@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import OpenAI from 'openai';
 
 async function makeRequest(useStreaming: boolean = false) {
