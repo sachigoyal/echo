@@ -85,8 +85,7 @@ app.all('*', async (req: Request, res: Response) => {
         // Process headers
         const processedHeaders = processHeaders(req.headers as Record<string, string>);
 
-        console.log("received request", req.path, req.method, processedHeaders);
-        console.log("request body:", req.body);
+        console.log("received request", req.path, req.method);
 
         // Forward the request to OpenAI API
         const response = await fetch(`${BASE_URL}${req.path}`, {
@@ -95,7 +94,7 @@ app.all('*', async (req: Request, res: Response) => {
             body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
         });
 
-        console.log("new outbound request", `${BASE_URL}${req.path}`, req.method, processedHeaders);
+        console.log("new outbound request", `${BASE_URL}${req.path}`, req.method);
 
         // Set response headers safely
         setSafeHeaders(res, response.headers);
