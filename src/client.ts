@@ -47,4 +47,20 @@ makeRequest(true).then(() => {
     console.log("done");
 });
 
+makeRequest(true).then(() => {
+    console.log("\n");
+    console.log("done");
+});
+
+makeRequest(true).then(() => {
+    console.log("\n");
+    console.log("done");
+});
+
+
+makeRequest(true).then(() => {
+    console.log("\n");
+    console.log("done");
+});
+
 // Uncomment to run with streaming
