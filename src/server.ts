@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express';
 import { Readable } from 'stream';
 import fetch, { Headers } from 'node-fetch';
-import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import compression from 'compression';
+import { handleBody } from './helpers';
 
 dotenv.config();
 
@@ -19,7 +19,19 @@ app.use(compression());
 
 // Function to process headers
 function processHeaders(headers: Record<string, string>): Record<string, string> {
-    // Remove problematic headers
+    /**
+     * Remove problematic headers
+     * host, 
+     * authorization, 
+     * content-encoding,
+     * content-length,
+     * transfer-encoding
+     * 
+     * 
+     * 
+     * Does a processing step on the headers, in the future this will be an authentication step
+     * which will be used to properly set the Openai API key
+     */
     const { 
         host, 
         authorization, 
@@ -38,19 +50,7 @@ function processHeaders(headers: Record<string, string>): Record<string, string>
     };
 }
 
-// Function to safely set response headers
-function setSafeHeaders(res: Response, headers: Headers) {
-    headers.forEach((value, key) => {
-        // Only set headers that are safe and valid
-        if (typeof value === 'string' && /^[\x20-\x7E]*$/.test(value)) {
-            // Skip problematic headers
-            const lowerKey = key.toLowerCase();
-            if (!['content-encoding', 'content-length', 'transfer-encoding'].includes(lowerKey)) {
-                res.setHeader(key, value);
-            }
-        }
-    });
-}
+
 
 // Function to duplicate a stream
 function duplicateStream(stream: Readable): [Readable, Readable] {
@@ -86,6 +86,11 @@ app.all('*', async (req: Request, res: Response) => {
         const processedHeaders = processHeaders(req.headers as Record<string, string>);
 
         console.log("received request", req.path, req.method);
+        if (req.body.stream) {
+            req.body.stream_options = {
+                include_usage: true
+            };
+        }
 
         // Forward the request to OpenAI API
         const response = await fetch(`${BASE_URL}${req.path}`, {
@@ -96,9 +101,6 @@ app.all('*', async (req: Request, res: Response) => {
 
         console.log("new outbound request", `${BASE_URL}${req.path}`, req.method);
 
-        // Set response headers safely
-        setSafeHeaders(res, response.headers);
-
         // Check if this is a streaming response
         const isStreaming = response.headers.get('content-type')?.includes('text/event-stream');
         
@@ -107,33 +109,31 @@ app.all('*', async (req: Request, res: Response) => {
             const bodyStream = response.body as Readable;
             const [stream1, stream2] = duplicateStream(bodyStream);
 
-            // Handle the streams in parallel
-            Promise.all([
-                // Forward the response to the client
-                new Promise((resolve, reject) => {
-                    stream1.pipe(res);
-                    stream1.on('end', resolve);
-                    stream1.on('error', reject);
-                }),
-                // Process the data asynchronously
-                new Promise((resolve, reject) => {
-                    let data = '';
-                    stream2.on('data', (chunk) => {
-                        data += chunk.toString();
-                    });
-                    stream2.on('end', () => {
-                        console.log('Processed data:', data);
-                        resolve(null);
-                    });
-                    stream2.on('error', reject);
-                })
-            ]).catch(error => {
-                console.error('Error processing streams:', error);
+            // Pipe the main stream directly to the response
+            stream1.on('data', (chunk) => {
+                res.write(chunk);
+            });
+            stream1.on('end', () => {
+                res.end();
+            });
+
+            // Handle the processing stream separately
+            let data: string = '';
+            stream2.on('data', (chunk) => {
+                data += chunk.toString();
+            });
+            stream2.on('end', () => {
+                handleBody(data, true);
+            });
+            stream2.on('error', (error) => {
+                console.error('Error processing stream:', error);
             });
         } else {
             // Handle non-streaming response
-            const data = await response.text();
-            res.send(data);
+            const data = await response.json();
+            handleBody(JSON.stringify(data), false);
+            res.setHeader('content-type', 'application/json');
+            res.json(data);
         }
 
     } catch (error) {
