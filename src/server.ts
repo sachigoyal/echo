@@ -128,6 +128,11 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-}); 
+// Only start the server if this file is being run directly
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+}
+
+export default app; 

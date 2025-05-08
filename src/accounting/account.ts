@@ -1,27 +1,37 @@
 import { PaymentRequiredError } from '../errors/http';
 
 export class AccountManager {
-    private accountLookupTable: Record<string, number>;
+    private accounts: Map<string, number>;
 
     constructor() {
-        this.accountLookupTable = {
-            "user-ben-reilly": 1000,
-        };
+        this.accounts = new Map();
     }
 
     getAccount(user: string): number {
-        return this.accountLookupTable[user];
+        return this.accounts.get(user) || 0;
+    }
+
+    setAccount(user: string, amount: number): void {
+        this.accounts.set(user, amount);
     }
 
     decrementAccount(user: string, amount: number): void {
-        this.accountLookupTable[user] -= amount;
-        if (this.accountLookupTable[user] <= 0) {
+        const currentBalance = this.accounts.get(user) || 0;
+        const newBalance = currentBalance - amount;
+        if (newBalance <= 0) {
             throw new PaymentRequiredError();
         }
+        this.accounts.set(user, newBalance);
     }
 
     incrementAccount(user: string, amount: number): void {
-        this.accountLookupTable[user] += amount;
+        const currentBalance = this.accounts.get(user) || 0;
+        const newBalance = currentBalance + amount;
+        this.accounts.set(user, newBalance);
+    }
+
+    reset() {
+        this.accounts.clear();
     }
 }
 
