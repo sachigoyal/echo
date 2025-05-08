@@ -1,8 +1,12 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
 import { handleBody } from './helpers';
-import { ReadableStream, ReadableStreamDefaultReader } from 'stream/web';
+import { ReadableStream } from 'stream/web';
+import { accountManager } from './accounting/account';
+import { HttpError, PaymentRequiredError } from './errors/http';
+import accountRoutes from './routes/account';
+import { processHeaders } from './auth/headers';
 
 dotenv.config();
 
@@ -16,39 +20,8 @@ const BASE_URL = 'https://api.openai.com/v1';
 app.use(express.json());
 app.use(compression());
 
-// Function to process headers
-function processHeaders(headers: Record<string, string>): Record<string, string> {
-    /**
-     * Remove problematic headers
-     * host, 
-     * authorization, 
-     * content-encoding,
-     * content-length,
-     * transfer-encoding
-     * 
-     * 
-     * 
-     * Does a processing step on the headers, in the future this will be an authentication step
-     * which will be used to properly set the Openai API key
-     */
-    const { 
-        host, 
-        authorization, 
-        'content-encoding': contentEncoding,
-        'content-length': contentLength,
-        'transfer-encoding': transferEncoding,
-        connection,
-        ...restHeaders 
-    } = headers;
-    
-    // Ensure content-type is set correctly
-    return {
-        ...restHeaders,
-        'content-type': 'application/json',
-        'accept-encoding': 'gzip, deflate',
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-    };
-}
+// Mount account routes
+app.use('/account', accountRoutes);
 
 // Function to duplicate a stream
 function duplicateStream(stream: ReadableStream<Uint8Array>): [ReadableStream<Uint8Array>, ReadableStream<Uint8Array>] {
@@ -61,16 +34,20 @@ function duplicateStream(stream: ReadableStream<Uint8Array>): [ReadableStream<Ui
 }
 
 // Main route handler
-app.all('*', async (req: Request, res: Response) => {
+app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Process headers
-        const processedHeaders = processHeaders(req.headers as Record<string, string>);
+        const [user, processedHeaders] = await processHeaders(req.headers as Record<string, string>);
 
         console.log("received request", req.path, req.method);
         if (req.body.stream) {
             req.body.stream_options = {
                 include_usage: true
             };
+        }
+
+        if (accountManager.getAccount(user) <= 0) {
+            throw new PaymentRequiredError();
         }
 
         // Forward the request to OpenAI API
@@ -118,7 +95,7 @@ app.all('*', async (req: Request, res: Response) => {
                         if (done) break;
                         data += new TextDecoder().decode(value);
                     }
-                    handleBody(data, true);
+                    handleBody(user, data, true);
                 } catch (error) {
                     console.error('Error processing stream:', error);
                 }
@@ -126,14 +103,28 @@ app.all('*', async (req: Request, res: Response) => {
         } else {
             // Handle non-streaming response
             const data = await response.json();
-            handleBody(JSON.stringify(data), false);
+            handleBody(user, JSON.stringify(data), false);
             res.setHeader('content-type', 'application/json'); // Set the content type to json
             res.json(data);
         }
 
     } catch (error) {
-        console.error('Error handling request:', error);
-        res.status(500).send('Internal Server Error');
+        next(error);
+    }
+});
+
+// Error handling middleware
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+    console.error('Error handling request:', error);
+    
+    if (error instanceof HttpError) {
+        res.status(error.statusCode).json({
+            error: error.message
+        });
+    } else {
+        res.status(500).json({
+            error: 'Internal Server Error'
+        });
     }
 });
 
