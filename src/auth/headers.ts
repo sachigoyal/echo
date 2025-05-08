@@ -1,7 +1,17 @@
 import { UnauthorizedError } from '../errors/http';
 import { verifyApiKey } from './verify';
 
-export async function processHeaders(headers: Record<string, string>): Promise<[string, Record<string, string>]> {
+
+const determineApiKey = (model: string) => {
+    if (model.includes("claude")) {
+        return process.env.ANTHROPIC_API_KEY;
+    } else {
+        return process.env.OPENAI_API_KEY;
+    }
+}
+
+
+export async function processHeaders(headers: Record<string, string>, model: string): Promise<[string, Record<string, string>]> {
     /**
      * Remove problematic headers
      * host, 
@@ -28,15 +38,23 @@ export async function processHeaders(headers: Record<string, string>): Promise<[
     }
 
     const user = await verifyApiKey(authorization);
-    if (user) {
-        return [
-            user, // User ID
-            {
+    if (!user) {
+        throw new UnauthorizedError();
+    }
+
+    const apiKey = determineApiKey(model);
+
+    if (!apiKey) {
+        throw new UnauthorizedError();
+    }
+
+    return [
+        user, // User ID
+        {
             ...restHeaders,
             'content-type': 'application/json',
             'accept-encoding': 'gzip, deflate',
-            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-        }]
-    }
-    throw new UnauthorizedError();
+            "Authorization": `Bearer ${apiKey}`
+        }
+    ]
 } 

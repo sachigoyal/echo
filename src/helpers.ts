@@ -93,3 +93,16 @@ export function handleBody(user: string, data: string, stream: boolean): void {
         console.error('Error processing data:', error);
     }
 } 
+
+const OPENAI_BASE_URL = 'https://api.openai.com/v1';
+
+const ANTHROPIC_BASE_URL = 'https://api.anthropic.com/v1';
+
+
+export function determineBaseUrl(model: string): string {
+    if (model.includes('claude')) {
+        return ANTHROPIC_BASE_URL;
+    } else {
+        return OPENAI_BASE_URL;
+    }
+}

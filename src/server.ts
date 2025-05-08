@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
-import { handleBody } from './helpers';
+import { determineBaseUrl, handleBody } from './helpers';
 import { ReadableStream } from 'stream/web';
 import { accountManager } from './accounting/account';
 import { HttpError, PaymentRequiredError } from './errors/http';
@@ -12,9 +12,6 @@ dotenv.config();
 
 const app = express();
 const port = 3000;
-
-// OpenAI API base URL
-const BASE_URL = 'https://api.openai.com/v1';
 
 // Add middleware
 app.use(express.json());
@@ -37,7 +34,7 @@ function duplicateStream(stream: ReadableStream<Uint8Array>): [ReadableStream<Ui
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Process headers
-        const [user, processedHeaders] = await processHeaders(req.headers as Record<string, string>);
+        const [user, processedHeaders] = await processHeaders(req.headers as Record<string, string>, req.body.model);
 
         console.log("received request", req.path, req.method);
         if (req.body.stream) {
@@ -50,14 +47,18 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
             throw new PaymentRequiredError();
         }
 
-        // Forward the request to OpenAI API
-        const response = await fetch(`${BASE_URL}${req.path}`, {
+        const baseUrl = determineBaseUrl(req.body.model);
+
+        // Forward the request to Base Url API
+        const response = await fetch(`${baseUrl}${req.path}`, {
             method: req.method,
             headers: processedHeaders,
             body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
         });
 
-        console.log("new outbound request", `${BASE_URL}${req.path}`, req.method);
+        console.log("new outbound request", `${baseUrl}${req.path}`, req.method);
+
+        console.log("response", response);
 
         // Check if this is a streaming response
         const isStreaming = response.headers.get('content-type')?.includes('text/event-stream');
