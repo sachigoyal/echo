@@ -1,3 +1,5 @@
+import { accountManager } from './accounting/account';
+
 export interface CompletionStateBody {
     usage: {
         prompt_tokens: number;
@@ -48,8 +50,12 @@ export function parseSSE(data: string): StreamingChunkBody[] {
     return chunks;
 }
 
-export function handleBody(data: string, stream: boolean): void {
+export function handleBody(user: string, data: string, stream: boolean): void {
     try {
+        let prompt_tokens = 0;
+        let completion_tokens = 0;
+        let total_tokens = 0;
+
         if (stream) {
             const chunks = parseSSE(data);
             
@@ -62,6 +68,9 @@ export function handleBody(data: string, stream: boolean): void {
                         completion_tokens: chunk.usage.completion_tokens,
                         total_tokens: chunk.usage.total_tokens
                     });
+                    prompt_tokens += chunk.usage.prompt_tokens;
+                    completion_tokens += chunk.usage.completion_tokens;
+                    total_tokens += chunk.usage.total_tokens;
                 }
             }
         } else {
@@ -73,9 +82,27 @@ export function handleBody(data: string, stream: boolean): void {
                     completion_tokens: parsed.usage.completion_tokens,
                     total_tokens: parsed.usage.total_tokens
                 });
+                prompt_tokens += parsed.usage.prompt_tokens;
+                completion_tokens += parsed.usage.completion_tokens;
+                total_tokens += parsed.usage.total_tokens;
             }
+
         }
+        accountManager.decrementAccount(user, total_tokens);
     } catch (error) {
         console.error('Error processing data:', error);
     }
 } 
+
+const OPENAI_BASE_URL = 'https://api.openai.com/v1';
+
+const ANTHROPIC_BASE_URL = 'https://api.anthropic.com/v1';
+
+
+export function determineBaseUrl(model: string): string {
+    if (model.includes('claude')) {
+        return ANTHROPIC_BASE_URL;
+    } else {
+        return OPENAI_BASE_URL;
+    }
+}
