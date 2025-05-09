@@ -5,7 +5,7 @@ export class AccountManager {
 
     constructor() {
         this.accounts = new Map();
-        this.accounts.set('user-ben-reilly', 1000);
+        this.accounts.set('user-ben-reilly', 1000000);
     }
 
     getAccount(user: string): number {
