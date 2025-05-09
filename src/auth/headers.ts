@@ -2,27 +2,22 @@ import { UnauthorizedError } from '../errors/http';
 import { verifyApiKey } from './verify';
 
 
-const determineApiKey = (model: string) => {
-    if (model.includes("claude")) {
-        return process.env.ANTHROPIC_API_KEY;
-    } else {
-        return process.env.OPENAI_API_KEY;
-    }
-}
-
-
-export async function processHeaders(headers: Record<string, string>, model: string): Promise<[string, Record<string, string>]> {
+export async function verifyUserHeaderCheck(headers: Record<string, string>): Promise<[string, Record<string, string>]> {
     /**
-     * Remove problematic headers
-     * host, 
-     * authorization, 
-     * content-encoding,
-     * content-length,
-     * transfer-encoding
+     * Process authentication for the user (authenticated with Merit Api Key)
      * 
-     * Does a processing step on the headers, in the future this will be an authentication step
-     * which will be used to properly set the Openai API key
+     * 
+     * We have to handle two cases:
+     * 1. Authentication: Bearer Token
+     * 2. x-api-key
+     * 
+     * 
+     * This is because the Anthropic Native API uses x-api-key, but the OpenAI API format uses Bearer Token
+     * 
+     * 
+     * We also swap problematic headers for the request (this is vibes IDK how much of this is needed)
      */
+
     const { 
         host, 
         authorization, 
@@ -30,31 +25,26 @@ export async function processHeaders(headers: Record<string, string>, model: str
         'content-length': contentLength,
         'transfer-encoding': transferEncoding,
         connection,
+        "x-api-key": xApiKey,
         ...restHeaders 
     } = headers;
 
-    if (!authorization) {
+
+    if (!authorization && !xApiKey)  {
         throw new UnauthorizedError();
     }
 
-    const user = await verifyApiKey(authorization);
+    const user = await verifyApiKey(authorization || xApiKey);
     if (!user) {
         throw new UnauthorizedError();
     }
 
-    const apiKey = determineApiKey(model);
-
-    if (!apiKey) {
-        throw new UnauthorizedError();
-    }
-
-    return [
-        user, // User ID
+    return [user, 
         {
             ...restHeaders,
             'content-type': 'application/json',
             'accept-encoding': 'gzip, deflate',
-            "Authorization": `Bearer ${apiKey}`
         }
-    ]
-} 
+    ];
+
+}

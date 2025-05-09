@@ -1,12 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
-import { determineBaseUrl, handleBody } from './helpers';
 import { ReadableStream } from 'stream/web';
 import { accountManager } from './accounting/account';
 import { HttpError, PaymentRequiredError } from './errors/http';
 import accountRoutes from './routes/account';
-import { processHeaders } from './auth/headers';
+import { verifyUserHeaderCheck } from './auth/headers';
+import { getProvider } from './providers/ProviderFactory';
 
 dotenv.config();
 
@@ -33,32 +33,43 @@ function duplicateStream(stream: ReadableStream<Uint8Array>): [ReadableStream<Ui
 // Main route handler
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Process headers
-        const [user, processedHeaders] = await processHeaders(req.headers as Record<string, string>, req.body.model);
+        // Process headers and instantiate provider
+        const [user, processedHeaders] = await verifyUserHeaderCheck(req.headers as Record<string, string>);
+        // assumption that "model" will always be passed in the body under this key
+        // assumption that "stream" will always be passed in the body under this key
+        // This currently works for everything implemented (OpenAI format + Anthropic native format)
+        const provider = getProvider(req.body.model, user, req.body.stream, req.path);
+        const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
-        console.log("received request", req.path, req.method);
-        if (req.body.stream) {
-            req.body.stream_options = {
-                include_usage: true
-            };
-        }
-
+        console.log("Account balance: ", accountManager.getAccount(user));
+    
         if (accountManager.getAccount(user) <= 0) {
+            console.log("Payment required for user: ", user);
             throw new PaymentRequiredError();
         }
 
-        const baseUrl = determineBaseUrl(req.body.model);
+
+        console.log("new outbound request", `${provider.getBaseUrl()}${req.path}`, req.method);
+
+        // make sure that streamUsage is set to true (openAI Format)
+        req.body = provider.ensureStreamUsage(req.body);
+
 
         // Forward the request to Base Url API
-        const response = await fetch(`${baseUrl}${req.path}`, {
+        const response = await fetch(`${provider.getBaseUrl()}${req.path}`, {
             method: req.method,
-            headers: processedHeaders,
+            headers: authenticatedHeaders,
             body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
         });
 
-        console.log("new outbound request", `${baseUrl}${req.path}`, req.method);
-
-        console.log("response", response);
+        if (response.status != 200) {
+            // decode the buffer
+            const error = await response.json();
+            console.error("Error response: ", error);
+            return res.status(response.status).json({
+                error: error
+            });
+        }
 
         // Check if this is a streaming response
         const isStreaming = response.headers.get('content-type')?.includes('text/event-stream');
@@ -96,7 +107,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
                         if (done) break;
                         data += new TextDecoder().decode(value);
                     }
-                    handleBody(user, data, true);
+                    provider.handleBody(data);
                 } catch (error) {
                     console.error('Error processing stream:', error);
                 }
@@ -104,7 +115,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
         } else {
             // Handle non-streaming response
             const data = await response.json();
-            handleBody(user, JSON.stringify(data), false);
+            provider.handleBody(JSON.stringify(data));
             res.setHeader('content-type', 'application/json'); // Set the content type to json
             res.json(data);
         }
@@ -121,6 +132,11 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     if (error instanceof HttpError) {
         res.status(error.statusCode).json({
             error: error.message
+        });
+    } else if (error instanceof Error) {
+        // Handle other errors with a more specific message
+        res.status(500).json({
+            error: error.message || 'Internal Server Error'
         });
     } else {
         res.status(500).json({
