@@ -5,7 +5,7 @@ export class AccountManager {
 
     constructor() {
         this.accounts = new Map();
-        this.accounts.set('user-ben-reilly', 100000);
+        this.accounts.set('user-ben-reilly', 1000);
     }
 
     getAccount(user: string): number {
@@ -19,9 +19,6 @@ export class AccountManager {
     decrementAccount(user: string, amount: number): void {
         const currentBalance = this.accounts.get(user) || 0;
         const newBalance = currentBalance - amount;
-        if (newBalance <= 0) {
-            throw new PaymentRequiredError();
-        }
         this.accounts.set(user, newBalance);
     }
 

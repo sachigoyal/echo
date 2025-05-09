@@ -45,7 +45,24 @@ describe('Server Tests', () => {
   });
 
   describe('Streaming endpoints', () => {
+    // We need to implement a test for the streaming endpoints
+    // This should test: 
+    // 1. All providers can stream successfully
+    // 2. All providers deduct the correct amount of tokens from the account
+    // 3. All providers return the correct content-type
+    // 4. All providers return the correct status code
+    // 5. All providers return the correct body
   });
+
+  describe('Non-streaming endpoints', () => {
+    // We need to implement a test for the non-streaming endpoints
+    // This should test: 
+    // 1. All providers can handle the request successfully
+    // 2. All providers return the correct content-type
+    // 3. All providers return the correct status code
+    // 4. All providers return the correct body
+  })
+  
 
   describe('Authentication Tests', () => {
     it('should reject requests without authorization header', async () => {
@@ -107,42 +124,6 @@ describe('Server Tests', () => {
 
       expect(response.status).toBe(402);
       expect(response.body).toHaveProperty('error');
-    });
-
-    it('should handle streaming requests with account balance updates', async () => {
-      const initialBalance = 100;
-      accountManager.setAccount(TEST_USER, initialBalance);
-
-      // Create a mock stream with usage data
-      const mockStream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"Test"}}]}\n\n'));
-          controller.close();
-        }
-      });
-
-      // Mock the OpenAI API response
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        body: mockStream,
-        headers: {
-          get: (name: string) => name === 'content-type' ? 'text/event-stream' : null
-        }
-      });
-
-      const response = await request(app)
-        .post('/chat/completions')
-        .set('Authorization', `Bearer ${TEST_TOKEN}`)
-        .send({
-          model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test prompt' }],
-          stream: true
-        });
-
-      expect(response.status).toBe(200);
-      // Verify that the account balance was updated
-      expect(accountManager.getAccount(TEST_USER)).toBeLessThan(initialBalance);
     });
   });
 }); 

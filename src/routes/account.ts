@@ -1,13 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { processHeaders } from '../auth/headers';
 import { accountManager } from '../accounting/account';
-
+import { verifyUserHeaderCheck } from '../auth/headers';
 const router = Router();
 
 // Route to increment account balance
 router.post('/increment', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const [user, _] = await processHeaders(req.headers as Record<string, string>, req.body.model);
+        const [user, _] = await verifyUserHeaderCheck(req.headers as Record<string, string>);
         const { amount } = req.body;
 
         if (typeof amount !== 'number' || amount <= 0) {
