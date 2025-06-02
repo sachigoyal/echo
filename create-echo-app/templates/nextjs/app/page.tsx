@@ -1,6 +1,6 @@
 'use client'
 
-import { useChat } from 'ai/react'
+import { useChat } from '@ai-sdk/react'
 
 export default function Home() {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
@@ -12,7 +12,7 @@ export default function Home() {
           🤖 Echo Chat
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          A simple AI chatbot powered by Vercel AI SDK
+          A simple AI chatbot powered by Vercel AI SDK and MERIT SYSTEMS
         </p>
       </div>
 
