@@ -1,75 +1,99 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, getCurrentUserByApiKey } from '@/lib/auth'
 
-// GET /api/echo-apps/[id] - Get echo app details for authenticated user
+// Helper function to get user from either Clerk or API key
+async function getAuthenticatedUser(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    // API key authentication
+    const authResult = await getCurrentUserByApiKey(request)
+    return { user: authResult.user, echoApp: authResult.echoApp, isApiKeyAuth: true }
+  } else {
+    // Clerk authentication
+    const user = await getCurrentUser()
+    return { user, echoApp: null, isApiKeyAuth: false }
+  }
+}
+
+// GET /api/echo-apps/[id] - Get detailed app information
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser()
-    // @ts-ignore - Next.js 15+ requires awaiting params, despite TS warning
-    const { id } = await params
+    const { user, echoApp, isApiKeyAuth } = await getAuthenticatedUser(request)
+    const { id: appId } = await params
 
-    const echoApp = await db.echoApp.findFirst({
-      where: { 
-        id,
-        userId: user.id // Ensure user can only access their own apps
+    // If using API key auth, ensure they can only access their scoped app
+    if (isApiKeyAuth && echoApp && echoApp.id !== appId) {
+      return NextResponse.json({ error: 'Access denied: API key not scoped to this app' }, { status: 403 })
+    }
+
+    // Find the echo app
+    const app = await db.echoApp.findFirst({
+      where: {
+        id: appId,
+        userId: user.id,
       },
       include: {
         user: {
-          select: { id: true, email: true, name: true },
-        },
-        apiKeys: {
-          where: { isActive: true },
-          orderBy: { createdAt: 'desc' },
-        },
-        llmTransactions: {
-          orderBy: { createdAt: 'desc' },
-          take: 50,
-        },
-        _count: {
           select: {
-            apiKeys: true,
-            llmTransactions: true,
+            id: true,
+            email: true,
+            name: true,
           },
         },
+        apiKeys: {
+          select: {
+            id: true,
+            name: true,
+            key: true,
+            isActive: true,
+            createdAt: true,
+            lastUsed: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     })
 
-    if (!echoApp) {
-      return NextResponse.json({ error: 'Echo app not found' }, { status: 404 })
+    if (!app) {
+      return NextResponse.json({ error: 'Echo app not found or access denied' }, { status: 404 })
     }
 
-    // Calculate usage statistics
+    // Get transaction statistics
     const stats = await db.llmTransaction.aggregate({
-      where: { echoAppId: id },
+      where: { echoAppId: appId },
       _sum: {
+        totalTokens: true,
         inputTokens: true,
         outputTokens: true,
-        totalTokens: true,
         cost: true,
       },
       _count: true,
     })
 
-    // Get usage by model
+    // Get model usage breakdown
     const modelUsage = await db.llmTransaction.groupBy({
       by: ['model'],
-      where: { echoAppId: id },
+      where: { echoAppId: appId },
       _sum: {
         totalTokens: true,
         cost: true,
       },
       _count: true,
+      orderBy: {
+        _sum: {
+          cost: 'desc',
+        },
+      },
     })
 
     // Get recent transactions
     const recentTransactions = await db.llmTransaction.findMany({
-      where: { echoAppId: id },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
+      where: { echoAppId: appId },
       select: {
         id: true,
         model: true,
@@ -78,12 +102,14 @@ export async function GET(
         status: true,
         createdAt: true,
       },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
     })
 
     const appWithStats = {
-      ...echoApp,
+      ...app,
       stats: {
-        totalTransactions: stats._count,
+        totalTransactions: stats._count || 0,
         totalTokens: stats._sum.totalTokens || 0,
         totalInputTokens: stats._sum.inputTokens || 0,
         totalOutputTokens: stats._sum.outputTokens || 0,
@@ -97,7 +123,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching echo app:', error)
     
-    if (error instanceof Error && error.message === 'Not authenticated') {
+    if (error instanceof Error && (error.message === 'Not authenticated' || error.message.includes('Invalid'))) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
     
@@ -105,39 +131,52 @@ export async function GET(
   }
 }
 
-// PUT /api/echo-apps/[id] - Update echo app for authenticated user
+// PUT /api/echo-apps/[id] - Update app information
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser()
-    // @ts-ignore - Next.js 15+ requires awaiting params, despite TS warning
-    const { id } = await params
+    const { user, echoApp, isApiKeyAuth } = await getAuthenticatedUser(request)
+    const { id: appId } = params
+
+    // API key users cannot update apps
+    if (isApiKeyAuth) {
+      return NextResponse.json({ error: 'API key authentication cannot update apps' }, { status: 403 })
+    }
+
     const body = await request.json()
     const { name, description, isActive } = body
 
-    // First check if the app exists and belongs to the user
+    // Verify the echo app exists and belongs to the user
     const existingApp = await db.echoApp.findFirst({
-      where: { 
-        id,
-        userId: user.id 
-      }
+      where: {
+        id: appId,
+        userId: user.id,
+      },
     })
 
     if (!existingApp) {
-      return NextResponse.json({ error: 'Echo app not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Echo app not found or access denied' }, { status: 404 })
     }
 
-    const echoApp = await db.echoApp.update({
-      where: { id },
+    // Update the app
+    const updatedApp = await db.echoApp.update({
+      where: { id: appId },
       data: {
-        name,
-        description,
-        isActive,
+        ...(name && { name }),
+        ...(description !== undefined && { description: description || null }),
+        ...(isActive !== undefined && { isActive }),
       },
       include: {
-        apiKeys: true,
+        apiKeys: {
+          select: {
+            id: true,
+            name: true,
+            isActive: true,
+            createdAt: true,
+          },
+        },
         _count: {
           select: {
             apiKeys: true,
@@ -147,11 +186,11 @@ export async function PUT(
       },
     })
 
-    return NextResponse.json({ echoApp })
+    return NextResponse.json({ echoApp: updatedApp })
   } catch (error) {
     console.error('Error updating echo app:', error)
     
-    if (error instanceof Error && error.message === 'Not authenticated') {
+    if (error instanceof Error && (error.message === 'Not authenticated' || error.message.includes('Invalid'))) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
     
