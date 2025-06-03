@@ -1,55 +1,116 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
+import Stripe from 'stripe'
 
-// POST /api/stripe/payment-link - Generate payment link (mocked) for authenticated user
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-05-28.basil',
+})
+
+// POST /api/stripe/payment-link - Generate real Stripe payment link for authenticated user
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()
     const body = await request.json()
-    const { amount, description = 'Echo Credits' } = body
+    const { amount, description = 'Echo Credits', echoAppId } = body
 
-    if (!amount) {
-      return NextResponse.json({ error: 'Amount is required' }, { status: 400 })
+    if (!amount || amount <= 0) {
+      return NextResponse.json({ error: 'Valid amount is required' }, { status: 400 })
     }
 
-    // Mock Stripe payment link generation
-    const mockPaymentIntentId = `pi_mock_${Date.now()}_${Math.random().toString(36).substring(7)}`
-    const mockPaymentLink = `https://checkout.stripe.com/pay/mock_${mockPaymentIntentId}`
+    if (!echoAppId) {
+      return NextResponse.json({ error: 'Echo App ID is required' }, { status: 400 })
+    }
 
-    // Create pending payment record
-    const payment = await db.payment.create({
-      data: {
-        stripePaymentId: mockPaymentIntentId,
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: 'usd',
-        status: 'pending',
-        description,
+    // Verify the echo app exists and belongs to the user
+    const echoApp = await db.echoApp.findFirst({
+      where: {
+        id: echoAppId,
         userId: user.id,
       },
     })
 
-    // Mock response similar to Stripe's payment link creation
-    const response = {
-      id: mockPaymentIntentId,
-      url: mockPaymentLink,
-      payment_intent: mockPaymentIntentId,
-      amount: payment.amount,
-      currency: payment.currency,
-      status: 'pending',
-      created: Math.floor(Date.now() / 1000),
-      metadata: {
-        userId: user.id,
-        description,
-      },
+    if (!echoApp) {
+      return NextResponse.json({ error: 'Echo app not found or access denied' }, { status: 404 })
     }
 
-    return NextResponse.json({ paymentLink: response }, { status: 201 })
+    // Convert amount to cents for Stripe
+    const amountInCents = Math.round(amount * 100)
+
+    // Create Stripe product
+    const product = await stripe.products.create({
+      name: `${description} - ${echoApp.name}`,
+      description: `${description} for ${echoApp.name} - ${amount} USD`,
+    })
+
+    // Create Stripe price
+    const price = await stripe.prices.create({
+      unit_amount: amountInCents,
+      currency: 'usd',
+      product: product.id,
+    })
+
+    // Create Stripe payment link
+    const paymentLink = await stripe.paymentLinks.create({
+      line_items: [
+        {
+          price: price.id,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId: user.id,
+        echoAppId,
+        description,
+      },
+      after_completion: {
+        type: 'redirect',
+        redirect: {
+          url: process.env.NEXTAUTH_URL + `/apps/${echoAppId}?payment=success`,
+        },
+      },
+    })
+
+    // Create pending payment record
+    const payment = await db.payment.create({
+      data: {
+        stripePaymentId: paymentLink.id,
+        amount: amountInCents,
+        currency: 'usd',
+        status: 'pending',
+        description: `${description} for ${echoApp.name}`,
+        userId: user.id,
+        echoAppId,
+      },
+    })
+
+    return NextResponse.json({ 
+      paymentLink: {
+        id: paymentLink.id,
+        url: paymentLink.url,
+        amount: amountInCents,
+        currency: 'usd',
+        status: 'pending',
+        created: Math.floor(Date.now() / 1000),
+        metadata: {
+          userId: user.id,
+          echoAppId,
+          description,
+        },
+      },
+      payment
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating payment link:', error)
     
     if (error instanceof Error && error.message === 'Not authenticated') {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
+    if (error instanceof Stripe.errors.StripeError) {
+      return NextResponse.json({ 
+        error: 'Stripe error: ' + error.message 
+      }, { status: 400 })
     }
     
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

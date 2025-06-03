@@ -9,7 +9,8 @@ export async function GET(
 ) {
   try {
     const user = await getCurrentUser()
-    const { id } = params
+    // @ts-ignore - Next.js 15+ requires awaiting params, despite TS warning
+    const { id } = await params
 
     const echoApp = await db.echoApp.findFirst({
       where: { 
@@ -111,7 +112,8 @@ export async function PUT(
 ) {
   try {
     const user = await getCurrentUser()
-    const { id } = params
+    // @ts-ignore - Next.js 15+ requires awaiting params, despite TS warning
+    const { id } = await params
     const body = await request.json()
     const { name, description, isActive } = body
 

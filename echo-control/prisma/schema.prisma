@@ -43,6 +43,7 @@ model EchoApp {
   // Relations
   apiKeys     ApiKey[]
   llmTransactions LlmTransaction[]
+  payments    Payment[]
 
   @@map("echo_apps")
 }
@@ -76,7 +77,9 @@ model Payment {
 
   // Foreign keys
   userId          String
+  echoAppId       String?
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp         EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: SetNull)
 
   @@map("payments")
 }

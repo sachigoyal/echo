@@ -124,33 +124,6 @@ export default function EchoAppsDashboard() {
           </div>
         </div>
       )}
-
-      {/* Balance and Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <BalanceCard />
-        </div>
-        <div className="bg-card rounded-lg border border-border p-6">
-          <h3 className="text-lg font-semibold text-card-foreground mb-4">Quick Actions</h3>
-          <div className="space-y-3">
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Create New App
-            </button>
-            <Link
-              href="#payment"
-              className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-card hover:bg-accent hover:text-accent-foreground"
-            >
-              <CreditCardIcon className="h-4 w-4 mr-2" />
-              Add Credits
-            </Link>
-          </div>
-        </div>
-      </div>
-
       {/* Echo Apps Grid */}
       <div>
         <div className="flex items-center justify-between mb-6">

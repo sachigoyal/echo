@@ -6,12 +6,13 @@ const isProtectedRoute = createRouteMatcher([
   '/api/echo-apps(.*)',
   '/api/api-keys(.*)',
   '/api/balance(.*)',
-  '/api/stripe(.*)'
+  '/api/stripe/payment-link(.*)'
 ])
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
-  '/sign-up(.*)'
+  '/sign-up(.*)',
+  '/api/stripe/webhook(.*)'
 ])
 
 export default clerkMiddleware(async (auth, req) => {

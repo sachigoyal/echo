@@ -2,10 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Key, Activity, CreditCard, ExternalLink, Plus } from 'lucide-react'
+import { ArrowLeft, Key, Activity, CreditCard, ExternalLink, Plus, CheckCircle, X } from 'lucide-react'
+import AppPaymentCard from './AppPaymentCard'
 
 interface EchoAppDetailProps {
   appId: string
+}
+
+interface Balance {
+  balance: string
+  totalCredits: string
+  totalSpent: string
+  currency: string
 }
 
 interface EchoApp {
@@ -53,12 +61,27 @@ interface EchoApp {
 
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   const [app, setApp] = useState<EchoApp | null>(null)
+  const [balance, setBalance] = useState<Balance | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [creatingApiKey, setCreatingApiKey] = useState(false)
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
 
   useEffect(() => {
     fetchAppDetails()
+    fetchAppBalance()
+    
+    // Check for payment success in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('payment') === 'success') {
+      setShowPaymentSuccess(true)
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname)
+      // Refetch balance after successful payment
+      setTimeout(() => {
+        fetchAppBalance()
+      }, 1000)
+    }
   }, [appId])
 
   const fetchAppDetails = async () => {
@@ -80,9 +103,14 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   }
 
-  const handleGeneratePaymentLink = async () => {
-    // Mock function - in real app would generate Stripe payment link
-    alert('Payment link generation would happen here')
+  const fetchAppBalance = async () => {
+    try {
+      const response = await fetch(`/api/balance?echoAppId=${appId}`)
+      const data = await response.json()
+      setBalance(data)
+    } catch (error) {
+      console.error('Error fetching app balance:', error)
+    }
   }
 
   const handleCreateApiKey = async () => {
@@ -134,6 +162,25 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
   return (
     <div className="space-y-6 fade-in">
+      {/* Payment Success Notification */}
+      {showPaymentSuccess && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center">
+            <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+            <div>
+              <h4 className="text-sm font-medium text-green-800">Payment Successful!</h4>
+              <p className="text-sm text-green-700">Credits have been added to your {app.name} account.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowPaymentSuccess(false)}
+            className="text-green-500 hover:text-green-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -164,60 +211,74 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-full bg-secondary/20 p-2">
-              <Activity className="h-5 w-5 text-secondary" />
+      {/* Balance and Payment Section */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center space-x-3">
+              <div className="rounded-full bg-secondary/20 p-2">
+                <Activity className="h-5 w-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Transactions</p>
+                <p className="text-xl font-bold text-card-foreground">
+                  {app.stats.totalTransactions.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Transactions</p>
-              <p className="text-xl font-bold text-card-foreground">
-                {app.stats.totalTransactions.toLocaleString()}
-              </p>
+          </div>
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center space-x-3">
+              <div className="rounded-full bg-secondary/20 p-2">
+                <Key className="h-5 w-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">API Keys</p>
+                <p className="text-xl font-bold text-card-foreground">
+                  {app.apiKeys.length}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center space-x-3">
+              <div className="rounded-full bg-secondary/20 p-2">
+                <CreditCard className="h-5 w-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Cost</p>
+                <p className="text-xl font-bold text-card-foreground">
+                  ${app.stats.totalCost.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-card rounded-lg border border-border p-4">
+            <div className="flex items-center space-x-3">
+              <div className="rounded-full bg-secondary/20 p-2">
+                <Activity className="h-5 w-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Tokens</p>
+                <p className="text-xl font-bold text-card-foreground">
+                  {app.stats.totalTokens.toLocaleString()}
+                </p>
+              </div>
             </div>
           </div>
         </div>
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-full bg-secondary/20 p-2">
-              <Key className="h-5 w-5 text-secondary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">API Keys</p>
-              <p className="text-xl font-bold text-card-foreground">
-                {app.apiKeys.length}
-              </p>
-            </div>
+        
+        {/* Payment Card */}
+        {balance && (
+          <div className="bg-card rounded-lg border border-border p-0 overflow-hidden">
+            <AppPaymentCard 
+              appId={app.id}
+              appName={app.name}
+              currentBalance={parseFloat(balance.balance)}
+            />
           </div>
-        </div>
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-full bg-secondary/20 p-2">
-              <CreditCard className="h-5 w-5 text-secondary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Cost</p>
-              <p className="text-xl font-bold text-card-foreground">
-                ${app.stats.totalCost.toFixed(2)}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-card rounded-lg border border-border p-4">
-          <div className="flex items-center space-x-3">
-            <div className="rounded-full bg-secondary/20 p-2">
-              <Activity className="h-5 w-5 text-secondary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Tokens</p>
-              <p className="text-xl font-bold text-card-foreground">
-                {app.stats.totalTokens.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* API Keys Section */}

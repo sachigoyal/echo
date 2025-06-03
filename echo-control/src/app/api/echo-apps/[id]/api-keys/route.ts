@@ -17,7 +17,8 @@ export async function POST(
 ) {
   try {
     const user = await getCurrentUser()
-    const { id: echoAppId } = params
+    // @ts-ignore - Next.js 15+ requires awaiting params, despite TS warning
+    const { id: echoAppId } = await params
     const body = await request.json()
     const { name } = body
 
