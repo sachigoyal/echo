@@ -2,24 +2,38 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 
-// GET /api/balance - Get authenticated user balance
+// GET /api/balance - Get authenticated user balance (optionally for a specific app)
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
+    const { searchParams } = new URL(request.url)
+    const echoAppId = searchParams.get('echoAppId')
 
     // Calculate balance from payments and transactions
+    const paymentsFilter: any = {
+      userId: user.id,
+      status: 'completed',
+    }
+    
+    const transactionsFilter: any = {
+      userId: user.id,
+    }
+
+    // If echoAppId is provided, filter by app
+    if (echoAppId) {
+      paymentsFilter.echoAppId = echoAppId
+      transactionsFilter.echoAppId = echoAppId
+    }
+
     const payments = await db.payment.aggregate({
-      where: {
-        userId: user.id,
-        status: 'completed',
-      },
+      where: paymentsFilter,
       _sum: {
         amount: true,
       },
     })
 
     const transactions = await db.llmTransaction.aggregate({
-      where: { userId: user.id },
+      where: transactionsFilter,
       _sum: {
         cost: true,
       },
@@ -34,6 +48,7 @@ export async function GET(request: NextRequest) {
       totalCredits: totalCredits.toFixed(2),
       totalSpent: totalSpent.toFixed(2),
       currency: 'USD',
+      echoAppId: echoAppId || null,
     })
   } catch (error) {
     console.error('Error fetching balance:', error)
