@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth'
 
-// GET /api/balance - Get user balance
+// GET /api/balance - Get authenticated user balance
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
-    }
+    const user = await getCurrentUser()
 
     // Calculate balance from payments and transactions
     const payments = await db.payment.aggregate({
       where: {
-        userId,
+        userId: user.id,
         status: 'completed',
       },
       _sum: {
@@ -23,7 +19,7 @@ export async function GET(request: NextRequest) {
     })
 
     const transactions = await db.llmTransaction.aggregate({
-      where: { userId },
+      where: { userId: user.id },
       _sum: {
         cost: true,
       },
@@ -41,19 +37,25 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching balance:', error)
+    
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// POST /api/balance - Increment/Decrement balance
+// POST /api/balance - Increment/Decrement balance for authenticated user
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
     const body = await request.json()
-    const { userId, amount, operation, description } = body
+    const { amount, operation, description } = body
 
-    if (!userId || !amount || !operation) {
+    if (!amount || !operation) {
       return NextResponse.json(
-        { error: 'User ID, amount, and operation are required' },
+        { error: 'Amount and operation are required' },
         { status: 400 }
       )
     }
@@ -71,12 +73,12 @@ export async function POST(request: NextRequest) {
       // Add credits via payment record
       await db.payment.create({
         data: {
-          stripePaymentId: `manual_${Date.now()}_${userId}`,
+          stripePaymentId: `manual_${Date.now()}_${user.id}`,
           amount: amountInCents,
           currency: 'usd',
           status: 'completed',
           description: description || 'Manual credit adjustment',
-          userId,
+          userId: user.id,
         },
       })
     } else {
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
           cost: amount,
           status: 'success',
           prompt: description || 'Manual debit adjustment',
-          userId,
+          userId: user.id,
         },
       })
     }
@@ -98,7 +100,7 @@ export async function POST(request: NextRequest) {
     // Return updated balance
     const payments = await db.payment.aggregate({
       where: {
-        userId,
+        userId: user.id,
         status: 'completed',
       },
       _sum: {
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
     })
 
     const transactions = await db.llmTransaction.aggregate({
-      where: { userId },
+      where: { userId: user.id },
       _sum: {
         cost: true,
       },
@@ -128,6 +130,11 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error updating balance:', error)
+    
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

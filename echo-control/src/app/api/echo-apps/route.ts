@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth'
 
-// GET /api/echo-apps - List echo apps for a user
+// GET /api/echo-apps - List echo apps for the authenticated user
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
-    }
+    const user = await getCurrentUser()
 
     const echoApps = await db.echoApp.findMany({
-      where: { userId },
+      where: { userId: user.id },
       include: {
         apiKeys: {
           where: { isActive: true },
@@ -55,42 +51,31 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ echoApps: appsWithStats })
   } catch (error) {
     console.error('Error fetching echo apps:', error)
+    
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// POST /api/echo-apps - Create a new echo app
+// POST /api/echo-apps - Create a new echo app for the authenticated user
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
     const body = await request.json()
-    const { userId, name, description } = body
+    const { name, description } = body
 
-    if (!userId || !name) {
-      return NextResponse.json({ error: 'User ID and name are required' }, { status: 400 })
-    }
-
-    // Check if user exists first
-    const user = await db.user.findUnique({
-      where: { id: userId }
-    })
-
-    if (!user) {
-      // If user doesn't exist, create it with mock data for development
-      console.log(`User ${userId} not found, creating mock user for development`)
-      await db.user.create({
-        data: {
-          id: userId,
-          email: `${userId}@example.com`,
-          name: 'Mock User',
-        }
-      })
+    if (!name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 })
     }
 
     const echoApp = await db.echoApp.create({
       data: {
         name,
         description: description || null,
-        userId,
+        userId: user.id,
       },
       include: {
         apiKeys: true,
@@ -107,11 +92,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating echo app:', error)
     
-    // Check if it's a foreign key constraint error
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2003') {
-      return NextResponse.json({ 
-        error: 'User not found. Please ensure the user exists before creating an echo app.' 
-      }, { status: 400 })
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
     
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

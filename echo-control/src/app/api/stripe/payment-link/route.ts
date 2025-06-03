@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth'
 
-// POST /api/stripe/payment-link - Generate payment link (mocked)
+// POST /api/stripe/payment-link - Generate payment link (mocked) for authenticated user
 export async function POST(request: NextRequest) {
   try {
+    const user = await getCurrentUser()
     const body = await request.json()
-    const { userId, amount, description = 'Echo Credits' } = body
+    const { amount, description = 'Echo Credits' } = body
 
-    if (!userId || !amount) {
-      return NextResponse.json({ error: 'User ID and amount are required' }, { status: 400 })
+    if (!amount) {
+      return NextResponse.json({ error: 'Amount is required' }, { status: 400 })
     }
 
     // Mock Stripe payment link generation
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
         currency: 'usd',
         status: 'pending',
         description,
-        userId,
+        userId: user.id,
       },
     })
 
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
       status: 'pending',
       created: Math.floor(Date.now() / 1000),
       metadata: {
-        userId,
+        userId: user.id,
         description,
       },
     }
@@ -45,6 +47,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ paymentLink: response }, { status: 201 })
   } catch (error) {
     console.error('Error creating payment link:', error)
+    
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

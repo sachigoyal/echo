@@ -1,11 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { CreditCardIcon, PlusIcon, MinusIcon } from 'lucide-react'
-
-interface BalanceCardProps {
-  userId: string
-}
 
 interface Balance {
   balance: string
@@ -14,7 +11,8 @@ interface Balance {
   currency: string
 }
 
-export default function BalanceCard({ userId }: BalanceCardProps) {
+export default function BalanceCard() {
+  const { user, isLoaded } = useUser()
   const [balance, setBalance] = useState<Balance | null>(null)
   const [loading, setLoading] = useState(true)
   const [showPaymentLink, setShowPaymentLink] = useState(false)
@@ -22,12 +20,14 @@ export default function BalanceCard({ userId }: BalanceCardProps) {
   const [adjustmentType, setAdjustmentType] = useState<'increment' | 'decrement'>('increment')
 
   useEffect(() => {
-    fetchBalance()
-  }, [userId])
+    if (isLoaded && user) {
+      fetchBalance()
+    }
+  }, [isLoaded, user])
 
   const fetchBalance = async () => {
     try {
-      const response = await fetch(`/api/balance?userId=${userId}`)
+      const response = await fetch('/api/balance')
       const data = await response.json()
       setBalance(data)
     } catch (error) {
@@ -43,7 +43,6 @@ export default function BalanceCard({ userId }: BalanceCardProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
           amount: 50, // $50 default
           description: 'Echo Credits Purchase',
         }),
@@ -68,7 +67,6 @@ export default function BalanceCard({ userId }: BalanceCardProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
           amount: Number(adjustmentAmount),
           operation: adjustmentType,
           description: `Manual ${adjustmentType} of $${adjustmentAmount}`,
@@ -84,7 +82,7 @@ export default function BalanceCard({ userId }: BalanceCardProps) {
     }
   }
 
-  if (loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="animate-pulse">

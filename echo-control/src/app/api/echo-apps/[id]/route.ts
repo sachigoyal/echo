@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth'
 
-// GET /api/echo-apps/[id] - Get echo app details
+// GET /api/echo-apps/[id] - Get echo app details for authenticated user
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const user = await getCurrentUser()
     const { id } = params
 
-    const echoApp = await db.echoApp.findUnique({
-      where: { id },
+    const echoApp = await db.echoApp.findFirst({
+      where: { 
+        id,
+        userId: user.id // Ensure user can only access their own apps
+      },
       include: {
         user: {
           select: { id: true, email: true, name: true },
@@ -90,19 +95,37 @@ export async function GET(
     return NextResponse.json({ echoApp: appWithStats })
   } catch (error) {
     console.error('Error fetching echo app:', error)
+    
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// PUT /api/echo-apps/[id] - Update echo app
+// PUT /api/echo-apps/[id] - Update echo app for authenticated user
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const user = await getCurrentUser()
     const { id } = params
     const body = await request.json()
     const { name, description, isActive } = body
+
+    // First check if the app exists and belongs to the user
+    const existingApp = await db.echoApp.findFirst({
+      where: { 
+        id,
+        userId: user.id 
+      }
+    })
+
+    if (!existingApp) {
+      return NextResponse.json({ error: 'Echo app not found' }, { status: 404 })
+    }
 
     const echoApp = await db.echoApp.update({
       where: { id },
@@ -125,6 +148,11 @@ export async function PUT(
     return NextResponse.json({ echoApp })
   } catch (error) {
     console.error('Error updating echo app:', error)
+    
+    if (error instanceof Error && error.message === 'Not authenticated') {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

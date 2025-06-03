@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { PlusIcon, CreditCardIcon, KeyIcon, ChartBarIcon } from 'lucide-react'
+import { useUser, useClerk } from '@clerk/nextjs'
+import { PlusIcon, CreditCardIcon, KeyIcon, ChartBarIcon, UserIcon, LogOutIcon } from 'lucide-react'
 import CreateEchoAppModal from '@/components/CreateEchoAppModal'
 import BalanceCard from '@/components/BalanceCard'
 
@@ -21,22 +22,24 @@ interface EchoApp {
 }
 
 export default function EchoAppsDashboard() {
+  const { user, isLoaded } = useUser()
+  const { signOut } = useClerk()
   const [echoApps, setEchoApps] = useState<EchoApp[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
-  // Mock user ID - in a real app, this would come from Clerk auth
-  const mockUserId = 'user_mock_123'
+  const [showUserMenu, setShowUserMenu] = useState(false)
 
   useEffect(() => {
-    fetchEchoApps()
-  }, [])
+    if (isLoaded && user) {
+      fetchEchoApps()
+    }
+  }, [isLoaded, user])
 
   const fetchEchoApps = async () => {
     try {
       setError(null)
-      const response = await fetch(`/api/echo-apps?userId=${mockUserId}`)
+      const response = await fetch('/api/echo-apps')
       const data = await response.json()
       
       if (!response.ok) {
@@ -57,7 +60,7 @@ export default function EchoAppsDashboard() {
     const response = await fetch('/api/echo-apps', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...appData, userId: mockUserId }),
+      body: JSON.stringify(appData),
     })
     
     const data = await response.json()
@@ -70,7 +73,7 @@ export default function EchoAppsDashboard() {
     setShowCreateModal(false)
   }
 
-  if (loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
@@ -80,6 +83,39 @@ export default function EchoAppsDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Header with User Menu */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!</h1>
+          <p className="text-muted-foreground">Manage your Echo applications and monitor usage.</p>
+        </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-accent"
+          >
+            {user?.imageUrl ? (
+              <img src={user.imageUrl} alt="Profile" className="h-8 w-8 rounded-full" />
+            ) : (
+              <UserIcon className="h-8 w-8 text-muted-foreground" />
+            )}
+            <span className="text-sm font-medium text-foreground">{user?.fullName || user?.emailAddresses[0]?.emailAddress}</span>
+          </button>
+          
+          {showUserMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
+              <button
+                onClick={() => signOut()}
+                className="w-full flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent rounded-md"
+              >
+                <LogOutIcon className="h-4 w-4 mr-2" />
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Error Message */}
       {error && (
         <div className="bg-destructive/20 border border-destructive rounded-md p-4">
@@ -92,7 +128,7 @@ export default function EchoAppsDashboard() {
       {/* Balance and Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <BalanceCard userId={mockUserId} />
+          <BalanceCard />
         </div>
         <div className="bg-card rounded-lg border border-border p-6">
           <h3 className="text-lg font-semibold text-card-foreground mb-4">Quick Actions</h3>
@@ -203,6 +239,9 @@ export default function EchoAppsDashboard() {
                         {app.totalTokens.toLocaleString()}
                       </span>
                     </div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Created {new Date(app.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -211,7 +250,7 @@ export default function EchoAppsDashboard() {
         )}
       </div>
 
-      {/* Create App Modal */}
+      {/* Create Modal */}
       {showCreateModal && (
         <CreateEchoAppModal
           onClose={() => setShowCreateModal(false)}
