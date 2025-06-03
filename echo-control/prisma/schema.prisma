@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  clerkId   String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  echoApps      EchoApp[]
+  apiKeys       ApiKey[]
+  payments      Payment[]
+  llmTransactions LlmTransaction[]
+
+  @@map("users")
+}
+
+model EchoApp {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Foreign keys
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations
+  apiKeys     ApiKey[]
+  llmTransactions LlmTransaction[]
+
+  @@map("echo_apps")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Foreign keys
+  userId    String
+  echoAppId String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp   EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: SetNull)
+
+  @@map("api_keys")
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  stripePaymentId String?  @unique
+  amount          Int      // Amount in cents
+  currency        String   @default("usd")
+  status          String   // pending, completed, failed, refunded
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Foreign keys
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model LlmTransaction {
+  id                String   @id @default(cuid())
+  model             String   // e.g., "gpt-4", "claude-3-sonnet"
+  inputTokens       Int
+  outputTokens      Int
+  totalTokens       Int
+  cost              Decimal  @db.Decimal(10, 6) // Cost in dollars
+  prompt            String?  @db.Text
+  response          String?  @db.Text
+  status            String   // success, error, timeout
+  errorMessage      String?
+  createdAt         DateTime @default(now())
+
+  // Foreign keys
+  userId            String
+  echoAppId         String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp           EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: SetNull)
+
+  @@map("llm_transactions")
+}
