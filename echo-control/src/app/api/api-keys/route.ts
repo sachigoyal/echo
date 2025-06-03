@@ -61,13 +61,13 @@ export async function POST(request: NextRequest) {
     // Generate a new API key
     const generatedKey = generateApiKey()
 
-    // Create the API key
+    // Create the API key - echoAppId is now required
     const apiKey = await db.apiKey.create({
       data: {
         key: generatedKey,
         name: name || 'Unnamed API Key',
         userId: user.id,
-        echoAppId,
+        echoAppId, // This is now required and not nullable
       },
       include: {
         echoApp: true,

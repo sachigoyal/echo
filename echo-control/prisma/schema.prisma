@@ -53,14 +53,16 @@ model ApiKey {
   key       String   @unique
   name      String?
   isActive  Boolean  @default(true)
+  lastUsed  DateTime?
+  metadata  Json?    // Store additional metadata like last IP, user agent, etc.
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Foreign keys
+  // Foreign keys - now echoAppId is required
   userId    String
-  echoAppId String?
+  echoAppId String   // Required: Every API key must be scoped to an app
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  echoApp   EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: SetNull)
+  echoApp   EchoApp  @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
 }
