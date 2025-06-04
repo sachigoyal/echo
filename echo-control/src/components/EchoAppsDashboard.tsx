@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useUser, useClerk } from '@clerk/nextjs'
-import { PlusIcon, CreditCardIcon, KeyIcon, ChartBarIcon, UserIcon, LogOutIcon } from 'lucide-react'
+import { PlusIcon, CreditCardIcon, KeyIcon, ChartBarIcon, UserIcon, LogOutIcon, TrashIcon } from 'lucide-react'
 import CreateEchoAppModal from '@/components/CreateEchoAppModal'
 import BalanceCard from '@/components/BalanceCard'
 
@@ -29,6 +29,7 @@ export default function EchoAppsDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [deletingAppId, setDeletingAppId] = useState<string | null>(null)
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -73,6 +74,32 @@ export default function EchoAppsDashboard() {
     setShowCreateModal(false)
   }
 
+  const handleDeleteApp = async (id: string, event: React.MouseEvent) => {
+    event.preventDefault() // Prevent navigation to app detail page
+    event.stopPropagation() // Stop event propagation
+
+    setDeletingAppId(id)
+    setError(null)
+    
+    try {
+      const response = await fetch(`/api/echo-apps/${id}`, {
+        method: 'DELETE',
+      })
+      
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to delete echo app')
+      }
+      
+      await fetchEchoApps() // Refresh the list
+    } catch (error) {
+      console.error('Error deleting echo app:', error)
+      setError(error instanceof Error ? error.message : 'Failed to delete echo app')
+    } finally {
+      setDeletingAppId(null)
+    }
+  }
+
   if (!isLoaded || loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -83,36 +110,46 @@ export default function EchoAppsDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header with User Menu */}
+      {/* Header with User Menu and Create Button */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!</h1>
           <p className="text-muted-foreground">Manage your Echo applications and monitor usage.</p>
         </div>
-        <div className="relative">
+        <div className="flex items-center space-x-4">
           <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-accent"
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
           >
-            {user?.imageUrl ? (
-              <img src={user.imageUrl} alt="Profile" className="h-8 w-8 rounded-full" />
-            ) : (
-              <UserIcon className="h-8 w-8 text-muted-foreground" />
-            )}
-            <span className="text-sm font-medium text-foreground">{user?.fullName || user?.emailAddresses[0]?.emailAddress}</span>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Create Echo App
           </button>
           
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
-              <button
-                onClick={() => signOut()}
-                className="w-full flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent rounded-md"
-              >
-                <LogOutIcon className="h-4 w-4 mr-2" />
-                Sign Out
-              </button>
-            </div>
-          )}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-accent"
+            >
+              {user?.imageUrl ? (
+                <img src={user.imageUrl} alt="Profile" className="h-8 w-8 rounded-full" />
+              ) : (
+                <UserIcon className="h-8 w-8 text-muted-foreground" />
+              )}
+              <span className="text-sm font-medium text-foreground">{user?.fullName || user?.emailAddresses[0]?.emailAddress}</span>
+            </button>
+            
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => signOut()}
+                  className="w-full flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent rounded-md"
+                >
+                  <LogOutIcon className="h-4 w-4 mr-2" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -161,15 +198,27 @@ export default function EchoAppsDashboard() {
                     <h3 className="text-lg font-semibold text-card-foreground truncate group-hover:text-secondary">
                       {app.name}
                     </h3>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        app.isActive
-                          ? 'bg-secondary/20 text-secondary'
-                          : 'bg-muted text-muted-foreground'
-                      }`}
-                    >
-                      {app.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          app.isActive
+                            ? 'bg-secondary/20 text-secondary'
+                            : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
+                        {app.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                      <button
+                        onClick={(e) => handleDeleteApp(app.id, e)}
+                        className={`p-1 rounded-full hover:bg-destructive/10 group-hover:opacity-100 ${
+                          deletingAppId === app.id ? 'opacity-50' : 'opacity-0'
+                        }`}
+                        disabled={deletingAppId === app.id}
+                        aria-label="Delete app"
+                      >
+                        <TrashIcon className="h-4 w-4 text-destructive" />
+                      </button>
+                    </div>
                   </div>
                   
                   {app.description && (

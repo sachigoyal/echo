@@ -44,6 +44,7 @@ export class EchoClient {
   /**
    * Get current balance for the authenticated user
    * @param echoAppId Optional app ID to get balance for specific app
+   * By default, it will get the balance for the app that the API key is scoped to
    */
   async getBalance(echoAppId?: string): Promise<Balance> {
     try {

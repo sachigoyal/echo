@@ -7,7 +7,6 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 const TEST_SERVER_URL = 'http://localhost:3001';
 const TEST_API_KEY = 'echo_test_api_key_12345';
-const INVALID_API_KEY = 'invalid_key';
 
 describe('EchoClient', () => {
   let client: EchoClient;
