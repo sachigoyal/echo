@@ -4,7 +4,7 @@ import { GPTProvider } from './GPTProvider';
 import { AnthropicGPTProvider } from './AnthropicGPTProvider';
 import { AnthropicNativeProvider } from './AnthropicNativeProvider';
 import { UnknownModelError } from '../errors/http';
-
+import { EchoControlService } from '../services/EchoControlService';
 
 export const MODEL_TO_PROVIDER: Record<string, ProviderType> = {
     "gpt-4o": ProviderType.GPT,
@@ -19,11 +19,7 @@ export const MODEL_TO_PROVIDER: Record<string, ProviderType> = {
     "gpt-3.5-turbo": ProviderType.GPT,
 }
 
-
-
-
-
-export function getProvider(model: string, user: string, stream: boolean, completionPath: string): BaseProvider {
+export function getProvider(model: string, echoControlService: EchoControlService, stream: boolean, completionPath: string): BaseProvider {
 
     let type = MODEL_TO_PROVIDER[model];
     if (!type) {
@@ -39,11 +35,11 @@ export function getProvider(model: string, user: string, stream: boolean, comple
 
     switch (type) {
         case ProviderType.GPT:
-            return new GPTProvider(user, stream);
+            return new GPTProvider(echoControlService, stream, model);
         case ProviderType.ANTHROPIC_GPT:
-            return new AnthropicGPTProvider(user, stream);
+            return new AnthropicGPTProvider(echoControlService, stream, model);
         case ProviderType.ANTHROPIC_NATIVE:
-            return new AnthropicNativeProvider(user, stream );
+            return new AnthropicNativeProvider(echoControlService, stream, model);
         default:
             throw new Error(`Unknown provider type: ${type}`);
     }

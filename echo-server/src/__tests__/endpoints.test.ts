@@ -1,9 +1,9 @@
 import request from 'supertest';
 import express from 'express';
 import { ReadableStream } from 'stream/web';
-import { accountManager } from '../accounting/account';
+import { EchoControlService } from '../services/EchoControlService';
 
-// Mock the fetch module
+// Mock the fetch module for outbound API calls
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
@@ -13,7 +13,8 @@ beforeAll(() => {
   process.env = {
     ...originalEnv,
     OPENAI_API_KEY: 'mock-openai-key',
-    ANTHROPIC_API_KEY: 'mock-anthropic-key'
+    ANTHROPIC_API_KEY: 'mock-anthropic-key',
+    ECHO_CONTROL_URL: 'http://localhost:3000'
   };
 });
 
@@ -22,10 +23,24 @@ afterAll(() => {
 });
 
 // Test constants
-const TEST_TOKEN = 'this-is-a-foolish-attempt-at-authorization';
-const TEST_USER = 'user-ben-reilly';
+const TEST_TOKEN = 'this-is-a-test-api-key';
+const TEST_USER_ID = 'user-ben-reilly';
+const TEST_ECHO_APP_ID = 'echo-app-123';
 
-// Mock responses
+// Mock user and echo app data
+const MOCK_USER = {
+  id: TEST_USER_ID,
+  email: 'ben@test.com',
+  name: 'Ben Reilly'
+};
+
+const MOCK_ECHO_APP = {
+  id: TEST_ECHO_APP_ID,
+  name: 'Test App',
+  userId: TEST_USER_ID
+};
+
+// Mock responses for various API providers
 const createMockStreamingResponse = (content: string, totalTokens: number = 10) => {
   return new ReadableStream({
     start(controller) {
@@ -133,18 +148,41 @@ const createMockHeaders = (headers: [string, string][]) => {
   };
 };
 
+// Helper function to setup successful EchoControlService mocks
+const setupMockEchoControlService = (balance: number = 1000) => {
+  const MockedEchoControlService = EchoControlService as jest.MockedClass<typeof EchoControlService>;
+  const mockInstance = new MockedEchoControlService('mock-key');
+  
+  (mockInstance.verifyApiKey as jest.Mock).mockResolvedValue({
+    userId: TEST_USER_ID,
+    echoAppId: TEST_ECHO_APP_ID,
+    user: MOCK_USER,
+    echoApp: MOCK_ECHO_APP
+  });
+  
+  (mockInstance.getBalance as jest.Mock).mockResolvedValue(balance);
+  (mockInstance.getUserId as jest.Mock).mockReturnValue(TEST_USER_ID);
+  (mockInstance.getEchoAppId as jest.Mock).mockReturnValue(TEST_ECHO_APP_ID);
+  (mockInstance.getUser as jest.Mock).mockReturnValue(MOCK_USER);
+  (mockInstance.getEchoApp as jest.Mock).mockReturnValue(MOCK_ECHO_APP);
+  (mockInstance.createTransaction as jest.Mock).mockResolvedValue(undefined);
+  
+  MockedEchoControlService.mockImplementation(() => mockInstance);
+  
+  return mockInstance;
+};
+
 describe('Endpoint Tests', () => {
   let app: express.Application;
+  let mockEchoControlService: any;
 
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks();
     mockFetch.mockClear();
     
-    // Reset account manager state
-    accountManager.reset();
-    // Set up test account with balance
-    accountManager.setAccount(TEST_USER, 1000);
+    // Setup EchoControlService mock with sufficient balance
+    mockEchoControlService = setupMockEchoControlService(1000);
     
     // Import the app after mocking
     app = require('../server').default;
@@ -224,13 +262,12 @@ describe('Endpoint Tests', () => {
             expect(response.body.choices[0].message.content).toBe(expectedContent);
           }, 10000);
 
-          it('should deduct correct tokens from account for non-streaming', async () => {
+          it('should create transaction for non-streaming requests', async () => {
             // Skip AnthropicNative non-streaming test as it's not implemented
             if (name === 'AnthropicNative') {
               return;
             }
             
-            const initialBalance = accountManager.getAccount(TEST_USER);
             const expectedTokens = 20;
             
             if (name === 'AnthropicNative') {
@@ -259,7 +296,15 @@ describe('Endpoint Tests', () => {
 
             // Wait a bit for async processing
             await new Promise(resolve => setTimeout(resolve, 100));
-            expect(accountManager.getAccount(TEST_USER)).toBe(initialBalance - expectedTokens);
+            
+            // Verify transaction was created
+            expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+              expect.objectContaining({
+                model: model,
+                totalTokens: expectedTokens,
+                status: 'success'
+              })
+            );
           }, 10000);
 
           it('should return correct content-type for non-streaming', async () => {
@@ -330,8 +375,7 @@ describe('Endpoint Tests', () => {
             // This is a limitation of the testing setup
           }, 10000);
 
-          it('should deduct correct tokens from account for streaming', async () => {
-            const initialBalance = accountManager.getAccount(TEST_USER);
+          it('should create transaction for streaming requests', async () => {
             const expectedTokens = 25;
             
             if (name === 'AnthropicNative') {
@@ -361,12 +405,30 @@ describe('Endpoint Tests', () => {
             // Wait for stream processing to complete
             await new Promise(resolve => setTimeout(resolve, 500));
             
+            // Verify transaction was created
+            expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+              expect.objectContaining({
+                model: model,
+                status: 'success'
+              })
+            );
+            
+            // Check token counts based on provider type
             if (name === 'AnthropicNative') {
               // AnthropicNative only counts output tokens (70% of total)
               const outputTokens = Math.floor(expectedTokens * 0.7);
-              expect(accountManager.getAccount(TEST_USER)).toBe(initialBalance - outputTokens);
+              expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  outputTokens: outputTokens,
+                  totalTokens: outputTokens
+                })
+              );
             } else {
-              expect(accountManager.getAccount(TEST_USER)).toBe(initialBalance - expectedTokens);
+              expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  totalTokens: expectedTokens
+                })
+              );
             }
           }, 10000);
 
@@ -406,6 +468,50 @@ describe('Endpoint Tests', () => {
   });
 
   describe('Authentication Tests', () => {
+    it('should reject requests without authorization header', async () => {
+      const response = await request(app)
+        .post('/chat/completions')
+        .send({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'Test prompt' }]
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
+    it('should reject requests with invalid authorization format', async () => {
+      // Setup EchoControlService to fail validation
+      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post('/chat/completions')
+        .set('Authorization', 'InvalidFormat')
+        .send({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'Test prompt' }]
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
+    it('should reject requests with invalid token', async () => {
+      // Setup EchoControlService to fail validation
+      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post('/chat/completions')
+        .set('Authorization', 'Bearer invalid-token')
+        .send({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'Test prompt' }]
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
     it('should work with Bearer token for OpenAI format', async () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
@@ -500,8 +606,8 @@ describe('Endpoint Tests', () => {
 
   describe('Account Balance Tests', () => {
     it('should reject requests when account has insufficient balance', async () => {
-      // Set account balance to 0
-      accountManager.setAccount(TEST_USER, 0);
+      // Setup EchoControlService with zero balance
+      (mockEchoControlService.getBalance as jest.Mock).mockResolvedValue(0);
 
       const response = await request(app)
         .post('/chat/completions')
@@ -516,9 +622,7 @@ describe('Endpoint Tests', () => {
     }, 10000);
 
     it('should allow requests when account has sufficient balance', async () => {
-      // Ensure account has balance
-      accountManager.setAccount(TEST_USER, 100);
-
+      // Ensure account has balance (already set up in beforeEach)
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: createMockHeaders([['content-type', 'application/json']]),

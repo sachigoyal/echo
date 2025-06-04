@@ -1,115 +1,180 @@
-# Endpoint Tests
+# Echo Server Test Suite
 
-This directory contains comprehensive tests for the Echo server's streaming and non-streaming endpoints.
+This test suite has been refactored to work with the new echo-control integration. The tests now mock the EchoControlService instead of the old account manager system.
 
-## Test Files
+## Overview
 
-### `endpoints.test.ts`
+The test suite comprehensively tests the echo-server's ability to:
 
-A comprehensive test suite that covers all major functionality of the Echo server:
+1. **Authentication & Authorization**: Tests that requests are properly authenticated through echo-control
+2. **Provider Support**: Tests all supported providers (GPT, AnthropicGPT, AnthropicNative)
+3. **Streaming & Non-streaming**: Tests both streaming and non-streaming endpoints
+4. **Transaction Recording**: Tests that usage is properly recorded through echo-control
+5. **Error Handling**: Tests various error scenarios (payment required, invalid auth, etc.)
 
-#### **Provider-Specific Tests**
-Tests for all supported providers and models:
-- **GPT Provider**: `gpt-3.5-turbo`, `gpt-4o` (OpenAI format)
-- **AnthropicGPT Provider**: `claude-3-5-sonnet-20240620` (OpenAI format via Anthropic)
-- **AnthropicNative Provider**: `claude-3-5-sonnet-20240620` (Anthropic native format)
+## Test Structure
 
-Each provider is tested for:
-- **Non-streaming endpoints**: Regular chat completions
-- **Streaming endpoints**: Server-sent events streaming
-- **Token accounting**: Proper deduction from user accounts
-- **Content-type headers**: Correct response headers
-- **Request body processing**: Adding `stream_options` when needed
+### Setup (`setup.ts`)
+- Mocks the EchoControlService class
+- Mocks the global fetch function for API calls
+- Sets up environment variables for testing
 
-#### **Authentication Tests**
-- Bearer token authentication (OpenAI format)
-- x-api-key header authentication (Anthropic native)
-- Invalid/missing authentication handling
+### Main Test Files
 
-#### **Error Handling Tests**
-- Upstream API errors (400, 429, etc.)
-- Unknown model errors
-- Payment required errors (insufficient balance)
+#### `endpoints.test.ts`
+Comprehensive provider-specific tests including:
 
-#### **Account Management Tests**
-- Insufficient balance rejection (402 Payment Required)
+**Provider Coverage:**
+- GPT models (`gpt-3.5-turbo`, `gpt-4o`) via `/chat/completions`
+- AnthropicGPT models (`claude-3-5-sonnet-20240620`) via `/chat/completions` 
+- AnthropicNative models (`claude-3-5-sonnet-20240620`) via `/messages`
+
+**Test Categories:**
+1. **Non-streaming endpoints** (for each provider):
+   - Successful request handling
+   - Transaction creation verification
+   - Correct content-type headers
+
+2. **Streaming endpoints** (for each provider):
+   - Successful streaming request handling
+   - Transaction creation with proper token counts
+   - Multi-chunk content handling
+
+3. **Authentication Tests**:
+   - Bearer token support (OpenAI format)
+   - x-api-key support (Anthropic native)
+   - Invalid token rejection
+
+4. **Error Handling**:
+   - Upstream API errors (400, 429, etc.)
+   - Unknown model errors
+
+5. **Account Balance Tests**:
+   - Payment required (402) when balance is zero
+   - Successful requests with sufficient balance
+
+6. **Request Processing**:
+   - `stream_options` addition for streaming requests
+   - No `stream_options` for non-streaming requests
+
+#### `server.test.ts` 
+Core server functionality tests including:
+
+1. **Payment Required Tests**: Ensures 402 errors when balance is insufficient
+2. **Streaming Endpoint Tests**: Tests streaming for all provider types
+3. **Non-streaming Endpoint Tests**: Tests non-streaming for supported providers
+4. **Authentication Tests**: Core auth validation
+5. **Account Management**: Balance checking and error handling
+
+## Mocking Strategy
+
+### EchoControlService Mocking
+The tests use a comprehensive mock of the EchoControlService that simulates:
+
+```typescript
+// Mock authentication response
+{
+  userId: 'user-ben-reilly',
+  echoAppId: 'echo-app-123',
+  user: { id: '...', email: '...', name: '...' },
+  echoApp: { id: '...', name: '...', userId: '...' }
+}
+
+// Mock methods
+verifyApiKey: jest.Mock       // Returns auth result or null
+getBalance: jest.Mock         // Returns numeric balance
+createTransaction: jest.Mock  // Records transaction calls
+getUserId: jest.Mock          // Returns user ID
+// ... other getters
+```
+
+### API Response Mocking
+The tests mock upstream API responses for different provider formats:
+
+**OpenAI Format (GPT & AnthropicGPT):**
+- Non-streaming: Standard completion response with usage
+- Streaming: SSE format with content deltas and final usage
+
+**Anthropic Native Format:**
+- Streaming only: SSE with content_block_delta and message_delta events
+
+## Key Test Scenarios
+
+### 1. Provider-Specific Streaming/Non-streaming
+Each provider is tested for both streaming and non-streaming capabilities (where supported).
+
+### 2. Transaction Recording
+Tests verify that `createTransaction` is called with correct parameters:
+- Model name
+- Token counts (input, output, total)
+- Cost calculation
+- Success status
+
+### 3. Authentication Flow
+Tests verify the complete auth flow:
+- Header parsing (Bearer vs x-api-key)
+- EchoControlService.verifyApiKey() call
+- Proper error responses for invalid auth
+
+### 4. Balance Checking
+Tests verify balance checking:
 - Successful requests with sufficient balance
-- Token deduction verification
+- 402 Payment Required when balance is zero
+- Proper user ID logging for payment required errors
 
-#### **Request Processing Tests**
-- Stream options injection for streaming requests
-- Proper request forwarding to upstream APIs
+### 5. Error Propagation
+Tests verify proper error handling:
+- Upstream API errors are passed through
+- Unknown models return 400 errors
+- Invalid auth returns 401 errors
 
-## Mock Strategy
-
-The tests use comprehensive mocking:
-
-1. **Environment Variables**: Mock API keys for OpenAI and Anthropic
-2. **Fetch Requests**: Mock all upstream API calls with realistic responses
-3. **Streaming Responses**: Mock ReadableStream objects that simulate real API streaming
-4. **Account Manager**: Reset and configure test accounts before each test
-
-## Mock Response Formats
-
-### OpenAI Format (GPT, AnthropicGPT)
-```javascript
-// Non-streaming
-{
-  choices: [{ message: { content: "response" } }],
-  usage: { total_tokens: 10 }
-}
-
-// Streaming  
-data: {"choices":[{"delta":{"content":"word"}}]}
-data: {"usage":{"total_tokens":10}}
-data: [DONE]
-```
-
-### Anthropic Native Format
-```javascript
-// Non-streaming (not implemented in provider)
-{
-  content: [{ text: "response" }],
-  usage: { output_tokens: 7 }
-}
-
-// Streaming
-data: {"type":"content_block_delta","delta":{"text":"word"}}
-data: {"type":"message_delta","usage":{"output_tokens":7}}
-```
-
-## Running the Tests
+## Running Tests
 
 ```bash
-# Run all endpoint tests
-npm test src/__tests__/endpoints.test.ts
+# Run all tests
+npm test
 
-# Run with verbose output
-npm test -- --verbose src/__tests__/endpoints.test.ts
+# Run specific test file
+npm test endpoints.test.ts
+npm test server.test.ts
 
-# Run specific test group
-npm test -- --testNamePattern="GPT Provider" src/__tests__/endpoints.test.ts
+# Run with coverage
+npm test -- --coverage
 ```
 
-## Test Coverage
+## Test Assertions
 
-The tests cover:
-- ✅ All 4 provider configurations
-- ✅ Both streaming and non-streaming modes  
-- ✅ Both authentication methods
-- ✅ Error conditions and edge cases
-- ✅ Account balance management
-- ✅ Token counting and billing
-- ✅ Request/response format validation
-- ✅ Stream processing and duplication
+The tests make comprehensive assertions about:
 
-## Key Features Tested
+1. **HTTP Status Codes**: Correct status for success/error scenarios
+2. **Response Headers**: Correct content-type headers
+3. **Response Body**: Proper response structure and content
+4. **Service Calls**: EchoControlService methods called with correct parameters
+5. **Token Accounting**: Accurate token counting and transaction recording
 
-1. **Multi-Provider Support**: Tests ensure all providers work correctly
-2. **Streaming Architecture**: Validates stream duplication for billing
-3. **Authentication**: Multiple auth methods work properly
-4. **Error Resilience**: Proper error handling and status codes
-5. **Billing Accuracy**: Token counting works for all providers
-6. **Request Processing**: Body modifications and header handling
+## Provider-Specific Behavior
 
-This test suite provides confidence that the Echo server correctly proxies requests to various AI providers while maintaining accurate billing and proper error handling. 
+### GPT Provider
+- Uses OpenAI API format
+- Reports total tokens for accounting
+- Supports both streaming and non-streaming
+
+### AnthropicGPT Provider  
+- Uses OpenAI API format via Anthropic's compatibility layer
+- Reports total tokens for accounting
+- Supports both streaming and non-streaming
+
+### AnthropicNative Provider
+- Uses Anthropic's native API format
+- Only reports output tokens (input tokens not available in streaming)
+- Streaming only (non-streaming not implemented)
+- Uses x-api-key authentication header
+
+## Future Enhancements
+
+The test suite can be extended to cover:
+1. Additional provider types (Gemini, etc.)
+2. More complex error scenarios
+3. Rate limiting behavior
+4. Concurrent request handling
+5. Performance testing 

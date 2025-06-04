@@ -1,6 +1,5 @@
 import { ProviderType } from './ProviderType';
 import { CompletionStateBody, GPTProvider, StreamingChunkBody } from './GPTProvider';
-import { accountManager } from '../accounting/account';
 
 
 export function parseSSEAnthropicGPTFormat(data: string): StreamingChunkBody[] {
@@ -79,8 +78,19 @@ export class AnthropicGPTProvider extends GPTProvider {
                     total_tokens += parsed.usage.total_tokens;
                 }
             }
-            console.log("usage tokens: ", total_tokens);
-            accountManager.decrementAccount(this.getUser(), total_tokens);
+            
+            if (total_tokens > 0) {
+                console.log("usage tokens: ", total_tokens);
+                // Create transaction with proper model info and token details
+                this.getEchoControlService().createTransaction({
+                    model: this.getModel(), 
+                    inputTokens: prompt_tokens,
+                    outputTokens: completion_tokens,
+                    totalTokens: total_tokens,
+                    cost: total_tokens * 0.015, // Convert tokens to cost (rough estimate for Claude)
+                    status: 'success'
+                });
+            }
         } catch (error) {
             console.error('Error processing data:', error);
         }

@@ -119,4 +119,20 @@ export interface CreatePaymentLinkResponse {
     currency: string;
     description?: string;
   };
+}
+
+export interface CreateLlmTransactionRequest {
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  cost: number;
+  prompt?: string;
+  response?: string;
+  status?: string;
+  errorMessage?: string;
+}
+
+export interface CreateLlmTransactionResponse {
+  transaction: LlmTransaction;
 } 

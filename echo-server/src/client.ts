@@ -40,30 +40,8 @@ async function makeRequest(useStreaming: boolean = false) {
     }
 }
 
-// Run the request without streaming
-makeRequest(false).then(() => {
-    console.log("\n");
-});
 
 makeRequest(true).then(() => {
     console.log("\n");
     console.log("done");
 });
-
-makeRequest(true).then(() => {
-    console.log("\n");
-    console.log("done");
-});
-
-makeRequest(true).then(() => {
-    console.log("\n");
-    console.log("done");
-});
-
-
-makeRequest(true).then(() => {
-    console.log("\n");
-    console.log("done");
-});
-
-// Uncomment to run with streaming
