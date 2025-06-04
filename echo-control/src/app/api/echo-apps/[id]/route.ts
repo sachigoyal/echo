@@ -196,4 +196,61 @@ export async function PUT(
     
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+}
+
+// DELETE /api/echo-apps/[id] - Delete an echo app
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { user, echoApp, isApiKeyAuth } = await getAuthenticatedUser(request)
+    const { id: appId } = await params
+
+    // API key users cannot delete apps
+    if (isApiKeyAuth) {
+      return NextResponse.json({ error: 'API key authentication cannot delete apps' }, { status: 403 })
+    }
+
+    // Verify the echo app exists and belongs to the user
+    const existingApp = await db.echoApp.findFirst({
+      where: {
+        id: appId,
+        userId: user.id,
+      },
+    })
+
+    if (!existingApp) {
+      return NextResponse.json({ error: 'Echo app not found or access denied' }, { status: 404 })
+    }
+
+    // First delete related API keys
+    await db.apiKey.deleteMany({
+      where: {
+        echoAppId: appId,
+      },
+    })
+
+    // Then delete related transactions
+    await db.llmTransaction.deleteMany({
+      where: {
+        echoAppId: appId,
+      },
+    })
+
+    // Finally delete the app itself
+    await db.echoApp.delete({
+      where: { id: appId },
+    })
+
+    return NextResponse.json({ success: true, message: 'Echo app and related data deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting echo app:', error)
+    
+    if (error instanceof Error && (error.message === 'Not authenticated' || error.message.includes('Invalid'))) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+    
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 } 

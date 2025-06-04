@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Key, Activity, CreditCard, ExternalLink, Plus, CheckCircle, X } from 'lucide-react'
+import { ArrowLeft, Key, Activity, CreditCard, ExternalLink, Plus, CheckCircle, X, Trash } from 'lucide-react'
 import AppPaymentCard from './AppPaymentCard'
+import CreateApiKeyModal from './CreateApiKeyModal'
+import ApiKeyModal from './ApiKeyModal'
 
 interface EchoAppDetailProps {
   appId: string
@@ -64,7 +66,10 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   const [balance, setBalance] = useState<Balance | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [creatingApiKey, setCreatingApiKey] = useState(false)
+  const [showCreateApiKeyModal, setShowCreateApiKeyModal] = useState(false)
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
+  const [newApiKey, setNewApiKey] = useState<{ id: string; key: string; name: string } | null>(null)
+  const [deletingKeyId, setDeletingKeyId] = useState<string | null>(null)
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
 
   useEffect(() => {
@@ -113,26 +118,77 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   }
 
-  const handleCreateApiKey = async () => {
-    if (!app) return
-    
-    setCreatingApiKey(true)
+  const handleCreateApiKey = async (data: { name: string; echoAppId: string }) => {
     try {
-      const response = await fetch(`/api/echo-apps/${app.id}/api-keys`, {
+      const response = await fetch(`/api/api-keys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: `API Key ${app.apiKeys.length + 1}`,
-        }),
+        body: JSON.stringify(data),
       })
       
-      if (response.ok) {
-        await fetchAppDetails() // Refresh data
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create API key')
       }
+      
+      // Store the new API key for display in the modal
+      setNewApiKey({
+        id: result.apiKey.id,
+        key: result.apiKey.key,
+        name: result.apiKey.name,
+      })
+      
+      // Close the create modal and show the key display modal
+      setShowCreateApiKeyModal(false)
+      setShowApiKeyModal(true)
+      
+      // Refresh app details to show the new key in the list
+      await fetchAppDetails()
     } catch (error) {
       console.error('Error creating API key:', error)
+      throw error
+    }
+  }
+
+  const handleRenameApiKey = async (id: string, newName: string) => {
+    try {
+      const response = await fetch(`/api/api-keys/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName }),
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to rename API key')
+      }
+      
+      await fetchAppDetails() // Refresh data
+    } catch (error) {
+      console.error('Error renaming API key:', error)
+      throw error
+    }
+  }
+
+  const handleDeleteApiKey = async (id: string) => {
+    
+    setDeletingKeyId(id)
+    try {
+      const response = await fetch(`/api/api-keys/${id}`, {
+        method: 'DELETE',
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete API key')
+      }
+      
+      await fetchAppDetails() // Refresh data
+    } catch (error) {
+      console.error('Error deleting API key:', error)
     } finally {
-      setCreatingApiKey(false)
+      setDeletingKeyId(null)
     }
   }
 
@@ -286,16 +342,15 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-card-foreground">API Keys</h2>
           <button
-            onClick={handleCreateApiKey}
-            disabled={creatingApiKey}
-            className="flex items-center px-3 py-1.5 bg-primary text-primary-foreground text-sm rounded hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            onClick={() => setShowCreateApiKeyModal(true)}
+            className="flex items-center px-3 py-1.5 bg-primary text-primary-foreground text-sm rounded hover:bg-primary/90 transition-colors"
           >
             <Plus className="h-4 w-4 mr-1" /> 
-            {creatingApiKey ? 'Creating...' : 'Create Key'}
+            Create Key
           </button>
         </div>
 
-        {app.apiKeys.length === 0 ? (
+        {app?.apiKeys.length === 0 ? (
           <div className="text-center py-8">
             <Key className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-2 text-sm font-medium text-card-foreground">No API keys yet</h3>
@@ -320,10 +375,13 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Created
                   </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {app.apiKeys.map((apiKey) => (
+                {app?.apiKeys.map((apiKey) => (
                   <tr key={apiKey.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
                       {apiKey.name || 'Unnamed Key'}
@@ -344,6 +402,16 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
                       {new Date(apiKey.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
+                      <button
+                        onClick={() => handleDeleteApiKey(apiKey.id)}
+                        disabled={deletingKeyId === apiKey.id}
+                        className="text-destructive hover:text-destructive/80 ml-2 disabled:opacity-50"
+                        title="Delete API Key"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -468,6 +536,26 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      {showCreateApiKeyModal && app && (
+        <CreateApiKeyModal
+          echoAppId={app.id}
+          onClose={() => setShowCreateApiKeyModal(false)}
+          onSubmit={handleCreateApiKey}
+        />
+      )}
+
+      {showApiKeyModal && newApiKey && (
+        <ApiKeyModal
+          apiKey={newApiKey}
+          onClose={() => {
+            setShowApiKeyModal(false)
+            setNewApiKey(null)
+          }}
+          onRename={handleRenameApiKey}
+        />
+      )}
     </div>
   )
 } 

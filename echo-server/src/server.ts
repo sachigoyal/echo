@@ -11,7 +11,7 @@ import { getProvider } from './providers/ProviderFactory';
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = 3069;
 
 // Add middleware
 app.use(express.json());
