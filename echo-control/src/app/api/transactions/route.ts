@@ -1,24 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getCurrentUserByApiKey } from '@/lib/auth'
-
-// Helper function to get user from API key
-async function getAuthenticatedUser(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Authentication required')
-  }
-
-  // API key authentication required for this endpoint
-  const authResult = await getCurrentUserByApiKey(request)
-  return { user: authResult.user, echoApp: authResult.echoApp }
-}
+import { getAuthenticatedUserByApiKeyOnly } from '@/lib/auth'
 
 // POST /api/transactions - Create a new LLM transaction
 export async function POST(request: NextRequest) {
   try {
-    const { user, echoApp } = await getAuthenticatedUser(request)
+    const { user, echoApp } = await getAuthenticatedUserByApiKeyOnly(request)
     const body = await request.json()
     const { 
       model, 

@@ -132,4 +132,46 @@ export async function requireAuth() {
   }
   
   return userId
+}
+
+// Shared authentication function that supports both Clerk and API key authentication
+export async function getAuthenticatedUser(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    // API key authentication
+    const authResult = await getCurrentUserByApiKey(request)
+    return { 
+      user: authResult.user, 
+      echoApp: authResult.echoApp, 
+      isApiKeyAuth: true,
+      apiKey: authResult.apiKey
+    }
+  } else {
+    // Clerk authentication
+    const user = await getCurrentUser()
+    return { 
+      user, 
+      echoApp: null, 
+      isApiKeyAuth: false,
+      apiKey: null
+    }
+  }
+}
+
+// Shared authentication function that requires API key authentication only
+export async function getAuthenticatedUserByApiKeyOnly(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('Authentication required')
+  }
+
+  // API key authentication required for this endpoint
+  const authResult = await getCurrentUserByApiKey(request)
+  return { 
+    user: authResult.user, 
+    echoApp: authResult.echoApp,
+    apiKey: authResult.apiKey
+  }
 } 
