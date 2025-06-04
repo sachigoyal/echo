@@ -135,4 +135,11 @@ export interface CreateLlmTransactionRequest {
 
 export interface CreateLlmTransactionResponse {
   transaction: LlmTransaction;
+}
+
+export interface ApiKeyValidationResult {
+  userId: string;
+  echoAppId: string;
+  user: User;
+  echoApp: EchoApp;
 } 

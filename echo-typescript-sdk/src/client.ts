@@ -73,19 +73,6 @@ export class EchoClient {
   }
 
   /**
-   * Create an LLM transaction record
-   * @param request Transaction details
-   */
-  async createTransaction(request: CreateLlmTransactionRequest): Promise<LlmTransaction> {
-    try {
-      const response = await this.http.post<CreateLlmTransactionResponse>('/api/transactions', request);
-      return response.data.transaction;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to create transaction');
-    }
-  }
-
-  /**
    * Get payment URL for purchasing credits
    * @param amount Amount to purchase in USD
    * @param echoAppId App ID to associate the purchase with

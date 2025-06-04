@@ -1,62 +1,32 @@
-import { EchoClient, User, EchoApp, CreateLlmTransactionRequest, Balance } from '@echo/typescript-sdk';
-
-// Authentication result interface - this is specific to our validation endpoint
-// and doesn't exist in the SDK, so we keep it here
-export interface AuthenticationResult {
-  userId: string;
-  echoAppId: string;
-  user: User;
-  echoApp: EchoApp;
-}
+import { PrismaClient } from '../../../echo-control/src/generated/prisma';
+import { User, EchoApp, CreateLlmTransactionRequest, EchoDbService, ApiKeyValidationResult, DatabaseClient } from '@echo/typescript-sdk';
 
 export class EchoControlService {
-  private echoControlUrl: string;
-  private client: EchoClient;
+  private db: PrismaClient;
+  private dbService: EchoDbService;
   private apiKey: string;
-  private authResult: AuthenticationResult | null = null;
+  private authResult: ApiKeyValidationResult | null = null;
 
   constructor(apiKey: string) {
-    this.echoControlUrl = process.env.ECHO_CONTROL_URL || 'http://localhost:3000';
     this.apiKey = apiKey;
-    this.client = new EchoClient({
-      apiKey: apiKey,
-      baseUrl: this.echoControlUrl
+    this.db = new PrismaClient({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL
+        }
+      }
     });
+    this.dbService = new EchoDbService(this.db as unknown as DatabaseClient);
   }
 
   /**
-   * Verify API key against echo-control and cache the authentication result
+   * Verify API key against the database and cache the authentication result
+   * Uses centralized logic from EchoDbService
    */
-  async verifyApiKey(): Promise<AuthenticationResult | null> {
+  async verifyApiKey(): Promise<ApiKeyValidationResult | null> {
     try {
-      const response = await fetch(`${this.echoControlUrl}/api/validate-api-key`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          apiKey: this.apiKey
-        })
-      });
-
-      if (!response.ok) {
-        console.error('API key validation failed:', response.status, response.statusText);
-        return null;
-      }
-
-      const data = await response.json();
-
-      if (data.valid && data.userId) {
-        this.authResult = {
-          userId: data.userId,
-          echoAppId: data.echoAppId,
-          user: data.user,
-          echoApp: data.echoApp
-        };
-        return this.authResult;
-      }
-
-      return null;
+      this.authResult = await this.dbService.validateApiKey(this.apiKey);
+      return this.authResult;
     } catch (error) {
       console.error('Error verifying API key:', error);
       return null;
@@ -66,7 +36,7 @@ export class EchoControlService {
   /**
    * Get the cached authentication result
    */
-  getAuthResult(): AuthenticationResult | null {
+  getAuthResult(): ApiKeyValidationResult | null {
     return this.authResult;
   }
 
@@ -99,11 +69,19 @@ export class EchoControlService {
   }
 
   /**
-   * Get balance for the authenticated user using the SDK
+   * Get balance for the authenticated user directly from the database
+   * Uses centralized logic from EchoDbService
    */
   async getBalance(): Promise<number> {
     try {
-      const balance: Balance = await this.client.getBalance();
+      if (!this.authResult) {
+        console.error('No authentication result available');
+        return 0;
+      }
+
+      const { userId, echoAppId } = this.authResult;
+      const balance = await this.dbService.getBalance(userId, echoAppId);
+      
       console.log("fetched balance", balance);
       return balance.balance;
     } catch (error) {
@@ -113,12 +91,18 @@ export class EchoControlService {
   }
 
   /**
-   * Create an LLM transaction record in echo-control using the SDK
+   * Create an LLM transaction record directly in the database
+   * Uses centralized logic from EchoDbService
    */
   async createTransaction(transaction: CreateLlmTransactionRequest): Promise<void> {
-    try { 
-      const result = await this.client.createTransaction(transaction);
-      console.log(`Created transaction for model ${transaction.model}: $${transaction.cost}`, result.id);
+    try {
+      if (!this.authResult) {
+        console.error('No authentication result available');
+        return;
+      }
+
+      const { userId, echoAppId } = this.authResult;
+      await this.dbService.createLlmTransaction(userId, echoAppId, transaction);
     } catch (error) {
       console.error('Error creating transaction:', error);
     }
