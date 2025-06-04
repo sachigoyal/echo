@@ -1,35 +1,74 @@
 import request from 'supertest';
 import express from 'express';
 import { ReadableStream } from 'stream/web';
-import { accountManager } from '../accounting/account';
+import { EchoControlService } from '../services/EchoControlService';
 
-// Mock the fetch module
+// Mock the fetch module for outbound API calls
 const mockFetch = jest.fn();
-jest.mock('node-fetch', () => mockFetch);
+global.fetch = mockFetch;
 
 // Test constants
-const TEST_TOKEN = 'this-is-a-foolish-attempt-at-authorization';
-const TEST_USER = 'user-ben-reilly';
+const TEST_TOKEN = 'this-is-a-test-api-key';
+const TEST_USER_ID = 'user-ben-reilly';
+const TEST_ECHO_APP_ID = 'echo-app-123';
+
+// Mock user and echo app data
+const MOCK_USER = {
+  id: TEST_USER_ID,
+  email: 'ben@test.com',
+  name: 'Ben Reilly'
+};
+
+const MOCK_ECHO_APP = {
+  id: TEST_ECHO_APP_ID,
+  name: 'Test App',
+  userId: TEST_USER_ID
+};
+
+// Helper function to setup successful EchoControlService mocks
+const setupMockEchoControlService = (balance: number = 100) => {
+  const MockedEchoControlService = EchoControlService as jest.MockedClass<typeof EchoControlService>;
+  const mockInstance = new MockedEchoControlService('mock-key');
+  
+  (mockInstance.verifyApiKey as jest.Mock).mockResolvedValue({
+    userId: TEST_USER_ID,
+    echoAppId: TEST_ECHO_APP_ID,
+    user: MOCK_USER,
+    echoApp: MOCK_ECHO_APP
+  });
+  
+  (mockInstance.getBalance as jest.Mock).mockResolvedValue(balance);
+  (mockInstance.getUserId as jest.Mock).mockReturnValue(TEST_USER_ID);
+  (mockInstance.getEchoAppId as jest.Mock).mockReturnValue(TEST_ECHO_APP_ID);
+  (mockInstance.getUser as jest.Mock).mockReturnValue(MOCK_USER);
+  (mockInstance.getEchoApp as jest.Mock).mockReturnValue(MOCK_ECHO_APP);
+  (mockInstance.createTransaction as jest.Mock).mockResolvedValue(undefined);
+  
+  MockedEchoControlService.mockImplementation(() => mockInstance);
+  
+  return mockInstance;
+};
 
 describe('Server Tests', () => {
   let app: express.Application;
+  let mockEchoControlService: any;
 
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks();
-    // Reset account manager state
-    accountManager.reset();
-    // Set up test account
-    accountManager.setAccount(TEST_USER, 100);
+    mockFetch.mockClear();
+    
+    // Setup EchoControlService mock with sufficient balance
+    mockEchoControlService = setupMockEchoControlService(100);
     
     // Import the app after mocking
     app = require('../server').default;
   });
 
-  describe('Non-streaming endpoints', () => {
+  describe('Payment Required Tests', () => {
     it('should handle payment required errors', async () => {
-      // Set account balance to 0
-      accountManager.setAccount(TEST_USER, 0);
+      // Setup EchoControlService with zero balance
+      (mockEchoControlService.getBalance as jest.Mock).mockResolvedValue(0);
 
       const response = await request(app)
         .post('/chat/completions')
@@ -45,24 +84,172 @@ describe('Server Tests', () => {
   });
 
   describe('Streaming endpoints', () => {
-    // We need to implement a test for the streaming endpoints
-    // This should test: 
-    // 1. All providers can stream successfully
-    // 2. All providers deduct the correct amount of tokens from the account
-    // 3. All providers return the correct content-type
-    // 4. All providers return the correct status code
-    // 5. All providers return the correct body
+    it('should handle streaming requests for all providers', async () => {
+      const providers = [
+        { model: 'gpt-3.5-turbo', path: '/chat/completions', authHeader: 'Authorization', authValue: `Bearer ${TEST_TOKEN}` },
+        { model: 'gpt-4o', path: '/chat/completions', authHeader: 'Authorization', authValue: `Bearer ${TEST_TOKEN}` },
+        { model: 'claude-3-5-sonnet-20240620', path: '/chat/completions', authHeader: 'Authorization', authValue: `Bearer ${TEST_TOKEN}` },
+        { model: 'claude-3-5-sonnet-20240620', path: '/messages', authHeader: 'x-api-key', authValue: TEST_TOKEN }
+      ];
+
+      for (const provider of providers) {
+        // Setup mock streaming response
+        const mockStreamingResponse = new ReadableStream({
+          start(controller) {
+            const chunk = provider.path === '/messages' 
+              ? { type: 'content_block_delta', delta: { text: 'Hello' } }
+              : { choices: [{ index: 0, delta: { content: 'Hello' }, finish_reason: null }], usage: null };
+            
+            controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`));
+            
+            // Send usage chunk
+            const usageChunk = provider.path === '/messages'
+              ? { type: 'message_delta', usage: { input_tokens: 3, output_tokens: 7 } }
+              : { choices: [{ index: 0, delta: {}, finish_reason: 'stop' }], usage: { prompt_tokens: 3, completion_tokens: 7, total_tokens: 10 } };
+            
+            controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(usageChunk)}\n\n`));
+            controller.close();
+          }
+        });
+
+        mockFetch.mockResolvedValueOnce({
+          status: 200,
+          headers: new Map([['content-type', 'text/event-stream']]),
+          body: mockStreamingResponse
+        });
+
+        const response = await request(app)
+          .post(provider.path)
+          .set(provider.authHeader, provider.authValue)
+          .send({
+            model: provider.model,
+            messages: [{ role: 'user', content: 'Test prompt' }],
+            stream: true
+          });
+
+        expect(response.status).toBe(200);
+      }
+    });
+
+    it('should create transactions for streaming requests', async () => {
+      // Setup mock streaming response with usage
+      const mockStreamingResponse = new ReadableStream({
+        start(controller) {
+          const chunk = { choices: [{ index: 0, delta: { content: 'Hello' }, finish_reason: null }], usage: null };
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`));
+          
+          const usageChunk = { choices: [{ index: 0, delta: {}, finish_reason: 'stop' }], usage: { prompt_tokens: 5, completion_tokens: 10, total_tokens: 15 } };
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(usageChunk)}\n\n`));
+          controller.close();
+        }
+      });
+
+      mockFetch.mockResolvedValueOnce({
+        status: 200,
+        headers: new Map([['content-type', 'text/event-stream']]),
+        body: mockStreamingResponse
+      });
+
+      await request(app)
+        .post('/chat/completions')
+        .set('Authorization', `Bearer ${TEST_TOKEN}`)
+        .send({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'Test prompt' }],
+          stream: true
+        });
+
+      // Wait for async processing
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify transaction was created
+      expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'gpt-3.5-turbo',
+          totalTokens: 15,
+          status: 'success'
+        })
+      );
+    });
   });
 
   describe('Non-streaming endpoints', () => {
-    // We need to implement a test for the non-streaming endpoints
-    // This should test: 
-    // 1. All providers can handle the request successfully
-    // 2. All providers return the correct content-type
-    // 3. All providers return the correct status code
-    // 4. All providers return the correct body
-  })
-  
+    it('should handle non-streaming requests for all providers', async () => {
+      const providers = [
+        { model: 'gpt-3.5-turbo', path: '/chat/completions', authHeader: 'Authorization', authValue: `Bearer ${TEST_TOKEN}` },
+        { model: 'gpt-4o', path: '/chat/completions', authHeader: 'Authorization', authValue: `Bearer ${TEST_TOKEN}` },
+        { model: 'claude-3-5-sonnet-20240620', path: '/chat/completions', authHeader: 'Authorization', authValue: `Bearer ${TEST_TOKEN}` }
+        // Note: AnthropicNative non-streaming is not implemented, so we skip it
+      ];
+
+      for (const provider of providers) {
+        const mockResponse = {
+          choices: [{
+            index: 0,
+            message: { role: 'assistant', content: 'Hello, world!' },
+            finish_reason: 'stop'
+          }],
+          usage: { prompt_tokens: 3, completion_tokens: 7, total_tokens: 10 }
+        };
+
+        mockFetch.mockResolvedValueOnce({
+          status: 200,
+          headers: new Map([['content-type', 'application/json']]),
+          json: () => Promise.resolve(mockResponse)
+        });
+
+        const response = await request(app)
+          .post(provider.path)
+          .set(provider.authHeader, provider.authValue)
+          .send({
+            model: provider.model,
+            messages: [{ role: 'user', content: 'Test prompt' }],
+            stream: false
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.choices[0].message.content).toBe('Hello, world!');
+      }
+    });
+
+    it('should create transactions for non-streaming requests', async () => {
+      const mockResponse = {
+        choices: [{
+          index: 0,
+          message: { role: 'assistant', content: 'Hello, world!' },
+          finish_reason: 'stop'
+        }],
+        usage: { prompt_tokens: 8, completion_tokens: 12, total_tokens: 20 }
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        status: 200,
+        headers: new Map([['content-type', 'application/json']]),
+        json: () => Promise.resolve(mockResponse)
+      });
+
+      await request(app)
+        .post('/chat/completions')
+        .set('Authorization', `Bearer ${TEST_TOKEN}`)
+        .send({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'Test prompt' }],
+          stream: false
+        });
+
+      // Wait for async processing
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Verify transaction was created
+      expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'gpt-3.5-turbo',
+          totalTokens: 20,
+          status: 'success'
+        })
+      );
+    });
+  });
 
   describe('Authentication Tests', () => {
     it('should reject requests without authorization header', async () => {
@@ -78,6 +265,9 @@ describe('Server Tests', () => {
     });
 
     it('should reject requests with invalid authorization format', async () => {
+      // Setup EchoControlService to fail validation
+      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(null);
+
       const response = await request(app)
         .post('/chat/completions')
         .set('Authorization', 'InvalidFormat')
@@ -91,6 +281,9 @@ describe('Server Tests', () => {
     });
 
     it('should reject requests with invalid token', async () => {
+      // Setup EchoControlService to fail validation
+      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(null);
+
       const response = await request(app)
         .post('/chat/completions')
         .set('Authorization', 'Bearer invalid-token')
@@ -105,14 +298,9 @@ describe('Server Tests', () => {
   });
 
   describe('Account Management Tests', () => {
-    beforeEach(() => {
-      // Set up a test account with some balance
-      accountManager.setAccount(TEST_USER, 100);
-    });
-
     it('should reject requests when account has insufficient balance', async () => {
-      // Set account balance to 0
-      accountManager.setAccount(TEST_USER, 0);
+      // Setup EchoControlService with zero balance
+      (mockEchoControlService.getBalance as jest.Mock).mockResolvedValue(0);
 
       const response = await request(app)
         .post('/chat/completions')
@@ -124,6 +312,34 @@ describe('Server Tests', () => {
 
       expect(response.status).toBe(402);
       expect(response.body).toHaveProperty('error');
+    });
+
+    it('should allow requests when account has sufficient balance', async () => {
+      // Balance is already set up in beforeEach, just need to mock API response
+      const mockResponse = {
+        choices: [{
+          index: 0,
+          message: { role: 'assistant', content: 'Hello!' },
+          finish_reason: 'stop'
+        }],
+        usage: { prompt_tokens: 3, completion_tokens: 5, total_tokens: 8 }
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        status: 200,
+        headers: new Map([['content-type', 'application/json']]),
+        json: () => Promise.resolve(mockResponse)
+      });
+
+      const response = await request(app)
+        .post('/chat/completions')
+        .set('Authorization', `Bearer ${TEST_TOKEN}`)
+        .send({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'Test prompt' }]
+        });
+
+      expect(response.status).toBe(200);
     });
   });
 }); 
