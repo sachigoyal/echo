@@ -5,8 +5,11 @@ import {
   Balance,
   CreatePaymentLinkRequest,
   CreatePaymentLinkResponse,
+  CreateLlmTransactionRequest,
+  CreateLlmTransactionResponse,
   EchoApp,
   ListEchoAppsResponse,
+  LlmTransaction,
 } from './types';
 
 export class EchoClient {
@@ -66,6 +69,19 @@ export class EchoClient {
       return response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to create payment link');
+    }
+  }
+
+  /**
+   * Create an LLM transaction record
+   * @param request Transaction details
+   */
+  async createTransaction(request: CreateLlmTransactionRequest): Promise<LlmTransaction> {
+    try {
+      const response = await this.http.post<CreateLlmTransactionResponse>('/api/transactions', request);
+      return response.data.transaction;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to create transaction');
     }
   }
 

@@ -1,6 +1,6 @@
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-import { accountManager } from '../accounting/account';
+import { echoAccountManager } from '../accounting/EchoAccountManager';
 
 export interface CompletionStateBody {
     usage: {
@@ -52,8 +52,6 @@ export function parseSSEGPTFormat(data: string): StreamingChunkBody[] {
     return chunks;
 }
 
-
-
 export class GPTProvider extends BaseProvider {
 
     getType(): ProviderType {
@@ -93,8 +91,23 @@ export class GPTProvider extends BaseProvider {
                     total_tokens += parsed.usage.total_tokens;
                 }
             }
-            console.log("usage tokens: ", total_tokens);
-            accountManager.decrementAccount(this.getUser(), total_tokens);
+            
+            if (total_tokens > 0) {
+                console.log("usage tokens: ", total_tokens);
+                // Create transaction with proper model info and token details
+                echoAccountManager.decrementAccount(
+                    this.getAuthResult(), 
+                    this.getUserApiKey(), 
+                    total_tokens * 0.001, // Convert tokens to cost (rough estimate - you should use proper pricing)
+                    {
+                        model: this.getModel(), 
+                        inputTokens: prompt_tokens,
+                        outputTokens: completion_tokens,
+                        totalTokens: total_tokens,
+                        status: 'success'
+                    }
+                );
+            }
         } catch (error) {
             console.error('Error processing data:', error);
         }

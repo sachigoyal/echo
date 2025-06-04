@@ -2,9 +2,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
 import { ReadableStream } from 'stream/web';
-import { accountManager } from './accounting/account';
+import { echoAccountManager } from './accounting/EchoAccountManager';
 import { HttpError, PaymentRequiredError } from './errors/http';
-import accountRoutes from './routes/account';
 import { verifyUserHeaderCheck } from './auth/headers';
 import { getProvider } from './providers/ProviderFactory';
 
@@ -16,9 +15,6 @@ const port = 3069;
 // Add middleware
 app.use(express.json());
 app.use(compression());
-
-// Mount account routes
-app.use('/account', accountRoutes);
 
 // Function to duplicate a stream
 function duplicateStream(stream: ReadableStream<Uint8Array>): [ReadableStream<Uint8Array>, ReadableStream<Uint8Array>] {
@@ -34,26 +30,23 @@ function duplicateStream(stream: ReadableStream<Uint8Array>): [ReadableStream<Ui
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Process headers and instantiate provider
-        const [user, processedHeaders] = await verifyUserHeaderCheck(req.headers as Record<string, string>);
+        const [authResult, processedHeaders, apiKey] = await verifyUserHeaderCheck(req.headers as Record<string, string>);
         // assumption that "model" will always be passed in the body under this key
         // assumption that "stream" will always be passed in the body under this key
         // This currently works for everything implemented (OpenAI format + Anthropic native format)
-        const provider = getProvider(req.body.model, user, req.body.stream, req.path);
+        const provider = getProvider(req.body.model, authResult, apiKey, req.body.stream, req.path);
         const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
-
-        console.log("Account balance: ", accountManager.getAccount(user));
+        const balance = await echoAccountManager.getAccount(authResult, apiKey);
     
-        if (accountManager.getAccount(user) <= 0) {
-            console.log("Payment required for user: ", user);
+        if (balance <= 0) {
+            console.log("Payment required for user:", authResult.userId);
             throw new PaymentRequiredError();
         }
-
 
         console.log("new outbound request", `${provider.getBaseUrl()}${req.path}`, req.method);
 
         // make sure that streamUsage is set to true (openAI Format)
         req.body = provider.ensureStreamUsage(req.body);
-
 
         // Forward the request to Base Url API
         const response = await fetch(`${provider.getBaseUrl()}${req.path}`, {
