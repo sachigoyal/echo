@@ -1,6 +1,5 @@
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-import { echoAccountManager } from '../accounting/EchoAccountManager';
 
 
 export interface AnthropicUsage {
@@ -69,18 +68,14 @@ export class AnthropicNativeProvider extends BaseProvider {
             if (usage && usage.output_tokens > 0) {
                 console.log("Usage tokens: ", usage.output_tokens);
                 // Create transaction with proper model info and token details
-                echoAccountManager.decrementAccount(
-                    this.getAuthResult(), 
-                    this.getUserApiKey(), 
-                    usage.output_tokens * 0.015, // Convert tokens to cost (rough estimate for Claude)
-                    {
-                        model: this.getModel(), 
-                        inputTokens: 0, // Not available in Anthropic streaming
-                        outputTokens: usage.output_tokens,
-                        totalTokens: usage.output_tokens,
-                        status: 'success'
-                    }
-                );
+                this.getEchoControlService().createTransaction({
+                    model: this.getModel(), 
+                    inputTokens: 0, // Not available in Anthropic streaming
+                    outputTokens: usage.output_tokens,
+                    totalTokens: usage.output_tokens,
+                    cost: usage.output_tokens * 0.015, // Convert tokens to cost (rough estimate for Claude)
+                    status: 'success'
+                });
             }
         } else {
             const parsed = JSON.parse(data);

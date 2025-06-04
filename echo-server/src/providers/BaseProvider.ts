@@ -1,5 +1,5 @@
 import { ProviderType } from './ProviderType';
-import { AuthenticationResult } from '../services/EchoControlService';
+import { AuthenticationResult, EchoControlService } from '../services/EchoControlService';
 
 export abstract class BaseProvider {
     protected readonly OPENAI_BASE_URL = 'https://api.openai.com/v1';
@@ -7,13 +7,13 @@ export abstract class BaseProvider {
     protected readonly GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai';
 
     private authResult: AuthenticationResult;
-    private apiKey: string;
+    private echoControlService: EchoControlService;
     private isStream: boolean;
     private model: string;
 
-    constructor(authResult: AuthenticationResult, apiKey: string, stream: boolean, model: string) {
+    constructor(authResult: AuthenticationResult, echoControlService: EchoControlService, stream: boolean, model: string) {
         this.authResult = authResult;
-        this.apiKey = apiKey;
+        this.echoControlService = echoControlService;
         this.isStream = stream;
         this.model = model;
     }
@@ -35,8 +35,8 @@ export abstract class BaseProvider {
     getAuthResult(): AuthenticationResult {
         return this.authResult;
     }
-    getUserApiKey(): string {
-        return this.apiKey;
+    getEchoControlService(): EchoControlService {
+        return this.echoControlService;
     }
     getUser(): string {
         return this.authResult.userId;

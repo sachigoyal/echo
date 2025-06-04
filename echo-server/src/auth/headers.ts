@@ -1,7 +1,7 @@
 import { UnauthorizedError } from '../errors/http';
-import { echoControlService, AuthenticationResult } from '../services/EchoControlService';
+import { EchoControlService, AuthenticationResult } from '../services/EchoControlService';
 
-export async function verifyUserHeaderCheck(headers: Record<string, string>): Promise<[AuthenticationResult, Record<string, string>, string]> {
+export async function verifyUserHeaderCheck(headers: Record<string, string>): Promise<[AuthenticationResult, Record<string, string>, EchoControlService]> {
     /**
      * Process authentication for the user (authenticated with Echo Api Key)
      * 
@@ -13,7 +13,7 @@ export async function verifyUserHeaderCheck(headers: Record<string, string>): Pr
      * 
      * We also swap problematic headers for the request (this is vibes IDK how much of this is needed)
      * 
-     * @returns [AuthenticationResult, processedHeaders, originalApiKey]
+     * @returns [AuthenticationResult, processedHeaders, echoControlService]
      */
 
     const { 
@@ -35,7 +35,8 @@ export async function verifyUserHeaderCheck(headers: Record<string, string>): Pr
 
     const cleanApiKey = apiKey.replace("Bearer ", "");
 
-    const authResult = await echoControlService.verifyApiKey(cleanApiKey);
+    const echoControlService = new EchoControlService(cleanApiKey);
+    const authResult = await echoControlService.verifyApiKey();
     
     if (!authResult) {
         throw new UnauthorizedError();
@@ -48,6 +49,6 @@ export async function verifyUserHeaderCheck(headers: Record<string, string>): Pr
             'content-type': 'application/json',
             'accept-encoding': 'gzip, deflate',
         },
-        cleanApiKey
+        echoControlService
     ];
 }

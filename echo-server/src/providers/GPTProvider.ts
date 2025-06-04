@@ -1,6 +1,5 @@
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-import { echoAccountManager } from '../accounting/EchoAccountManager';
 
 export interface CompletionStateBody {
     usage: {
@@ -95,18 +94,14 @@ export class GPTProvider extends BaseProvider {
             if (total_tokens > 0) {
                 console.log("usage tokens: ", total_tokens);
                 // Create transaction with proper model info and token details
-                echoAccountManager.decrementAccount(
-                    this.getAuthResult(), 
-                    this.getUserApiKey(), 
-                    total_tokens * 0.001, // Convert tokens to cost (rough estimate - you should use proper pricing)
-                    {
-                        model: this.getModel(), 
-                        inputTokens: prompt_tokens,
-                        outputTokens: completion_tokens,
-                        totalTokens: total_tokens,
-                        status: 'success'
-                    }
-                );
+                this.getEchoControlService().createTransaction({
+                    model: this.getModel(), 
+                    inputTokens: prompt_tokens,
+                    outputTokens: completion_tokens,
+                    totalTokens: total_tokens,
+                    cost: total_tokens * 0.001, // Convert tokens to cost (rough estimate - you should use proper pricing)
+                    status: 'success'
+                });
             }
         } catch (error) {
             console.error('Error processing data:', error);

@@ -1,48 +1,32 @@
-import { EchoClient } from '@echo/typescript-sdk';
+import { EchoClient, User, EchoApp, CreateLlmTransactionRequest, Balance } from '@echo/typescript-sdk';
 
-// Types for authentication result
+// Authentication result interface - this is specific to our validation endpoint
+// and doesn't exist in the SDK, so we keep it here
 export interface AuthenticationResult {
   userId: string;
   echoAppId: string;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-  };
-  echoApp: {
-    id: string;
-    name: string;
-    description?: string;
-    isActive: boolean;
-  };
-}
-
-// Interface for transaction creation
-export interface CreateTransactionRequest {
-  model: string;
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-  cost: number;
-  prompt?: string;
-  response?: string;
-  status: string;
-  errorMessage?: string;
-  userId: string;
-  echoAppId: string;
+  user: User;
+  echoApp: EchoApp;
 }
 
 export class EchoControlService {
   private echoControlUrl: string;
+  private client: EchoClient;
+  private apiKey: string;
 
-  constructor() {
+  constructor(apiKey: string) {
     this.echoControlUrl = process.env.ECHO_CONTROL_URL || 'http://localhost:3000';
+    this.apiKey = apiKey;
+    this.client = new EchoClient({
+      apiKey: apiKey,
+      baseUrl: this.echoControlUrl
+    });
   }
 
   /**
    * Verify API key against echo-control and return authentication result
    */
-  async verifyApiKey(apiKey: string): Promise<AuthenticationResult | null> {
+  async verifyApiKey(): Promise<AuthenticationResult | null> {
     try {
       const response = await fetch(`${this.echoControlUrl}/api/validate-api-key`, {
         method: 'POST',
@@ -50,7 +34,7 @@ export class EchoControlService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          apiKey: apiKey
+          apiKey: this.apiKey
         })
       });
 
@@ -78,17 +62,11 @@ export class EchoControlService {
   }
 
   /**
-   * Get balance for a specific user and echo app using authenticated API key
+   * Get balance for the authenticated user using the SDK
    */
-  async getBalance(apiKey: string): Promise<number> {
+  async getBalance(): Promise<number> {
     try {
-      // Create an authenticated client with the API key
-      const client = new EchoClient({
-        apiKey: apiKey,
-        baseUrl: this.echoControlUrl
-      });
-
-      const balance = await client.getBalance();
+      const balance: Balance = await this.client.getBalance();
       console.log("fetched balance", balance);
       return balance.balance;
     } catch (error) {
@@ -100,61 +78,12 @@ export class EchoControlService {
   /**
    * Create an LLM transaction record in echo-control using the SDK
    */
-  async createTransaction(apiKey: string, transaction: CreateTransactionRequest): Promise<void> {
+  async createTransaction(transaction: CreateLlmTransactionRequest): Promise<void> {
     try { 
-      // Create an authenticated client with the API key
-      const client = new EchoClient({
-        apiKey: apiKey,
-        baseUrl: this.echoControlUrl
-      });
-
-      const result = await client.createTransaction({
-        model: transaction.model,
-        inputTokens: transaction.inputTokens,
-        outputTokens: transaction.outputTokens,
-        totalTokens: transaction.totalTokens,
-        cost: transaction.cost,
-        prompt: transaction.prompt,
-        response: transaction.response,
-        status: transaction.status,
-        errorMessage: transaction.errorMessage
-      });
-
+      const result = await this.client.createTransaction(transaction);
       console.log(`Created transaction for model ${transaction.model}: $${transaction.cost}`, result.id);
     } catch (error) {
       console.error('Error creating transaction:', error);
     }
   }
-
-  /**
-   * Add credits to account (for testing or manual adjustments)
-   */
-  async incrementBalance(apiKey: string, amount: number, description?: string): Promise<void> {
-    try {
-      const response = await fetch(`${this.echoControlUrl}/api/balance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey.replace("Bearer ", "")}`
-        },
-        body: JSON.stringify({
-          amount: amount,
-          operation: 'increment',
-          description: description || 'Credit adjustment'
-        })
-      });
-
-      if (!response.ok) {
-        console.error('Failed to increment balance:', response.status, response.statusText);
-        return;
-      }
-
-      console.log(`Added ${amount} credits to account`);
-    } catch (error) {
-      console.error('Error incrementing balance:', error);
-    }
-  }
-}
-
-// Export singleton instance
-export const echoControlService = new EchoControlService(); 
+} 
