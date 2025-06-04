@@ -1,7 +1,7 @@
 import { UnauthorizedError } from '../errors/http';
-import { EchoControlService, AuthenticationResult } from '../services/EchoControlService';
+import { EchoControlService } from '../services/EchoControlService';
 
-export async function verifyUserHeaderCheck(headers: Record<string, string>): Promise<[AuthenticationResult, Record<string, string>, EchoControlService]> {
+export async function verifyUserHeaderCheck(headers: Record<string, string>): Promise<[Record<string, string>, EchoControlService]> {
     /**
      * Process authentication for the user (authenticated with Echo Api Key)
      * 
@@ -13,7 +13,7 @@ export async function verifyUserHeaderCheck(headers: Record<string, string>): Pr
      * 
      * We also swap problematic headers for the request (this is vibes IDK how much of this is needed)
      * 
-     * @returns [AuthenticationResult, processedHeaders, echoControlService]
+     * @returns [processedHeaders, echoControlService]
      */
 
     const { 
@@ -43,7 +43,6 @@ export async function verifyUserHeaderCheck(headers: Record<string, string>): Pr
     }
 
     return [
-        authResult, 
         {
             ...restHeaders,
             'content-type': 'application/json',

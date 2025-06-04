@@ -29,16 +29,17 @@ function duplicateStream(stream: ReadableStream<Uint8Array>): [ReadableStream<Ui
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Process headers and instantiate provider
-        const [authResult, processedHeaders, echoControlService] = await verifyUserHeaderCheck(req.headers as Record<string, string>);
+        const [processedHeaders, echoControlService] = await verifyUserHeaderCheck(req.headers as Record<string, string>);
         // assumption that "model" will always be passed in the body under this key
         // assumption that "stream" will always be passed in the body under this key
         // This currently works for everything implemented (OpenAI format + Anthropic native format)
-        const provider = getProvider(req.body.model, authResult, echoControlService, req.body.stream, req.path);
+        const provider = getProvider(req.body.model, echoControlService, req.body.stream, req.path);
         const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
         const balance = await echoControlService.getBalance();
     
         if (balance <= 0) {
-            console.log("Payment required for user:", authResult.userId);
+            const userId = echoControlService.getUserId();
+            console.log("Payment required for user:", userId);
             throw new PaymentRequiredError();
         }
 

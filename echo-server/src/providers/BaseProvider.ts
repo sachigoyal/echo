@@ -1,18 +1,16 @@
 import { ProviderType } from './ProviderType';
-import { AuthenticationResult, EchoControlService } from '../services/EchoControlService';
+import { EchoControlService } from '../services/EchoControlService';
 
 export abstract class BaseProvider {
     protected readonly OPENAI_BASE_URL = 'https://api.openai.com/v1';
     protected readonly ANTHROPIC_BASE_URL = 'https://api.anthropic.com';
     protected readonly GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai';
 
-    private authResult: AuthenticationResult;
     private echoControlService: EchoControlService;
     private isStream: boolean;
     private model: string;
 
-    constructor(authResult: AuthenticationResult, echoControlService: EchoControlService, stream: boolean, model: string) {
-        this.authResult = authResult;
+    constructor(echoControlService: EchoControlService, stream: boolean, model: string) {
         this.echoControlService = echoControlService;
         this.isStream = stream;
         this.model = model;
@@ -32,14 +30,11 @@ export abstract class BaseProvider {
         }
     }
     abstract handleBody(data: string): void;
-    getAuthResult(): AuthenticationResult {
-        return this.authResult;
-    }
     getEchoControlService(): EchoControlService {
         return this.echoControlService;
     }
-    getUser(): string {
-        return this.authResult.userId;
+    getUserId(): string | null {
+        return this.echoControlService.getUserId();
     }
     getIsStream(): boolean {
         return this.isStream;
@@ -47,6 +42,7 @@ export abstract class BaseProvider {
     getModel(): string {
         return this.model;
     }
+    // This is specific to OpenAI Format, Anthropic Native and others will need to override this
     ensureStreamUsage(reqBody: any): any {
         if (this.isStream) {
             reqBody.stream_options = {

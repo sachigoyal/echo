@@ -48,9 +48,6 @@ export class AnthropicNativeProvider extends BaseProvider {
         return process.env.ANTHROPIC_API_KEY;
     }
 
-
-
-
     formatAuthHeaders(headers: Record<string, string>): Record<string, string> {
         const apiKey = this.getApiKey();
         if (!apiKey) {

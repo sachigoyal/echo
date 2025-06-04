@@ -13,6 +13,7 @@ export class EchoControlService {
   private echoControlUrl: string;
   private client: EchoClient;
   private apiKey: string;
+  private authResult: AuthenticationResult | null = null;
 
   constructor(apiKey: string) {
     this.echoControlUrl = process.env.ECHO_CONTROL_URL || 'http://localhost:3000';
@@ -24,7 +25,7 @@ export class EchoControlService {
   }
 
   /**
-   * Verify API key against echo-control and return authentication result
+   * Verify API key against echo-control and cache the authentication result
    */
   async verifyApiKey(): Promise<AuthenticationResult | null> {
     try {
@@ -46,12 +47,13 @@ export class EchoControlService {
       const data = await response.json();
 
       if (data.valid && data.userId) {
-        return {
+        this.authResult = {
           userId: data.userId,
           echoAppId: data.echoAppId,
           user: data.user,
           echoApp: data.echoApp
         };
+        return this.authResult;
       }
 
       return null;
@@ -59,6 +61,41 @@ export class EchoControlService {
       console.error('Error verifying API key:', error);
       return null;
     }
+  }
+
+  /**
+   * Get the cached authentication result
+   */
+  getAuthResult(): AuthenticationResult | null {
+    return this.authResult;
+  }
+
+  /**
+   * Get the user ID from cached authentication result
+   */
+  getUserId(): string | null {
+    return this.authResult?.userId || null;
+  }
+
+  /**
+   * Get the echo app ID from cached authentication result
+   */
+  getEchoAppId(): string | null {
+    return this.authResult?.echoAppId || null;
+  }
+
+  /**
+   * Get the user from cached authentication result
+   */
+  getUser(): User | null {
+    return this.authResult?.user || null;
+  }
+
+  /**
+   * Get the echo app from cached authentication result
+   */
+  getEchoApp(): EchoApp | null {
+    return this.authResult?.echoApp || null;
   }
 
   /**
