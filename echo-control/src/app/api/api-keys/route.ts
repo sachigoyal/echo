@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
-import { randomBytes } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 
 // GET /api/api-keys - List API keys for authenticated user
 export async function GET(request: NextRequest) {
@@ -28,11 +28,18 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Generate a secure API key
+// Generate a secure API key using UUID v4 and additional entropy
 function generateApiKey(): string {
   const prefix = process.env.API_KEY_PREFIX || 'echo_'
-  const randomPart = randomBytes(32).toString('hex')
-  return `${prefix}${randomPart}`
+  
+  // Use UUID v4 for structured randomness
+  const uuidPart = randomUUID().replace(/-/g, '')
+  
+  // Add additional cryptographic entropy (16 bytes = 32 hex chars)
+  const entropyPart = randomBytes(16).toString('hex')
+  
+  // Combine for maximum security: prefix + UUID + entropy
+  return `${prefix}${uuidPart}${entropyPart}`
 }
 
 // POST /api/api-keys - Create a new API key for authenticated user
