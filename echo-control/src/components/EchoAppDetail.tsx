@@ -12,9 +12,9 @@ interface EchoAppDetailProps {
 }
 
 interface Balance {
-  balance: string
-  totalCredits: string
-  totalSpent: string
+  balance: number
+  totalCredits: number
+  totalSpent: number
   currency: string
 }
 
@@ -59,6 +59,30 @@ interface EchoApp {
     status: string
     createdAt: string
   }>
+}
+
+// Helper function to safely format numbers
+const formatNumber = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return '0'
+  }
+  return value.toLocaleString()
+}
+
+// Helper function to safely format currency
+const formatCurrency = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return '$0.00'
+  }
+  return `$${Number(value).toFixed(2)}`
+}
+
+// Helper function to safely format cost with more precision
+const formatCost = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || isNaN(value)) {
+    return '$0.0000'
+  }
+  return `$${Number(value).toFixed(4)}`
 }
 
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
@@ -112,7 +136,10 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     try {
       const response = await fetch(`/api/balance?echoAppId=${appId}`)
       const data = await response.json()
-      setBalance(data)
+      
+      if (response.ok) {
+        setBalance(data)
+      }
     } catch (error) {
       console.error('Error fetching app balance:', error)
     }
@@ -172,7 +199,6 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   }
 
   const handleDeleteApiKey = async (id: string) => {
-    
     setDeletingKeyId(id)
     try {
       const response = await fetch(`/api/api-keys/${id}`, {
@@ -279,7 +305,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
               <div>
                 <p className="text-sm text-muted-foreground">Total Transactions</p>
                 <p className="text-xl font-bold text-card-foreground">
-                  {app.stats.totalTransactions.toLocaleString()}
+                  {formatNumber(app.stats?.totalTransactions)}
                 </p>
               </div>
             </div>
@@ -292,7 +318,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
               <div>
                 <p className="text-sm text-muted-foreground">API Keys</p>
                 <p className="text-xl font-bold text-card-foreground">
-                  {app.apiKeys.length}
+                  {app.apiKeys?.length || 0}
                 </p>
               </div>
             </div>
@@ -305,7 +331,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
               <div>
                 <p className="text-sm text-muted-foreground">Total Cost</p>
                 <p className="text-xl font-bold text-card-foreground">
-                  ${app.stats.totalCost.toFixed(2)}
+                  {formatCurrency(app.stats?.totalCost)}
                 </p>
               </div>
             </div>
@@ -318,7 +344,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
               <div>
                 <p className="text-sm text-muted-foreground">Total Tokens</p>
                 <p className="text-xl font-bold text-card-foreground">
-                  {app.stats.totalTokens.toLocaleString()}
+                  {formatNumber(app.stats?.totalTokens)}
                 </p>
               </div>
             </div>
@@ -331,7 +357,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
             <AppPaymentCard 
               appId={app.id}
               appName={app.name}
-              currentBalance={parseFloat(balance.balance)}
+              currentBalance={balance.balance}
             />
           </div>
         )}
@@ -350,7 +376,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           </button>
         </div>
 
-        {app?.apiKeys.length === 0 ? (
+        {!app?.apiKeys || app.apiKeys.length === 0 ? (
           <div className="text-center py-8">
             <Key className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-2 text-sm font-medium text-card-foreground">No API keys yet</h3>
@@ -381,13 +407,13 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {app?.apiKeys.map((apiKey) => (
+                {app.apiKeys.map((apiKey) => (
                   <tr key={apiKey.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
                       {apiKey.name || 'Unnamed Key'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-muted-foreground">
-                      {apiKey.key.slice(0, 10)}...
+                      {apiKey.key?.slice(0, 10)}...
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span
@@ -425,7 +451,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
       <div className="bg-card rounded-lg border border-border p-6">
         <h2 className="text-lg font-semibold text-card-foreground mb-6">Recent Transactions</h2>
         
-        {app.recentTransactions.length === 0 ? (
+        {!app.recentTransactions || app.recentTransactions.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-2 text-sm font-medium text-card-foreground">No transactions yet</h3>
@@ -465,10 +491,10 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                       {transaction.model}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
-                      {transaction.totalTokens.toLocaleString()}
+                      {formatNumber(transaction.totalTokens)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
-                      ${transaction.cost.toFixed(4)}
+                      {formatCost(transaction.cost)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary">
@@ -487,7 +513,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
       <div className="bg-card rounded-lg border border-border p-6">
         <h2 className="text-lg font-semibold text-card-foreground mb-6">Model Usage</h2>
         
-        {app.stats.modelUsage.length === 0 ? (
+        {!app.stats?.modelUsage || app.stats.modelUsage.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-2 text-sm font-medium text-card-foreground">No model usage yet</h3>
@@ -521,13 +547,13 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                       {usage.model}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
-                      {usage._count.toLocaleString()}
+                      {formatNumber(usage._count)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
-                      {(usage._sum.totalTokens || 0).toLocaleString()}
+                      {formatNumber(usage._sum?.totalTokens)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
-                      ${(usage._sum.cost || 0).toFixed(4)}
+                      {formatCost(usage._sum?.cost)}
                     </td>
                   </tr>
                 ))}

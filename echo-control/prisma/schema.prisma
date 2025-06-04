@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -12,98 +9,86 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  clerkId   String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  echoApps      EchoApp[]
-  apiKeys       ApiKey[]
-  payments      Payment[]
+  id              String           @id @default(uuid()) @db.Uuid
+  email           String           @unique
+  name            String?
+  clerkId         String           @unique
+  createdAt       DateTime         @default(now()) @db.Timestamptz
+  updatedAt       DateTime         @updatedAt @db.Timestamptz
+  apiKeys         ApiKey[]
+  echoApps        EchoApp[]
   llmTransactions LlmTransaction[]
+  payments        Payment[]
 
   @@map("users")
 }
 
 model EchoApp {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Foreign keys
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Relations
-  apiKeys     ApiKey[]
+  id              String           @id @default(uuid()) @db.Uuid
+  name            String
+  description     String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @db.Timestamptz
+  updatedAt       DateTime         @updatedAt @db.Timestamptz
+  userId          String           @db.Uuid
+  apiKeys         ApiKey[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   llmTransactions LlmTransaction[]
-  payments    Payment[]
+  payments        Payment[]
 
   @@map("echo_apps")
 }
 
 model ApiKey {
-  id        String   @id @default(cuid())
-  key       String   @unique
+  id        String    @id @default(uuid()) @db.Uuid
+  key       String    @unique
   name      String?
-  isActive  Boolean  @default(true)
-  lastUsed  DateTime?
-  metadata  Json?    // Store additional metadata like last IP, user agent, etc.
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Foreign keys - now echoAppId is required
-  userId    String
-  echoAppId String   // Required: Every API key must be scoped to an app
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  echoApp   EchoApp  @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  isActive  Boolean   @default(true)
+  lastUsed  DateTime? @db.Timestamptz
+  metadata  Json?
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+  userId    String    @db.Uuid
+  echoAppId String    @db.Uuid
+  echoApp   EchoApp   @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("api_keys")
 }
 
 model Payment {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid()) @db.Uuid
   stripePaymentId String?  @unique
-  amount          Int      // Amount in cents
+  amount          Int
   currency        String   @default("usd")
-  status          String   // pending, completed, failed, refunded
+  status          String
   description     String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Foreign keys
-  userId          String
-  echoAppId       String?
+  createdAt       DateTime @default(now()) @db.Timestamptz
+  updatedAt       DateTime @updatedAt @db.Timestamptz
+  userId          String   @db.Uuid
+  echoAppId       String?  @db.Uuid
+  echoApp         EchoApp? @relation(fields: [echoAppId], references: [id])
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  echoApp         EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: SetNull)
 
   @@map("payments")
 }
 
 model LlmTransaction {
-  id                String   @id @default(cuid())
-  model             String   // e.g., "gpt-4", "claude-3-sonnet"
-  inputTokens       Int
-  outputTokens      Int
-  totalTokens       Int
-  cost              Decimal  @db.Decimal(10, 6) // Cost in dollars
-  prompt            String?  @db.Text
-  response          String?  @db.Text
-  status            String   // success, error, timeout
-  errorMessage      String?
-  createdAt         DateTime @default(now())
-
-  // Foreign keys
-  userId            String
-  echoAppId         String?
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  echoApp           EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: SetNull)
+  id           String   @id @default(uuid()) @db.Uuid
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
+  cost         Decimal  @db.Decimal(10, 6)
+  prompt       String?
+  response     String?
+  status       String
+  errorMessage String?
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  userId       String   @db.Uuid
+  echoAppId    String?  @db.Uuid
+  echoApp      EchoApp? @relation(fields: [echoAppId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("llm_transactions")
 }

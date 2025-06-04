@@ -1,26 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getCurrentUser, getCurrentUserByApiKey } from '@/lib/auth'
+import { getAuthenticatedUser } from '@/lib/auth'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 })
-
-// Helper function to get user from either Clerk or API key
-async function getAuthenticatedUser(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    // API key authentication
-    const authResult = await getCurrentUserByApiKey(request)
-    return { user: authResult.user, echoApp: authResult.echoApp }
-  } else {
-    // Clerk authentication
-    const user = await getCurrentUser()
-    return { user, echoApp: null }
-  }
-}
 
 // POST /api/stripe/payment-link - Generate real Stripe payment link for authenticated user
 export async function POST(request: NextRequest) {

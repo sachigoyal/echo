@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getCurrentUser, getCurrentUserByApiKey } from '@/lib/auth'
-
-// Helper function to get user from either Clerk or API key
-async function getAuthenticatedUser(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    // API key authentication
-    const authResult = await getCurrentUserByApiKey(request)
-    return { user: authResult.user, echoApp: authResult.echoApp, isApiKeyAuth: true }
-  } else {
-    // Clerk authentication
-    const user = await getCurrentUser()
-    return { user, echoApp: null, isApiKeyAuth: false }
-  }
-}
+import { getAuthenticatedUser } from '@/lib/auth'
 
 // GET /api/echo-apps - List echo apps for authenticated user
 export async function GET(request: NextRequest) {
