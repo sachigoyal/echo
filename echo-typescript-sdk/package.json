@@ -1,6 +1,6 @@
 {
-  "name": "@echo/typescript-sdk",
-  "version": "1.0.0",
+  "name": "@zdql/echo-typescript-sdk",
+  "version": "1.0.1",
   "description": "TypeScript SDK for Echo platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
