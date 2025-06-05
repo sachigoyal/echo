@@ -14,10 +14,10 @@ jest.mock('../services/EchoControlService', () => {
       getEchoAppId: jest.fn(),
       getUser: jest.fn(),
       getEchoApp: jest.fn(),
-      getAuthResult: jest.fn()
-    }))
+      getAuthResult: jest.fn(),
+    })),
   };
 });
 
 // Mock fetch globally (for both outbound API calls and echo-control calls)
-global.fetch = jest.fn(); 
+global.fetch = jest.fn();

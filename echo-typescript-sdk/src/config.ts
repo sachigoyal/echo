@@ -12,4 +12,4 @@ export function getConfig(overrides?: Partial<EchoConfig>): EchoConfig {
     ...defaultConfig,
     ...overrides,
   };
-} 
+}

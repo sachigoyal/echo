@@ -1,9 +1,10 @@
-'use client'
+'use client';
 
-import { useChat } from '@ai-sdk/react'
+import { useChat } from '@ai-sdk/react';
 
 export default function Home() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
+    useChat();
 
   return (
     <main className="chat-container">
@@ -23,29 +24,30 @@ export default function Home() {
             <p>Ask me anything to get started!</p>
           </div>
         )}
-        
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`message ${message.role}`}
-          >
+
+        {messages.map(message => (
+          <div key={message.id} className={`message ${message.role}`}>
             <div className="font-semibold mb-1">
               {message.role === 'user' ? '👤 You' : '🤖 Assistant'}
             </div>
-            <div className="whitespace-pre-wrap">
-              {message.content}
-            </div>
+            <div className="whitespace-pre-wrap">{message.content}</div>
           </div>
         ))}
-        
+
         {isLoading && (
           <div className="message assistant">
             <div className="font-semibold mb-1">🤖 Assistant</div>
             <div className="flex items-center space-x-1">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '0.1s' }}
+                ></div>
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '0.2s' }}
+                ></div>
               </div>
               <span className="text-gray-500 ml-2">Thinking...</span>
             </div>
@@ -70,5 +72,5 @@ export default function Home() {
         </button>
       </form>
     </main>
-  )
-} 
+  );
+}

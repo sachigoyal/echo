@@ -24,8 +24,8 @@ export class EchoClient {
     });
 
     // Add request interceptor to include API key
-    this.http.interceptors.request.use(async (config) => {
-      const apiKey = this.config.apiKey || await getStoredApiKey();
+    this.http.interceptors.request.use(async config => {
+      const apiKey = this.config.apiKey || (await getStoredApiKey());
       if (apiKey) {
         config.headers['Authorization'] = `Bearer ${apiKey}`;
       }
@@ -34,10 +34,12 @@ export class EchoClient {
 
     // Add response interceptor for error handling
     this.http.interceptors.response.use(
-      (response) => response,
+      response => response,
       (error: AxiosError) => {
         if (error.response?.status === 401) {
-          throw new Error('Invalid or expired API key. Please run "echo-cli login" to authenticate.');
+          throw new Error(
+            'Invalid or expired API key. Please run "echo-cli login" to authenticate.'
+          );
         }
         throw error;
       }
@@ -63,9 +65,14 @@ export class EchoClient {
    * Create a payment link for purchasing credits
    * @param request Payment link details
    */
-  async createPaymentLink(request: CreatePaymentLinkRequest): Promise<CreatePaymentLinkResponse> {
+  async createPaymentLink(
+    request: CreatePaymentLinkRequest
+  ): Promise<CreatePaymentLinkResponse> {
     try {
-      const response = await this.http.post('/api/stripe/payment-link', request);
+      const response = await this.http.post(
+        '/api/stripe/payment-link',
+        request
+      );
       return response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to create payment link');
@@ -78,7 +85,11 @@ export class EchoClient {
    * @param echoAppId App ID to associate the purchase with
    * @param description Optional description for the payment
    */
-  async getPaymentUrl(amount: number, echoAppId: string, description?: string): Promise<string> {
+  async getPaymentUrl(
+    amount: number,
+    echoAppId: string,
+    description?: string
+  ): Promise<string> {
     const response = await this.createPaymentLink({
       amount,
       echoAppId,
@@ -100,7 +111,8 @@ export class EchoClient {
    */
   async listEchoApps(): Promise<EchoApp[]> {
     try {
-      const response = await this.http.get<ListEchoAppsResponse>('/api/echo-apps');
+      const response =
+        await this.http.get<ListEchoAppsResponse>('/api/echo-apps');
       return response.data.echoApps;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch Echo apps');
@@ -129,4 +141,4 @@ export class EchoClient {
     }
     return new Error(message);
   }
-} 
+}

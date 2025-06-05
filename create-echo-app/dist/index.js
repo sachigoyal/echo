@@ -37,11 +37,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const commander_1 = require("commander");
 const chalk_1 = __importDefault(require("chalk"));
+const commander_1 = require("commander");
 const inquirer_1 = __importDefault(require("inquirer"));
-const create_app_1 = require("./create-app");
 const packageJson = __importStar(require("../package.json"));
+const create_app_1 = require("./create-app");
 const program = new commander_1.Command();
 program
     .name('create-echo-merit-app')
@@ -59,7 +59,7 @@ program
         let finalProjectName = projectName;
         let finalTemplate = options.template;
         // If no project name provided, ask for it
-        if (!finalProjectName) {
+        if (finalProjectName === undefined || finalProjectName.trim() === '') {
             const answers = await inquirer_1.default.prompt([
                 {
                     type: 'input',
@@ -90,15 +90,15 @@ program
             finalTemplate = answers.template;
         }
         // Ensure we have a project name
-        if (!finalProjectName) {
+        if (finalProjectName === undefined || finalProjectName.trim() === '') {
             throw new Error('Project name is required');
         }
         await (0, create_app_1.createApp)({
             projectName: finalProjectName,
             template: finalTemplate,
-            useNpm: options.useNpm,
-            useYarn: options.useYarn,
-            usePnpm: options.usePnpm
+            useNpm: options.useNpm ?? false,
+            useYarn: options.useYarn ?? false,
+            usePnpm: options.usePnpm ?? false
         });
     }
     catch (error) {

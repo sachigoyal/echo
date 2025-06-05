@@ -1,14 +1,20 @@
 {
-  "name": "create-echo-merit-app",
+  "name": "create-echo-app",
   "version": "1.0.0",
   "description": "Create LLM chatbot applications using Vercel AI SDK",
   "main": "dist/index.js",
   "bin": {
-    "create-echo-merit-app": "./dist/index.js"
+    "create-echo-app": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "test": "npm run type-check && echo 'All tests passed!'",
+    "lint": "npx eslint src/**/*.ts",
+    "lint:fix": "npx eslint src/**/*.ts --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,js}\"",
+    "format:check": "prettier --check \"**/*.{ts,js}\"",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -24,16 +30,17 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "commander": "^12.0.0",
     "chalk": "^4.1.2",
-    "inquirer": "^8.2.6",
+    "commander": "^12.0.0",
     "fs-extra": "^11.2.0",
+    "inquirer": "^8.2.6",
     "validate-npm-package-name": "^5.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^8.2.10",
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/parser": "^8.33.1",
     "typescript": "^5.3.3"
   },
   "files": [
@@ -43,4 +50,4 @@
   "engines": {
     "node": ">=16.0.0"
   }
-} 
+}

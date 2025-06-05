@@ -1,11 +1,12 @@
 #!/usr/bin/env ts-node
 
-import { spawn, ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
+import type { ChildProcess } from 'child_process';
 import path from 'path';
 
 /**
  * Test Runner Script
- * 
+ *
  * This script orchestrates the testing process:
  * 1. Starts the Echo server
  * 2. Waits for it to be ready
@@ -23,14 +24,17 @@ class TestRunner {
   private serverProcess: ChildProcess | null = null;
   private readonly serverPort = 3001;
   private readonly serverBaseUrl = `http://localhost:${this.serverPort}`;
+  private readonly options: TestRunnerOptions;
 
-  constructor(private options: TestRunnerOptions = {}) {}
+  constructor(options: TestRunnerOptions = {}) {
+    this.options = options;
+  }
 
   async run(): Promise<void> {
     console.log('🚀 Starting Echo CLI Test Suite...\n');
 
     try {
-      await this.startServer();
+      this.startServer();
       await this.waitForServer();
       await this.runTests();
       console.log('\n✅ All tests completed successfully!');
@@ -42,11 +46,11 @@ class TestRunner {
     }
   }
 
-  private async startServer(): Promise<void> {
+  private startServer(): void {
     console.log('🔄 Starting Echo server for tests...');
-    
+
     const serverPath = path.join(__dirname, '../../../../echo-server');
-    
+
     this.serverProcess = spawn('npm', ['run', 'dev'], {
       cwd: serverPath,
       env: {
@@ -55,11 +59,14 @@ class TestRunner {
         NODE_ENV: 'test',
         TEST_MODE: 'true',
       },
-      stdio: this.options.verbose ? 'inherit' : 'pipe',
+      stdio: this.options.verbose === true ? 'inherit' : 'pipe',
     });
 
-    if (!this.options.verbose && this.serverProcess.stdout) {
-      this.serverProcess.stdout.on('data', (data) => {
+    if (
+      (this.options.verbose === undefined || this.options.verbose === false) &&
+      this.serverProcess.stdout !== null
+    ) {
+      this.serverProcess.stdout.on('data', (data: Buffer) => {
         const output = data.toString();
         if (output.includes('error') || output.includes('Error')) {
           console.log(`[Server] ${output}`);
@@ -67,14 +74,17 @@ class TestRunner {
       });
     }
 
-    if (!this.options.verbose && this.serverProcess.stderr) {
-      this.serverProcess.stderr.on('data', (data) => {
+    if (
+      (this.options.verbose === undefined || this.options.verbose === false) &&
+      this.serverProcess.stderr !== null
+    ) {
+      this.serverProcess.stderr.on('data', (data: Buffer) => {
         console.error(`[Server Error] ${data.toString()}`);
       });
     }
 
-    this.serverProcess.on('exit', (code) => {
-      if (code !== 0 && code !== null) {
+    this.serverProcess.on('exit', code => {
+      if (code !== null && code !== 0) {
         console.error(`Server process exited with code ${code}`);
       }
     });
@@ -82,7 +92,7 @@ class TestRunner {
 
   private async waitForServer(): Promise<void> {
     console.log('⏳ Waiting for server to be ready...');
-    
+
     const maxAttempts = 30;
     let attempts = 0;
 
@@ -99,7 +109,7 @@ class TestRunner {
           console.log('✅ Server is ready!');
           return;
         }
-      } catch (error) {
+      } catch {
         // Server not ready yet, continue waiting
       }
 
@@ -120,15 +130,18 @@ class TestRunner {
       '--detectOpenHandles',
     ];
 
-    if (this.options.coverage) {
+    if (this.options.coverage === true) {
       jestArgs.push('--coverage');
     }
 
-    if (this.options.testPattern) {
+    if (
+      this.options.testPattern !== undefined &&
+      this.options.testPattern.length > 0
+    ) {
       jestArgs.push('--testNamePattern', this.options.testPattern);
     }
 
-    if (this.options.verbose) {
+    if (this.options.verbose === true) {
       jestArgs.push('--verbose');
     }
 
@@ -143,7 +156,7 @@ class TestRunner {
         stdio: 'inherit',
       });
 
-      jestProcess.on('exit', (code) => {
+      jestProcess.on('exit', code => {
         if (code === 0) {
           resolve();
         } else {
@@ -151,25 +164,25 @@ class TestRunner {
         }
       });
 
-      jestProcess.on('error', (error) => {
+      jestProcess.on('error', error => {
         reject(error);
       });
     });
   }
 
   private async stopServer(): Promise<void> {
-    if (this.serverProcess) {
+    if (this.serverProcess !== null) {
       console.log('\n🛑 Stopping server...');
-      
+
       this.serverProcess.kill('SIGTERM');
-      
+
       // Wait for graceful shutdown
-      await new Promise((resolve) => {
-        if (this.serverProcess) {
+      await new Promise(resolve => {
+        if (this.serverProcess !== null) {
           this.serverProcess.on('exit', resolve);
           // Force kill after 5 seconds
           setTimeout(() => {
-            if (this.serverProcess && !this.serverProcess.killed) {
+            if (this.serverProcess !== null && !this.serverProcess.killed) {
               this.serverProcess.kill('SIGKILL');
             }
             resolve(true);
@@ -178,14 +191,14 @@ class TestRunner {
           resolve(true);
         }
       });
-      
+
       console.log('✅ Server stopped');
     }
   }
 }
 
 // CLI interface
-async function main() {
+const main = async () => {
   const args = process.argv.slice(2);
   const options: TestRunnerOptions = {};
 
@@ -201,9 +214,13 @@ async function main() {
         options.coverage = true;
         break;
       case '--pattern':
-      case '-p':
-        options.testPattern = args[++i];
+      case '-p': {
+        const pattern = args[++i];
+        if (pattern !== undefined && pattern.length > 0) {
+          options.testPattern = pattern;
+        }
         break;
+      }
       case '--help':
       case '-h':
         console.log(`
@@ -229,13 +246,13 @@ Examples:
 
   const runner = new TestRunner(options);
   await runner.run();
-}
+};
 
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Test runner failed:', error);
     process.exit(1);
   });
 }
 
-export { TestRunner }; 
+export { TestRunner };

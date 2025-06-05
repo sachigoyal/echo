@@ -2,109 +2,105 @@ import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 
 export interface CompletionStateBody {
-    usage: {
-        prompt_tokens: number;
-        completion_tokens: number;
-        total_tokens: number;
-    };
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }
 
 export interface StreamingChunkBody {
-    choices: {
-        index: number;
-        delta: {
-            content?: string;
-        };
-        finish_reason: string | null;
-    }[];
-    usage: {
-        prompt_tokens: number;
-        completion_tokens: number;
-        total_tokens: number;
-    } | null;
+  choices: {
+    index: number;
+    delta: {
+      content?: string;
+    };
+    finish_reason: string | null;
+  }[];
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  } | null;
 }
 
-export function parseSSEGPTFormat(data: string): StreamingChunkBody[] {
-    // Split by double newlines to separate events
-    const events = data.split('\n\n');
-    const chunks: StreamingChunkBody[] = [];
-    
-    for (const event of events) {
-        if (!event.trim()) continue;
-        
-        // Each event should start with 'data: '
-        if (event.startsWith('data: ')) {
-            const jsonStr = event.slice(6); // Remove 'data: ' prefix
-            
-            // Skip [DONE] marker
-            if (jsonStr.trim() === '[DONE]') continue;
-            
-            try {
-                const parsed = JSON.parse(jsonStr);
-                chunks.push(parsed);
-            } catch (error) {
-                console.error('Error parsing SSE chunk:', error);
-            }
-        }
+export const parseSSEGPTFormat = (data: string): StreamingChunkBody[] => {
+  // Split by double newlines to separate events
+  const events = data.split('\n\n');
+  const chunks: StreamingChunkBody[] = [];
+
+  for (const event of events) {
+    if (!event.trim()) continue;
+
+    // Each event should start with 'data: '
+    if (event.startsWith('data: ')) {
+      const jsonStr = event.slice(6); // Remove 'data: ' prefix
+
+      // Skip [DONE] marker
+      if (jsonStr.trim() === '[DONE]') continue;
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        chunks.push(parsed);
+      } catch (error) {
+        console.error('Error parsing SSE chunk:', error);
+      }
     }
-    
-    return chunks;
-}
+  }
+
+  return chunks;
+};
 
 export class GPTProvider extends BaseProvider {
+  getType(): ProviderType {
+    return ProviderType.GPT;
+  }
 
-    getType(): ProviderType {
-        return ProviderType.GPT;
-    }
+  getBaseUrl(): string {
+    return this.OPENAI_BASE_URL;
+  }
 
-    getBaseUrl(): string {
-        return this.OPENAI_BASE_URL;
-    }
+  getApiKey(): string | undefined {
+    return process.env.OPENAI_API_KEY;
+  }
 
-    getApiKey(): string | undefined {
-        return process.env.OPENAI_API_KEY;
-    }
+  handleBody(data: string): void {
+    try {
+      let prompt_tokens = 0;
+      let completion_tokens = 0;
+      let total_tokens = 0;
 
-    handleBody(data: string): void {
-        try {
-            let prompt_tokens = 0;
-            let completion_tokens = 0;
-            let total_tokens = 0;
+      if (this.getIsStream()) {
+        const chunks = parseSSEGPTFormat(data);
 
-            if (this.getIsStream()) {
-                const chunks = parseSSEGPTFormat(data);
-                
-                for (const chunk of chunks) {
-                    if (chunk.usage) {
-                        prompt_tokens += chunk.usage.prompt_tokens;
-                        completion_tokens += chunk.usage.completion_tokens;
-                        total_tokens += chunk.usage.total_tokens;
-                  
-                    }
-                }
-            } else {
-                const parsed = JSON.parse(data) as CompletionStateBody;
-                if (parsed.usage) {
-                    prompt_tokens += parsed.usage.prompt_tokens;
-                    completion_tokens += parsed.usage.completion_tokens;
-                    total_tokens += parsed.usage.total_tokens;
-                }
-            }
-            
-            if (total_tokens > 0) {
-                console.log("usage tokens: ", total_tokens);
-                // Create transaction with proper model info and token details
-                this.getEchoControlService().createTransaction({
-                    model: this.getModel(), 
-                    inputTokens: prompt_tokens,
-                    outputTokens: completion_tokens,
-                    totalTokens: total_tokens,
-                    cost: total_tokens * 0.001, // Convert tokens to cost (rough estimate - you should use proper pricing)
-                    status: 'success'
-                });
-            }
-        } catch (error) {
-            console.error('Error processing data:', error);
+        for (const chunk of chunks) {
+          if (chunk.usage !== null) {
+            prompt_tokens += chunk.usage.prompt_tokens;
+            completion_tokens += chunk.usage.completion_tokens;
+            total_tokens += chunk.usage.total_tokens;
+          }
         }
+      } else {
+        const parsed = JSON.parse(data) as CompletionStateBody;
+        prompt_tokens += parsed.usage.prompt_tokens;
+        completion_tokens += parsed.usage.completion_tokens;
+        total_tokens += parsed.usage.total_tokens;
+      }
+
+      if (total_tokens > 0) {
+        console.log('usage tokens: ', total_tokens);
+        // Create transaction with proper model info and token details
+        void this.getEchoControlService().createTransaction({
+          model: this.getModel(),
+          inputTokens: prompt_tokens,
+          outputTokens: completion_tokens,
+          totalTokens: total_tokens,
+          cost: total_tokens * 0.001, // Convert tokens to cost (rough estimate - you should use proper pricing)
+          status: 'success',
+        });
+      }
+    } catch (error) {
+      console.error('Error processing data:', error);
     }
-} 
+  }
+}

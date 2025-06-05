@@ -5,6 +5,7 @@ This guide will help you set up Stripe webhooks to properly handle payment compl
 ## Overview
 
 The webhook endpoint is located at `/api/stripe/webhook` and handles the following events:
+
 - `checkout.session.completed` - Fires when payment link payments are completed
 - `payment_intent.succeeded` - Fires when direct payments succeed
 - `payment_intent.payment_failed` - Fires when payments fail
@@ -17,9 +18,11 @@ The webhook endpoint is located at `/api/stripe/webhook` and handles the followi
 Your webhook endpoint must be publicly accessible via HTTPS. You have several options:
 
 #### Option A: Deploy to Production
+
 Deploy your application to a hosting service like Vercel, Netlify, or your own server.
 
 #### Option B: Use ngrok for Local Development
+
 ```bash
 # Install ngrok
 npm install -g ngrok
@@ -34,6 +37,7 @@ ngrok http 3000
 ```
 
 #### Option C: Use Stripe CLI for Local Testing
+
 ```bash
 # Install Stripe CLI
 # Follow instructions at: https://stripe.com/docs/stripe-cli
@@ -66,6 +70,7 @@ NEXTAUTH_URL=https://yourdomain.com  # or your ngrok URL
 ### 3. Create the Webhook Endpoint
 
 #### Option A: Use the Automated Script
+
 ```bash
 # Set your webhook URL
 export WEBHOOK_URL="https://yourdomain.com/api/stripe/webhook"
@@ -75,6 +80,7 @@ npm run setup-webhook
 ```
 
 #### Option B: Manual Setup via Stripe Dashboard
+
 1. Go to the [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
 2. Click "Add endpoint"
 3. Enter your webhook URL: `https://yourdomain.com/api/stripe/webhook`
@@ -87,6 +93,7 @@ npm run setup-webhook
 6. Copy the webhook signing secret
 
 #### Option C: Use Stripe CLI (for development)
+
 ```bash
 # This automatically creates a webhook and forwards events
 stripe listen --forward-to localhost:3000/api/stripe/webhook
@@ -103,12 +110,14 @@ STRIPE_WEBHOOK_SECRET=whsec_1234567890abcdef...
 ### 5. Test the Webhook
 
 #### Test with Stripe CLI
+
 ```bash
 # Trigger a test event
 stripe trigger checkout.session.completed
 ```
 
 #### Test with a Real Payment Link
+
 1. Create a payment link in your application
 2. Complete a test payment
 3. Check your application logs for webhook events
@@ -127,11 +136,13 @@ The webhook endpoint includes several security measures:
 ### Common Issues
 
 1. **Webhook not receiving events**
+
    - Ensure your endpoint is publicly accessible via HTTPS
    - Check that the webhook URL is correct in Stripe dashboard
    - Verify your server is running and responding to POST requests
 
 2. **Signature verification failures**
+
    - Ensure `STRIPE_WEBHOOK_SECRET` is set correctly
    - Make sure you're using the raw request body for verification
    - Check that your webhook secret matches the one in Stripe dashboard
@@ -173,4 +184,4 @@ npm run dev
 
 - [Stripe Webhooks Documentation](https://stripe.com/docs/webhooks)
 - [Stripe CLI Documentation](https://stripe.com/docs/stripe-cli)
-- [Payment Links Documentation](https://stripe.com/docs/payment-links) 
+- [Payment Links Documentation](https://stripe.com/docs/payment-links)

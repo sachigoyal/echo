@@ -74,17 +74,21 @@ export class EchoDbService {
       const cleanApiKey = apiKey.replace('Bearer ', '');
 
       const apiKeyRecord = await this.db.apiKey.findUnique({
-        where: { 
+        where: {
           key: cleanApiKey,
-          isActive: true 
+          isActive: true,
         },
         include: {
           user: true,
-          echoApp: true
-        }
+          echoApp: true,
+        },
       });
 
-      if (!apiKeyRecord || !apiKeyRecord.echoApp || !apiKeyRecord.echoApp.isActive) {
+      if (
+        !apiKeyRecord ||
+        !apiKeyRecord.echoApp ||
+        !apiKeyRecord.echoApp.isActive
+      ) {
         return null;
       }
 
@@ -94,20 +98,22 @@ export class EchoDbService {
         user: {
           id: apiKeyRecord.user.id,
           email: apiKeyRecord.user.email,
-          name: apiKeyRecord.user.name || undefined,
+          ...(apiKeyRecord.user.name && { name: apiKeyRecord.user.name }),
           clerkId: apiKeyRecord.user.clerkId,
           createdAt: apiKeyRecord.user.createdAt.toISOString(),
-          updatedAt: apiKeyRecord.user.updatedAt.toISOString()
+          updatedAt: apiKeyRecord.user.updatedAt.toISOString(),
         },
         echoApp: {
           id: apiKeyRecord.echoApp.id,
           name: apiKeyRecord.echoApp.name,
-          description: apiKeyRecord.echoApp.description || undefined,
+          ...(apiKeyRecord.echoApp.description && {
+            description: apiKeyRecord.echoApp.description,
+          }),
           isActive: apiKeyRecord.echoApp.isActive,
           createdAt: apiKeyRecord.echoApp.createdAt.toISOString(),
           updatedAt: apiKeyRecord.echoApp.updatedAt.toISOString(),
-          userId: apiKeyRecord.echoApp.userId
-        }
+          userId: apiKeyRecord.echoApp.userId,
+        },
       };
     } catch (error) {
       console.error('Error validating API key:', error);
@@ -122,13 +128,17 @@ export class EchoDbService {
   async getBalance(userId: string, echoAppId?: string): Promise<Balance> {
     try {
       // Calculate balance from payments and transactions
-      const paymentsFilter: { userId: string; status: string; echoAppId?: string } = {
+      const paymentsFilter: {
+        userId: string;
+        status: string;
+        echoAppId?: string;
+      } = {
         userId: userId,
-        status: 'completed'
+        status: 'completed',
       };
-      
+
       const transactionsFilter: { userId: string; echoAppId?: string } = {
-        userId: userId
+        userId: userId,
       };
 
       // If echoAppId is provided, filter by app
@@ -159,8 +169,7 @@ export class EchoDbService {
         balance,
         totalCredits,
         totalSpent,
-        echoAppId: echoAppId,
-        echoAppName: undefined // This would need to be passed in or fetched separately
+        ...(echoAppId && { echoAppId }),
       };
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -168,8 +177,7 @@ export class EchoDbService {
         balance: 0,
         totalCredits: 0,
         totalSpent: 0,
-        echoAppId: echoAppId,
-        echoAppName: undefined
+        ...(echoAppId && { echoAppId }),
       };
     }
   }
@@ -195,10 +203,16 @@ export class EchoDbService {
   ): Promise<string | null> {
     try {
       // Validate required fields
-      if (!transaction.model || typeof transaction.inputTokens !== 'number' || 
-          typeof transaction.outputTokens !== 'number' || typeof transaction.totalTokens !== 'number' || 
-          typeof transaction.cost !== 'number') {
-        throw new Error('Missing required fields: model, inputTokens, outputTokens, totalTokens, cost');
+      if (
+        !transaction.model ||
+        typeof transaction.inputTokens !== 'number' ||
+        typeof transaction.outputTokens !== 'number' ||
+        typeof transaction.totalTokens !== 'number' ||
+        typeof transaction.cost !== 'number'
+      ) {
+        throw new Error(
+          'Missing required fields: model, inputTokens, outputTokens, totalTokens, cost'
+        );
       }
 
       // Create the LLM transaction
@@ -218,11 +232,14 @@ export class EchoDbService {
         },
       });
 
-      console.log(`Created transaction for model ${transaction.model}: $${transaction.cost}`, dbTransaction.id);
+      console.log(
+        `Created transaction for model ${transaction.model}: $${transaction.cost}`,
+        dbTransaction.id
+      );
       return dbTransaction.id;
     } catch (error) {
       console.error('Error creating transaction:', error);
       return null;
     }
   }
-} 
+}

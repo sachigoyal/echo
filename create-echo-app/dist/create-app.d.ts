@@ -5,5 +5,5 @@ export interface CreateAppConfig {
     useYarn?: boolean;
     usePnpm?: boolean;
 }
-export declare function createApp(config: CreateAppConfig): Promise<void>;
+export declare const createApp: (config: CreateAppConfig) => Promise<void>;
 //# sourceMappingURL=create-app.d.ts.map

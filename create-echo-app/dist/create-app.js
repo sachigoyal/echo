@@ -36,12 +36,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createApp = createApp;
-const fs = __importStar(require("fs-extra"));
+exports.createApp = void 0;
+const child_process_1 = require("child_process");
 const path = __importStar(require("path"));
 const chalk_1 = __importDefault(require("chalk"));
-const child_process_1 = require("child_process");
-async function createApp(config) {
+const fs = __importStar(require("fs-extra"));
+const createApp = async (config) => {
     const { projectName, template } = config;
     const projectPath = path.resolve(process.cwd(), projectName);
     // Check if directory already exists
@@ -75,7 +75,7 @@ async function createApp(config) {
         });
         console.log(chalk_1.default.green('✅ Dependencies installed successfully'));
     }
-    catch (error) {
+    catch {
         console.log(chalk_1.default.yellow('⚠️  Failed to install dependencies automatically'));
         console.log(chalk_1.default.gray(`You can install them manually by running: cd ${projectName} && ${packageManager} install`));
     }
@@ -85,25 +85,30 @@ async function createApp(config) {
     console.log(chalk_1.default.cyan(`  cd ${projectName}`));
     console.log(chalk_1.default.cyan(`  ${packageManager === 'npm' ? 'npm run dev' : `${packageManager} dev`}`));
     console.log('\nHappy coding! 🚀');
-}
-function getPackageManager(config) {
-    if (config.useNpm)
+};
+exports.createApp = createApp;
+const getPackageManager = (config) => {
+    if (config.useNpm === true)
         return 'npm';
-    if (config.useYarn)
+    if (config.useYarn === true)
         return 'yarn';
-    if (config.usePnpm)
+    if (config.usePnpm === true)
         return 'pnpm';
     // Auto-detect based on what's available
     try {
         (0, child_process_1.execSync)('pnpm --version', { stdio: 'ignore' });
         return 'pnpm';
     }
-    catch { }
+    catch {
+        // pnpm not available, continue to next option
+    }
     try {
         (0, child_process_1.execSync)('yarn --version', { stdio: 'ignore' });
         return 'yarn';
     }
-    catch { }
+    catch {
+        // yarn not available, fall back to npm
+    }
     return 'npm';
-}
+};
 //# sourceMappingURL=create-app.js.map

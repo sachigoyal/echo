@@ -1,5 +1,11 @@
-import { storeApiKey, getStoredApiKey, removeStoredApiKey, validateApiKey } from '../auth';
 import * as keytar from 'keytar';
+
+import {
+  storeApiKey,
+  getStoredApiKey,
+  removeStoredApiKey,
+  validateApiKey,
+} from '../auth';
 
 // Mock keytar
 jest.mock('keytar');
@@ -40,8 +46,8 @@ describe('Auth Module', () => {
     });
 
     it('should handle null and undefined', () => {
-      expect(validateApiKey(null as any)).toBe(false);
-      expect(validateApiKey(undefined as any)).toBe(false);
+      expect(validateApiKey(null as unknown as string)).toBe(false);
+      expect(validateApiKey(undefined as unknown as string)).toBe(false);
     });
   });
 
@@ -64,15 +70,13 @@ describe('Auth Module', () => {
       const error = new Error('Storage failed');
       mockedKeytar.setPassword.mockRejectedValue(error);
 
-      await expect(storeApiKey(apiKey)).rejects.toThrow('Failed to store API key: Error: Storage failed');
+      await expect(storeApiKey(apiKey)).rejects.toThrow(
+        'Failed to store API key: Error: Storage failed'
+      );
     });
 
     it('should store different API keys', async () => {
-      const apiKeys = [
-        'echo_key_1',
-        'echo_key_2',
-        'echo_key_3',
-      ];
+      const apiKeys = ['echo_key_1', 'echo_key_2', 'echo_key_3'];
 
       mockedKeytar.setPassword.mockResolvedValue();
 
@@ -119,7 +123,9 @@ describe('Auth Module', () => {
     });
 
     it('should handle undefined return from keytar', async () => {
-      mockedKeytar.getPassword.mockResolvedValue(undefined as any);
+      mockedKeytar.getPassword.mockResolvedValue(
+        undefined as unknown as string
+      );
 
       const result = await getStoredApiKey();
 
@@ -157,7 +163,7 @@ describe('Auth Module', () => {
   describe('Integration scenarios', () => {
     it('should store and retrieve the same API key', async () => {
       const apiKey = 'echo_integration_test_key_12345';
-      
+
       mockedKeytar.setPassword.mockResolvedValue();
       mockedKeytar.getPassword.mockResolvedValue(apiKey);
 
@@ -169,24 +175,24 @@ describe('Auth Module', () => {
 
     it('should handle store, retrieve, and remove cycle', async () => {
       const apiKey = 'echo_cycle_test_key_12345';
-      
+
       // Store
       mockedKeytar.setPassword.mockResolvedValue();
       await storeApiKey(apiKey);
-      
+
       // Retrieve
       mockedKeytar.getPassword.mockResolvedValue(apiKey);
       const retrieved = await getStoredApiKey();
       expect(retrieved).toBe(apiKey);
-      
+
       // Remove
       mockedKeytar.deletePassword.mockResolvedValue(true);
       await removeStoredApiKey();
-      
+
       // Verify removal
       mockedKeytar.getPassword.mockResolvedValue(null);
       const afterRemoval = await getStoredApiKey();
       expect(afterRemoval).toBeNull();
     });
   });
-}); 
+});

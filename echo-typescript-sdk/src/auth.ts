@@ -33,4 +33,4 @@ export function validateApiKey(apiKey: string): boolean {
     return false;
   }
   return apiKey.startsWith('echo_') && apiKey.length > 10;
-} 
+}

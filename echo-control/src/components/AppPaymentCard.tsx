@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { CreditCard, DollarSign, Zap } from 'lucide-react'
+import { useState } from 'react';
+import { CreditCard, DollarSign, Zap } from 'lucide-react';
 
 interface AppPaymentCardProps {
-  appId: string
-  appName: string
-  currentBalance: number
+  appId: string;
+  appName: string;
+  currentBalance: number;
 }
 
 const CREDIT_PACKAGES = [
@@ -14,14 +14,18 @@ const CREDIT_PACKAGES = [
   { amount: 25, price: 25, popular: true },
   { amount: 50, price: 50, popular: false },
   { amount: 100, price: 100, popular: false },
-]
+];
 
-export default function AppPaymentCard({ appId, appName, currentBalance }: AppPaymentCardProps) {
-  const [loading, setLoading] = useState(false)
-  const [selectedPackage, setSelectedPackage] = useState(CREDIT_PACKAGES[1]) // Default to popular option
+export default function AppPaymentCard({
+  appId,
+  appName,
+  currentBalance,
+}: AppPaymentCardProps) {
+  const [loading, setLoading] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(CREDIT_PACKAGES[1]); // Default to popular option
 
   const handlePurchaseCredits = async (amount: number) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch('/api/stripe/payment-link', {
         method: 'POST',
@@ -31,25 +35,27 @@ export default function AppPaymentCard({ appId, appName, currentBalance }: AppPa
           description: `Echo Credits for ${appName}`,
           echoAppId: appId,
         }),
-      })
-      
-      const data = await response.json()
-      
+      });
+
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment link')
+        throw new Error(data.error || 'Failed to create payment link');
       }
-      
+
       if (data.paymentLink?.url) {
         // Navigate to Stripe payment page instead of opening in popup
-        window.location.href = data.paymentLink.url
+        window.location.href = data.paymentLink.url;
       }
     } catch (error) {
-      console.error('Error creating payment link:', error)
-      alert(`Error: ${error instanceof Error ? error.message : 'Failed to create payment link'}`)
+      console.error('Error creating payment link:', error);
+      alert(
+        `Error: ${error instanceof Error ? error.message : 'Failed to create payment link'}`
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="bg-gradient-to-br from-card to-card/80 rounded-lg border border-border p-6 shadow-lg">
@@ -62,7 +68,10 @@ export default function AppPaymentCard({ appId, appName, currentBalance }: AppPa
                 Credits for {appName}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Current balance: <span className="font-medium text-primary">${currentBalance.toFixed(2)}</span>
+                Current balance:{' '}
+                <span className="font-medium text-primary">
+                  ${currentBalance.toFixed(2)}
+                </span>
               </p>
             </div>
             <div className="rounded-full bg-primary/10 p-3 md:mt-4 md:hidden lg:flex">
@@ -74,9 +83,11 @@ export default function AppPaymentCard({ appId, appName, currentBalance }: AppPa
         {/* Credit Packages */}
         <div className="md:w-2/3">
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-card-foreground">Choose a credit package:</h4>
+            <h4 className="text-sm font-medium text-card-foreground">
+              Choose a credit package:
+            </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {CREDIT_PACKAGES.map((pkg) => (
+              {CREDIT_PACKAGES.map(pkg => (
                 <button
                   key={pkg.amount}
                   onClick={() => setSelectedPackage(pkg)}
@@ -95,8 +106,12 @@ export default function AppPaymentCard({ appId, appName, currentBalance }: AppPa
                   )}
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-lg font-bold text-card-foreground">${pkg.amount}</div>
-                      <div className="text-xs text-muted-foreground">credits</div>
+                      <div className="text-lg font-bold text-card-foreground">
+                        ${pkg.amount}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        credits
+                      </div>
                     </div>
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </div>
@@ -128,10 +143,12 @@ export default function AppPaymentCard({ appId, appName, currentBalance }: AppPa
           </button>
 
           <div className="mt-2 text-xs text-muted-foreground text-center">
-            Credits will be added to your account for <span className="font-medium">{appName}</span> immediately after payment
+            Credits will be added to your account for{' '}
+            <span className="font-medium">{appName}</span> immediately after
+            payment
           </div>
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

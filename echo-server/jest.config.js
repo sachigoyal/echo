@@ -7,4 +7,4 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
-}; 
+};
