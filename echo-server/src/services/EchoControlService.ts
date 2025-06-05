@@ -1,10 +1,18 @@
+import type {
+  User,
+  EchoApp,
+  CreateLlmTransactionRequest,
+  ApiKeyValidationResult,
+  DatabaseClient,
+} from '@zdql/echo-typescript-sdk';
+import { EchoDbService } from '@zdql/echo-typescript-sdk';
+
 import { PrismaClient } from '../../../echo-control/src/generated/prisma';
-import { User, EchoApp, CreateLlmTransactionRequest, EchoDbService, ApiKeyValidationResult, DatabaseClient } from '@echo/typescript-sdk';
 
 export class EchoControlService {
-  private db: PrismaClient;
-  private dbService: EchoDbService;
-  private apiKey: string;
+  private readonly db: PrismaClient;
+  private readonly dbService: EchoDbService;
+  private readonly apiKey: string;
   private authResult: ApiKeyValidationResult | null = null;
 
   constructor(apiKey: string) {
@@ -12,9 +20,9 @@ export class EchoControlService {
     this.db = new PrismaClient({
       datasources: {
         db: {
-          url: process.env.DATABASE_URL
-        }
-      }
+          url: process.env.DATABASE_URL ?? 'postgresql://localhost:5432/echo',
+        },
+      },
     });
     this.dbService = new EchoDbService(this.db as unknown as DatabaseClient);
   }
@@ -44,28 +52,28 @@ export class EchoControlService {
    * Get the user ID from cached authentication result
    */
   getUserId(): string | null {
-    return this.authResult?.userId || null;
+    return this.authResult?.userId ?? null;
   }
 
   /**
    * Get the echo app ID from cached authentication result
    */
   getEchoAppId(): string | null {
-    return this.authResult?.echoAppId || null;
+    return this.authResult?.echoAppId ?? null;
   }
 
   /**
    * Get the user from cached authentication result
    */
   getUser(): User | null {
-    return this.authResult?.user || null;
+    return this.authResult?.user ?? null;
   }
 
   /**
    * Get the echo app from cached authentication result
    */
   getEchoApp(): EchoApp | null {
-    return this.authResult?.echoApp || null;
+    return this.authResult?.echoApp ?? null;
   }
 
   /**
@@ -81,8 +89,8 @@ export class EchoControlService {
 
       const { userId, echoAppId } = this.authResult;
       const balance = await this.dbService.getBalance(userId, echoAppId);
-      
-      console.log("fetched balance", balance);
+
+      console.log('fetched balance', balance);
       return balance.balance;
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -94,7 +102,9 @@ export class EchoControlService {
    * Create an LLM transaction record directly in the database
    * Uses centralized logic from EchoDbService
    */
-  async createTransaction(transaction: CreateLlmTransactionRequest): Promise<void> {
+  async createTransaction(
+    transaction: CreateLlmTransactionRequest
+  ): Promise<void> {
     try {
       if (!this.authResult) {
         console.error('No authentication result available');
@@ -107,4 +117,4 @@ export class EchoControlService {
       console.error('Error creating transaction:', error);
     }
   }
-} 
+}

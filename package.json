@@ -1,0 +1,53 @@
+{
+  "name": "echo-monorepo",
+  "version": "1.0.0",
+  "description": "Echo platform monorepo",
+  "private": true,
+  "workspaces": [
+    "echo-control",
+    "echo-server",
+    "echo-typescript-sdk",
+    "create-echo-app"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:fix": "npm run lint:fix --workspaces --if-present",
+    "type-check": "npm run type-check --workspaces",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
+    "@typescript-eslint/parser": "^8.33.1",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.0"
+  },
+  "lint-staged": {
+    "echo-control/**/*.{ts,tsx,js,jsx}": [
+      "cd echo-control && npm run lint"
+    ],
+    "echo-server/**/*.{ts,js}": [
+      "cd echo-server && npm run lint"
+    ],
+    "echo-typescript-sdk/**/*.{ts,js}": [
+      "cd echo-typescript-sdk && npm run lint"
+    ],
+    "create-echo-app/**/*.{ts,tsx,js,jsx}": [
+      "cd create-echo-app && npm run lint"
+    ],
+    "**/*.{ts,tsx,js,jsx,json,md}": [
+      "npm run format:check"
+    ]
+  }
+}

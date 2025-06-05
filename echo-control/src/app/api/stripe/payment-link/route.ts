@@ -1,30 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { getAuthenticatedUser } from '@/lib/auth'
-import Stripe from 'stripe'
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { getAuthenticatedUser } from '@/lib/auth';
+import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
-})
+});
 
 // POST /api/stripe/payment-link - Generate real Stripe payment link for authenticated user
 export async function POST(request: NextRequest) {
   try {
-    const { user, echoApp: authEchoApp } = await getAuthenticatedUser(request)
-    const body = await request.json()
-    let { amount, description = 'Echo Credits', echoAppId } = body
+    const { user, echoApp: authEchoApp } = await getAuthenticatedUser(request);
+    const body = await request.json();
+    const { amount, description = 'Echo Credits' } = body;
+    let { echoAppId } = body;
 
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'Valid amount is required' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Valid amount is required' },
+        { status: 400 }
+      );
     }
 
     // If authenticated via API key and no echoAppId provided, use the API key's app
     if (!echoAppId && authEchoApp) {
-      echoAppId = authEchoApp.id
+      echoAppId = authEchoApp.id;
     }
 
     if (!echoAppId) {
-      return NextResponse.json({ error: 'Echo App ID is required' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Echo App ID is required' },
+        { status: 400 }
+      );
     }
 
     // Verify the echo app exists and belongs to the user
@@ -33,27 +40,30 @@ export async function POST(request: NextRequest) {
         id: echoAppId,
         userId: user.id,
       },
-    })
+    });
 
     if (!echoApp) {
-      return NextResponse.json({ error: 'Echo app not found or access denied' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Echo app not found or access denied' },
+        { status: 404 }
+      );
     }
 
     // Convert amount to cents for Stripe
-    const amountInCents = Math.round(amount * 100)
+    const amountInCents = Math.round(amount * 100);
 
     // Create Stripe product
     const product = await stripe.products.create({
       name: `${description} - ${echoApp.name}`,
       description: `${description} for ${echoApp.name} - ${amount} USD`,
-    })
+    });
 
     // Create Stripe price
     const price = await stripe.prices.create({
       unit_amount: amountInCents,
       currency: 'usd',
       product: product.id,
-    })
+    });
 
     // Create Stripe payment link
     const paymentLink = await stripe.paymentLinks.create({
@@ -74,7 +84,7 @@ export async function POST(request: NextRequest) {
           url: process.env.NEXTAUTH_URL + `/apps/${echoAppId}?payment=success`,
         },
       },
-    })
+    });
 
     // Create pending payment record
     const payment = await db.payment.create({
@@ -87,37 +97,49 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         echoAppId,
       },
-    })
+    });
 
-    return NextResponse.json({ 
-      paymentLink: {
-        id: paymentLink.id,
-        url: paymentLink.url,
-        amount: amountInCents,
-        currency: 'usd',
-        status: 'pending',
-        created: Math.floor(Date.now() / 1000),
-        metadata: {
-          userId: user.id,
-          echoAppId,
-          description,
+    return NextResponse.json(
+      {
+        paymentLink: {
+          id: paymentLink.id,
+          url: paymentLink.url,
+          amount: amountInCents,
+          currency: 'usd',
+          status: 'pending',
+          created: Math.floor(Date.now() / 1000),
+          metadata: {
+            userId: user.id,
+            echoAppId,
+            description,
+          },
         },
+        payment,
       },
-      payment
-    }, { status: 201 })
+      { status: 201 }
+    );
   } catch (error) {
-    console.error('Error creating payment link:', error)
-    
+    console.error('Error creating payment link:', error);
+
     if (error instanceof Error && error.message === 'Not authenticated') {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
     }
 
     if (error instanceof Stripe.errors.StripeError) {
-      return NextResponse.json({ 
-        error: 'Stripe error: ' + error.message 
-      }, { status: 400 })
+      return NextResponse.json(
+        {
+          error: 'Stripe error: ' + error.message,
+        },
+        { status: 400 }
+      );
     }
-    
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-} 
+}

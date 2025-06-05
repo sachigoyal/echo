@@ -1,182 +1,198 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Key, Activity, CreditCard, ExternalLink, Plus, CheckCircle, X, Trash } from 'lucide-react'
-import AppPaymentCard from './AppPaymentCard'
-import CreateApiKeyModal from './CreateApiKeyModal'
-import ApiKeyModal from './ApiKeyModal'
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Key,
+  Activity,
+  CreditCard,
+  Plus,
+  CheckCircle,
+  X,
+  Trash,
+} from 'lucide-react';
+import AppPaymentCard from './AppPaymentCard';
+import CreateApiKeyModal from './CreateApiKeyModal';
+import ApiKeyModal from './ApiKeyModal';
 
 interface EchoAppDetailProps {
-  appId: string
+  appId: string;
 }
 
 interface Balance {
-  balance: number
-  totalCredits: number
-  totalSpent: number
-  currency: string
+  balance: number;
+  totalCredits: number;
+  totalSpent: number;
+  currency: string;
 }
 
 interface EchoApp {
-  id: string
-  name: string
-  description?: string
-  isActive: boolean
-  createdAt: string
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
   user: {
-    id: string
-    email: string
-    name?: string
-  }
+    id: string;
+    email: string;
+    name?: string;
+  };
   apiKeys: Array<{
-    id: string
-    name?: string
-    key: string
-    isActive: boolean
-    createdAt: string
-  }>
+    id: string;
+    name?: string;
+    key: string;
+    isActive: boolean;
+    createdAt: string;
+  }>;
   stats: {
-    totalTransactions: number
-    totalTokens: number
-    totalInputTokens: number
-    totalOutputTokens: number
-    totalCost: number
+    totalTransactions: number;
+    totalTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCost: number;
     modelUsage: Array<{
-      model: string
+      model: string;
       _sum: {
-        totalTokens: number | null
-        cost: number | null
-      }
-      _count: number
-    }>
-  }
+        totalTokens: number | null;
+        cost: number | null;
+      };
+      _count: number;
+    }>;
+  };
   recentTransactions: Array<{
-    id: string
-    model: string
-    totalTokens: number
-    cost: number
-    status: string
-    createdAt: string
-  }>
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: string;
+  }>;
 }
 
 // Helper function to safely format numbers
 const formatNumber = (value: number | null | undefined): string => {
   if (value === null || value === undefined || isNaN(value)) {
-    return '0'
+    return '0';
   }
-  return value.toLocaleString()
-}
+  return value.toLocaleString();
+};
 
 // Helper function to safely format currency
 const formatCurrency = (value: number | null | undefined): string => {
   if (value === null || value === undefined || isNaN(value)) {
-    return '$0.00'
+    return '$0.00';
   }
-  return `$${Number(value).toFixed(2)}`
-}
+  return `$${Number(value).toFixed(2)}`;
+};
 
 // Helper function to safely format cost with more precision
 const formatCost = (value: number | null | undefined): string => {
   if (value === null || value === undefined || isNaN(value)) {
-    return '$0.0000'
+    return '$0.0000';
   }
-  return `$${Number(value).toFixed(4)}`
-}
+  return `$${Number(value).toFixed(4)}`;
+};
 
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
-  const [app, setApp] = useState<EchoApp | null>(null)
-  const [balance, setBalance] = useState<Balance | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showCreateApiKeyModal, setShowCreateApiKeyModal] = useState(false)
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
-  const [newApiKey, setNewApiKey] = useState<{ id: string; key: string; name: string } | null>(null)
-  const [deletingKeyId, setDeletingKeyId] = useState<string | null>(null)
-  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
+  const [app, setApp] = useState<EchoApp | null>(null);
+  const [balance, setBalance] = useState<Balance | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreateApiKeyModal, setShowCreateApiKeyModal] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [newApiKey, setNewApiKey] = useState<{
+    id: string;
+    key: string;
+    name: string;
+  } | null>(null);
+  const [deletingKeyId, setDeletingKeyId] = useState<string | null>(null);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+
+  const fetchAppDetails = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/echo-apps/${appId}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to load app details');
+        return;
+      }
+
+      setApp(data.echoApp);
+    } catch (error) {
+      console.error('Error fetching app details:', error);
+      setError('Failed to load app details');
+    } finally {
+      setLoading(false);
+    }
+  }, [appId]);
+
+  const fetchAppBalance = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/balance?echoAppId=${appId}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        setBalance(data);
+      }
+    } catch (error) {
+      console.error('Error fetching app balance:', error);
+    }
+  }, [appId]);
 
   useEffect(() => {
-    fetchAppDetails()
-    fetchAppBalance()
-    
+    fetchAppDetails();
+    fetchAppBalance();
+
     // Check for payment success in URL
-    const urlParams = new URLSearchParams(window.location.search)
+    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('payment') === 'success') {
-      setShowPaymentSuccess(true)
+      setShowPaymentSuccess(true);
       // Clean up URL
-      window.history.replaceState({}, '', window.location.pathname)
+      window.history.replaceState({}, '', window.location.pathname);
       // Refetch balance after successful payment
       setTimeout(() => {
-        fetchAppBalance()
-      }, 1000)
+        fetchAppBalance();
+      }, 1000);
     }
-  }, [appId])
+  }, [appId, fetchAppBalance, fetchAppDetails]);
 
-  const fetchAppDetails = async () => {
-    try {
-      const response = await fetch(`/api/echo-apps/${appId}`)
-      const data = await response.json()
-      
-      if (!response.ok) {
-        setError(data.error || 'Failed to load app details')
-        return
-      }
-      
-      setApp(data.echoApp)
-    } catch (error) {
-      console.error('Error fetching app details:', error)
-      setError('Failed to load app details')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchAppBalance = async () => {
-    try {
-      const response = await fetch(`/api/balance?echoAppId=${appId}`)
-      const data = await response.json()
-      
-      if (response.ok) {
-        setBalance(data)
-      }
-    } catch (error) {
-      console.error('Error fetching app balance:', error)
-    }
-  }
-
-  const handleCreateApiKey = async (data: { name: string; echoAppId: string }) => {
+  const handleCreateApiKey = async (data: {
+    name: string;
+    echoAppId: string;
+  }) => {
     try {
       const response = await fetch(`/api/api-keys`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      })
-      
-      const result = await response.json()
-      
+      });
+
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create API key')
+        throw new Error(result.error || 'Failed to create API key');
       }
-      
+
       // Store the new API key for display in the modal
       setNewApiKey({
         id: result.apiKey.id,
         key: result.apiKey.key,
         name: result.apiKey.name,
-      })
-      
+      });
+
       // Close the create modal and show the key display modal
-      setShowCreateApiKeyModal(false)
-      setShowApiKeyModal(true)
-      
+      setShowCreateApiKeyModal(false);
+      setShowApiKeyModal(true);
+
       // Refresh app details to show the new key in the list
-      await fetchAppDetails()
+      await fetchAppDetails();
     } catch (error) {
-      console.error('Error creating API key:', error)
-      throw error
+      console.error('Error creating API key:', error);
+      throw error;
     }
-  }
+  };
 
   const handleRenameApiKey = async (id: string, newName: string) => {
     try {
@@ -184,46 +200,46 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newName }),
-      })
-      
+      });
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to rename API key')
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to rename API key');
       }
-      
-      await fetchAppDetails() // Refresh data
+
+      await fetchAppDetails(); // Refresh data
     } catch (error) {
-      console.error('Error renaming API key:', error)
-      throw error
+      console.error('Error renaming API key:', error);
+      throw error;
     }
-  }
+  };
 
   const handleDeleteApiKey = async (id: string) => {
-    setDeletingKeyId(id)
+    setDeletingKeyId(id);
     try {
       const response = await fetch(`/api/api-keys/${id}`, {
         method: 'DELETE',
-      })
-      
+      });
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to delete API key')
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete API key');
       }
-      
-      await fetchAppDetails() // Refresh data
+
+      await fetchAppDetails(); // Refresh data
     } catch (error) {
-      console.error('Error deleting API key:', error)
+      console.error('Error deleting API key:', error);
     } finally {
-      setDeletingKeyId(null)
+      setDeletingKeyId(null);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
       </div>
-    )
+    );
   }
 
   if (error || !app) {
@@ -239,7 +255,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           Back to Dashboard
         </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -250,8 +266,12 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           <div className="flex items-center">
             <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
             <div>
-              <h4 className="text-sm font-medium text-green-800">Payment Successful!</h4>
-              <p className="text-sm text-green-700">Credits have been added to your {app.name} account.</p>
+              <h4 className="text-sm font-medium text-green-800">
+                Payment Successful!
+              </h4>
+              <p className="text-sm text-green-700">
+                Credits have been added to your {app.name} account.
+              </p>
             </div>
           </div>
           <button
@@ -303,7 +323,9 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 <Activity className="h-5 w-5 text-secondary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Transactions</p>
+                <p className="text-sm text-muted-foreground">
+                  Total Transactions
+                </p>
                 <p className="text-xl font-bold text-card-foreground">
                   {formatNumber(app.stats?.totalTransactions)}
                 </p>
@@ -350,11 +372,11 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
             </div>
           </div>
         </div>
-        
+
         {/* Payment Card */}
         {balance && (
           <div className="bg-card rounded-lg border border-border p-0 overflow-hidden">
-            <AppPaymentCard 
+            <AppPaymentCard
               appId={app.id}
               appName={app.name}
               currentBalance={balance.balance}
@@ -366,12 +388,14 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
       {/* API Keys Section */}
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-card-foreground">API Keys</h2>
+          <h2 className="text-lg font-semibold text-card-foreground">
+            API Keys
+          </h2>
           <button
             onClick={() => setShowCreateApiKeyModal(true)}
             className="flex items-center px-3 py-1.5 bg-primary text-primary-foreground text-sm rounded hover:bg-primary/90 transition-colors"
           >
-            <Plus className="h-4 w-4 mr-1" /> 
+            <Plus className="h-4 w-4 mr-1" />
             Create Key
           </button>
         </div>
@@ -379,7 +403,9 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         {!app?.apiKeys || app.apiKeys.length === 0 ? (
           <div className="text-center py-8">
             <Key className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-2 text-sm font-medium text-card-foreground">No API keys yet</h3>
+            <h3 className="mt-2 text-sm font-medium text-card-foreground">
+              No API keys yet
+            </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Create an API key to start using this Echo App.
             </p>
@@ -407,8 +433,11 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {app.apiKeys.map((apiKey) => (
-                  <tr key={apiKey.id} className="hover:bg-muted/50 transition-colors">
+                {app.apiKeys.map(apiKey => (
+                  <tr
+                    key={apiKey.id}
+                    className="hover:bg-muted/50 transition-colors"
+                  >
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
                       {apiKey.name || 'Unnamed Key'}
                     </td>
@@ -449,12 +478,16 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
       {/* Recent Transactions */}
       <div className="bg-card rounded-lg border border-border p-6">
-        <h2 className="text-lg font-semibold text-card-foreground mb-6">Recent Transactions</h2>
-        
+        <h2 className="text-lg font-semibold text-card-foreground mb-6">
+          Recent Transactions
+        </h2>
+
         {!app.recentTransactions || app.recentTransactions.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-2 text-sm font-medium text-card-foreground">No transactions yet</h3>
+            <h3 className="mt-2 text-sm font-medium text-card-foreground">
+              No transactions yet
+            </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Transactions will appear here once you start using your API.
             </p>
@@ -482,8 +515,11 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {app.recentTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="hover:bg-muted/50 transition-colors">
+                {app.recentTransactions.map(transaction => (
+                  <tr
+                    key={transaction.id}
+                    className="hover:bg-muted/50 transition-colors"
+                  >
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
                       {new Date(transaction.createdAt).toLocaleDateString()}
                     </td>
@@ -511,14 +547,19 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
       {/* Model Usage */}
       <div className="bg-card rounded-lg border border-border p-6">
-        <h2 className="text-lg font-semibold text-card-foreground mb-6">Model Usage</h2>
-        
+        <h2 className="text-lg font-semibold text-card-foreground mb-6">
+          Model Usage
+        </h2>
+
         {!app.stats?.modelUsage || app.stats.modelUsage.length === 0 ? (
           <div className="text-center py-8">
             <Activity className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-2 text-sm font-medium text-card-foreground">No model usage yet</h3>
+            <h3 className="mt-2 text-sm font-medium text-card-foreground">
+              No model usage yet
+            </h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              Model usage statistics will appear here once you start using your API.
+              Model usage statistics will appear here once you start using your
+              API.
             </p>
           </div>
         ) : (
@@ -541,8 +582,11 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {app.stats.modelUsage.map((usage) => (
-                  <tr key={usage.model} className="hover:bg-muted/50 transition-colors">
+                {app.stats.modelUsage.map(usage => (
+                  <tr
+                    key={usage.model}
+                    className="hover:bg-muted/50 transition-colors"
+                  >
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-card-foreground">
                       {usage.model}
                     </td>
@@ -576,12 +620,12 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         <ApiKeyModal
           apiKey={newApiKey}
           onClose={() => {
-            setShowApiKeyModal(false)
-            setNewApiKey(null)
+            setShowApiKeyModal(false);
+            setNewApiKey(null);
           }}
           onRename={handleRenameApiKey}
         />
       )}
     </div>
-  )
-} 
+  );
+}

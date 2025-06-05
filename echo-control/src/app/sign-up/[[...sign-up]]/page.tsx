@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { SignUp } from '@clerk/nextjs'
+import { SignUp } from '@clerk/nextjs';
 
 export default function SignUpPage() {
   return (
@@ -13,14 +13,16 @@ export default function SignUpPage() {
           </p>
         </div>
         <div className="bg-card rounded-lg border border-border p-6 shadow-lg">
-          <SignUp 
+          <SignUp
             appearance={{
               elements: {
-                formButtonPrimary: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+                formButtonPrimary:
+                  'bg-primary hover:bg-primary/90 text-primary-foreground',
                 card: 'bg-transparent shadow-none border-none',
                 headerTitle: 'text-foreground',
                 headerSubtitle: 'text-muted-foreground',
-                socialButtonsBlockButton: 'bg-secondary hover:bg-secondary/90 text-secondary-foreground border border-border',
+                socialButtonsBlockButton:
+                  'bg-secondary hover:bg-secondary/90 text-secondary-foreground border border-border',
                 formFieldInput: 'bg-input border-border text-foreground',
                 formFieldLabel: 'text-foreground',
                 dividerLine: 'bg-border',
@@ -32,7 +34,7 @@ export default function SignUpPage() {
               layout: {
                 socialButtonsPlacement: 'top',
                 showOptionalFields: false,
-              }
+              },
             }}
             routing="path"
             path="/sign-up"
@@ -41,5 +43,5 @@ export default function SignUpPage() {
         </div>
       </div>
     </main>
-  )
-} 
+  );
+}

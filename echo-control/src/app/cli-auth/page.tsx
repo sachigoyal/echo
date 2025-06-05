@@ -1,49 +1,50 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { Copy, Check, Terminal, Key } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { Copy, Check, Terminal, Key } from 'lucide-react';
+import Link from 'next/link';
 
 interface EchoApp {
-  id: string
-  name: string
-  description?: string
+  id: string;
+  name: string;
+  description?: string;
 }
 
 export default function CLIAuthPage() {
-  const { user, isLoaded } = useUser()
-  const [apps, setApps] = useState<EchoApp[]>([])
-  const [selectedAppId, setSelectedAppId] = useState<string>('')
-  const [apiKeyName, setApiKeyName] = useState('CLI Access')
-  const [generatedApiKey, setGeneratedApiKey] = useState<string>('')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const { user, isLoaded } = useUser();
+  const [apps, setApps] = useState<EchoApp[]>([]);
+  const [selectedAppId, setSelectedAppId] = useState<string>('');
+  const [apiKeyName, setApiKeyName] = useState('CLI Access');
+  const [generatedApiKey, setGeneratedApiKey] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (isLoaded && user) {
-      fetchApps()
+      fetchApps();
     }
-  }, [isLoaded, user])
+  }, [isLoaded, user]);
 
   const fetchApps = async () => {
     try {
-      const response = await fetch('/api/echo-apps')
+      const response = await fetch('/api/echo-apps');
       if (response.ok) {
-        const data = await response.json()
-        setApps(data.echoApps)
+        const data = await response.json();
+        setApps(data.echoApps);
         if (data.echoApps.length > 0) {
-          setSelectedAppId(data.echoApps[0].id)
+          setSelectedAppId(data.echoApps[0].id);
         }
       }
     } catch (error) {
-      console.error('Failed to fetch apps:', error)
+      console.error('Failed to fetch apps:', error);
     }
-  }
+  };
 
   const generateApiKey = async () => {
-    if (!selectedAppId) return
+    if (!selectedAppId) return;
 
-    setIsGenerating(true)
+    setIsGenerating(true);
     try {
       const response = await fetch('/api/api-keys', {
         method: 'POST',
@@ -54,37 +55,37 @@ export default function CLIAuthPage() {
           echoAppId: selectedAppId,
           name: apiKeyName,
         }),
-      })
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        setGeneratedApiKey(data.apiKey.key)
+        const data = await response.json();
+        setGeneratedApiKey(data.apiKey.key);
       } else {
-        console.error('Failed to generate API key')
+        console.error('Failed to generate API key');
       }
     } catch (error) {
-      console.error('Failed to generate API key:', error)
+      console.error('Failed to generate API key:', error);
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(generatedApiKey)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(generatedApiKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error)
+      console.error('Failed to copy to clipboard:', error);
     }
-  }
+  };
 
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
-    )
+    );
   }
 
   if (!user) {
@@ -93,20 +94,22 @@ export default function CLIAuthPage() {
         <div className="bg-card rounded-lg border border-border p-6 w-full max-w-md">
           <div className="text-center">
             <Terminal className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-card-foreground mb-2">CLI Authentication</h1>
+            <h1 className="text-xl font-semibold text-card-foreground mb-2">
+              CLI Authentication
+            </h1>
             <p className="text-muted-foreground mb-6">
               Please sign in to generate an API key for CLI access.
             </p>
-            <a
+            <Link
               href="/sign-in"
               className="inline-flex items-center justify-center px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 transition-colors"
             >
               Sign In
-            </a>
+            </Link>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -117,7 +120,8 @@ export default function CLIAuthPage() {
           CLI Authentication
         </h1>
         <p className="text-muted-foreground mt-2">
-          Generate an API key to authenticate with the Echo CLI. Each API key is scoped to a specific Echo app.
+          Generate an API key to authenticate with the Echo CLI. Each API key is
+          scoped to a specific Echo app.
         </p>
       </div>
 
@@ -125,22 +129,27 @@ export default function CLIAuthPage() {
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-2 mb-6">
             <Key className="w-5 h-5" />
-            <h2 className="text-lg font-semibold text-card-foreground">Generate App-Scoped API Key</h2>
+            <h2 className="text-lg font-semibold text-card-foreground">
+              Generate App-Scoped API Key
+            </h2>
           </div>
-          
+
           <div className="space-y-6">
             <div>
-              <label htmlFor="app-select" className="block text-sm font-medium text-card-foreground mb-2">
+              <label
+                htmlFor="app-select"
+                className="block text-sm font-medium text-card-foreground mb-2"
+              >
                 Select Echo App <span className="text-red-500">*</span>
               </label>
               <select
                 id="app-select"
                 value={selectedAppId}
-                onChange={(e) => setSelectedAppId(e.target.value)}
+                onChange={e => setSelectedAppId(e.target.value)}
                 className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 <option value="">Choose an app</option>
-                {apps.map((app) => (
+                {apps.map(app => (
                   <option key={app.id} value={app.id}>
                     {app.name}
                   </option>
@@ -149,26 +158,30 @@ export default function CLIAuthPage() {
               {apps.length === 0 && (
                 <p className="text-sm text-muted-foreground mt-2">
                   No apps found. Create an app first in your{' '}
-                  <a href="/" className="text-accent hover:underline">
+                  <Link href="/" className="text-accent hover:underline">
                     dashboard
-                  </a>
+                  </Link>
                   .
                 </p>
               )}
               <p className="text-xs text-muted-foreground mt-2">
-                API keys are scoped to specific apps and can only access resources for the selected app.
+                API keys are scoped to specific apps and can only access
+                resources for the selected app.
               </p>
             </div>
 
             <div>
-              <label htmlFor="api-key-name" className="block text-sm font-medium text-card-foreground mb-2">
+              <label
+                htmlFor="api-key-name"
+                className="block text-sm font-medium text-card-foreground mb-2"
+              >
                 API Key Name
               </label>
               <input
                 id="api-key-name"
                 type="text"
                 value={apiKeyName}
-                onChange={(e) => setApiKeyName(e.target.value)}
+                onChange={e => setApiKeyName(e.target.value)}
                 placeholder="Enter a name for this API key"
                 className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-accent placeholder-muted-foreground"
               />
@@ -187,9 +200,11 @@ export default function CLIAuthPage() {
         <div className="bg-card rounded-lg border border-border p-6">
           <div className="flex items-center gap-2 text-green-600 mb-6">
             <Check className="w-5 h-5" />
-            <h2 className="text-lg font-semibold">App-Scoped API Key Generated</h2>
+            <h2 className="text-lg font-semibold">
+              App-Scoped API Key Generated
+            </h2>
           </div>
-          
+
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-card-foreground mb-2">
@@ -206,19 +221,28 @@ export default function CLIAuthPage() {
                   onClick={copyToClipboard}
                   className="px-3 py-2 border border-input bg-input text-input-foreground rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <h3 className="font-semibold text-yellow-800 mb-2">Important Security Notice</h3>
+              <h3 className="font-semibold text-yellow-800 mb-2">
+                Important Security Notice
+              </h3>
               <ul className="text-sm text-yellow-700 space-y-1">
                 <li>• Keep this API key secure and never share it publicly</li>
                 <li>• This key provides access to your Echo account</li>
                 <li>• This key is scoped only to the selected Echo app</li>
                 <li>• Store it safely in your CLI tool</li>
-                <li>• You won't be able to see this key again after leaving this page</li>
+                <li>
+                  • You won&apos;t be able to see this key again after leaving
+                  this page
+                </li>
               </ul>
             </div>
 
@@ -239,16 +263,16 @@ export default function CLIAuthPage() {
               >
                 Generate Another Key
               </button>
-              <a
+              <Link
                 href="/"
                 className="flex-1 px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 transition-colors text-center"
               >
                 Go to Dashboard
-              </a>
+              </Link>
             </div>
           </div>
         </div>
       )}
     </div>
-  )
-} 
+  );
+}

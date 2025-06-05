@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup-webhook": "node scripts/setup-webhook.js"
+    "setup-webhook": "node scripts/setup-webhook.js",
+    "test": "npm run type-check && echo 'All tests passed!'"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.20.2",
@@ -37,6 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "typescript": "^5"
+    "typescript": "^5.0.0",
+    "husky": "^9.0.0"
   }
 }

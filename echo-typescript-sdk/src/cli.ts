@@ -79,11 +79,12 @@ program
   .description('Generate a payment link to add credits')
   .option('-a, --amount <amount>', 'Amount in USD')
   .option('-d, --description <description>', 'Payment description')
-  .action(async (options) => {
+  .action(async options => {
     try {
       const { amount, description } = options;
+      const parsedAmount = amount ? parseFloat(amount) : undefined;
       await createEchoPaymentLink({
-        amount: amount ? parseFloat(amount) : undefined,
+        ...(parsedAmount !== undefined && { amount: parsedAmount }),
         description,
         interactive: true,
       });
@@ -93,4 +94,4 @@ program
     }
   });
 
-program.parse(); 
+program.parse();

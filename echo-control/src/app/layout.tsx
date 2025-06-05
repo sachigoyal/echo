@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import { ClerkProvider } from '@clerk/nextjs'
-import "./globals.css";
+import type { Metadata } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Echo Control",
-  description: "Control plane for Echo applications",
+  title: 'Echo Control',
+  description: 'Control plane for Echo applications',
 };
 
 export default function RootLayout({
@@ -15,9 +15,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className="dark">
-        <body className="antialiased">
-          {children}
-        </body>
+        <body className="antialiased">{children}</body>
       </html>
     </ClerkProvider>
   );

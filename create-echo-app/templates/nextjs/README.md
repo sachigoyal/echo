@@ -103,17 +103,17 @@ The app uses Tailwind CSS for styling. You can:
 Some ideas for extending your chatbot:
 
 - **Message persistence**: Store chat history in a database
-- **User authentication**: Add login/signup functionality  
+- **User authentication**: Add login/signup functionality
 - **Multiple conversations**: Support for separate chat threads
 - **File uploads**: Allow users to upload images or documents
 - **Custom tools**: Integrate external APIs and tools
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `OPENAI_API_KEY` | Your OpenAI API key | Yes |
-| `ANTHROPIC_API_KEY` | Your Anthropic API key (optional) | No |
+| Variable            | Description                       | Required |
+| ------------------- | --------------------------------- | -------- |
+| `OPENAI_API_KEY`    | Your OpenAI API key               | Yes      |
+| `ANTHROPIC_API_KEY` | Your Anthropic API key (optional) | No       |
 
 ## Deployment
 
@@ -139,4 +139,4 @@ Found a bug or want to add a feature? Feel free to open an issue or submit a pul
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE). 
+This project is open source and available under the [MIT License](LICENSE).

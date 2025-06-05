@@ -1,6 +1,8 @@
-import request from 'supertest';
-import express from 'express';
 import { ReadableStream } from 'stream/web';
+
+import type express from 'express';
+import request from 'supertest';
+
 import { EchoControlService } from '../services/EchoControlService';
 
 // Mock the fetch module for outbound API calls
@@ -14,7 +16,7 @@ beforeAll(() => {
     ...originalEnv,
     OPENAI_API_KEY: 'mock-openai-key',
     ANTHROPIC_API_KEY: 'mock-anthropic-key',
-    ECHO_CONTROL_URL: 'http://localhost:3000'
+    ECHO_CONTROL_URL: 'http://localhost:3000',
   };
 });
 
@@ -31,108 +33,136 @@ const TEST_ECHO_APP_ID = 'echo-app-123';
 const MOCK_USER = {
   id: TEST_USER_ID,
   email: 'ben@test.com',
-  name: 'Ben Reilly'
+  name: 'Ben Reilly',
 };
 
 const MOCK_ECHO_APP = {
   id: TEST_ECHO_APP_ID,
   name: 'Test App',
-  userId: TEST_USER_ID
+  userId: TEST_USER_ID,
 };
 
 // Mock responses for various API providers
-const createMockStreamingResponse = (content: string, totalTokens: number = 10) => {
+const createMockStreamingResponse = (
+  content: string,
+  totalTokens: number = 10
+) => {
   return new ReadableStream({
-    start(controller) {
+    start: controller => {
       // Send content chunks
       const words = content.split(' ');
       words.forEach((word, index) => {
         const chunk = {
-          choices: [{
-            index: 0,
-            delta: { content: index === 0 ? word : ` ${word}` },
-            finish_reason: null
-          }],
-          usage: null
+          choices: [
+            {
+              index: 0,
+              delta: { content: index === 0 ? word : ` ${word}` },
+              finish_reason: null,
+            },
+          ],
+          usage: null,
         };
-        controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`));
+        controller.enqueue(
+          new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`)
+        );
       });
-      
+
       // Send final chunk with usage
       const finalChunk = {
-        choices: [{
-          index: 0,
-          delta: {},
-          finish_reason: 'stop'
-        }],
+        choices: [
+          {
+            index: 0,
+            delta: {},
+            finish_reason: 'stop',
+          },
+        ],
         usage: {
           prompt_tokens: Math.floor(totalTokens * 0.3),
           completion_tokens: Math.floor(totalTokens * 0.7),
-          total_tokens: totalTokens
-        }
+          total_tokens: totalTokens,
+        },
       };
-      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(finalChunk)}\n\n`));
+      controller.enqueue(
+        new TextEncoder().encode(`data: ${JSON.stringify(finalChunk)}\n\n`)
+      );
       controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
       controller.close();
-    }
+    },
   });
 };
 
-const createMockNonStreamingResponse = (content: string, totalTokens: number = 10) => {
+const createMockNonStreamingResponse = (
+  content: string,
+  totalTokens: number = 10
+) => {
   return {
-    choices: [{
-      index: 0,
-      message: {
-        role: 'assistant',
-        content: content
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: 'assistant',
+          content: content,
+        },
+        finish_reason: 'stop',
       },
-      finish_reason: 'stop'
-    }],
+    ],
     usage: {
       prompt_tokens: Math.floor(totalTokens * 0.3),
       completion_tokens: Math.floor(totalTokens * 0.7),
-      total_tokens: totalTokens
-    }
+      total_tokens: totalTokens,
+    },
   };
 };
 
-const createMockAnthropicResponse = (content: string, totalTokens: number = 10) => {
+const createMockAnthropicResponse = (
+  content: string,
+  totalTokens: number = 10
+) => {
   return {
-    content: [{
-      type: 'text',
-      text: content
-    }],
+    content: [
+      {
+        type: 'text',
+        text: content,
+      },
+    ],
     usage: {
       input_tokens: Math.floor(totalTokens * 0.3),
-      output_tokens: Math.floor(totalTokens * 0.7)
-    }
+      output_tokens: Math.floor(totalTokens * 0.7),
+    },
   };
 };
 
-const createMockAnthropicStreamingResponse = (content: string, totalTokens: number = 10) => {
+const createMockAnthropicStreamingResponse = (
+  content: string,
+  totalTokens: number = 10
+) => {
   return new ReadableStream({
-    start(controller) {
+    start: controller => {
       // Send content chunks
       const words = content.split(' ');
       words.forEach((word, index) => {
         const chunk = {
           type: 'content_block_delta',
-          delta: { text: index === 0 ? word : ` ${word}` }
+          delta: { text: index === 0 ? word : ` ${word}` },
         };
-        controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`));
+        controller.enqueue(
+          new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`)
+        );
       });
-      
+
       // Send final usage chunk
       const usageChunk = {
         type: 'message_delta',
         usage: {
           input_tokens: Math.floor(totalTokens * 0.3),
-          output_tokens: Math.floor(totalTokens * 0.7)
-        }
+          output_tokens: Math.floor(totalTokens * 0.7),
+        },
       };
-      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(usageChunk)}\n\n`));
+      controller.enqueue(
+        new TextEncoder().encode(`data: ${JSON.stringify(usageChunk)}\n\n`)
+      );
       controller.close();
-    }
+    },
   });
 };
 
@@ -144,107 +174,122 @@ const createMockHeaders = (headers: [string, string][]) => {
     has: (key: string) => headersMap.has(key.toLowerCase()),
     entries: () => headersMap.entries(),
     keys: () => headersMap.keys(),
-    values: () => headersMap.values()
+    values: () => headersMap.values(),
   };
 };
 
 // Helper function to setup successful EchoControlService mocks
 const setupMockEchoControlService = (balance: number = 1000) => {
-  const MockedEchoControlService = EchoControlService as jest.MockedClass<typeof EchoControlService>;
+  const MockedEchoControlService = EchoControlService as jest.MockedClass<
+    typeof EchoControlService
+  >;
   const mockInstance = new MockedEchoControlService('mock-key');
-  
+
   (mockInstance.verifyApiKey as jest.Mock).mockResolvedValue({
     userId: TEST_USER_ID,
     echoAppId: TEST_ECHO_APP_ID,
     user: MOCK_USER,
-    echoApp: MOCK_ECHO_APP
+    echoApp: MOCK_ECHO_APP,
   });
-  
+
   (mockInstance.getBalance as jest.Mock).mockResolvedValue(balance);
   (mockInstance.getUserId as jest.Mock).mockReturnValue(TEST_USER_ID);
   (mockInstance.getEchoAppId as jest.Mock).mockReturnValue(TEST_ECHO_APP_ID);
   (mockInstance.getUser as jest.Mock).mockReturnValue(MOCK_USER);
   (mockInstance.getEchoApp as jest.Mock).mockReturnValue(MOCK_ECHO_APP);
   (mockInstance.createTransaction as jest.Mock).mockResolvedValue(undefined);
-  
+
   MockedEchoControlService.mockImplementation(() => mockInstance);
-  
+
   return mockInstance;
 };
 
 describe('Endpoint Tests', () => {
   let app: express.Application;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockEchoControlService: any;
 
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks();
     mockFetch.mockClear();
-    
+
     // Setup EchoControlService mock with sufficient balance
     mockEchoControlService = setupMockEchoControlService(1000);
-    
+
     // Import the app after mocking
     app = require('../server').default;
   });
 
   describe('Provider-specific tests', () => {
     const providers = [
-      { 
-        model: 'gpt-3.5-turbo', 
+      {
+        model: 'gpt-3.5-turbo',
         name: 'GPT',
         path: '/chat/completions',
         authHeader: 'Authorization',
-        authValue: `Bearer ${TEST_TOKEN}`
+        authValue: `Bearer ${TEST_TOKEN}`,
       },
-      { 
-        model: 'gpt-4o', 
+      {
+        model: 'gpt-4o',
         name: 'GPT',
         path: '/chat/completions',
         authHeader: 'Authorization',
-        authValue: `Bearer ${TEST_TOKEN}`
+        authValue: `Bearer ${TEST_TOKEN}`,
       },
-      { 
-        model: 'claude-3-5-sonnet-20240620', 
+      {
+        model: 'claude-3-5-sonnet-20240620',
         name: 'AnthropicGPT',
         path: '/chat/completions',
         authHeader: 'Authorization',
-        authValue: `Bearer ${TEST_TOKEN}`
+        authValue: `Bearer ${TEST_TOKEN}`,
       },
-      { 
-        model: 'claude-3-5-sonnet-20240620', 
+      {
+        model: 'claude-3-5-sonnet-20240620',
         name: 'AnthropicNative',
         path: '/messages',
         authHeader: 'x-api-key',
-        authValue: TEST_TOKEN
-      }
+        authValue: TEST_TOKEN,
+      },
     ];
 
     providers.forEach(({ model, name, path, authHeader, authValue }) => {
       describe(`${name} Provider (${model}) on ${path}`, () => {
-        
         describe('Non-streaming endpoints', () => {
           it('should handle non-streaming requests successfully', async () => {
             // Skip AnthropicNative non-streaming test as it's not implemented
             if (name === 'AnthropicNative') {
               return;
             }
-            
+
             const expectedContent = 'Hello, this is a test response!';
             const expectedTokens = 15;
-            
+
             if (name === 'AnthropicNative') {
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'application/json']]),
-                json: () => Promise.resolve(createMockAnthropicResponse(expectedContent, expectedTokens))
+                headers: createMockHeaders([
+                  ['content-type', 'application/json'],
+                ]),
+                json: () =>
+                  Promise.resolve(
+                    createMockAnthropicResponse(expectedContent, expectedTokens)
+                  ),
               });
             } else {
               // GPT and AnthropicGPT both use OpenAI format
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'application/json']]),
-                json: () => Promise.resolve(createMockNonStreamingResponse(expectedContent, expectedTokens))
+                headers: createMockHeaders([
+                  ['content-type', 'application/json'],
+                ]),
+                json: () =>
+                  Promise.resolve(
+                    createMockNonStreamingResponse(
+                      expectedContent,
+                      expectedTokens
+                    )
+                  ),
               });
             }
 
@@ -254,12 +299,16 @@ describe('Endpoint Tests', () => {
               .send({
                 model: model,
                 messages: [{ role: 'user', content: 'Test prompt' }],
-                stream: false
+                stream: false,
               });
 
             expect(response.status).toBe(200);
-            expect(response.headers['content-type']).toContain('application/json');
-            expect(response.body.choices[0].message.content).toBe(expectedContent);
+            expect(response.headers['content-type']).toContain(
+              'application/json'
+            );
+            expect(response.body.choices[0].message.content).toBe(
+              expectedContent
+            );
           }, 10000);
 
           it('should create transaction for non-streaming requests', async () => {
@@ -267,21 +316,34 @@ describe('Endpoint Tests', () => {
             if (name === 'AnthropicNative') {
               return;
             }
-            
+
             const expectedTokens = 20;
-            
+
             if (name === 'AnthropicNative') {
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'application/json']]),
-                json: () => Promise.resolve(createMockAnthropicResponse('Test response', expectedTokens))
+                headers: createMockHeaders([
+                  ['content-type', 'application/json'],
+                ]),
+                json: () =>
+                  Promise.resolve(
+                    createMockAnthropicResponse('Test response', expectedTokens)
+                  ),
               });
             } else {
               // GPT and AnthropicGPT both use OpenAI format
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'application/json']]),
-                json: () => Promise.resolve(createMockNonStreamingResponse('Test response', expectedTokens))
+                headers: createMockHeaders([
+                  ['content-type', 'application/json'],
+                ]),
+                json: () =>
+                  Promise.resolve(
+                    createMockNonStreamingResponse(
+                      'Test response',
+                      expectedTokens
+                    )
+                  ),
               });
             }
 
@@ -291,18 +353,20 @@ describe('Endpoint Tests', () => {
               .send({
                 model: model,
                 messages: [{ role: 'user', content: 'Test prompt' }],
-                stream: false
+                stream: false,
               });
 
             // Wait a bit for async processing
             await new Promise(resolve => setTimeout(resolve, 100));
-            
+
             // Verify transaction was created
-            expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+            expect(
+              mockEchoControlService.createTransaction
+            ).toHaveBeenCalledWith(
               expect.objectContaining({
                 model: model,
                 totalTokens: expectedTokens,
-                status: 'success'
+                status: 'success',
               })
             );
           }, 10000);
@@ -312,19 +376,25 @@ describe('Endpoint Tests', () => {
             if (name === 'AnthropicNative') {
               return;
             }
-            
+
             if (name === 'AnthropicNative') {
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'application/json']]),
-                json: () => Promise.resolve(createMockAnthropicResponse('Test', 10))
+                headers: createMockHeaders([
+                  ['content-type', 'application/json'],
+                ]),
+                json: () =>
+                  Promise.resolve(createMockAnthropicResponse('Test', 10)),
               });
             } else {
               // GPT and AnthropicGPT both use OpenAI format
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'application/json']]),
-                json: () => Promise.resolve(createMockNonStreamingResponse('Test', 10))
+                headers: createMockHeaders([
+                  ['content-type', 'application/json'],
+                ]),
+                json: () =>
+                  Promise.resolve(createMockNonStreamingResponse('Test', 10)),
               });
             }
 
@@ -333,11 +403,13 @@ describe('Endpoint Tests', () => {
               .set(authHeader, authValue)
               .send({
                 model: model,
-                messages: [{ role: 'user', content: 'Test' }]
+                messages: [{ role: 'user', content: 'Test' }],
               });
 
             expect(response.status).toBe(200);
-            expect(response.headers['content-type']).toContain('application/json');
+            expect(response.headers['content-type']).toContain(
+              'application/json'
+            );
           }, 10000);
         });
 
@@ -345,19 +417,29 @@ describe('Endpoint Tests', () => {
           it('should handle streaming requests successfully', async () => {
             const expectedContent = 'Hello streaming world!';
             const expectedTokens = 12;
-            
+
             if (name === 'AnthropicNative') {
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'text/event-stream']]),
-                body: createMockAnthropicStreamingResponse(expectedContent, expectedTokens)
+                headers: createMockHeaders([
+                  ['content-type', 'text/event-stream'],
+                ]),
+                body: createMockAnthropicStreamingResponse(
+                  expectedContent,
+                  expectedTokens
+                ),
               });
             } else {
-              // GPT and AnthropicGPT both use OpenAI format  
+              // GPT and AnthropicGPT both use OpenAI format
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'text/event-stream']]),
-                body: createMockStreamingResponse(expectedContent, expectedTokens)
+                headers: createMockHeaders([
+                  ['content-type', 'text/event-stream'],
+                ]),
+                body: createMockStreamingResponse(
+                  expectedContent,
+                  expectedTokens
+                ),
               });
             }
 
@@ -367,7 +449,7 @@ describe('Endpoint Tests', () => {
               .send({
                 model: model,
                 messages: [{ role: 'user', content: 'Test streaming prompt' }],
-                stream: true
+                stream: true,
               });
 
             expect(response.status).toBe(200);
@@ -377,19 +459,29 @@ describe('Endpoint Tests', () => {
 
           it('should create transaction for streaming requests', async () => {
             const expectedTokens = 25;
-            
+
             if (name === 'AnthropicNative') {
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'text/event-stream']]),
-                body: createMockAnthropicStreamingResponse('Streaming test', expectedTokens)
+                headers: createMockHeaders([
+                  ['content-type', 'text/event-stream'],
+                ]),
+                body: createMockAnthropicStreamingResponse(
+                  'Streaming test',
+                  expectedTokens
+                ),
               });
             } else {
               // GPT and AnthropicGPT both use OpenAI format
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'text/event-stream']]),
-                body: createMockStreamingResponse('Streaming test', expectedTokens)
+                headers: createMockHeaders([
+                  ['content-type', 'text/event-stream'],
+                ]),
+                body: createMockStreamingResponse(
+                  'Streaming test',
+                  expectedTokens
+                ),
               });
             }
 
@@ -399,55 +491,69 @@ describe('Endpoint Tests', () => {
               .send({
                 model: model,
                 messages: [{ role: 'user', content: 'Test streaming' }],
-                stream: true
+                stream: true,
               });
 
             // Wait for stream processing to complete
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             // Verify transaction was created
-            expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+            expect(
+              mockEchoControlService.createTransaction
+            ).toHaveBeenCalledWith(
               expect.objectContaining({
                 model: model,
-                status: 'success'
+                status: 'success',
               })
             );
-            
+
             // Check token counts based on provider type
             if (name === 'AnthropicNative') {
               // AnthropicNative only counts output tokens (70% of total)
               const outputTokens = Math.floor(expectedTokens * 0.7);
-              expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+              expect(
+                mockEchoControlService.createTransaction
+              ).toHaveBeenCalledWith(
                 expect.objectContaining({
                   outputTokens: outputTokens,
-                  totalTokens: outputTokens
+                  totalTokens: outputTokens,
                 })
               );
             } else {
-              expect(mockEchoControlService.createTransaction).toHaveBeenCalledWith(
+              expect(
+                mockEchoControlService.createTransaction
+              ).toHaveBeenCalledWith(
                 expect.objectContaining({
-                  totalTokens: expectedTokens
+                  totalTokens: expectedTokens,
                 })
               );
             }
           }, 10000);
 
           it('should handle stream with multiple content chunks', async () => {
-            const longContent = 'This is a much longer response that will be split into multiple chunks for streaming';
+            const longContent =
+              'This is a much longer response that will be split into multiple chunks for streaming';
             const expectedTokens = 30;
-            
+
             if (name === 'AnthropicNative') {
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'text/event-stream']]),
-                body: createMockAnthropicStreamingResponse(longContent, expectedTokens)
+                headers: createMockHeaders([
+                  ['content-type', 'text/event-stream'],
+                ]),
+                body: createMockAnthropicStreamingResponse(
+                  longContent,
+                  expectedTokens
+                ),
               });
             } else {
               // GPT and AnthropicGPT both use OpenAI format
               mockFetch.mockResolvedValueOnce({
                 status: 200,
-                headers: createMockHeaders([['content-type', 'text/event-stream']]),
-                body: createMockStreamingResponse(longContent, expectedTokens)
+                headers: createMockHeaders([
+                  ['content-type', 'text/event-stream'],
+                ]),
+                body: createMockStreamingResponse(longContent, expectedTokens),
               });
             }
 
@@ -457,7 +563,7 @@ describe('Endpoint Tests', () => {
               .send({
                 model: model,
                 messages: [{ role: 'user', content: 'Tell me a story' }],
-                stream: true
+                stream: true,
               });
 
             expect(response.status).toBe(200);
@@ -473,7 +579,7 @@ describe('Endpoint Tests', () => {
         .post('/chat/completions')
         .send({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test prompt' }]
+          messages: [{ role: 'user', content: 'Test prompt' }],
         });
 
       expect(response.status).toBe(401);
@@ -482,14 +588,16 @@ describe('Endpoint Tests', () => {
 
     it('should reject requests with invalid authorization format', async () => {
       // Setup EchoControlService to fail validation
-      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(null);
+      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(
+        null
+      );
 
       const response = await request(app)
         .post('/chat/completions')
         .set('Authorization', 'InvalidFormat')
         .send({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test prompt' }]
+          messages: [{ role: 'user', content: 'Test prompt' }],
         });
 
       expect(response.status).toBe(401);
@@ -498,14 +606,16 @@ describe('Endpoint Tests', () => {
 
     it('should reject requests with invalid token', async () => {
       // Setup EchoControlService to fail validation
-      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(null);
+      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(
+        null
+      );
 
       const response = await request(app)
         .post('/chat/completions')
         .set('Authorization', 'Bearer invalid-token')
         .send({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test prompt' }]
+          messages: [{ role: 'user', content: 'Test prompt' }],
         });
 
       expect(response.status).toBe(401);
@@ -516,7 +626,7 @@ describe('Endpoint Tests', () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: createMockHeaders([['content-type', 'application/json']]),
-        json: () => Promise.resolve(createMockNonStreamingResponse('Test', 10))
+        json: () => Promise.resolve(createMockNonStreamingResponse('Test', 10)),
       });
 
       const response = await request(app)
@@ -524,7 +634,7 @@ describe('Endpoint Tests', () => {
         .set('Authorization', `Bearer ${TEST_TOKEN}`)
         .send({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test' }]
+          messages: [{ role: 'user', content: 'Test' }],
         });
 
       expect(response.status).toBe(200);
@@ -534,7 +644,7 @@ describe('Endpoint Tests', () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: createMockHeaders([['content-type', 'text/event-stream']]),
-        body: createMockAnthropicStreamingResponse('Test', 10)
+        body: createMockAnthropicStreamingResponse('Test', 10),
       });
 
       const response = await request(app)
@@ -543,7 +653,7 @@ describe('Endpoint Tests', () => {
         .send({
           model: 'claude-3-5-sonnet-20240620',
           messages: [{ role: 'user', content: 'Test' }],
-          stream: true
+          stream: true,
         });
 
       expect(response.status).toBe(200);
@@ -555,7 +665,8 @@ describe('Endpoint Tests', () => {
       mockFetch.mockResolvedValueOnce({
         status: 400,
         headers: createMockHeaders([['content-type', 'application/json']]),
-        json: () => Promise.resolve({ error: { message: 'Bad request from upstream' } })
+        json: () =>
+          Promise.resolve({ error: { message: 'Bad request from upstream' } }),
       });
 
       const response = await request(app)
@@ -563,7 +674,7 @@ describe('Endpoint Tests', () => {
         .set('Authorization', `Bearer ${TEST_TOKEN}`)
         .send({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test' }]
+          messages: [{ role: 'user', content: 'Test' }],
         });
 
       expect(response.status).toBe(400);
@@ -574,7 +685,8 @@ describe('Endpoint Tests', () => {
       mockFetch.mockResolvedValueOnce({
         status: 429,
         headers: createMockHeaders([['content-type', 'application/json']]),
-        json: () => Promise.resolve({ error: { message: 'Rate limit exceeded' } })
+        json: () =>
+          Promise.resolve({ error: { message: 'Rate limit exceeded' } }),
       });
 
       const response = await request(app)
@@ -583,7 +695,7 @@ describe('Endpoint Tests', () => {
         .send({
           model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: 'Test' }],
-          stream: true
+          stream: true,
         });
 
       expect(response.status).toBe(429);
@@ -596,7 +708,7 @@ describe('Endpoint Tests', () => {
         .set('Authorization', `Bearer ${TEST_TOKEN}`)
         .send({
           model: 'unknown-model',
-          messages: [{ role: 'user', content: 'Test' }]
+          messages: [{ role: 'user', content: 'Test' }],
         });
 
       expect(response.status).toBe(400);
@@ -614,7 +726,7 @@ describe('Endpoint Tests', () => {
         .set('Authorization', `Bearer ${TEST_TOKEN}`)
         .send({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test' }]
+          messages: [{ role: 'user', content: 'Test' }],
         });
 
       expect(response.status).toBe(402);
@@ -626,7 +738,7 @@ describe('Endpoint Tests', () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: createMockHeaders([['content-type', 'application/json']]),
-        json: () => Promise.resolve(createMockNonStreamingResponse('Test', 10))
+        json: () => Promise.resolve(createMockNonStreamingResponse('Test', 10)),
       });
 
       const response = await request(app)
@@ -634,7 +746,7 @@ describe('Endpoint Tests', () => {
         .set('Authorization', `Bearer ${TEST_TOKEN}`)
         .send({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Test' }]
+          messages: [{ role: 'user', content: 'Test' }],
         });
 
       expect(response.status).toBe(200);
@@ -646,7 +758,7 @@ describe('Endpoint Tests', () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: createMockHeaders([['content-type', 'text/event-stream']]),
-        body: createMockStreamingResponse('Test', 10)
+        body: createMockStreamingResponse('Test', 10),
       });
 
       await request(app)
@@ -655,14 +767,16 @@ describe('Endpoint Tests', () => {
         .send({
           model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: 'Test' }],
-          stream: true
+          stream: true,
         });
 
       // Verify that fetch was called with stream_options
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          body: expect.stringContaining('"stream_options":{"include_usage":true}')
+          body: expect.stringContaining(
+            '"stream_options":{"include_usage":true}'
+          ),
         })
       );
     }, 10000);
@@ -671,7 +785,7 @@ describe('Endpoint Tests', () => {
       mockFetch.mockResolvedValueOnce({
         status: 200,
         headers: createMockHeaders([['content-type', 'application/json']]),
-        json: () => Promise.resolve(createMockNonStreamingResponse('Test', 10))
+        json: () => Promise.resolve(createMockNonStreamingResponse('Test', 10)),
       });
 
       await request(app)
@@ -680,16 +794,16 @@ describe('Endpoint Tests', () => {
         .send({
           model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: 'Test' }],
-          stream: false
+          stream: false,
         });
 
       // Verify that fetch was called without stream_options
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          body: expect.not.stringContaining('stream_options')
+          body: expect.not.stringContaining('stream_options'),
         })
       );
     }, 10000);
   });
-}); 
+});

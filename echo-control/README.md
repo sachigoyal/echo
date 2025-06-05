@@ -5,6 +5,7 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 ## Features
 
 ### Frontend (Next.js)
+
 1. **Echo Apps Dashboard** - View all your Echo applications with usage statistics
 2. **App Details Page** - Detailed view of individual Echo apps with:
    - Usage analytics by model
@@ -15,6 +16,7 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 4. **Payment Integration** - Mock Stripe payment links for adding credits
 
 ### Backend API (Next.js API Routes)
+
 1. **Authentication** - Ready for Clerk integration (currently mocked)
 2. **API Key Management** - Create and manage API keys for users
 3. **Stripe Integration** - Payment links and webhook handling (mocked)
@@ -22,6 +24,7 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 5. **Usage Analytics** - Track LLM transactions and costs
 
 ### Database Schema (PostgreSQL + Prisma)
+
 - **Users** - User accounts with Clerk integration support
 - **Echo Apps** - Individual Echo applications
 - **API Keys** - API keys associated with users and apps
@@ -41,38 +44,44 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 ## Setup Instructions
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - PostgreSQL database
 - npm or yarn
 
 ### Installation
 
 1. **Clone and navigate to the project**:
+
    ```bash
    cd echo-control
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 3. **Set up the database**:
+
    ```bash
    # Copy the example environment file
    cp .env.example .env
-   
+
    # Update DATABASE_URL in .env with your PostgreSQL connection string
    # Example: DATABASE_URL="postgresql://username:password@localhost:5432/echo_control"
    ```
 
 4. **Run database migrations**:
+
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
 5. **Start the development server**:
+
    ```bash
    npm run dev
    ```
@@ -106,20 +115,24 @@ API_KEY_PREFIX="echo_"
 ## API Endpoints
 
 ### Echo Apps
+
 - `GET /api/echo-apps?userId={id}` - List user's Echo apps
 - `POST /api/echo-apps` - Create new Echo app
 - `GET /api/echo-apps/{id}` - Get app details
 - `PUT /api/echo-apps/{id}` - Update app
 
 ### API Keys
+
 - `GET /api/api-keys?userId={id}` - List user's API keys
 - `POST /api/api-keys` - Store API key from Clerk
 
 ### Balance Management
+
 - `GET /api/balance?userId={id}` - Get user balance
 - `POST /api/balance` - Increment/decrement balance
 
 ### Stripe Integration
+
 - `POST /api/stripe/payment-link` - Generate payment link
 - `POST /api/stripe/webhook` - Handle Stripe webhooks
 
@@ -128,6 +141,7 @@ API_KEY_PREFIX="echo_"
 ### Key Models
 
 **User**
+
 ```prisma
 model User {
   id        String   @id @default(cuid())
@@ -140,6 +154,7 @@ model User {
 ```
 
 **EchoApp**
+
 ```prisma
 model EchoApp {
   id          String   @id @default(cuid())
@@ -151,6 +166,7 @@ model EchoApp {
 ```
 
 **Payment**
+
 ```prisma
 model Payment {
   id              String   @id @default(cuid())
@@ -163,6 +179,7 @@ model Payment {
 ```
 
 **LlmTransaction**
+
 ```prisma
 model LlmTransaction {
   id           String   @id @default(cuid())
@@ -180,12 +197,14 @@ model LlmTransaction {
 ## Features Overview
 
 ### Dashboard
+
 - View all Echo applications
 - Quick balance overview
 - Create new applications
 - Generate payment links
 
 ### App Details
+
 - Comprehensive usage analytics
 - API key management
 - Transaction history
@@ -193,12 +212,14 @@ model LlmTransaction {
 - Direct Stripe integration
 
 ### Balance Management
+
 - Real-time balance calculation
 - Payment history
 - Admin controls for balance adjustments
 - Stripe payment integration
 
 ### Mock Integrations
+
 - **Clerk Authentication**: Ready for real Clerk integration
 - **Stripe Payments**: Mock payment links and webhooks
 - **API Key Generation**: Prepared for Clerk-managed API keys
@@ -206,11 +227,13 @@ model LlmTransaction {
 ## Development
 
 ### Running Tests
+
 ```bash
 npm test
 ```
 
 ### Database Operations
+
 ```bash
 # Reset database
 npx prisma db push --force-reset
@@ -223,6 +246,7 @@ npx prisma generate
 ```
 
 ### Building for Production
+
 ```bash
 npm run build
 npm start

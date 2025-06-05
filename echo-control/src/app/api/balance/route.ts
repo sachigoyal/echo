@@ -1,33 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-import { getCurrentUser, getAuthenticatedUser } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { getCurrentUser, getAuthenticatedUser } from '@/lib/auth';
 
 // GET /api/balance - Get authenticated user balance (optionally for a specific app)
 export async function GET(request: NextRequest) {
   try {
-    const { user, echoApp } = await getAuthenticatedUser(request)
-    const { searchParams } = new URL(request.url)
-    let echoAppId = searchParams.get('echoAppId')
+    const { user, echoApp } = await getAuthenticatedUser(request);
+    const { searchParams } = new URL(request.url);
+    let echoAppId = searchParams.get('echoAppId');
 
     // If authenticated via API key and no specific app requested, use the API key's app
     if (!echoAppId && echoApp) {
-      echoAppId = echoApp.id
+      echoAppId = echoApp.id;
     }
 
     // Calculate balance from payments and transactions
-    const paymentsFilter: any = {
+    const paymentsFilter: {
+      userId: string;
+      status: string;
+      echoAppId?: string;
+    } = {
       userId: user.id,
       status: 'completed',
-    }
-    
-    const transactionsFilter: any = {
+    };
+
+    const transactionsFilter: {
+      userId: string;
+      echoAppId?: string;
+    } = {
       userId: user.id,
-    }
+    };
 
     // If echoAppId is provided, filter by app
     if (echoAppId) {
-      paymentsFilter.echoAppId = echoAppId
-      transactionsFilter.echoAppId = echoAppId
+      paymentsFilter.echoAppId = echoAppId;
+      transactionsFilter.echoAppId = echoAppId;
     }
 
     const payments = await db.payment.aggregate({
@@ -35,18 +42,18 @@ export async function GET(request: NextRequest) {
       _sum: {
         amount: true,
       },
-    })
+    });
 
     const transactions = await db.llmTransaction.aggregate({
       where: transactionsFilter,
       _sum: {
         cost: true,
       },
-    })
+    });
 
-    const totalCredits = (payments._sum.amount || 0) / 100 // Convert from cents
-    const totalSpent = Number(transactions._sum.cost || 0)
-    const balance = totalCredits - totalSpent
+    const totalCredits = (payments._sum.amount || 0) / 100; // Convert from cents
+    const totalSpent = Number(transactions._sum.cost || 0);
+    const balance = totalCredits - totalSpent;
 
     return NextResponse.json({
       balance: balance,
@@ -55,40 +62,50 @@ export async function GET(request: NextRequest) {
       currency: 'USD',
       echoAppId: echoAppId || null,
       echoAppName: echoApp?.name || null,
-    })
+    });
   } catch (error) {
-    console.error('Error fetching balance:', error)
-    
-    if (error instanceof Error && (error.message === 'Not authenticated' || error.message.includes('Invalid'))) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    console.error('Error fetching balance:', error);
+
+    if (
+      error instanceof Error &&
+      (error.message === 'Not authenticated' ||
+        error.message.includes('Invalid'))
+    ) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
     }
-    
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
 // POST /api/balance - Increment/Decrement balance for authenticated user
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser()
-    const body = await request.json()
-    const { amount, operation, description } = body
+    const user = await getCurrentUser();
+    const body = await request.json();
+    const { amount, operation, description } = body;
 
     if (!amount || !operation) {
       return NextResponse.json(
         { error: 'Amount and operation are required' },
         { status: 400 }
-      )
+      );
     }
 
     if (!['increment', 'decrement'].includes(operation)) {
       return NextResponse.json(
         { error: 'Operation must be increment or decrement' },
         { status: 400 }
-      )
+      );
     }
 
-    const amountInCents = Math.round(Math.abs(amount) * 100)
+    const amountInCents = Math.round(Math.abs(amount) * 100);
 
     if (operation === 'increment') {
       // Add credits via payment record
@@ -101,7 +118,7 @@ export async function POST(request: NextRequest) {
           description: description || 'Manual credit adjustment',
           userId: user.id,
         },
-      })
+      });
     } else {
       // Deduct credits via LLM transaction record
       await db.llmTransaction.create({
@@ -115,7 +132,7 @@ export async function POST(request: NextRequest) {
           prompt: description || 'Manual debit adjustment',
           userId: user.id,
         },
-      })
+      });
     }
 
     // Return updated balance
@@ -127,18 +144,18 @@ export async function POST(request: NextRequest) {
       _sum: {
         amount: true,
       },
-    })
+    });
 
     const transactions = await db.llmTransaction.aggregate({
       where: { userId: user.id },
       _sum: {
         cost: true,
       },
-    })
+    });
 
-    const totalCredits = (payments._sum.amount || 0) / 100
-    const totalSpent = Number(transactions._sum.cost || 0)
-    const balance = totalCredits - totalSpent
+    const totalCredits = (payments._sum.amount || 0) / 100;
+    const totalSpent = Number(transactions._sum.cost || 0);
+    const balance = totalCredits - totalSpent;
 
     return NextResponse.json({
       success: true,
@@ -148,14 +165,20 @@ export async function POST(request: NextRequest) {
       totalCredits: totalCredits.toFixed(2),
       totalSpent: totalSpent.toFixed(2),
       currency: 'USD',
-    })
+    });
   } catch (error) {
-    console.error('Error updating balance:', error)
-    
+    console.error('Error updating balance:', error);
+
     if (error instanceof Error && error.message === 'Not authenticated') {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
     }
-    
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-} 
+}

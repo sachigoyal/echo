@@ -1,7 +1,8 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import chalk from 'chalk';
 import { execSync } from 'child_process';
+import * as path from 'path';
+
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
 
 export interface CreateAppConfig {
   projectName: string;
@@ -11,7 +12,7 @@ export interface CreateAppConfig {
   usePnpm?: boolean;
 }
 
-export async function createApp(config: CreateAppConfig): Promise<void> {
+export const createApp = async (config: CreateAppConfig): Promise<void> => {
   const { projectName, template } = config;
   const projectPath = path.resolve(process.cwd(), projectName);
 
@@ -27,7 +28,7 @@ export async function createApp(config: CreateAppConfig): Promise<void> {
 
   // Copy template files
   const templatePath = path.join(__dirname, '..', 'templates', template);
-  
+
   if (!(await fs.pathExists(templatePath))) {
     throw new Error(`Template ${template} not found`);
   }
@@ -46,43 +47,59 @@ export async function createApp(config: CreateAppConfig): Promise<void> {
 
   // Determine package manager
   const packageManager = getPackageManager(config);
-  
-  console.log(chalk.blue(`📦 Installing dependencies with ${packageManager}...`));
+
+  console.log(
+    chalk.blue(`📦 Installing dependencies with ${packageManager}...`)
+  );
 
   try {
     execSync(`cd ${projectPath} && ${packageManager} install`, {
       stdio: 'inherit',
-      cwd: projectPath
+      cwd: projectPath,
     });
     console.log(chalk.green('✅ Dependencies installed successfully'));
-  } catch (error) {
-    console.log(chalk.yellow('⚠️  Failed to install dependencies automatically'));
-    console.log(chalk.gray(`You can install them manually by running: cd ${projectName} && ${packageManager} install`));
+  } catch {
+    console.log(
+      chalk.yellow('⚠️  Failed to install dependencies automatically')
+    );
+    console.log(
+      chalk.gray(
+        `You can install them manually by running: cd ${projectName} && ${packageManager} install`
+      )
+    );
   }
 
   // Print success message
   console.log(chalk.green('\n🎉 Your Echo app is ready!'));
   console.log('\nTo get started:');
   console.log(chalk.cyan(`  cd ${projectName}`));
-  console.log(chalk.cyan(`  ${packageManager === 'npm' ? 'npm run dev' : `${packageManager} dev`}`));
+  console.log(
+    chalk.cyan(
+      `  ${packageManager === 'npm' ? 'npm run dev' : `${packageManager} dev`}`
+    )
+  );
   console.log('\nHappy coding! 🚀');
-}
+};
 
-function getPackageManager(config: CreateAppConfig): string {
-  if (config.useNpm) return 'npm';
-  if (config.useYarn) return 'yarn';
-  if (config.usePnpm) return 'pnpm';
+const getPackageManager = (config: CreateAppConfig): string => {
+  if (config.useNpm === true) return 'npm';
+  if (config.useYarn === true) return 'yarn';
+  if (config.usePnpm === true) return 'pnpm';
 
   // Auto-detect based on what's available
   try {
     execSync('pnpm --version', { stdio: 'ignore' });
     return 'pnpm';
-  } catch {}
+  } catch {
+    // pnpm not available, continue to next option
+  }
 
   try {
     execSync('yarn --version', { stdio: 'ignore' });
     return 'yarn';
-  } catch {}
+  } catch {
+    // yarn not available, fall back to npm
+  }
 
   return 'npm';
-} 
+};

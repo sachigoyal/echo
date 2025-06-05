@@ -21,6 +21,7 @@ npx echo-cli login
 ```
 
 This will:
+
 1. Open your browser to the Echo authentication page
 2. Guide you through creating an API key
 3. Securely store the API key locally
@@ -51,7 +52,7 @@ import { EchoClient } from '@echo/typescript-sdk';
 
 // Initialize with API key
 const client = new EchoClient({
-  apiKey: 'echo_your_api_key_here'
+  apiKey: 'echo_your_api_key_here',
 });
 
 // Or use stored credentials from CLI
@@ -73,9 +74,9 @@ const app = await client.getEchoApp('app-id');
 
 // Create a payment link
 const paymentResponse = await client.createPaymentLink({
-  amount: 10.00, // $10.00
+  amount: 10.0, // $10.00
   echoAppId: 'app-id',
-  description: 'Credits for my app'
+  description: 'Credits for my app',
 });
 console.log('Payment URL:', paymentResponse.paymentLink.url);
 
@@ -91,7 +92,7 @@ The SDK can be configured via environment variables or constructor options:
 ```typescript
 const client = new EchoClient({
   baseUrl: 'https://your-echo-instance.com', // Default: http://localhost:3000
-  apiKey: 'your-api-key' // Optional if using stored credentials
+  apiKey: 'your-api-key', // Optional if using stored credentials
 });
 ```
 
@@ -138,6 +139,7 @@ Get the web URL for accessing an Echo app.
 ### Types
 
 #### Balance
+
 ```typescript
 interface Balance {
   balance: string;
@@ -149,6 +151,7 @@ interface Balance {
 ```
 
 #### EchoApp
+
 ```typescript
 interface EchoApp {
   id: string;
@@ -165,6 +168,7 @@ interface EchoApp {
 ```
 
 #### CreatePaymentLinkRequest
+
 ```typescript
 interface CreatePaymentLinkRequest {
   amount: number; // Amount in USD
@@ -176,6 +180,7 @@ interface CreatePaymentLinkRequest {
 ## Security
 
 API keys are stored securely using the system keychain:
+
 - **macOS**: Keychain Access
 - **Windows**: Credential Vault
 - **Linux**: libsecret
@@ -216,4 +221,4 @@ npm run dev
 
 ## License
 
-MIT 
+MIT

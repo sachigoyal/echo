@@ -7,14 +7,18 @@ This directory contains a comprehensive testing suite for the Echo TypeScript SD
 ### 1. Unit Tests
 
 #### `auth.test.ts`
+
 Tests the authentication module functionality:
+
 - API key validation (format, length, prefix)
 - Secure storage and retrieval of API keys using keytar
 - Error handling for storage operations
 - Integration scenarios (store → retrieve → remove cycle)
 
 #### `client.test.ts`
+
 Tests the EchoClient SDK functionality:
+
 - Authentication header inclusion
 - Balance fetching (with and without app ID)
 - Payment link creation
@@ -25,7 +29,9 @@ Tests the EchoClient SDK functionality:
 ### 2. CLI Tests
 
 #### `cli.test.ts`
+
 Tests all CLI commands by mocking dependencies and verifying correct SDK function calls:
+
 - `login` command - authentication flow
 - `logout` command - credential removal
 - `apps` command - listing applications (with `ls` alias)
@@ -38,7 +44,9 @@ Tests all CLI commands by mocking dependencies and verifying correct SDK functio
 ### 3. Integration Tests
 
 #### `integration.test.ts`
+
 Tests the complete workflow against a real server:
+
 - Full user workflow (auth → balance → apps → payments)
 - Real API response validation
 - Error scenarios with live server
@@ -49,7 +57,9 @@ Tests the complete workflow against a real server:
 ## Test Infrastructure
 
 ### `setup.ts`
+
 Global test setup that:
+
 - Starts the Echo server before tests
 - Configures test environment variables
 - Mocks keytar for secure storage
@@ -57,7 +67,9 @@ Global test setup that:
 - Provides test constants and utilities
 
 ### `run-tests.ts`
+
 Standalone test runner that:
+
 - Orchestrates server startup
 - Waits for server readiness
 - Runs Jest tests
@@ -135,12 +147,14 @@ The tests use the following environment variables:
 ## Test Data
 
 ### Mock API Keys
+
 - Valid: `echo_test_api_key_12345`
 - Invalid: `invalid_key`
 
 ### Test Scenarios
 
 Each test file covers:
+
 - ✅ Happy path scenarios
 - ❌ Error conditions
 - 🔀 Edge cases
@@ -149,6 +163,7 @@ Each test file covers:
 ## Coverage Goals
 
 The test suite aims for:
+
 - **95%+ line coverage** across all modules
 - **100% function coverage** for public APIs
 - **90%+ branch coverage** for conditional logic
@@ -198,6 +213,7 @@ describe('Feature Name', () => {
 ## Performance Benchmarks
 
 The integration tests include performance benchmarks:
+
 - Concurrent requests should complete within 10 seconds
 - Sequential requests should be fast and reliable
 - Memory usage should remain stable during test runs
@@ -205,8 +221,9 @@ The integration tests include performance benchmarks:
 ## CI/CD Integration
 
 The test suite is designed for CI/CD environments:
+
 - Non-interactive mode
 - Proper exit codes
 - Coverage reporting
 - Parallel test execution support
-- Deterministic test results 
+- Deterministic test results

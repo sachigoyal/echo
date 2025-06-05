@@ -15,6 +15,7 @@ The test suite comprehensively tests the echo-server's ability to:
 ## Test Structure
 
 ### Setup (`setup.ts`)
+
 - Mocks the EchoControlService class
 - Mocks the global fetch function for API calls
 - Sets up environment variables for testing
@@ -22,34 +23,42 @@ The test suite comprehensively tests the echo-server's ability to:
 ### Main Test Files
 
 #### `endpoints.test.ts`
+
 Comprehensive provider-specific tests including:
 
 **Provider Coverage:**
+
 - GPT models (`gpt-3.5-turbo`, `gpt-4o`) via `/chat/completions`
-- AnthropicGPT models (`claude-3-5-sonnet-20240620`) via `/chat/completions` 
+- AnthropicGPT models (`claude-3-5-sonnet-20240620`) via `/chat/completions`
 - AnthropicNative models (`claude-3-5-sonnet-20240620`) via `/messages`
 
 **Test Categories:**
+
 1. **Non-streaming endpoints** (for each provider):
+
    - Successful request handling
    - Transaction creation verification
    - Correct content-type headers
 
 2. **Streaming endpoints** (for each provider):
+
    - Successful streaming request handling
    - Transaction creation with proper token counts
    - Multi-chunk content handling
 
 3. **Authentication Tests**:
+
    - Bearer token support (OpenAI format)
    - x-api-key support (Anthropic native)
    - Invalid token rejection
 
 4. **Error Handling**:
+
    - Upstream API errors (400, 429, etc.)
    - Unknown model errors
 
 5. **Account Balance Tests**:
+
    - Payment required (402) when balance is zero
    - Successful requests with sufficient balance
 
@@ -57,7 +66,8 @@ Comprehensive provider-specific tests including:
    - `stream_options` addition for streaming requests
    - No `stream_options` for non-streaming requests
 
-#### `server.test.ts` 
+#### `server.test.ts`
+
 Core server functionality tests including:
 
 1. **Payment Required Tests**: Ensures 402 errors when balance is insufficient
@@ -69,6 +79,7 @@ Core server functionality tests including:
 ## Mocking Strategy
 
 ### EchoControlService Mocking
+
 The tests use a comprehensive mock of the EchoControlService that simulates:
 
 ```typescript
@@ -89,41 +100,53 @@ getUserId: jest.Mock          // Returns user ID
 ```
 
 ### API Response Mocking
+
 The tests mock upstream API responses for different provider formats:
 
 **OpenAI Format (GPT & AnthropicGPT):**
+
 - Non-streaming: Standard completion response with usage
 - Streaming: SSE format with content deltas and final usage
 
 **Anthropic Native Format:**
+
 - Streaming only: SSE with content_block_delta and message_delta events
 
 ## Key Test Scenarios
 
 ### 1. Provider-Specific Streaming/Non-streaming
+
 Each provider is tested for both streaming and non-streaming capabilities (where supported).
 
 ### 2. Transaction Recording
+
 Tests verify that `createTransaction` is called with correct parameters:
+
 - Model name
 - Token counts (input, output, total)
 - Cost calculation
 - Success status
 
 ### 3. Authentication Flow
+
 Tests verify the complete auth flow:
+
 - Header parsing (Bearer vs x-api-key)
 - EchoControlService.verifyApiKey() call
 - Proper error responses for invalid auth
 
 ### 4. Balance Checking
+
 Tests verify balance checking:
+
 - Successful requests with sufficient balance
 - 402 Payment Required when balance is zero
 - Proper user ID logging for payment required errors
 
 ### 5. Error Propagation
+
 Tests verify proper error handling:
+
 - Upstream API errors are passed through
 - Unknown models return 400 errors
 - Invalid auth returns 401 errors
@@ -155,16 +178,19 @@ The tests make comprehensive assertions about:
 ## Provider-Specific Behavior
 
 ### GPT Provider
+
 - Uses OpenAI API format
 - Reports total tokens for accounting
 - Supports both streaming and non-streaming
 
-### AnthropicGPT Provider  
+### AnthropicGPT Provider
+
 - Uses OpenAI API format via Anthropic's compatibility layer
 - Reports total tokens for accounting
 - Supports both streaming and non-streaming
 
 ### AnthropicNative Provider
+
 - Uses Anthropic's native API format
 - Only reports output tokens (input tokens not available in streaming)
 - Streaming only (non-streaming not implemented)
@@ -173,8 +199,9 @@ The tests make comprehensive assertions about:
 ## Future Enhancements
 
 The test suite can be extended to cover:
+
 1. Additional provider types (Gemini, etc.)
 2. More complex error scenarios
 3. Rate limiting behavior
 4. Concurrent request handling
-5. Performance testing 
+5. Performance testing

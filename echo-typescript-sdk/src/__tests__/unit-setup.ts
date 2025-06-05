@@ -7,9 +7,11 @@ jest.mock('keytar', () => ({
 
 // Mock process.exit to prevent tests from actually exiting
 beforeEach(() => {
-  jest.spyOn(process, 'exit').mockImplementation((code?: string | number | null | undefined) => {
-    throw new Error(`Process.exit called with code: ${code}`);
-  });
+  jest
+    .spyOn(process, 'exit')
+    .mockImplementation((code?: string | number | null | undefined) => {
+      throw new Error(`Process.exit called with code: ${code}`);
+    });
 });
 
 afterEach(() => {
@@ -19,4 +21,4 @@ afterEach(() => {
 // Export utilities for tests
 export const TEST_SERVER_URL = 'http://localhost:3001';
 export const TEST_API_KEY = 'echo_test_api_key_12345';
-export const INVALID_API_KEY = 'invalid_key'; 
+export const INVALID_API_KEY = 'invalid_key';
