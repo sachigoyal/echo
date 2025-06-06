@@ -2,12 +2,6 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import open from 'open';
 import { EchoClient } from './client';
-import {
-  getStoredApiKey,
-  storeApiKey,
-  removeStoredApiKey,
-  validateApiKey,
-} from './auth';
 import type { EchoApp, Balance, CreatePaymentLinkResponse } from './types';
 
 // Re-export the Balance type from types.ts as EchoBalance for backwards compatibility
@@ -29,11 +23,7 @@ export interface PaymentOptions {
  * @throws {Error} If no valid authentication is found
  */
 export async function getAuthenticatedEchoClient(): Promise<EchoClient> {
-  const apiKey = await getStoredApiKey();
-  if (apiKey && validateApiKey(apiKey)) {
-    return new EchoClient({ apiKey });
-  }
-  throw new Error('No valid authentication found. Please authenticate first.');
+  return new EchoClient({ apiKey: process.env.ECHO_API_KEY ?? '' });
 }
 
 /**
@@ -82,58 +72,36 @@ export async function loginToEcho(options: LoginOptions = {}): Promise<void> {
       chalk.cyan('2. Select the Echo app you want to use with the CLI')
     );
     console.log(chalk.cyan('3. Generate a new app-scoped API key'));
-    console.log(chalk.cyan('4. Copy the API key and paste it below'));
+    console.log(chalk.cyan('4. Copy the API key'));
+    console.log();
+    console.log(
+      chalk.yellow(
+        'Once you have your API key, run this command in your terminal:'
+      )
+    );
+    console.log(chalk.green('export ECHO_API_KEY="your_api_key_here"'));
+    console.log();
+    console.log(
+      chalk.gray('Replace "your_api_key_here" with your actual API key')
+    );
+    console.log(chalk.gray('Then run your Echo CLI command again.'));
     console.log();
   }
 
-  const { apiKey } = await inquirer.prompt([
-    {
-      type: 'password',
-      name: 'apiKey',
-      message: 'Paste your Echo API key:',
-      mask: '*',
-      validate: (input: string) => {
-        if (!input.trim()) {
-          return 'API key is required';
-        }
-        if (!validateApiKey(input.trim())) {
-          return 'Invalid API key format. Expected format: echo_...';
-        }
-        return true;
-      },
-    },
-  ]);
+  // Check if API key is already set in environment
+  const cleanApiKey = process.env.ECHO_API_KEY?.trim();
 
-  const cleanApiKey = apiKey.trim();
-
-  if (!silent) {
-    console.log(chalk.blue('🔍 Verifying API key...'));
-  }
-
-  // Test the API key by making a request
-  const client = new EchoClient({ apiKey: cleanApiKey });
-
-  try {
-    const echoApps = await client.listEchoApps();
+  if (!cleanApiKey) {
+    const message =
+      'No API key found. Please export ECHO_API_KEY environment variable first.';
     if (!silent) {
-      console.log(chalk.green('✅ API key verified successfully!'));
-      console.log(
-        chalk.gray(
-          `Found ${echoApps.length} Echo app(s) accessible with this key`
-        )
-      );
+      console.log(chalk.red('❌ ' + message));
+      console.log(chalk.yellow('Run: export ECHO_API_KEY="your_api_key_here"'));
     }
-  } catch (error) {
-    const errorMessage = `API key verification failed: ${error}`;
-    if (!silent) {
-      console.log(chalk.red('❌ API key verification failed'));
-      console.log(chalk.red(`Error: ${error}`));
-    }
-    throw new Error(errorMessage);
   }
 
   // Store the API key
-  await storeApiKey(cleanApiKey);
+  process.env.ECHO_API_KEY = cleanApiKey;
   if (!silent) {
     console.log(chalk.green('🔑 API key stored securely'));
     console.log();
@@ -148,7 +116,7 @@ export async function loginToEcho(options: LoginOptions = {}): Promise<void> {
  * @param silent - Whether to suppress console output
  */
 export async function logoutFromEcho(silent: boolean = false): Promise<void> {
-  await removeStoredApiKey();
+  delete process.env.ECHO_API_KEY;
   if (!silent) {
     console.log(chalk.green('✅ Successfully logged out from Echo!'));
   }

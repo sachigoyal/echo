@@ -1,6 +1,8 @@
-
 dist/
 node_modules/
 .env
 .aws-sam/
 .env.test
+
+# Generated Prisma client (copied from echo-control)
+src/generated/
