@@ -12,6 +12,8 @@
   "scripts": {
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces",
+    "build:server": "cd echo-server && npm run build && cd ..",
+    "start:server": "cd echo-server && npm run start",
     "test": "npm run test --workspaces",
     "lint": "npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",

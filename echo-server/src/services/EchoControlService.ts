@@ -6,8 +6,10 @@ import type {
   DatabaseClient,
 } from '@zdql/echo-typescript-sdk';
 import { EchoDbService } from '@zdql/echo-typescript-sdk';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
-import { PrismaClient } from '../../../echo-control/src/generated/prisma';
+import { PrismaClient } from '../generated/prisma';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
@@ -16,6 +18,15 @@ export class EchoControlService {
   private authResult: ApiKeyValidationResult | null = null;
 
   constructor(apiKey: string) {
+    // Check if the generated Prisma client exists
+    const generatedPrismaPath = join(__dirname, '..', 'generated', 'prisma');
+    if (!existsSync(generatedPrismaPath)) {
+      throw new Error(
+        `Generated Prisma client not found at ${generatedPrismaPath}. ` +
+          'Please run "npm run copy-prisma" to copy the generated client from echo-control.'
+      );
+    }
+
     this.apiKey = apiKey;
     this.db = new PrismaClient({
       datasources: {

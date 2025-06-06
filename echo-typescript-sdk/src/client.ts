@@ -1,15 +1,11 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { EchoConfig, getConfig } from './config';
-import { getStoredApiKey } from './auth';
 import {
   Balance,
   CreatePaymentLinkRequest,
   CreatePaymentLinkResponse,
-  CreateLlmTransactionRequest,
-  CreateLlmTransactionResponse,
   EchoApp,
   ListEchoAppsResponse,
-  LlmTransaction,
 } from './types';
 
 export class EchoClient {
@@ -25,7 +21,7 @@ export class EchoClient {
 
     // Add request interceptor to include API key
     this.http.interceptors.request.use(async config => {
-      const apiKey = this.config.apiKey || (await getStoredApiKey());
+      const apiKey = this.config.apiKey || process.env.ECHO_API_KEY;
       if (apiKey) {
         config.headers['Authorization'] = `Bearer ${apiKey}`;
       }
