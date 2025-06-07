@@ -23,8 +23,18 @@ interface AuthCodePayload {
 
 export async function POST(req: NextRequest) {
   try {
-    /* 1️⃣ Parse the token request */
-    const body = await req.json();
+    /* 1️⃣ Parse the token request - handle both JSON and form-encoded */
+    let body: any;
+    const contentType = req.headers.get('content-type') || '';
+
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      const text = await req.text();
+      body = Object.fromEntries(new URLSearchParams(text));
+    } else {
+      // Default to JSON
+      body = await req.json();
+    }
+
     const { grant_type, code, redirect_uri, client_id, code_verifier } = body;
 
     // Validate required parameters
@@ -217,7 +227,7 @@ export async function POST(req: NextRequest) {
     });
 
     /* 🔟 Return the JWT access token response with refresh token */
-    return NextResponse.json({
+    const response = NextResponse.json({
       access_token: jwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
       expires_in: 24 * 60 * 60, // JWT expires in 24 hours
@@ -240,6 +250,8 @@ export async function POST(req: NextRequest) {
         api_key_prefix: apiKey.key.slice(0, 10),
       },
     });
+
+    return response;
   } catch (error) {
     console.error('OAuth token exchange error:', error);
     return NextResponse.json(

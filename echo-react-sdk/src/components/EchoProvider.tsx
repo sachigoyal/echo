@@ -8,6 +8,25 @@ import React, {
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts';
 import { EchoConfig, EchoUser, EchoBalance } from '../types';
 
+interface EchoOAuthProfile {
+  sub?: string;
+  user_id?: string;
+  id?: string;
+  email?: string;
+  preferred_username?: string;
+  name?: string;
+  given_name?: string;
+}
+
+interface BalanceResponse {
+  credits: number;
+  currency: string;
+}
+
+interface PaymentLinkResponse {
+  url: string;
+}
+
 export interface EchoContextValue {
   user: EchoUser | null;
   balance: EchoBalance | null;
@@ -20,7 +39,9 @@ export interface EchoContextValue {
   createPaymentLink: (amount: number) => Promise<string>;
 }
 
-export const EchoContext = createContext<EchoContextValue | null>(null);
+export const EchoContext = createContext<EchoContextValue | undefined>(
+  undefined
+);
 
 interface EchoProviderProps {
   config: EchoConfig;
@@ -53,7 +74,9 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
     // Make UserManager available globally for JWT testing
     if (typeof window !== 'undefined') {
-      (window as any).__echoUserManager = manager;
+      (
+        window as Window & { __echoUserManager?: UserManager }
+      ).__echoUserManager = manager;
     }
 
     return manager;
@@ -64,7 +87,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   // Convert OIDC user to Echo user format
   const convertUser = (oidcUser: User): EchoUser => {
     // For Echo OAuth, user data might be in the token response or profile
-    const profile = oidcUser.profile as any;
+    const profile = oidcUser.profile as EchoOAuthProfile;
     return {
       id: profile?.sub || profile?.user_id || profile?.id || 'unknown',
       email: profile?.email || profile?.preferred_username || '',
@@ -91,7 +114,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         );
 
         if (response.ok) {
-          const balanceData = await response.json();
+          const balanceData: BalanceResponse = await response.json();
           setBalance(balanceData);
         } else {
           console.warn('Failed to fetch balance:', response.statusText);
@@ -155,7 +178,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       );
 
       if (response.ok) {
-        const balanceData = await response.json();
+        const balanceData: BalanceResponse = await response.json();
         setBalance(balanceData);
       } else {
         throw new Error(`Failed to refresh balance: ${response.statusText}`);
@@ -191,7 +214,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         );
 
         if (response.ok) {
-          const { url } = await response.json();
+          const { url }: PaymentLinkResponse = await response.json();
           return url;
         } else {
           throw new Error(

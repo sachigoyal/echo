@@ -112,7 +112,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
   const fetchAppDetails = useCallback(async () => {
     try {
-      const response = await fetch(`/api/echo-apps/${appId}`);
+      const response = await fetch(`/api/apps/${appId}`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -120,7 +120,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         return;
       }
 
-      setApp(data.echoApp);
+      setApp(data);
     } catch (error) {
       console.error('Error fetching app details:', error);
       setError('Failed to load app details');
