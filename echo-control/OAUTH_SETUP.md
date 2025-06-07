@@ -5,8 +5,9 @@ This document explains how to set up and use the OAuth 2.0 PKCE (Proof Key for C
 ## Overview
 
 The OAuth PKCE flow allows Echo app frontends to:
+
 1. Authenticate users via Echo Control (using Clerk)
-2. Obtain API keys programmatically 
+2. Obtain API keys programmatically
 3. Make authenticated requests to Echo Server
 
 ## Setup
@@ -30,11 +31,13 @@ CLERK_SECRET_KEY=...
 ### 2. Dependencies
 
 The following packages are now installed:
+
 - `jose` - For JWT signing and verification
 
 ### 3. Database Schema
 
 No database changes are required! The implementation uses your existing:
+
 - `User` table (via Clerk integration)
 - `EchoApp` table (created/found automatically)
 - `ApiKey` table (created automatically)
@@ -48,6 +51,7 @@ GET /api/oauth/authorize
 ```
 
 **Parameters:**
+
 - `client_id` - Your Echo app ID
 - `redirect_uri` - Your app's callback URL
 - `code_challenge` - PKCE code challenge (base64url-encoded SHA256 hash)
@@ -65,6 +69,7 @@ POST /api/oauth/token
 ```
 
 **Request Body:**
+
 ```json
 {
   "grant_type": "authorization_code",
@@ -76,6 +81,7 @@ POST /api/oauth/token
 ```
 
 **Response:**
+
 ```json
 {
   "access_token": "echo_api_key_here",
@@ -84,7 +90,7 @@ POST /api/oauth/token
   "expires_in": null,
   "user": {
     "id": "user_id",
-    "email": "user@example.com", 
+    "email": "user@example.com",
     "name": "User Name"
   },
   "echo_app": {
@@ -118,10 +124,10 @@ function startAuth() {
 async function handleCallback() {
   try {
     const token = await client.handleCallback();
-    
+
     // Store the API key for later use
     localStorage.setItem('echo_api_key', token.access_token);
-    
+
     console.log('Authenticated!', token.user);
     console.log('API Key:', token.access_token);
   } catch (error) {
@@ -218,17 +224,20 @@ Once you have the API key, use it for Echo Server requests:
 const apiKey = localStorage.getItem('echo_api_key');
 
 // Make requests to Echo Server
-const response = await fetch('https://your-echo-server.com/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${apiKey}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    model: 'gpt-4',
-    messages: [{ role: 'user', content: 'Hello!' }],
-  }),
-});
+const response = await fetch(
+  'https://your-echo-server.com/v1/chat/completions',
+  {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: 'Hello!' }],
+    }),
+  }
+);
 ```
 
 ## Security Considerations
@@ -266,14 +275,17 @@ const response = await fetch('https://your-echo-server.com/v1/chat/completions',
 ### Common Issues
 
 1. **"Invalid or expired authorization code"**
+
    - Check that your JWT secret matches between authorize and token endpoints
    - Ensure the authorization code hasn't expired (5 minute TTL)
 
 2. **"PKCE verification failed"**
+
    - Verify that the code_verifier matches the original code_challenge
    - Check that you're using SHA256 hashing and base64url encoding
 
-3. **"User not found"** 
+3. **"User not found"**
+
    - Ensure the user has signed up through Echo Control first
    - Check that Clerk is properly configured
 
@@ -297,4 +309,4 @@ console.log('Token response:', token);
 - Test the flow with a simple Echo app
 - Configure production environment variables
 - Set up proper error handling and user feedback
-- Consider implementing refresh tokens for long-lived sessions 
+- Consider implementing refresh tokens for long-lived sessions

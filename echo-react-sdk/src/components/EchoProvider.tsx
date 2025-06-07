@@ -33,34 +33,44 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userManager] = useState(() => {
+    const apiUrl = config.apiUrl || 'http://localhost:3000';
     const settings: UserManagerSettings = {
-      authority: config.apiUrl || 'http://localhost:3000',
+      authority: apiUrl,
       client_id: config.instanceId,
-      redirect_uri:
-        config.redirectUri || `${window.location.origin}/echo/callback`,
+      redirect_uri: config.redirectUri || window.location.origin,
       response_type: 'code',
-      scope: 'openid profile',
+      scope: config.scope || 'llm:invoke offline_access',
       automaticSilentRenew: true,
       includeIdTokenInSilentRenew: false,
-      // Custom metadata since Echo might not be fully OIDC compliant yet
+      // Echo-specific OAuth endpoints (not standard OIDC)
       metadata: {
-        authorization_endpoint: `${config.apiUrl || 'http://localhost:3000'}/oauth/authorize`,
-        token_endpoint: `${config.apiUrl || 'http://localhost:3000'}/oauth/token`,
-        issuer: config.apiUrl || 'http://localhost:3000',
-        userinfo_endpoint: `${config.apiUrl || 'http://localhost:3000'}/api/user`,
+        authorization_endpoint: `${apiUrl}/api/oauth/authorize`,
+        token_endpoint: `${apiUrl}/api/oauth/token`,
+        issuer: apiUrl,
       },
     };
-    return new UserManager(settings);
+    const manager = new UserManager(settings);
+
+    // Make UserManager available globally for JWT testing
+    if (typeof window !== 'undefined') {
+      (window as any).__echoUserManager = manager;
+    }
+
+    return manager;
   });
 
   const isAuthenticated = user !== null;
 
   // Convert OIDC user to Echo user format
-  const convertUser = (oidcUser: User): EchoUser => ({
-    id: oidcUser.profile.sub,
-    email: oidcUser.profile.email || '',
-    name: oidcUser.profile.name || oidcUser.profile.email || '',
-  });
+  const convertUser = (oidcUser: User): EchoUser => {
+    // For Echo OAuth, user data might be in the token response or profile
+    const profile = oidcUser.profile as any;
+    return {
+      id: profile?.sub || profile?.user_id || profile?.id || 'unknown',
+      email: profile?.email || profile?.preferred_username || '',
+      name: profile?.name || profile?.given_name || profile?.email || 'User',
+    };
+  };
 
   // Load user data (profile + balance)
   const loadUserData = useCallback(
@@ -205,11 +215,8 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         setIsLoading(true);
         setError(null);
 
-        // Handle OAuth callback
-        if (
-          window.location.pathname.includes('/echo/callback') ||
-          window.location.search.includes('code=')
-        ) {
+        // Handle OAuth callback - check for authorization code in query params anywhere
+        if (window.location.search.includes('code=')) {
           const oidcUser = await userManager.signinRedirectCallback();
           await loadUserData(oidcUser);
           // Clean up URL
