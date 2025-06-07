@@ -37,17 +37,34 @@ export async function GET(req: NextRequest) {
         id: app.id,
         name: app.name,
         description: app.description,
-        is_active: app.isActive,
-        created_at: app.createdAt.toISOString(),
-        updated_at: app.updatedAt.toISOString(),
-        authorized_callback_urls: app.authorizedCallbackUrls,
-        active_api_keys: app._count.apiKeys,
+        isActive: app.isActive,
+        createdAt: app.createdAt.toISOString(),
+        updatedAt: app.updatedAt.toISOString(),
+        authorizedCallbackUrls: app.authorizedCallbackUrls,
+        totalTokens: 0, // TODO: Calculate from llmTransactions
+        totalCost: 0, // TODO: Calculate from llmTransactions
+        _count: {
+          apiKeys: app._count.apiKeys,
+          llmTransactions: 0, // TODO: Add this to the query
+        },
       })),
     });
   } catch (error) {
     console.error('Error fetching Echo apps:', error);
+
+    // Check if it's an authentication error
+    if (error instanceof Error && error.message.includes('authentication')) {
+      return NextResponse.json(
+        { error: 'Authentication required', details: error.message },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }

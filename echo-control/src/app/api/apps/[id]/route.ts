@@ -59,21 +59,32 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       id: echoApp.id,
       name: echoApp.name,
       description: echoApp.description,
-      is_active: echoApp.isActive,
-      created_at: echoApp.createdAt.toISOString(),
-      updated_at: echoApp.updatedAt.toISOString(),
-      authorized_callback_urls: echoApp.authorizedCallbackUrls,
-      api_keys: echoApp.apiKeys.map(key => ({
+      isActive: echoApp.isActive,
+      createdAt: echoApp.createdAt.toISOString(),
+      updatedAt: echoApp.updatedAt.toISOString(),
+      authorizedCallbackUrls: echoApp.authorizedCallbackUrls,
+      apiKeys: echoApp.apiKeys.map(key => ({
         id: key.id,
         key: key.key,
         name: key.name,
-        created_at: key.createdAt.toISOString(),
-        last_used: key.lastUsed?.toISOString() || null,
+        isActive: true, // Keys are filtered to active ones only
+        createdAt: key.createdAt.toISOString(),
+        lastUsed: key.lastUsed?.toISOString() || null,
         metadata: key.metadata,
       })),
       stats: {
-        total_transactions: echoApp._count.llmTransactions,
-        total_payments: echoApp._count.payments,
+        totalTransactions: echoApp._count.llmTransactions,
+        totalTokens: 0, // TODO: Calculate from transactions
+        totalInputTokens: 0, // TODO: Calculate from transactions
+        totalOutputTokens: 0, // TODO: Calculate from transactions
+        totalCost: 0, // TODO: Calculate from transactions
+        modelUsage: [], // TODO: Calculate from transactions
+      },
+      recentTransactions: [], // TODO: Fetch recent transactions
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name || undefined,
       },
     });
   } catch (error) {
