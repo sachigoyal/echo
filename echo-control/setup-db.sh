@@ -7,7 +7,7 @@ if [ ! -f .env ]; then
     echo "📝 Creating .env file..."
     cat > .env << 'EOF'
 # Database - Docker PostgreSQL
-DATABASE_URL="postgresql://echo_user:echo_password@localhost:5432/echo_control?schema=public"
+DATABASE_URL="postgresql://echo_user:echo_password@localhost:5469/echo_control?schema=public"
 
 # Authentication (Mocked for now)
 CLERK_SECRET_KEY="mock_clerk_secret_key"
@@ -33,11 +33,7 @@ echo "🐳 Starting PostgreSQL container..."
 docker-compose up -d postgres
 
 # Wait for PostgreSQL to be ready
-echo "⏳ Waiting for PostgreSQL to be ready..."
-until docker-compose exec postgres pg_isready -U echo_user -d echo_control 2>/dev/null; do
-    echo "Waiting for PostgreSQL..."
-    sleep 2
-done
+# No need for manual health check since docker-compose.yml already has healthcheck configured
 
 echo "✅ PostgreSQL is ready!"
 
@@ -57,5 +53,5 @@ echo ""
 echo "📊 You can now run:"
 echo "  npm run dev          # Start the application"
 echo "  npx prisma studio    # View the database"
-echo "  docker-compose logs  # View database logs"
-echo "  docker-compose down  # Stop the database" 
+echo "  docker logs local-postgres  # View database logs"
+echo "  docker stop local-postgres  # Stop the database"

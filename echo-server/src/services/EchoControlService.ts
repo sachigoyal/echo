@@ -31,7 +31,7 @@ export class EchoControlService {
     this.db = new PrismaClient({
       datasources: {
         db: {
-          url: process.env.DATABASE_URL ?? 'postgresql://localhost:5432/echo',
+          url: process.env.DATABASE_URL ?? 'postgresql://localhost:5469/echo',
         },
       },
     });

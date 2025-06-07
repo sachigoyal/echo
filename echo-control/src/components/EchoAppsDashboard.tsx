@@ -47,7 +47,7 @@ export default function EchoAppsDashboard() {
   const fetchEchoApps = async () => {
     try {
       setError(null);
-      const response = await fetch('/api/echo-apps');
+      const response = await fetch('/api/apps');
       const data = await response.json();
 
       if (!response.ok) {
@@ -70,7 +70,7 @@ export default function EchoAppsDashboard() {
     description?: string;
   }) => {
     setError(null);
-    const response = await fetch('/api/echo-apps', {
+    const response = await fetch('/api/apps', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(appData),

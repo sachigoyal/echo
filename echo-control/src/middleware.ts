@@ -9,6 +9,7 @@ const isProtectedRoute = createRouteMatcher([
 
 const isApiRoute = createRouteMatcher([
   '/api/echo-apps(.*)',
+  '/api/apps(.*)',
   '/api/api-keys(.*)',
   '/api/balance(.*)',
   '/api/stripe/payment-link(.*)',
@@ -19,6 +20,9 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/api/stripe/webhook(.*)',
   '/api/validate-api-key(.*)', // Public endpoint for external validation
+  '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
+  '/api/oauth/token(.*)', // OAuth token endpoint - handles its own auth
+  '/api/oauth/refresh(.*)', // OAuth refresh endpoint - handles its own auth
 ]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {

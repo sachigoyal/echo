@@ -1,20 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import {
-  ArrowLeft,
-  Key,
   Activity,
-  CreditCard,
-  Plus,
+  ArrowLeft,
   CheckCircle,
-  X,
+  CreditCard,
+  Key,
+  Plus,
   Trash,
+  X,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import ApiKeyModal from './ApiKeyModal';
 import AppPaymentCard from './AppPaymentCard';
 import CreateApiKeyModal from './CreateApiKeyModal';
-import ApiKeyModal from './ApiKeyModal';
+import OAuthConfigSection from './OAuthConfigSection';
 
 interface EchoAppDetailProps {
   appId: string;
@@ -475,6 +476,9 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           </div>
         )}
       </div>
+
+      {/* OAuth Configuration */}
+      <OAuthConfigSection appId={app.id} />
 
       {/* Recent Transactions */}
       <div className="bg-card rounded-lg border border-border p-6">

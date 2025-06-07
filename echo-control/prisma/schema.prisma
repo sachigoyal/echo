@@ -19,41 +19,63 @@ model User {
   echoApps        EchoApp[]
   llmTransactions LlmTransaction[]
   payments        Payment[]
+  refreshTokens   RefreshToken[]
 
   @@map("users")
 }
 
 model EchoApp {
-  id              String           @id @default(uuid()) @db.Uuid
-  name            String
-  description     String?
-  isActive        Boolean          @default(true)
-  createdAt       DateTime         @default(now()) @db.Timestamptz
-  updatedAt       DateTime         @updatedAt @db.Timestamptz
-  userId          String           @db.Uuid
-  apiKeys         ApiKey[]
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  llmTransactions LlmTransaction[]
-  payments        Payment[]
+  id                    String           @id @default(uuid()) @db.Uuid
+  name                  String
+  description           String?
+  isActive              Boolean          @default(true)
+  authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
+  createdAt             DateTime         @default(now()) @db.Timestamptz
+  updatedAt             DateTime         @updatedAt @db.Timestamptz
+  userId                String           @db.Uuid
+  apiKeys               ApiKey[]
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  llmTransactions       LlmTransaction[]
+  payments              Payment[]
+  refreshTokens         RefreshToken[]
 
   @@map("echo_apps")
 }
 
 model ApiKey {
-  id        String    @id @default(uuid()) @db.Uuid
-  key       String    @unique
-  name      String?
-  isActive  Boolean   @default(true)
-  lastUsed  DateTime? @db.Timestamptz
-  metadata  Json?
-  createdAt DateTime  @default(now()) @db.Timestamptz
-  updatedAt DateTime  @updatedAt @db.Timestamptz
-  userId    String    @db.Uuid
-  echoAppId String    @db.Uuid
-  echoApp   EchoApp   @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String         @id @default(uuid()) @db.Uuid
+  key          String         @unique
+  name         String?
+  isActive     Boolean        @default(true)
+  lastUsed     DateTime?      @db.Timestamptz
+  metadata     Json?
+  createdAt    DateTime       @default(now()) @db.Timestamptz
+  updatedAt    DateTime       @updatedAt @db.Timestamptz
+  userId       String         @db.Uuid
+  echoAppId    String         @db.Uuid
+  echoApp      EchoApp        @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
 
   @@map("api_keys")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @db.Timestamptz
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  userId    String   @db.Uuid
+  echoAppId String   @db.Uuid
+  apiKeyId  String   @db.Uuid
+  scope     String   @default("llm:invoke offline_access")
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp   EchoApp  @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }
 
 model Payment {

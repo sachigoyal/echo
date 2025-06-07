@@ -70,7 +70,7 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
    cp .env.example .env
 
    # Update DATABASE_URL in .env with your PostgreSQL connection string
-   # Example: DATABASE_URL="postgresql://username:password@localhost:5432/echo_control"
+   # Example: DATABASE_URL="postgresql://username:password@localhost:5469/echo_control"
    ```
 
 4. **Run database migrations**:
@@ -95,7 +95,7 @@ Create a `.env` file with the following variables:
 
 ```env
 # Database
-DATABASE_URL="postgresql://username:password@localhost:5432/echo_control"
+DATABASE_URL="postgresql://username:password@localhost:5469/echo_control"
 
 # Authentication (Mocked)
 CLERK_SECRET_KEY="mock_clerk_secret_key"
