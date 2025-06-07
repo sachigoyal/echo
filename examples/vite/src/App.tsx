@@ -4,7 +4,7 @@ import {
   EchoTokenPurchase,
   useEcho,
 } from '@echo-systems/react-sdk';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Configuration constants
 const CONFIG = {
@@ -15,7 +15,60 @@ const CONFIG = {
 } as const;
 
 function Dashboard() {
-  const { isAuthenticated, user, balance, error } = useEcho();
+  const { isAuthenticated, user, balance, error, isLoading } = useEcho();
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: '20px',
+        }}
+      >
+        <h1>Processing authentication...</h1>
+        <div>Please wait while we complete the OAuth flow.</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          gap: '20px',
+        }}
+      >
+        <h1>❌ Authentication Error</h1>
+        <p style={{ color: 'red', textAlign: 'center', maxWidth: '500px' }}>
+          {error}
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#007cba',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   // Not signed in - show sign in button
   if (!isAuthenticated) {
@@ -56,7 +109,7 @@ function Dashboard() {
     );
   }
 
-  // Signed in with balance - success!
+  // Signed in - show success and JWT test (regardless of balance)
   return (
     <div
       style={{
@@ -66,14 +119,28 @@ function Dashboard() {
         justifyContent: 'center',
         minHeight: '100vh',
         gap: '20px',
+        padding: '20px',
       }}
     >
-      <h1>🎉 Success!</h1>
-      <p>Welcome {user?.name}!</p>
-      <p>
-        You have {balance?.credits} {balance?.currency}
-      </p>
+      <h1>🎉 OAuth Success!</h1>
+      <div style={{ textAlign: 'center' }}>
+        <p>
+          <strong>Welcome {user?.name}!</strong>
+        </p>
+        <p>Email: {user?.email}</p>
+        {balance && (
+          <p>
+            Balance: {balance?.credits} {balance?.currency}
+          </p>
+        )}
+      </div>
       <JWTTestComponent />
+      {balance?.credits === 0 && (
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <p>Need tokens to get started?</p>
+          <EchoTokenPurchase amount={100} />
+        </div>
+      )}
     </div>
   );
 }
@@ -130,6 +197,14 @@ function JWTTestComponent() {
     }
   };
 
+  // Auto-run JWT test on component mount
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      testJWTToken();
+    }, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [testJWTToken]);
+
   return (
     <div
       style={{
@@ -137,9 +212,14 @@ function JWTTestComponent() {
         padding: '20px',
         border: '1px solid #ddd',
         borderRadius: '8px',
+        backgroundColor: testResult?.includes('✅')
+          ? '#e8f5e8'
+          : testResult?.includes('❌')
+            ? '#f8e8e8'
+            : '#f9f9f9',
       }}
     >
-      <h3>JWT Token Test</h3>
+      <h3>🔐 JWT Token Validation</h3>
       <button
         onClick={testJWTToken}
         disabled={isTestLoading}
@@ -153,7 +233,7 @@ function JWTTestComponent() {
           opacity: isTestLoading ? 0.6 : 1,
         }}
       >
-        {isTestLoading ? 'Testing...' : 'Test JWT Token'}
+        {isTestLoading ? 'Testing...' : 'Re-test JWT Token'}
       </button>
       {testResult && (
         <pre
@@ -232,13 +312,19 @@ function ConfigForm({ onSubmit }: { onSubmit: (clientId: string) => void }) {
             required
           />
         </div>
-        <div style={{ fontSize: '12px', color: '#666' }}>
+        <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
           <p>
-            <strong>Configuration:</strong>
+            <strong>Current Configuration:</strong>
           </p>
           <p>• Echo Control URL: {CONFIG.ECHO_CONTROL_URL}</p>
           <p>• Redirect URI: {CONFIG.REDIRECT_URI}</p>
           <p>• Scope: {CONFIG.SCOPE}</p>
+        </div>
+        <div style={{ fontSize: '11px', color: '#999', fontStyle: 'italic' }}>
+          <p>
+            ⚠️ Make sure this redirect URI is configured in your Echo app's
+            OAuth settings!
+          </p>
         </div>
         <button
           type="submit"
@@ -260,8 +346,24 @@ function ConfigForm({ onSubmit }: { onSubmit: (clientId: string) => void }) {
 }
 
 function App() {
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [echoConfig, setEchoConfig] = useState<any>(null);
+  const [clientId, setClientId] = useState<string | null>(() => {
+    // Restore client ID from localStorage on app start
+    try {
+      return localStorage.getItem('echo_oauth_client_id') || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [echoConfig, setEchoConfig] = useState<any>(() => {
+    // Restore config from localStorage on app start
+    try {
+      const stored = localStorage.getItem('echo_oauth_config');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const handleConfigSubmit = (submittedClientId: string) => {
     setClientId(submittedClientId);
@@ -272,6 +374,25 @@ function App() {
       scope: CONFIG.SCOPE,
     };
     setEchoConfig(config);
+
+    // Persist to localStorage
+    try {
+      localStorage.setItem('echo_oauth_client_id', submittedClientId);
+      localStorage.setItem('echo_oauth_config', JSON.stringify(config));
+    } catch (error) {
+      console.warn('Failed to save config to localStorage:', error);
+    }
+  };
+
+  const handleReset = () => {
+    setClientId(null);
+    setEchoConfig(null);
+    try {
+      localStorage.removeItem('echo_oauth_client_id');
+      localStorage.removeItem('echo_oauth_config');
+    } catch (error) {
+      console.warn('Failed to clear localStorage:', error);
+    }
   };
 
   // Show config form if no client ID is set
@@ -281,7 +402,25 @@ function App() {
 
   return (
     <EchoProvider config={echoConfig}>
-      <Dashboard />
+      <div>
+        <Dashboard />
+        <div style={{ position: 'fixed', top: '10px', right: '10px' }}>
+          <button
+            onClick={handleReset}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '3px',
+              fontSize: '12px',
+              cursor: 'pointer',
+            }}
+          >
+            Reset Config
+          </button>
+        </div>
+      </div>
     </EchoProvider>
   );
 }
