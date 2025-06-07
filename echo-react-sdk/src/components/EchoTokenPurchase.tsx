@@ -62,7 +62,7 @@ export function EchoTokenPurchase({
           }
 
           setTimeout(checkPaymentComplete, 1000);
-        } catch (err) {
+        } catch {
           setIsProcessing(false);
         }
       };
