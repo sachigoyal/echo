@@ -1,0 +1,100 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Echo React SDK/Introduction" />
+
+# Echo React SDK
+
+Welcome to the Echo React SDK Storybook! This interactive documentation shows you how to use all the components in the Echo React SDK.
+
+## What is Echo?
+
+Echo is an LLM application platform that provides authentication, token management, and billing for AI-powered applications. The React SDK makes it easy to integrate Echo into your React applications.
+
+## Getting Started
+
+### Installation
+
+```bash
+npm install @echo-systems/react-sdk
+```
+
+### Basic Setup
+
+Wrap your application with the `EchoProvider`:
+
+```tsx
+import { EchoProvider } from '@echo-systems/react-sdk';
+
+function App() {
+  return (
+    <EchoProvider config={{
+      instanceId: 'your-echo-instance-id',
+      apiUrl: 'https://your-echo-server.com',
+    }}>
+      {/* Your app components */}
+    </EchoProvider>
+  );
+}
+```
+
+## Available Components
+
+### EchoProvider
+The root provider component that manages authentication state and configuration.
+
+### EchoSignIn
+A sign-in button component that handles OAuth2 + PKCE authentication flow.
+
+### EchoTokenPurchase
+A component for purchasing tokens through Stripe payments.
+
+## Hooks
+
+### useEcho
+The main hook for accessing Echo functionality:
+
+```tsx
+import { useEcho } from '@echo-systems/react-sdk';
+
+function MyComponent() {
+  const { 
+    user, 
+    balance, 
+    isAuthenticated, 
+    isLoading, 
+    signIn, 
+    signOut,
+    refreshBalance,
+    createPaymentLink 
+  } = useEcho();
+
+  // Use the Echo functionality
+}
+```
+
+## Authentication Flow
+
+1. User clicks the EchoSignIn component
+2. OAuth2 + PKCE flow is initiated
+3. User is redirected to Echo's authentication server
+4. After successful authentication, user is redirected back
+5. The SDK automatically handles token storage and refresh
+
+## Token Management
+
+Users can purchase tokens using the EchoTokenPurchase component, which:
+- Opens a Stripe payment popup
+- Handles the payment flow
+- Automatically refreshes the user's balance after successful payment
+
+## Configuration
+
+The EchoProvider accepts a config object with:
+
+- `instanceId` (required): Your Echo instance identifier
+- `apiUrl` (required): Your Echo server URL
+- `redirectUri` (optional): Custom redirect URI for OAuth flow
+
+## Support
+
+For questions and support, visit the [Echo documentation](https://docs.echo-systems.com) or contact our support team.

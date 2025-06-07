@@ -7,19 +7,22 @@
     "echo-control",
     "echo-server",
     "echo-typescript-sdk",
-    "create-echo-app"
+    "create-echo-app",
+    "echo-react-sdk"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces",
-    "build": "npm run build --workspaces",
-    "build:server": "cd echo-server && npm run build && cd ..",
-    "start:server": "cd echo-server && npm run start",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces --if-present",
-    "lint:fix": "npm run lint:fix --workspaces --if-present",
-    "type-check": "npm run type-check --workspaces",
+    "dev": "bun run dev --filter='*'",
+    "build": "bun run build --filter='*'",
+    "build:server": "cd echo-server && bun run build && cd ..",
+    "start:server": "cd echo-server && bun run start",
+    "test": "bun run test --filter='*'",
+    "lint": "bun run lint --filter='*'",
+    "lint:fix": "bun run lint:fix --filter='*'",
+    "type-check": "bun run type-check --filter='*'",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "example:vite": "cd examples/vite && bun run dev",
+    "example:storybook": "cd echo-react-sdk && bun run storybook",
     "prepare": "husky install"
   },
   "devDependencies": {
@@ -37,19 +40,22 @@
   },
   "lint-staged": {
     "echo-control/**/*.{ts,tsx,js,jsx}": [
-      "cd echo-control && npm run lint"
+      "cd echo-control && bun run lint"
     ],
     "echo-server/**/*.{ts,js}": [
-      "cd echo-server && npm run lint"
+      "cd echo-server && bun run lint"
     ],
     "echo-typescript-sdk/**/*.{ts,js}": [
-      "cd echo-typescript-sdk && npm run lint"
+      "cd echo-typescript-sdk && bun run lint"
     ],
     "create-echo-app/**/*.{ts,tsx,js,jsx}": [
-      "cd create-echo-app && npm run lint"
+      "cd create-echo-app && bun run lint"
+    ],
+    "echo-react-sdk/**/*.{ts,tsx,js,jsx}": [
+      "cd echo-react-sdk && bun run lint"
     ],
     "**/*.{ts,tsx,js,jsx,json,md}": [
-      "npm run format:check"
+      "bun run format:check"
     ]
   }
 }
