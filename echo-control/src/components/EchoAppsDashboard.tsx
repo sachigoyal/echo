@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useUser, useClerk } from '@clerk/nextjs';
-import {
-  PlusIcon,
-  KeyIcon,
-  ChartBarIcon,
-  UserIcon,
-  LogOutIcon,
-  TrashIcon,
-} from 'lucide-react';
 import CreateEchoAppModal from '@/components/CreateEchoAppModal';
+import { useClerk, useUser } from '@clerk/nextjs';
+import {
+  ChartBarIcon,
+  KeyIcon,
+  LogOutIcon,
+  PlusIcon,
+  TrashIcon,
+  UserIcon,
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface EchoApp {
   id: string;
@@ -54,7 +54,7 @@ export default function EchoAppsDashboard() {
         throw new Error(data.error || 'Failed to fetch echo apps');
       }
 
-      setEchoApps(data.echoApps || []);
+      setEchoApps(data.apps || []);
     } catch (error) {
       console.error('Error fetching echo apps:', error);
       setError(
@@ -94,7 +94,7 @@ export default function EchoAppsDashboard() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/echo-apps/${id}`, {
+      const response = await fetch(`/api/apps/${id}`, {
         method: 'DELETE',
       });
 
