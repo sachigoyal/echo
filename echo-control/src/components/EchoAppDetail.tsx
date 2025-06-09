@@ -214,7 +214,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   };
 
-  const handleDeleteApiKey = async (id: string) => {
+  const handleArchiveApiKey = async (id: string) => {
     setDeletingKeyId(id);
     try {
       const response = await fetch(`/api/api-keys/${id}`, {
@@ -223,12 +223,12 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete API key');
+        throw new Error(error.error || 'Failed to archive API key');
       }
 
       await fetchAppDetails(); // Refresh data
     } catch (error) {
-      console.error('Error deleting API key:', error);
+      console.error('Error archiving API key:', error);
     } finally {
       setDeletingKeyId(null);
     }
@@ -460,10 +460,10 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
                       <button
-                        onClick={() => handleDeleteApiKey(apiKey.id)}
+                        onClick={() => handleArchiveApiKey(apiKey.id)}
                         disabled={deletingKeyId === apiKey.id}
                         className="text-destructive hover:text-destructive/80 ml-2 disabled:opacity-50"
-                        title="Delete API Key"
+                        title="Archive API Key"
                       >
                         <Trash className="h-4 w-4" />
                       </button>

@@ -10,7 +10,11 @@ export async function GET(request: NextRequest) {
     const whereClause: {
       userId: string;
       id?: string;
-    } = { userId: user.id };
+      isArchived: boolean;
+    } = {
+      userId: user.id,
+      isArchived: false, // Only return non-archived apps
+    };
 
     // If using API key authentication, only return the app the key is scoped to
     if (isApiKeyAuth && echoApp) {
@@ -21,6 +25,9 @@ export async function GET(request: NextRequest) {
       where: whereClause,
       include: {
         apiKeys: {
+          where: {
+            isArchived: false, // Only include non-archived API keys
+          },
           select: {
             id: true,
             name: true,
@@ -32,8 +39,16 @@ export async function GET(request: NextRequest) {
         },
         _count: {
           select: {
-            apiKeys: true,
-            llmTransactions: true,
+            apiKeys: {
+              where: {
+                isArchived: false, // Only count non-archived API keys
+              },
+            },
+            llmTransactions: {
+              where: {
+                isArchived: false, // Only count non-archived transactions
+              },
+            },
           },
         },
       },
@@ -44,7 +59,10 @@ export async function GET(request: NextRequest) {
     const echoAppsWithStats = await Promise.all(
       echoApps.map(async app => {
         const transactions = await db.llmTransaction.aggregate({
-          where: { echoAppId: app.id },
+          where: {
+            echoAppId: app.id,
+            isArchived: false, // Only include non-archived transactions in stats
+          },
           _sum: {
             totalTokens: true,
             cost: true,

@@ -4,7 +4,7 @@ import { Balance, ApiKeyValidationResult } from './types';
 export interface DatabaseClient {
   apiKey: {
     findUnique: (params: {
-      where: { key: string; isActive: boolean };
+      where: { key: string; isActive: boolean; isArchived: boolean };
       include: { user: boolean; echoApp: boolean };
     }) => Promise<{
       userId: string;
@@ -14,6 +14,7 @@ export interface DatabaseClient {
         email: string;
         name: string | null;
         clerkId: string;
+        isArchived: boolean;
         createdAt: Date;
         updatedAt: Date;
       };
@@ -22,6 +23,7 @@ export interface DatabaseClient {
         name: string;
         description: string | null;
         isActive: boolean;
+        isArchived: boolean;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
@@ -30,13 +32,18 @@ export interface DatabaseClient {
   };
   payment: {
     aggregate: (params: {
-      where: { userId: string; status: string; echoAppId?: string };
+      where: {
+        userId: string;
+        status: string;
+        isArchived: boolean;
+        echoAppId?: string;
+      };
       _sum: { amount: boolean };
     }) => Promise<{ _sum: { amount: number | null } }>;
   };
   llmTransaction: {
     aggregate: (params: {
-      where: { userId: string; echoAppId?: string };
+      where: { userId: string; isArchived: boolean; echoAppId?: string };
       _sum: { cost: boolean };
     }) => Promise<{ _sum: { cost: any | null } }>;
     create: (params: {
@@ -77,6 +84,7 @@ export class EchoDbService {
         where: {
           key: cleanApiKey,
           isActive: true,
+          isArchived: false, // Only validate non-archived API keys
         },
         include: {
           user: true,
@@ -87,7 +95,9 @@ export class EchoDbService {
       if (
         !apiKeyRecord ||
         !apiKeyRecord.echoApp ||
-        !apiKeyRecord.echoApp.isActive
+        !apiKeyRecord.echoApp.isActive ||
+        apiKeyRecord.user.isArchived ||
+        apiKeyRecord.echoApp.isArchived
       ) {
         return null;
       }
@@ -131,14 +141,21 @@ export class EchoDbService {
       const paymentsFilter: {
         userId: string;
         status: string;
+        isArchived: boolean;
         echoAppId?: string;
       } = {
         userId: userId,
         status: 'completed',
+        isArchived: false, // Only include non-archived payments
       };
 
-      const transactionsFilter: { userId: string; echoAppId?: string } = {
+      const transactionsFilter: {
+        userId: string;
+        isArchived: boolean;
+        echoAppId?: string;
+      } = {
         userId: userId,
+        isArchived: false, // Only include non-archived transactions
       };
 
       // If echoAppId is provided, filter by app

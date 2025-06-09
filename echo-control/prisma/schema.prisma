@@ -13,6 +13,8 @@ model User {
   email           String           @unique
   name            String?
   clerkId         String           @unique
+  isArchived      Boolean          @default(false)
+  archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
   apiKeys         ApiKey[]
@@ -28,6 +30,8 @@ model EchoApp {
   name            String
   description     String?
   isActive        Boolean          @default(true)
+  isArchived      Boolean          @default(false)
+  archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
   userId          String           @db.Uuid
@@ -44,6 +48,8 @@ model ApiKey {
   key       String    @unique
   name      String?
   isActive  Boolean   @default(true)
+  isArchived Boolean  @default(false)
+  archivedAt DateTime? @db.Timestamptz
   lastUsed  DateTime? @db.Timestamptz
   metadata  Json?
   createdAt DateTime  @default(now()) @db.Timestamptz
@@ -63,6 +69,8 @@ model Payment {
   currency        String   @default("usd")
   status          String
   description     String?
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime? @db.Timestamptz
   createdAt       DateTime @default(now()) @db.Timestamptz
   updatedAt       DateTime @updatedAt @db.Timestamptz
   userId          String   @db.Uuid
@@ -84,6 +92,8 @@ model LlmTransaction {
   response     String?
   status       String
   errorMessage String?
+  isArchived   Boolean  @default(false)
+  archivedAt   DateTime? @db.Timestamptz
   createdAt    DateTime @default(now()) @db.Timestamptz
   userId       String   @db.Uuid
   echoAppId    String?  @db.Uuid

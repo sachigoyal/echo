@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: echoAppId,
         userId: user.id,
+        isArchived: false, // Only allow payments for non-archived apps
       },
     });
 

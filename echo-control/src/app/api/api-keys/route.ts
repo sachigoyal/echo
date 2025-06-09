@@ -9,7 +9,13 @@ export async function GET() {
     const user = await getCurrentUser();
 
     const apiKeys = await db.apiKey.findMany({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        isArchived: false, // Only return non-archived API keys
+        echoApp: {
+          isArchived: false, // Only include API keys from non-archived apps
+        },
+      },
       include: {
         echoApp: true,
       },
@@ -67,6 +73,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: echoAppId,
         userId: user.id,
+        isArchived: false, // Only allow creating API keys for non-archived apps
       },
     });
 

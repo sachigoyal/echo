@@ -3,6 +3,7 @@ node_modules/
 .env
 .aws-sam/
 .env.test
+.env.staging
 
 # Generated Prisma client (copied from echo-control)
 src/generated/

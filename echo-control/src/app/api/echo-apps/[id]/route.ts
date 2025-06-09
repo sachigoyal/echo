@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { softDeleteEchoApp } from '@/lib/soft-delete';
 
 // GET /api/echo-apps/[id] - Get detailed app information
 export async function GET(
@@ -20,21 +21,18 @@ export async function GET(
       );
     }
 
-    // Find the echo app
+    // Find the app and verify user access
     const app = await db.echoApp.findFirst({
       where: {
         id: appId,
         userId: user.id,
+        isArchived: false, // Only return non-archived apps
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-          },
-        },
         apiKeys: {
+          where: {
+            isArchived: false, // Only include non-archived API keys
+          },
           select: {
             id: true,
             name: true,
@@ -44,6 +42,20 @@ export async function GET(
             lastUsed: true,
           },
           orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            apiKeys: {
+              where: {
+                isArchived: false, // Only count non-archived API keys
+              },
+            },
+            llmTransactions: {
+              where: {
+                isArchived: false, // Only count non-archived transactions
+              },
+            },
+          },
         },
       },
     });
@@ -55,37 +67,46 @@ export async function GET(
       );
     }
 
-    // Get transaction statistics
+    // Get aggregated statistics for the app
     const stats = await db.llmTransaction.aggregate({
-      where: { echoAppId: appId },
+      where: {
+        echoAppId: appId,
+        isArchived: false, // Only include non-archived transactions in stats
+      },
+      _count: true,
       _sum: {
         totalTokens: true,
         inputTokens: true,
         outputTokens: true,
         cost: true,
       },
-      _count: true,
     });
 
     // Get model usage breakdown
     const modelUsage = await db.llmTransaction.groupBy({
       by: ['model'],
-      where: { echoAppId: appId },
+      where: {
+        echoAppId: appId,
+        isArchived: false, // Only include non-archived transactions
+      },
+      _count: true,
       _sum: {
         totalTokens: true,
         cost: true,
       },
-      _count: true,
       orderBy: {
         _sum: {
-          cost: 'desc',
+          totalTokens: 'desc',
         },
       },
     });
 
     // Get recent transactions
     const recentTransactions = await db.llmTransaction.findMany({
-      where: { echoAppId: appId },
+      where: {
+        echoAppId: appId,
+        isArchived: false, // Only include non-archived transactions
+      },
       select: {
         id: true,
         model: true,
@@ -159,6 +180,7 @@ export async function PUT(
       where: {
         id: appId,
         userId: user.id,
+        isArchived: false, // Only allow updating non-archived apps
       },
     });
 
@@ -217,7 +239,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/echo-apps/[id] - Delete an echo app
+// DELETE /api/echo-apps/[id] - Archive an echo app (soft delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -240,6 +262,7 @@ export async function DELETE(
       where: {
         id: appId,
         userId: user.id,
+        isArchived: false, // Only allow archiving non-archived apps
       },
     });
 
@@ -250,31 +273,15 @@ export async function DELETE(
       );
     }
 
-    // First delete related API keys
-    await db.apiKey.deleteMany({
-      where: {
-        echoAppId: appId,
-      },
-    });
-
-    // Then delete related transactions
-    await db.llmTransaction.deleteMany({
-      where: {
-        echoAppId: appId,
-      },
-    });
-
-    // Finally delete the app itself
-    await db.echoApp.delete({
-      where: { id: appId },
-    });
+    // Soft delete the echo app and all related records
+    await softDeleteEchoApp(appId);
 
     return NextResponse.json({
       success: true,
-      message: 'Echo app and related data deleted successfully',
+      message: 'Echo app and related data archived successfully',
     });
   } catch (error) {
-    console.error('Error deleting echo app:', error);
+    console.error('Error archiving echo app:', error);
 
     if (
       error instanceof Error &&
