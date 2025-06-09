@@ -9,13 +9,13 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "bun run type-check && echo 'All tests passed!'",
-    "lint": "bunx eslint src/**/*.ts",
-    "lint:fix": "bunx eslint src/**/*.ts --fix",
+    "test": "pnpm run type-check && echo 'All tests passed!'",
+    "lint": "pnpx eslint src/**/*.ts",
+    "lint:fix": "pnpx eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,js}\"",
     "format:check": "prettier --check \"**/*.{ts,js}\"",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [
     "react",

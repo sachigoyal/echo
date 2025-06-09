@@ -8,10 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "setup-webhook": "node scripts/setup-webhook.js",
-    "test": "bun run type-check && echo 'All tests passed!'",
-    "prisma:generate": "bunx prisma generate",
-    "prisma:push": "bunx prisma db push",
-    "prisma:studio": "bunx prisma studio"
+    "test": "pnpm run type-check && echo 'All tests passed!'",
+    "prisma:generate": "pnpx prisma generate",
+    "prisma:push": "pnpx prisma db push",
+    "prisma:studio": "pnpx prisma studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.20.2",
