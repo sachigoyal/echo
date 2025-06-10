@@ -1,94 +1,214 @@
-import { getAuthenticatedUser } from '@/lib/auth';
-import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { softDeleteEchoApp } from '@/lib/soft-delete';
+import { PermissionService } from '@/lib/permissions/service';
+import { Permission, AppRole } from '@/lib/permissions/types';
 
-interface RouteParams {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-// GET /api/apps/[id] - Get a specific Echo app
-export async function GET(req: NextRequest, { params }: RouteParams) {
+// GET /api/apps/[id] - Get detailed app information
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { user } = await getAuthenticatedUser(req);
-    const { id } = await params;
+    const { user, echoApp, isApiKeyAuth } = await getAuthenticatedUser(request);
+    const resolvedParams = await params;
+    const { id: appId } = resolvedParams;
 
-    const echoApp = await db.echoApp.findFirst({
+    // If using API key auth, ensure they can only access their scoped app
+    if (isApiKeyAuth && echoApp && echoApp.id !== appId) {
+      return NextResponse.json(
+        { error: 'Access denied: API key not scoped to this app' },
+        { status: 403 }
+      );
+    }
+
+    // Check if user has permission to read this app
+    const hasPermission = await PermissionService.hasPermission(
+      user.id,
+      appId,
+      Permission.READ_APP
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Echo app not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // Get user's role for this app to determine what data to show
+    const userRole = await PermissionService.getUserAppRole(user.id, appId);
+
+    // Find the app
+    const app = await db.echoApp.findFirst({
       where: {
-        id,
-        userId: user.id,
+        id: appId,
+        isArchived: false,
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        authorizedCallbackUrls: true,
-        apiKeys: {
-          where: { isActive: true },
+      include: {
+        user: {
           select: {
             id: true,
-            key: true,
+            email: true,
             name: true,
+          },
+        },
+        apiKeys: {
+          where: {
+            isArchived: false,
+            // Customers can only see their own API keys
+            ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
+          },
+          select: {
+            id: true,
+            name: true,
+            key: true,
+            isActive: true,
             createdAt: true,
             lastUsed: true,
-            metadata: true,
+            createdBy: {
+              select: {
+                email: true,
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                email: true,
+                name: true,
+              },
+            },
           },
           orderBy: { createdAt: 'desc' },
         },
         _count: {
           select: {
-            llmTransactions: true,
-            payments: true,
+            apiKeys: {
+              where: {
+                isArchived: false,
+                ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
+              },
+            },
+            llmTransactions: {
+              where: {
+                isArchived: false,
+                ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
+              },
+            },
           },
         },
       },
     });
 
-    if (!echoApp) {
+    if (!app) {
       return NextResponse.json(
-        { error: 'Echo app not found' },
+        { error: 'Echo app not found or access denied' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({
-      id: echoApp.id,
-      name: echoApp.name,
-      description: echoApp.description,
-      isActive: echoApp.isActive,
-      createdAt: echoApp.createdAt.toISOString(),
-      updatedAt: echoApp.updatedAt.toISOString(),
-      authorizedCallbackUrls: echoApp.authorizedCallbackUrls,
-      apiKeys: echoApp.apiKeys.map(key => ({
-        id: key.id,
-        key: key.key,
-        name: key.name,
-        isActive: true, // Keys are filtered to active ones only
-        createdAt: key.createdAt.toISOString(),
-        lastUsed: key.lastUsed?.toISOString() || null,
-        metadata: key.metadata,
-      })),
-      stats: {
-        totalTransactions: echoApp._count.llmTransactions,
-        totalTokens: 0, // TODO: Calculate from transactions
-        totalInputTokens: 0, // TODO: Calculate from transactions
-        totalOutputTokens: 0, // TODO: Calculate from transactions
-        totalCost: 0, // TODO: Calculate from transactions
-        modelUsage: [], // TODO: Calculate from transactions
+    // Get aggregated statistics for the app (filtered by user for customers)
+    const stats = await db.llmTransaction.aggregate({
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+        // Filter by user for customers
+        ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
       },
-      recentTransactions: [], // TODO: Fetch recent transactions
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name || undefined,
+      _count: true,
+      _sum: {
+        totalTokens: true,
+        inputTokens: true,
+        outputTokens: true,
+        cost: true,
       },
     });
+
+    // Get model usage breakdown (filtered by user for customers)
+    const modelUsage = await db.llmTransaction.groupBy({
+      by: ['model'],
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+        ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
+      },
+      _count: true,
+      _sum: {
+        totalTokens: true,
+        cost: true,
+      },
+      orderBy: {
+        _sum: {
+          totalTokens: 'desc',
+        },
+      },
+    });
+
+    // Get recent transactions (filtered by user for customers)
+    const recentTransactions = await db.llmTransaction.findMany({
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+        ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
+      },
+      select: {
+        id: true,
+        model: true,
+        totalTokens: true,
+        cost: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    // Calculate total spent for each API key
+    const apiKeysWithSpending = await Promise.all(
+      app.apiKeys.map(async apiKey => {
+        // Get total spending for this API key
+        // Note: We'll need to add apiKeyId to LlmTransaction model to track per-key spending
+        // For now, we'll set totalSpent to 0 as a placeholder
+        const totalSpent = 0; // TODO: Implement API key spending tracking
+
+        return {
+          ...apiKey,
+          totalSpent,
+          creator: apiKey.createdBy || apiKey.user || null,
+        };
+      })
+    );
+
+    const appWithStats = {
+      ...app,
+      apiKeys: apiKeysWithSpending,
+      stats: {
+        totalTransactions: stats._count || 0,
+        totalTokens: stats._sum.totalTokens || 0,
+        totalInputTokens: stats._sum.inputTokens || 0,
+        totalOutputTokens: stats._sum.outputTokens || 0,
+        totalCost: stats._sum.cost || 0,
+        modelUsage,
+      },
+      recentTransactions,
+    };
+
+    return NextResponse.json({ echoApp: appWithStats });
   } catch (error) {
-    console.error('Error fetching Echo app:', error);
+    console.error('Error fetching echo app:', error);
+
+    if (
+      error instanceof Error &&
+      (error.message === 'Not authenticated' ||
+        error.message.includes('Invalid'))
+    ) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -96,105 +216,84 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// PUT /api/apps/[id] - Update a specific Echo app
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+// PUT /api/apps/[id] - Update app information
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { user } = await getAuthenticatedUser(req);
-    const { id } = await params;
-    const body = await req.json();
+    const { user, isApiKeyAuth } = await getAuthenticatedUser(request);
+    const resolvedParams = await params;
+    const { id: appId } = resolvedParams;
 
-    const { name, description, is_active } = body;
-
-    // Validate input
-    const updateData: {
-      name?: string;
-      description?: string;
-      isActive?: boolean;
-    } = {};
-
-    if (name !== undefined) {
-      if (!name || typeof name !== 'string' || name.trim().length === 0) {
-        return NextResponse.json(
-          { error: 'App name is required' },
-          { status: 400 }
-        );
-      }
-      if (name.length > 100) {
-        return NextResponse.json(
-          { error: 'App name must be 100 characters or less' },
-          { status: 400 }
-        );
-      }
-      updateData.name = name.trim();
+    // API key users cannot update apps
+    if (isApiKeyAuth) {
+      return NextResponse.json(
+        { error: 'API key authentication cannot update apps' },
+        { status: 403 }
+      );
     }
 
-    if (description !== undefined) {
-      if (description !== null && typeof description !== 'string') {
-        return NextResponse.json(
-          { error: 'Description must be a string or null' },
-          { status: 400 }
-        );
-      }
-      if (description && description.length > 500) {
-        return NextResponse.json(
-          { error: 'Description must be 500 characters or less' },
-          { status: 400 }
-        );
-      }
-      updateData.description = description?.trim() || null;
-    }
+    const body = await request.json();
+    const { name, description, isActive } = body;
 
-    if (is_active !== undefined) {
-      if (typeof is_active !== 'boolean') {
-        return NextResponse.json(
-          { error: 'is_active must be a boolean' },
-          { status: 400 }
-        );
-      }
-      updateData.isActive = is_active;
-    }
-
-    // Check if app exists and user owns it
+    // Verify the echo app exists and belongs to the user
     const existingApp = await db.echoApp.findFirst({
       where: {
-        id,
+        id: appId,
         userId: user.id,
+        isArchived: false, // Only allow updating non-archived apps
       },
     });
 
     if (!existingApp) {
       return NextResponse.json(
-        { error: 'Echo app not found' },
+        { error: 'Echo app not found or access denied' },
         { status: 404 }
       );
     }
 
     // Update the app
     const updatedApp = await db.echoApp.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        authorizedCallbackUrls: true,
+      where: { id: appId },
+      data: {
+        ...(name && { name }),
+        ...(description !== undefined && { description: description || null }),
+        ...(isActive !== undefined && { isActive }),
+      },
+      include: {
+        apiKeys: {
+          select: {
+            id: true,
+            name: true,
+            isActive: true,
+            createdAt: true,
+          },
+        },
+        _count: {
+          select: {
+            apiKeys: true,
+            llmTransactions: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json({
-      id: updatedApp.id,
-      name: updatedApp.name,
-      description: updatedApp.description,
-      is_active: updatedApp.isActive,
-      created_at: updatedApp.createdAt.toISOString(),
-      updated_at: updatedApp.updatedAt.toISOString(),
-      authorized_callback_urls: updatedApp.authorizedCallbackUrls,
-    });
+    return NextResponse.json({ echoApp: updatedApp });
   } catch (error) {
-    console.error('Error updating Echo app:', error);
+    console.error('Error updating echo app:', error);
+
+    if (
+      error instanceof Error &&
+      (error.message === 'Not authenticated' ||
+        error.message.includes('Invalid'))
+    ) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -202,37 +301,61 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   }
 }
 
-// DELETE /api/apps/[id] - Delete a specific Echo app
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+// DELETE /api/apps/[id] - Archive an echo app (soft delete)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { user } = await getAuthenticatedUser(req);
-    const { id } = await params;
+    const { user, isApiKeyAuth } = await getAuthenticatedUser(request);
+    const resolvedParams = await params;
+    const { id: appId } = resolvedParams;
 
-    // Check if app exists and user owns it
+    // API key users cannot delete apps
+    if (isApiKeyAuth) {
+      return NextResponse.json(
+        { error: 'API key authentication cannot delete apps' },
+        { status: 403 }
+      );
+    }
+
+    // Verify the echo app exists and belongs to the user
     const existingApp = await db.echoApp.findFirst({
       where: {
-        id,
+        id: appId,
         userId: user.id,
+        isArchived: false, // Only allow archiving non-archived apps
       },
     });
 
     if (!existingApp) {
       return NextResponse.json(
-        { error: 'Echo app not found' },
+        { error: 'Echo app not found or access denied' },
         { status: 404 }
       );
     }
 
-    // Delete the app (cascade will handle related records)
-    await db.echoApp.delete({
-      where: { id },
-    });
+    // Soft delete the echo app and all related records
+    await softDeleteEchoApp(appId);
 
     return NextResponse.json({
-      message: 'Echo app deleted successfully',
+      success: true,
+      message: 'Echo app and related data archived successfully',
     });
   } catch (error) {
-    console.error('Error deleting Echo app:', error);
+    console.error('Error archiving echo app:', error);
+
+    if (
+      error instanceof Error &&
+      (error.message === 'Not authenticated' ||
+        error.message.includes('Invalid'))
+    ) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

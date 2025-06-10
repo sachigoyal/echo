@@ -1,5 +1,6 @@
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { AppRole, MembershipStatus } from '@/lib/permissions/types';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/apps - List all Echo apps for the authenticated user
@@ -9,7 +10,13 @@ export async function GET(req: NextRequest) {
 
     const echoApps = await db.echoApp.findMany({
       where: {
-        userId: user.id,
+        appMemberships: {
+          some: {
+            userId: user.id,
+            status: MembershipStatus.ACTIVE,
+            isArchived: false,
+          },
+        },
       },
       select: {
         id: true,
@@ -110,7 +117,15 @@ export async function POST(req: NextRequest) {
       data: {
         name: name.trim(),
         description: description?.trim() || null,
-        userId: user.id,
+        appMemberships: {
+          create: {
+            userId: user.id,
+            role: AppRole.OWNER,
+            status: MembershipStatus.ACTIVE,
+            isArchived: false,
+            totalSpent: 0,
+          },
+        },
         isActive: true,
         authorizedCallbackUrls: [], // Start with empty callback URLs
       },

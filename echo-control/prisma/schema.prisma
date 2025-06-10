@@ -18,37 +18,21 @@ model User {
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
-  apiKeys         ApiKey[]
-  echoApps        EchoApp[]
-  llmTransactions LlmTransaction[]
-  payments        Payment[]
-  refreshTokens   RefreshToken[]
+  apiKeys         ApiKey[]         // API keys owned by user
+  llmTransactions LlmTransaction[] // LLM transactions
+  payments        Payment[]        // payments made to the app
+  
+  totalPaid       Decimal  @db.Decimal(10, 6)   // Aggregate for Total payment amount
 
-  // New relations for customer/owner system
-  appMemberships  AppMembership[]
-  createdApiKeys  ApiKey[]        @relation("CreatedApiKeys")
-  paidPayments    Payment[]       @relation("PaidPayments")
-  billedTransactions LlmTransaction[] @relation("BilledTransactions")
+  totalSpent      Decimal  @db.Decimal(10, 6)  // Aggregate for Total spent across apps 
+  
+  refreshTokens   RefreshToken[]   // refresh tokens 
+  appMemberships  AppMembership[]  // Apps you are a member of
 
   @@map("users")
 }
 
 model EchoApp {
-<<<<<<< HEAD
-  id                    String           @id @default(uuid()) @db.Uuid
-  name                  String
-  description           String?
-  isActive              Boolean          @default(true)
-  authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
-  createdAt             DateTime         @default(now()) @db.Timestamptz
-  updatedAt             DateTime         @updatedAt @db.Timestamptz
-  userId                String           @db.Uuid
-  apiKeys               ApiKey[]
-  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  llmTransactions       LlmTransaction[]
-  payments              Payment[]
-  refreshTokens         RefreshToken[]
-=======
   id              String           @id @default(uuid()) @db.Uuid
   name            String
   description     String?
@@ -57,15 +41,11 @@ model EchoApp {
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
-  userId          String           @db.Uuid
-  apiKeys         ApiKey[]
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  llmTransactions LlmTransaction[]
-  payments        Payment[]
-  
-  // New relation for app memberships
-  appMemberships  AppMembership[]
->>>>>>> br/soft_delete
+  authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
+  apiKeys         ApiKey[]         // API keys for the app 
+  llmTransactions LlmTransaction[] // LLM transactions for that App
+  refreshTokens   RefreshToken[]   // Refresh tokens
+  appMemberships  AppMembership[]  // Customers of app and owners
 
   @@map("echo_apps")
 }
@@ -80,6 +60,7 @@ model AppMembership {
   archivedAt DateTime? @db.Timestamptz
   createdAt  DateTime  @default(now()) @db.Timestamptz
   updatedAt  DateTime  @updatedAt @db.Timestamptz
+  totalSpent Decimal  @db.Decimal(10, 6)  // Aggregate for Total spent by user for this app
   
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   echoApp EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
@@ -89,23 +70,8 @@ model AppMembership {
 }
 
 model ApiKey {
-<<<<<<< HEAD
-  id           String         @id @default(uuid()) @db.Uuid
-  key          String         @unique
-  name         String?
-  isActive     Boolean        @default(true)
-  lastUsed     DateTime?      @db.Timestamptz
-  metadata     Json?
-  createdAt    DateTime       @default(now()) @db.Timestamptz
-  updatedAt    DateTime       @updatedAt @db.Timestamptz
-  userId       String         @db.Uuid
-  echoAppId    String         @db.Uuid
-  echoApp      EchoApp        @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refreshTokens RefreshToken[]
-=======
   id              String    @id @default(uuid()) @db.Uuid
-  key             String    @unique
+  key             String    @unique /// NEEDS TO BE HASHED
   name            String?
   isActive        Boolean   @default(true)
   isArchived      Boolean   @default(false)
@@ -117,15 +83,12 @@ model ApiKey {
   userId          String    @db.Uuid
   echoAppId       String    @db.Uuid
   
-  // New columns for customer/owner system
-  createdByUserId String?   @db.Uuid
-  scope           String    @default("owner")
-  customerRole    String?
+  scope           String    @default("owner") 
+  // Permissions available to API key - can be <= to AppMembership.role for same (userId, echoAppId) pair
   
   echoApp   EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdBy User?   @relation("CreatedApiKeys", fields: [createdByUserId], references: [id], onDelete: SetNull)
->>>>>>> br/soft_delete
+  refreshTokens RefreshToken[]
 
   @@map("api_keys")
 }
@@ -133,6 +96,8 @@ model ApiKey {
 model RefreshToken {
   id        String   @id @default(uuid()) @db.Uuid
   token     String   @unique
+  isArchived      Boolean   @default(false)
+  archivedAt      DateTime? @db.Timestamptz
   expiresAt DateTime @db.Timestamptz
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now()) @db.Timestamptz
@@ -150,8 +115,8 @@ model RefreshToken {
 
 model Payment {
   id              String   @id @default(uuid()) @db.Uuid
-  stripePaymentId String?  @unique
-  amount          Int
+  stripePaymentId String   @unique
+  amount          Decimal  @db.Decimal(10, 6)
   currency        String   @default("usd")
   status          String
   description     String?
@@ -160,14 +125,8 @@ model Payment {
   createdAt       DateTime @default(now()) @db.Timestamptz
   updatedAt       DateTime @updatedAt @db.Timestamptz
   userId          String   @db.Uuid
-  echoAppId       String?  @db.Uuid
   
-  // New column for customer payments
-  payerUserId     String?  @db.Uuid
-  
-  echoApp EchoApp? @relation(fields: [echoAppId], references: [id])
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payer   User?    @relation("PaidPayments", fields: [payerUserId], references: [id], onDelete: SetNull)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
 
   @@map("payments")
 }
@@ -187,14 +146,10 @@ model LlmTransaction {
   archivedAt   DateTime? @db.Timestamptz
   createdAt    DateTime @default(now()) @db.Timestamptz
   userId       String   @db.Uuid
-  echoAppId    String?  @db.Uuid
+  echoAppId    String  @db.Uuid
   
-  // New column for customer billing
-  billedToUserId String? @db.Uuid
-  
-  echoApp  EchoApp? @relation(fields: [echoAppId], references: [id])
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  billedTo User?    @relation("BilledTransactions", fields: [billedToUserId], references: [id], onDelete: SetNull)
+  echoApp  EchoApp @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
 
   @@map("llm_transactions")
 }

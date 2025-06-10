@@ -37,15 +37,6 @@ export class PermissionService {
     userId: string,
     appId: string
   ): Promise<AppRole | null> {
-    // First check if user is the owner (backward compatibility)
-    const app = await db.echoApp.findFirst({
-      where: { id: appId, userId, isArchived: false },
-    });
-
-    if (app) {
-      return AppRole.OWNER;
-    }
-
     // Check app membership
     const membership = await db.appMembership.findFirst({
       where: {
@@ -92,14 +83,6 @@ export class PermissionService {
     role?: AppRole
   ): Promise<Array<{ app: EchoApp; userRole: AppRole }>> {
     const results: Array<{ app: EchoApp; userRole: AppRole }> = [];
-
-    // Get owned apps (backward compatibility)
-    const ownedApps = await db.echoApp.findMany({
-      where: { userId, isArchived: false },
-    });
-
-    results.push(...ownedApps.map(app => ({ app, userRole: AppRole.OWNER })));
-
     // Get membership apps
     const memberships = await db.appMembership.findMany({
       where: {

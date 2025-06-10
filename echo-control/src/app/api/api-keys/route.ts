@@ -27,9 +27,6 @@ export async function GET() {
         user: {
           select: { id: true, email: true, name: true },
         },
-        createdBy: {
-          select: { id: true, email: true, name: true },
-        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -134,9 +131,7 @@ export async function POST(request: NextRequest) {
         name: name || 'API Key',
         userId: user.id,
         echoAppId,
-        createdByUserId: user.id,
         scope,
-        customerRole: userRole,
       },
       include: {
         echoApp: true,

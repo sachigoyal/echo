@@ -1,5 +1,6 @@
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { MembershipStatus } from '@/lib/permissions/types';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface RouteParams {
@@ -17,7 +18,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const echoApp = await db.echoApp.findFirst({
       where: {
         id,
-        userId: user.id,
+        appMemberships: {
+          some: {
+            userId: user.id,
+            status: MembershipStatus.ACTIVE,
+            isArchived: false,
+          },
+        },
       },
       select: {
         id: true,
@@ -109,7 +116,13 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const echoApp = await db.echoApp.findFirst({
       where: {
         id,
-        userId: user.id,
+        appMemberships: {
+          some: {
+            userId: user.id,
+            status: MembershipStatus.ACTIVE,
+            isArchived: false,
+          },
+        },
       },
     });
 
@@ -199,7 +212,13 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const echoApp = await db.echoApp.findFirst({
       where: {
         id,
-        userId: user.id,
+        appMemberships: {
+          some: {
+            userId: user.id,
+            status: MembershipStatus.ACTIVE,
+            isArchived: false,
+          },
+        },
       },
     });
 
@@ -265,7 +284,13 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     const echoApp = await db.echoApp.findFirst({
       where: {
         id,
-        userId: user.id,
+        appMemberships: {
+          some: {
+            userId: user.id,
+            status: MembershipStatus.ACTIVE,
+            isArchived: false,
+          },
+        },
       },
     });
 
