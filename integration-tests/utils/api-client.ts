@@ -1,5 +1,4 @@
-// Temporarily commented out until Prisma client issue is resolved
-// import { TEST_DATA } from '../scripts/seed-integration-db';
+import { TEST_CONFIG } from '../config/index.js';
 
 export interface EchoControlApiClient {
   baseUrl: string;
@@ -9,12 +8,10 @@ export interface EchoControlApiClient {
 export class EchoControlApiClient {
   private integrationJwt: string | undefined;
 
-  constructor(
-    baseUrl: string = process.env.ECHO_CONTROL_URL || 'http://localhost:3001'
-  ) {
+  constructor(baseUrl: string = TEST_CONFIG.services.echoControl) {
     this.baseUrl = baseUrl;
     this.fetch = fetch;
-    this.integrationJwt = process.env.INTEGRATION_TEST_JWT;
+    this.integrationJwt = TEST_CONFIG.auth.integrationJwt;
   }
 
   private async request<T>(
@@ -163,18 +160,21 @@ export class EchoControlApiClient {
   }> {
     const url = `${this.baseUrl}/api/validate-jwt-token`;
     console.log('🔧 Making JWT validation request to:', url);
-    console.log('🔧 Headers being sent:', {
+
+    // Only send X-Echo-Token header - this endpoint should be public
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'X-Echo-Token': jwtToken, // Our Echo token to validate
+    };
+
+    console.log('🔧 Headers being sent:', {
+      'Content-Type': headers['Content-Type'],
       'X-Echo-Token': jwtToken.substring(0, 50) + '...',
     });
 
     const response = await this.fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.integrationJwt}`, // Clerk JWT for endpoint auth
-        'X-Echo-Token': jwtToken, // Echo token to validate
-      },
+      headers,
       body: JSON.stringify({}), // Empty body to prevent JSON parsing errors
     });
 
@@ -236,13 +236,5 @@ export class EchoControlApiClient {
 // Export a default instance with test configuration
 export const echoControlApi = new EchoControlApiClient();
 
-// Export test client IDs for easy access (matches seeded data)
-export const TEST_CLIENT_IDS = {
-  primary: '87654321-4321-4321-4321-fedcba987654',
-  secondary: '44444444-4444-4444-4444-444444444444',
-};
-
-export const TEST_USER_IDS = {
-  primary: '11111111-1111-1111-1111-111111111111',
-  secondary: '33333333-3333-3333-3333-333333333333',
-};
+// Re-export test IDs from centralized config
+export { TEST_CLIENT_IDS, TEST_USER_IDS } from '../config/index.js';

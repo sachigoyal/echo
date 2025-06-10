@@ -1,49 +1,17 @@
-import { config } from 'dotenv';
-import { resolve } from 'path';
+// This file is now deprecated - environment loading is handled by config/test-config.ts
+// Keep for backward compatibility until all references are updated
+
+import { TEST_CONFIG } from '../config/index.js';
 
 export function loadIntegrationTestEnv() {
-  console.log('🔧 Loading integration test environment...');
-
-  // Load in order of precedence (last one wins)
-  const envFiles = [
-    '.env.integration', // Default integration settings
-    '.env.integration.local', // Local overrides (gitignored)
-    '.env.integration.ci', // CI-specific overrides
-  ];
-
-  for (const envFile of envFiles) {
-    const envPath = resolve(process.cwd(), envFile);
-    try {
-      config({ path: envPath });
-      console.log(`✅ Loaded ${envFile}`);
-    } catch (error) {
-      console.log(`⚠️  ${envFile} not found (optional)`);
-    }
-  }
-
-  // Validate required environment variables
-  const requiredVars = [
-    'DATABASE_URL',
-    'ECHO_CONTROL_URL',
-    'JWT_SECRET',
-    'CLERK_SECRET_KEY',
-    'INTEGRATION_TEST_JWT',
-  ];
-
-  const missing = requiredVars.filter(varName => !process.env[varName]);
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}`
-    );
-  }
+  console.log('🔧 Loading integration test environment (via TEST_CONFIG)...');
 
   console.log('✅ All required environment variables loaded');
-  console.log(`🎯 Echo Control URL: ${process.env.ECHO_CONTROL_URL}`);
+  console.log(`🎯 Echo Control URL: ${TEST_CONFIG.services.echoControl}`);
   console.log(
-    `🗄️  Database: ${process.env.DATABASE_URL?.split('@')[1] || 'Unknown'}`
+    `🗄️  Database: ${TEST_CONFIG.database.host}:${TEST_CONFIG.database.port}/${TEST_CONFIG.database.name}`
   );
 }
 
-// Auto-load when imported (always run in test environment)
+// Auto-load when imported for backward compatibility
 loadIntegrationTestEnv();

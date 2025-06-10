@@ -21,7 +21,8 @@ services:
       context: ../../
       dockerfile: echo-control/Dockerfile.test
     env_file:
-      - ../.env.integration.local
+      - ../.env.test
+      - ./.env.docker       # Docker-specific overrides
     ports:
       - "3001:3000"
     depends_on:

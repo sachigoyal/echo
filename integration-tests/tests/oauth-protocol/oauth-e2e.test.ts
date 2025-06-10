@@ -6,14 +6,13 @@ import {
   generateCodeChallenge,
   generateState,
   echoControlApi,
+  TEST_CONFIG,
 } from '../../utils/index.js';
-import { SignJWT } from 'jose';
-import { nanoid } from 'nanoid';
 
 describe('OAuth End-to-End Flow Tests', () => {
   beforeAll(async () => {
     // Verify test environment
-    expect(process.env.ECHO_CONTROL_URL).toBeTruthy();
+    expect(TEST_CONFIG.services.echoControl).toBeTruthy();
     expect(process.env.INTEGRATION_TEST_JWT).toBeTruthy();
   });
 
@@ -27,87 +26,41 @@ describe('OAuth End-to-End Flow Tests', () => {
         'Testing real OAuth authorize endpoint with proper authentication...'
       );
 
-      try {
-        const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
-          client_id: TEST_CLIENT_IDS.primary,
-          redirect_uri: 'http://localhost:3000/callback',
-          state,
-          code_challenge: codeChallenge,
-          code_challenge_method: 'S256',
-          scope: 'llm:invoke offline_access',
-          prompt: 'none', // Skip consent page for automated testing
-        });
+      const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        scope: 'llm:invoke offline_access',
+        prompt: 'none', // Skip consent page for automated testing
+      });
 
-        console.log('OAuth authorize succeeded! Redirect URL:', redirectUrl);
+      console.log('OAuth authorize succeeded! Redirect URL:', redirectUrl);
 
-        // Extract authorization code from callback URL
-        const callbackUrl = new URL(redirectUrl);
-        const authCode = callbackUrl.searchParams.get('code');
-        const returnedState = callbackUrl.searchParams.get('state');
+      // Extract authorization code from callback URL
+      const callbackUrl = new URL(redirectUrl);
+      const authCode = callbackUrl.searchParams.get('code');
+      const returnedState = callbackUrl.searchParams.get('state');
 
-        expect(authCode).toBeTruthy();
-        expect(returnedState).toBe(state);
+      expect(authCode).toBeTruthy();
+      expect(returnedState).toBe(state);
 
-        console.log('✅ Got real authorization code from server!');
+      console.log('✅ Got real authorization code from server!');
 
-        // Store for next test
-        (globalThis as any).testAuthCode = authCode;
-        (globalThis as any).testCodeVerifier = codeVerifier;
-        (globalThis as any).testState = state;
-        (globalThis as any).testIsRealCode = true;
-      } catch (error) {
-        console.log(
-          '❌ Real OAuth flow failed, falling back to mock code creation'
-        );
-        console.log('Error:', error.message);
-
-        // Fall back to creating mock authorization code
-        console.log('Creating mock authorization code as fallback...');
-        const authCode = nanoid(32);
-        const exp = Math.floor(Date.now() / 1000) + 300; // 5 minutes
-
-        const OAUTH_JWT_SECRET = new TextEncoder().encode(
-          process.env.OAUTH_JWT_SECRET || 'your-secret-key-change-in-production'
-        );
-
-        const authCodeJwt = await new SignJWT({
-          clientId: TEST_CLIENT_IDS.primary,
-          redirectUri: 'http://localhost:3000/callback',
-          codeChallenge,
-          codeChallengeMethod: 'S256',
-          scope: 'llm:invoke offline_access',
-          userId: 'user_clerk_test_123', // Use Clerk ID, not database ID
-          exp,
-          code: authCode,
-        })
-          .setProtectedHeader({ alg: 'HS256' })
-          .setIssuedAt()
-          .setExpirationTime(exp)
-          .sign(OAUTH_JWT_SECRET);
-
-        console.log('Created mock authorization code JWT');
-
-        // Store for next test
-        (globalThis as any).testAuthCode = authCodeJwt;
-        (globalThis as any).testCodeVerifier = codeVerifier;
-        (globalThis as any).testState = state;
-        (globalThis as any).testIsRealCode = false;
-      }
+      // Store for next test
+      (globalThis as any).testAuthCode = authCode;
+      (globalThis as any).testCodeVerifier = codeVerifier;
+      (globalThis as any).testState = state;
     });
   });
 
   describe('Step 2: Authorization Code Ready', () => {
     test('has authorization code ready for token exchange', async () => {
       const authCode = (globalThis as any).testAuthCode;
-      const isRealCode = (globalThis as any).testIsRealCode;
 
       expect(authCode).toBeTruthy();
-
-      if (isRealCode) {
-        console.log('✅ Using REAL authorization code from OAuth server');
-      } else {
-        console.log('⚠️ Using mock authorization code (real OAuth failed)');
-      }
+      console.log('✅ Using REAL authorization code from OAuth server');
 
       expect(authCode.split('.')).toHaveLength(3); // Valid JWT structure
     });
@@ -179,25 +132,19 @@ describe('OAuth End-to-End Flow Tests', () => {
       console.log('Validation result:', {
         valid: validationResult.valid,
         error: validationResult.error,
-        claims: validationResult.claims
-          ? {
-              user_id: validationResult.claims.user_id,
-              app_id: validationResult.claims.app_id,
-              scope: validationResult.claims.scope,
-              exp: validationResult.claims.exp,
-            }
-          : null,
+        userId: validationResult.userId,
+        appId: validationResult.appId,
+        scope: validationResult.scope,
       });
 
       // Verify token is valid
       expect(validationResult.valid).toBe(true);
-      expect(validationResult.claims).toBeTruthy();
+      expect(validationResult.userId).toBeTruthy();
 
       // Verify token claims
-      expect(validationResult.claims.user_id).toBe(TEST_USER_IDS.primary);
-      expect(validationResult.claims.app_id).toBe(TEST_CLIENT_IDS.primary);
-      expect(validationResult.claims.scope).toBe('llm:invoke offline_access');
-      expect(validationResult.claims.exp).toBeGreaterThan(Date.now() / 1000);
+      expect(validationResult.userId).toBe(TEST_USER_IDS.primary);
+      expect(validationResult.appId).toBe(TEST_CLIENT_IDS.primary);
+      expect(validationResult.scope).toBe('llm:invoke offline_access');
     });
   });
 });

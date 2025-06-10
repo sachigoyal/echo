@@ -1,5 +1,9 @@
 import { describe, test, expect, beforeAll } from 'vitest';
-import { echoControlApi, TEST_CLIENT_IDS } from '../../utils/index.js';
+import {
+  echoControlApi,
+  TEST_CLIENT_IDS,
+  TEST_CONFIG,
+} from '../../utils/index.js';
 
 describe('OAuth Refresh Token Tests', () => {
   beforeAll(async () => {
@@ -20,7 +24,7 @@ describe('OAuth Refresh Token Tests', () => {
     test('rejects missing grant type in custom request', async () => {
       // Test direct API call without grant_type to ensure server validation
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {
@@ -43,7 +47,7 @@ describe('OAuth Refresh Token Tests', () => {
 
     test('rejects wrong grant type in custom request', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {
@@ -66,7 +70,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Refresh Token Validation', () => {
     test('rejects missing refresh token', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {
@@ -139,7 +143,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Client Validation', () => {
     test('rejects missing client_id', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {
@@ -193,7 +197,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Content-Type Handling', () => {
     test('supports application/json content-type', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {
@@ -222,7 +226,7 @@ describe('OAuth Refresh Token Tests', () => {
       });
 
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {
@@ -243,7 +247,7 @@ describe('OAuth Refresh Token Tests', () => {
 
     test('rejects unsupported content-types', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {
@@ -270,7 +274,7 @@ describe('OAuth Refresh Token Tests', () => {
       });
 
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh?${params.toString()}`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh?${params.toString()}`,
         {
           method: 'GET',
         }
@@ -282,7 +286,7 @@ describe('OAuth Refresh Token Tests', () => {
 
     test('rejects PUT requests', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'PUT',
           headers: {
@@ -304,7 +308,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Error Response Format', () => {
     test('returns consistent OAuth error format', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
         {
           method: 'POST',
           headers: {

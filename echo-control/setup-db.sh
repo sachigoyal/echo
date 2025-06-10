@@ -19,8 +19,8 @@ STRIPE_PUBLISHABLE_KEY="mock_stripe_publishable_key"
 STRIPE_WEBHOOK_SECRET="mock_webhook_secret"
 
 # Application
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
+ECHO_CONTROL_APP_BASE_URL="http://localhost:3000"
+# NEXTAUTH_SECRET is no longer needed (removed)
 API_KEY_PREFIX="echo_"
 EOF
     echo "✅ .env file created"

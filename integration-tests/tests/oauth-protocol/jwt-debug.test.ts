@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { echoControlApi } from '../../utils/index.js';
+import { echoControlApi, TEST_CONFIG } from '../../utils/index.js';
 
 describe('JWT Debug Test', () => {
   test('test header processing with direct request', async () => {
@@ -12,7 +12,7 @@ describe('JWT Debug Test', () => {
     const clerkJwt = process.env.INTEGRATION_TEST_JWT;
 
     const responseBoth = await fetch(
-      `${process.env.ECHO_CONTROL_URL}/api/validate-jwt-token`,
+      `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
       {
         method: 'POST',
         headers: {
@@ -29,7 +29,7 @@ describe('JWT Debug Test', () => {
 
     // Try with just X-Echo-Token header (original approach)
     const responseEcho = await fetch(
-      `${process.env.ECHO_CONTROL_URL}/api/validate-jwt-token`,
+      `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
       {
         method: 'POST',
         headers: {

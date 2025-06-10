@@ -1,4 +1,5 @@
 import { describe, test, expect, beforeAll } from 'vitest';
+import { TEST_CONFIG } from '../../utils/index.js';
 
 describe('Basic Connectivity Test', () => {
   beforeAll(async () => {
@@ -6,10 +7,11 @@ describe('Basic Connectivity Test', () => {
   });
 
   test('environment variables are loaded', () => {
-    expect(process.env.ECHO_CONTROL_URL).toBeDefined();
+    expect(TEST_CONFIG.services.echoControl).toBeDefined();
     expect(process.env.DATABASE_URL).toBeDefined();
     expect(process.env.JWT_SECRET).toBeDefined();
-    expect(process.env.CLERK_SECRET_KEY).toBeDefined();
+    expect(process.env.CLERK_PUBLISHABLE_KEY).toBeDefined();
+    expect(process.env.INTEGRATION_TEST_JWT).toBeDefined();
   });
 
   test('can import utility functions', async () => {
@@ -32,7 +34,9 @@ describe('Basic Connectivity Test', () => {
   });
 
   test('can reach echo-control health endpoint', async () => {
-    const response = await fetch(`${process.env.ECHO_CONTROL_URL}/api/health`);
+    const response = await fetch(
+      `${TEST_CONFIG.services.echoControl}/api/health`
+    );
     expect(response.ok).toBe(true);
 
     const health = await response.json();

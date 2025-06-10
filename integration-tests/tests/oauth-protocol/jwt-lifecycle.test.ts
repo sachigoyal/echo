@@ -3,6 +3,7 @@ import {
   echoControlApi,
   TEST_CLIENT_IDS,
   TEST_USER_IDS,
+  TEST_CONFIG,
 } from '../../utils/index.js';
 
 describe('JWT Token Lifecycle Tests', () => {
@@ -20,7 +21,8 @@ describe('JWT Token Lifecycle Tests', () => {
           code: mockCode,
           client_id: TEST_CLIENT_IDS.primary,
           redirect_uri: 'http://localhost:3000/callback',
-          code_verifier: 'test-verifier-for-jwt-validation',
+          code_verifier:
+            'test-verifier-for-jwt-validation-that-meets-minimum-43-character-requirement-for-pkce',
         })
       ).rejects.toThrow(/invalid.*grant|authorization.*code/i);
     });
@@ -109,7 +111,7 @@ describe('JWT Token Lifecycle Tests', () => {
       const invalidToken = 'invalid.jwt.token';
 
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/validate-jwt-token`,
+        `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
         {
           method: 'POST',
           headers: {
@@ -138,7 +140,7 @@ describe('JWT Token Lifecycle Tests', () => {
       const invalidToken = 'invalid.jwt.token';
 
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/validate-jwt-token`,
+        `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
         {
           method: 'POST',
           headers: {
@@ -156,7 +158,7 @@ describe('JWT Token Lifecycle Tests', () => {
 
     test('rejects requests with missing token headers', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/validate-jwt-token`,
+        `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
         {
           method: 'POST',
           headers: {
@@ -192,7 +194,7 @@ describe('JWT Token Lifecycle Tests', () => {
 
     test('handles HTTP method validation', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/validate-jwt-token`,
+        `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
         {
           method: 'GET', // Wrong method
         }
@@ -204,7 +206,7 @@ describe('JWT Token Lifecycle Tests', () => {
 
     test('handles content-type validation', async () => {
       const response = await fetch(
-        `${process.env.ECHO_CONTROL_URL}/api/validate-jwt-token`,
+        `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
         {
           method: 'POST',
           headers: {

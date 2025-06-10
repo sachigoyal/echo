@@ -5,11 +5,12 @@ import {
   generateCodeChallenge,
   generateState,
   echoControlApi,
+  TEST_CONFIG,
 } from '../../utils/index.js';
 
 describe('OAuth Authorization Minimal Test', () => {
   beforeAll(async () => {
-    expect(process.env.ECHO_CONTROL_URL).toBeTruthy();
+    expect(TEST_CONFIG.services.echoControl).toBeTruthy();
     expect(process.env.INTEGRATION_TEST_JWT).toBeTruthy();
 
     // Verify basic connectivity

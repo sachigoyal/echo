@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import {
   echoControlApi,
   TEST_CLIENT_IDS,
+  TEST_CONFIG,
   generateCodeVerifier,
   generateCodeChallenge,
   generateState,
@@ -126,7 +127,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           code_challenge_method: method,
         });
 
-        const url = `${process.env.ECHO_CONTROL_URL}/api/oauth/authorize?${params.toString()}`;
+        const url = `${TEST_CONFIG.services.echoControl}/api/oauth/authorize?${params.toString()}`;
 
         const response = await fetch(url, {
           method: 'GET',
@@ -182,7 +183,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           response_type: responseType,
         });
 
-        const url = `${process.env.ECHO_CONTROL_URL}/api/oauth/authorize?${params.toString()}`;
+        const url = `${TEST_CONFIG.services.echoControl}/api/oauth/authorize?${params.toString()}`;
 
         const response = await fetch(url, {
           method: 'GET',

@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./scripts/load-test-env.ts'],
+    setupFiles: ['./config/test-config.ts'],
     testTimeout: 30000,
     hookTimeout: 30000,
     teardownTimeout: 30000,
@@ -13,6 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './'),
+      '@config': resolve(__dirname, './config'),
       '@utils': resolve(__dirname, './utils'),
       '@tests': resolve(__dirname, './tests'),
       '@prisma/client': resolve(

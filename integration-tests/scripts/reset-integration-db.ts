@@ -1,6 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../echo-control/src/generated/prisma/index.js';
+import { TEST_CONFIG } from '../config/index.js';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: TEST_CONFIG.database.url,
+    },
+  },
+});
 
 export async function resetIntegrationDatabase() {
   console.log('🗑️  Resetting integration test database...');

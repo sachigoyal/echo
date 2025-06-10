@@ -5,6 +5,9 @@ export * from './auth-helpers';
 export * from './test-data-factory';
 export * from './browser-helpers';
 
+// Re-export configuration and test data
+export * from '../config/index.js';
+
 // Re-export important types and constants
 export type { EchoControlApiClient } from './api-client';
 
@@ -29,9 +32,3 @@ export type {
 
 // Export commonly used instances
 export { echoControlApi, TEST_CLIENT_IDS, TEST_USER_IDS } from './api-client';
-
-// Temporarily commented out until Prisma client issue is resolved
-// export { testDataFactory } from './test-data-factory';
-
-// Temporarily commented out until Prisma client issue is resolved
-// export { TEST_DATA } from '../scripts/seed-integration-db';

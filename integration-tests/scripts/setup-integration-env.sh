@@ -11,15 +11,15 @@ cd "$(dirname "$0")/.."
 # Detect environment
 if [ "$CI" = "true" ]; then
     echo "📦 Running in CI environment"
-    ENV_FILE=".env.integration.ci"
+    ENV_FILE=".env.test"
     IS_CI=true
-elif [ -f ".env.integration.local" ]; then
+elif [ -f ".env.test.local" ]; then
     echo "🏠 Using local integration environment"
-    ENV_FILE=".env.integration.local"
+    ENV_FILE=".env.test.local"
     IS_CI=false
 else
     echo "🔧 Using default integration environment"
-    ENV_FILE=".env.integration"
+    ENV_FILE=".env.test"
     IS_CI=false
 fi
 
@@ -46,7 +46,8 @@ required_vars=(
     "DATABASE_URL"
     "ECHO_CONTROL_URL"
     "JWT_SECRET"
-    "CLERK_SECRET_KEY"
+    "CLERK_PUBLISHABLE_KEY"
+    "INTEGRATION_TEST_JWT"
 )
 
 missing_vars=()
@@ -93,8 +94,15 @@ if [ "$IS_CI" != "true" ]; then
             break
         fi
         
-        if docker-compose -f docker/docker-compose.yml ps | grep -q "healthy"; then
+        # Check if all services (including echo-control) are healthy
+        if docker-compose -f docker/docker-compose.yml ps | grep -q "healthy" && \
+           curl -f "$ECHO_CONTROL_URL/api/health" >/dev/null 2>&1; then
             echo "✅ Services are healthy"
+            
+            # Seed the database
+            echo "🌱 Seeding integration test database..."
+            pnpm db:seed
+            
             exit 0
         fi
         

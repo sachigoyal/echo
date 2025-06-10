@@ -81,7 +81,9 @@ export async function POST(request: NextRequest) {
       after_completion: {
         type: 'redirect',
         redirect: {
-          url: process.env.NEXTAUTH_URL + `/apps/${echoAppId}?payment=success`,
+          url:
+            process.env.ECHO_CONTROL_APP_BASE_URL +
+            `/apps/${echoAppId}?payment=success`,
         },
       },
     });
