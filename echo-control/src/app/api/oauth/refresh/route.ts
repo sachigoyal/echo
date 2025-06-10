@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { createApiToken } from '@/lib/jwt-tokens';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
+import { hashApiKey } from '@/lib/crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
 
     /* 4️⃣ Generate new API key (rotate the access token) */
     const newKeyValue = `echo_${nanoid(40)}`;
+    const keyHash = hashApiKey(newKeyValue);
 
     // Deactivate old API key
     await db.apiKey.update({
@@ -92,7 +94,7 @@ export async function POST(req: NextRequest) {
     // Create new API key
     const newApiKey = await db.apiKey.create({
       data: {
-        key: newKeyValue,
+        keyHash,
         name: 'OAuth Generated (Refreshed)',
         userId: refreshTokenRecord.userId,
         echoAppId: refreshTokenRecord.echoAppId,
@@ -159,7 +161,7 @@ export async function POST(req: NextRequest) {
       },
       _internal: {
         api_key_id: newApiKey.id,
-        api_key_prefix: newApiKey.key.slice(0, 10),
+        // Note: Original key is not stored in plaintext for security
       },
     });
   } catch (error) {

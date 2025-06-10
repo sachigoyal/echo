@@ -36,7 +36,6 @@ interface EchoApp {
   apiKeys: Array<{
     id: string;
     name?: string;
-    key: string;
     isActive: boolean;
     createdAt: string;
     lastUsed?: string;
@@ -426,9 +425,6 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     Total Spent
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Prefix
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Last Used
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -452,9 +448,6 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
                       {formatCurrency(apiKey.totalSpent)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-muted-foreground">
-                      {apiKey.key?.slice(0, 10)}...
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
                       {apiKey.lastUsed

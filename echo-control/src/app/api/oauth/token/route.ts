@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole } from '@/lib/permissions/types';
+import { hashApiKey } from '@/lib/crypto';
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
 const JWT_SECRET = new TextEncoder().encode(
@@ -200,10 +201,11 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       // Generate new API key
       const keyValue = `echo_${nanoid(40)}`;
+      const keyHash = hashApiKey(keyValue);
 
       apiKey = await db.apiKey.create({
         data: {
-          key: keyValue,
+          keyHash,
           name: 'OAuth Generated',
           userId: user.id,
           echoAppId: echoApp.id,
@@ -272,10 +274,10 @@ export async function POST(req: NextRequest) {
         name: echoApp.name,
         description: echoApp.description,
       },
-      // Include raw API key for admin purposes (optional)
+      // Include API key info for admin purposes (optional)
       _internal: {
         api_key_id: apiKey.id,
-        api_key_prefix: apiKey.key.slice(0, 10),
+        // Note: Original key is not stored in plaintext for security
       },
     });
 

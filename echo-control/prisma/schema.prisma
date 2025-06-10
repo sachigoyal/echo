@@ -71,7 +71,7 @@ model AppMembership {
 
 model ApiKey {
   id              String    @id @default(uuid()) @db.Uuid
-  key             String    @unique /// NEEDS TO BE HASHED
+  keyHash         String    @unique /// Deterministic HMAC-SHA256 hash of the API key for secure storage and O(1) lookup
   name            String?
   isActive        Boolean   @default(true)
   isArchived      Boolean   @default(false)

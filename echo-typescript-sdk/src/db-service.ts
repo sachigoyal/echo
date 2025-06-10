@@ -1,16 +1,31 @@
 import { Balance, ApiKeyValidationResult } from './types';
+import { createHmac } from 'crypto';
+
+/**
+ * Secret key for deterministic API key hashing (should match echo-control)
+ */
+const API_KEY_SECRET =
+  process.env.API_KEY_SECRET || 'change-this-in-production-very-secret-key';
+
+/**
+ * Hash an API key deterministically for O(1) database lookup
+ */
+function hashApiKey(apiKey: string): string {
+  return createHmac('sha256', API_KEY_SECRET).update(apiKey).digest('hex');
+}
 
 // Generic database client interface to avoid direct Prisma dependency
 export interface DatabaseClient {
   apiKey: {
     findUnique: (params: {
-      where: { key: string; isActive: boolean; isArchived: boolean };
+      where: { keyHash: string };
       include: { user: boolean; echoApp: boolean };
     }) => Promise<{
       id: string;
-      key: string;
+      keyHash: string;
       name: string | null;
       isActive: boolean;
+      isArchived: boolean;
       lastUsed: Date | null;
       metadata: any;
       createdAt: Date;
@@ -117,11 +132,13 @@ export class EchoDbService {
       // Remove Bearer prefix if present
       const cleanApiKey = apiKey.replace('Bearer ', '');
 
+      // Hash the provided API key for direct O(1) lookup
+      const keyHash = hashApiKey(cleanApiKey);
+
+      // Direct lookup by keyHash - O(1) operation!
       const apiKeyRecord = await this.db.apiKey.findUnique({
         where: {
-          key: cleanApiKey,
-          isActive: true,
-          isArchived: false, // Only validate non-archived API keys
+          keyHash,
         },
         include: {
           user: true,
@@ -129,12 +146,14 @@ export class EchoDbService {
         },
       });
 
+      // Verify the API key is valid and all related entities are active
       if (
         !apiKeyRecord ||
-        !apiKeyRecord.echoApp ||
-        !apiKeyRecord.echoApp.isActive ||
+        !apiKeyRecord.isActive ||
+        apiKeyRecord.isArchived ||
         apiKeyRecord.user.isArchived ||
-        apiKeyRecord.echoApp.isArchived
+        apiKeyRecord.echoApp.isArchived ||
+        !apiKeyRecord.echoApp.isActive
       ) {
         return null;
       }
@@ -164,7 +183,7 @@ export class EchoDbService {
         },
         apiKey: {
           id: apiKeyRecord.id,
-          key: apiKeyRecord.key,
+          key: cleanApiKey, // Return the plaintext key for compatibility
           ...(apiKeyRecord.name && { name: apiKeyRecord.name }),
           isActive: apiKeyRecord.isActive,
           ...(apiKeyRecord.lastUsed && {
