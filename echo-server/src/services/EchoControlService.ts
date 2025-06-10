@@ -122,8 +122,13 @@ export class EchoControlService {
         return;
       }
 
-      const { userId, echoAppId } = this.authResult;
-      await this.dbService.createLlmTransaction(userId, echoAppId, transaction);
+      const { userId, echoAppId, apiKeyId } = this.authResult;
+      await this.dbService.createLlmTransaction(
+        userId,
+        echoAppId,
+        apiKeyId,
+        transaction
+      );
     } catch (error) {
       console.error('Error creating transaction:', error);
     }

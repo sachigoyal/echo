@@ -51,7 +51,8 @@ export interface LlmTransaction {
   errorMessage?: string;
   createdAt: string;
   userId: string;
-  echoAppId?: string;
+  echoAppId: string;
+  apiKeyId: string;
 }
 
 export interface Payment {
@@ -137,6 +138,8 @@ export interface CreateLlmTransactionResponse {
 export interface ApiKeyValidationResult {
   userId: string;
   echoAppId: string;
+  apiKeyId: string;
   user: User;
   echoApp: EchoApp;
+  apiKey: ApiKey;
 }

@@ -53,7 +53,6 @@ export default function UserPaymentCard() {
         body: JSON.stringify({
           amount,
           description: `Echo Account Credits`,
-          // No echoAppId - this credits the user's overall account
         }),
       });
 

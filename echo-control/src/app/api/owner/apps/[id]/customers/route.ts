@@ -140,6 +140,7 @@ export async function POST(
         echoAppId: appId,
         role: AppRole.CUSTOMER,
         status: MembershipStatus.ACTIVE,
+        totalSpent: 0, // Initialize with zero spending
       },
       include: {
         user: {

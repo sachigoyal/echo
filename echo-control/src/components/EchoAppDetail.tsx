@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { AppRole } from '@/lib/permissions/types';
 import ApiKeyModal from './ApiKeyModal';
-import AppPaymentCard from './AppPaymentCard';
 import CreateApiKeyModal from './CreateApiKeyModal';
 import OAuthConfigSection from './OAuthConfigSection';
 
@@ -27,6 +27,7 @@ interface EchoApp {
   description?: string;
   isActive: boolean;
   createdAt: string;
+  userRole: string;
   user: {
     id: string;
     email: string;
@@ -478,8 +479,10 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         )}
       </div>
 
-      {/* OAuth Configuration */}
-      <OAuthConfigSection appId={app.id} />
+      {/* OAuth Configuration - Only show for owners */}
+      {app && app.userRole === AppRole.OWNER && (
+        <OAuthConfigSection appId={app.id} />
+      )}
 
       {/* Recent Transactions */}
       <div className="bg-card rounded-lg border border-border p-6">

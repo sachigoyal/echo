@@ -7,6 +7,14 @@ export interface DatabaseClient {
       where: { key: string; isActive: boolean; isArchived: boolean };
       include: { user: boolean; echoApp: boolean };
     }) => Promise<{
+      id: string;
+      key: string;
+      name: string | null;
+      isActive: boolean;
+      lastUsed: Date | null;
+      metadata: any;
+      createdAt: Date;
+      updatedAt: Date;
       userId: string;
       echoAppId: string;
       user: {
@@ -39,6 +47,14 @@ export interface DatabaseClient {
       };
       _sum: { amount: boolean };
     }) => Promise<{ _sum: { amount: number | null } }>;
+    update: (params: {
+      where: { id: string };
+      data: {
+        totalPaid: {
+          increment: number;
+        };
+      };
+    }) => Promise<{ id: string }>;
   };
   llmTransaction: {
     aggregate: (params: {
@@ -58,9 +74,31 @@ export interface DatabaseClient {
         errorMessage: string | null;
         userId: string;
         echoAppId: string;
+        apiKeyId: string;
       };
     }) => Promise<{ id: string }>;
   };
+  user: {
+    findUnique: (params: {
+      where: { id: string };
+      select: {
+        totalPaid: boolean;
+        totalSpent: boolean;
+      };
+    }) => Promise<{
+      totalPaid: string;
+      totalSpent: string;
+    } | null>;
+    update: (params: {
+      where: { id: string };
+      data: {
+        totalSpent: {
+          increment: number;
+        };
+      };
+    }) => Promise<{ id: string }>;
+  };
+  $transaction: <T>(fn: (tx: DatabaseClient) => Promise<T>) => Promise<T>;
 }
 
 export class EchoDbService {
@@ -104,6 +142,7 @@ export class EchoDbService {
       return {
         userId: apiKeyRecord.userId,
         echoAppId: apiKeyRecord.echoAppId,
+        apiKeyId: apiKeyRecord.id,
         user: {
           id: apiKeyRecord.user.id,
           email: apiKeyRecord.user.email,
@@ -123,6 +162,20 @@ export class EchoDbService {
           updatedAt: apiKeyRecord.echoApp.updatedAt.toISOString(),
           userId: apiKeyRecord.echoApp.userId,
         },
+        apiKey: {
+          id: apiKeyRecord.id,
+          key: apiKeyRecord.key,
+          ...(apiKeyRecord.name && { name: apiKeyRecord.name }),
+          isActive: apiKeyRecord.isActive,
+          ...(apiKeyRecord.lastUsed && {
+            lastUsed: apiKeyRecord.lastUsed.toISOString(),
+          }),
+          ...(apiKeyRecord.metadata && { metadata: apiKeyRecord.metadata }),
+          createdAt: apiKeyRecord.createdAt.toISOString(),
+          updatedAt: apiKeyRecord.updatedAt.toISOString(),
+          userId: apiKeyRecord.userId,
+          echoAppId: apiKeyRecord.echoAppId,
+        },
       };
     } catch (error) {
       console.error('Error validating API key:', error);
@@ -132,38 +185,29 @@ export class EchoDbService {
 
   /**
    * Calculate total balance for a user across all apps
-   * Centralized logic previously duplicated in echo-control and echo-server
+   * Uses User.totalPaid and User.totalSpent for consistent balance calculation
    */
   async getBalance(userId: string): Promise<Balance> {
     try {
-      // Calculate balance from payments and transactions across all apps
-      const paymentsFilter = {
-        userId: userId,
-        status: 'completed',
-        isArchived: false, // Only include non-archived payments
-      };
-
-      const transactionsFilter = {
-        userId: userId,
-        isArchived: false, // Only include non-archived transactions
-      };
-
-      const payments = await this.db.payment.aggregate({
-        where: paymentsFilter,
-        _sum: {
-          amount: true,
+      const user = await this.db.user.findUnique({
+        where: { id: userId },
+        select: {
+          totalPaid: true,
+          totalSpent: true,
         },
       });
 
-      const transactions = await this.db.llmTransaction.aggregate({
-        where: transactionsFilter,
-        _sum: {
-          cost: true,
-        },
-      });
+      if (!user) {
+        console.error('User not found:', userId);
+        return {
+          balance: 0,
+          totalCredits: 0,
+          totalSpent: 0,
+        };
+      }
 
-      const totalCredits = (payments._sum.amount || 0) / 100; // Convert from cents
-      const totalSpent = Number(transactions._sum.cost || 0);
+      const totalCredits = Number(user.totalPaid);
+      const totalSpent = Number(user.totalSpent);
       const balance = totalCredits - totalSpent;
 
       return {
@@ -182,12 +226,13 @@ export class EchoDbService {
   }
 
   /**
-   * Create an LLM transaction record
-   * Centralized logic for transaction creation
+   * Create an LLM transaction record and atomically update user's totalSpent
+   * Centralized logic for transaction creation with atomic balance updates
    */
   async createLlmTransaction(
     userId: string,
     echoAppId: string,
+    apiKeyId: string,
     transaction: {
       model: string;
       inputTokens: number;
@@ -214,30 +259,46 @@ export class EchoDbService {
         );
       }
 
-      // Create the LLM transaction
-      const dbTransaction = await this.db.llmTransaction.create({
-        data: {
-          model: transaction.model,
-          inputTokens: transaction.inputTokens,
-          outputTokens: transaction.outputTokens,
-          totalTokens: transaction.totalTokens,
-          cost: transaction.cost,
-          prompt: transaction.prompt || null,
-          response: transaction.response || null,
-          status: transaction.status || 'success',
-          errorMessage: transaction.errorMessage || null,
-          userId: userId,
-          echoAppId: echoAppId,
-        },
+      // Use a database transaction to atomically create the LLM transaction and update user balance
+      const result = await this.db.$transaction(async tx => {
+        // Create the LLM transaction
+        const dbTransaction = await tx.llmTransaction.create({
+          data: {
+            model: transaction.model,
+            inputTokens: transaction.inputTokens,
+            outputTokens: transaction.outputTokens,
+            totalTokens: transaction.totalTokens,
+            cost: transaction.cost,
+            prompt: transaction.prompt || null,
+            response: transaction.response || null,
+            status: transaction.status || 'success',
+            errorMessage: transaction.errorMessage || null,
+            userId: userId,
+            echoAppId: echoAppId,
+            apiKeyId: apiKeyId,
+          },
+        });
+
+        // Atomically update user's totalSpent
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            totalSpent: {
+              increment: transaction.cost,
+            },
+          },
+        });
+
+        return dbTransaction;
       });
 
       console.log(
-        `Created transaction for model ${transaction.model}: $${transaction.cost}`,
-        dbTransaction.id
+        `Created transaction for model ${transaction.model}: $${transaction.cost}, updated user totalSpent`,
+        result.id
       );
-      return dbTransaction.id;
+      return result.id;
     } catch (error) {
-      console.error('Error creating transaction:', error);
+      console.error('Error creating transaction and updating balance:', error);
       return null;
     }
   }

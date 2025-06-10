@@ -9,11 +9,26 @@ interface RouteParams {
   }>;
 }
 
+// Helper function to validate UUID format
+function isValidUUID(uuid: string): boolean {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
 // GET /api/apps/[id]/oauth-config - Get OAuth configuration
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const { user } = await getAuthenticatedUser(req);
     const { id } = await params;
+
+    // Validate UUID format
+    if (!isValidUUID(id)) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
 
     const echoApp = await db.echoApp.findFirst({
       where: {
@@ -68,6 +83,15 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
     const { user } = await getAuthenticatedUser(req);
     const { id } = await params;
+
+    // Validate UUID format
+    if (!isValidUUID(id)) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
+
     const body = await req.json();
 
     const { authorized_callback_urls } = body;
@@ -174,6 +198,15 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
     const { user } = await getAuthenticatedUser(req);
     const { id } = await params;
+
+    // Validate UUID format
+    if (!isValidUUID(id)) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
+
     const body = await req.json();
 
     const { callback_url } = body;
@@ -269,6 +302,15 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
     const { user } = await getAuthenticatedUser(req);
     const { id } = await params;
+
+    // Validate UUID format
+    if (!isValidUUID(id)) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
+
     const body = await req.json();
 
     const { callback_url } = body;

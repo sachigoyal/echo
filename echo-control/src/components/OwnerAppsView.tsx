@@ -38,7 +38,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
   }) => {
     setError(null);
     try {
-      const response = await fetch('/api/echo-apps', {
+      const response = await fetch('/api/apps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(appData),
@@ -66,7 +66,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/echo-apps/${id}`, {
+      const response = await fetch(`/api/apps/${id}`, {
         method: 'DELETE',
       });
 

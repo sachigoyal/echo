@@ -47,13 +47,6 @@ export async function GET(
         isArchived: false,
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-          },
-        },
         apiKeys: {
           where: {
             isArchived: false,
@@ -67,12 +60,6 @@ export async function GET(
             isActive: true,
             createdAt: true,
             lastUsed: true,
-            createdBy: {
-              select: {
-                email: true,
-                name: true,
-              },
-            },
             user: {
               select: {
                 email: true,
@@ -167,21 +154,30 @@ export async function GET(
     // Calculate total spent for each API key
     const apiKeysWithSpending = await Promise.all(
       app.apiKeys.map(async apiKey => {
-        // Get total spending for this API key
-        // Note: We'll need to add apiKeyId to LlmTransaction model to track per-key spending
-        // For now, we'll set totalSpent to 0 as a placeholder
-        const totalSpent = 0; // TODO: Implement API key spending tracking
+        // Get total spending for this API key using the new apiKeyId field
+        const spendingResult = await db.llmTransaction.aggregate({
+          where: {
+            apiKeyId: apiKey.id,
+            isArchived: false,
+          },
+          _sum: {
+            cost: true,
+          },
+        });
+
+        const totalSpent = Number(spendingResult._sum.cost || 0);
 
         return {
           ...apiKey,
           totalSpent,
-          creator: apiKey.createdBy || apiKey.user || null,
+          creator: apiKey.user,
         };
       })
     );
 
     const appWithStats = {
       ...app,
+      userRole,
       apiKeys: apiKeysWithSpending,
       stats: {
         totalTransactions: stats._count || 0,
@@ -194,7 +190,7 @@ export async function GET(
       recentTransactions,
     };
 
-    return NextResponse.json({ echoApp: appWithStats });
+    return NextResponse.json(appWithStats);
   } catch (error) {
     console.error('Error fetching echo app:', error);
 
@@ -234,14 +230,27 @@ export async function PUT(
       );
     }
 
+    // Check if user has permission to edit this app
+    const hasEditPermission = await PermissionService.hasPermission(
+      user.id,
+      appId,
+      Permission.EDIT_APP
+    );
+
+    if (!hasEditPermission) {
+      return NextResponse.json(
+        { error: 'Echo app not found or access denied' },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
     const { name, description, isActive } = body;
 
-    // Verify the echo app exists and belongs to the user
+    // Verify the echo app exists and is not archived
     const existingApp = await db.echoApp.findFirst({
       where: {
         id: appId,
-        userId: user.id,
         isArchived: false, // Only allow updating non-archived apps
       },
     });
@@ -279,7 +288,7 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ echoApp: updatedApp });
+    return NextResponse.json(updatedApp);
   } catch (error) {
     console.error('Error updating echo app:', error);
 
@@ -319,11 +328,24 @@ export async function DELETE(
       );
     }
 
-    // Verify the echo app exists and belongs to the user
+    // Check if user has permission to delete this app
+    const hasDeletePermission = await PermissionService.hasPermission(
+      user.id,
+      appId,
+      Permission.DELETE_APP
+    );
+
+    if (!hasDeletePermission) {
+      return NextResponse.json(
+        { error: 'Echo app not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // Verify the echo app exists and is not archived
     const existingApp = await db.echoApp.findFirst({
       where: {
         id: appId,
-        userId: user.id,
         isArchived: false, // Only allow archiving non-archived apps
       },
     });

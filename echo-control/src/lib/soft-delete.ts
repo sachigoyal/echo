@@ -37,8 +37,20 @@ export async function softDeleteEchoApp(appId: string) {
     },
   });
 
-  // Archive related payments
-  await db.payment.updateMany({
+  // Archive related refresh tokens
+  await db.refreshToken.updateMany({
+    where: {
+      echoAppId: appId,
+      isArchived: false,
+    },
+    data: {
+      isArchived: true,
+      archivedAt: now,
+    },
+  });
+
+  // Archive related app memberships
+  await db.appMembership.updateMany({
     where: {
       echoAppId: appId,
       isArchived: false,
@@ -79,19 +91,37 @@ export async function softDeleteApiKey(keyId: string) {
 export async function softDeleteUser(userId: string) {
   const now = new Date();
 
-  // First, get all the user's echo apps
-  const userApps = await db.echoApp.findMany({
+  // First, get all the user's owned echo apps (where they are the owner)
+  const userOwnedApps = await db.echoApp.findMany({
     where: {
-      userId,
+      appMemberships: {
+        some: {
+          userId,
+          role: 'owner',
+          isArchived: false,
+        },
+      },
       isArchived: false,
     },
     select: { id: true },
   });
 
-  // Archive all user's echo apps and their related records
-  for (const app of userApps) {
+  // Archive all user's owned echo apps and their related records
+  for (const app of userOwnedApps) {
     await softDeleteEchoApp(app.id);
   }
+
+  // Archive the user's memberships in other apps
+  await db.appMembership.updateMany({
+    where: {
+      userId,
+      isArchived: false,
+    },
+    data: {
+      isArchived: true,
+      archivedAt: now,
+    },
+  });
 
   // Archive any remaining user records that weren't caught by app deletion
   await db.apiKey.updateMany({
@@ -117,6 +147,17 @@ export async function softDeleteUser(userId: string) {
   });
 
   await db.llmTransaction.updateMany({
+    where: {
+      userId,
+      isArchived: false,
+    },
+    data: {
+      isArchived: true,
+      archivedAt: now,
+    },
+  });
+
+  await db.refreshToken.updateMany({
     where: {
       userId,
       isArchived: false,

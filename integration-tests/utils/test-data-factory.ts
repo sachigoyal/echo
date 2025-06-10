@@ -50,7 +50,8 @@ export interface CreateLlmTransactionOptions {
   response?: string;
   status?: string;
   userId: string;
-  echoAppId?: string;
+  echoAppId: string;
+  apiKeyId: string;
 }
 
 export class TestDataFactory {
@@ -160,6 +161,7 @@ export class TestDataFactory {
         status: options.status || 'completed',
         userId: options.userId,
         echoAppId: options.echoAppId,
+        apiKeyId: options.apiKeyId,
       },
     });
   }
@@ -226,6 +228,7 @@ export class TestDataFactory {
     const llmTransaction = await this.createLlmTransaction({
       userId: user.id,
       echoAppId: echoApp.id,
+      apiKeyId: apiKey.id,
     });
 
     return {

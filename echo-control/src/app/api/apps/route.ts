@@ -1,6 +1,7 @@
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
+import { PermissionService } from '@/lib/permissions/service';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/apps - List all Echo apps for the authenticated user
@@ -8,53 +9,62 @@ export async function GET(req: NextRequest) {
   try {
     const { user } = await getAuthenticatedUser(req);
 
-    const echoApps = await db.echoApp.findMany({
-      where: {
-        appMemberships: {
-          some: {
-            userId: user.id,
-            status: MembershipStatus.ACTIVE,
-            isArchived: false,
-          },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        authorizedCallbackUrls: true,
-        _count: {
+    // Use PermissionService to get accessible apps with roles
+    const accessibleApps = await PermissionService.getAccessibleApps(user.id);
+
+    // Get additional data for each app (transaction stats, counts)
+    const appsWithDetails = await Promise.all(
+      accessibleApps.map(async ({ app, userRole }) => {
+        // Get counts for API keys and transactions
+        const counts = await db.echoApp.findUnique({
+          where: { id: app.id },
           select: {
-            apiKeys: {
-              where: { isActive: true },
+            _count: {
+              select: {
+                apiKeys: {
+                  where: { isActive: true, isArchived: false },
+                },
+                llmTransactions: {
+                  where: { isArchived: false },
+                },
+              },
             },
           },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+        });
+
+        // Get transaction totals
+        const transactionStats = await db.llmTransaction.aggregate({
+          where: {
+            echoAppId: app.id,
+            isArchived: false,
+          },
+          _sum: {
+            totalTokens: true,
+            cost: true,
+          },
+        });
+
+        return {
+          id: app.id,
+          name: app.name,
+          description: app.description,
+          isActive: app.isActive,
+          createdAt: app.createdAt.toISOString(),
+          updatedAt: app.updatedAt.toISOString(),
+          authorizedCallbackUrls: app.authorizedCallbackUrls,
+          userRole,
+          totalTokens: transactionStats._sum.totalTokens || 0,
+          totalCost: Number(transactionStats._sum.cost || 0),
+          _count: {
+            apiKeys: counts?._count.apiKeys || 0,
+            llmTransactions: counts?._count.llmTransactions || 0,
+          },
+        };
+      })
+    );
 
     return NextResponse.json({
-      apps: echoApps.map(app => ({
-        id: app.id,
-        name: app.name,
-        description: app.description,
-        isActive: app.isActive,
-        createdAt: app.createdAt.toISOString(),
-        updatedAt: app.updatedAt.toISOString(),
-        authorizedCallbackUrls: app.authorizedCallbackUrls,
-        totalTokens: 0, // TODO: Calculate from llmTransactions
-        totalCost: 0, // TODO: Calculate from llmTransactions
-        _count: {
-          apiKeys: app._count.apiKeys,
-          llmTransactions: 0, // TODO: Add this to the query
-        },
-      })),
+      apps: appsWithDetails,
     });
   } catch (error) {
     console.error('Error fetching Echo apps:', error);

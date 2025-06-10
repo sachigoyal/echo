@@ -9,12 +9,16 @@ export const TEST_DATA = {
       email: 'test@example.com',
       name: 'Integration Test User',
       clerkId: 'user_2mP4JRQPpWlDVDPuyrxBxwZU6cM',
+      totalPaid: 0,
+      totalSpent: 0,
     },
     secondary: {
       id: '33333333-3333-3333-3333-333333333333',
       email: 'test2@example.com',
       name: 'Second Test User',
       clerkId: 'user_clerk_test_456',
+      totalPaid: 0,
+      totalSpent: 0,
     },
   },
 

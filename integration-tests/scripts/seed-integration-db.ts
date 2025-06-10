@@ -39,8 +39,18 @@ export async function seedIntegrationDatabase() {
       data: {
         ...TEST_DATA.echoApps.primary,
         authorizedCallbackUrls: TEST_DATA.oauth.defaultCallbackUrls,
-        userId: testUser.id,
         isActive: true,
+      },
+    });
+
+    // Create app membership for the test user as owner
+    await prisma.appMembership.create({
+      data: {
+        userId: testUser.id,
+        echoAppId: testApp.id,
+        role: 'owner',
+        status: 'active',
+        totalSpent: 0,
       },
     });
 
@@ -70,8 +80,18 @@ export async function seedIntegrationDatabase() {
       data: {
         ...TEST_DATA.echoApps.secondary,
         authorizedCallbackUrls: TEST_DATA.oauth.secondaryCallbackUrls,
-        userId: secondUser.id,
         isActive: true,
+      },
+    });
+
+    // Create app membership for the second user as owner
+    await prisma.appMembership.create({
+      data: {
+        userId: secondUser.id,
+        echoAppId: secondApp.id,
+        role: 'owner',
+        status: 'active',
+        totalSpent: 0,
       },
     });
 
@@ -82,7 +102,6 @@ export async function seedIntegrationDatabase() {
       data: {
         ...TEST_DATA.payments.testPayment,
         userId: testUser.id,
-        echoAppId: testApp.id,
       },
     });
 
@@ -94,6 +113,7 @@ export async function seedIntegrationDatabase() {
         ...TEST_DATA.llmTransactions.testTransaction,
         userId: testUser.id,
         echoAppId: testApp.id,
+        apiKeyId: testApiKey.id,
       },
     });
 

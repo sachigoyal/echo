@@ -86,9 +86,10 @@ model ApiKey {
   scope           String    @default("owner") 
   // Permissions available to API key - can be <= to AppMembership.role for same (userId, echoAppId) pair
   
-  echoApp   EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp       EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
+  llmTransactions LlmTransaction[] // LLM transactions using this API key
 
   @@map("api_keys")
 }
@@ -146,10 +147,12 @@ model LlmTransaction {
   archivedAt   DateTime? @db.Timestamptz
   createdAt    DateTime @default(now()) @db.Timestamptz
   userId       String   @db.Uuid
-  echoAppId    String  @db.Uuid
+  echoAppId    String   @db.Uuid
+  apiKeyId     String   @db.Uuid  // API key used for this transaction (required)
   
   echoApp  EchoApp @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
+  apiKey   ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
 
   @@map("llm_transactions")
 }

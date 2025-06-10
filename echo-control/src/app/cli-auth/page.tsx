@@ -26,12 +26,12 @@ function CLIAuthContent() {
 
   const fetchApps = useCallback(async () => {
     try {
-      const response = await fetch('/api/echo-apps');
+      const response = await fetch('/api/apps');
       if (response.ok) {
         const data = await response.json();
-        setApps(data.echoApps);
-        if (data.echoApps.length > 0) {
-          setSelectedAppId(data.echoApps[0].id);
+        setApps(data.apps);
+        if (data.apps.length > 0) {
+          setSelectedAppId(data.apps[0].id);
         }
       }
     } catch (error) {
@@ -46,16 +46,16 @@ function CLIAuthContent() {
 
       try {
         // First, check if the user already has access to this app
-        const response = await fetch('/api/echo-apps');
+        const response = await fetch('/api/apps');
         if (response.ok) {
           const data = await response.json();
-          const existingApp = data.echoApps.find(
+          const existingApp = data.apps.find(
             (app: EchoApp) => app.id === appId
           );
 
           if (existingApp) {
             // User already has access, just set it as selected
-            setApps(data.echoApps);
+            setApps(data.apps);
             setSelectedAppId(appId);
             setIsEnrolling(false);
             return;

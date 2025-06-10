@@ -4,6 +4,8 @@ import { createHash } from 'crypto';
 import { jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
+import { PermissionService } from '@/lib/permissions/service';
+import { AppRole } from '@/lib/permissions/types';
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
 const JWT_SECRET = new TextEncoder().encode(
@@ -129,7 +131,6 @@ export async function POST(req: NextRequest) {
     /* 5️⃣ Get user and validate they exist */
     const user = await db.user.findUnique({
       where: { clerkId: authData.userId },
-      include: { echoApps: true },
     });
 
     if (!user) {
@@ -171,8 +172,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Ensure the user owns this Echo app (from the authorization code)
-    if (echoApp.userId !== user.id) {
+    // Ensure the user has access to this Echo app (from the authorization code)
+    const userRole = await PermissionService.getUserAppRole(
+      user.id,
+      echoApp.id
+    );
+    if (!userRole || userRole !== AppRole.OWNER) {
       return NextResponse.json(
         {
           error: 'invalid_grant',

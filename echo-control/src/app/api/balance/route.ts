@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getCurrentUser, getAuthenticatedUser } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 // GET /api/balance - Get authenticated user balance (optionally for a specific app)
 export async function GET(request: NextRequest) {
   try {
     const { user, echoApp } = await getAuthenticatedUser(request);
     const { searchParams } = new URL(request.url);
-    let echoAppId = searchParams.get('echoAppId');
+    const echoAppId = searchParams.get('echoAppId');
 
     let balance: number;
     let totalCredits: number;

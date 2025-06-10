@@ -30,6 +30,8 @@ export async function getCurrentUser() {
         name:
           `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
           null,
+        totalPaid: 0, // Initialize with zero paid amount
+        totalSpent: 0, // Initialize with zero spent amount
       },
     });
   }

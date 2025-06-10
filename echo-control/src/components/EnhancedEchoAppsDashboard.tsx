@@ -53,14 +53,14 @@ export default function EnhancedEchoAppsDashboard() {
   const fetchApps = async () => {
     try {
       setError(null);
-      const response = await fetch('/api/echo-apps');
+      const response = await fetch('/api/apps');
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch echo apps');
       }
 
-      const allApps = data.echoApps || [];
+      const allApps = data.apps || [];
 
       const owned = allApps.filter(
         (app: EchoAppWithRole) => app.userRole === AppRole.OWNER
