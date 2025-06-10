@@ -1,5 +1,6 @@
 // Central repository for all test data constants
 // This eliminates hardcoded values scattered across multiple files
+import { hashApiKey } from '../../echo-control/src/lib/crypto.js';
 
 export const TEST_DATA = {
   // Test user configurations
@@ -40,7 +41,7 @@ export const TEST_DATA = {
   apiKeys: {
     primary: {
       id: '22222222-2222-2222-2222-222222222222',
-      key: 'ek_test_1234567890abcdef',
+      keyHash: hashApiKey('ek_test_1234567890abcdef'),
       name: 'Integration Test API Key',
     },
   },
