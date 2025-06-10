@@ -21,10 +21,11 @@ export async function GET(req: NextRequest) {
     const clientId = qs.get('client_id'); // Echo app ID
     const redirectUri = qs.get('redirect_uri');
     const codeChallenge = qs.get('code_challenge');
-    const codeChallengeMethod = qs.get('code_challenge_method') || 'S256';
+    const codeChallengeMethod = qs.get('code_challenge_method');
     const state = qs.get('state') || nanoid();
     const scope = qs.get('scope') || 'llm:invoke offline_access';
     const responseType = qs.get('response_type') || 'code';
+    const prompt = qs.get('prompt');
 
     if (!clientId || !redirectUri || !codeChallenge) {
       return NextResponse.json(
@@ -47,11 +48,43 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (codeChallengeMethod !== 'S256') {
+    // Validate code_challenge_method (required and must be S256)
+    if (
+      !codeChallengeMethod ||
+      codeChallengeMethod === '' ||
+      codeChallengeMethod !== 'S256'
+    ) {
       return NextResponse.json(
         {
           error: 'invalid_request',
           error_description: 'Only code_challenge_method=S256 is supported',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate code challenge format (RFC 7636 Section 4.2)
+    // Must be 43-128 characters, base64url-encoded
+    if (
+      !codeChallenge ||
+      codeChallenge.length < 43 ||
+      codeChallenge.length > 128
+    ) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_challenge must be 43-128 characters long',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate base64url format (no +, /, or = characters)
+    if (!/^[A-Za-z0-9_-]+$/.test(codeChallenge)) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_challenge must be base64url encoded',
         },
         { status: 400 }
       );
@@ -92,7 +125,19 @@ export async function GET(req: NextRequest) {
     /* 2️⃣ Check if user is authenticated with Clerk */
     const { userId } = await getAuth(req);
     if (!userId) {
-      // Preserve the original authorize URL so user can return after sign-in
+      // Handle prompt=none for unauthenticated users - SECURITY FIX
+      if (prompt === 'none') {
+        return NextResponse.json(
+          {
+            error: 'login_required',
+            error_description:
+              'Silent authentication failed - user not authenticated',
+          },
+          { status: 400 }
+        );
+      }
+
+      // Normal flow: preserve the original authorize URL so user can return after sign-in
       const currentUrl = req.url;
       const signInUrl = new URL('/sign-in', req.nextUrl.origin);
       signInUrl.searchParams.set('redirect_url', currentUrl);
@@ -100,12 +145,41 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(signInUrl.toString(), 302);
     }
 
-    /* 3️⃣ Redirect to consent page with OAuth parameters */
+    /* 3️⃣ Handle prompt=none for authenticated users - skip consent page */
+    if (prompt === 'none') {
+      // Generate authorization code immediately (same logic as POST handler)
+      const authCode = nanoid(32);
+      const exp = Math.floor(Date.now() / 1000) + AUTH_CODE_TTL;
+
+      const authCodeJwt = await new SignJWT({
+        clientId,
+        redirectUri,
+        codeChallenge,
+        codeChallengeMethod: 'S256', // Always S256 since we validated it above
+        scope,
+        userId,
+        exp,
+        code: authCode,
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime(exp)
+        .sign(JWT_SECRET);
+
+      // Return direct redirect to callback URL with authorization code
+      const redirectUrl = new URL(redirectUri);
+      redirectUrl.searchParams.set('code', authCodeJwt);
+      if (state) redirectUrl.searchParams.set('state', state);
+
+      return NextResponse.redirect(redirectUrl.toString(), 302);
+    }
+
+    /* 4️⃣ Normal flow: Redirect to consent page with OAuth parameters */
     const consentUrl = new URL('/oauth/authorize', req.nextUrl.origin);
     consentUrl.searchParams.set('client_id', clientId);
     consentUrl.searchParams.set('redirect_uri', redirectUri);
     consentUrl.searchParams.set('code_challenge', codeChallenge);
-    consentUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
+    consentUrl.searchParams.set('code_challenge_method', 'S256'); // Always S256 since we validated it above
     consentUrl.searchParams.set('scope', scope);
     consentUrl.searchParams.set('response_type', responseType);
     if (state) consentUrl.searchParams.set('state', state);

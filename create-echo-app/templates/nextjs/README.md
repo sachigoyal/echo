@@ -16,7 +16,7 @@ A modern AI chatbot built with [Next.js](https://nextjs.org/) and [Vercel AI SDK
 ### Prerequisites
 
 - Node.js 16.x or later
-- npm, yarn, or pnpm
+- pnpm (recommended), npm, or yarn
 
 ### Installation
 
@@ -39,21 +39,21 @@ A modern AI chatbot built with [Next.js](https://nextjs.org/) and [Vercel AI SDK
 2. **Install dependencies**
 
    ```bash
+   pnpm install
+   # or
    npm install
    # or
    yarn install
-   # or
-   pnpm install
    ```
 
 3. **Run the development server**
 
    ```bash
+   pnpm dev
+   # or
    npm run dev
    # or
    yarn dev
-   # or
-   pnpm dev
    ```
 
 4. **Open your browser**

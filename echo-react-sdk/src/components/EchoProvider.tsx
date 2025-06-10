@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts';
 import { EchoConfig, EchoUser, EchoBalance } from '../types';
+import { sanitizeUserProfile, debounce } from '../utils/security';
 
 interface EchoOAuthProfile {
   sub?: string;
@@ -54,6 +55,16 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userManager] = useState(() => {
+    // Check for existing mock UserManager in tests
+    if (
+      typeof window !== 'undefined' &&
+      (window as typeof window & { __echoUserManager?: unknown })
+        .__echoUserManager
+    ) {
+      return (window as typeof window & { __echoUserManager?: UserManager })
+        .__echoUserManager;
+    }
+
     const apiUrl = config.apiUrl || 'http://localhost:3000';
     const settings: UserManagerSettings = {
       authority: apiUrl,
@@ -84,14 +95,25 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
   const isAuthenticated = user !== null;
 
-  // Convert OIDC user to Echo user format
+  // Convert OIDC user to Echo user format with security sanitization
   const convertUser = (oidcUser: User): EchoUser => {
     // For Echo OAuth, user data might be in the token response or profile
     const profile = oidcUser.profile as EchoOAuthProfile;
+
+    // Sanitize all user profile data to prevent XSS attacks
+    const rawProfile = {
+      name: profile?.name || profile?.given_name || profile?.email || 'User',
+      email: profile?.email || profile?.preferred_username || '',
+      picture: profile?.picture || '',
+    };
+
+    const sanitizedProfile = sanitizeUserProfile(rawProfile);
+
     return {
       id: profile?.sub || profile?.user_id || profile?.id || 'unknown',
-      email: profile?.email || profile?.preferred_username || '',
-      name: profile?.name || profile?.given_name || profile?.email || 'User',
+      email: sanitizedProfile.email,
+      name: sanitizedProfile.name || 'User',
+      picture: sanitizedProfile.picture,
     };
   };
 
@@ -161,8 +183,8 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     }
   }, [userManager]);
 
-  // Refresh balance
-  const refreshBalance = useCallback(async () => {
+  // Refresh balance with debouncing to prevent API spam
+  const refreshBalanceInternal = useCallback(async () => {
     const currentUser = await userManager.getUser();
     if (!currentUser?.access_token) return;
 
@@ -190,6 +212,12 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       console.error('Error refreshing balance:', err);
     }
   }, [userManager, config.apiUrl]);
+
+  // Debounced version to prevent rapid API calls
+  const refreshBalance = useCallback(
+    debounce(refreshBalanceInternal, 1000), // 1 second debounce
+    [refreshBalanceInternal]
+  );
 
   // Create payment link
   const createPaymentLink = useCallback(

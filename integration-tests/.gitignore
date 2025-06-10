@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.pnpm-debug.log*
+
+# Environment files with secrets
+.env.integration.local
+
+# Test results
+test-results/
+playwright-report/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+
+.env.test

@@ -3,26 +3,23 @@
   "version": "1.0.0",
   "description": "Echo platform monorepo",
   "private": true,
-  "workspaces": [
-    "echo-control",
-    "echo-server",
-    "echo-typescript-sdk",
-    "create-echo-app",
-    "echo-react-sdk"
-  ],
   "scripts": {
-    "dev": "bun run dev --filter='*'",
-    "build": "bun run build --filter='*'",
-    "build:server": "cd echo-server && bun run build && cd ..",
-    "start:server": "cd echo-server && bun run start",
-    "test": "bun run test --filter='*'",
-    "lint": "bun run lint --filter='*'",
-    "lint:fix": "bun run lint:fix --filter='*'",
-    "type-check": "bun run type-check --filter='*'",
+    "dev": "pnpm run --recursive dev",
+    "build": "pnpm run --recursive build",
+    "build:server": "cd echo-server && pnpm run build && cd ..",
+    "start:server": "cd echo-server && pnpm run start",
+    "test": "pnpm run --recursive test",
+    "test:unit": "pnpm run --recursive test:unit",
+    "test:integration": "cd integration-tests && pnpm test",
+    "test:integration:watch": "cd integration-tests && pnpm test:watch",
+    "test:all": "pnpm run test:unit && pnpm run test:integration",
+    "lint": "pnpm run --recursive lint",
+    "lint:fix": "pnpm run --recursive lint:fix",
+    "type-check": "pnpm run --recursive type-check",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "example:vite": "cd examples/vite && bun run dev",
-    "example:storybook": "cd echo-react-sdk && bun run storybook",
+    "example:vite": "cd examples/vite && pnpm run dev",
+    "example:storybook": "cd echo-react-sdk && pnpm run storybook",
     "prepare": "husky install"
   },
   "devDependencies": {
@@ -40,22 +37,25 @@
   },
   "lint-staged": {
     "echo-control/**/*.{ts,tsx,js,jsx}": [
-      "cd echo-control && bun run lint"
+      "cd echo-control && pnpm run lint"
     ],
     "echo-server/**/*.{ts,js}": [
-      "cd echo-server && bun run lint"
+      "cd echo-server && pnpm run lint"
     ],
     "echo-typescript-sdk/**/*.{ts,js}": [
-      "cd echo-typescript-sdk && bun run lint"
+      "cd echo-typescript-sdk && pnpm run lint"
     ],
     "create-echo-app/**/*.{ts,tsx,js,jsx}": [
-      "cd create-echo-app && bun run lint"
+      "cd create-echo-app && pnpm run lint"
     ],
     "echo-react-sdk/**/*.{ts,tsx,js,jsx}": [
-      "cd echo-react-sdk && bun run lint"
+      "cd echo-react-sdk && pnpm run lint"
+    ],
+    "integration-tests/**/*.{ts,tsx,js,jsx}": [
+      "cd integration-tests && pnpm run lint"
     ],
     "**/*.{ts,tsx,js,jsx,json,md}": [
-      "bun run format:check"
+      "pnpm run format:check"
     ]
   }
 }

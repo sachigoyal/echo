@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 interface AuthorizeParams {
@@ -16,35 +16,41 @@ interface AuthorizeParams {
 
 export default function OAuthAuthorizePage() {
   const { isSignedIn, isLoaded } = useAuth();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [authParams, setAuthParams] = useState<AuthorizeParams | null>(null);
 
-  // Parse OAuth parameters
-  const authParams: AuthorizeParams = {
-    client_id: searchParams.get('client_id') || '',
-    redirect_uri: searchParams.get('redirect_uri') || '',
-    code_challenge: searchParams.get('code_challenge') || '',
-    code_challenge_method: searchParams.get('code_challenge_method') || 'S256',
-    scope: searchParams.get('scope') || 'llm:invoke offline_access',
-    state: searchParams.get('state') || undefined,
-    response_type: searchParams.get('response_type') || 'code',
-  };
+  // Parse OAuth parameters from URL on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      setAuthParams({
+        client_id: urlParams.get('client_id') || '',
+        redirect_uri: urlParams.get('redirect_uri') || '',
+        code_challenge: urlParams.get('code_challenge') || '',
+        code_challenge_method: urlParams.get('code_challenge_method') || 'S256',
+        scope: urlParams.get('scope') || 'llm:invoke offline_access',
+        state: urlParams.get('state') || undefined,
+        response_type: urlParams.get('response_type') || 'code',
+      });
+    }
+  }, []);
 
   // Validate required parameters
   useEffect(() => {
     if (
-      !authParams.client_id ||
-      !authParams.redirect_uri ||
-      !authParams.code_challenge
+      authParams &&
+      (!authParams.client_id ||
+        !authParams.redirect_uri ||
+        !authParams.code_challenge)
     ) {
       setError('Missing required OAuth parameters');
     }
-    if (authParams.response_type !== 'code') {
+    if (authParams && authParams.response_type !== 'code') {
       setError('Only authorization code flow is supported');
     }
-    if (authParams.code_challenge_method !== 'S256') {
+    if (authParams && authParams.code_challenge_method !== 'S256') {
       setError('Only S256 code challenge method is supported');
     }
   }, [authParams]);
@@ -75,7 +81,7 @@ export default function OAuthAuthorizePage() {
       } else {
         setError(result.error_description || 'Authorization failed');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to authorize application');
     } finally {
       setIsAuthorizing(false);
@@ -83,6 +89,8 @@ export default function OAuthAuthorizePage() {
   };
 
   const handleDeny = () => {
+    if (!authParams) return;
+
     // Redirect back with error
     const redirectUrl = new URL(authParams.redirect_uri);
     redirectUrl.searchParams.set('error', 'access_denied');
@@ -96,7 +104,7 @@ export default function OAuthAuthorizePage() {
     window.location.href = redirectUrl.toString();
   };
 
-  if (!isLoaded) {
+  if (!isLoaded || !authParams) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Loading...

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { EchoTokenPurchaseProps } from '../types';
 import { useEcho } from '../hooks/useEcho';
+import { openPaymentFlow } from '../utils/security';
 
 export function EchoTokenPurchase({
   amount = 100,
@@ -28,46 +29,34 @@ export function EchoTokenPurchase({
 
       const paymentUrl = await createPaymentLink(amount);
 
-      const popup = window.open(
-        paymentUrl,
-        'echo-payment',
-        'width=600,height=700,scrollbars=yes,resizable=yes'
-      );
-
-      if (!popup) {
-        throw new Error('Popup blocked. Please allow popups for this site.');
-      }
-
-      const checkPaymentComplete = () => {
-        try {
-          if (popup.closed) {
-            setTimeout(async () => {
-              try {
-                await refreshBalance();
-                if (onPurchaseComplete && balance) {
-                  onPurchaseComplete(balance);
-                }
-              } catch (err) {
-                const error =
-                  err instanceof Error
-                    ? err
-                    : new Error('Failed to refresh balance');
-                setPurchaseError(error.message);
-                if (onError) onError(error);
-              } finally {
-                setIsProcessing(false);
-              }
-            }, 1000);
-            return;
+      // Use CSP-compatible payment flow instead of direct window.open()
+      await openPaymentFlow(paymentUrl, {
+        onComplete: async () => {
+          try {
+            await refreshBalance();
+            if (onPurchaseComplete && balance) {
+              onPurchaseComplete(balance);
+            }
+          } catch (err) {
+            const error =
+              err instanceof Error
+                ? err
+                : new Error('Failed to refresh balance');
+            setPurchaseError(error.message);
+            if (onError) onError(error);
+          } finally {
+            setIsProcessing(false);
           }
-
-          setTimeout(checkPaymentComplete, 1000);
-        } catch {
+        },
+        onCancel: () => {
           setIsProcessing(false);
-        }
-      };
-
-      checkPaymentComplete();
+        },
+        onError: err => {
+          setPurchaseError(err.message);
+          if (onError) onError(err);
+          setIsProcessing(false);
+        },
+      });
     } catch (err) {
       const error =
         err instanceof Error ? err : new Error('Failed to create payment link');

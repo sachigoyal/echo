@@ -155,14 +155,14 @@ Tests verify proper error handling:
 
 ```bash
 # Run all tests
-npm test
+pnpm test
 
 # Run specific test file
-npm test endpoints.test.ts
-npm test server.test.ts
+pnpm test endpoints.test.ts
+pnpm test server.test.ts
 
 # Run with coverage
-npm test -- --coverage
+pnpm test -- --coverage
 ```
 
 ## Test Assertions

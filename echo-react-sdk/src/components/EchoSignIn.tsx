@@ -1,6 +1,7 @@
 import React from 'react';
 import { EchoSignInProps } from '../types';
 import { useEcho } from '../hooks/useEcho';
+import { sanitizeText } from '../utils/security';
 
 export function EchoSignIn({
   onSuccess,
@@ -35,7 +36,7 @@ export function EchoSignIn({
   if (isAuthenticated) {
     return (
       <div className={`echo-signin-success ${className}`}>
-        <div>Welcome, {user?.name || user?.email}!</div>
+        <div>Welcome, {sanitizeText(user?.name || user?.email)}!</div>
       </div>
     );
   }
