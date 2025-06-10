@@ -3,9 +3,9 @@ import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET /api/apps/[id]/oauth-config - Get OAuth configuration

@@ -23,8 +23,18 @@ interface AuthCodePayload {
 
 export async function POST(req: NextRequest) {
   try {
-    /* 1️⃣ Parse the token request */
-    const body = await req.json();
+    /* 1️⃣ Parse the token request - handle both JSON and form-encoded */
+    let body: Record<string, string>;
+    const contentType = req.headers.get('content-type') || '';
+
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      const text = await req.text();
+      body = Object.fromEntries(new URLSearchParams(text));
+    } else {
+      // Default to JSON
+      body = await req.json();
+    }
+
     const { grant_type, code, redirect_uri, client_id, code_verifier } = body;
 
     // Validate required parameters
@@ -48,12 +58,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate code verifier length (RFC 7636 Section 4.1)
+    // Must be 43-128 characters
+    if (code_verifier.length < 43 || code_verifier.length > 128) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_verifier must be 43-128 characters long',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate code verifier format (only unreserved characters)
+    if (!/^[A-Za-z0-9._~-]+$/.test(code_verifier)) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_verifier contains invalid characters',
+        },
+        { status: 400 }
+      );
+    }
+
     /* 2️⃣ Verify and decode the authorization code JWT */
     let authData: AuthCodePayload;
     try {
       const { payload } = await jwtVerify(code, JWT_SECRET);
       authData = payload as unknown as AuthCodePayload;
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: 'invalid_grant',
@@ -217,7 +250,7 @@ export async function POST(req: NextRequest) {
     });
 
     /* 🔟 Return the JWT access token response with refresh token */
-    return NextResponse.json({
+    const response = NextResponse.json({
       access_token: jwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
       expires_in: 24 * 60 * 60, // JWT expires in 24 hours
@@ -240,6 +273,8 @@ export async function POST(req: NextRequest) {
         api_key_prefix: apiKey.key.slice(0, 10),
       },
     });
+
+    return response;
   } catch (error) {
     console.error('OAuth token exchange error:', error);
     return NextResponse.json(

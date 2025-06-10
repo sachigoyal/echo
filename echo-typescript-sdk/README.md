@@ -5,7 +5,7 @@ The official TypeScript SDK for the Echo platform, providing easy access to Echo
 ## Installation
 
 ```bash
-npm install @echo/typescript-sdk
+pnpm install @echo/typescript-sdk
 ```
 
 ## CLI Usage
@@ -207,16 +207,16 @@ try {
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Build the SDK
-npm run build
+pnpm run build
 
 # Run tests
-npm test
+pnpm test
 
 # Watch mode for development
-npm run dev
+pnpm run dev
 ```
 
 ## License

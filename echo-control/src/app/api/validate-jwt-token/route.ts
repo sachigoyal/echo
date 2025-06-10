@@ -4,20 +4,30 @@ import { NextRequest, NextResponse } from 'next/server';
 // POST /api/validate-jwt-token - Fast JWT validation without DB lookup
 export async function POST(request: NextRequest) {
   try {
+    // Use X-Echo-Token header instead of Authorization to avoid Clerk middleware conflicts
+    const echoTokenHeader = request.headers.get('x-echo-token');
     const authHeader = request.headers.get('authorization');
 
-    if (!authHeader) {
+    const tokenToValidate = echoTokenHeader || authHeader;
+
+    if (!tokenToValidate) {
       return NextResponse.json(
         {
           valid: false,
-          error: 'Missing authorization header',
+          error: 'Missing token header (use Authorization or X-Echo-Token)',
         },
         { status: 400 }
       );
     }
 
+    // If using X-Echo-Token header, add "Bearer " prefix if not present
+    const tokenWithBearer =
+      echoTokenHeader && !echoTokenHeader.startsWith('Bearer ')
+        ? `Bearer ${echoTokenHeader}`
+        : tokenToValidate;
+
     // Fast JWT validation (no database lookup)
-    const validationResult = await validateApiTokenFast(authHeader);
+    const validationResult = await validateApiTokenFast(tokenWithBearer);
 
     if (!validationResult.valid) {
       return NextResponse.json(

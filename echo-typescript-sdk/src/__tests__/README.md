@@ -81,35 +81,35 @@ Standalone test runner that:
 ### Prerequisites
 
 1. Ensure the Echo server is configured and can run
-2. Install dependencies: `npm install`
-3. Build the TypeScript: `npm run build`
+2. Install dependencies: `pnpm install`
+3. Build the TypeScript: `pnpm run build`
 
 ### Test Commands
 
 ```bash
 # Run all tests
-npm test
+pnpm test
 
 # Run with coverage
-npm run test:coverage
+pnpm run test:coverage
 
 # Run only unit tests (auth + client)
-npm run test:unit
+pnpm run test:unit
 
 # Run only CLI tests
-npm run test:cli
+pnpm run test:cli
 
 # Run only integration tests
-npm run test:integration
+pnpm run test:integration
 
 # Run all test types sequentially
-npm run test:all
+pnpm run test:all
 
 # Run tests in watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Run tests for CI
-npm run test:ci
+pnpm run test:ci
 ```
 
 ### Running Individual Test Suites
@@ -180,7 +180,7 @@ The test suite aims for:
 
 ```bash
 # Run with debug output
-DEBUG=* npm test
+DEBUG=* pnpm test
 
 # Run single test with full output
 npx jest --verbose --no-coverage auth.test.ts

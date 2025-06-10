@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Copy, ExternalLink, Plus, Shield, Trash } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface OAuthConfigSectionProps {
   appId: string;
@@ -29,7 +29,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
   const [deletingUrl, setDeletingUrl] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const fetchOAuthConfig = async () => {
+  const fetchOAuthConfig = useCallback(async () => {
     try {
       const response = await fetch(`/api/apps/${appId}/oauth-config`);
       if (response.ok) {
@@ -42,16 +42,16 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
         const error = await response.json();
         setError(error.error || 'Failed to load OAuth configuration');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load OAuth configuration');
     } finally {
       setLoading(false);
     }
-  };
+  }, [appId]);
 
   useEffect(() => {
     fetchOAuthConfig();
-  }, [appId]);
+  }, [appId, fetchOAuthConfig]);
 
   const handleAddCallbackUrl = async () => {
     if (!newUrl.trim()) return;
@@ -71,7 +71,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
         const error = await response.json();
         alert(error.error || 'Failed to add callback URL');
       }
-    } catch (err) {
+    } catch {
       alert('Failed to add callback URL');
     } finally {
       setAdding(false);
@@ -93,7 +93,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
         const error = await response.json();
         alert(error.error || 'Failed to remove callback URL');
       }
-    } catch (err) {
+    } catch {
       alert('Failed to remove callback URL');
     } finally {
       setDeletingUrl(null);
@@ -349,7 +349,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
           Quick Start
         </h4>
         <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-          <li>Add your application's callback URLs above</li>
+          <li>Add your application&apos;s callback URLs above</li>
           <li>Use the Client ID and OAuth endpoints in your app</li>
           <li>Implement PKCE flow for secure authentication</li>
           <li>Exchange authorization codes for API keys</li>

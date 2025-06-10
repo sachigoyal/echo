@@ -10,8 +10,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "lint": "npx eslint src/**/*.ts",
-    "lint:fix": "npx eslint src/**/*.ts --fix",
+    "lint": "pnpx eslint src/**/*.ts",
+    "lint:fix": "pnpx eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write src/**/*.{ts,js}",
     "format:check": "prettier --check src/**/*.{ts,js}",
@@ -20,10 +20,10 @@
     "test:unit": "jest --testPathPattern='(auth|client).test.ts'",
     "test:cli": "jest --testPathPattern='cli.test.ts'",
     "test:integration": "jest --testPathPattern='integration.test.ts'",
-    "test:all": "npm run test:unit && npm run test:cli && npm run test:integration",
+    "test:all": "pnpm run test:unit && pnpm run test:cli && pnpm run test:integration",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [
     "echo",
