@@ -71,8 +71,6 @@ export interface Balance {
   totalCredits: number;
   totalSpent: number;
   balance: number;
-  echoAppName?: string;
-  echoAppId?: string;
 }
 
 export interface CreateEchoAppRequest {
@@ -108,7 +106,6 @@ export interface GetBalanceResponse {
 export interface CreatePaymentLinkRequest {
   amount: number;
   description?: string;
-  echoAppId?: string;
 }
 
 export interface CreatePaymentLinkResponse {

@@ -43,14 +43,11 @@ export class EchoClient {
   }
 
   /**
-   * Get current balance for the authenticated user
-   * @param echoAppId Optional app ID to get balance for specific app
-   * By default, it will get the balance for the app that the API key is scoped to
+   * Get current balance for the authenticated user across all apps
    */
-  async getBalance(echoAppId?: string): Promise<Balance> {
+  async getBalance(): Promise<Balance> {
     try {
-      const params = echoAppId ? { echoAppId } : {};
-      const response = await this.http.get('/api/balance', { params });
+      const response = await this.http.get('/api/balance');
       return response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch balance');
@@ -78,17 +75,11 @@ export class EchoClient {
   /**
    * Get payment URL for purchasing credits
    * @param amount Amount to purchase in USD
-   * @param echoAppId App ID to associate the purchase with
    * @param description Optional description for the payment
    */
-  async getPaymentUrl(
-    amount: number,
-    echoAppId: string,
-    description?: string
-  ): Promise<string> {
+  async getPaymentUrl(amount: number, description?: string): Promise<string> {
     const response = await this.createPaymentLink({
       amount,
-      echoAppId,
       description: description || 'Echo Credits',
     });
     return response.paymentLink.url;

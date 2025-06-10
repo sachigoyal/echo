@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { softDeleteEchoApp } from '@/lib/soft-delete';
+import { PermissionService } from '@/lib/permissions/service';
+import { Permission, AppRole } from '@/lib/permissions/types';
 
 // GET /api/echo-apps/[id] - Get detailed app information
 export async function GET(
@@ -21,17 +23,42 @@ export async function GET(
       );
     }
 
-    // Find the app and verify user access
+    // Check if user has permission to read this app
+    const hasPermission = await PermissionService.hasPermission(
+      user.id,
+      appId,
+      Permission.READ_APP
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Echo app not found or access denied' },
+        { status: 404 }
+      );
+    }
+
+    // Get user's role for this app to determine what data to show
+    const userRole = await PermissionService.getUserAppRole(user.id, appId);
+
+    // Find the app
     const app = await db.echoApp.findFirst({
       where: {
         id: appId,
-        userId: user.id,
-        isArchived: false, // Only return non-archived apps
+        isArchived: false,
       },
       include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
         apiKeys: {
           where: {
-            isArchived: false, // Only include non-archived API keys
+            isArchived: false,
+            // Customers can only see their own API keys
+            ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
           },
           select: {
             id: true,
@@ -40,6 +67,18 @@ export async function GET(
             isActive: true,
             createdAt: true,
             lastUsed: true,
+            createdBy: {
+              select: {
+                email: true,
+                name: true,
+              },
+            },
+            user: {
+              select: {
+                email: true,
+                name: true,
+              },
+            },
           },
           orderBy: { createdAt: 'desc' },
         },
@@ -47,12 +86,14 @@ export async function GET(
           select: {
             apiKeys: {
               where: {
-                isArchived: false, // Only count non-archived API keys
+                isArchived: false,
+                ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
               },
             },
             llmTransactions: {
               where: {
-                isArchived: false, // Only count non-archived transactions
+                isArchived: false,
+                ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
               },
             },
           },
@@ -67,11 +108,13 @@ export async function GET(
       );
     }
 
-    // Get aggregated statistics for the app
+    // Get aggregated statistics for the app (filtered by user for customers)
     const stats = await db.llmTransaction.aggregate({
       where: {
         echoAppId: appId,
-        isArchived: false, // Only include non-archived transactions in stats
+        isArchived: false,
+        // Filter by user for customers
+        ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
       },
       _count: true,
       _sum: {
@@ -82,12 +125,13 @@ export async function GET(
       },
     });
 
-    // Get model usage breakdown
+    // Get model usage breakdown (filtered by user for customers)
     const modelUsage = await db.llmTransaction.groupBy({
       by: ['model'],
       where: {
         echoAppId: appId,
-        isArchived: false, // Only include non-archived transactions
+        isArchived: false,
+        ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
       },
       _count: true,
       _sum: {
@@ -101,11 +145,12 @@ export async function GET(
       },
     });
 
-    // Get recent transactions
+    // Get recent transactions (filtered by user for customers)
     const recentTransactions = await db.llmTransaction.findMany({
       where: {
         echoAppId: appId,
-        isArchived: false, // Only include non-archived transactions
+        isArchived: false,
+        ...(userRole === AppRole.CUSTOMER && { userId: user.id }),
       },
       select: {
         id: true,
@@ -119,8 +164,25 @@ export async function GET(
       take: 10,
     });
 
+    // Calculate total spent for each API key
+    const apiKeysWithSpending = await Promise.all(
+      app.apiKeys.map(async apiKey => {
+        // Get total spending for this API key
+        // Note: We'll need to add apiKeyId to LlmTransaction model to track per-key spending
+        // For now, we'll set totalSpent to 0 as a placeholder
+        const totalSpent = 0; // TODO: Implement API key spending tracking
+
+        return {
+          ...apiKey,
+          totalSpent,
+          creator: apiKey.createdBy || apiKey.user || null,
+        };
+      })
+    );
+
     const appWithStats = {
       ...app,
+      apiKeys: apiKeysWithSpending,
       stats: {
         totalTransactions: stats._count || 0,
         totalTokens: stats._sum.totalTokens || 0,

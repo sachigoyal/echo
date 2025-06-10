@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import EchoAppsDashboard from '@/components/EchoAppsDashboard';
+import EnhancedEchoAppsDashboard from '@/components/EnhancedEchoAppsDashboard';
 
 export default async function Home() {
   const { userId } = await auth();
@@ -20,7 +20,7 @@ export default async function Home() {
             Manage your Echo applications, API keys, and usage analytics.
           </p>
         </div>
-        <EchoAppsDashboard />
+        <EnhancedEchoAppsDashboard />
       </div>
     </main>
   );

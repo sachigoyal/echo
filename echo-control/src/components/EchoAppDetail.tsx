@@ -12,7 +12,7 @@ import {
   X,
   Trash,
 } from 'lucide-react';
-import AppPaymentCard from './AppPaymentCard';
+
 import CreateApiKeyModal from './CreateApiKeyModal';
 import ApiKeyModal from './ApiKeyModal';
 
@@ -44,6 +44,12 @@ interface EchoApp {
     key: string;
     isActive: boolean;
     createdAt: string;
+    lastUsed?: string;
+    totalSpent: number;
+    creator: {
+      email: string;
+      name?: string;
+    } | null;
   }>;
   stats: {
     totalTransactions: number;
@@ -373,16 +379,35 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           </div>
         </div>
 
-        {/* Payment Card */}
-        {balance && (
-          <div className="bg-card rounded-lg border border-border p-0 overflow-hidden">
-            <AppPaymentCard
-              appId={app.id}
-              appName={app.name}
-              currentBalance={balance.balance}
-            />
+        {/* Total Spent Info Card */}
+        <div className="bg-gradient-to-br from-card to-card/80 rounded-lg border border-border p-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-card-foreground flex items-center">
+                <CreditCard className="h-5 w-5 mr-2 text-primary" />
+                Total spent on app
+              </h3>
+              <p className="text-2xl font-bold text-primary mt-2">
+                {formatCurrency(app.stats?.totalCost)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Total spending for this app
+              </p>
+            </div>
+            <div className="text-center">
+              <Link
+                href="/"
+                className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Credits
+              </Link>
+              <p className="text-xs text-muted-foreground mt-2">
+                Manage billing on main dashboard
+              </p>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* API Keys Section */}
@@ -419,13 +444,16 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     Name
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Creator
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Total Spent
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Prefix
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Created
+                    Last Used
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Actions
@@ -441,22 +469,21 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
                       {apiKey.name || 'Unnamed Key'}
                     </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
+                      {apiKey.creator?.email ||
+                        apiKey.creator?.name ||
+                        'Unknown'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
+                      {formatCurrency(apiKey.totalSpent)}
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-muted-foreground">
                       {apiKey.key?.slice(0, 10)}...
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          apiKey.isActive
-                            ? 'bg-secondary/20 text-secondary'
-                            : 'bg-destructive/20 text-destructive'
-                        }`}
-                      >
-                        {apiKey.isActive ? 'Active' : 'Revoked'}
-                      </span>
-                    </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
-                      {new Date(apiKey.createdAt).toLocaleDateString()}
+                      {apiKey.lastUsed
+                        ? new Date(apiKey.lastUsed).toLocaleDateString()
+                        : 'Never used'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
                       <button
