@@ -157,7 +157,7 @@ export function sanitizeEmail(email: string | null | undefined): string {
     /^([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/
   );
   if (emailMatch) {
-    return emailMatch[1];
+    return emailMatch[1] ?? '';
   }
 
   return '';
