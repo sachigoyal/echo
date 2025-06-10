@@ -105,3 +105,9 @@ jspm_packages/
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test 
+.vercel
+*storybook.log
+storybook-static
+
+# Claude Code
+.claude

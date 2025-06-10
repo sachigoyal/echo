@@ -31,7 +31,7 @@ export class EchoControlService {
     this.db = new PrismaClient({
       datasources: {
         db: {
-          url: process.env.DATABASE_URL ?? 'postgresql://localhost:5432/echo',
+          url: process.env.DATABASE_URL ?? 'postgresql://localhost:5469/echo',
         },
       },
     });
@@ -98,8 +98,8 @@ export class EchoControlService {
         return 0;
       }
 
-      const { userId, echoAppId } = this.authResult;
-      const balance = await this.dbService.getBalance(userId, echoAppId);
+      const { userId } = this.authResult;
+      const balance = await this.dbService.getBalance(userId);
 
       console.log('fetched balance', balance);
       return balance.balance;
@@ -122,8 +122,13 @@ export class EchoControlService {
         return;
       }
 
-      const { userId, echoAppId } = this.authResult;
-      await this.dbService.createLlmTransaction(userId, echoAppId, transaction);
+      const { userId, echoAppId, apiKeyId } = this.authResult;
+      await this.dbService.createLlmTransaction(
+        userId,
+        echoAppId,
+        apiKeyId,
+        transaction
+      );
     } catch (error) {
       console.error('Error creating transaction:', error);
     }

@@ -1,30 +1,24 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
 import {
-  ArrowLeft,
-  Key,
   Activity,
-  CreditCard,
-  Plus,
+  ArrowLeft,
   CheckCircle,
-  X,
+  CreditCard,
+  Key,
+  Plus,
   Trash,
+  X,
 } from 'lucide-react';
-import AppPaymentCard from './AppPaymentCard';
-import CreateApiKeyModal from './CreateApiKeyModal';
+import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
+import { AppRole } from '@/lib/permissions/types';
 import ApiKeyModal from './ApiKeyModal';
+import CreateApiKeyModal from './CreateApiKeyModal';
+import OAuthConfigSection from './OAuthConfigSection';
 
 interface EchoAppDetailProps {
   appId: string;
-}
-
-interface Balance {
-  balance: number;
-  totalCredits: number;
-  totalSpent: number;
-  currency: string;
 }
 
 interface EchoApp {
@@ -33,6 +27,7 @@ interface EchoApp {
   description?: string;
   isActive: boolean;
   createdAt: string;
+  userRole: string;
   user: {
     id: string;
     email: string;
@@ -44,6 +39,12 @@ interface EchoApp {
     key: string;
     isActive: boolean;
     createdAt: string;
+    lastUsed?: string;
+    totalSpent: number;
+    creator: {
+      email: string;
+      name?: string;
+    } | null;
   }>;
   stats: {
     totalTransactions: number;
@@ -96,7 +97,6 @@ const formatCost = (value: number | null | undefined): string => {
 
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   const [app, setApp] = useState<EchoApp | null>(null);
-  const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateApiKeyModal, setShowCreateApiKeyModal] = useState(false);
@@ -111,7 +111,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
   const fetchAppDetails = useCallback(async () => {
     try {
-      const response = await fetch(`/api/echo-apps/${appId}`);
+      const response = await fetch(`/api/apps/${appId}`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -119,7 +119,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         return;
       }
 
-      setApp(data.echoApp);
+      setApp(data);
     } catch (error) {
       console.error('Error fetching app details:', error);
       setError('Failed to load app details');
@@ -128,22 +128,8 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   }, [appId]);
 
-  const fetchAppBalance = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/balance?echoAppId=${appId}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setBalance(data);
-      }
-    } catch (error) {
-      console.error('Error fetching app balance:', error);
-    }
-  }, [appId]);
-
   useEffect(() => {
     fetchAppDetails();
-    fetchAppBalance();
 
     // Check for payment success in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -151,12 +137,8 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
       setShowPaymentSuccess(true);
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
-      // Refetch balance after successful payment
-      setTimeout(() => {
-        fetchAppBalance();
-      }, 1000);
     }
-  }, [appId, fetchAppBalance, fetchAppDetails]);
+  }, [appId, fetchAppDetails]);
 
   const handleCreateApiKey = async (data: {
     name: string;
@@ -214,7 +196,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   };
 
-  const handleDeleteApiKey = async (id: string) => {
+  const handleArchiveApiKey = async (id: string) => {
     setDeletingKeyId(id);
     try {
       const response = await fetch(`/api/api-keys/${id}`, {
@@ -223,12 +205,12 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete API key');
+        throw new Error(error.error || 'Failed to archive API key');
       }
 
       await fetchAppDetails(); // Refresh data
     } catch (error) {
-      console.error('Error deleting API key:', error);
+      console.error('Error archiving API key:', error);
     } finally {
       setDeletingKeyId(null);
     }
@@ -373,16 +355,35 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           </div>
         </div>
 
-        {/* Payment Card */}
-        {balance && (
-          <div className="bg-card rounded-lg border border-border p-0 overflow-hidden">
-            <AppPaymentCard
-              appId={app.id}
-              appName={app.name}
-              currentBalance={balance.balance}
-            />
+        {/* Total Spent Info Card */}
+        <div className="bg-gradient-to-br from-card to-card/80 rounded-lg border border-border p-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-card-foreground flex items-center">
+                <CreditCard className="h-5 w-5 mr-2 text-primary" />
+                Total spent on app
+              </h3>
+              <p className="text-2xl font-bold text-primary mt-2">
+                {formatCurrency(app.stats?.totalCost)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Total spending for this app
+              </p>
+            </div>
+            <div className="text-center">
+              <Link
+                href="/"
+                className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Credits
+              </Link>
+              <p className="text-xs text-muted-foreground mt-2">
+                Manage billing on main dashboard
+              </p>
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* API Keys Section */}
@@ -419,13 +420,16 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     Name
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Creator
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Total Spent
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Prefix
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Created
+                    Last Used
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Actions
@@ -441,29 +445,28 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
                       {apiKey.name || 'Unnamed Key'}
                     </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
+                      {apiKey.creator?.email ||
+                        apiKey.creator?.name ||
+                        'Unknown'}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-card-foreground">
+                      {formatCurrency(apiKey.totalSpent)}
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-muted-foreground">
                       {apiKey.key?.slice(0, 10)}...
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          apiKey.isActive
-                            ? 'bg-secondary/20 text-secondary'
-                            : 'bg-destructive/20 text-destructive'
-                        }`}
-                      >
-                        {apiKey.isActive ? 'Active' : 'Revoked'}
-                      </span>
-                    </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
-                      {new Date(apiKey.createdAt).toLocaleDateString()}
+                      {apiKey.lastUsed
+                        ? new Date(apiKey.lastUsed).toLocaleDateString()
+                        : 'Never used'}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
                       <button
-                        onClick={() => handleDeleteApiKey(apiKey.id)}
+                        onClick={() => handleArchiveApiKey(apiKey.id)}
                         disabled={deletingKeyId === apiKey.id}
                         className="text-destructive hover:text-destructive/80 ml-2 disabled:opacity-50"
-                        title="Delete API Key"
+                        title="Archive API Key"
                       >
                         <Trash className="h-4 w-4" />
                       </button>
@@ -475,6 +478,11 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           </div>
         )}
       </div>
+
+      {/* OAuth Configuration - Only show for owners */}
+      {app && app.userRole === AppRole.OWNER && (
+        <OAuthConfigSection appId={app.id} />
+      )}
 
       {/* Recent Transactions */}
       <div className="bg-card rounded-lg border border-border p-6">

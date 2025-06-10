@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useUser, useClerk } from '@clerk/nextjs';
-import {
-  PlusIcon,
-  KeyIcon,
-  ChartBarIcon,
-  UserIcon,
-  LogOutIcon,
-  TrashIcon,
-} from 'lucide-react';
 import CreateEchoAppModal from '@/components/CreateEchoAppModal';
+import { useClerk, useUser } from '@clerk/nextjs';
+import {
+  ChartBarIcon,
+  KeyIcon,
+  LogOutIcon,
+  PlusIcon,
+  TrashIcon,
+  UserIcon,
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface EchoApp {
   id: string;
@@ -47,14 +47,14 @@ export default function EchoAppsDashboard() {
   const fetchEchoApps = async () => {
     try {
       setError(null);
-      const response = await fetch('/api/echo-apps');
+      const response = await fetch('/api/apps');
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch echo apps');
       }
 
-      setEchoApps(data.echoApps || []);
+      setEchoApps(data.apps || []);
     } catch (error) {
       console.error('Error fetching echo apps:', error);
       setError(
@@ -70,7 +70,7 @@ export default function EchoAppsDashboard() {
     description?: string;
   }) => {
     setError(null);
-    const response = await fetch('/api/echo-apps', {
+    const response = await fetch('/api/apps', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(appData),
@@ -86,7 +86,7 @@ export default function EchoAppsDashboard() {
     setShowCreateModal(false);
   };
 
-  const handleDeleteApp = async (id: string, event: React.MouseEvent) => {
+  const handleArchiveApp = async (id: string, event: React.MouseEvent) => {
     event.preventDefault(); // Prevent navigation to app detail page
     event.stopPropagation(); // Stop event propagation
 
@@ -94,20 +94,20 @@ export default function EchoAppsDashboard() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/echo-apps/${id}`, {
+      const response = await fetch(`/api/apps/${id}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to delete echo app');
+        throw new Error(data.error || 'Failed to archive echo app');
       }
 
       await fetchEchoApps(); // Refresh the list
     } catch (error) {
-      console.error('Error deleting echo app:', error);
+      console.error('Error archiving echo app:', error);
       setError(
-        error instanceof Error ? error.message : 'Failed to delete echo app'
+        error instanceof Error ? error.message : 'Failed to archive echo app'
       );
     } finally {
       setDeletingAppId(null);
@@ -239,12 +239,12 @@ export default function EchoAppsDashboard() {
                         {app.isActive ? 'Active' : 'Inactive'}
                       </span>
                       <button
-                        onClick={e => handleDeleteApp(app.id, e)}
+                        onClick={e => handleArchiveApp(app.id, e)}
                         className={`p-1 rounded-full hover:bg-destructive/10 group-hover:opacity-100 ${
                           deletingAppId === app.id ? 'opacity-50' : 'opacity-0'
                         }`}
                         disabled={deletingAppId === app.id}
-                        aria-label="Delete app"
+                        aria-label="Archive app"
                       >
                         <TrashIcon className="h-4 w-4 text-destructive" />
                       </button>

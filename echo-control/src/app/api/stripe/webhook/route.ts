@@ -90,38 +90,50 @@ async function handleCheckoutSessionCompleted(
       return;
     }
 
-    // Update payment in database
-    const updatedPayment = await db.payment.updateMany({
-      where: {
-        stripePaymentId: paymentId,
-        status: 'pending',
-      },
-      data: {
-        status: 'completed',
-        updatedAt: new Date(),
-      },
-    });
-
-    if (updatedPayment.count === 0) {
-      console.warn(`No pending payment found for payment ID: ${paymentId}`);
-      // Create a new payment record if one doesn't exist
-      await db.payment.create({
-        data: {
+    // Use a database transaction to atomically update payment status and user balance
+    await db.$transaction(async tx => {
+      // Update payment in database
+      const updatedPayment = await tx.payment.updateMany({
+        where: {
           stripePaymentId: paymentId,
-          amount: amount_total,
-          currency: currency || 'usd',
+          status: 'pending',
+        },
+        data: {
           status: 'completed',
-          description: description || 'Echo credits purchase',
-          userId,
-          echoAppId: echoAppId || null,
+          updatedAt: new Date(),
         },
       });
-      console.log(`Created new payment record for payment ID: ${paymentId}`);
-    }
 
-    const creditsAdded = Math.floor(amount_total / 100); // Convert cents to dollars as credits
+      if (updatedPayment.count === 0) {
+        console.warn(`No pending payment found for payment ID: ${paymentId}`);
+        // Create a new payment record if one doesn't exist
+        await tx.payment.create({
+          data: {
+            stripePaymentId: paymentId,
+            amount: amount_total,
+            currency: currency || 'usd',
+            status: 'completed',
+            description: description || 'Echo credits purchase',
+            userId,
+          },
+        });
+        console.log(`Created new payment record for payment ID: ${paymentId}`);
+      }
+
+      // Atomically update user's totalPaid (amount_total is in cents, convert to dollars)
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          totalPaid: {
+            increment: amount_total / 100,
+          },
+        },
+      });
+    });
+
+    const creditsAdded = Math.floor(amount_total / 100);
     console.log(
-      `Checkout completed for user ${userId}${echoAppId ? ` and app ${echoAppId}` : ''}: ${creditsAdded} credits added`
+      `Checkout completed for user ${userId}${echoAppId ? ` and app ${echoAppId}` : ''}: ${creditsAdded} credits added, totalPaid updated`
     );
   } catch (error) {
     console.error('Error handling checkout completion:', error);
@@ -138,21 +150,34 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       return;
     }
 
-    // Update payment in database
-    await db.payment.upsert({
-      where: { stripePaymentId: id },
-      update: { status: 'completed' },
-      create: {
-        stripePaymentId: id,
-        amount,
-        currency,
-        status: 'completed',
-        description: 'Echo credits purchase',
-        userId,
-      },
+    // Use a database transaction to atomically update payment status and user balance
+    await db.$transaction(async tx => {
+      // Update payment in database
+      await tx.payment.upsert({
+        where: { stripePaymentId: id },
+        update: { status: 'completed' },
+        create: {
+          stripePaymentId: id,
+          amount,
+          currency,
+          status: 'completed',
+          description: 'Echo credits purchase',
+          userId,
+        },
+      });
+
+      // Atomically update user's totalPaid (amount is in cents, convert to dollars)
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          totalPaid: {
+            increment: amount / 100,
+          },
+        },
+      });
     });
 
-    console.log(`Payment succeeded: ${id}`);
+    console.log(`Payment succeeded: ${id}, totalPaid updated`);
   } catch (error) {
     console.error('Error handling payment success:', error);
   }

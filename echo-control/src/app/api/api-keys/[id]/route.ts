@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
+import { softDeleteApiKey } from '@/lib/soft-delete';
 
 // PATCH /api/api-keys/[id] - Update an API key (rename)
 export async function PATCH(
@@ -22,6 +23,7 @@ export async function PATCH(
       where: {
         id,
         userId: user.id,
+        isArchived: false, // Only allow updating non-archived API keys
       },
     });
 
@@ -56,7 +58,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/api-keys/[id] - Delete an API key
+// DELETE /api/api-keys/[id] - Archive an API key (soft delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -71,6 +73,7 @@ export async function DELETE(
       where: {
         id,
         userId: user.id,
+        isArchived: false, // Only allow archiving non-archived keys
       },
     });
 
@@ -81,14 +84,12 @@ export async function DELETE(
       );
     }
 
-    // Delete the API key
-    await db.apiKey.delete({
-      where: { id },
-    });
+    // Archive the API key (soft delete)
+    await softDeleteApiKey(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting API key:', error);
+    console.error('Error archiving API key:', error);
 
     if (error instanceof Error && error.message === 'Not authenticated') {
       return NextResponse.json(

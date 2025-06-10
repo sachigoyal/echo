@@ -8,10 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "setup-webhook": "node scripts/setup-webhook.js",
-    "test": "npm run type-check && echo 'All tests passed!'",
-    "prisma:generate": "npx prisma generate",
-    "prisma:push": "npx prisma db push",
-    "prisma:studio": "npx prisma studio"
+    "test": "pnpm run type-check && echo 'All tests passed!'",
+    "prisma:generate": "pnpx prisma generate",
+    "prisma:push": "pnpx prisma db push",
+    "prisma:studio": "pnpx prisma studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.20.2",
@@ -22,6 +22,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.5.0",
+    "jose": "^6.0.11",
     "lucide-react": "^0.511.0",
     "nanoid": "^5.1.5",
     "next": "15.3.3",
@@ -41,7 +42,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "typescript": "^5.0.0",
-    "husky": "^9.0.0"
+    "husky": "^9.0.0",
+    "typescript": "^5.0.0"
   }
 }

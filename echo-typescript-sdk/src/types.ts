@@ -51,7 +51,8 @@ export interface LlmTransaction {
   errorMessage?: string;
   createdAt: string;
   userId: string;
-  echoAppId?: string;
+  echoAppId: string;
+  apiKeyId: string;
 }
 
 export interface Payment {
@@ -71,8 +72,6 @@ export interface Balance {
   totalCredits: number;
   totalSpent: number;
   balance: number;
-  echoAppName?: string;
-  echoAppId?: string;
 }
 
 export interface CreateEchoAppRequest {
@@ -108,7 +107,6 @@ export interface GetBalanceResponse {
 export interface CreatePaymentLinkRequest {
   amount: number;
   description?: string;
-  echoAppId?: string;
 }
 
 export interface CreatePaymentLinkResponse {
@@ -140,6 +138,8 @@ export interface CreateLlmTransactionResponse {
 export interface ApiKeyValidationResult {
   userId: string;
   echoAppId: string;
+  apiKeyId: string;
   user: User;
   echoApp: EchoApp;
+  apiKey: ApiKey;
 }

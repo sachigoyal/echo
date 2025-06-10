@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo OAuth PKCE Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .step.active {
+            border-color: #007cba;
+            background-color: #f0f8ff;
+        }
+
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #005a9e;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .code {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .success {
+            color: #28a745;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .token-display {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Echo OAuth PKCE Flow Test</h1>
+    <p>This page helps you test the complete OAuth PKCE flow for Echo apps.</p>
+
+    <!-- Step 1: Configuration -->
+    <div class="step active" id="step1">
+        <h2>Step 1: Configuration</h2>
+        <label>Echo App ID (Client ID):</label>
+        <input type="text" id="clientId" placeholder="your-echo-app-id" />
+
+        <label>Redirect URI (this page):</label>
+        <input type="text" id="redirectUri" readonly />
+
+        <label>Authorization Server:</label>
+        <input type="text" id="authServer" value="http://localhost:3000" />
+
+        <button onclick="setConfig()">Set Configuration</button>
+        <div id="configStatus"></div>
+    </div>
+
+    <!-- Step 2: Start OAuth Flow -->
+    <div class="step" id="step2">
+        <h2>Step 2: Start OAuth Flow</h2>
+        <p>This will generate PKCE codes and redirect to the authorization server.</p>
+        <button onclick="startOAuth()" id="startBtn" disabled>Start OAuth Flow</button>
+        <div id="pkceInfo"></div>
+    </div>
+
+    <!-- Step 3: Handle Callback -->
+    <div class="step" id="step3">
+        <h2>Step 3: Handle OAuth Callback</h2>
+        <p>After authorization, you'll be redirected back here with an authorization code.</p>
+        <button onclick="handleCallback()" id="callbackBtn" disabled>Process Callback</button>
+        <div id="callbackInfo"></div>
+    </div>
+
+    <!-- Step 4: Exchange for Tokens -->
+    <div class="step" id="step4">
+        <h2>Step 4: Exchange Code for JWT Token</h2>
+        <button onclick="exchangeToken()" id="exchangeBtn" disabled>Exchange for Tokens</button>
+        <div id="tokenInfo"></div>
+    </div>
+
+    <!-- Step 5: Test JWT Validation -->
+    <div class="step" id="step5">
+        <h2>Step 5: Test JWT Token Validation</h2>
+        <button onclick="testJWT()" id="jwtBtn" disabled>Test JWT Validation</button>
+        <div id="jwtInfo"></div>
+    </div>
+
+    <!-- Step 6: Test Refresh -->
+    <div class="step" id="step6">
+        <h2>Step 6: Test Token Refresh</h2>
+        <button onclick="testRefresh()" id="refreshBtn" disabled>Test Refresh Token</button>
+        <div id="refreshInfo"></div>
+    </div>
+
+    <script>
+        let config = {};
+        let oauthState = {};
+        let tokens = {};
+
+        // Initialize page
+        window.onload = function () {
+            document.getElementById('redirectUri').value = window.location.href.split('?')[0];
+
+            // Check if we're returning from OAuth
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('code')) {
+                document.getElementById('step3').classList.add('active');
+                document.getElementById('callbackBtn').disabled = false;
+                loadStoredState();
+            }
+        };
+
+        function setConfig() {
+            config.clientId = document.getElementById('clientId').value;
+            config.redirectUri = document.getElementById('redirectUri').value;
+            config.authServer = document.getElementById('authServer').value;
+
+            if (!config.clientId) {
+                showStatus('configStatus', 'Please enter a Client ID', 'error');
+                return;
+            }
+
+            localStorage.setItem('oauthTestConfig', JSON.stringify(config));
+            showStatus('configStatus', '✅ Configuration saved', 'success');
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('step2').classList.add('active');
+        }
+
+        function generatePKCE() {
+            // Generate code verifier
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            const codeVerifier = btoa(String.fromCharCode.apply(null, array))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+
+            // Generate code challenge
+            const encoder = new TextEncoder();
+            const data = encoder.encode(codeVerifier);
+            return crypto.subtle.digest('SHA-256', data).then(hash => {
+                const codeChallenge = btoa(String.fromCharCode.apply(null, new Uint8Array(hash)))
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=/g, '');
+
+                return { codeVerifier, codeChallenge };
+            });
+        }
+
+        async function startOAuth() {
+            const pkce = await generatePKCE();
+            const state = crypto.randomUUID();
+
+            oauthState = {
+                codeVerifier: pkce.codeVerifier,
+                state: state,
+                timestamp: Date.now()
+            };
+
+            localStorage.setItem('oauthTestState', JSON.stringify(oauthState));
+
+            showStatus('pkceInfo', `
+                <div class="code">
+                    <strong>PKCE Generated:</strong><br>
+                    Code Verifier: ${pkce.codeVerifier.substring(0, 20)}...<br>
+                    Code Challenge: ${pkce.codeChallenge.substring(0, 20)}...<br>
+                    State: ${state}
+                </div>
+            `);
+
+            const params = new URLSearchParams({
+                client_id: config.clientId,
+                redirect_uri: config.redirectUri,
+                code_challenge: pkce.codeChallenge,
+                code_challenge_method: 'S256',
+                response_type: 'code',
+                scope: 'llm:invoke offline_access',
+                state: state
+            });
+
+            const authUrl = `${config.authServer}/api/oauth/authorize?${params}`;
+            window.location.href = authUrl;
+        }
+
+        function loadStoredState() {
+            const stored = localStorage.getItem('oauthTestState');
+            const storedConfig = localStorage.getItem('oauthTestConfig');
+
+            if (stored) oauthState = JSON.parse(stored);
+            if (storedConfig) {
+                config = JSON.parse(storedConfig);
+                document.getElementById('clientId').value = config.clientId;
+                document.getElementById('authServer').value = config.authServer;
+            }
+        }
+
+        function handleCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+
+            if (error) {
+                showStatus('callbackInfo', `❌ OAuth Error: ${error}`, 'error');
+                return;
+            }
+
+            if (!code) {
+                showStatus('callbackInfo', '❌ No authorization code found', 'error');
+                return;
+            }
+
+            if (state !== oauthState.state) {
+                showStatus('callbackInfo', '❌ State parameter mismatch (CSRF protection)', 'error');
+                return;
+            }
+
+            showStatus('callbackInfo', `
+                ✅ Authorization code received!<br>
+                <div class="code">Code: ${code.substring(0, 50)}...</div>
+            `, 'success');
+
+            oauthState.authCode = code;
+            document.getElementById('exchangeBtn').disabled = false;
+            document.getElementById('step4').classList.add('active');
+        }
+
+        async function exchangeToken() {
+            const tokenRequest = {
+                grant_type: 'authorization_code',
+                code: oauthState.authCode,
+                redirect_uri: config.redirectUri,
+                client_id: config.clientId,
+                code_verifier: oauthState.codeVerifier
+            };
+
+            try {
+                const response = await fetch(`${config.authServer}/api/oauth/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(tokenRequest)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showStatus('tokenInfo', `❌ Token exchange failed: ${result.error_description}`, 'error');
+                    return;
+                }
+
+                tokens = result;
+
+                showStatus('tokenInfo', `
+                    <div class="token-display">
+                        <strong>✅ JWT Token received!</strong><br><br>
+                        <strong>Access Token (JWT):</strong><br>
+                        <textarea readonly style="height: 100px;">${result.access_token}</textarea><br>
+                        <strong>Expires in:</strong> ${result.expires_in} seconds<br>
+                        <strong>Refresh Token:</strong> ${result.refresh_token.substring(0, 30)}...<br>
+                        <strong>Scope:</strong> ${result.scope}<br>
+                        <strong>User:</strong> ${result.user.email}<br>
+                        <strong>App:</strong> ${result.echo_app.name}
+                    </div>
+                `, 'success');
+
+                document.getElementById('jwtBtn').disabled = false;
+                document.getElementById('refreshBtn').disabled = false;
+                document.getElementById('step5').classList.add('active');
+                document.getElementById('step6').classList.add('active');
+
+            } catch (error) {
+                showStatus('tokenInfo', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testJWT() {
+            try {
+                const response = await fetch(`${config.authServer}/api/validate-jwt-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${tokens.access_token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showStatus('jwtInfo', `❌ JWT validation failed: ${result.error}`, 'error');
+                    return;
+                }
+
+                showStatus('jwtInfo', `
+                    <div class="token-display">
+                        <strong>✅ JWT validation successful!</strong><br>
+                        <strong>Valid:</strong> ${result.valid}<br>
+                        <strong>User ID:</strong> ${result.userId}<br>
+                        <strong>App ID:</strong> ${result.appId}<br>
+                        <strong>Scope:</strong> ${result.scope}<br>
+                        <em>⚡ This validation took ~1ms (no database lookup)</em>
+                    </div>
+                `, 'success');
+
+            } catch (error) {
+                showStatus('jwtInfo', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRefresh() {
+            try {
+                const response = await fetch(`${config.authServer}/api/oauth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        grant_type: 'refresh_token',
+                        refresh_token: tokens.refresh_token
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    showStatus('refreshInfo', `❌ Refresh failed: ${result.error_description}`, 'error');
+                    return;
+                }
+
+                tokens = result; // Update with new tokens
+
+                showStatus('refreshInfo', `
+                    <div class="token-display">
+                        <strong>✅ Token refresh successful!</strong><br>
+                        <strong>New Access Token:</strong> ${result.access_token.substring(0, 50)}...<br>
+                        <strong>New Refresh Token:</strong> ${result.refresh_token.substring(0, 30)}...<br>
+                        <em>🔄 Tokens automatically rotated for security</em>
+                    </div>
+                `, 'success');
+
+            } catch (error) {
+                showStatus('refreshInfo', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        function showStatus(elementId, message, type = '') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = type;
+        }
+    </script>
+</body>
+
+</html>

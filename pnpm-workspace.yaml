@@ -1,0 +1,23 @@
+packages:
+  - echo-control
+  - echo-server
+  - echo-typescript-sdk
+  - create-echo-app
+  - echo-react-sdk
+  - integration-tests
+  - examples/*
+allowBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - esbuild
+  - msw
+  - prisma
+ignoredBuiltDependencies:
+  - '@clerk/shared'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - esbuild
+  - msw
+  - prisma
+  - sharp
+  - unrs-resolver

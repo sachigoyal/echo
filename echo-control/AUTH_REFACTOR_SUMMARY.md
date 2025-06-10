@@ -198,7 +198,7 @@ const response = await fetch(`${echoControlUrl}/api/validate-api-key`, {
 ### Echo Control (.env)
 
 ```bash
-DATABASE_URL="postgresql://user:pass@localhost:5432/echo_control"
+DATABASE_URL="postgresql://user:pass@localhost:5469/echo_control"
 CLERK_SECRET_KEY="your_clerk_secret"
 CLERK_PUBLISHABLE_KEY="your_clerk_publishable"
 API_KEY_PREFIX="echo_"

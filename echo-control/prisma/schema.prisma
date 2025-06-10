@@ -8,17 +8,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// TODO(ben): Fix
 model User {
   id              String           @id @default(uuid()) @db.Uuid
   email           String           @unique
   name            String?
   clerkId         String           @unique
+  isArchived      Boolean          @default(false)
+  archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
-  apiKeys         ApiKey[]
-  echoApps        EchoApp[]
-  llmTransactions LlmTransaction[]
-  payments        Payment[]
+  apiKeys         ApiKey[]         // API keys owned by user
+  llmTransactions LlmTransaction[] // LLM transactions
+  payments        Payment[]        // payments made to the app
+  
+  totalPaid       Decimal  @db.Decimal(10, 6)   // Aggregate for Total payment amount
+
+  totalSpent      Decimal  @db.Decimal(10, 6)  // Aggregate for Total spent across apps 
+  
+  refreshTokens   RefreshToken[]   // refresh tokens 
+  appMemberships  AppMembership[]  // Apps you are a member of
 
   @@map("users")
 }
@@ -28,47 +37,97 @@ model EchoApp {
   name            String
   description     String?
   isActive        Boolean          @default(true)
+  isArchived      Boolean          @default(false)
+  archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
-  userId          String           @db.Uuid
-  apiKeys         ApiKey[]
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  llmTransactions LlmTransaction[]
-  payments        Payment[]
+  authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
+  apiKeys         ApiKey[]         // API keys for the app 
+  llmTransactions LlmTransaction[] // LLM transactions for that App
+  refreshTokens   RefreshToken[]   // Refresh tokens
+  appMemberships  AppMembership[]  // Customers of app and owners
 
   @@map("echo_apps")
 }
 
+model AppMembership {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  echoAppId  String    @db.Uuid
+  role       String    // 'owner', 'admin', 'customer'
+  status     String    @default("active") // 'active', 'pending', 'revoked'
+  isArchived Boolean   @default(false)
+  archivedAt DateTime? @db.Timestamptz
+  createdAt  DateTime  @default(now()) @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @db.Timestamptz
+  totalSpent Decimal  @db.Decimal(10, 6)  // Aggregate for Total spent by user for this app
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, echoAppId])
+  @@map("app_memberships")
+}
+
 model ApiKey {
-  id        String    @id @default(uuid()) @db.Uuid
-  key       String    @unique
-  name      String?
-  isActive  Boolean   @default(true)
-  lastUsed  DateTime? @db.Timestamptz
-  metadata  Json?
-  createdAt DateTime  @default(now()) @db.Timestamptz
-  updatedAt DateTime  @updatedAt @db.Timestamptz
-  userId    String    @db.Uuid
-  echoAppId String    @db.Uuid
-  echoApp   EchoApp   @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String    @id @default(uuid()) @db.Uuid
+  key             String    @unique /// NEEDS TO BE HASHED
+  name            String?
+  isActive        Boolean   @default(true)
+  isArchived      Boolean   @default(false)
+  archivedAt      DateTime? @db.Timestamptz
+  lastUsed        DateTime? @db.Timestamptz
+  metadata        Json?
+  createdAt       DateTime  @default(now()) @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @db.Timestamptz
+  userId          String    @db.Uuid
+  echoAppId       String    @db.Uuid
+  
+  scope           String    @default("owner") 
+  // Permissions available to API key - can be <= to AppMembership.role for same (userId, echoAppId) pair
+  
+  echoApp       EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+  llmTransactions LlmTransaction[] // LLM transactions using this API key
 
   @@map("api_keys")
 }
 
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  token     String   @unique
+  isArchived      Boolean   @default(false)
+  archivedAt      DateTime? @db.Timestamptz
+  expiresAt DateTime @db.Timestamptz
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  userId    String   @db.Uuid
+  echoAppId String   @db.Uuid
+  apiKeyId  String   @db.Uuid
+  scope     String   @default("llm:invoke offline_access")
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp   EchoApp  @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
 model Payment {
   id              String   @id @default(uuid()) @db.Uuid
-  stripePaymentId String?  @unique
-  amount          Int
+  stripePaymentId String   @unique
+  amount          Decimal  @db.Decimal(10, 6)
   currency        String   @default("usd")
   status          String
   description     String?
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime? @db.Timestamptz
   createdAt       DateTime @default(now()) @db.Timestamptz
   updatedAt       DateTime @updatedAt @db.Timestamptz
   userId          String   @db.Uuid
-  echoAppId       String?  @db.Uuid
-  echoApp         EchoApp? @relation(fields: [echoAppId], references: [id])
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
 
   @@map("payments")
 }
@@ -84,11 +143,16 @@ model LlmTransaction {
   response     String?
   status       String
   errorMessage String?
+  isArchived   Boolean  @default(false)
+  archivedAt   DateTime? @db.Timestamptz
   createdAt    DateTime @default(now()) @db.Timestamptz
   userId       String   @db.Uuid
-  echoAppId    String?  @db.Uuid
-  echoApp      EchoApp? @relation(fields: [echoAppId], references: [id])
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoAppId    String   @db.Uuid
+  apiKeyId     String   @db.Uuid  // API key used for this transaction (required)
+  
+  echoApp  EchoApp @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
+  apiKey   ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
 
   @@map("llm_transactions")
 }
