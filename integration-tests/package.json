@@ -22,8 +22,8 @@
     "db:reset": "dotenv -e .env.test tsx scripts/reset-integration-db.ts",
     "db:reset-and-seed": "pnpm db:reset && pnpm db:seed",
     "type-check": "tsc --noEmit",
-    "lint": "eslint **/*.{ts,tsx} --no-warn-ignored",
-    "lint:fix": "eslint **/*.{ts,tsx} --no-warn-ignored --fix"
+    "lint": "eslint **/*.ts",
+    "lint:fix": "eslint **/*.ts --fix"
   },
   "dependencies": {
     "@echo-systems/react-sdk": "workspace:*",

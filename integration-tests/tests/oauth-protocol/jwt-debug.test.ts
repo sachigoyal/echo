@@ -1,5 +1,5 @@
-import { describe, test, expect } from 'vitest';
-import { echoControlApi, TEST_CONFIG } from '../../utils/index.js';
+import { describe, test } from 'vitest';
+import { TEST_CONFIG } from '../../utils/index.js';
 
 describe('JWT Debug Test', () => {
   test('test header processing with direct request', async () => {

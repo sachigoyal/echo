@@ -9,6 +9,15 @@ import {
   TEST_CONFIG,
 } from '../../utils/index.js';
 
+// Extend globalThis with test state
+declare global {
+  var testAuthCode: string;
+  var testCodeVerifier: string;
+  var testState: string;
+  var testAccessToken: string;
+  var testRefreshToken: string;
+}
+
 describe('OAuth End-to-End Flow Tests', () => {
   beforeAll(async () => {
     // Verify test environment
@@ -49,15 +58,15 @@ describe('OAuth End-to-End Flow Tests', () => {
       console.log('✅ Got real authorization code from server!');
 
       // Store for next test
-      (globalThis as any).testAuthCode = authCode;
-      (globalThis as any).testCodeVerifier = codeVerifier;
-      (globalThis as any).testState = state;
+      globalThis.testAuthCode = authCode;
+      globalThis.testCodeVerifier = codeVerifier;
+      globalThis.testState = state;
     });
   });
 
   describe('Step 2: Authorization Code Ready', () => {
     test('has authorization code ready for token exchange', async () => {
-      const authCode = (globalThis as any).testAuthCode;
+      const authCode = globalThis.testAuthCode;
 
       expect(authCode).toBeTruthy();
       console.log('✅ Using REAL authorization code from OAuth server');
@@ -69,8 +78,8 @@ describe('OAuth End-to-End Flow Tests', () => {
   describe('Step 3: Exchange Authorization Code for Tokens', () => {
     test('exchanges valid authorization code for access and refresh tokens', async () => {
       // Get values from previous test
-      const authCode = (globalThis as any).testAuthCode;
-      const codeVerifier = (globalThis as any).testCodeVerifier;
+      const authCode = globalThis.testAuthCode;
+      const codeVerifier = globalThis.testCodeVerifier;
 
       expect(authCode).toBeTruthy();
       expect(codeVerifier).toBeTruthy();
@@ -100,14 +109,14 @@ describe('OAuth End-to-End Flow Tests', () => {
       expect(tokenResponse.refresh_token).toBeTruthy();
 
       // Store for next test
-      (globalThis as any).testAccessToken = tokenResponse.access_token;
-      (globalThis as any).testRefreshToken = tokenResponse.refresh_token;
+      globalThis.testAccessToken = tokenResponse.access_token;
+      globalThis.testRefreshToken = tokenResponse.refresh_token;
     });
   });
 
   describe('Step 4: Validate Access Token', () => {
     test('validates access token with JWT validation endpoint', async () => {
-      const accessToken = (globalThis as any).testAccessToken;
+      const accessToken = globalThis.testAccessToken;
       expect(accessToken).toBeTruthy();
 
       console.log('Validating access token...');

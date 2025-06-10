@@ -133,10 +133,11 @@ describe('PKCE Security Validation', () => {
           redirect_uri: 'http://localhost:3000/callback',
           code_verifier: codeVerifier,
         });
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as Error;
         // Should fail with invalid_grant (because mock code), not verifier issues
-        expect(error.message).toMatch(/invalid.*grant/i);
-        expect(error.message).not.toMatch(/verifier/i);
+        expect(err.message).toMatch(/invalid.*grant/i);
+        expect(err.message).not.toMatch(/verifier/i);
       }
 
       // Second attempt with same code should fail (replay attack prevention)
@@ -290,8 +291,9 @@ describe('PKCE Security Validation', () => {
           redirect_uri: 'http://localhost:3000/callback',
           code_verifier: validMinVerifier,
         });
-      } catch (error: any) {
-        expect(error.message).not.toMatch(
+      } catch (error) {
+        const err = error as Error;
+        expect(err.message).not.toMatch(
           /code.*verifier.*length|verifier.*invalid/i
         );
       }
@@ -319,8 +321,9 @@ describe('PKCE Security Validation', () => {
           redirect_uri: 'http://localhost:3000/callback',
           code_verifier: validMaxVerifier,
         });
-      } catch (error: any) {
-        expect(error.message).not.toMatch(
+      } catch (error) {
+        const err = error as Error;
+        expect(err.message).not.toMatch(
           /code.*verifier.*length|verifier.*invalid/i
         );
       }
@@ -339,11 +342,12 @@ describe('PKCE Security Validation', () => {
           redirect_uri: 'http://localhost:3000/callback',
           code_verifier: validVerifier,
         });
-      } catch (error: any) {
-        expect(error.message).not.toMatch(
+      } catch (error) {
+        const err = error as Error;
+        expect(err.message).not.toMatch(
           /code.*verifier.*invalid|invalid.*characters/i
         );
-        expect(error.message).toMatch(/invalid.*grant|authorization.*code/i);
+        expect(err.message).toMatch(/invalid.*grant|authorization.*code/i);
       }
     });
   });
