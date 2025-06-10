@@ -42,7 +42,7 @@ ENV WEBHOOK_URL=$WEBHOOK_URL
 RUN apk add --no-cache \
     bash \
     git \
-    openssh-client
+    openssh-client 
 
 # Copy package files for dependency installation
 COPY package*.json ./
@@ -55,26 +55,26 @@ COPY echo-typescript-sdk/ ./echo-typescript-sdk/
 
 # Install dependencies for both projects (including dev dependencies for build)
 WORKDIR /app/echo-control
-RUN npm ci
+RUN pnpm install
 
 WORKDIR /app/echo-server
-RUN npm ci
+RUN pnpm install
 
 # Step 1: Build echo-control and generate Prisma client
 WORKDIR /app/echo-control
-RUN npm run prisma:generate
-RUN npm run build
+RUN pnpm run prisma:generate
+RUN pnpm run build
 
 WORKDIR /app/echo-typescript-sdk
-RUN npm install
-RUN npm run build
+RUN pnpm install
+RUN pnpm run build
 
 # Step 2: Copy the generated Prisma files to echo-server
 WORKDIR /app/echo-server
-RUN npm run copy-prisma
+RUN pnpm run copy-prisma
 
 # Step 3: Build echo-server
-RUN npm run build
+RUN pnpm run build
 
 # Expose the port that echo-server runs on
 EXPOSE 3069
