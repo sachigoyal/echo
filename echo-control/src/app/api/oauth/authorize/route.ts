@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const clientId = qs.get('client_id'); // Echo app ID
     const redirectUri = qs.get('redirect_uri');
     const codeChallenge = qs.get('code_challenge');
-    const codeChallengeMethod = qs.get('code_challenge_method') || 'S256';
+    const codeChallengeMethod = qs.get('code_challenge_method');
     const state = qs.get('state') || nanoid();
     const scope = qs.get('scope') || 'llm:invoke offline_access';
     const responseType = qs.get('response_type') || 'code';
@@ -48,11 +48,43 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (codeChallengeMethod !== 'S256') {
+    // Validate code_challenge_method (required and must be S256)
+    if (
+      !codeChallengeMethod ||
+      codeChallengeMethod === '' ||
+      codeChallengeMethod !== 'S256'
+    ) {
       return NextResponse.json(
         {
           error: 'invalid_request',
           error_description: 'Only code_challenge_method=S256 is supported',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate code challenge format (RFC 7636 Section 4.2)
+    // Must be 43-128 characters, base64url-encoded
+    if (
+      !codeChallenge ||
+      codeChallenge.length < 43 ||
+      codeChallenge.length > 128
+    ) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_challenge must be 43-128 characters long',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate base64url format (no +, /, or = characters)
+    if (!/^[A-Za-z0-9_-]+$/.test(codeChallenge)) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_challenge must be base64url encoded',
         },
         { status: 400 }
       );
@@ -123,7 +155,7 @@ export async function GET(req: NextRequest) {
         clientId,
         redirectUri,
         codeChallenge,
-        codeChallengeMethod,
+        codeChallengeMethod: 'S256', // Always S256 since we validated it above
         scope,
         userId,
         exp,
@@ -147,7 +179,7 @@ export async function GET(req: NextRequest) {
     consentUrl.searchParams.set('client_id', clientId);
     consentUrl.searchParams.set('redirect_uri', redirectUri);
     consentUrl.searchParams.set('code_challenge', codeChallenge);
-    consentUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
+    consentUrl.searchParams.set('code_challenge_method', 'S256'); // Always S256 since we validated it above
     consentUrl.searchParams.set('scope', scope);
     consentUrl.searchParams.set('response_type', responseType);
     if (state) consentUrl.searchParams.set('state', state);

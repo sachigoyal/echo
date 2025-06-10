@@ -1,41 +1,27 @@
-version: '3.8'
-
 services:
   postgres-test:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: ${TEST_DB_NAME}
-      POSTGRES_USER: ${TEST_DB_USER}
-      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD}
+      POSTGRES_DB: echo_integration_test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
     ports:
-      - "${TEST_DB_PORT}:5432"
+      - "5433:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
       - ./init-test-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${TEST_DB_USER} -d ${TEST_DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U test -d echo_integration_test"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   echo-control-test:
     build: 
-      context: ../echo-control
-      dockerfile: Dockerfile.test
-    environment:
-      - DATABASE_URL
-      - NODE_ENV=test
-      - INTEGRATION_TEST_MODE=true
-      - CLERK_SECRET_KEY
-      - CLERK_PUBLISHABLE_KEY
-      - NEXTAUTH_SECRET
-      - NEXTAUTH_URL
-      - JWT_SECRET
-      - JWT_ISSUER
-      - JWT_AUDIENCE
-      - LOG_LEVEL=error
-      - DISABLE_RATE_LIMITING=true
-      - SKIP_EMAIL_VERIFICATION=true
+      context: ../../
+      dockerfile: echo-control/Dockerfile.test
+    env_file:
+      - ../.env.integration.local
     ports:
       - "3001:3000"
     depends_on:
@@ -47,8 +33,6 @@ services:
         sleep 5 &&
         echo 'Running Prisma migrations...' &&
         pnpm prisma:push &&
-        echo 'Seeding integration test data...' &&
-        INTEGRATION_TEST_MODE=true pnpm prisma db seed &&
         echo 'Starting echo-control in test mode...' &&
         pnpm start
       "

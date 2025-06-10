@@ -1,9 +1,22 @@
-// @ts-ignore - Generated Prisma client from echo-control
-import { PrismaClient } from '../../../echo-control/src/generated/prisma/index.js';
-
-const prisma = new PrismaClient();
+import { PrismaClient } from '../../echo-control/src/generated/prisma/index.js';
+import { loadIntegrationTestEnv } from './load-test-env.js';
 
 export async function seedIntegrationDatabase() {
+  // Load environment variables
+  loadIntegrationTestEnv();
+
+  // Force use of integration test database URL
+  const databaseUrl =
+    'postgresql://test:test@localhost:5433/echo_integration_test';
+  console.log('🔗 Using integration test database URL:', databaseUrl);
+
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: databaseUrl,
+      },
+    },
+  });
   console.log('🌱 Seeding integration test database...');
 
   try {
@@ -20,10 +33,10 @@ export async function seedIntegrationDatabase() {
     // Create test users
     const testUser = await prisma.user.create({
       data: {
-        id: 'test-user-456',
+        id: '11111111-1111-1111-1111-111111111111',
         email: 'test@example.com',
         name: 'Integration Test User',
-        clerkId: 'user_clerk_test_123',
+        clerkId: 'user_2mP4JRQPpWlDVDPuyrxBxwZU6cM',
       },
     });
 
@@ -32,7 +45,7 @@ export async function seedIntegrationDatabase() {
     // Create test Echo apps (OAuth clients)
     const testApp = await prisma.echoApp.create({
       data: {
-        id: 'test-client-123',
+        id: '87654321-4321-4321-4321-fedcba987654',
         name: 'Integration Test Client',
         description: 'OAuth client for integration testing',
         authorizedCallbackUrls: [
@@ -50,7 +63,7 @@ export async function seedIntegrationDatabase() {
     // Create test API keys
     const testApiKey = await prisma.apiKey.create({
       data: {
-        id: 'test-api-key-789',
+        id: '22222222-2222-2222-2222-222222222222',
         key: 'ek_test_1234567890abcdef',
         name: 'Integration Test API Key',
         userId: testUser.id,
@@ -64,7 +77,7 @@ export async function seedIntegrationDatabase() {
     // Create a second user for multi-user testing
     const secondUser = await prisma.user.create({
       data: {
-        id: 'test-user-789',
+        id: '33333333-3333-3333-3333-333333333333',
         email: 'test2@example.com',
         name: 'Second Test User',
         clerkId: 'user_clerk_test_456',
@@ -76,7 +89,7 @@ export async function seedIntegrationDatabase() {
     // Create a second test app for the second user
     const secondApp = await prisma.echoApp.create({
       data: {
-        id: 'test-client-456',
+        id: '44444444-4444-4444-4444-444444444444',
         name: 'Second Integration Test Client',
         description: 'Second OAuth client for cross-client testing',
         authorizedCallbackUrls: [
@@ -93,7 +106,7 @@ export async function seedIntegrationDatabase() {
     // Create some test payments
     await prisma.payment.create({
       data: {
-        id: 'test-payment-123',
+        id: '55555555-5555-5555-5555-555555555555',
         stripePaymentId: 'pi_test_1234567890',
         amount: 1000, // $10.00
         currency: 'usd',
@@ -109,7 +122,7 @@ export async function seedIntegrationDatabase() {
     // Create some test LLM transactions
     await prisma.llmTransaction.create({
       data: {
-        id: 'test-transaction-123',
+        id: '66666666-6666-6666-6666-666666666666',
         model: 'claude-3-5-sonnet-20241022',
         inputTokens: 100,
         outputTokens: 50,
@@ -144,29 +157,29 @@ export async function seedIntegrationDatabase() {
 export const TEST_DATA = {
   users: {
     testUser: {
-      id: 'test-user-456',
+      id: '11111111-1111-1111-1111-111111111111',
       email: 'test@example.com',
-      clerkId: 'user_clerk_test_123',
+      clerkId: 'user_2mP4JRQPpWlDVDPuyrxBxwZU6cM',
     },
     secondUser: {
-      id: 'test-user-789',
+      id: '33333333-3333-3333-3333-333333333333',
       email: 'test2@example.com',
       clerkId: 'user_clerk_test_456',
     },
   },
   echoApps: {
     testApp: {
-      id: 'test-client-123',
+      id: '87654321-4321-4321-4321-fedcba987654',
       name: 'Integration Test Client',
     },
     secondApp: {
-      id: 'test-client-456',
+      id: '44444444-4444-4444-4444-444444444444',
       name: 'Second Integration Test Client',
     },
   },
   apiKeys: {
     testKey: {
-      id: 'test-api-key-789',
+      id: '22222222-2222-2222-2222-222222222222',
       key: 'ek_test_1234567890abcdef',
     },
   },

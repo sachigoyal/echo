@@ -10,7 +10,6 @@ const CORS_HEADERS = {
 
 const isOAuthRoute = createRouteMatcher([
   '/api/oauth(.*)',
-  '/api/validate-jwt-token(.*)', // JWT validation also needs CORS for browser testing
   '/api/balance(.*)', // Balance endpoint needs CORS for SPA access
   '/api/stripe/payment-link(.*)', // Payment link creation needs CORS for SPA access
 ]);
@@ -35,6 +34,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/stripe/webhook(.*)',
   '/api/validate-api-key(.*)', // Public endpoint for external validation
   '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
+  '/api/oauth/authorize(.*)', // OAuth authorize endpoint - handles its own auth
   '/api/oauth/token(.*)', // OAuth token endpoint - handles its own auth
   '/api/oauth/refresh(.*)', // OAuth refresh endpoint - handles its own auth
 ]);

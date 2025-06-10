@@ -12,23 +12,23 @@ This server depends on the generated Prisma client from the `echo-control` proje
 
    ```bash
    cd ../echo-control
-   npm run build  # or whatever command generates the Prisma client
+   pnpm run build  # or whatever command generates the Prisma client
    ```
 
 2. Copy the generated Prisma client:
    ```bash
-   npm run copy-prisma
+   pnpm run copy-prisma
    ```
 
 ### Running the Server
 
 ```bash
 # Development mode (automatically copies Prisma client)
-npm run dev
+pnpm run dev
 
 # Production mode
-npm run build
-npm start
+pnpm run build
+pnpm start
 ```
 
 The `dev` and `start` scripts automatically run `copy-prisma` as a pre-hook, so you don't need to run it manually.
@@ -48,11 +48,11 @@ COPY echo-server/ /app/echo-server/
 
 # Build echo-control first
 WORKDIR /app/echo-control
-RUN npm ci && npm run build
+RUN pnpm install && pnpm run build
 
 # Build echo-server
 WORKDIR /app/echo-server
-RUN npm ci && npm run build
+RUN pnpm install && pnpm run build
 
 FROM node:18-alpine AS runtime
 WORKDIR /app
@@ -60,7 +60,7 @@ COPY --from=base /app/echo-server/dist ./dist
 COPY --from=base /app/echo-server/node_modules ./node_modules
 COPY --from=base /app/echo-server/package.json ./package.json
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
 ```
 
 ### Option 2: Build artifacts approach
@@ -78,4 +78,4 @@ CMD ["npm", "start"]
 
 ## Error Handling
 
-If the generated Prisma client is not found, the server will throw a descriptive error message asking you to run `npm run copy-prisma`.
+If the generated Prisma client is not found, the server will throw a descriptive error message asking you to run `pnpm run copy-prisma`.

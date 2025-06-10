@@ -1,5 +1,4 @@
-// @ts-ignore - Generated Prisma client from echo-control
-import { PrismaClient } from '../../../echo-control/src/generated/prisma/index.js';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

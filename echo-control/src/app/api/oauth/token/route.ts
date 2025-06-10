@@ -24,7 +24,7 @@ interface AuthCodePayload {
 export async function POST(req: NextRequest) {
   try {
     /* 1️⃣ Parse the token request - handle both JSON and form-encoded */
-    let body: any;
+    let body: Record<string, string>;
     const contentType = req.headers.get('content-type') || '';
 
     if (contentType.includes('application/x-www-form-urlencoded')) {
@@ -58,12 +58,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate code verifier length (RFC 7636 Section 4.1)
+    // Must be 43-128 characters
+    if (code_verifier.length < 43 || code_verifier.length > 128) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_verifier must be 43-128 characters long',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate code verifier format (only unreserved characters)
+    if (!/^[A-Za-z0-9._~-]+$/.test(code_verifier)) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'code_verifier contains invalid characters',
+        },
+        { status: 400 }
+      );
+    }
+
     /* 2️⃣ Verify and decode the authorization code JWT */
     let authData: AuthCodePayload;
     try {
       const { payload } = await jwtVerify(code, JWT_SECRET);
       authData = payload as unknown as AuthCodePayload;
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: 'invalid_grant',

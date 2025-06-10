@@ -27,6 +27,7 @@ export function loadIntegrationTestEnv() {
     'ECHO_CONTROL_URL',
     'JWT_SECRET',
     'CLERK_SECRET_KEY',
+    'INTEGRATION_TEST_JWT',
   ];
 
   const missing = requiredVars.filter(varName => !process.env[varName]);
@@ -44,7 +45,5 @@ export function loadIntegrationTestEnv() {
   );
 }
 
-// Auto-load when imported
-if (typeof require !== 'undefined' && require.main === module) {
-  loadIntegrationTestEnv();
-}
+// Auto-load when imported (always run in test environment)
+loadIntegrationTestEnv();

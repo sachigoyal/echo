@@ -3,9 +3,9 @@ import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET /api/apps/[id] - Get a specific Echo app
@@ -106,7 +106,11 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     const { name, description, is_active } = body;
 
     // Validate input
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      description?: string;
+      isActive?: boolean;
+    } = {};
 
     if (name !== undefined) {
       if (!name || typeof name !== 'string' || name.trim().length === 0) {

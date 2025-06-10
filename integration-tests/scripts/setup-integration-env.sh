@@ -27,7 +27,13 @@ fi
 if [ -f "$ENV_FILE" ]; then
     # Export variables from env file (skip comments and empty lines)
     set -a
-    source <(grep -v '^#' "$ENV_FILE" | grep -v '^$')
+    # Use a more reliable method to load environment variables
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Skip comments and empty lines
+        if [[ ! "$line" =~ ^[[:space:]]*# ]] && [[ -n "${line// }" ]]; then
+            export "$line"
+        fi
+    done < "$ENV_FILE"
     set +a
     echo "✅ Loaded environment from $ENV_FILE"
 else
@@ -73,16 +79,30 @@ if [ "$IS_CI" != "true" ]; then
     
     # Wait for services to be healthy
     echo "⏳ Waiting for services to be ready..."
-    timeout 120 bash -c '
-        while true; do
-            if docker-compose -f docker/docker-compose.yml ps | grep -q "healthy"; then
-                echo "✅ Services are healthy"
-                break
-            fi
-            echo "⏳ Still waiting for services..."
-            sleep 5
-        done
-    ' || {
+    
+    # macOS-compatible timeout implementation
+    start_time=$(date +%s)
+    timeout_duration=120
+    
+    while true; do
+        current_time=$(date +%s)
+        elapsed=$((current_time - start_time))
+        
+        if [ $elapsed -ge $timeout_duration ]; then
+            echo "❌ Services failed to start within $timeout_duration seconds"
+            break
+        fi
+        
+        if docker-compose -f docker/docker-compose.yml ps | grep -q "healthy"; then
+            echo "✅ Services are healthy"
+            exit 0
+        fi
+        
+        echo "⏳ Still waiting for services... (${elapsed}s elapsed)"
+        sleep 5
+    done
+    
+    {
         echo "❌ Services failed to start within 2 minutes"
         echo "📊 Service status:"
         docker-compose -f docker/docker-compose.yml ps
@@ -99,12 +119,17 @@ else
     cd ../echo-control
     
     # Wait for database to be available
-    timeout 30 bash -c '
-        while ! pg_isready -h localhost -p 5433 -U test -d echo_integration_test; do
-            echo "⏳ Waiting for database..."
-            sleep 2
-        done
-    '
+    start_time=$(date +%s)
+    while ! pg_isready -h localhost -p 5433 -U test -d echo_integration_test; do
+        current_time=$(date +%s)
+        elapsed=$((current_time - start_time))
+        if [ $elapsed -ge 30 ]; then
+            echo "❌ Database failed to start within 30 seconds"
+            exit 1
+        fi
+        echo "⏳ Waiting for database... (${elapsed}s elapsed)"
+        sleep 2
+    done
     
     # Run Prisma migrations
     pnpm prisma:push
@@ -121,12 +146,18 @@ else
     ECHO_CONTROL_PID=$!
     
     # Wait for health check
-    timeout 60 bash -c '
-        while ! curl -f http://localhost:3001/api/health >/dev/null 2>&1; do
-            echo "⏳ Waiting for echo-control health check..."
-            sleep 2
-        done
-    ' || {
+    start_time=$(date +%s)
+    while ! curl -f http://localhost:3001/api/health >/dev/null 2>&1; do
+        current_time=$(date +%s)
+        elapsed=$((current_time - start_time))
+        if [ $elapsed -ge 60 ]; then
+            echo "❌ echo-control failed to start within 60 seconds"
+            kill $ECHO_CONTROL_PID 2>/dev/null || true
+            exit 1
+        fi
+        echo "⏳ Waiting for echo-control health check... (${elapsed}s elapsed)"
+        sleep 2
+    done || {
         echo "❌ echo-control failed to start within 60 seconds"
         kill $ECHO_CONTROL_PID 2>/dev/null || true
         exit 1

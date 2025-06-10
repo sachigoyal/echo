@@ -30,6 +30,8 @@ export type {
 // Export commonly used instances
 export { echoControlApi, TEST_CLIENT_IDS, TEST_USER_IDS } from './api-client';
 
-export { testDataFactory } from './test-data-factory';
+// Temporarily commented out until Prisma client issue is resolved
+// export { testDataFactory } from './test-data-factory';
 
-export { TEST_DATA } from '../scripts/seed-integration-db';
+// Temporarily commented out until Prisma client issue is resolved
+// export { TEST_DATA } from '../scripts/seed-integration-db';

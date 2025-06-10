@@ -4,11 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-Echo is a TypeScript monorepo providing an LLM application platform with 4 main packages:
+Echo is a TypeScript monorepo providing an LLM application platform with 5 main packages:
 
 - **echo-control** - Control plane (Next.js) for user management, billing, API keys
 - **echo-server** - Backend API server handling LLM requests and provider proxying
 - **echo-typescript-sdk** - Client SDK and CLI for developers
+- **echo-react-sdk** - React SDK for OAuth2 + PKCE authentication and token management
 - **create-echo-app** - CLI tool for scaffolding chatbot applications
 
 ### Key Architectural Relationships
@@ -60,6 +61,18 @@ bunx echo-cli login          # CLI authentication
 bun test                    # Run SDK tests
 ```
 
+**React SDK:**
+
+```bash
+cd echo-react-sdk
+pnpm install                 # Install dependencies
+pnpm run build              # Build SDK
+pnpm run test               # Run unit tests
+pnpm run test:integration   # Run integration tests
+pnpm run test:security      # Run security tests
+pnpm run storybook          # Component development
+```
+
 ## Database & Authentication
 
 - **PostgreSQL** with Prisma ORM
@@ -86,5 +99,7 @@ bun test                    # Run SDK tests
 - **Consistent linting** across packages with shared ESLint config
 - **Automatic Prettier formatting** on commit
 - **Type checking** enforced across monorepo
+- **Comprehensive testing**: Unit, integration, and security tests in echo-react-sdk using Vitest
+- **Component testing**: Storybook for React component development and documentation
 
 Run `bun run lint` and `bun run type-check` before committing changes.

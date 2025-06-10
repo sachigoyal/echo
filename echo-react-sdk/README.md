@@ -5,7 +5,7 @@ React SDK for Echo OAuth2 + PKCE authentication and token management.
 ## Install
 
 ```bash
-npm install @echo-systems/react-sdk
+pnpm install @echo-systems/react-sdk
 ```
 
 ## Setup

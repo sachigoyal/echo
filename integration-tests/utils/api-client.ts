@@ -1,4 +1,5 @@
-import { TEST_DATA } from '../scripts/seed-integration-db';
+// Temporarily commented out until Prisma client issue is resolved
+// import { TEST_DATA } from '../scripts/seed-integration-db';
 
 export interface EchoControlApiClient {
   baseUrl: string;
@@ -6,11 +7,14 @@ export interface EchoControlApiClient {
 }
 
 export class EchoControlApiClient {
+  private integrationJwt: string | undefined;
+
   constructor(
     baseUrl: string = process.env.ECHO_CONTROL_URL || 'http://localhost:3001'
   ) {
     this.baseUrl = baseUrl;
     this.fetch = fetch;
+    this.integrationJwt = process.env.INTEGRATION_TEST_JWT;
   }
 
   private async request<T>(
@@ -49,9 +53,52 @@ export class EchoControlApiClient {
     code_challenge: string;
     code_challenge_method: string;
     scope?: string;
+    prompt?: string;
   }): Promise<string> {
     const searchParams = new URLSearchParams(params);
     return `${this.baseUrl}/api/oauth/authorize?${searchParams.toString()}`;
+  }
+
+  // OAuth authorize validation (actually calls the endpoint for validation testing)
+  async validateOAuthAuthorizeRequest(params: {
+    client_id: string;
+    redirect_uri: string;
+    state: string;
+    code_challenge: string;
+    code_challenge_method: string;
+    scope?: string;
+    prompt?: string;
+  }): Promise<string> {
+    const searchParams = new URLSearchParams(params);
+    const url = `${this.baseUrl}/api/oauth/authorize?${searchParams.toString()}`;
+
+    const headers: Record<string, string> = {};
+
+    // Add Clerk JWT template token as Bearer token for authentication
+    if (this.integrationJwt) {
+      headers['Authorization'] = `Bearer ${this.integrationJwt}`;
+    }
+
+    const response = await this.fetch(url, {
+      method: 'GET',
+      headers,
+      redirect: 'manual', // Don't follow redirects
+    });
+
+    // If validation passes, it will redirect (302) or return error JSON (400/500)
+    if (response.status === 302) {
+      // Validation passed, return the redirect location
+      return response.headers.get('location') || url;
+    } else if (!response.ok) {
+      // Validation failed, throw with error details
+      const errorText = await response.text();
+      throw new Error(
+        `OAuth authorization failed: ${response.status} ${response.statusText}\n${errorText}`
+      );
+    }
+
+    // For 200 responses (shouldn't happen in this flow)
+    return url;
   }
 
   async exchangeCodeForToken(params: {
@@ -112,13 +159,34 @@ export class EchoControlApiClient {
   async validateJwtToken(jwtToken: string): Promise<{
     valid: boolean;
     claims?: any;
+    error?: string;
   }> {
-    return this.request('/api/validate-jwt-token', {
+    const url = `${this.baseUrl}/api/validate-jwt-token`;
+    console.log('🔧 Making JWT validation request to:', url);
+    console.log('🔧 Headers being sent:', {
+      'Content-Type': 'application/json',
+      'X-Echo-Token': jwtToken.substring(0, 50) + '...',
+    });
+
+    const response = await this.fetch(url, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.integrationJwt}`, // Clerk JWT for endpoint auth
+        'X-Echo-Token': jwtToken, // Echo token to validate
       },
+      body: JSON.stringify({}), // Empty body to prevent JSON parsing errors
     });
+
+    // For JWT validation, 400/401 with JSON body is a valid response (invalid token)
+    if (response.status === 400 || response.status === 401 || response.ok) {
+      return response.json();
+    }
+
+    const errorText = await response.text();
+    throw new Error(
+      `API request failed: ${response.status} ${response.statusText}\n${errorText}`
+    );
   }
 
   // Balance endpoint (requires authentication)
@@ -168,13 +236,13 @@ export class EchoControlApiClient {
 // Export a default instance with test configuration
 export const echoControlApi = new EchoControlApiClient();
 
-// Export test client IDs for easy access
+// Export test client IDs for easy access (matches seeded data)
 export const TEST_CLIENT_IDS = {
-  primary: TEST_DATA.echoApps.testApp.id,
-  secondary: TEST_DATA.echoApps.secondApp.id,
+  primary: '87654321-4321-4321-4321-fedcba987654',
+  secondary: '44444444-4444-4444-4444-444444444444',
 };
 
 export const TEST_USER_IDS = {
-  primary: TEST_DATA.users.testUser.id,
-  secondary: TEST_DATA.users.secondUser.id,
+  primary: '11111111-1111-1111-1111-111111111111',
+  secondary: '33333333-3333-3333-3333-333333333333',
 };

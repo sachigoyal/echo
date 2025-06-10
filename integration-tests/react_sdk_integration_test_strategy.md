@@ -1,6 +1,6 @@
 # Echo Integration Test Strategy
 
-**Status**: Phase 1 Infrastructure ✅ Complete | Ready for Phase 2 Implementation
+**Status**: Phase 1 Infrastructure ✅ Complete | Phase 2 OAuth Protocol Tests 🚧 In Progress
 
 **Note**: This strategy document has been updated to reflect the new **monorepo root architecture**. Integration tests now live at `echo/integration-tests/` to support testing across all SDKs (React, TypeScript, future Python, etc.) with shared infrastructure.
 
@@ -17,11 +17,11 @@
 - [x] **Create shared test utilities** and helper functions for all SDKs
 - [ ] ~~**Set up GitHub Actions workflow** with encrypted secrets management~~ (Removed from scope)
 
-### Phase 2: OAuth Protocol Core Tests (Service-Agnostic)
+### Phase 2: OAuth Protocol Core Tests (Service-Agnostic) 🚧 IN PROGRESS
 
-- [ ] **OAuth 2.0 compliance tests** against real echo-control endpoints
-- [ ] **PKCE security validation** with real cryptographic operations
-- [ ] **JWT token lifecycle tests** with actual signing/verification
+- [x] **OAuth 2.0 compliance tests** against real echo-control endpoints
+- [x] **PKCE security validation** with real cryptographic operations
+- [x] **JWT token lifecycle tests** with actual signing/verification
 - [ ] **Authorization code flow tests** end-to-end
 - [ ] **Refresh token rotation tests** with database persistence
 - [ ] **Error handling scenarios** with actual HTTP error responses
