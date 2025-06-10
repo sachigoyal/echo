@@ -36,14 +36,13 @@ export interface DatabaseClient {
         userId: string;
         status: string;
         isArchived: boolean;
-        echoAppId?: string;
       };
       _sum: { amount: boolean };
     }) => Promise<{ _sum: { amount: number | null } }>;
   };
   llmTransaction: {
     aggregate: (params: {
-      where: { userId: string; isArchived: boolean; echoAppId?: string };
+      where: { userId: string; isArchived: boolean };
       _sum: { cost: boolean };
     }) => Promise<{ _sum: { cost: any | null } }>;
     create: (params: {
@@ -132,37 +131,22 @@ export class EchoDbService {
   }
 
   /**
-   * Calculate balance for a user and optional echo app
+   * Calculate total balance for a user across all apps
    * Centralized logic previously duplicated in echo-control and echo-server
    */
-  async getBalance(userId: string, echoAppId?: string): Promise<Balance> {
+  async getBalance(userId: string): Promise<Balance> {
     try {
-      // Calculate balance from payments and transactions
-      const paymentsFilter: {
-        userId: string;
-        status: string;
-        isArchived: boolean;
-        echoAppId?: string;
-      } = {
+      // Calculate balance from payments and transactions across all apps
+      const paymentsFilter = {
         userId: userId,
         status: 'completed',
         isArchived: false, // Only include non-archived payments
       };
 
-      const transactionsFilter: {
-        userId: string;
-        isArchived: boolean;
-        echoAppId?: string;
-      } = {
+      const transactionsFilter = {
         userId: userId,
         isArchived: false, // Only include non-archived transactions
       };
-
-      // If echoAppId is provided, filter by app
-      if (echoAppId) {
-        paymentsFilter.echoAppId = echoAppId;
-        transactionsFilter.echoAppId = echoAppId;
-      }
 
       const payments = await this.db.payment.aggregate({
         where: paymentsFilter,
@@ -186,7 +170,6 @@ export class EchoDbService {
         balance,
         totalCredits,
         totalSpent,
-        ...(echoAppId && { echoAppId }),
       };
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -194,7 +177,6 @@ export class EchoDbService {
         balance: 0,
         totalCredits: 0,
         totalSpent: 0,
-        ...(echoAppId && { echoAppId }),
       };
     }
   }

@@ -35,9 +35,6 @@ npx echo-cli whoami
 # Get account balance
 npx echo-cli balance
 
-# Get balance for a specific app
-npx echo-cli balance --app <app-id>
-
 # List your Echo apps
 npx echo-cli apps
 
@@ -62,9 +59,6 @@ const client = new EchoClient();
 const balance = await client.getBalance();
 console.log(`Balance: $${balance.balance}`);
 
-// Get balance for specific app
-const appBalance = await client.getBalance('app-id');
-
 // List your Echo apps
 const apps = await client.listEchoApps();
 console.log('Your apps:', apps);
@@ -75,8 +69,7 @@ const app = await client.getEchoApp('app-id');
 // Create a payment link
 const paymentResponse = await client.createPaymentLink({
   amount: 10.0, // $10.00
-  echoAppId: 'app-id',
-  description: 'Credits for my app',
+  description: 'Credits for my account',
 });
 console.log('Payment URL:', paymentResponse.paymentLink.url);
 
