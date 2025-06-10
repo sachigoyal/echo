@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Copy, Check, Terminal, Key } from 'lucide-react';
 import Link from 'next/link';
@@ -24,18 +24,7 @@ function CLIAuthContent() {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [enrollmentError, setEnrollmentError] = useState<string>('');
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      const appIdFromUrl = searchParams.get('appId');
-      if (appIdFromUrl) {
-        handleAppIdFromUrl(appIdFromUrl);
-      } else {
-        fetchApps();
-      }
-    }
-  }, [isLoaded, user, searchParams]);
-
-  const fetchApps = async () => {
+  const fetchApps = useCallback(async () => {
     try {
       const response = await fetch('/api/echo-apps');
       if (response.ok) {
@@ -48,58 +37,75 @@ function CLIAuthContent() {
     } catch (error) {
       console.error('Failed to fetch apps:', error);
     }
-  };
+  }, []);
 
-  const handleAppIdFromUrl = async (appId: string) => {
-    setIsEnrolling(true);
-    setEnrollmentError('');
+  const handleAppIdFromUrl = useCallback(
+    async (appId: string) => {
+      setIsEnrolling(true);
+      setEnrollmentError('');
 
-    try {
-      // First, check if the user already has access to this app
-      const response = await fetch('/api/echo-apps');
-      if (response.ok) {
-        const data = await response.json();
-        const existingApp = data.echoApps.find(
-          (app: EchoApp) => app.id === appId
+      try {
+        // First, check if the user already has access to this app
+        const response = await fetch('/api/echo-apps');
+        if (response.ok) {
+          const data = await response.json();
+          const existingApp = data.echoApps.find(
+            (app: EchoApp) => app.id === appId
+          );
+
+          if (existingApp) {
+            // User already has access, just set it as selected
+            setApps(data.echoApps);
+            setSelectedAppId(appId);
+            setIsEnrolling(false);
+            return;
+          }
+        }
+
+        // User doesn't have access, try to enroll them as a customer
+        const enrollResponse = await fetch(
+          `/api/owner/apps/${appId}/customers`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}), // Empty body means enroll current user
+          }
         );
 
-        if (existingApp) {
-          // User already has access, just set it as selected
-          setApps(data.echoApps);
+        if (enrollResponse.ok) {
+          // Successfully enrolled, now refetch all apps to include the newly joined app
+          await fetchApps();
           setSelectedAppId(appId);
-          setIsEnrolling(false);
-          return;
-        }
-      }
-
-      // User doesn't have access, try to enroll them as a customer
-      const enrollResponse = await fetch(`/api/owner/apps/${appId}/customers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}), // Empty body means enroll current user
-      });
-
-      if (enrollResponse.ok) {
-        // Successfully enrolled, now refetch all apps to include the newly joined app
-        await fetchApps();
-        setSelectedAppId(appId);
-      } else {
-        const errorData = await enrollResponse.json();
-        if (enrollResponse.status === 404) {
-          setEnrollmentError('App not found or inactive');
         } else {
-          setEnrollmentError(errorData.error || 'Failed to join app');
+          const errorData = await enrollResponse.json();
+          if (enrollResponse.status === 404) {
+            setEnrollmentError('App not found or inactive');
+          } else {
+            setEnrollmentError(errorData.error || 'Failed to join app');
+          }
         }
+      } catch (error) {
+        console.error('Failed to handle app enrollment:', error);
+        setEnrollmentError('Failed to join app');
+      } finally {
+        setIsEnrolling(false);
       }
-    } catch (error) {
-      console.error('Failed to handle app enrollment:', error);
-      setEnrollmentError('Failed to join app');
-    } finally {
-      setIsEnrolling(false);
+    },
+    [fetchApps]
+  );
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      const appIdFromUrl = searchParams.get('appId');
+      if (appIdFromUrl) {
+        handleAppIdFromUrl(appIdFromUrl);
+      } else {
+        fetchApps();
+      }
     }
-  };
+  }, [isLoaded, user, searchParams, handleAppIdFromUrl, fetchApps]);
 
   const generateApiKey = async () => {
     if (!selectedAppId) return;
@@ -254,8 +260,8 @@ function CLIAuthContent() {
         {searchParams.get('appId') && selectedAppId && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-sm text-green-700">
-              ✓ You've been successfully added as a customer to this app and can
-              now generate an API key.
+              ✓ You&apos;ve been successfully added as a customer to this app
+              and can now generate an API key.
             </p>
           </div>
         )}

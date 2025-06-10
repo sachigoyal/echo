@@ -20,13 +20,6 @@ interface EchoAppDetailProps {
   appId: string;
 }
 
-interface Balance {
-  balance: number;
-  totalCredits: number;
-  totalSpent: number;
-  currency: string;
-}
-
 interface EchoApp {
   id: string;
   name: string;
@@ -102,7 +95,6 @@ const formatCost = (value: number | null | undefined): string => {
 
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   const [app, setApp] = useState<EchoApp | null>(null);
-  const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateApiKeyModal, setShowCreateApiKeyModal] = useState(false);
@@ -134,22 +126,8 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   }, [appId]);
 
-  const fetchAppBalance = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/balance?echoAppId=${appId}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setBalance(data);
-      }
-    } catch (error) {
-      console.error('Error fetching app balance:', error);
-    }
-  }, [appId]);
-
   useEffect(() => {
     fetchAppDetails();
-    fetchAppBalance();
 
     // Check for payment success in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -157,12 +135,8 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
       setShowPaymentSuccess(true);
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
-      // Refetch balance after successful payment
-      setTimeout(() => {
-        fetchAppBalance();
-      }, 1000);
     }
-  }, [appId, fetchAppBalance, fetchAppDetails]);
+  }, [appId, fetchAppDetails]);
 
   const handleCreateApiKey = async (data: {
     name: string;
