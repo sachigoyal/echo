@@ -1,6 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from './db';
 import { NextRequest } from 'next/server';
+import { hashApiKey } from './crypto';
 
 export async function getCurrentUser() {
   const { userId } = await auth();
@@ -48,18 +49,13 @@ export async function getCurrentUserByApiKey(request: NextRequest) {
 
   const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-  // Find the API key in the database
-  const apiKeyRecord = await db.apiKey.findFirst({
+  // Hash the provided API key for direct O(1) lookup
+  const keyHash = hashApiKey(apiKey);
+
+  // Direct lookup by keyHash - O(1) operation!
+  const apiKeyRecord = await db.apiKey.findUnique({
     where: {
-      key: apiKey,
-      isActive: true,
-      isArchived: false, // Only allow authentication with non-archived API keys
-      user: {
-        isArchived: false, // Only allow authentication for non-archived users
-      },
-      echoApp: {
-        isArchived: false, // Only allow authentication for non-archived echo apps
-      },
+      keyHash,
     },
     include: {
       user: true,
@@ -67,7 +63,15 @@ export async function getCurrentUserByApiKey(request: NextRequest) {
     },
   });
 
-  if (!apiKeyRecord) {
+  // Verify the API key is valid and all related entities are active
+  if (
+    !apiKeyRecord ||
+    !apiKeyRecord.isActive ||
+    apiKeyRecord.isArchived ||
+    apiKeyRecord.user.isArchived ||
+    apiKeyRecord.echoApp.isArchived ||
+    !apiKeyRecord.echoApp.isActive
+  ) {
     throw new Error('Invalid or inactive API key');
   }
 
@@ -121,17 +125,13 @@ export async function validateApiKey(apiKey: string): Promise<{
     // Remove Bearer prefix if present
     const cleanApiKey = apiKey.replace('Bearer ', '');
 
-    const apiKeyRecord = await db.apiKey.findFirst({
+    // Hash the provided API key for direct O(1) lookup
+    const keyHash = hashApiKey(cleanApiKey);
+
+    // Direct lookup by keyHash - O(1) operation!
+    const apiKeyRecord = await db.apiKey.findUnique({
       where: {
-        key: cleanApiKey,
-        isActive: true,
-        isArchived: false, // Only allow validation of non-archived API keys
-        user: {
-          isArchived: false, // Only allow validation for non-archived users
-        },
-        echoApp: {
-          isArchived: false, // Only allow validation for non-archived echo apps
-        },
+        keyHash,
       },
       include: {
         user: true,
@@ -139,9 +139,13 @@ export async function validateApiKey(apiKey: string): Promise<{
       },
     });
 
+    // Verify the API key is valid and all related entities are active
     if (
       !apiKeyRecord ||
-      !apiKeyRecord.echoApp ||
+      !apiKeyRecord.isActive ||
+      apiKeyRecord.isArchived ||
+      apiKeyRecord.user.isArchived ||
+      apiKeyRecord.echoApp.isArchived ||
       !apiKeyRecord.echoApp.isActive
     ) {
       return null;

@@ -48,7 +48,7 @@ CREATE TABLE "app_memberships" (
 -- CreateTable
 CREATE TABLE "api_keys" (
     "id" UUID NOT NULL,
-    "key" TEXT NOT NULL,
+    "keyHash" TEXT NOT NULL,
     "name" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "isArchived" BOOLEAN NOT NULL DEFAULT false,
@@ -116,6 +116,7 @@ CREATE TABLE "llm_transactions" (
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" UUID NOT NULL,
     "echoAppId" UUID NOT NULL,
+    "apiKeyId" UUID NOT NULL,
 
     CONSTRAINT "llm_transactions_pkey" PRIMARY KEY ("id")
 );
@@ -130,7 +131,7 @@ CREATE UNIQUE INDEX "users_clerkId_key" ON "users"("clerkId");
 CREATE UNIQUE INDEX "app_memberships_userId_echoAppId_key" ON "app_memberships"("userId", "echoAppId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "api_keys_key_key" ON "api_keys"("key");
+CREATE UNIQUE INDEX "api_keys_keyHash_key" ON "api_keys"("keyHash");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "refresh_tokens_token_key" ON "refresh_tokens"("token");
@@ -167,3 +168,6 @@ ALTER TABLE "llm_transactions" ADD CONSTRAINT "llm_transactions_echoAppId_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "llm_transactions" ADD CONSTRAINT "llm_transactions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "llm_transactions" ADD CONSTRAINT "llm_transactions_apiKeyId_fkey" FOREIGN KEY ("apiKeyId") REFERENCES "api_keys"("id") ON DELETE CASCADE ON UPDATE CASCADE;

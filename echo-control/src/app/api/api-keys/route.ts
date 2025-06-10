@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
-import { randomBytes, randomUUID } from 'crypto';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, Permission } from '@/lib/permissions/types';
+import { hashApiKey, generateApiKey } from '@/lib/crypto';
 
 // GET /api/api-keys - List API keys user has access to
 export async function GET() {
@@ -70,20 +70,6 @@ export async function GET() {
   }
 }
 
-// Generate a secure API key using UUID v4 and additional entropy
-function generateApiKey(): string {
-  const prefix = process.env.API_KEY_PREFIX || 'echo_';
-
-  // Use UUID v4 for structured randomness
-  const uuidPart = randomUUID().replace(/-/g, '');
-
-  // Add additional cryptographic entropy (16 bytes = 32 hex chars)
-  const entropyPart = randomBytes(16).toString('hex');
-
-  // Combine for maximum security: prefix + UUID + entropy
-  return `${prefix}${uuidPart}${entropyPart}`;
-}
-
 // POST /api/api-keys - Create a new API key for authenticated user
 export async function POST(request: NextRequest) {
   try {
@@ -124,10 +110,13 @@ export async function POST(request: NextRequest) {
     // Generate a new API key
     const generatedKey = generateApiKey();
 
+    // Hash the API key for secure storage (deterministic for O(1) lookup)
+    const keyHash = hashApiKey(generatedKey);
+
     // Create the API key
     const apiKey = await db.apiKey.create({
       data: {
-        key: generatedKey,
+        keyHash,
         name: name || 'API Key',
         userId: user.id,
         echoAppId,
@@ -138,7 +127,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ apiKey }, { status: 201 });
+    // Return the API key with the original plaintext key for the user to save
+    const response = {
+      ...apiKey,
+      key: generatedKey, // Include the plaintext key in the response for the user to copy
+    };
+
+    return NextResponse.json({ apiKey: response }, { status: 201 });
   } catch (error) {
     console.error('Error creating API key:', error);
 
