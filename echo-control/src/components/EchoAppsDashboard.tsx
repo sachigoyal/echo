@@ -86,7 +86,7 @@ export default function EchoAppsDashboard() {
     setShowCreateModal(false);
   };
 
-  const handleDeleteApp = async (id: string, event: React.MouseEvent) => {
+  const handleArchiveApp = async (id: string, event: React.MouseEvent) => {
     event.preventDefault(); // Prevent navigation to app detail page
     event.stopPropagation(); // Stop event propagation
 
@@ -100,14 +100,14 @@ export default function EchoAppsDashboard() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to delete echo app');
+        throw new Error(data.error || 'Failed to archive echo app');
       }
 
       await fetchEchoApps(); // Refresh the list
     } catch (error) {
-      console.error('Error deleting echo app:', error);
+      console.error('Error archiving echo app:', error);
       setError(
-        error instanceof Error ? error.message : 'Failed to delete echo app'
+        error instanceof Error ? error.message : 'Failed to archive echo app'
       );
     } finally {
       setDeletingAppId(null);
@@ -239,12 +239,12 @@ export default function EchoAppsDashboard() {
                         {app.isActive ? 'Active' : 'Inactive'}
                       </span>
                       <button
-                        onClick={e => handleDeleteApp(app.id, e)}
+                        onClick={e => handleArchiveApp(app.id, e)}
                         className={`p-1 rounded-full hover:bg-destructive/10 group-hover:opacity-100 ${
                           deletingAppId === app.id ? 'opacity-50' : 'opacity-0'
                         }`}
                         disabled={deletingAppId === app.id}
-                        aria-label="Delete app"
+                        aria-label="Archive app"
                       >
                         <TrashIcon className="h-4 w-4 text-destructive" />
                       </button>

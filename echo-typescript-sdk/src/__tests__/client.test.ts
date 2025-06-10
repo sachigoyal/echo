@@ -58,9 +58,7 @@ describe('EchoClient', () => {
 
       await client.getBalance();
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/balance', {
-        params: {},
-      });
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/balance');
     });
 
     it('should handle authentication errors', async () => {
@@ -73,7 +71,7 @@ describe('EchoClient', () => {
   });
 
   describe('getBalance', () => {
-    it('should fetch balance successfully', async () => {
+    it('should fetch total balance across all apps successfully', async () => {
       const mockBalance = {
         balance: 75.5,
         totalCredits: 100.0,
@@ -85,27 +83,7 @@ describe('EchoClient', () => {
       const balance = await client.getBalance();
 
       expect(balance).toEqual(mockBalance);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/balance', {
-        params: {},
-      });
-    });
-
-    it('should fetch balance for specific app', async () => {
-      const mockAppId = 'test-app-123';
-      const mockBalance = {
-        balance: 50.0,
-        totalCredits: 75.0,
-        totalSpent: 25.0,
-      };
-
-      mockAxiosInstance.get.mockResolvedValue({ data: mockBalance });
-
-      const balance = await client.getBalance(mockAppId);
-
-      expect(balance).toEqual(mockBalance);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/balance', {
-        params: { echoAppId: mockAppId },
-      });
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/balance');
     });
 
     it('should handle balance fetch errors', async () => {
@@ -123,7 +101,6 @@ describe('EchoClient', () => {
       const paymentRequest = {
         amount: 50.0,
         description: 'Test payment',
-        echoAppId: 'test-app-123',
       };
 
       const mockResponse = {
@@ -190,7 +167,6 @@ describe('EchoClient', () => {
   describe('getPaymentUrl', () => {
     it('should generate payment URL', async () => {
       const amount = 100.0;
-      const echoAppId = 'test-app-123';
       const description = 'Test payment URL';
 
       const mockResponse = {
@@ -205,14 +181,13 @@ describe('EchoClient', () => {
 
       mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
 
-      const url = await client.getPaymentUrl(amount, echoAppId, description);
+      const url = await client.getPaymentUrl(amount, description);
 
       expect(url).toBe(mockResponse.paymentLink.url);
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         '/api/stripe/payment-link',
         {
           amount,
-          echoAppId,
           description,
         }
       );
@@ -220,7 +195,6 @@ describe('EchoClient', () => {
 
     it('should generate payment URL without description', async () => {
       const amount = 50.0;
-      const echoAppId = 'test-app-456';
 
       const mockResponse = {
         paymentLink: {
@@ -234,14 +208,13 @@ describe('EchoClient', () => {
 
       mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
 
-      const url = await client.getPaymentUrl(amount, echoAppId);
+      const url = await client.getPaymentUrl(amount);
 
       expect(url).toBe(mockResponse.paymentLink.url);
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         '/api/stripe/payment-link',
         {
           amount,
-          echoAppId,
           description: 'Echo Credits',
         }
       );

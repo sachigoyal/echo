@@ -8,11 +8,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// TODO(ben): Fix
 model User {
   id              String           @id @default(uuid()) @db.Uuid
   email           String           @unique
   name            String?
   clerkId         String           @unique
+  isArchived      Boolean          @default(false)
+  archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
   apiKeys         ApiKey[]
@@ -21,10 +24,17 @@ model User {
   payments        Payment[]
   refreshTokens   RefreshToken[]
 
+  // New relations for customer/owner system
+  appMemberships  AppMembership[]
+  createdApiKeys  ApiKey[]        @relation("CreatedApiKeys")
+  paidPayments    Payment[]       @relation("PaidPayments")
+  billedTransactions LlmTransaction[] @relation("BilledTransactions")
+
   @@map("users")
 }
 
 model EchoApp {
+<<<<<<< HEAD
   id                    String           @id @default(uuid()) @db.Uuid
   name                  String
   description           String?
@@ -38,11 +48,48 @@ model EchoApp {
   llmTransactions       LlmTransaction[]
   payments              Payment[]
   refreshTokens         RefreshToken[]
+=======
+  id              String           @id @default(uuid()) @db.Uuid
+  name            String
+  description     String?
+  isActive        Boolean          @default(true)
+  isArchived      Boolean          @default(false)
+  archivedAt      DateTime?        @db.Timestamptz
+  createdAt       DateTime         @default(now()) @db.Timestamptz
+  updatedAt       DateTime         @updatedAt @db.Timestamptz
+  userId          String           @db.Uuid
+  apiKeys         ApiKey[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  llmTransactions LlmTransaction[]
+  payments        Payment[]
+  
+  // New relation for app memberships
+  appMemberships  AppMembership[]
+>>>>>>> br/soft_delete
 
   @@map("echo_apps")
 }
 
+model AppMembership {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  echoAppId  String    @db.Uuid
+  role       String    // 'owner', 'admin', 'customer'
+  status     String    @default("active") // 'active', 'pending', 'revoked'
+  isArchived Boolean   @default(false)
+  archivedAt DateTime? @db.Timestamptz
+  createdAt  DateTime  @default(now()) @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @db.Timestamptz
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, echoAppId])
+  @@map("app_memberships")
+}
+
 model ApiKey {
+<<<<<<< HEAD
   id           String         @id @default(uuid()) @db.Uuid
   key          String         @unique
   name         String?
@@ -56,6 +103,29 @@ model ApiKey {
   echoApp      EchoApp        @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   refreshTokens RefreshToken[]
+=======
+  id              String    @id @default(uuid()) @db.Uuid
+  key             String    @unique
+  name            String?
+  isActive        Boolean   @default(true)
+  isArchived      Boolean   @default(false)
+  archivedAt      DateTime? @db.Timestamptz
+  lastUsed        DateTime? @db.Timestamptz
+  metadata        Json?
+  createdAt       DateTime  @default(now()) @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @db.Timestamptz
+  userId          String    @db.Uuid
+  echoAppId       String    @db.Uuid
+  
+  // New columns for customer/owner system
+  createdByUserId String?   @db.Uuid
+  scope           String    @default("owner")
+  customerRole    String?
+  
+  echoApp   EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation("CreatedApiKeys", fields: [createdByUserId], references: [id], onDelete: SetNull)
+>>>>>>> br/soft_delete
 
   @@map("api_keys")
 }
@@ -85,12 +155,19 @@ model Payment {
   currency        String   @default("usd")
   status          String
   description     String?
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime? @db.Timestamptz
   createdAt       DateTime @default(now()) @db.Timestamptz
   updatedAt       DateTime @updatedAt @db.Timestamptz
   userId          String   @db.Uuid
   echoAppId       String?  @db.Uuid
-  echoApp         EchoApp? @relation(fields: [echoAppId], references: [id])
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // New column for customer payments
+  payerUserId     String?  @db.Uuid
+  
+  echoApp EchoApp? @relation(fields: [echoAppId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payer   User?    @relation("PaidPayments", fields: [payerUserId], references: [id], onDelete: SetNull)
 
   @@map("payments")
 }
@@ -106,11 +183,18 @@ model LlmTransaction {
   response     String?
   status       String
   errorMessage String?
+  isArchived   Boolean  @default(false)
+  archivedAt   DateTime? @db.Timestamptz
   createdAt    DateTime @default(now()) @db.Timestamptz
   userId       String   @db.Uuid
   echoAppId    String?  @db.Uuid
-  echoApp      EchoApp? @relation(fields: [echoAppId], references: [id])
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // New column for customer billing
+  billedToUserId String? @db.Uuid
+  
+  echoApp  EchoApp? @relation(fields: [echoAppId], references: [id])
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billedTo User?    @relation("BilledTransactions", fields: [billedToUserId], references: [id], onDelete: SetNull)
 
   @@map("llm_transactions")
 }

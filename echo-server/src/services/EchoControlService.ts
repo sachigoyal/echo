@@ -98,8 +98,8 @@ export class EchoControlService {
         return 0;
       }
 
-      const { userId, echoAppId } = this.authResult;
-      const balance = await this.dbService.getBalance(userId, echoAppId);
+      const { userId } = this.authResult;
+      const balance = await this.dbService.getBalance(userId);
 
       console.log('fetched balance', balance);
       return balance.balance;

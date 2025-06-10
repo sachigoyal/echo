@@ -47,10 +47,17 @@ export async function getCurrentUserByApiKey(request: NextRequest) {
   const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
 
   // Find the API key in the database
-  const apiKeyRecord = await db.apiKey.findUnique({
+  const apiKeyRecord = await db.apiKey.findFirst({
     where: {
       key: apiKey,
       isActive: true,
+      isArchived: false, // Only allow authentication with non-archived API keys
+      user: {
+        isArchived: false, // Only allow authentication for non-archived users
+      },
+      echoApp: {
+        isArchived: false, // Only allow authentication for non-archived echo apps
+      },
     },
     include: {
       user: true,
@@ -112,10 +119,17 @@ export async function validateApiKey(apiKey: string): Promise<{
     // Remove Bearer prefix if present
     const cleanApiKey = apiKey.replace('Bearer ', '');
 
-    const apiKeyRecord = await db.apiKey.findUnique({
+    const apiKeyRecord = await db.apiKey.findFirst({
       where: {
         key: cleanApiKey,
         isActive: true,
+        isArchived: false, // Only allow validation of non-archived API keys
+        user: {
+          isArchived: false, // Only allow validation for non-archived users
+        },
+        echoApp: {
+          isArchived: false, // Only allow validation for non-archived echo apps
+        },
       },
       include: {
         user: true,

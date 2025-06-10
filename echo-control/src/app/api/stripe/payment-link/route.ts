@@ -23,30 +23,29 @@ export async function POST(request: NextRequest) {
     }
 
     // If authenticated via API key and no echoAppId provided, use the API key's app
+    // If authenticated via API key and no echoAppId provided, use the API key's app
     if (!echoAppId && authEchoApp) {
       echoAppId = authEchoApp.id;
     }
 
-    if (!echoAppId) {
-      return NextResponse.json(
-        { error: 'Echo App ID is required' },
-        { status: 400 }
-      );
-    }
+    // echoAppId is now optional - if not provided, credits go to user's overall account
+    let echoApp = null;
+    if (echoAppId) {
+      // Verify the echo app exists and belongs to the user
+      echoApp = await db.echoApp.findFirst({
+        where: {
+          id: echoAppId,
+          userId: user.id,
+          isArchived: false, // Only allow payments for non-archived apps
+        },
+      });
 
-    // Verify the echo app exists and belongs to the user
-    const echoApp = await db.echoApp.findFirst({
-      where: {
-        id: echoAppId,
-        userId: user.id,
-      },
-    });
-
-    if (!echoApp) {
-      return NextResponse.json(
-        { error: 'Echo app not found or access denied' },
-        { status: 404 }
-      );
+      if (!echoApp) {
+        return NextResponse.json(
+          { error: 'Echo app not found or access denied' },
+          { status: 404 }
+        );
+      }
     }
 
     // Convert amount to cents for Stripe
@@ -54,8 +53,10 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe product
     const product = await stripe.products.create({
-      name: `${description} - ${echoApp.name}`,
-      description: `${description} for ${echoApp.name} - ${amount} USD`,
+      name: echoApp ? `${description} - ${echoApp.name}` : description,
+      description: echoApp
+        ? `${description} for ${echoApp.name} - ${amount} USD`
+        : `${description} - ${amount} USD`,
     });
 
     // Create Stripe price
@@ -95,7 +96,9 @@ export async function POST(request: NextRequest) {
         amount: amountInCents,
         currency: 'usd',
         status: 'pending',
-        description: `${description} for ${echoApp.name}`,
+        description: echoApp
+          ? `${description} for ${echoApp.name}`
+          : description,
         userId: user.id,
         echoAppId,
       },

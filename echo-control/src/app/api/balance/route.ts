@@ -18,17 +18,21 @@ export async function GET(request: NextRequest) {
     const paymentsFilter: {
       userId: string;
       status: string;
+      isArchived: boolean;
       echoAppId?: string;
     } = {
       userId: user.id,
       status: 'completed',
+      isArchived: false, // Only include non-archived payments
     };
 
     const transactionsFilter: {
       userId: string;
+      isArchived: boolean;
       echoAppId?: string;
     } = {
       userId: user.id,
+      isArchived: false, // Only include non-archived transactions
     };
 
     // If echoAppId is provided, filter by app
@@ -140,6 +144,7 @@ export async function POST(request: NextRequest) {
       where: {
         userId: user.id,
         status: 'completed',
+        isArchived: false, // Only include non-archived payments
       },
       _sum: {
         amount: true,
@@ -147,7 +152,10 @@ export async function POST(request: NextRequest) {
     });
 
     const transactions = await db.llmTransaction.aggregate({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        isArchived: false, // Only include non-archived transactions
+      },
       _sum: {
         cost: true,
       },

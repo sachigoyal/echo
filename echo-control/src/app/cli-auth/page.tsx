@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Copy, Check, Terminal, Key } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface EchoApp {
   id: string;
@@ -11,22 +12,19 @@ interface EchoApp {
   description?: string;
 }
 
-export default function CLIAuthPage() {
+function CLIAuthContent() {
   const { user, isLoaded } = useUser();
+  const searchParams = useSearchParams();
   const [apps, setApps] = useState<EchoApp[]>([]);
   const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [apiKeyName, setApiKeyName] = useState('CLI Access');
   const [generatedApiKey, setGeneratedApiKey] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [enrollmentError, setEnrollmentError] = useState<string>('');
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      fetchApps();
-    }
-  }, [isLoaded, user]);
-
-  const fetchApps = async () => {
+  const fetchApps = useCallback(async () => {
     try {
       const response = await fetch('/api/echo-apps');
       if (response.ok) {
@@ -39,7 +37,75 @@ export default function CLIAuthPage() {
     } catch (error) {
       console.error('Failed to fetch apps:', error);
     }
-  };
+  }, []);
+
+  const handleAppIdFromUrl = useCallback(
+    async (appId: string) => {
+      setIsEnrolling(true);
+      setEnrollmentError('');
+
+      try {
+        // First, check if the user already has access to this app
+        const response = await fetch('/api/echo-apps');
+        if (response.ok) {
+          const data = await response.json();
+          const existingApp = data.echoApps.find(
+            (app: EchoApp) => app.id === appId
+          );
+
+          if (existingApp) {
+            // User already has access, just set it as selected
+            setApps(data.echoApps);
+            setSelectedAppId(appId);
+            setIsEnrolling(false);
+            return;
+          }
+        }
+
+        // User doesn't have access, try to enroll them as a customer
+        const enrollResponse = await fetch(
+          `/api/owner/apps/${appId}/customers`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}), // Empty body means enroll current user
+          }
+        );
+
+        if (enrollResponse.ok) {
+          // Successfully enrolled, now refetch all apps to include the newly joined app
+          await fetchApps();
+          setSelectedAppId(appId);
+        } else {
+          const errorData = await enrollResponse.json();
+          if (enrollResponse.status === 404) {
+            setEnrollmentError('App not found or inactive');
+          } else {
+            setEnrollmentError(errorData.error || 'Failed to join app');
+          }
+        }
+      } catch (error) {
+        console.error('Failed to handle app enrollment:', error);
+        setEnrollmentError('Failed to join app');
+      } finally {
+        setIsEnrolling(false);
+      }
+    },
+    [fetchApps]
+  );
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      const appIdFromUrl = searchParams.get('appId');
+      if (appIdFromUrl) {
+        handleAppIdFromUrl(appIdFromUrl);
+      } else {
+        fetchApps();
+      }
+    }
+  }, [isLoaded, user, searchParams, handleAppIdFromUrl, fetchApps]);
 
   const generateApiKey = async () => {
     if (!selectedAppId) return;
@@ -112,6 +178,74 @@ export default function CLIAuthPage() {
     );
   }
 
+  // Show enrollment status if currently enrolling
+  if (isEnrolling) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-card-foreground flex items-center gap-3">
+            <Terminal className="w-8 h-8" />
+            CLI Authentication
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Setting up access to the Echo app...
+          </p>
+        </div>
+
+        <div className="bg-card rounded-lg border border-border p-6">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            <span className="ml-3 text-muted-foreground">Joining app...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show enrollment error if any
+  if (enrollmentError) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-card-foreground flex items-center gap-3">
+            <Terminal className="w-8 h-8" />
+            CLI Authentication
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Unable to access the requested app.
+          </p>
+        </div>
+
+        <div className="bg-card rounded-lg border border-border p-6">
+          <div className="text-center">
+            <div className="text-red-500 mb-4">
+              <Terminal className="w-12 h-12 mx-auto mb-2" />
+              <h2 className="text-lg font-semibold">Access Error</h2>
+            </div>
+            <p className="text-muted-foreground mb-6">{enrollmentError}</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => {
+                  setEnrollmentError('');
+                  fetchApps();
+                }}
+                className="px-4 py-2 border border-input bg-input text-input-foreground rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                View My Apps
+              </button>
+              <Link
+                href="/"
+                className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 transition-colors"
+              >
+                Go to Dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="mb-8">
@@ -123,6 +257,14 @@ export default function CLIAuthPage() {
           Generate an API key to authenticate with the Echo CLI. Each API key is
           scoped to a specific Echo app.
         </p>
+        {searchParams.get('appId') && selectedAppId && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-700">
+              ✓ You&apos;ve been successfully added as a customer to this app
+              and can now generate an API key.
+            </p>
+          </div>
+        )}
       </div>
 
       {!generatedApiKey ? (
@@ -146,7 +288,8 @@ export default function CLIAuthPage() {
                 id="app-select"
                 value={selectedAppId}
                 onChange={e => setSelectedAppId(e.target.value)}
-                className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+                disabled={searchParams.get('appId') ? true : false}
+                className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">Choose an app</option>
                 {apps.map(app => (
@@ -165,8 +308,9 @@ export default function CLIAuthPage() {
                 </p>
               )}
               <p className="text-xs text-muted-foreground mt-2">
-                API keys are scoped to specific apps and can only access
-                resources for the selected app.
+                {searchParams.get('appId')
+                  ? 'This app was pre-selected from your invitation link.'
+                  : 'API keys are scoped to specific apps and can only access resources for the selected app.'}
               </p>
             </div>
 
@@ -274,5 +418,13 @@ export default function CLIAuthPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CLIAuthPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CLIAuthContent />
+    </Suspense>
   );
 }
