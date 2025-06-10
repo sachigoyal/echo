@@ -128,7 +128,7 @@ export function decodeJwtPayload(token: string): any {
     }
     const payload = Buffer.from(base64Payload, 'base64').toString('utf-8');
     return JSON.parse(payload);
-  } catch (_error) {
+  } catch {
     throw new Error('Invalid JWT token format');
   }
 }
@@ -227,7 +227,7 @@ export async function testOAuthSecurityViolation(
 
     await echoControlApi.getOAuthAuthorizeUrl(flowParams);
     return false; // Should have thrown an error
-  } catch (_error) {
+  } catch {
     return true; // Security violation correctly detected
   }
 }

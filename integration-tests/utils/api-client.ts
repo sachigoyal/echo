@@ -157,6 +157,9 @@ export class EchoControlApiClient {
     valid: boolean;
     claims?: any;
     error?: string;
+    userId?: string;
+    appId?: string;
+    scope?: string;
   }> {
     const url = `${this.baseUrl}/api/validate-jwt-token`;
     console.log('🔧 Making JWT validation request to:', url);

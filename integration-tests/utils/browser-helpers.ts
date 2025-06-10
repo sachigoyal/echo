@@ -190,7 +190,7 @@ export class BrowserHelpers {
       (window as any).silentRenewalError = null;
     });
 
-    const _iframe = await page.evaluateHandle(url => {
+    await page.evaluateHandle(url => {
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';
       iframe.src = url;
