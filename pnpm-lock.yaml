@@ -452,6 +452,9 @@ importers:
       '@zdql/echo-typescript-sdk':
         specifier: workspace:*
         version: link:../echo-typescript-sdk
+      jose:
+        specifier: ^6.0.11
+        version: 6.0.11
       nanoid:
         specifier: ^5.1.5
         version: 5.1.5

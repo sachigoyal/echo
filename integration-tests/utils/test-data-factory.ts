@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
+import { hashApiKey } from '../../echo-control/src/lib/crypto.js';
 
 const prisma = new PrismaClient();
 
@@ -21,7 +22,7 @@ export interface CreateEchoAppOptions {
 
 export interface CreateApiKeyOptions {
   id?: string;
-  key?: string;
+  keyHash?: string;
   name?: string;
   userId: string;
   echoAppId: string;
@@ -117,7 +118,7 @@ export class TestDataFactory {
     return prisma.apiKey.create({
       data: {
         id: options.id || this.generateUniqueId(),
-        key: options.key || this.generateApiKey(),
+        keyHash: options.keyHash || hashApiKey(this.generateApiKey()),
         name: options.name || 'Test API Key',
         userId: options.userId,
         echoAppId: options.echoAppId,
