@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, Express } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
 import { ReadableStream } from 'stream/web';
@@ -8,7 +8,7 @@ import { getProvider } from './providers/ProviderFactory';
 
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 const port = 3069;
 
 // Add middleware
