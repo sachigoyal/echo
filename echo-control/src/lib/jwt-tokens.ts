@@ -6,9 +6,6 @@ const API_JWT_SECRET = new TextEncoder().encode(
   process.env.API_JWT_SECRET || 'api-jwt-secret-change-in-production'
 );
 
-// JWT expiry time (shorter for security)
-const API_JWT_EXPIRY = 60 * 60 * 24; // 24 hours
-
 export interface ApiTokenPayload {
   user_id: string;
   app_id: string;
@@ -31,12 +28,14 @@ export async function createApiToken(params: {
   appId: string;
   apiKeyId: string;
   scope: string;
+  expiry: Date;
   keyVersion?: number;
 }): Promise<string> {
-  const { userId, appId, apiKeyId, scope, keyVersion = 1 } = params;
+  const { userId, appId, apiKeyId, scope, expiry, keyVersion = 1 } = params;
 
   const tokenId = nanoid(16);
-  const now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000); // divide by 1000 to convert to seconds
+  const expirySeconds = Math.floor(expiry.getTime() / 1000); // divide by 1000 to convert to seconds
 
   const token = await new SignJWT({
     user_id: userId,
@@ -50,7 +49,8 @@ export async function createApiToken(params: {
     .setAudience(appId)
     .setJti(tokenId)
     .setIssuedAt(now)
-    .setExpirationTime(now + API_JWT_EXPIRY)
+    // set expiration time to the expiry time of the access token
+    .setExpirationTime(expirySeconds)
     .sign(API_JWT_SECRET);
 
   return token;

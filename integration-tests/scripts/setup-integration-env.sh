@@ -48,6 +48,7 @@ required_vars=(
     "JWT_SECRET"
     "CLERK_PUBLISHABLE_KEY"
     "INTEGRATION_TEST_JWT"
+    "OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS"
 )
 
 missing_vars=()
@@ -189,6 +190,10 @@ echo "  pnpm test:typescript-sdk  - TypeScript SDK integration tests"
 echo "  pnpm test:cross-sdk       - Cross-SDK interoperability tests"
 echo "  pnpm test:e2e             - End-to-end browser tests"
 echo "  pnpm test:all             - Run all integration tests"
+echo ""
+echo "⚙️  Test configuration:"
+echo "  OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS - Override refresh token expiry (for testing)"
+echo "  OAUTH_REFRESH_TOKEN_EXPIRY_DAYS    - Set refresh token expiry in days (default: 30)"
 echo ""
 echo "🗄️  Database management:"
 echo "  pnpm db:seed              - Seed test data"

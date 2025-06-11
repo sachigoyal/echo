@@ -7,6 +7,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole } from '@/lib/permissions/types';
 import { hashApiKey } from '@/lib/crypto';
+import {
+  createAccessTokenExpiry,
+  createRefreshTokenExpiry,
+} from '@/lib/oauth-config';
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
 const JWT_SECRET = new TextEncoder().encode(
@@ -179,6 +183,7 @@ export async function POST(req: NextRequest) {
       echoApp.id
     );
     if (!userRole || userRole !== AppRole.OWNER) {
+      // TODO: Review: Should this only be scoped to OWNER?
       return NextResponse.json(
         {
           error: 'invalid_grant',
@@ -194,7 +199,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         echoAppId: echoApp.id,
         isActive: true,
-        name: 'OAuth Generated',
+        name: 'OAuth Generated', // TODO: Make this an ENUM
       },
     });
 
@@ -221,8 +226,7 @@ export async function POST(req: NextRequest) {
 
     /* 8️⃣ Generate refresh token */
     const refreshTokenValue = `refresh_${nanoid(48)}`;
-    const refreshTokenExpiry = new Date();
-    refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 30); // 30 days
+    const refreshTokenExpiry = createRefreshTokenExpiry();
 
     // Deactivate any existing refresh tokens for this app
     await db.refreshToken.updateMany({
@@ -247,6 +251,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const accessTokenExpiry = createAccessTokenExpiry();
+
     /* 9️⃣ Generate JWT access token for fast validation */
     const jwtToken = await createApiToken({
       userId: user.id,
@@ -254,15 +260,16 @@ export async function POST(req: NextRequest) {
       apiKeyId: apiKey.id,
       scope: authData.scope,
       keyVersion: 1, // Can be incremented to invalidate old tokens
+      expiry: accessTokenExpiry,
     });
 
     /* 🔟 Return the JWT access token response with refresh token */
     const response = NextResponse.json({
       access_token: jwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
-      expires_in: 24 * 60 * 60, // JWT expires in 24 hours
+      expires_in: accessTokenExpiry.getTime() - Date.now(),
       refresh_token: refreshToken.token,
-      refresh_token_expires_in: 30 * 24 * 60 * 60, // 30 days in seconds
+      refresh_token_expires_in: refreshToken.expiresAt.getTime() - Date.now(),
       scope: authData.scope,
       user: {
         id: user.id,

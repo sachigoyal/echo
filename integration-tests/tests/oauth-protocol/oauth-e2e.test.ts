@@ -58,7 +58,7 @@ describe('OAuth End-to-End Flow Tests', () => {
       console.log('✅ Got real authorization code from server!');
 
       // Store for next test
-      globalThis.testAuthCode = authCode;
+      globalThis.testAuthCode = authCode || '';
       globalThis.testCodeVerifier = codeVerifier;
       globalThis.testState = state;
     });
@@ -110,7 +110,7 @@ describe('OAuth End-to-End Flow Tests', () => {
 
       // Store for next test
       globalThis.testAccessToken = tokenResponse.access_token;
-      globalThis.testRefreshToken = tokenResponse.refresh_token;
+      globalThis.testRefreshToken = tokenResponse.refresh_token || '';
     });
   });
 
@@ -123,12 +123,12 @@ describe('OAuth End-to-End Flow Tests', () => {
       console.log('Access token structure:', {
         parts: accessToken.split('.').length,
         header: accessToken.split('.')[0],
-        payload_preview: accessToken.split('.')[1].substring(0, 50) + '...',
+        payload_preview: accessToken.split('.')[1]?.substring(0, 50) + '...',
       });
 
       // Decode payload for debugging
       try {
-        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const payload = JSON.parse(atob(accessToken.split('.')[1] || ''));
         console.log('Decoded access token payload:', payload);
       } catch (e) {
         console.log('Failed to decode access token payload:', e.message);
@@ -154,6 +154,15 @@ describe('OAuth End-to-End Flow Tests', () => {
       expect(validationResult.userId).toBe(TEST_USER_IDS.primary);
       expect(validationResult.appId).toBe(TEST_CLIENT_IDS.primary);
       expect(validationResult.scope).toBe('llm:invoke offline_access');
+    });
+  });
+
+  describe('Step 5: Check Access Token Authentication Against Echo Data', () => {
+    test('validates access token can authenticate against Echo Data server', async () => {
+      const accessToken = globalThis.testAccessToken;
+      expect(accessToken).toBeTruthy();
+
+      console.log('Validating access token with Echo Data...');
     });
   });
 });

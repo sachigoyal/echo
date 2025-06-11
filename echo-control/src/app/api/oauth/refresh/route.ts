@@ -3,6 +3,10 @@ import { createApiToken } from '@/lib/jwt-tokens';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
 import { hashApiKey } from '@/lib/crypto';
+import {
+  createRefreshTokenExpiry,
+  createAccessTokenExpiry,
+} from '@/lib/oauth-config';
 
 export async function POST(req: NextRequest) {
   try {
@@ -110,8 +114,7 @@ export async function POST(req: NextRequest) {
 
     /* 5️⃣ Generate new refresh token */
     const newRefreshTokenValue = `refresh_${nanoid(48)}`;
-    const newRefreshTokenExpiry = new Date();
-    newRefreshTokenExpiry.setDate(newRefreshTokenExpiry.getDate() + 30); // 30 days
+    const newRefreshTokenExpiry = createRefreshTokenExpiry();
 
     // Deactivate old refresh token
     await db.refreshToken.update({
@@ -132,6 +135,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const accessTokenExpiry = createAccessTokenExpiry();
+
     /* 6️⃣ Generate new JWT access token */
     const jwtToken = await createApiToken({
       userId: refreshTokenRecord.userId,
@@ -139,15 +144,16 @@ export async function POST(req: NextRequest) {
       apiKeyId: newApiKey.id,
       scope: refreshTokenRecord.scope,
       keyVersion: 1,
+      expiry: accessTokenExpiry,
     });
 
     /* 7️⃣ Return new JWT token */
     return NextResponse.json({
       access_token: jwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
-      expires_in: 24 * 60 * 60, // JWT expires in 24 hours
+      expires_in: accessTokenExpiry.getTime() - Date.now(),
       refresh_token: newRefreshToken.token,
-      refresh_token_expires_in: 30 * 24 * 60 * 60, // 30 days in seconds
+      refresh_token_expires_in: newRefreshTokenExpiry.getTime() - Date.now(),
       scope: refreshTokenRecord.scope,
       user: {
         id: refreshTokenRecord.user.id,

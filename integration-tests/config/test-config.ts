@@ -94,6 +94,14 @@ export const TEST_CONFIG = {
     // Echo Control application base URL
     echoControlAppBaseUrl:
       process.env.ECHO_CONTROL_APP_BASE_URL || process.env.ECHO_CONTROL_URL!,
+
+    // OAuth refresh token expiry seconds
+    oauthRefreshTokenExpirySeconds:
+      process.env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS || 30 * 24 * 60 * 60,
+
+    // OAuth access token expiry seconds
+    oauthAccessTokenExpirySeconds:
+      process.env.OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS || 24 * 60 * 60,
   },
 
   // Test environment settings

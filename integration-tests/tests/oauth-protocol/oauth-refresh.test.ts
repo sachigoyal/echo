@@ -335,4 +335,149 @@ describe('OAuth Refresh Token Tests', () => {
       }
     });
   });
+
+  describe('Refresh Token Lifecycle', () => {
+    test('fails to refresh access token with expired refresh token', async () => {
+      // This test requires setting OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=1
+      // in the environment to make tokens expire quickly
+
+      // Skip test if we're not in a test environment with short token expiry
+      const expectedExpirySeconds =
+        process.env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS;
+      if (!expectedExpirySeconds || parseInt(expectedExpirySeconds) > 10) {
+        console.log(
+          'Skipping expired refresh token test - requires OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=1 or similar short duration'
+        );
+        return;
+      }
+
+      // log token expiry
+      console.log(
+        'The token expiry is set as',
+        expectedExpirySeconds,
+        'seconds for testing'
+      );
+
+      // Step 1: Get a real authorization code through OAuth flow
+      const { generateCodeVerifier, generateCodeChallenge, generateState } =
+        await import('../../utils/auth-helpers.js');
+
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = generateCodeChallenge(codeVerifier);
+      const state = generateState();
+
+      console.log(
+        'Getting authorization code for refresh token expiry test...'
+      );
+
+      const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        scope: 'llm:invoke offline_access',
+        prompt: 'none', // Skip consent page for automated testing
+      });
+
+      // Extract authorization code from callback URL
+      const callbackUrl = new URL(redirectUrl);
+      const authCode = callbackUrl.searchParams.get('code');
+      expect(authCode).toBeTruthy();
+
+      // Step 2: Exchange authorization code for tokens (including refresh token)
+      console.log('Exchanging auth code for tokens with short expiry...');
+
+      const tokenResponse = await echoControlApi.exchangeCodeForToken({
+        code: authCode!,
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        code_verifier: codeVerifier,
+      });
+
+      expect(tokenResponse.refresh_token).toBeTruthy();
+      console.log(
+        `Got refresh token that expires in ${tokenResponse.refresh_token_expires_in} seconds`
+      );
+
+      console.log('The token response is', tokenResponse);
+
+      // Step 3: Wait for the refresh token to expire
+      const waitTime = parseInt(expectedExpirySeconds) * 1000 + 1000; // Add 1000ms buffer
+      console.log(`Waiting ${waitTime}ms for refresh token to expire...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+
+      // Step 4: Try to refresh with the expired token - should fail
+      console.log('Attempting to refresh with expired token...');
+      await expect(
+        echoControlApi.refreshToken({
+          refresh_token: tokenResponse.refresh_token!,
+          client_id: TEST_CLIENT_IDS.primary,
+        })
+      ).rejects.toThrow(
+        /invalid.*grant|refresh.*token.*expired|token.*expired/i
+      );
+
+      console.log('✅ Expired refresh token correctly rejected');
+    });
+  });
+
+  describe('Expired Access Token Fails to Authenticate', () => {
+    test('fails to authenticate with expired access token', async () => {
+      // Step 1: Get a real authorization code through OAuth flow
+      const { generateCodeVerifier, generateCodeChallenge, generateState } =
+        await import('../../utils/auth-helpers.js');
+
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = generateCodeChallenge(codeVerifier);
+      const state = generateState();
+
+      console.log(
+        'Getting authorization code for refresh token expiry test...'
+      );
+
+      const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        scope: 'llm:invoke offline_access',
+        prompt: 'none', // Skip consent page for automated testing
+      });
+
+      // Extract authorization code from callback URL
+      const callbackUrl = new URL(redirectUrl);
+      const authCode = callbackUrl.searchParams.get('code');
+      expect(authCode).toBeTruthy();
+
+      // Step 2: Exchange authorization code for tokens (including refresh token)
+      console.log('Exchanging auth code for tokens with short expiry...');
+
+      const tokenResponse = await echoControlApi.exchangeCodeForToken({
+        code: authCode!,
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        code_verifier: codeVerifier,
+      });
+
+      // token expiry is in the token response
+      console.log(
+        `Access token expires in ${tokenResponse.expires_in / 1000} seconds`
+      );
+
+      // wait for the access token to expire
+      const waitTime = tokenResponse.expires_in + 1000; // Add 1000ms buffer
+      console.log(`Waiting ${waitTime}ms for access token to expire...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+
+      // Step 3: Try to use the access token - should fail
+      console.log('Attempting to use expired access token...');
+      await expect(
+        echoControlApi.getBalance(tokenResponse.access_token!)
+      ).rejects.toThrow(/401|Unauthorized/i);
+
+      console.log('✅ Expired access token correctly rejected');
+    });
+  });
 });
