@@ -19,7 +19,10 @@
     "lint:fix": "pnpx eslint src/**/*.ts --no-warn-ignored --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write src/**/*.{ts,js}",
-    "format:check": "prettier --check src/**/*.{ts,js}"
+    "format:check": "prettier --check src/**/*.{ts,js}",
+    "docker:build": "./scripts/build-local-docker.sh",
+    "docker:run": "./scripts/run-local-docker.sh",
+    "docker:build-and-run": "pnpm run docker:build && pnpm run docker:run"
   },
   "keywords": [],
   "author": "",
