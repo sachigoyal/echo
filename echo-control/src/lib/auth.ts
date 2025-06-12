@@ -1,9 +1,16 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from './db';
+import { User, ApiKey, EchoApp } from '@/generated/prisma';
 import { NextRequest } from 'next/server';
 import { hashApiKey } from './crypto';
+import { authenticateEchoAccessJwtToken } from './jwt-tokens';
 
-export async function getCurrentUser() {
+/**
+ * Get the current user from Clerk
+ * Should be used for endpoints coming from the merit-hosted echo client
+ * @returns The current user
+ */
+export async function getCurrentUser(): Promise<User> {
   const { userId } = await auth();
 
   if (!userId) {
@@ -40,52 +47,87 @@ export async function getCurrentUser() {
   return user;
 }
 
-export async function getCurrentUserByApiKey(request: NextRequest) {
+/**
+ * Get the current user from an Echo API key or Echo Access JWT
+ * Should be used for API requests on the /v1 endpoint
+ * @param request - The request object
+ * @returns The current user, apiKey, and echoApp
+ */
+export async function getCurrentUserByApiKeyOrEchoJwt(
+  request: NextRequest
+): Promise<{
+  user: User;
+  apiKey: ApiKey;
+  echoApp: EchoApp;
+}> {
   const authHeader = request.headers.get('authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new Error('Invalid authorization header');
   }
 
-  const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.substring(7)
+    : authHeader; // Remove 'Bearer ' prefix
 
-  // Hash the provided API key for direct O(1) lookup
-  const keyHash = hashApiKey(apiKey);
+  // Check if token is a JWT (has 3 parts separated by dots)
+  const isJWT = token.split('.').length === 3;
 
-  // Direct lookup by keyHash - O(1) operation!
-  const apiKeyRecord = await db.apiKey.findUnique({
-    where: {
-      keyHash,
-    },
-    include: {
-      user: true,
-      echoApp: true,
-    },
-  });
+  if (isJWT) {
+    const { user, apiKey, echoApp } =
+      await authenticateEchoAccessJwtToken(token);
 
-  // Verify the API key is valid and all related entities are active
-  if (
-    !apiKeyRecord ||
-    !apiKeyRecord.isActive ||
-    apiKeyRecord.isArchived ||
-    apiKeyRecord.user.isArchived ||
-    apiKeyRecord.echoApp.isArchived ||
-    !apiKeyRecord.echoApp.isActive
-  ) {
-    throw new Error('Invalid or inactive API key');
+    // Update last used timestamp and metadata for JWT tokens
+    await updateApiKeyUsage(apiKey.id, request);
+
+    return {
+      user,
+      apiKey,
+      echoApp,
+    };
+  } else {
+    // Handle traditional API key (existing logic)
+    // Hash the provided API key for direct O(1) lookup
+    const keyHash = hashApiKey(token);
+
+    // Direct lookup by keyHash - O(1) operation!
+    const apiKeyRecord = await db.apiKey.findUnique({
+      where: {
+        keyHash,
+      },
+      include: {
+        user: true,
+        echoApp: true,
+      },
+    });
+
+    // Verify the API key is valid and all related entities are active
+    if (
+      !apiKeyRecord ||
+      !apiKeyRecord.isActive ||
+      apiKeyRecord.isArchived ||
+      apiKeyRecord.user.isArchived ||
+      apiKeyRecord.echoApp.isArchived ||
+      !apiKeyRecord.echoApp.isActive
+    ) {
+      throw new Error('Invalid or inactive API key');
+    }
+
+    // Update last used timestamp and metadata
+    await updateApiKeyUsage(apiKeyRecord.id, request);
+
+    return {
+      user: apiKeyRecord.user,
+      apiKey: apiKeyRecord,
+      echoApp: apiKeyRecord.echoApp,
+    };
   }
-
-  // Update last used timestamp and metadata
-  await updateApiKeyUsage(apiKeyRecord.id, request);
-
-  return {
-    user: apiKeyRecord.user,
-    apiKey: apiKeyRecord,
-    echoApp: apiKeyRecord.echoApp,
-  };
 }
 
-async function updateApiKeyUsage(apiKeyId: string, request: NextRequest) {
+export async function updateApiKeyUsage(
+  apiKeyId: string,
+  request: NextRequest
+) {
   try {
     const metadata = {
       lastIp:
@@ -109,77 +151,13 @@ async function updateApiKeyUsage(apiKeyId: string, request: NextRequest) {
   }
 }
 
-// Helper function to validate API keys from external services (like echo-server)
-export async function validateApiKey(apiKey: string): Promise<{
-  userId: string;
-  echoAppId: string;
-  user: { id: string; email: string; name: string | null; clerkId: string };
-  echoApp: {
-    id: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-  };
-} | null> {
-  try {
-    // Remove Bearer prefix if present
-    const cleanApiKey = apiKey.replace('Bearer ', '');
-
-    // Hash the provided API key for direct O(1) lookup
-    const keyHash = hashApiKey(cleanApiKey);
-
-    // Direct lookup by keyHash - O(1) operation!
-    const apiKeyRecord = await db.apiKey.findUnique({
-      where: {
-        keyHash,
-      },
-      include: {
-        user: true,
-        echoApp: true,
-      },
-    });
-
-    // Verify the API key is valid and all related entities are active
-    if (
-      !apiKeyRecord ||
-      !apiKeyRecord.isActive ||
-      apiKeyRecord.isArchived ||
-      apiKeyRecord.user.isArchived ||
-      apiKeyRecord.echoApp.isArchived ||
-      !apiKeyRecord.echoApp.isActive
-    ) {
-      return null;
-    }
-
-    return {
-      userId: apiKeyRecord.userId,
-      echoAppId: apiKeyRecord.echoAppId,
-      user: apiKeyRecord.user,
-      echoApp: apiKeyRecord.echoApp,
-    };
-  } catch (error) {
-    console.error('Error validating API key:', error);
-    return null;
-  }
-}
-
-export async function requireAuth() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    throw new Error('Authentication required');
-  }
-
-  return userId;
-}
-
-// Shared authentication function that supports both Clerk and API key authentication
+// Shared authentication function that supports Echo API key or Echo Access JWT authentication
 export async function getAuthenticatedUser(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     // API key authentication
-    const authResult = await getCurrentUserByApiKey(request);
+    const authResult = await getCurrentUserByApiKeyOrEchoJwt(request);
     return {
       user: authResult.user,
       echoApp: authResult.echoApp,
@@ -198,17 +176,61 @@ export async function getAuthenticatedUser(request: NextRequest) {
   }
 }
 
-// Shared authentication function that requires API key authentication only
-export async function getAuthenticatedUserByApiKeyOnly(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
+/**
+ * Get authentication info from middleware headers (for v1 API routes)
+ * This function extracts user info that was validated in middleware
+ * without requiring database access, making it suitable for high-performance routes
+ *
+ * Note: This only works for JWT tokens. API keys still require database validation
+ * in individual routes due to Edge Runtime limitations.
+ */
+export function getAuthFromMiddleware(request: NextRequest): {
+  userId?: string;
+  appId?: string;
+  scope?: string;
+  isFromMiddleware: boolean;
+} {
+  const userId = request.headers.get('x-echo-user-id');
+  const appId = request.headers.get('x-echo-app-id');
+  const scope = request.headers.get('x-echo-scope');
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Authentication required');
+  return {
+    userId: userId || undefined,
+    appId: appId || undefined,
+    scope: scope || undefined,
+    isFromMiddleware: !!(userId && appId), // true if we have the essential data
+  };
+}
+
+/**
+ * Hybrid authentication function that first tries to use middleware-validated auth,
+ * and falls back to full database authentication for API keys
+ */
+export async function getAuthenticatedUserHybrid(request: NextRequest) {
+  // First, try to get auth info from middleware
+  const middlewareAuth = getAuthFromMiddleware(request);
+
+  if (middlewareAuth.isFromMiddleware) {
+    // JWT was validated in middleware, we can trust this data
+    // For complete user/app data, you'd still need database calls, but
+    // this is sufficient for basic authorization checks
+    return {
+      userId: middlewareAuth.userId!,
+      appId: middlewareAuth.appId!,
+      scope: middlewareAuth.scope,
+      source: 'middleware' as const,
+      isApiKeyAuth: true, // JWT tokens are considered API key auth in this context
+    };
   }
 
-  // API key authentication required for this endpoint
-  const authResult = await getCurrentUserByApiKey(request);
+  // Fallback to full authentication (needed for API keys or when middleware doesn't handle it)
+  const authResult = await getAuthenticatedUser(request);
   return {
+    userId: authResult.user.id,
+    appId: authResult.echoApp?.id,
+    scope: authResult.apiKey?.scope,
+    source: 'database' as const,
+    isApiKeyAuth: authResult.isApiKeyAuth,
     user: authResult.user,
     echoApp: authResult.echoApp,
     apiKey: authResult.apiKey,

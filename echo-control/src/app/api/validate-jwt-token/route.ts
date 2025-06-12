@@ -1,4 +1,4 @@
-import { validateApiTokenFast } from '@/lib/jwt-tokens';
+import { validateEchoAccessJwtTokenFast } from '@/lib/jwt-tokens';
 import { NextRequest, NextResponse } from 'next/server';
 
 // POST /api/validate-jwt-token - Fast JWT validation without DB lookup
@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
         : tokenToValidate;
 
     // Fast JWT validation (no database lookup)
-    const validationResult = await validateApiTokenFast(tokenWithBearer);
+    const validationResult =
+      await validateEchoAccessJwtTokenFast(tokenWithBearer);
 
     if (!validationResult.valid) {
       return NextResponse.json(
@@ -45,8 +46,6 @@ export async function POST(request: NextRequest) {
       userId: validationResult.userId,
       appId: validationResult.appId,
       scope: validationResult.scope,
-      // Note: No user/app details returned to keep this fast
-      // If detailed info is needed, fall back to the regular validate-api-key endpoint
     });
   } catch (error) {
     console.error('JWT token validation error:', error);

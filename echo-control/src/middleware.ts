@@ -8,31 +8,12 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-const isOAuthRoute = createRouteMatcher([
-  '/api/oauth(.*)',
-  '/api/balance(.*)', // Balance endpoint needs CORS for SPA access
-  '/api/stripe/payment-link(.*)', // Payment link creation needs CORS for SPA access
-]);
-
-const isProtectedRoute = createRouteMatcher([
-  '/',
-  '/apps(.*)',
-  '/cli-auth(.*)',
-]);
-
-const isApiRoute = createRouteMatcher([
-  '/api/echo-apps(.*)',
-  '/api/apps(.*)',
-  '/api/api-keys(.*)',
-  '/api/balance(.*)',
-  '/api/stripe/payment-link(.*)',
-]);
+const isOAuthRoute = createRouteMatcher(['/api/v1/(.*)', '/api/oauth(.*)']);
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/stripe/webhook(.*)',
-  '/api/validate-api-key(.*)', // Public endpoint for external validation
   '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
   '/api/oauth/authorize(.*)', // OAuth authorize endpoint - handles its own auth
   '/api/oauth/token(.*)', // OAuth token endpoint - handles its own auth
@@ -51,35 +32,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     // Just continue with normal processing
   }
 
-  // Handle API routes with potential API key authentication
-  if (isApiRoute(req)) {
-    const authHeader = req.headers.get('authorization');
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      // API key authentication - let the API routes handle validation
-      // We just pass it through and let each route validate the key
-      const response = NextResponse.next();
-
-      // Add CORS headers if this is an OAuth route
-      if (isOAuthRoute(req)) {
-        Object.entries(CORS_HEADERS).forEach(([key, value]) => {
-          response.headers.set(key, value);
-        });
-      }
-
-      return response;
-    } else {
-      // No API key, fall back to Clerk authentication
-      await auth.protect();
-    }
-  }
-
-  // Handle protected frontend routes with Clerk authentication
-  if (!isPublicRoute(req) && isProtectedRoute(req)) {
-    await auth.protect();
-  }
-
-  // For OAuth routes, add CORS headers to the response
+  // For OAuth routes, add CORS headers to the response and pass through.
+  // We do the authentication in the OAuth routes themselves (because they may require database access).
   if (isOAuthRoute(req)) {
     const response = NextResponse.next();
     Object.entries(CORS_HEADERS).forEach(([key, value]) => {
@@ -87,6 +41,12 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     });
     return response;
   }
+
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+
+  await auth.protect();
 });
 
 export const config = {

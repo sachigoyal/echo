@@ -7,7 +7,7 @@
  * Checks OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS first, then OAUTH_REFRESH_TOKEN_EXPIRY_DAYS
  * Defaults to 30 days (2592000 seconds) if neither is set
  */
-export function getRefreshTokenExpirySeconds(): number {
+export function getEchoRefreshTokenExpirySeconds(): number {
   // Check for seconds first (more granular control, useful for testing)
   const secondsEnv = process.env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS;
   if (secondsEnv) {
@@ -26,14 +26,14 @@ export function getRefreshTokenExpirySeconds(): number {
 /**
  * Create a new Date object for refresh token expiry
  */
-export function createRefreshTokenExpiry(): Date {
+export function createEchoRefreshTokenExpiry(): Date {
   const expiry = new Date();
-  const expirySeconds = getRefreshTokenExpirySeconds();
+  const expirySeconds = getEchoRefreshTokenExpirySeconds();
   expiry.setTime(expiry.getTime() + expirySeconds * 1000); // multiply by 1000 to convert to milliseconds
   return expiry;
 }
 
-export function getAccessTokenExpirySeconds(): number {
+export function getEchoAccessTokenExpirySeconds(): number {
   const secondsEnv = process.env.OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS;
   if (secondsEnv) {
     const parsed = parseInt(secondsEnv, 10);
@@ -44,9 +44,9 @@ export function getAccessTokenExpirySeconds(): number {
   return 1; // Default to 1 second
 }
 
-export function createAccessTokenExpiry(): Date {
+export function createEchoAccessTokenExpiry(): Date {
   const expiry = new Date();
-  const expirySeconds = getAccessTokenExpirySeconds();
+  const expirySeconds = getEchoAccessTokenExpirySeconds();
   expiry.setTime(expiry.getTime() + expirySeconds * 1000);
   return expiry;
 }

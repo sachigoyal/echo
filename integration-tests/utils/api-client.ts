@@ -139,20 +139,6 @@ export class EchoControlApiClient {
     });
   }
 
-  // API Key validation
-  async validateApiKey(apiKey: string): Promise<{
-    valid: boolean;
-    userId?: string;
-    echoAppId?: string;
-  }> {
-    return this.request('/api/validate-api-key', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-    });
-  }
-
   // JWT token validation
   async validateJwtToken(jwtToken: string): Promise<{
     valid: boolean;

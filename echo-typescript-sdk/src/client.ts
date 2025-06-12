@@ -47,7 +47,7 @@ export class EchoClient {
    */
   async getBalance(): Promise<Balance> {
     try {
-      const response = await this.http.get('/api/balance');
+      const response = await this.http.get('/api/v1/balance');
       return response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch balance');
@@ -63,7 +63,7 @@ export class EchoClient {
   ): Promise<CreatePaymentLinkResponse> {
     try {
       const response = await this.http.post(
-        '/api/stripe/payment-link',
+        '/api/v1/stripe/payment-link',
         request
       );
       return response.data;
@@ -99,8 +99,8 @@ export class EchoClient {
   async listEchoApps(): Promise<EchoApp[]> {
     try {
       const response =
-        await this.http.get<ListEchoAppsResponse>('/api/echo-apps');
-      return response.data.echoApps;
+        await this.http.get<ListEchoAppsResponse>('/api/v1/apps');
+      return response.data.apps;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch Echo apps');
     }
@@ -112,8 +112,8 @@ export class EchoClient {
    */
   async getEchoApp(appId: string): Promise<EchoApp> {
     try {
-      const response = await this.http.get(`/api/echo-apps/${appId}`);
-      return response.data.echoApp;
+      const response = await this.http.get(`/api/v1/apps/${appId}`);
+      return response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch Echo app');
     }

@@ -1,7 +1,7 @@
-import { getAuthenticatedUser } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { MembershipStatus } from '@/lib/permissions/types';
+import { getCurrentUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { isValidUUID } from '@/lib/oauth-config/index';
+import { findEchoApp, updateEchoApp } from '@/lib/echo-apps/index';
 
 interface RouteParams {
   params: Promise<{
@@ -9,17 +9,10 @@ interface RouteParams {
   }>;
 }
 
-// Helper function to validate UUID format
-function isValidUUID(uuid: string): boolean {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
-
 // GET /api/apps/[id]/oauth-config - Get OAuth configuration
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user } = await getAuthenticatedUser(req);
+    const user = await getCurrentUser();
     const { id } = await params;
 
     // Validate UUID format
@@ -30,25 +23,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const echoApp = await db.echoApp.findFirst({
-      where: {
-        id,
-        appMemberships: {
-          some: {
-            userId: user.id,
-            status: MembershipStatus.ACTIVE,
-            isArchived: false,
-          },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        authorizedCallbackUrls: true,
-      },
-    });
+    const echoApp = await findEchoApp(id, user.id);
 
     if (!echoApp) {
       return NextResponse.json(
@@ -81,7 +56,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 // PUT /api/apps/[id]/oauth-config - Update OAuth configuration
 export async function PUT(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user } = await getAuthenticatedUser(req);
+    const user = await getCurrentUser();
     const { id } = await params;
 
     // Validate UUID format
@@ -137,18 +112,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     }
 
     // Check if Echo app exists and user owns it
-    const echoApp = await db.echoApp.findFirst({
-      where: {
-        id,
-        appMemberships: {
-          some: {
-            userId: user.id,
-            status: MembershipStatus.ACTIVE,
-            isArchived: false,
-          },
-        },
-      },
-    });
+    const echoApp = await findEchoApp(id, user.id);
 
     if (!echoApp) {
       return NextResponse.json(
@@ -157,20 +121,20 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Update the Echo app
-    const updatedApp = await db.echoApp.update({
-      where: { id },
-      data: {
+    const updatedApp = await updateEchoApp(
+      id,
+      user.id,
+      {
         authorizedCallbackUrls: authorized_callback_urls,
       },
-      select: {
+      {
         id: true,
         name: true,
         description: true,
         isActive: true,
         authorizedCallbackUrls: true,
-      },
-    });
+      }
+    );
 
     return NextResponse.json({
       client_id: updatedApp.id,
@@ -196,7 +160,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
 // POST /api/apps/[id]/oauth-config - Add a callback URL
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user } = await getAuthenticatedUser(req);
+    const user = await getCurrentUser();
     const { id } = await params;
 
     // Validate UUID format
@@ -242,18 +206,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     }
 
     // Get current Echo app
-    const echoApp = await db.echoApp.findFirst({
-      where: {
-        id,
-        appMemberships: {
-          some: {
-            userId: user.id,
-            status: MembershipStatus.ACTIVE,
-            isArchived: false,
-          },
-        },
-      },
-    });
+    const echoApp = await findEchoApp(id, user.id);
 
     if (!echoApp) {
       return NextResponse.json(
@@ -271,18 +224,19 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     }
 
     // Add the new callback URL
-    const updatedApp = await db.echoApp.update({
-      where: { id },
-      data: {
+    const updatedApp = await updateEchoApp(
+      id,
+      user.id,
+      {
         authorizedCallbackUrls: [
           ...echoApp.authorizedCallbackUrls,
           callback_url,
         ],
       },
-      select: {
+      {
         authorizedCallbackUrls: true,
-      },
-    });
+      }
+    );
 
     return NextResponse.json({
       message: 'Callback URL added successfully',
@@ -300,7 +254,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 // DELETE /api/apps/[id]/oauth-config - Remove a callback URL
 export async function DELETE(req: NextRequest, { params }: RouteParams) {
   try {
-    const { user } = await getAuthenticatedUser(req);
+    const user = await getCurrentUser();
     const { id } = await params;
 
     // Validate UUID format
@@ -323,18 +277,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     }
 
     // Get current Echo app
-    const echoApp = await db.echoApp.findFirst({
-      where: {
-        id,
-        appMemberships: {
-          some: {
-            userId: user.id,
-            status: MembershipStatus.ACTIVE,
-            isArchived: false,
-          },
-        },
-      },
-    });
+    const echoApp = await findEchoApp(id, user.id);
 
     if (!echoApp) {
       return NextResponse.json(
@@ -356,15 +299,16 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       url => url !== callback_url
     );
 
-    const updatedApp = await db.echoApp.update({
-      where: { id },
-      data: {
+    const updatedApp = await updateEchoApp(
+      id,
+      user.id,
+      {
         authorizedCallbackUrls: updatedCallbackUrls,
       },
-      select: {
+      {
         authorizedCallbackUrls: true,
-      },
-    });
+      }
+    );
 
     return NextResponse.json({
       message: 'Callback URL removed successfully',

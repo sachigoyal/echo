@@ -1,15 +1,14 @@
 import { db } from '@/lib/db';
-import { createApiToken } from '@/lib/jwt-tokens';
+import { createEchoAccessJwtToken } from '@/lib/jwt-tokens';
 import { createHash } from 'crypto';
 import { jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole } from '@/lib/permissions/types';
-import { hashApiKey } from '@/lib/crypto';
 import {
-  createAccessTokenExpiry,
-  createRefreshTokenExpiry,
+  createEchoAccessTokenExpiry,
+  createEchoRefreshTokenExpiry,
 } from '@/lib/oauth-config';
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
@@ -193,40 +192,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* 7️⃣ Check for existing API key or create new one */
-    let apiKey = await db.apiKey.findFirst({
-      where: {
-        userId: user.id,
-        echoAppId: echoApp.id,
-        isActive: true,
-        name: 'OAuth Generated', // TODO: Make this an ENUM
-      },
-    });
-
-    if (!apiKey) {
-      // Generate new API key
-      const keyValue = `echo_${nanoid(40)}`;
-      const keyHash = hashApiKey(keyValue);
-
-      apiKey = await db.apiKey.create({
-        data: {
-          keyHash,
-          name: 'OAuth Generated',
-          userId: user.id,
-          echoAppId: echoApp.id,
-          isActive: true,
-          metadata: {
-            createdVia: 'oauth',
-            scope: authData.scope,
-            grantedAt: new Date().toISOString(),
-          },
-        },
-      });
-    }
-
     /* 8️⃣ Generate refresh token */
-    const refreshTokenValue = `refresh_${nanoid(48)}`;
-    const refreshTokenExpiry = createRefreshTokenExpiry();
+    const echoRefreshTokenValue = `refresh_${nanoid(48)}`;
+    const echoRefreshTokenExpiry = createEchoRefreshTokenExpiry();
 
     // Deactivate any existing refresh tokens for this app
     await db.refreshToken.updateMany({
@@ -239,37 +207,36 @@ export async function POST(req: NextRequest) {
     });
 
     // Create new refresh token
-    const refreshToken = await db.refreshToken.create({
+    const newEchoRefreshToken = await db.refreshToken.create({
       data: {
-        token: refreshTokenValue,
-        expiresAt: refreshTokenExpiry,
+        token: echoRefreshTokenValue,
+        expiresAt: echoRefreshTokenExpiry,
         userId: user.id,
         echoAppId: echoApp.id,
-        apiKeyId: apiKey.id,
         scope: authData.scope,
         isActive: true,
       },
     });
 
-    const accessTokenExpiry = createAccessTokenExpiry();
+    const newEchoAccessTokenExpiry = createEchoAccessTokenExpiry();
 
     /* 9️⃣ Generate JWT access token for fast validation */
-    const jwtToken = await createApiToken({
+    const echoAccessTokenJwtToken = await createEchoAccessJwtToken({
       userId: user.id,
       appId: echoApp.id,
-      apiKeyId: apiKey.id,
       scope: authData.scope,
       keyVersion: 1, // Can be incremented to invalidate old tokens
-      expiry: accessTokenExpiry,
+      expiry: newEchoAccessTokenExpiry,
     });
 
     /* 🔟 Return the JWT access token response with refresh token */
     const response = NextResponse.json({
-      access_token: jwtToken, // JWT instead of raw API key
+      access_token: echoAccessTokenJwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
-      expires_in: accessTokenExpiry.getTime() - Date.now(),
-      refresh_token: refreshToken.token,
-      refresh_token_expires_in: refreshToken.expiresAt.getTime() - Date.now(),
+      expires_in: newEchoAccessTokenExpiry.getTime() - Date.now(),
+      refresh_token: newEchoRefreshToken.token,
+      refresh_token_expires_in:
+        newEchoRefreshToken.expiresAt.getTime() - Date.now(),
       scope: authData.scope,
       user: {
         id: user.id,
@@ -280,11 +247,6 @@ export async function POST(req: NextRequest) {
         id: echoApp.id,
         name: echoApp.name,
         description: echoApp.description,
-      },
-      // Include API key info for admin purposes (optional)
-      _internal: {
-        api_key_id: apiKey.id,
-        // Note: Original key is not stored in plaintext for security
       },
     });
 

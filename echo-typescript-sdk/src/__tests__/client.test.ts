@@ -58,7 +58,7 @@ describe('EchoClient', () => {
 
       await client.getBalance();
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/balance');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/balance');
     });
 
     it('should handle authentication errors', async () => {
@@ -83,7 +83,7 @@ describe('EchoClient', () => {
       const balance = await client.getBalance();
 
       expect(balance).toEqual(mockBalance);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/balance');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/balance');
     });
 
     it('should handle balance fetch errors', async () => {
@@ -119,7 +119,7 @@ describe('EchoClient', () => {
 
       expect(response).toEqual(mockResponse);
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/stripe/payment-link',
+        '/api/v1/stripe/payment-link',
         paymentRequest
       );
     });
@@ -144,7 +144,7 @@ describe('EchoClient', () => {
 
       expect(response).toEqual(mockResponse);
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/stripe/payment-link',
+        '/api/v1/stripe/payment-link',
         paymentRequest
       );
     });
@@ -185,7 +185,7 @@ describe('EchoClient', () => {
 
       expect(url).toBe(mockResponse.paymentLink.url);
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/stripe/payment-link',
+        '/api/v1/stripe/payment-link',
         {
           amount,
           description,
@@ -198,8 +198,8 @@ describe('EchoClient', () => {
 
       const mockResponse = {
         paymentLink: {
-          id: 'link_012',
-          url: 'https://checkout.stripe.com/pay/cs_test_012',
+          id: 'link_default',
+          url: 'https://checkout.stripe.com/pay/cs_test_default',
           amount: 50.0,
           currency: 'usd',
           description: 'Echo Credits',
@@ -212,7 +212,7 @@ describe('EchoClient', () => {
 
       expect(url).toBe(mockResponse.paymentLink.url);
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/stripe/payment-link',
+        '/api/v1/stripe/payment-link',
         {
           amount,
           description: 'Echo Credits',
@@ -242,16 +242,16 @@ describe('EchoClient', () => {
         },
       ];
 
-      mockAxiosInstance.get.mockResolvedValue({ data: { echoApps: mockApps } });
+      mockAxiosInstance.get.mockResolvedValue({ data: { apps: mockApps } });
 
       const apps = await client.listEchoApps();
 
       expect(apps).toEqual(mockApps);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/echo-apps');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/apps');
     });
 
     it('should handle empty app list', async () => {
-      mockAxiosInstance.get.mockResolvedValue({ data: { echoApps: [] } });
+      mockAxiosInstance.get.mockResolvedValue({ data: { apps: [] } });
 
       const apps = await client.listEchoApps();
 
@@ -271,82 +271,82 @@ describe('EchoClient', () => {
         userId: 'user1',
       };
 
-      mockAxiosInstance.get.mockResolvedValue({ data: { echoApp: mockApp } });
+      mockAxiosInstance.get.mockResolvedValue({ data: mockApp });
 
       const app = await client.getEchoApp('app1');
 
       expect(app).toEqual(mockApp);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/echo-apps/app1');
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/apps/app1');
     });
 
     it('should handle non-existent app', async () => {
-      const error = new Error('App not found') as ErrorWithResponse;
-      error.response = { status: 404 };
+      const error = new Error('Not found') as ErrorWithResponse;
+      error.response = { status: 404, data: { error: 'Echo app not found' } };
       mockAxiosInstance.get.mockRejectedValue(error);
 
-      await expect(client.getEchoApp('non-existent-app-123')).rejects.toThrow(
+      await expect(client.getEchoApp('nonexistent')).rejects.toThrow(
         'Failed to fetch Echo app'
       );
     });
   });
 
   describe('getAppUrl', () => {
-    it('should generate correct app URL', () => {
+    it('should generate correct app URL', async () => {
       const appId = 'test-app-123';
+      const expectedUrl = `${TEST_SERVER_URL}/apps/${appId}`;
+
       const url = client.getAppUrl(appId);
 
-      expect(url).toBe(`${TEST_SERVER_URL}/apps/${appId}`);
+      expect(url).toBe(expectedUrl);
     });
 
-    it('should handle special characters in app ID', () => {
+    it('should handle special characters in app ID', async () => {
       const appId = 'test-app-with-special-chars_123';
+      const expectedUrl = `${TEST_SERVER_URL}/apps/${appId}`;
+
       const url = client.getAppUrl(appId);
 
-      expect(url).toBe(`${TEST_SERVER_URL}/apps/${appId}`);
+      expect(url).toBe(expectedUrl);
     });
   });
 
   describe('Error Handling', () => {
     it('should handle network errors gracefully', async () => {
-      const error = new Error('Network Error') as ErrorWithResponse;
-      error.code = 'ECONNREFUSED';
-      mockAxiosInstance.get.mockRejectedValue(error);
+      const networkError = new Error('Network Error');
+      mockAxiosInstance.get.mockRejectedValue(networkError);
 
       await expect(client.getBalance()).rejects.toThrow(
-        'Failed to fetch balance'
+        'Failed to fetch balance: Network Error'
       );
     });
 
     it('should handle 401 unauthorized errors', async () => {
-      const error = new Error('Unauthorized') as ErrorWithResponse;
-      error.response = { status: 401 };
-      mockAxiosInstance.get.mockRejectedValue(error);
+      const authError = new Error('Unauthorized') as ErrorWithResponse;
+      authError.response = { status: 401 };
+      mockAxiosInstance.get.mockRejectedValue(authError);
 
       await expect(client.getBalance()).rejects.toThrow();
     });
 
     it('should handle timeout errors', async () => {
-      const error = new Error('Timeout') as ErrorWithResponse;
-      error.code = 'ECONNABORTED';
-      mockAxiosInstance.get.mockRejectedValue(error);
+      const timeoutError = new Error('timeout of 30000ms exceeded') as Error & {
+        code?: string;
+      };
+      timeoutError.code = 'ECONNABORTED';
+      mockAxiosInstance.get.mockRejectedValue(timeoutError);
 
       await expect(client.getBalance()).rejects.toThrow(
-        'Failed to fetch balance'
+        'Failed to fetch balance: timeout of 30000ms exceeded'
       );
     });
 
     it('should handle API error responses', async () => {
-      const error = new Error('API Error') as ErrorWithResponse;
-      error.response = {
-        status: 400,
-        data: {
-          error: 'Invalid request parameters',
-        },
-      };
-      mockAxiosInstance.get.mockRejectedValue(error);
+      const apiError = new Error('API Error') as ErrorWithResponse;
+      apiError.response = { status: 400, data: { error: 'Invalid request' } };
+      mockAxiosInstance.get.mockRejectedValue(apiError);
 
       await expect(client.getBalance()).rejects.toThrow(
-        'Failed to fetch balance: Invalid request parameters'
+        'Failed to fetch balance: Invalid request'
       );
     });
   });

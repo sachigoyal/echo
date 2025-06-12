@@ -88,7 +88,6 @@ model ApiKey {
   
   echoApp       EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refreshTokens RefreshToken[]
   llmTransactions LlmTransaction[] // LLM transactions using this API key
 
   @@map("api_keys")
@@ -105,9 +104,7 @@ model RefreshToken {
   updatedAt DateTime @updatedAt @db.Timestamptz
   userId    String   @db.Uuid
   echoAppId String   @db.Uuid
-  apiKeyId  String   @db.Uuid
   scope     String   @default("llm:invoke offline_access")
-  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   echoApp   EchoApp  @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
 
