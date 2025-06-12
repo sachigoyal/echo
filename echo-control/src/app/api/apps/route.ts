@@ -1,71 +1,18 @@
-import { getAuthenticatedUser } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { AppRole, MembershipStatus } from '@/lib/permissions/types';
-import { PermissionService } from '@/lib/permissions/service';
+import { getCurrentUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  listAppsWithDetails,
+  createEchoApp,
+  AppCreateInput,
+} from '@/lib/echo-apps';
 
 // GET /api/apps - List all Echo apps for the authenticated user
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const { user } = await getAuthenticatedUser(req);
+    const user = await getCurrentUser();
+    const apps = await listAppsWithDetails(user.id);
 
-    // Use PermissionService to get accessible apps with roles
-    const accessibleApps = await PermissionService.getAccessibleApps(user.id);
-
-    // Get additional data for each app (transaction stats, counts)
-    const appsWithDetails = await Promise.all(
-      accessibleApps.map(async ({ app, userRole }) => {
-        // Get counts for API keys and transactions
-        const counts = await db.echoApp.findUnique({
-          where: { id: app.id },
-          select: {
-            _count: {
-              select: {
-                apiKeys: {
-                  where: { isActive: true, isArchived: false },
-                },
-                llmTransactions: {
-                  where: { isArchived: false },
-                },
-              },
-            },
-          },
-        });
-
-        // Get transaction totals
-        const transactionStats = await db.llmTransaction.aggregate({
-          where: {
-            echoAppId: app.id,
-            isArchived: false,
-          },
-          _sum: {
-            totalTokens: true,
-            cost: true,
-          },
-        });
-
-        return {
-          id: app.id,
-          name: app.name,
-          description: app.description,
-          isActive: app.isActive,
-          createdAt: app.createdAt.toISOString(),
-          updatedAt: app.updatedAt.toISOString(),
-          authorizedCallbackUrls: app.authorizedCallbackUrls,
-          userRole,
-          totalTokens: transactionStats._sum.totalTokens || 0,
-          totalCost: Number(transactionStats._sum.cost || 0),
-          _count: {
-            apiKeys: counts?._count.apiKeys || 0,
-            llmTransactions: counts?._count.llmTransactions || 0,
-          },
-        };
-      })
-    );
-
-    return NextResponse.json({
-      apps: appsWithDetails,
-    });
+    return NextResponse.json({ apps });
   } catch (error) {
     console.error('Error fetching Echo apps:', error);
 
@@ -90,65 +37,13 @@ export async function GET(req: NextRequest) {
 // POST /api/apps - Create a new Echo app
 export async function POST(req: NextRequest) {
   try {
-    const { user } = await getAuthenticatedUser(req);
+    const user = await getCurrentUser();
     const body = await req.json();
 
     const { name, description } = body;
+    const appData: AppCreateInput = { name, description };
 
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'App name is required' },
-        { status: 400 }
-      );
-    }
-
-    if (name.length > 100) {
-      return NextResponse.json(
-        { error: 'App name must be 100 characters or less' },
-        { status: 400 }
-      );
-    }
-
-    if (description && typeof description !== 'string') {
-      return NextResponse.json(
-        { error: 'Description must be a string' },
-        { status: 400 }
-      );
-    }
-
-    if (description && description.length > 500) {
-      return NextResponse.json(
-        { error: 'Description must be 500 characters or less' },
-        { status: 400 }
-      );
-    }
-
-    const echoApp = await db.echoApp.create({
-      data: {
-        name: name.trim(),
-        description: description?.trim() || null,
-        appMemberships: {
-          create: {
-            userId: user.id,
-            role: AppRole.OWNER,
-            status: MembershipStatus.ACTIVE,
-            isArchived: false,
-            totalSpent: 0,
-          },
-        },
-        isActive: true,
-        authorizedCallbackUrls: [], // Start with empty callback URLs
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-        authorizedCallbackUrls: true,
-      },
-    });
+    const echoApp = await createEchoApp(user.id, appData);
 
     return NextResponse.json(
       {
@@ -164,6 +59,17 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error('Error creating Echo app:', error);
+
+    // Handle validation errors
+    if (
+      error instanceof Error &&
+      (error.message.includes('required') ||
+        error.message.includes('must be') ||
+        error.message.includes('characters'))
+    ) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

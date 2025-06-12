@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getAuthenticatedUser } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import { PermissionService } from '@/lib/permissions/service';
 import { Permission, AppRole, MembershipStatus } from '@/lib/permissions/types';
 
@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { id: appId } = await params;
-    const { user } = await getAuthenticatedUser(request);
+    const user = await getCurrentUser();
 
     // Check if user has permission to manage customers
     const hasPermission = await PermissionService.hasPermission(
@@ -73,7 +73,7 @@ export async function POST(
 ) {
   try {
     const { id: appId } = await params;
-    const { user } = await getAuthenticatedUser(request);
+    const user = await getCurrentUser();
     const { userId } = await request.json();
 
     // Verify the app exists and is active

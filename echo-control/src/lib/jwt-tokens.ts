@@ -6,15 +6,11 @@ const API_JWT_SECRET = new TextEncoder().encode(
   process.env.API_JWT_SECRET || 'api-jwt-secret-change-in-production'
 );
 
-// JWT expiry time (shorter for security)
-const API_JWT_EXPIRY = 60 * 60 * 24; // 24 hours
-
 export interface ApiTokenPayload {
   user_id: string;
   app_id: string;
   scope: string;
   key_version: number;
-  api_key_id: string;
   // Standard JWT claims
   sub: string; // user_id
   aud: string; // app_id
@@ -24,33 +20,34 @@ export interface ApiTokenPayload {
 }
 
 /**
- * Create a JWT-based API token for fast validation
+ * Create a JWT-based Echo Access Token for fast validation
  */
-export async function createApiToken(params: {
+export async function createEchoAccessJwtToken(params: {
   userId: string;
   appId: string;
-  apiKeyId: string;
   scope: string;
+  expiry: Date;
   keyVersion?: number;
 }): Promise<string> {
-  const { userId, appId, apiKeyId, scope, keyVersion = 1 } = params;
+  const { userId, appId, scope, expiry, keyVersion = 1 } = params;
 
   const tokenId = nanoid(16);
-  const now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000); // divide by 1000 to convert to seconds
+  const expirySeconds = Math.floor(expiry.getTime() / 1000); // divide by 1000 to convert to seconds
 
   const token = await new SignJWT({
     user_id: userId,
     app_id: appId,
     scope,
     key_version: keyVersion,
-    api_key_id: apiKeyId,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(userId)
     .setAudience(appId)
     .setJti(tokenId)
     .setIssuedAt(now)
-    .setExpirationTime(now + API_JWT_EXPIRY)
+    // set expiration time to the expiry time of the access token
+    .setExpirationTime(expirySeconds)
     .sign(API_JWT_SECRET);
 
   return token;
@@ -58,8 +55,10 @@ export async function createApiToken(params: {
 
 /**
  * Verify and decode JWT API token (fast path - no DB lookup)
+ *
+ * This should not include a Bearer prefix
  */
-export async function verifyApiToken(
+export async function verifyEchoAccessJwtToken(
   token: string
 ): Promise<ApiTokenPayload | null> {
   try {
@@ -91,7 +90,6 @@ export function extractTokenInfo(payload: ApiTokenPayload) {
     appId: payload.app_id,
     scope: payload.scope,
     keyVersion: payload.key_version,
-    apiKeyId: payload.api_key_id,
     tokenId: payload.jti,
     issuedAt: new Date(payload.iat * 1000),
     expiresAt: new Date(payload.exp * 1000),
@@ -101,37 +99,36 @@ export function extractTokenInfo(payload: ApiTokenPayload) {
 /**
  * Check if token needs refresh (within 2 hours of expiry)
  */
-export function shouldRefreshToken(payload: ApiTokenPayload): boolean {
+export function shouldRefreshEchoAccessJwtToken(
+  payload: ApiTokenPayload
+): boolean {
   const now = Math.floor(Date.now() / 1000);
   const timeUntilExpiry = payload.exp - now;
   return timeUntilExpiry < 2 * 60 * 60; // 2 hours
 }
 
-/**
- * Fast validation for Echo Server (hot path)
- */
-export async function validateApiTokenFast(authHeader: string): Promise<{
-  valid: boolean;
-  userId?: string;
-  appId?: string;
-  scope?: string;
-  error?: string;
+export async function authenticateEchoAccessJwtToken(
+  jwtToken: string
+): Promise<{
+  userId: string;
+  appId: string;
+  scope: string;
 }> {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return { valid: false, error: 'Invalid authorization header' };
+  const jwtPayload = await verifyEchoAccessJwtToken(jwtToken);
+
+  console.log('🔍 DEBUG: jwtPayload', jwtPayload);
+
+  if (!jwtPayload) {
+    throw new Error('Invalid or expired JWT token');
   }
 
-  const token = authHeader.substring(7);
-  const payload = await verifyApiToken(token);
-
-  if (!payload) {
-    return { valid: false, error: 'Invalid or expired token' };
+  if (jwtPayload.exp < Math.floor(Date.now() / 1000)) {
+    throw new Error('JWT token has expired');
   }
 
   return {
-    valid: true,
-    userId: payload.user_id,
-    appId: payload.app_id,
-    scope: payload.scope,
+    userId: jwtPayload.user_id,
+    appId: jwtPayload.app_id,
+    scope: jwtPayload.scope,
   };
 }

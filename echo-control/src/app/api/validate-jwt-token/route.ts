@@ -1,4 +1,4 @@
-import { validateApiTokenFast } from '@/lib/jwt-tokens';
+import { authenticateEchoAccessJwtToken } from '@/lib/jwt-tokens';
 import { NextRequest, NextResponse } from 'next/server';
 
 // POST /api/validate-jwt-token - Fast JWT validation without DB lookup
@@ -20,34 +20,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If using X-Echo-Token header, add "Bearer " prefix if not present
-    const tokenWithBearer =
-      echoTokenHeader && !echoTokenHeader.startsWith('Bearer ')
-        ? `Bearer ${echoTokenHeader}`
-        : tokenToValidate;
+    // remove Bearer if it exists
+    const tokenRemovedBearer = tokenToValidate.replace('Bearer ', '');
 
     // Fast JWT validation (no database lookup)
-    const validationResult = await validateApiTokenFast(tokenWithBearer);
-
-    if (!validationResult.valid) {
-      return NextResponse.json(
-        {
-          valid: false,
-          error: validationResult.error || 'Invalid token',
-        },
-        { status: 401 }
-      );
+    try {
+      const validationResult =
+        await authenticateEchoAccessJwtToken(tokenRemovedBearer);
+      return NextResponse.json({
+        valid: true,
+        userId: validationResult.userId,
+        appId: validationResult.appId,
+        scope: validationResult.scope,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Invalid')) {
+        return NextResponse.json(
+          { valid: false, error: 'Invalid token' },
+          { status: 401 }
+        );
+      }
     }
 
-    // Return validation success with decoded token info
-    return NextResponse.json({
-      valid: true,
-      userId: validationResult.userId,
-      appId: validationResult.appId,
-      scope: validationResult.scope,
-      // Note: No user/app details returned to keep this fast
-      // If detailed info is needed, fall back to the regular validate-api-key endpoint
-    });
+    return NextResponse.json(
+      { valid: false, error: 'Invalid token' },
+      { status: 401 }
+    );
   } catch (error) {
     console.error('JWT token validation error:', error);
     return NextResponse.json(

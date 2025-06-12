@@ -84,7 +84,7 @@ export interface CreateEchoAppResponse {
 }
 
 export interface ListEchoAppsResponse {
-  echoApps: EchoApp[];
+  apps: EchoApp[];
 }
 
 export interface CreateApiKeyRequest {

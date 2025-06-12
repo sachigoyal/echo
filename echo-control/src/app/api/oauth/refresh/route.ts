@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
-import { createApiToken } from '@/lib/jwt-tokens';
+import { createEchoAccessJwtToken } from '@/lib/jwt-tokens';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
-import { hashApiKey } from '@/lib/crypto';
+import {
+  createEchoRefreshTokenExpiry,
+  createEchoAccessTokenExpiry,
+} from '@/lib/oauth-config';
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     /* 1️⃣ Find and validate refresh token */
-    const refreshTokenRecord = await db.refreshToken.findUnique({
+    const echoRefreshTokenRecord = await db.refreshToken.findUnique({
       where: {
         token: refresh_token,
         isActive: true,
@@ -39,11 +42,10 @@ export async function POST(req: NextRequest) {
       include: {
         user: true,
         echoApp: true,
-        apiKey: true,
       },
     });
 
-    if (!refreshTokenRecord) {
+    if (!echoRefreshTokenRecord) {
       return NextResponse.json(
         {
           error: 'invalid_grant',
@@ -54,10 +56,10 @@ export async function POST(req: NextRequest) {
     }
 
     /* 2️⃣ Check if refresh token is expired */
-    if (refreshTokenRecord.expiresAt < new Date()) {
+    if (echoRefreshTokenRecord.expiresAt < new Date()) {
       // Deactivate expired token
       await db.refreshToken.update({
-        where: { id: refreshTokenRecord.id },
+        where: { id: echoRefreshTokenRecord.id },
         data: { isActive: false },
       });
 
@@ -71,7 +73,7 @@ export async function POST(req: NextRequest) {
     }
 
     /* 3️⃣ Check if echo app is still active */
-    if (!refreshTokenRecord.echoApp.isActive) {
+    if (!echoRefreshTokenRecord.echoApp.isActive) {
       return NextResponse.json(
         {
           error: 'invalid_grant',
@@ -81,87 +83,57 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* 4️⃣ Generate new API key (rotate the access token) */
-    const newKeyValue = `echo_${nanoid(40)}`;
-    const keyHash = hashApiKey(newKeyValue);
-
-    // Deactivate old API key
-    await db.apiKey.update({
-      where: { id: refreshTokenRecord.apiKeyId },
-      data: { isActive: false },
-    });
-
-    // Create new API key
-    const newApiKey = await db.apiKey.create({
-      data: {
-        keyHash,
-        name: 'OAuth Generated (Refreshed)',
-        userId: refreshTokenRecord.userId,
-        echoAppId: refreshTokenRecord.echoAppId,
-        isActive: true,
-        metadata: {
-          createdVia: 'oauth_refresh',
-          scope: refreshTokenRecord.scope,
-          refreshedAt: new Date().toISOString(),
-          previousApiKeyId: refreshTokenRecord.apiKeyId,
-        },
-      },
-    });
-
     /* 5️⃣ Generate new refresh token */
-    const newRefreshTokenValue = `refresh_${nanoid(48)}`;
-    const newRefreshTokenExpiry = new Date();
-    newRefreshTokenExpiry.setDate(newRefreshTokenExpiry.getDate() + 30); // 30 days
+    const newEchoRefreshTokenValue = `refresh_${nanoid(48)}`;
+    const newEchoRefreshTokenExpiry = createEchoRefreshTokenExpiry();
 
     // Deactivate old refresh token
     await db.refreshToken.update({
-      where: { id: refreshTokenRecord.id },
+      where: { id: echoRefreshTokenRecord.id },
       data: { isActive: false },
     });
 
     // Create new refresh token
-    const newRefreshToken = await db.refreshToken.create({
+    const newEchoRefreshToken = await db.refreshToken.create({
       data: {
-        token: newRefreshTokenValue,
-        expiresAt: newRefreshTokenExpiry,
-        userId: refreshTokenRecord.userId,
-        echoAppId: refreshTokenRecord.echoAppId,
-        apiKeyId: newApiKey.id,
-        scope: refreshTokenRecord.scope,
+        token: newEchoRefreshTokenValue,
+        expiresAt: newEchoRefreshTokenExpiry,
+        userId: echoRefreshTokenRecord.userId,
+        echoAppId: echoRefreshTokenRecord.echoAppId,
+        scope: echoRefreshTokenRecord.scope,
         isActive: true,
       },
     });
 
+    const newEchoAccessTokenExpiry = createEchoAccessTokenExpiry();
+
     /* 6️⃣ Generate new JWT access token */
-    const jwtToken = await createApiToken({
-      userId: refreshTokenRecord.userId,
-      appId: refreshTokenRecord.echoAppId,
-      apiKeyId: newApiKey.id,
-      scope: refreshTokenRecord.scope,
+    const echoAccessTokenJwtToken = await createEchoAccessJwtToken({
+      userId: newEchoRefreshToken.userId,
+      appId: newEchoRefreshToken.echoAppId,
+      scope: echoRefreshTokenRecord.scope,
       keyVersion: 1,
+      expiry: newEchoAccessTokenExpiry,
     });
 
     /* 7️⃣ Return new JWT token */
     return NextResponse.json({
-      access_token: jwtToken, // JWT instead of raw API key
+      access_token: echoAccessTokenJwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
-      expires_in: 24 * 60 * 60, // JWT expires in 24 hours
-      refresh_token: newRefreshToken.token,
-      refresh_token_expires_in: 30 * 24 * 60 * 60, // 30 days in seconds
-      scope: refreshTokenRecord.scope,
+      expires_in: newEchoAccessTokenExpiry.getTime() - Date.now(),
+      refresh_token: newEchoRefreshToken.token,
+      refresh_token_expires_in:
+        newEchoRefreshTokenExpiry.getTime() - Date.now(),
+      scope: echoRefreshTokenRecord.scope,
       user: {
-        id: refreshTokenRecord.user.id,
-        email: refreshTokenRecord.user.email,
-        name: refreshTokenRecord.user.name,
+        id: echoRefreshTokenRecord.user.id,
+        email: echoRefreshTokenRecord.user.email,
+        name: echoRefreshTokenRecord.user.name,
       },
       echo_app: {
-        id: refreshTokenRecord.echoApp.id,
-        name: refreshTokenRecord.echoApp.name,
-        description: refreshTokenRecord.echoApp.description,
-      },
-      _internal: {
-        api_key_id: newApiKey.id,
-        // Note: Original key is not stored in plaintext for security
+        id: echoRefreshTokenRecord.echoApp.id,
+        name: echoRefreshTokenRecord.echoApp.name,
+        description: echoRefreshTokenRecord.echoApp.description,
       },
     });
   } catch (error) {

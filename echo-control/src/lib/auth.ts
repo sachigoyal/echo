@@ -1,9 +1,16 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from './db';
+import { User, EchoApp } from '@/generated/prisma';
 import { NextRequest } from 'next/server';
 import { hashApiKey } from './crypto';
+import { authenticateEchoAccessJwtToken } from './jwt-tokens';
 
-export async function getCurrentUser() {
+/**
+ * Get the current user from Clerk
+ * Should be used for endpoints coming from the merit-hosted echo client
+ * @returns The current user
+ */
+export async function getCurrentUser(): Promise<User> {
   const { userId } = await auth();
 
   if (!userId) {
@@ -40,52 +47,101 @@ export async function getCurrentUser() {
   return user;
 }
 
-export async function getCurrentUserByApiKey(request: NextRequest) {
+/**
+ * Get the current user from an Echo API key or Echo Access JWT
+ * Should be used for API requests on the /v1 endpoint
+ * @param request - The request object
+ * @returns The current user, apiKey, and echoApp
+ */
+export async function getCurrentUserByApiKeyOrEchoJwt(
+  request: NextRequest
+): Promise<{
+  user: User;
+  echoApp: EchoApp;
+}> {
   const authHeader = request.headers.get('authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new Error('Invalid authorization header');
   }
 
-  const apiKey = authHeader.substring(7); // Remove 'Bearer ' prefix
+  const token = authHeader.startsWith('Bearer ')
+    ? authHeader.substring(7)
+    : authHeader; // Remove 'Bearer ' prefix
 
-  // Hash the provided API key for direct O(1) lookup
-  const keyHash = hashApiKey(apiKey);
+  // Check if token is a JWT (has 3 parts separated by dots)
+  const isJWT = token.split('.').length === 3;
 
-  // Direct lookup by keyHash - O(1) operation!
-  const apiKeyRecord = await db.apiKey.findUnique({
-    where: {
-      keyHash,
-    },
-    include: {
-      user: true,
-      echoApp: true,
-    },
-  });
+  if (isJWT) {
+    const { userId, appId } = await authenticateEchoAccessJwtToken(token);
 
-  // Verify the API key is valid and all related entities are active
-  if (
-    !apiKeyRecord ||
-    !apiKeyRecord.isActive ||
-    apiKeyRecord.isArchived ||
-    apiKeyRecord.user.isArchived ||
-    apiKeyRecord.echoApp.isArchived ||
-    !apiKeyRecord.echoApp.isActive
-  ) {
-    throw new Error('Invalid or inactive API key');
+    const user = await db.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    const app = await db.echoApp.findUnique({
+      where: {
+        id: appId,
+      },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (!app) {
+      throw new Error('App not found');
+    }
+
+    return {
+      user,
+      echoApp: app,
+    };
+  } else {
+    // Handle traditional API key (existing logic)
+    // Hash the provided API key for direct O(1) lookup
+    const keyHash = hashApiKey(token);
+
+    /// This is a DOS vector, but we're not going to fix it now
+    // Direct lookup by keyHash - O(1) operation!
+    const apiKeyRecord = await db.apiKey.findUnique({
+      where: {
+        keyHash,
+      },
+      include: {
+        user: true,
+        echoApp: true,
+      },
+    });
+
+    // Verify the API key is valid and all related entities are active
+    if (
+      !apiKeyRecord ||
+      !apiKeyRecord.isActive ||
+      apiKeyRecord.isArchived ||
+      apiKeyRecord.user.isArchived ||
+      apiKeyRecord.echoApp.isArchived ||
+      !apiKeyRecord.echoApp.isActive
+    ) {
+      throw new Error('Invalid or inactive API key');
+    }
+
+    // Update last used timestamp and metadata
+    await updateApiKeyUsage(apiKeyRecord.id, request);
+
+    return {
+      user: apiKeyRecord.user,
+      echoApp: apiKeyRecord.echoApp,
+    };
   }
-
-  // Update last used timestamp and metadata
-  await updateApiKeyUsage(apiKeyRecord.id, request);
-
-  return {
-    user: apiKeyRecord.user,
-    apiKey: apiKeyRecord,
-    echoApp: apiKeyRecord.echoApp,
-  };
 }
 
-async function updateApiKeyUsage(apiKeyId: string, request: NextRequest) {
+export async function updateApiKeyUsage(
+  apiKeyId: string,
+  request: NextRequest
+) {
   try {
     const metadata = {
       lastIp:
@@ -109,108 +165,18 @@ async function updateApiKeyUsage(apiKeyId: string, request: NextRequest) {
   }
 }
 
-// Helper function to validate API keys from external services (like echo-server)
-export async function validateApiKey(apiKey: string): Promise<{
-  userId: string;
-  echoAppId: string;
-  user: { id: string; email: string; name: string | null; clerkId: string };
-  echoApp: {
-    id: string;
-    name: string;
-    description?: string | null;
-    isActive: boolean;
-  };
-} | null> {
-  try {
-    // Remove Bearer prefix if present
-    const cleanApiKey = apiKey.replace('Bearer ', '');
-
-    // Hash the provided API key for direct O(1) lookup
-    const keyHash = hashApiKey(cleanApiKey);
-
-    // Direct lookup by keyHash - O(1) operation!
-    const apiKeyRecord = await db.apiKey.findUnique({
-      where: {
-        keyHash,
-      },
-      include: {
-        user: true,
-        echoApp: true,
-      },
-    });
-
-    // Verify the API key is valid and all related entities are active
-    if (
-      !apiKeyRecord ||
-      !apiKeyRecord.isActive ||
-      apiKeyRecord.isArchived ||
-      apiKeyRecord.user.isArchived ||
-      apiKeyRecord.echoApp.isArchived ||
-      !apiKeyRecord.echoApp.isActive
-    ) {
-      return null;
-    }
-
-    return {
-      userId: apiKeyRecord.userId,
-      echoAppId: apiKeyRecord.echoAppId,
-      user: apiKeyRecord.user,
-      echoApp: apiKeyRecord.echoApp,
-    };
-  } catch (error) {
-    console.error('Error validating API key:', error);
-    return null;
-  }
-}
-
-export async function requireAuth() {
-  const { userId } = await auth();
-
-  if (!userId) {
-    throw new Error('Authentication required');
-  }
-
-  return userId;
-}
-
-// Shared authentication function that supports both Clerk and API key authentication
+// Shared authentication function that supports Echo API key or Echo Access JWT authentication
 export async function getAuthenticatedUser(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    // API key authentication
-    const authResult = await getCurrentUserByApiKey(request);
+    const authResult = await getCurrentUserByApiKeyOrEchoJwt(request);
+
     return {
       user: authResult.user,
       echoApp: authResult.echoApp,
-      isApiKeyAuth: true,
-      apiKey: authResult.apiKey,
-    };
-  } else {
-    // Clerk authentication
-    const user = await getCurrentUser();
-    return {
-      user,
-      echoApp: null,
-      isApiKeyAuth: false,
-      apiKey: null,
     };
   }
-}
 
-// Shared authentication function that requires API key authentication only
-export async function getAuthenticatedUserByApiKeyOnly(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Authentication required');
-  }
-
-  // API key authentication required for this endpoint
-  const authResult = await getCurrentUserByApiKey(request);
-  return {
-    user: authResult.user,
-    echoApp: authResult.echoApp,
-    apiKey: authResult.apiKey,
-  };
+  throw new Error('Invalid authorization header');
 }

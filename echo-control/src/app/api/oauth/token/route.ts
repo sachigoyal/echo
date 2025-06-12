@@ -1,12 +1,15 @@
 import { db } from '@/lib/db';
-import { createApiToken } from '@/lib/jwt-tokens';
+import { createEchoAccessJwtToken } from '@/lib/jwt-tokens';
 import { createHash } from 'crypto';
 import { jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole } from '@/lib/permissions/types';
-import { hashApiKey } from '@/lib/crypto';
+import {
+  createEchoAccessTokenExpiry,
+  createEchoRefreshTokenExpiry,
+} from '@/lib/oauth-config';
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
 const JWT_SECRET = new TextEncoder().encode(
@@ -179,6 +182,7 @@ export async function POST(req: NextRequest) {
       echoApp.id
     );
     if (!userRole || userRole !== AppRole.OWNER) {
+      // TODO: Review: Should this only be scoped to OWNER?
       return NextResponse.json(
         {
           error: 'invalid_grant',
@@ -188,41 +192,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /* 7️⃣ Check for existing API key or create new one */
-    let apiKey = await db.apiKey.findFirst({
-      where: {
-        userId: user.id,
-        echoAppId: echoApp.id,
-        isActive: true,
-        name: 'OAuth Generated',
-      },
-    });
-
-    if (!apiKey) {
-      // Generate new API key
-      const keyValue = `echo_${nanoid(40)}`;
-      const keyHash = hashApiKey(keyValue);
-
-      apiKey = await db.apiKey.create({
-        data: {
-          keyHash,
-          name: 'OAuth Generated',
-          userId: user.id,
-          echoAppId: echoApp.id,
-          isActive: true,
-          metadata: {
-            createdVia: 'oauth',
-            scope: authData.scope,
-            grantedAt: new Date().toISOString(),
-          },
-        },
-      });
-    }
-
     /* 8️⃣ Generate refresh token */
-    const refreshTokenValue = `refresh_${nanoid(48)}`;
-    const refreshTokenExpiry = new Date();
-    refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 30); // 30 days
+    const echoRefreshTokenValue = `refresh_${nanoid(48)}`;
+    const echoRefreshTokenExpiry = createEchoRefreshTokenExpiry();
 
     // Deactivate any existing refresh tokens for this app
     await db.refreshToken.updateMany({
@@ -235,34 +207,36 @@ export async function POST(req: NextRequest) {
     });
 
     // Create new refresh token
-    const refreshToken = await db.refreshToken.create({
+    const newEchoRefreshToken = await db.refreshToken.create({
       data: {
-        token: refreshTokenValue,
-        expiresAt: refreshTokenExpiry,
+        token: echoRefreshTokenValue,
+        expiresAt: echoRefreshTokenExpiry,
         userId: user.id,
         echoAppId: echoApp.id,
-        apiKeyId: apiKey.id,
         scope: authData.scope,
         isActive: true,
       },
     });
 
+    const newEchoAccessTokenExpiry = createEchoAccessTokenExpiry();
+
     /* 9️⃣ Generate JWT access token for fast validation */
-    const jwtToken = await createApiToken({
+    const echoAccessTokenJwtToken = await createEchoAccessJwtToken({
       userId: user.id,
       appId: echoApp.id,
-      apiKeyId: apiKey.id,
       scope: authData.scope,
       keyVersion: 1, // Can be incremented to invalidate old tokens
+      expiry: newEchoAccessTokenExpiry,
     });
 
     /* 🔟 Return the JWT access token response with refresh token */
     const response = NextResponse.json({
-      access_token: jwtToken, // JWT instead of raw API key
+      access_token: echoAccessTokenJwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
-      expires_in: 24 * 60 * 60, // JWT expires in 24 hours
-      refresh_token: refreshToken.token,
-      refresh_token_expires_in: 30 * 24 * 60 * 60, // 30 days in seconds
+      expires_in: newEchoAccessTokenExpiry.getTime() - Date.now(),
+      refresh_token: newEchoRefreshToken.token,
+      refresh_token_expires_in:
+        newEchoRefreshToken.expiresAt.getTime() - Date.now(),
       scope: authData.scope,
       user: {
         id: user.id,
@@ -273,11 +247,6 @@ export async function POST(req: NextRequest) {
         id: echoApp.id,
         name: echoApp.name,
         description: echoApp.description,
-      },
-      // Include API key info for admin purposes (optional)
-      _internal: {
-        api_key_id: apiKey.id,
-        // Note: Original key is not stored in plaintext for security
       },
     });
 

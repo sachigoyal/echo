@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { getBalance } from '@/lib/balance';
+import { User } from '@/generated/prisma';
 
-// GET /api/balance - Get authenticated user balance (optionally for a specific app)
+// GET /api/v1/balance - Get authenticated user balance (optionally for a specific app)
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    let user: User;
+    try {
+      const { user: userResult } = await getAuthenticatedUser(request);
+      user = userResult;
+    } catch (error) {
+      console.error('Error fetching balance:', error);
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const echoAppId = searchParams.get('echoAppId');
 
