@@ -1,7 +1,5 @@
-import { ApiKey, EchoApp, User } from '@/generated/prisma';
 import { SignJWT, jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
-import { db } from './db';
 
 // JWT secret for API tokens (different from OAuth codes)
 const API_JWT_SECRET = new TextEncoder().encode(
@@ -13,7 +11,6 @@ export interface ApiTokenPayload {
   app_id: string;
   scope: string;
   key_version: number;
-  api_key_id: string;
   // Standard JWT claims
   sub: string; // user_id
   aud: string; // app_id
@@ -58,6 +55,8 @@ export async function createEchoAccessJwtToken(params: {
 
 /**
  * Verify and decode JWT API token (fast path - no DB lookup)
+ *
+ * This should not include a Bearer prefix
  */
 export async function verifyEchoAccessJwtToken(
   token: string
@@ -91,7 +90,6 @@ export function extractTokenInfo(payload: ApiTokenPayload) {
     appId: payload.app_id,
     scope: payload.scope,
     keyVersion: payload.key_version,
-    apiKeyId: payload.api_key_id,
     tokenId: payload.jti,
     issuedAt: new Date(payload.iat * 1000),
     expiresAt: new Date(payload.exp * 1000),
@@ -109,43 +107,12 @@ export function shouldRefreshEchoAccessJwtToken(
   return timeUntilExpiry < 2 * 60 * 60; // 2 hours
 }
 
-/**
- * Fast validation for Echo Server (hot path)
- */
-export async function validateEchoAccessJwtTokenFast(
-  authHeader: string
-): Promise<{
-  valid: boolean;
-  userId?: string;
-  appId?: string;
-  scope?: string;
-  error?: string;
-}> {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return { valid: false, error: 'Invalid authorization header' };
-  }
-
-  const token = authHeader.substring(7);
-  const payload = await verifyEchoAccessJwtToken(token);
-
-  if (!payload) {
-    return { valid: false, error: 'Invalid or expired token' };
-  }
-
-  return {
-    valid: true,
-    userId: payload.user_id,
-    appId: payload.app_id,
-    scope: payload.scope,
-  };
-}
-
 export async function authenticateEchoAccessJwtToken(
   jwtToken: string
 ): Promise<{
-  user: User;
-  apiKey: ApiKey;
-  echoApp: EchoApp;
+  userId: string;
+  appId: string;
+  scope: string;
 }> {
   const jwtPayload = await verifyEchoAccessJwtToken(jwtToken);
 
@@ -159,44 +126,9 @@ export async function authenticateEchoAccessJwtToken(
     throw new Error('JWT token has expired');
   }
 
-  // Get user from database using the JWT payload
-  const user = await db.user.findUnique({
-    where: { id: jwtPayload.user_id },
-  });
-
-  if (!user || user.isArchived) {
-    throw new Error('User not found or archived');
-  }
-
-  // Get echo app from database
-  const echoApp = await db.echoApp.findUnique({
-    where: { id: jwtPayload.app_id },
-  });
-
-  if (!echoApp || echoApp.isArchived || !echoApp.isActive) {
-    throw new Error('Echo app not found, archived, or inactive');
-  }
-
-  // Find API key by api_key_id
-  const apiKey = await db.apiKey.findUnique({
-    where: { id: jwtPayload.api_key_id },
-  });
-
-  if (!apiKey || !apiKey.isActive || apiKey.isArchived) {
-    throw new Error('API key not found, inactive, or archived');
-  }
-
-  // Verify the API key belongs to the correct user and app from JWT
-  if (
-    apiKey.userId !== jwtPayload.user_id ||
-    apiKey.echoAppId !== jwtPayload.app_id
-  ) {
-    throw new Error('API key does not match JWT user/app');
-  }
-
   return {
-    user,
-    apiKey,
-    echoApp,
+    userId: jwtPayload.user_id,
+    appId: jwtPayload.app_id,
+    scope: jwtPayload.scope,
   };
 }

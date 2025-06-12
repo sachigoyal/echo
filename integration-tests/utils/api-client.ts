@@ -1,4 +1,5 @@
 import { TEST_CONFIG } from '../config/index.js';
+import { Balance, EchoClient } from '@zdql/echo-typescript-sdk';
 
 export interface EchoControlApiClient {
   baseUrl: string;
@@ -180,25 +181,12 @@ export class EchoControlApiClient {
   }
 
   // Balance endpoint (requires authentication)
-  async getBalance(authToken: string): Promise<{
-    credits: number;
-  }> {
-    return this.request('/api/balance', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
+  async getBalance(authToken: string): Promise<Balance> {
+    const echoClient = new EchoClient({
+      apiKey: authToken,
+      baseUrl: this.baseUrl,
     });
-  }
-
-  // Echo Apps endpoint
-  async getEchoApps(authToken: string): Promise<any[]> {
-    return this.request('/api/echo-apps', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
+    return await echoClient.getBalance();
   }
 
   // Payment endpoint
@@ -206,20 +194,22 @@ export class EchoControlApiClient {
     authToken: string,
     params: {
       amount: number;
-      currency?: string;
       description?: string;
     }
   ): Promise<{
     payment_url: string;
     payment_id: string;
   }> {
-    return this.request('/api/stripe/payment-link', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-      body: JSON.stringify(params),
+    const echoClient = new EchoClient({ apiKey: authToken });
+    const response = await echoClient.createPaymentLink({
+      amount: params.amount,
+      description: params.description ?? '',
     });
+
+    return {
+      payment_url: response.paymentLink.url,
+      payment_id: response.paymentLink.id,
+    };
   }
 }
 

@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/oauth/authorize(.*)', // OAuth authorize endpoint - handles its own auth
   '/api/oauth/token(.*)', // OAuth token endpoint - handles its own auth
   '/api/oauth/refresh(.*)', // OAuth refresh endpoint - handles its own auth
+  '/api/health(.*)', // Health check endpoint - no auth needed
 ]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {

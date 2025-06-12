@@ -76,8 +76,13 @@ if [ "$IS_CI" != "true" ]; then
         exit 1
     fi
     
-    # Start services
-    docker-compose -f docker/docker-compose.yml up -d
+    # Clean up existing containers and volumes
+    echo "🧹 Cleaning up existing containers and volumes..."
+    docker-compose -f docker/docker-compose.yml down -v
+    
+    # Start services with rebuild
+    echo "🏗️  Rebuilding and starting services..."
+    docker-compose -f docker/docker-compose.yml up -d --build
     
     # Wait for services to be healthy
     echo "⏳ Waiting for services to be ready..."

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getDetailedAppInfo } from '@/lib/echo-apps';
+import { EchoApp, User } from '@/generated/prisma';
 
 // GET /api/v1/apps/[id] - Get detailed app information
 export async function GET(
@@ -8,14 +9,24 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, echoApp, isApiKeyAuth } = await getAuthenticatedUser(request);
+    let user: User;
+    let echoApp: EchoApp;
+    try {
+      const { user: userResult, echoApp: echoAppResult } =
+        await getAuthenticatedUser(request);
+      user = userResult;
+      echoApp = echoAppResult;
+    } catch (error) {
+      console.error('Error fetching echo app:', error);
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const resolvedParams = await params;
     const { id: appId } = resolvedParams;
 
-    // If using API key auth, ensure they can only access their scoped app
-    if (isApiKeyAuth && echoApp && echoApp.id !== appId) {
+    if (echoApp && echoApp.id !== appId) {
       return NextResponse.json(
-        { error: 'Access denied: API key not scoped to this app' },
+        { error: 'Access denied: App not found' },
         { status: 403 }
       );
     }

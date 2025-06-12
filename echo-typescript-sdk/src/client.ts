@@ -34,7 +34,7 @@ export class EchoClient {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           throw new Error(
-            'Invalid or expired API key. Please run "echo-cli login" to authenticate.'
+            'Unauthorized. Invalid or expired API key. Please run "echo-cli login" to authenticate.'
           );
         }
         throw error;

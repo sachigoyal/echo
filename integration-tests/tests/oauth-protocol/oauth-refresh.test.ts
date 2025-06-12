@@ -397,7 +397,7 @@ describe('OAuth Refresh Token Tests', () => {
 
       expect(tokenResponse.refresh_token).toBeTruthy();
       console.log(
-        `Got refresh token that expires in ${tokenResponse.refresh_token_expires_in} seconds`
+        `Got refresh token that expires in ${tokenResponse.refresh_token_expires_in} ms`
       );
 
       console.log('The token response is', tokenResponse);
@@ -513,202 +513,210 @@ describe('OAuth Refresh Token Tests', () => {
     });
   });
 
-  // describe('Expired Access Token Fails to Authenticate', () => {
-  //   test('fails to authenticate with expired access token', async () => {
-  //     // Step 1: Get a real authorization code through OAuth flow
-  //     const { generateCodeVerifier, generateCodeChallenge, generateState } =
-  //       await import('../../utils/auth-helpers.js');
+  describe('Expired Access Token Fails to Authenticate', () => {
+    test('fails to authenticate with expired access token', async () => {
+      // Step 1: Get a real authorization code through OAuth flow
+      const { generateCodeVerifier, generateCodeChallenge, generateState } =
+        await import('../../utils/auth-helpers.js');
 
-  //     const codeVerifier = generateCodeVerifier();
-  //     const codeChallenge = generateCodeChallenge(codeVerifier);
-  //     const state = generateState();
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = generateCodeChallenge(codeVerifier);
+      const state = generateState();
 
-  //     console.log(
-  //       'Getting authorization code for refresh token expiry test...'
-  //     );
+      console.log(
+        'Getting authorization code for refresh token expiry test...'
+      );
 
-  //     const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
-  //       client_id: TEST_CLIENT_IDS.primary,
-  //       redirect_uri: 'http://localhost:3000/callback',
-  //       state,
-  //       code_challenge: codeChallenge,
-  //       code_challenge_method: 'S256',
-  //       scope: 'llm:invoke offline_access',
-  //       prompt: 'none', // Skip consent page for automated testing
-  //     });
+      const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        scope: 'llm:invoke offline_access',
+        prompt: 'none', // Skip consent page for automated testing
+      });
 
-  //     // Extract authorization code from callback URL
-  //     const callbackUrl = new URL(redirectUrl);
-  //     const authCode = callbackUrl.searchParams.get('code');
-  //     expect(authCode).toBeTruthy();
+      // Extract authorization code from callback URL
+      const callbackUrl = new URL(redirectUrl);
+      const authCode = callbackUrl.searchParams.get('code');
+      expect(authCode).toBeTruthy();
 
-  //     // Step 2: Exchange authorization code for tokens (including refresh token)
-  //     console.log('Exchanging auth code for tokens with short expiry...');
+      // Step 2: Exchange authorization code for tokens (including refresh token)
+      console.log('Exchanging auth code for tokens with short expiry...');
 
-  //     const tokenResponse = await echoControlApi.exchangeCodeForToken({
-  //       code: authCode!,
-  //       client_id: TEST_CLIENT_IDS.primary,
-  //       redirect_uri: 'http://localhost:3000/callback',
-  //       code_verifier: codeVerifier,
-  //     });
+      const tokenResponse = await echoControlApi.exchangeCodeForToken({
+        code: authCode!,
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        code_verifier: codeVerifier,
+      });
 
-  //     // token expiry is in the token response
-  //     console.log(
-  //       `Access token expires in ${tokenResponse.expires_in / 1000} seconds`
-  //     );
+      // token expiry is in the token response
+      console.log(
+        `Access token expires in ${tokenResponse.expires_in / 1000} seconds`
+      );
 
-  //     // wait for the access token to expire
-  //     const waitTime = tokenResponse.expires_in + 1000; // Add 1000ms buffer
-  //     console.log(`Waiting ${waitTime}ms for access token to expire...`);
-  //     await new Promise(resolve => setTimeout(resolve, waitTime));
+      // wait for the access token to expire
+      const waitTime = tokenResponse.expires_in + 1000; // Add 1000ms buffer
+      console.log(`Waiting ${waitTime}ms for access token to expire...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
 
-  //     // Step 3: Try to use the access token - should fail
-  //     console.log('Attempting to use expired access token...');
-  //     await expect(
-  //       echoControlApi.getBalance(tokenResponse.access_token!)
-  //     ).rejects.toThrow(/401|Unauthorized/i);
+      // Step 3: Try to use the access token - should fail
+      console.log('Attempting to use expired access token...');
+      await expect(
+        echoControlApi.getBalance(tokenResponse.access_token!)
+      ).rejects.toThrow(/401|Unauthorized/i);
 
-  //     console.log('✅ Expired access token correctly rejected');
-  //   });
+      console.log('✅ Expired access token correctly rejected');
+    });
 
-  //   test('Succeeds Authentication with JWT token', async () => {
-  //     // Step 1: Get a real authorization code through OAuth flow
-  //     const { generateCodeVerifier, generateCodeChallenge, generateState } =
-  //       await import('../../utils/auth-helpers.js');
+    test('Succeeds Authentication with JWT token', async () => {
+      // Step 1: Get a real authorization code through OAuth flow
+      const { generateCodeVerifier, generateCodeChallenge, generateState } =
+        await import('../../utils/auth-helpers.js');
 
-  //     const codeVerifier = generateCodeVerifier();
-  //     const codeChallenge = generateCodeChallenge(codeVerifier);
-  //     const state = generateState();
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = generateCodeChallenge(codeVerifier);
+      const state = generateState();
 
-  //     console.log(
-  //       'Getting authorization code for refresh token expiry test...'
-  //     );
+      console.log(
+        'Getting authorization code for refresh token expiry test...'
+      );
 
-  //     const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
-  //       client_id: TEST_CLIENT_IDS.primary,
-  //       redirect_uri: 'http://localhost:3000/callback',
-  //       state,
-  //       code_challenge: codeChallenge,
-  //       code_challenge_method: 'S256',
-  //       scope: 'llm:invoke offline_access',
-  //       prompt: 'none', // Skip consent page for automated testing
-  //     });
+      const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        scope: 'llm:invoke offline_access',
+        prompt: 'none', // Skip consent page for automated testing
+      });
 
-  //     // Extract authorization code from callback URL
-  //     const callbackUrl = new URL(redirectUrl);
-  //     const authCode = callbackUrl.searchParams.get('code');
-  //     expect(authCode).toBeTruthy();
+      // Extract authorization code from callback URL
+      const callbackUrl = new URL(redirectUrl);
+      const authCode = callbackUrl.searchParams.get('code');
+      expect(authCode).toBeTruthy();
 
-  //     // Step 2: Exchange authorization code for tokens (including refresh token)
-  //     console.log('Exchanging auth code for tokens with short expiry...');
+      // Step 2: Exchange authorization code for tokens (including refresh token)
+      console.log('Exchanging auth code for tokens with short expiry...');
 
-  //     const tokenResponse = await echoControlApi.exchangeCodeForToken({
-  //       code: authCode!,
-  //       client_id: TEST_CLIENT_IDS.primary,
-  //       redirect_uri: 'http://localhost:3000/callback',
-  //       code_verifier: codeVerifier,
-  //     });
+      const tokenResponse = await echoControlApi.exchangeCodeForToken({
+        code: authCode!,
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        code_verifier: codeVerifier,
+      });
 
-  //     // Step 3: First test JWT validation directly
-  //     console.log('🔍 Testing JWT validation endpoint...');
-  //     try {
-  //       const jwtValidation = await echoControlApi.validateJwtToken(tokenResponse.access_token!);
-  //       console.log('✅ JWT validation result:', jwtValidation);
+      // Step 3: First test JWT validation directly
+      console.log('🔍 Testing JWT validation endpoint...');
+      try {
+        const jwtValidation = await echoControlApi.validateJwtToken(
+          tokenResponse.access_token!
+        );
+        console.log('✅ JWT validation result:', jwtValidation);
 
-  //       // Also decode the JWT to see the api_key_id
-  //       const parts = tokenResponse.access_token!.split('.');
-  //       if (parts[1]) {
-  //         const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-  //         console.log('🔍 JWT payload api_key_id:', payload.api_key_id);
-  //       }
-  //     } catch (error) {
-  //       console.error('❌ JWT validation failed:', error);
-  //     }
+        // Also decode the JWT to see the api_key_id
+        const parts = tokenResponse.access_token!.split('.');
+        if (parts[1]) {
+          const payload = JSON.parse(
+            Buffer.from(parts[1], 'base64url').toString()
+          );
+          console.log('🔍 JWT payload api_key_id:', payload.api_key_id);
+        }
+      } catch (error) {
+        console.error('❌ JWT validation failed:', error);
+      }
 
-  //     // Step 3: Use the access token to get the balance
-  //     console.log('Using access token to get the balance...');
-  //     const balance = await echoControlApi.getBalance(
-  //       tokenResponse.access_token!
-  //     );
-  //     console.log('Balance:', balance);
-  //     expect(balance).toBeTruthy();
-  //   });
+      // Step 3: Use the access token to get the balance
+      console.log('Using access token to get the balance...');
+      const balance = await echoControlApi.getBalance(
+        tokenResponse.access_token!
+      );
+      console.log('Balance:', balance);
+      expect(balance).toBeTruthy();
+    });
 
-  //   test('Succeeds Authentication with JWT token, and then fails when it expires', async () => {
-  //     // Step 1: Get a real authorization code through OAuth flow
-  //     const { generateCodeVerifier, generateCodeChallenge, generateState } =
-  //       await import('../../utils/auth-helpers.js');
+    test('Succeeds Authentication with JWT token, and then fails when it expires', async () => {
+      // Step 1: Get a real authorization code through OAuth flow
+      const { generateCodeVerifier, generateCodeChallenge, generateState } =
+        await import('../../utils/auth-helpers.js');
 
-  //     const codeVerifier = generateCodeVerifier();
-  //     const codeChallenge = generateCodeChallenge(codeVerifier);
-  //     const state = generateState();
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = generateCodeChallenge(codeVerifier);
+      const state = generateState();
 
-  //     console.log(
-  //       'Getting authorization code for refresh token expiry test...'
-  //     );
+      console.log(
+        'Getting authorization code for refresh token expiry test...'
+      );
 
-  //     const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
-  //       client_id: TEST_CLIENT_IDS.primary,
-  //       redirect_uri: 'http://localhost:3000/callback',
-  //       state,
-  //       code_challenge: codeChallenge,
-  //       code_challenge_method: 'S256',
-  //       scope: 'llm:invoke offline_access',
-  //       prompt: 'none', // Skip consent page for automated testing
-  //     });
+      const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        scope: 'llm:invoke offline_access',
+        prompt: 'none', // Skip consent page for automated testing
+      });
 
-  //     // Extract authorization code from callback URL
-  //     const callbackUrl = new URL(redirectUrl);
-  //     const authCode = callbackUrl.searchParams.get('code');
-  //     expect(authCode).toBeTruthy();
+      // Extract authorization code from callback URL
+      const callbackUrl = new URL(redirectUrl);
+      const authCode = callbackUrl.searchParams.get('code');
+      expect(authCode).toBeTruthy();
 
-  //     // Step 2: Exchange authorization code for tokens (including refresh token)
-  //     console.log('Exchanging auth code for tokens with short expiry...');
+      // Step 2: Exchange authorization code for tokens (including refresh token)
+      console.log('Exchanging auth code for tokens with short expiry...');
 
-  //     const tokenResponse = await echoControlApi.exchangeCodeForToken({
-  //       code: authCode!,
-  //       client_id: TEST_CLIENT_IDS.primary,
-  //       redirect_uri: 'http://localhost:3000/callback',
-  //       code_verifier: codeVerifier,
-  //     });
+      const tokenResponse = await echoControlApi.exchangeCodeForToken({
+        code: authCode!,
+        client_id: TEST_CLIENT_IDS.primary,
+        redirect_uri: 'http://localhost:3000/callback',
+        code_verifier: codeVerifier,
+      });
 
-  //     // Step 3: First test JWT validation directly
-  //     console.log('🔍 Testing JWT validation endpoint...');
-  //     try {
-  //       const jwtValidation = await echoControlApi.validateJwtToken(tokenResponse.access_token!);
-  //       console.log('✅ JWT validation result:', jwtValidation);
+      // Step 3: First test JWT validation directly
+      console.log('🔍 Testing JWT validation endpoint...');
+      try {
+        const jwtValidation = await echoControlApi.validateJwtToken(
+          tokenResponse.access_token!
+        );
+        console.log('✅ JWT validation result:', jwtValidation);
 
-  //       // Also decode the JWT to see the api_key_id
-  //       const parts = tokenResponse.access_token!.split('.');
-  //       if (parts[1]) {
-  //         const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-  //         console.log('🔍 JWT payload api_key_id:', payload.api_key_id);
-  //       }
-  //     } catch (error) {
-  //       console.error('❌ JWT validation failed:', error);
-  //     }
+        // Also decode the JWT to see the api_key_id
+        const parts = tokenResponse.access_token!.split('.');
+        if (parts[1]) {
+          const payload = JSON.parse(
+            Buffer.from(parts[1], 'base64url').toString()
+          );
+          console.log('🔍 JWT payload api_key_id:', payload.api_key_id);
+        }
+      } catch (error) {
+        console.error('❌ JWT validation failed:', error);
+      }
 
-  //     // Step 3: Use the access token to get the balance
-  //     console.log('Using access token to get the balance...');
-  //     const balance = await echoControlApi.getBalance(
-  //       tokenResponse.access_token!
-  //     );
-  //     console.log('Balance:', balance);
-  //     expect(balance).toBeTruthy();
+      // Step 3: Use the access token to get the balance
+      console.log('Using access token to get the balance...');
+      const balance = await echoControlApi.getBalance(
+        tokenResponse.access_token!
+      );
+      console.log('Balance:', balance);
+      expect(balance).toBeTruthy();
 
-  //     // Step 4: Wait for the access token to expire
-  //     const waitTime = tokenResponse.expires_in + 1000; // Add 1000ms buffer
-  //     console.log(`Waiting ${waitTime}ms for access token to expire...`);
-  //     await new Promise(resolve => setTimeout(resolve, waitTime));
+      // Step 4: Wait for the access token to expire
+      const waitTime = tokenResponse.expires_in + 1000; // Add 1000ms buffer
+      console.log(`Waiting ${waitTime}ms for access token to expire...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
 
-  //     // Step 5: Try to use the access token - should fail
-  //     console.log('Attempting to use expired access token...');
+      // Step 5: Try to use the access token - should fail
+      console.log('Attempting to use expired access token...');
 
-  //     await expect(
-  //       echoControlApi.getBalance(tokenResponse.access_token!)
-  //     ).rejects.toThrow(/401|Unauthorized/i);
+      await expect(
+        echoControlApi.getBalance(tokenResponse.access_token!)
+      ).rejects.toThrow(/401|Unauthorized/i);
 
-  //     console.log('✅ Expired access token correctly rejected');
-  //   });
-  // });
+      console.log('✅ Expired access token correctly rejected');
+    });
+  });
 });
