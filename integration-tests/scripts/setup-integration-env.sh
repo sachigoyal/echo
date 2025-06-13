@@ -45,6 +45,7 @@ fi
 required_vars=(
     "DATABASE_URL"
     "ECHO_CONTROL_URL"
+    "ECHO_DATA_SERVER_URL"
     "JWT_SECRET"
     "CLERK_PUBLISHABLE_KEY"
     "INTEGRATION_TEST_JWT"
@@ -100,10 +101,14 @@ if [ "$IS_CI" != "true" ]; then
             break
         fi
         
-        # Check if all services (including echo-control) are healthy
-        if docker-compose -f docker/docker-compose.yml ps | grep -q "healthy" && \
-           curl -f "$ECHO_CONTROL_URL/api/health" >/dev/null 2>&1; then
-            echo "✅ Services are healthy"
+        # Check if all services are healthy
+        echo_control_healthy=$(curl -f "$ECHO_CONTROL_URL/api/health" >/dev/null 2>&1 && echo "true" || echo "false")
+        echo_data_server_healthy=$(curl -f "$ECHO_DATA_SERVER_URL/health" >/dev/null 2>&1 && echo "true" || echo "false")
+        
+        if [ "$echo_control_healthy" = "true" ] && [ "$echo_data_server_healthy" = "true" ]; then
+            echo "✅ All services are healthy"
+            echo "  📊 Echo Control: $ECHO_CONTROL_URL ✅"
+            echo "  🗃️  Echo Data Server: $ECHO_DATA_SERVER_URL ✅"
             
             # Seed the database
             echo "🌱 Seeding integration test database..."
@@ -113,6 +118,8 @@ if [ "$IS_CI" != "true" ]; then
         fi
         
         echo "⏳ Still waiting for services... (${elapsed}s elapsed)"
+        echo "  📊 Echo Control status: $echo_control_healthy"
+        echo "  🗃️  Echo Data Server status: $echo_data_server_healthy"
         sleep 5
     done
     
@@ -122,6 +129,8 @@ if [ "$IS_CI" != "true" ]; then
         docker-compose -f docker/docker-compose.yml ps
         echo "📋 Logs from echo-control-test:"
         docker-compose -f docker/docker-compose.yml logs echo-control-test
+        echo "📋 Logs from echo-data-server-test:"
+        docker-compose -f docker/docker-compose.yml logs echo-data-server-test
         exit 1
     }
     
@@ -178,6 +187,39 @@ else
     }
     
     echo "✅ echo-control is healthy at http://localhost:3001"
+    
+    # Start echo-data-server in CI
+    echo "🚀 Starting echo-data-server test server..."
+    cd ../echo-server
+    
+    # Build echo-data-server
+    pnpm build
+    
+    # Start echo-data-server in background
+    ECHO_CONTROL_URL="http://localhost:3001" NODE_ENV=test PORT=3069 pnpm start &
+    ECHO_DATA_SERVER_PID=$!
+    
+    # Wait for echo-data-server health check
+    start_time=$(date +%s)
+    while ! curl -f "$ECHO_DATA_SERVER_URL/health" >/dev/null 2>&1; do
+        current_time=$(date +%s)
+        elapsed=$((current_time - start_time))
+        if [ $elapsed -ge 60 ]; then
+            echo "❌ echo-data-server failed to start within 60 seconds"
+            kill $ECHO_CONTROL_PID 2>/dev/null || true
+            kill $ECHO_DATA_SERVER_PID 2>/dev/null || true
+            exit 1
+        fi
+        echo "⏳ Waiting for echo-data-server health check... (${elapsed}s elapsed)"
+        sleep 2
+    done || {
+        echo "❌ echo-data-server failed to start within 60 seconds"
+        kill $ECHO_CONTROL_PID 2>/dev/null || true
+        kill $ECHO_DATA_SERVER_PID 2>/dev/null || true
+        exit 1
+    }
+    
+    echo "✅ echo-data-server is healthy at $ECHO_DATA_SERVER_URL"
     cd ../integration-tests
 fi
 
@@ -186,6 +228,7 @@ echo "🎉 Integration environment ready!"
 echo ""
 echo "🌐 Services:"
 echo "  📊 Echo Control: $ECHO_CONTROL_URL"
+echo "  🗃️  Echo Data Server: $ECHO_DATA_SERVER_URL"
 echo "  🗄️  Database: ${DATABASE_URL#*@}"
 echo ""
 echo "🧪 Available test commands:"

@@ -156,13 +156,4 @@ describe('OAuth End-to-End Flow Tests', () => {
       expect(validationResult.scope).toBe('llm:invoke offline_access');
     });
   });
-
-  describe('Step 5: Check Access Token Authentication Against Echo Data', () => {
-    test('validates access token can authenticate against Echo Data server', async () => {
-      const accessToken = globalThis.testAccessToken;
-      expect(accessToken).toBeTruthy();
-
-      console.log('Validating access token with Echo Data...');
-    });
-  });
 });

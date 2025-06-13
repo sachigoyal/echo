@@ -5,7 +5,7 @@ import { CreditCard, DollarSign, Zap, TrendingUp } from 'lucide-react';
 
 interface UserBalance {
   balance: number;
-  totalCredits: number;
+  totalPaid: number;
   totalSpent: number;
   currency: string;
 }
@@ -123,7 +123,7 @@ export default function UserPaymentCard() {
                   Total Credits
                 </div>
                 <div className="font-semibold text-emerald-600">
-                  +${balance.totalCredits.toFixed(2)}
+                  +${balance.totalPaid.toFixed(2)}
                 </div>
               </div>
               <div>

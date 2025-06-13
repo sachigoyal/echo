@@ -53,7 +53,7 @@ describe('EchoClient', () => {
   describe('Authentication', () => {
     it('should include Authorization header in requests', async () => {
       mockAxiosInstance.get.mockResolvedValue({
-        data: { totalCredits: 100, totalSpent: 0, balance: 100 },
+        data: { totalPaid: 100, totalSpent: 0, balance: 100 },
       });
 
       await client.getBalance();
@@ -74,7 +74,7 @@ describe('EchoClient', () => {
     it('should fetch total balance across all apps successfully', async () => {
       const mockBalance = {
         balance: 75.5,
-        totalCredits: 100.0,
+        totalPaid: 100.0,
         totalSpent: 24.5,
       };
 

@@ -136,7 +136,7 @@ Get the web URL for accessing an Echo app.
 ```typescript
 interface Balance {
   balance: string;
-  totalCredits: string;
+  totalPaid: string;
   totalSpent: string;
   currency: string;
   echoAppId?: string | null;

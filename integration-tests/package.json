@@ -6,6 +6,7 @@
   "scripts": {
     "test": "vitest run tests/",
     "test:watch": "vitest tests/",
+    "test:echo-data-server": "vitest run tests/echo-data-server/",
     "test:oauth-protocol": "vitest run tests/oauth-protocol/",
     "test:oauth-refresh-expiry": "vitest run tests/oauth-protocol/oauth-refresh.test.ts",
     "test:react-sdk": "vitest run tests/react-sdk/",
