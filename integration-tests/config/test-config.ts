@@ -76,6 +76,9 @@ export const TEST_CONFIG = {
     echoControl: process.env.ECHO_CONTROL_URL!,
     // Docker internal URL (used in docker-compose environment overrides)
     echoControlInternal: 'http://echo-control-test:3000',
+    // Echo data server URLs
+    echoDataServer: process.env.ECHO_DATA_SERVER_URL || 'http://localhost:3069',
+    echoDataServerInternal: 'http://echo-data-server-test:3069',
   },
 
   // Authentication configuration

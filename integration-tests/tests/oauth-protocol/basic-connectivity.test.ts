@@ -42,4 +42,13 @@ describe('Basic Connectivity Test', () => {
     const health = await response.json();
     expect(health).toHaveProperty('status');
   });
+  test('can reach echo-server health endpoint', async () => {
+    const response = await fetch(
+      `${TEST_CONFIG.services.echoDataServer}/health`
+    );
+    expect(response.ok).toBe(true);
+
+    const health = await response.json();
+    expect(health).toHaveProperty('status');
+  });
 });

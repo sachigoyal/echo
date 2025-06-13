@@ -40,6 +40,10 @@ else
     pkill -f "next start" || true
     pkill -f "echo-control" || true
     
+    # Kill any background echo-data-server processes
+    pkill -f "echo-server" || true
+    pkill -f "echo-data-server" || true
+    
     echo "🗃️ Cleaning up CI database..."
     cd ../echo-control
     

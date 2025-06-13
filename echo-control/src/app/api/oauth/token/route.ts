@@ -181,8 +181,10 @@ export async function POST(req: NextRequest) {
       user.id,
       echoApp.id
     );
-    if (!userRole || userRole !== AppRole.OWNER) {
-      // TODO: Review: Should this only be scoped to OWNER?
+    if (
+      !userRole ||
+      ![AppRole.OWNER, AppRole.ADMIN, AppRole.CUSTOMER].includes(userRole)
+    ) {
       return NextResponse.json(
         {
           error: 'invalid_grant',
