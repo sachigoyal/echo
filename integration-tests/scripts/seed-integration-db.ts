@@ -105,6 +105,13 @@ export async function seedIntegrationDatabase() {
       },
     });
 
+    await prisma.user.update({
+      where: { id: testUser.id },
+      data: {
+        totalPaid: TEST_DATA.payments.testPayment.amount,
+      },
+    });
+
     console.log('💳 Created test payment');
 
     // Create some test LLM transactions

@@ -200,25 +200,25 @@ export class EchoDbService {
         console.error('User not found:', userId);
         return {
           balance: 0,
-          totalCredits: 0,
+          totalPaid: 0,
           totalSpent: 0,
         };
       }
 
-      const totalCredits = Number(user.totalPaid);
+      const totalPaid = Number(user.totalPaid);
       const totalSpent = Number(user.totalSpent);
-      const balance = totalCredits - totalSpent;
+      const balance = totalPaid - totalSpent;
 
       return {
         balance,
-        totalCredits,
+        totalPaid,
         totalSpent,
       };
     } catch (error) {
       console.error('Error fetching balance:', error);
       return {
         balance: 0,
-        totalCredits: 0,
+        totalPaid: 0,
         totalSpent: 0,
       };
     }

@@ -68,7 +68,7 @@ export interface Payment {
 }
 
 export interface Balance {
-  totalCredits: number;
+  totalPaid: number;
   totalSpent: number;
   balance: number;
 }

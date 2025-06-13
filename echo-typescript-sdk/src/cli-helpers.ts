@@ -189,9 +189,7 @@ export async function getEchoBalance(
 
   if (!silent) {
     console.log(chalk.green(`Balance: $${balance.balance.toFixed(2)}`));
-    console.log(
-      chalk.gray(`Total Credits: $${balance.totalCredits.toFixed(2)}`)
-    );
+    console.log(chalk.gray(`Total Credits: $${balance.totalPaid.toFixed(2)}`));
     console.log(chalk.gray(`Total Spent: $${balance.totalSpent.toFixed(2)}`));
   }
 

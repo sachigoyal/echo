@@ -6,7 +6,7 @@ import { CreditCardIcon, PlusIcon, MinusIcon } from 'lucide-react';
 
 interface Balance {
   balance: string;
-  totalCredits: string;
+  totalPaid: string;
   totalSpent: string;
   currency: string;
 }
@@ -97,7 +97,7 @@ export default function BalanceCard() {
             <div>
               <div className="text-sm text-muted-foreground">Total Credits</div>
               <div className="font-semibold text-secondary">
-                +${balance.totalCredits}
+                +${balance.totalPaid}
               </div>
             </div>
             <div>
