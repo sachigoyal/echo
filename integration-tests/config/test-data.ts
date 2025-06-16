@@ -9,7 +9,7 @@ export const TEST_DATA = {
       id: '11111111-1111-1111-1111-111111111111',
       email: 'test@example.com',
       name: 'Integration Test User',
-      clerkId: 'user_2mP4JRQPpWlDVDPuyrxBxwZU6cM',
+      clerkId: 'user_2mP4JRQPpWlDVDPuyrxBxwZU6cM', // links to the INTEGRATION_TEST_JWT user in Clerk
       totalPaid: 0,
       totalSpent: 0,
     },
@@ -17,7 +17,7 @@ export const TEST_DATA = {
       id: '33333333-3333-3333-3333-333333333333',
       email: 'test2@example.com',
       name: 'Second Test User',
-      clerkId: 'user_clerk_test_456',
+      clerkId: 'user_2yazGcnqOARrPN3GwgZ8j8QWDEL', // links to the INTEGRATION_TEST_JWT_USER_2 user in Clerk
       totalPaid: 0,
       totalSpent: 0,
     },
