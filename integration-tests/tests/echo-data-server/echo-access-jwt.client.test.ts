@@ -5,6 +5,7 @@ import {
   echoControlApi,
   TEST_CLIENT_IDS,
 } from '../../utils/index.js';
+import { EchoControlApiClient } from '../../utils/api-client.js';
 
 describe('Echo Data Server Client Integration Tests', () => {
   beforeAll(async () => {
@@ -21,7 +22,14 @@ describe('Echo Data Server Client Integration Tests', () => {
     }
   });
 
-  async function getAccessTokenForPaidUser(): Promise<string> {
+  async function getAccessTokenForPaidUser(): Promise<{
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    refresh_token?: string;
+    refresh_token_expires_in?: number;
+    scope: string;
+  }> {
     // Primary user has payments, so they are the "paid" user
     // Use their primary client that they are a member of
     const { generateCodeVerifier, generateCodeChallenge, generateState } =
@@ -67,7 +75,7 @@ describe('Echo Data Server Client Integration Tests', () => {
       tokenResponse.access_token!.substring(0, 50) + '...'
     );
 
-    return tokenResponse.access_token!;
+    return tokenResponse;
   }
 
   test('Should create a valid echo access jwt for paid user', async () => {
@@ -75,18 +83,78 @@ describe('Echo Data Server Client Integration Tests', () => {
     expect(accessToken).toBeTruthy();
   });
 
+  async function getAccessTokenForUnpaidUser(): Promise<{
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    refresh_token?: string;
+    refresh_token_expires_in?: number;
+    scope: string;
+  }> {
+    const { generateCodeVerifier, generateCodeChallenge, generateState } =
+      await import('../../utils/auth-helpers.js');
+
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = generateCodeChallenge(codeVerifier);
+    const state = generateState();
+
+    const testUserApi = new EchoControlApiClient(
+      TEST_CONFIG.services.echoControl,
+      TEST_CONFIG.auth.integrationJwtForUser2
+    );
+
+    const redirectUrl = await testUserApi.validateOAuthAuthorizeRequest({
+      client_id: TEST_CLIENT_IDS.secondary,
+      redirect_uri: 'http://localhost:3000/callback',
+      state,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
+      scope: 'llm:invoke offline_access',
+      prompt: 'none', // Skip consent page for automated testing
+    });
+
+    const callbackUrl = new URL(redirectUrl);
+    const authCode = callbackUrl.searchParams.get('code');
+    expect(authCode).toBeTruthy();
+
+    const tokenResponse = await testUserApi.exchangeCodeForToken({
+      code: authCode!,
+      client_id: TEST_CLIENT_IDS.secondary,
+      redirect_uri: 'http://localhost:3000/callback',
+      code_verifier: codeVerifier,
+    });
+
+    expect(tokenResponse.access_token).toBeTruthy();
+    console.log('✅ Got valid access token for unpaid user (secondary user)');
+    console.log(
+      '🔍 Access token (first 50 chars):',
+      tokenResponse.access_token!.substring(0, 50) + '...'
+    );
+
+    return tokenResponse;
+  }
+
+  describe('Unpaid user', () => {
+    test('Should be able to generate an access token for an unpaid user', async () => {
+      const accessToken = await getAccessTokenForUnpaidUser();
+      expect(accessToken).toBeTruthy();
+    });
+  });
+
   describe('Non-streaming Chat Completions', () => {
     test('should successfully make a non-streaming chat completion request', async () => {
       // Get a valid access token for the paid user
       const accessToken = await getAccessTokenForPaidUser();
 
-      const balanceCheck = await echoControlApi.getBalance(accessToken);
+      const balanceCheck = await echoControlApi.getBalance(
+        accessToken.access_token
+      );
       expect(balanceCheck.totalPaid).toBeGreaterThan(0);
 
       // Initialize OpenAI client with the valid access token
       const openaiClient = new OpenAI({
         baseURL: TEST_CONFIG.services.echoDataServer,
-        apiKey: accessToken,
+        apiKey: accessToken.access_token,
       });
 
       const completion = await openaiClient.chat.completions.create({
@@ -108,7 +176,9 @@ describe('Echo Data Server Client Integration Tests', () => {
         0
       );
 
-      const secondBalanceCheck = await echoControlApi.getBalance(accessToken);
+      const secondBalanceCheck = await echoControlApi.getBalance(
+        accessToken.access_token
+      );
       expect(secondBalanceCheck.totalPaid).toBe(balanceCheck.totalPaid);
       expect(secondBalanceCheck.totalSpent).toBeGreaterThan(
         balanceCheck.totalSpent
@@ -124,12 +194,14 @@ describe('Echo Data Server Client Integration Tests', () => {
       test('should successfully make a streaming chat completion request', async () => {
         const accessToken = await getAccessTokenForPaidUser();
 
-        const balanceCheck = await echoControlApi.getBalance(accessToken);
+        const balanceCheck = await echoControlApi.getBalance(
+          accessToken.access_token
+        );
         expect(balanceCheck.totalPaid).toBeGreaterThan(0);
 
         const openaiClient = new OpenAI({
           baseURL: TEST_CONFIG.services.echoDataServer,
-          apiKey: accessToken,
+          apiKey: accessToken.access_token,
         });
 
         const stream = await openaiClient.chat.completions.create({
@@ -156,7 +228,9 @@ describe('Echo Data Server Client Integration Tests', () => {
         expect(chunkCount).toBeGreaterThan(0);
         expect(receivedContent.length).toBeGreaterThan(0);
 
-        const secondBalanceCheck = await echoControlApi.getBalance(accessToken);
+        const secondBalanceCheck = await echoControlApi.getBalance(
+          accessToken.access_token
+        );
         expect(secondBalanceCheck.totalPaid).toBe(balanceCheck.totalPaid);
         expect(secondBalanceCheck.totalSpent).toBeGreaterThan(
           balanceCheck.totalSpent
@@ -168,5 +242,112 @@ describe('Echo Data Server Client Integration Tests', () => {
         );
       });
     });
+  });
+
+  // TODO Tests:
+
+  // Can I spend on a different app? - NO
+
+  // User that hasn't paid -- should get 402
+
+  // User that isn't authenticated -- should get 401
+
+  test("User that isn't authenticated -- should get 401", async () => {
+    const nonsenseAccessToken = 'nonsense';
+
+    const openaiClient = new OpenAI({
+      baseURL: TEST_CONFIG.services.echoDataServer,
+      apiKey: nonsenseAccessToken,
+    });
+
+    const completion = await openaiClient.chat.completions
+      .create({
+        messages: [
+          { role: 'user', content: 'Tell me a short story about a cat!' },
+        ],
+        model: 'gpt-3.5-turbo',
+        stream: false,
+      })
+      .catch(error => {
+        expect(error.status).toBe(401);
+      });
+
+    expect(completion).toBeUndefined();
+  });
+
+  test('User with expired access token -- should get 401', async () => {
+    const accessToken = await getAccessTokenForPaidUser();
+    expect(accessToken).toBeTruthy();
+
+    const balanceCheck = await echoControlApi.getBalance(
+      accessToken.access_token
+    );
+    expect(balanceCheck).toBeDefined();
+
+    console.log('✅ Access token successfully used to get balance');
+
+    console.log(
+      `🔍 Access token expires in ${accessToken.expires_in / 1000} seconds`
+    );
+
+    // Wait for the access token to expire
+    const waitTime = accessToken.expires_in + 1000; // Add 1000ms buffer
+    console.log(`Waiting ${waitTime}ms for access token to expire...`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+
+    const openaiClient = new OpenAI({
+      baseURL: TEST_CONFIG.services.echoDataServer,
+      apiKey: accessToken.access_token,
+    });
+
+    const completion = await openaiClient.chat.completions
+      .create({
+        messages: [
+          { role: 'user', content: 'Tell me a short story about a cat!' },
+        ],
+        model: 'gpt-3.5-turbo',
+        stream: false,
+      })
+      .catch(error => {
+        expect(error.status).toBe(401);
+      });
+
+    expect(completion).toBeUndefined();
+
+    console.log('✅ Access token expired and was rejected');
+  });
+
+  test("User that hasn't paid -- should get 402", async () => {
+    const accessToken = await getAccessTokenForUnpaidUser();
+    expect(accessToken).toBeTruthy();
+
+    const balanceCheck = await echoControlApi.getBalance(
+      accessToken.access_token
+    );
+    expect(balanceCheck).toBeDefined();
+    expect(balanceCheck.totalPaid).toBe(0);
+
+    const openaiClient = new OpenAI({
+      baseURL: TEST_CONFIG.services.echoDataServer,
+      apiKey: accessToken.access_token,
+    });
+
+    const completion = await openaiClient.chat.completions
+      .create({
+        messages: [
+          { role: 'user', content: 'Tell me a short story about a cat!' },
+        ],
+        model: 'gpt-3.5-turbo',
+        stream: false,
+      })
+      .catch(error => {
+        expect(error.status).toBe(402);
+      });
+
+    expect(completion).toBeUndefined();
+
+    console.log(
+      '✅ Unpaid user (secondary user) successfully made LLM request and was rejected due to insufficient balance'
+    );
   });
 });

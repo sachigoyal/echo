@@ -9,10 +9,13 @@ export interface EchoControlApiClient {
 export class EchoControlApiClient {
   private integrationJwt: string | undefined;
 
-  constructor(baseUrl: string = TEST_CONFIG.services.echoControl) {
+  constructor(
+    baseUrl: string = TEST_CONFIG.services.echoControl,
+    integrationJwt: string = TEST_CONFIG.auth.integrationJwt
+  ) {
     this.baseUrl = baseUrl;
     this.fetch = fetch;
-    this.integrationJwt = TEST_CONFIG.auth.integrationJwt;
+    this.integrationJwt = integrationJwt;
   }
 
   private async request<T>(

@@ -94,6 +94,8 @@ export const TEST_CONFIG = {
     // Integration test JWT (pre-generated for testing)
     integrationJwt: process.env.INTEGRATION_TEST_JWT!,
 
+    integrationJwtForUser2: process.env.INTEGRATION_TEST_JWT_USER_2!,
+
     // Echo Control application base URL
     echoControlAppBaseUrl:
       process.env.ECHO_CONTROL_APP_BASE_URL || process.env.ECHO_CONTROL_URL!,

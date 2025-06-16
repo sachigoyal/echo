@@ -131,7 +131,10 @@ describe('OAuth End-to-End Flow Tests', () => {
         const payload = JSON.parse(atob(accessToken.split('.')[1] || ''));
         console.log('Decoded access token payload:', payload);
       } catch (e) {
-        console.log('Failed to decode access token payload:', e.message);
+        console.log(
+          'Failed to decode access token payload:',
+          e instanceof Error ? e.message : String(e)
+        );
       }
 
       console.log('Making validation request with X-Echo-Token header...');
@@ -154,6 +157,56 @@ describe('OAuth End-to-End Flow Tests', () => {
       expect(validationResult.userId).toBe(TEST_USER_IDS.primary);
       expect(validationResult.appId).toBe(TEST_CLIENT_IDS.primary);
       expect(validationResult.scope).toBe('llm:invoke offline_access');
+    });
+  });
+  describe('User should not be able to create a valid token for an app they are not a member of', () => {
+    test('should get 400 when trying to make a request', async () => {
+      const { generateCodeVerifier, generateCodeChallenge, generateState } =
+        await import('../../utils/auth-helpers.js');
+
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = generateCodeChallenge(codeVerifier);
+      const state = generateState();
+
+      console.log(
+        `🔑 Getting authorization code for paid user (primary user with primary client)...`
+      );
+
+      const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
+        client_id: TEST_CLIENT_IDS.secondary,
+        redirect_uri: 'http://localhost:3000/callback',
+        state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        scope: 'llm:invoke offline_access',
+        prompt: 'none', // Skip consent page for automated testing
+      });
+
+      // Extract authorization code from callback URL
+      const callbackUrl = new URL(redirectUrl);
+      const authCode = callbackUrl.searchParams.get('code');
+      expect(authCode).toBeTruthy();
+
+      // Exchange authorization code for tokens
+      console.log('🔄 Exchanging auth code for access token...');
+
+      const tokenResponse = await echoControlApi
+        .exchangeCodeForToken({
+          code: authCode!,
+          client_id: TEST_CLIENT_IDS.secondary,
+          redirect_uri: 'http://localhost:3000/callback',
+          code_verifier: codeVerifier,
+        })
+        .catch(error => {
+          expect(error.message).toContain(
+            'Client does not belong to the authenticated user'
+          );
+        });
+
+      expect(tokenResponse).toBeUndefined();
+      console.log(
+        '✅ User is not able to authenticate against an app they are not a member of'
+      );
     });
   });
 });
