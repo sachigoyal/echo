@@ -35,7 +35,7 @@ export abstract class BaseProvider {
       Authorization: `Bearer ${apiKey}`,
     };
   }
-  abstract handleBody(data: string): void; // eslint-disable-line no-unused-vars
+  abstract handleBody(data: string): void;
   getEchoControlService(): EchoControlService {
     return this.echoControlService;
   }

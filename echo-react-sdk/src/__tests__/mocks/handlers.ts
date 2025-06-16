@@ -166,7 +166,8 @@ export const handlers = [
         const text = await request.text();
         body = Object.fromEntries(new URLSearchParams(text));
       } else {
-        body = await request.json();
+        const jsonBody = await request.json();
+        body = jsonBody as Record<string, string>;
       }
     } catch {
       return HttpResponse.json(
@@ -294,7 +295,8 @@ export const handlers = [
       return HttpResponse.json({ error: validation.error }, { status: 401 });
     }
 
-    const { amount } = await request.json();
+    const requestBody = (await request.json()) as { amount?: number };
+    const { amount } = requestBody;
 
     if (!amount || amount <= 0) {
       return HttpResponse.json(

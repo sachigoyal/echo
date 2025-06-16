@@ -11,7 +11,7 @@ DATABASE_URL="postgresql://echo_user:echo_password@localhost:5469/echo_control?s
 
 # Authentication (Mocked for now)
 CLERK_SECRET_KEY="mock_clerk_secret_key"
-CLERK_PUBLISHABLE_KEY="mock_clerk_publishable_key"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="mock_clerk_publishable_key"
 
 # Stripe (Mocked for now)
 STRIPE_SECRET_KEY="mock_stripe_secret_key"

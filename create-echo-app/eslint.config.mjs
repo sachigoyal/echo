@@ -1,9 +1,8 @@
-import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
 
 export default [
-  js.configs.recommended,
   {
+    name: 'create-echo-app/ts-base',
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsParser,
@@ -30,6 +29,7 @@ export default [
     },
   },
   {
+    name: 'create-echo-app/ignores',
     ignores: [
       'node_modules/',
       'dist/',

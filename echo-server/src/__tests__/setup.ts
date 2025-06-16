@@ -1,23 +1,24 @@
 import dotenv from 'dotenv';
+import { vi } from 'vitest';
 
 // Load environment variables from .env.test if it exists, otherwise from .env
 dotenv.config({ path: '.env.test' });
 
 // Mock the EchoControlService
-jest.mock('../services/EchoControlService', () => {
+vi.mock('../services/EchoControlService', () => {
   return {
-    EchoControlService: jest.fn().mockImplementation(() => ({
-      verifyApiKey: jest.fn(),
-      getBalance: jest.fn(),
-      createTransaction: jest.fn(),
-      getUserId: jest.fn(),
-      getEchoAppId: jest.fn(),
-      getUser: jest.fn(),
-      getEchoApp: jest.fn(),
-      getAuthResult: jest.fn(),
+    EchoControlService: vi.fn().mockImplementation(() => ({
+      verifyApiKey: vi.fn(),
+      getBalance: vi.fn(),
+      createTransaction: vi.fn(),
+      getUserId: vi.fn(),
+      getEchoAppId: vi.fn(),
+      getUser: vi.fn(),
+      getEchoApp: vi.fn(),
+      getAuthResult: vi.fn(),
     })),
   };
 });
 
 // Mock fetch globally (for both outbound API calls and echo-control calls)
-global.fetch = jest.fn();
+global.fetch = vi.fn();

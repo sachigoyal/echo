@@ -1,10 +1,9 @@
-import js from '@eslint/js';
 import ts from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
 export default [
-  js.configs.recommended,
   {
+    name: 'echo-server/ts-base',
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsParser,
@@ -43,6 +42,7 @@ export default [
     },
   },
   {
+    name: 'echo-server/tests',
     files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     languageOptions: {
       globals: {
@@ -66,6 +66,7 @@ export default [
     },
   },
   {
+    name: 'echo-server/ignores',
     ignores: [
       'node_modules/',
       'dist/',

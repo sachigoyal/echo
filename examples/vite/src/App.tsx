@@ -4,7 +4,7 @@ import {
   EchoTokenPurchase,
   useEcho,
 } from '@echo-systems/react-sdk';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // Configuration constants
 const CONFIG = {
@@ -149,13 +149,13 @@ function JWTTestComponent() {
   const [testResult, setTestResult] = useState<string | null>(null);
   const [isTestLoading, setIsTestLoading] = useState(false);
 
-  const testJWTToken = async () => {
+  const testJWTToken = useCallback(async () => {
     setIsTestLoading(true);
     setTestResult(null);
 
     try {
       // Get current user and access token from oidc-client-ts
-      const userManager = (window as any).__echoUserManager;
+      const userManager = (window as Window).__echoUserManager;
       if (!userManager) {
         throw new Error('UserManager not available');
       }
@@ -195,7 +195,7 @@ function JWTTestComponent() {
     } finally {
       setIsTestLoading(false);
     }
-  };
+  }, []);
 
   // Auto-run JWT test on component mount
   useEffect(() => {
@@ -355,7 +355,12 @@ function App() {
     }
   });
 
-  const [echoConfig, setEchoConfig] = useState<any>(() => {
+  const [echoConfig, setEchoConfig] = useState<{
+    instanceId: string;
+    apiUrl: string;
+    redirectUri: string;
+    scope: string;
+  } | null>(() => {
     // Restore config from localStorage on app start
     try {
       const stored = localStorage.getItem('echo_oauth_config');
@@ -430,6 +435,8 @@ export default App;
 // Store UserManager globally for JWT testing
 declare global {
   interface Window {
-    __echoUserManager?: any;
+    __echoUserManager?: {
+      getUser: () => Promise<{ access_token?: string } | null>;
+    };
   }
 }

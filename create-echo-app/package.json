@@ -38,10 +38,10 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/inquirer": "^8.2.10",
-    "@types/node": "^20.11.24",
-    "@typescript-eslint/parser": "^8.33.1",
-    "typescript": "^5.3.3"
+    "@types/inquirer": "^9.0.8",
+    "@types/node": "^24.0.3",
+    "@typescript-eslint/parser": "^8.34.1",
+    "typescript": "^5.8.3"
   },
   "files": [
     "dist/**/*",
