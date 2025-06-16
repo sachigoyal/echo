@@ -55,6 +55,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "supertest": "^6.3.4",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.3"
   }
 }
