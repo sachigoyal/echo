@@ -31,7 +31,8 @@
     "@echo-systems/react-sdk": "workspace:*",
     "@zdql/echo-typescript-sdk": "workspace:*",
     "jose": "^6.0.11",
-    "nanoid": "^5.1.5"
+    "nanoid": "^5.1.5",
+    "openai": "^4.81.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

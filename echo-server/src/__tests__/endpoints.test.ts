@@ -2,11 +2,12 @@ import { ReadableStream } from 'stream/web';
 
 import type express from 'express';
 import request from 'supertest';
+import { vi } from 'vitest';
 
 import { EchoControlService } from '../services/EchoControlService';
 
 // Mock the fetch module for outbound API calls
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 // Mock environment variables
@@ -180,24 +181,22 @@ const createMockHeaders = (headers: [string, string][]) => {
 
 // Helper function to setup successful EchoControlService mocks
 const setupMockEchoControlService = (balance: number = 1000) => {
-  const MockedEchoControlService = EchoControlService as jest.MockedClass<
-    typeof EchoControlService
-  >;
+  const MockedEchoControlService = EchoControlService as any;
   const mockInstance = new MockedEchoControlService('mock-key');
 
-  (mockInstance.verifyApiKey as jest.Mock).mockResolvedValue({
+  (mockInstance.verifyApiKey as any).mockResolvedValue({
     userId: TEST_USER_ID,
     echoAppId: TEST_ECHO_APP_ID,
     user: MOCK_USER,
     echoApp: MOCK_ECHO_APP,
   });
 
-  (mockInstance.getBalance as jest.Mock).mockResolvedValue(balance);
-  (mockInstance.getUserId as jest.Mock).mockReturnValue(TEST_USER_ID);
-  (mockInstance.getEchoAppId as jest.Mock).mockReturnValue(TEST_ECHO_APP_ID);
-  (mockInstance.getUser as jest.Mock).mockReturnValue(MOCK_USER);
-  (mockInstance.getEchoApp as jest.Mock).mockReturnValue(MOCK_ECHO_APP);
-  (mockInstance.createTransaction as jest.Mock).mockResolvedValue(undefined);
+  (mockInstance.getBalance as any).mockResolvedValue(balance);
+  (mockInstance.getUserId as any).mockReturnValue(TEST_USER_ID);
+  (mockInstance.getEchoAppId as any).mockReturnValue(TEST_ECHO_APP_ID);
+  (mockInstance.getUser as any).mockReturnValue(MOCK_USER);
+  (mockInstance.getEchoApp as any).mockReturnValue(MOCK_ECHO_APP);
+  (mockInstance.createTransaction as any).mockResolvedValue(undefined);
 
   MockedEchoControlService.mockImplementation(() => mockInstance);
 
@@ -209,16 +208,17 @@ describe('Endpoint Tests', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockEchoControlService: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset all mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockFetch.mockClear();
 
     // Setup EchoControlService mock with sufficient balance
     mockEchoControlService = setupMockEchoControlService(1000);
 
     // Import the app after mocking
-    app = require('../server').default;
+    const serverModule = await import('../server');
+    app = serverModule.default;
   });
 
   describe('Provider-specific tests', () => {
@@ -588,9 +588,7 @@ describe('Endpoint Tests', () => {
 
     it('should reject requests with invalid authorization format', async () => {
       // Setup EchoControlService to fail validation
-      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(
-        null
-      );
+      (mockEchoControlService.verifyApiKey as any).mockResolvedValue(null);
 
       const response = await request(app)
         .post('/chat/completions')
@@ -606,9 +604,7 @@ describe('Endpoint Tests', () => {
 
     it('should reject requests with invalid token', async () => {
       // Setup EchoControlService to fail validation
-      (mockEchoControlService.verifyApiKey as jest.Mock).mockResolvedValue(
-        null
-      );
+      (mockEchoControlService.verifyApiKey as any).mockResolvedValue(null);
 
       const response = await request(app)
         .post('/chat/completions')
@@ -719,7 +715,7 @@ describe('Endpoint Tests', () => {
   describe('Account Balance Tests', () => {
     it('should reject requests when account has insufficient balance', async () => {
       // Setup EchoControlService with zero balance
-      (mockEchoControlService.getBalance as jest.Mock).mockResolvedValue(0);
+      (mockEchoControlService.getBalance as any).mockResolvedValue(0);
 
       const response = await request(app)
         .post('/chat/completions')

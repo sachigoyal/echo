@@ -1,29 +1,22 @@
-/// <reference types="jest" />
+/// <reference types="vitest/globals" />
+
+import type { MockedFunction } from 'vitest';
 
 declare module 'supertest' {
   import { SuperTest, Test } from 'supertest';
   export default function supertest(app: any): SuperTest<Test>;
 }
 
-declare global {
-  namespace jest {
-    interface Mock<T = any, Y extends any[] = any> {
-      mockResolvedValueOnce(value: T): this;
-      mockRejectedValueOnce(value: any): this;
-    }
-  }
-}
-
 // Mock types for testing
 export interface MockEchoControlService {
-  verifyApiKey: jest.Mock;
-  getBalance: jest.Mock;
-  createTransaction: jest.Mock;
-  getUserId: jest.Mock;
-  getEchoAppId: jest.Mock;
-  getUser: jest.Mock;
-  getEchoApp: jest.Mock;
-  getAuthResult: jest.Mock;
+  verifyApiKey: MockedFunction<any>;
+  getBalance: MockedFunction<any>;
+  createTransaction: MockedFunction<any>;
+  getUserId: MockedFunction<any>;
+  getEchoAppId: MockedFunction<any>;
+  getUser: MockedFunction<any>;
+  getEchoApp: MockedFunction<any>;
+  getAuthResult: MockedFunction<any>;
 }
 
 export interface MockAuthenticationResult {

@@ -1,10 +1,11 @@
 import axios from 'axios';
+import { vi } from 'vitest';
 
 import { EchoClient } from '../client';
 
 // Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as any;
 
 const TEST_SERVER_URL = 'http://localhost:3001';
 const TEST_API_KEY = 'echo_test_api_key_12345';
@@ -23,18 +24,18 @@ describe('EchoClient', () => {
   let mockAxiosInstance: any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup mock axios instance
     mockAxiosInstance = {
-      get: jest.fn(),
-      post: jest.fn(),
+      get: vi.fn(),
+      post: vi.fn(),
       interceptors: {
         request: {
-          use: jest.fn(),
+          use: vi.fn(),
         },
         response: {
-          use: jest.fn(),
+          use: vi.fn(),
         },
       },
       defaults: {
