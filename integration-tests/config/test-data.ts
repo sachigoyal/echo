@@ -2,6 +2,8 @@
 // This eliminates hardcoded values scattered across multiple files
 import { hashApiKey } from '../../echo-control/src/lib/crypto.js';
 
+const primaryApiKey = 'ek_test_1234567890abcdef';
+
 export const TEST_DATA = {
   // Test user configurations
   users: {
@@ -41,7 +43,7 @@ export const TEST_DATA = {
   apiKeys: {
     primary: {
       id: '22222222-2222-2222-2222-222222222222',
-      keyHash: hashApiKey('ek_test_1234567890abcdef'),
+      keyHash: hashApiKey(primaryApiKey),
       name: 'Integration Test API Key',
     },
   },
@@ -193,6 +195,10 @@ export const TEST_CLIENT_IDS = {
 export const TEST_USER_IDS = {
   primary: TEST_DATA.users.primary.id,
   secondary: TEST_DATA.users.secondary.id,
+};
+
+export const TEST_USER_API_KEYS = {
+  primary: primaryApiKey,
 };
 
 // Type definitions for test data
