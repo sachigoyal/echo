@@ -17,6 +17,11 @@ afterAll(() => {
   server.close();
 });
 
+// Ensure global is available (Node.js compatibility)
+if (typeof global === 'undefined') {
+  (globalThis as any).global = globalThis;
+}
+
 // Mock window.crypto for PKCE testing
 Object.defineProperty(window, 'crypto', {
   value: {
@@ -65,3 +70,53 @@ Object.defineProperty(window, 'open', {
   value: vi.fn(() => null), // Default to null (popup blocked)
   writable: true,
 });
+
+// Polyfill for URL constructor if not available
+if (typeof URL === 'undefined') {
+  (globalThis as any).URL = class URL {
+    constructor(url: string, base?: string) {
+      // Simple URL implementation for testing
+      this.href = base ? new URL(url, base).href : url;
+    }
+    href: string = '';
+    searchParams: URLSearchParams = new URLSearchParams();
+  };
+}
+
+// Polyfill for URLSearchParams if not available
+if (typeof URLSearchParams === 'undefined') {
+  (globalThis as any).URLSearchParams = class URLSearchParams {
+    private params = new Map<string, string>();
+
+    constructor(init?: string | Record<string, string>) {
+      if (typeof init === 'string') {
+        // Parse query string
+        init.split('&').forEach(pair => {
+          const [key, value] = pair.split('=').map(decodeURIComponent);
+          if (key) this.params.set(key, value || '');
+        });
+      } else if (init) {
+        Object.entries(init).forEach(([key, value]) => {
+          this.params.set(key, value);
+        });
+      }
+    }
+
+    set(name: string, value: string) {
+      this.params.set(name, value);
+    }
+
+    get(name: string) {
+      return this.params.get(name);
+    }
+
+    toString() {
+      return Array.from(this.params.entries())
+        .map(
+          ([key, value]) =>
+            `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+        )
+        .join('&');
+    }
+  };
+}

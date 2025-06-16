@@ -20,7 +20,6 @@
  */
 
 import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
 
 // Initialize DOMPurify for both browser and Node.js environments
 const purify = (() => {
@@ -28,9 +27,19 @@ const purify = (() => {
     // Browser environment
     return DOMPurify;
   } else {
-    // Node.js environment (testing)
-    const { window } = new JSDOM('');
-    return DOMPurify(window);
+    // Node.js environment (testing) - import JSDOM dynamically to avoid issues
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { JSDOM } = require('jsdom');
+      const { window } = new JSDOM('');
+      return DOMPurify(window);
+    } catch (error) {
+      // Fallback if JSDOM is not available
+      console.warn('JSDOM not available, using fallback sanitization');
+      return {
+        sanitize: (dirty: string) => dirty.replace(/<[^>]*>/g, ''),
+      } as typeof DOMPurify;
+    }
   }
 })();
 
