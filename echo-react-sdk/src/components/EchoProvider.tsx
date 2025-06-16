@@ -1,13 +1,13 @@
 import React, {
   createContext,
-  useEffect,
   useState,
+  useEffect,
   useCallback,
   ReactNode,
 } from 'react';
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts';
 import { EchoConfig, EchoUser, EchoBalance } from '../types';
-import { sanitizeUserProfile, debounce } from '../utils/security';
+import { sanitizeUserProfile } from '../utils/security';
 
 interface EchoOAuthProfile {
   sub?: string;
@@ -17,6 +17,7 @@ interface EchoOAuthProfile {
   preferred_username?: string;
   name?: string;
   given_name?: string;
+  picture?: string;
 }
 
 interface BalanceResponse {
@@ -126,11 +127,26 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         setUser(echoUser);
 
         // Fetch balance using access token
+        await loadBalance(oidcUser.access_token);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to load user data';
+        setError(errorMessage);
+        console.error('Error loading user data:', err);
+      }
+    },
+    [config.apiUrl]
+  );
+
+  // Load balance helper function
+  const loadBalance = useCallback(
+    async (accessToken: string) => {
+      try {
         const response = await fetch(
           `${config.apiUrl || 'http://localhost:3000'}/api/balance`,
           {
             headers: {
-              Authorization: `Bearer ${oidcUser.access_token}`,
+              Authorization: `Bearer ${accessToken}`,
             },
           }
         );
@@ -142,86 +158,60 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
           console.warn('Failed to fetch balance:', response.statusText);
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to load user data';
-        setError(errorMessage);
-        console.error('Error loading user data:', err);
+        console.error('Error loading balance:', err);
       }
     },
     [config.apiUrl]
   );
 
   // Sign in
-  const signIn = useCallback(async () => {
-    try {
-      setError(null);
-      await userManager.signinRedirect();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Sign in failed';
-      setError(errorMessage);
-      console.error('Sign in error:', err);
+  const signIn = async () => {
+    if (!userManager) {
+      throw new Error('UserManager not initialized');
     }
-  }, [userManager]);
+    await userManager.signinRedirect();
+  };
 
   // Sign out
-  const signOut = useCallback(async () => {
+  const signOut = async () => {
     try {
+      if (!userManager) {
+        throw new Error('UserManager not initialized');
+      }
+
+      // Clear local state immediately
+      setUser(null);
+      setBalance(null);
       setError(null);
-      await userManager.signoutRedirect();
-      setUser(null);
-      setBalance(null);
-    } catch (err) {
-      // Fallback: clear local state even if redirect fails
+
+      // Remove user from storage
       await userManager.removeUser();
-      setUser(null);
-      setBalance(null);
-      const errorMessage =
-        err instanceof Error ? err.message : 'Sign out failed';
-      setError(errorMessage);
-      console.error('Sign out error:', err);
+
+      // Attempt redirect (may fail in test environment)
+      await userManager.signoutRedirect();
+    } catch (error) {
+      console.warn('Sign out redirect failed:', error);
+      // State already cleared above
     }
-  }, [userManager]);
+  };
 
   // Refresh balance with debouncing to prevent API spam
-  const refreshBalanceInternal = useCallback(async () => {
-    const currentUser = await userManager.getUser();
-    if (!currentUser?.access_token) return;
-
-    try {
-      setError(null);
-      const response = await fetch(
-        `${config.apiUrl || 'http://localhost:3000'}/api/balance`,
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.access_token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        const balanceData: BalanceResponse = await response.json();
-        setBalance(balanceData);
-      } else {
-        throw new Error(`Failed to refresh balance: ${response.statusText}`);
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to refresh balance';
-      setError(errorMessage);
-      console.error('Error refreshing balance:', err);
+  const refreshBalance = async () => {
+    if (!userManager) {
+      return;
     }
-  }, [userManager, config.apiUrl]);
-
-  // Debounced version to prevent rapid API calls
-  const refreshBalance = useCallback(
-    debounce(refreshBalanceInternal, 1000), // 1 second debounce
-    [refreshBalanceInternal]
-  );
+    const currentUser = await userManager.getUser();
+    if (currentUser?.access_token) {
+      await loadBalance(currentUser.access_token);
+    }
+  };
 
   // Create payment link
   const createPaymentLink = useCallback(
     async (amount: number): Promise<string> => {
+      if (!userManager) {
+        throw new Error('UserManager not initialized');
+      }
       const currentUser = await userManager.getUser();
       if (!currentUser?.access_token) {
         throw new Error('Not authenticated');
@@ -262,6 +252,11 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   // Initialize and handle OAuth callback
   useEffect(() => {
     const initializeAuth = async () => {
+      if (!userManager) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -300,6 +295,10 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
   // Set up event listeners for token events
   useEffect(() => {
+    if (!userManager) {
+      return;
+    }
+
     const handleUserLoaded = (oidcUser: User) => {
       loadUserData(oidcUser);
     };

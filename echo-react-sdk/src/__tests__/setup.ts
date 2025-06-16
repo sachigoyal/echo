@@ -53,3 +53,15 @@ Object.defineProperty(window, 'history', {
     pushState: vi.fn(),
   },
 });
+
+// Mock window.confirm for payment flow tests
+Object.defineProperty(window, 'confirm', {
+  value: vi.fn(() => true), // Default to true for tests
+  writable: true,
+});
+
+// Mock window.open for payment flow tests
+Object.defineProperty(window, 'open', {
+  value: vi.fn(() => null), // Default to null (popup blocked)
+  writable: true,
+});
