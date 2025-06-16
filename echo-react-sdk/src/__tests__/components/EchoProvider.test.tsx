@@ -346,16 +346,18 @@ describe('EchoProvider', () => {
 
       // Simulate access token expired event
       const expiredHandler =
-        mockUserManager.events.addAccessTokenExpired.mock.calls[0][0];
-      await act(async () => {
-        expiredHandler();
-      });
+        mockUserManager.events.addAccessTokenExpired.mock.calls?.[0]?.[0];
+      if (expiredHandler) {
+        await act(async () => {
+          expiredHandler();
+        });
 
-      await waitFor(() => {
-        expect(screen.getByTestId('error')).toHaveTextContent(
-          'Session expired. Please sign in again.'
-        );
-      });
+        await waitFor(() => {
+          expect(screen.getByTestId('error')).toHaveTextContent(
+            'Session expired. Please sign in again.'
+          );
+        });
+      }
     });
 
     test('handles silent renewal errors', async () => {
@@ -374,16 +376,18 @@ describe('EchoProvider', () => {
 
       // Simulate silent renewal error
       const errorHandler =
-        mockUserManager.events.addSilentRenewError.mock.calls[0][0];
-      await act(async () => {
-        errorHandler(new Error('login_required'));
-      });
+        mockUserManager.events.addSilentRenewError.mock.calls?.[0]?.[0];
+      if (errorHandler) {
+        await act(async () => {
+          errorHandler(new Error('login_required'));
+        });
 
-      await waitFor(() => {
-        expect(screen.getByTestId('error')).toHaveTextContent(
-          'Session renewal failed. Please sign in again.'
-        );
-      });
+        await waitFor(() => {
+          expect(screen.getByTestId('error')).toHaveTextContent(
+            'Session renewal failed. Please sign in again.'
+          );
+        });
+      }
     });
 
     test('updates user data after successful renewal', async () => {
@@ -404,16 +408,18 @@ describe('EchoProvider', () => {
 
       // Simulate successful renewal with user loaded event
       const userLoadedHandler =
-        mockUserManager.events.addUserLoaded.mock.calls[0][0];
-      await act(async () => {
-        userLoadedHandler(renewedUser);
-      });
+        mockUserManager.events.addUserLoaded.mock.calls?.[0]?.[0];
+      if (userLoadedHandler) {
+        await act(async () => {
+          userLoadedHandler(renewedUser);
+        });
 
-      await waitFor(() => {
-        expect(screen.getByTestId('user')).toHaveTextContent(
-          'User: Renewed User'
-        );
-      });
+        await waitFor(() => {
+          expect(screen.getByTestId('user')).toHaveTextContent(
+            'User: Renewed User'
+          );
+        });
+      }
     });
   });
 });

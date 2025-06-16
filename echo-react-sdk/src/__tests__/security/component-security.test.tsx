@@ -269,7 +269,11 @@ describe('Component Security Integration', () => {
       });
 
       const TestComponent = () => {
-        const { user } = React.useContext(EchoContext);
+        const context = React.useContext(EchoContext);
+        if (!context) {
+          return <div>No context</div>;
+        }
+        const { user } = context;
         return (
           <div>
             <div data-testid="user-name">{user?.name}</div>
@@ -313,12 +317,19 @@ describe('Component Security Integration', () => {
       const originalLocation = window.location;
       const mockUser = await createMockAuthenticatedUser();
 
-      delete (window as typeof window & { location?: Location }).location;
-      window.location = {
+      // Create a mock location object
+      const mockLocation = {
         ...originalLocation,
         search:
           '?code=<script>alert("OAuth XSS")</script>&state=<img src=x onerror=alert("State XSS")>',
-      } as Location;
+      };
+
+      // Replace window.location with our mock
+      Object.defineProperty(window, 'location', {
+        value: mockLocation,
+        writable: true,
+        configurable: true,
+      });
 
       const mockUserManager = createMockUserManager({
         signinRedirectCallback: vi.fn().mockResolvedValue(mockUser),
@@ -335,7 +346,11 @@ describe('Component Security Integration', () => {
       expect(document.querySelector('script')).toBeNull();
 
       // Restore original location
-      window.location = originalLocation;
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
     });
   });
 });

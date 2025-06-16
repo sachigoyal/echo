@@ -48,7 +48,7 @@ export function renderWithEcho(
     config?: Partial<EchoConfig>;
     mockUserManager?: unknown;
   } = {}
-) {
+): ReturnType<typeof render> {
   return render(<TestEchoProvider {...options}>{component}</TestEchoProvider>);
 }
 
@@ -103,7 +103,10 @@ export function createMockUserManager(
  * Mock authenticated user for testing
  */
 export async function createMockAuthenticatedUser(
-  overrides: Record<string, unknown> = {}
+  overrides: {
+    profile?: Record<string, unknown>;
+    [key: string]: unknown;
+  } = {}
 ) {
   // Create a valid JWT token for API calls
   const { createValidJWT } = await import('../mocks/jwt-factory');
@@ -113,6 +116,12 @@ export async function createMockAuthenticatedUser(
     scope: 'llm:invoke offline_access',
   });
 
+  const defaultProfile = {
+    sub: 'test-user-123',
+    email: 'test@example.com',
+    name: 'Test User',
+  };
+
   return {
     access_token: validToken,
     token_type: 'Bearer',
@@ -121,10 +130,8 @@ export async function createMockAuthenticatedUser(
     scope: 'llm:invoke offline_access',
     expired: false,
     profile: {
-      sub: 'test-user-123',
-      email: 'test@example.com',
-      name: 'Test User',
-      ...overrides.profile,
+      ...defaultProfile,
+      ...(overrides.profile || {}),
     },
     ...overrides,
   };

@@ -383,7 +383,7 @@ describe('Client-Side Security Protection', () => {
         close: vi.fn(),
       };
 
-      mockWindow.open.mockReturnValue(mockPopup as Window);
+      mockWindow.open.mockReturnValue(mockPopup as unknown as Window);
 
       const onComplete = vi.fn();
 

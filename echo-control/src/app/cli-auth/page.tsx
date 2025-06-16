@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Copy, Check, Terminal, Key } from 'lucide-react';
 import Link from 'next/link';
@@ -423,8 +423,8 @@ function CLIAuthContent() {
 
 export default function CLIAuthPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <React.Suspense fallback={<div>Loading...</div>}>
       <CLIAuthContent />
-    </Suspense>
+    </React.Suspense>
   );
 }

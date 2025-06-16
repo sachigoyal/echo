@@ -18,7 +18,7 @@ export const verifyUserHeaderCheck = async (
    *
    * @returns [processedHeaders, echoControlService]
    */
-  /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const {
     host: _host,
     authorization,
@@ -29,7 +29,7 @@ export const verifyUserHeaderCheck = async (
     'x-api-key': xApiKey,
     ...restHeaders
   } = headers;
-  /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   if (!authorization && !xApiKey) {
     throw new UnauthorizedError();

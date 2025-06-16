@@ -52,3 +52,27 @@ export async function createTamperedJWT(
   // Tamper with the signature by replacing last 8 characters
   return validToken.slice(0, -8) + 'TAMPERED';
 }
+
+/**
+ * Create an expired JWT token for testing
+ */
+export async function createExpiredJWT(
+  overrides: JWTPayload = {}
+): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    userId: 'test-user-123',
+    appId: 'test-app-456',
+    scope: 'llm:invoke',
+    aud: 'echo-proxy',
+    iss: 'http://localhost:3000',
+    iat: now - 3600, // 1 hour ago
+    exp: now - 1800, // 30 minutes ago (expired)
+    ...overrides,
+  };
+
+  return jwt.sign(payload, TEST_JWT_SECRET, {
+    algorithm: 'HS256',
+    noTimestamp: true, // We're setting iat manually
+  });
+}
