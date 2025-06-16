@@ -40,9 +40,9 @@ WORKDIR /app/echo-typescript-sdk
 RUN pnpm install
 RUN pnpm run build
 
-# Step 2: Copy the generated Prisma files to echo-server
+# Step 2: Set up Prisma in echo-server using the new script
 WORKDIR /app/echo-server
-RUN pnpm run copy-prisma
+RUN pnpm run setup-prisma
 
 # Step 3: Build echo-server
 RUN pnpm run build

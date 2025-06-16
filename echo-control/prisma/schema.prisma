@@ -8,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// TODO(ben): Fix
 model User {
   id              String           @id @default(uuid()) @db.Uuid
   email           String           @unique
@@ -18,14 +17,13 @@ model User {
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
+  
+  totalPaid       Decimal  @db.Decimal(10, 6)   // Aggregate for Total payment amount
+  totalSpent      Decimal  @db.Decimal(10, 6)  // Aggregate for Total spent across apps 
+  
   apiKeys         ApiKey[]         // API keys owned by user
   llmTransactions LlmTransaction[] // LLM transactions
   payments        Payment[]        // payments made to the app
-  
-  totalPaid       Decimal  @db.Decimal(10, 6)   // Aggregate for Total payment amount
-
-  totalSpent      Decimal  @db.Decimal(10, 6)  // Aggregate for Total spent across apps 
-  
   refreshTokens   RefreshToken[]   // refresh tokens 
   appMemberships  AppMembership[]  // Apps you are a member of
 
@@ -145,11 +143,11 @@ model LlmTransaction {
   createdAt    DateTime @default(now()) @db.Timestamptz
   userId       String   @db.Uuid
   echoAppId    String   @db.Uuid
-  apiKeyId     String   @db.Uuid  // API key used for this transaction (required)
+  apiKeyId     String?   @db.Uuid  // API key used for this transaction (not required, won't be included if it was using a JWT)
   
   echoApp  EchoApp @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
-  apiKey   ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
+  apiKey   ApiKey?   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
 
   @@map("llm_transactions")
 }

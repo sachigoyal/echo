@@ -76,6 +76,9 @@ export const TEST_CONFIG = {
     echoControl: process.env.ECHO_CONTROL_URL!,
     // Docker internal URL (used in docker-compose environment overrides)
     echoControlInternal: 'http://echo-control-test:3000',
+    // Echo data server URLs
+    echoDataServer: process.env.ECHO_DATA_SERVER_URL || 'http://localhost:3069',
+    echoDataServerInternal: 'http://echo-data-server-test:3069',
   },
 
   // Authentication configuration
@@ -90,6 +93,8 @@ export const TEST_CONFIG = {
 
     // Integration test JWT (pre-generated for testing)
     integrationJwt: process.env.INTEGRATION_TEST_JWT!,
+
+    integrationJwtForUser2: process.env.INTEGRATION_TEST_JWT_USER_2!,
 
     // Echo Control application base URL
     echoControlAppBaseUrl:

@@ -5,7 +5,6 @@ export interface EchoApp {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  userId: string;
   totalTokens?: number;
   totalCost?: number;
   apiKeys?: ApiKey[];
@@ -69,7 +68,7 @@ export interface Payment {
 }
 
 export interface Balance {
-  totalCredits: number;
+  totalPaid: number;
   totalSpent: number;
   balance: number;
 }
@@ -138,8 +137,20 @@ export interface CreateLlmTransactionResponse {
 export interface ApiKeyValidationResult {
   userId: string;
   echoAppId: string;
-  apiKeyId: string;
   user: User;
   echoApp: EchoApp;
-  apiKey: ApiKey;
+  apiKeyId?: string;
+  apiKey?: ApiKey;
+}
+
+/**
+ * JWT payload for Echo Access Tokens
+ */
+export interface EchoAccessJwtPayload {
+  user_id: string;
+  app_id: string;
+  scope: string;
+  exp: number;
+  iat: number;
+  jti: string;
 }

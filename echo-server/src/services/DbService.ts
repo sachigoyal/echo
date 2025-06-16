@@ -1,11 +1,20 @@
-import { Balance, ApiKeyValidationResult } from './types';
+import {
+  Balance,
+  ApiKeyValidationResult,
+  EchoAccessJwtPayload,
+} from '@zdql/echo-typescript-sdk/src/types';
 import { createHmac } from 'crypto';
-
+import { jwtVerify } from 'jose';
+import { PrismaClient } from 'generated/prisma';
 /**
  * Secret key for deterministic API key hashing (should match echo-control)
  */
 const API_KEY_SECRET =
   process.env.API_KEY_SECRET || 'change-this-in-production-very-secret-key';
+
+const API_ECHO_ACCESS_JWT_SECRET =
+  process.env.API_ECHO_ACCESS_JWT_SECRET ||
+  'api-jwt-secret-change-in-production';
 
 /**
  * Hash an API key deterministically for O(1) database lookup
@@ -14,113 +23,13 @@ function hashApiKey(apiKey: string): string {
   return createHmac('sha256', API_KEY_SECRET).update(apiKey).digest('hex');
 }
 
-// Generic database client interface to avoid direct Prisma dependency
-export interface DatabaseClient {
-  apiKey: {
-    findUnique: (params: {
-      where: { keyHash: string };
-      include: { user: boolean; echoApp: boolean };
-    }) => Promise<{
-      id: string;
-      keyHash: string;
-      name: string | null;
-      isActive: boolean;
-      isArchived: boolean;
-      lastUsed: Date | null;
-      metadata: any;
-      createdAt: Date;
-      updatedAt: Date;
-      userId: string;
-      echoAppId: string;
-      user: {
-        id: string;
-        email: string;
-        name: string | null;
-        clerkId: string;
-        isArchived: boolean;
-        createdAt: Date;
-        updatedAt: Date;
-      };
-      echoApp: {
-        id: string;
-        name: string;
-        description: string | null;
-        isActive: boolean;
-        isArchived: boolean;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-      };
-    } | null>;
-  };
-  payment: {
-    aggregate: (params: {
-      where: {
-        userId: string;
-        status: string;
-        isArchived: boolean;
-      };
-      _sum: { amount: boolean };
-    }) => Promise<{ _sum: { amount: number | null } }>;
-    update: (params: {
-      where: { id: string };
-      data: {
-        totalPaid: {
-          increment: number;
-        };
-      };
-    }) => Promise<{ id: string }>;
-  };
-  llmTransaction: {
-    aggregate: (params: {
-      where: { userId: string; isArchived: boolean };
-      _sum: { cost: boolean };
-    }) => Promise<{ _sum: { cost: any | null } }>;
-    create: (params: {
-      data: {
-        model: string;
-        inputTokens: number;
-        outputTokens: number;
-        totalTokens: number;
-        cost: number;
-        prompt: string | null;
-        response: string | null;
-        status: string;
-        errorMessage: string | null;
-        userId: string;
-        echoAppId: string;
-        apiKeyId: string;
-      };
-    }) => Promise<{ id: string }>;
-  };
-  user: {
-    findUnique: (params: {
-      where: { id: string };
-      select: {
-        totalPaid: boolean;
-        totalSpent: boolean;
-      };
-    }) => Promise<{
-      totalPaid: string;
-      totalSpent: string;
-    } | null>;
-    update: (params: {
-      where: { id: string };
-      data: {
-        totalSpent: {
-          increment: number;
-        };
-      };
-    }) => Promise<{ id: string }>;
-  };
-  $transaction: <T>(fn: (tx: DatabaseClient) => Promise<T>) => Promise<T>;
-}
-
 export class EchoDbService {
-  private db: DatabaseClient;
+  private db: PrismaClient;
+  private apiJwtSecret: Uint8Array;
 
-  constructor(db: DatabaseClient) {
+  constructor(db: PrismaClient) {
     this.db = db;
+    this.apiJwtSecret = new TextEncoder().encode(API_ECHO_ACCESS_JWT_SECRET);
   }
 
   /**
@@ -132,6 +41,86 @@ export class EchoDbService {
       // Remove Bearer prefix if present
       const cleanApiKey = apiKey.replace('Bearer ', '');
 
+      const isJWT = cleanApiKey.split('.').length === 3;
+
+      if (isJWT) {
+        const verifyResult = await jwtVerify(cleanApiKey, this.apiJwtSecret);
+        const payload = verifyResult.payload as unknown as EchoAccessJwtPayload;
+        console.log('🔍 DEBUG: JWT payload:', payload);
+
+        if (!payload) {
+          return null;
+        }
+
+        // Validate required fields exist
+        if (!payload.user_id || !payload.app_id) {
+          console.error('JWT missing required fields:', {
+            user_id: payload.user_id,
+            app_id: payload.app_id,
+          });
+          return null;
+        }
+
+        if (payload.exp && payload.exp < Date.now() / 1000) {
+          return null;
+        }
+
+        const user = await this.db.user.findUnique({
+          where: {
+            id: payload.user_id,
+          },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            clerkId: true,
+            createdAt: true,
+            updatedAt: true,
+            totalPaid: true,
+            totalSpent: true,
+          },
+        });
+
+        const app = await this.db.echoApp.findUnique({
+          where: {
+            id: payload.app_id,
+          },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            isActive: true,
+            isArchived: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+
+        if (!user || !app) {
+          return null;
+        }
+
+        return {
+          userId: payload.user_id,
+          echoAppId: payload.app_id,
+          user: {
+            id: user.id,
+            email: user.email,
+            ...(user.name && { name: user.name }),
+            clerkId: user.clerkId,
+            createdAt: user.createdAt.toISOString(),
+            updatedAt: user.updatedAt.toISOString(),
+          },
+          echoApp: {
+            id: app.id,
+            name: app.name,
+            ...(app.description && { description: app.description }),
+            isActive: app.isActive,
+            createdAt: app.createdAt.toISOString(),
+            updatedAt: app.updatedAt.toISOString(),
+          },
+        };
+      }
       // Hash the provided API key for direct O(1) lookup
       const keyHash = hashApiKey(cleanApiKey);
 
@@ -161,7 +150,6 @@ export class EchoDbService {
       return {
         userId: apiKeyRecord.userId,
         echoAppId: apiKeyRecord.echoAppId,
-        apiKeyId: apiKeyRecord.id,
         user: {
           id: apiKeyRecord.user.id,
           email: apiKeyRecord.user.email,
@@ -179,22 +167,8 @@ export class EchoDbService {
           isActive: apiKeyRecord.echoApp.isActive,
           createdAt: apiKeyRecord.echoApp.createdAt.toISOString(),
           updatedAt: apiKeyRecord.echoApp.updatedAt.toISOString(),
-          userId: apiKeyRecord.echoApp.userId,
         },
-        apiKey: {
-          id: apiKeyRecord.id,
-          key: cleanApiKey, // Return the plaintext key for compatibility
-          ...(apiKeyRecord.name && { name: apiKeyRecord.name }),
-          isActive: apiKeyRecord.isActive,
-          ...(apiKeyRecord.lastUsed && {
-            lastUsed: apiKeyRecord.lastUsed.toISOString(),
-          }),
-          ...(apiKeyRecord.metadata && { metadata: apiKeyRecord.metadata }),
-          createdAt: apiKeyRecord.createdAt.toISOString(),
-          updatedAt: apiKeyRecord.updatedAt.toISOString(),
-          userId: apiKeyRecord.userId,
-          echoAppId: apiKeyRecord.echoAppId,
-        },
+        apiKeyId: apiKeyRecord.id,
       };
     } catch (error) {
       console.error('Error validating API key:', error);
@@ -211,6 +185,12 @@ export class EchoDbService {
       const user = await this.db.user.findUnique({
         where: { id: userId },
         select: {
+          id: true,
+          email: true,
+          name: true,
+          clerkId: true,
+          createdAt: true,
+          updatedAt: true,
           totalPaid: true,
           totalSpent: true,
         },
@@ -220,25 +200,25 @@ export class EchoDbService {
         console.error('User not found:', userId);
         return {
           balance: 0,
-          totalCredits: 0,
+          totalPaid: 0,
           totalSpent: 0,
         };
       }
 
-      const totalCredits = Number(user.totalPaid);
+      const totalPaid = Number(user.totalPaid);
       const totalSpent = Number(user.totalSpent);
-      const balance = totalCredits - totalSpent;
+      const balance = totalPaid - totalSpent;
 
       return {
         balance,
-        totalCredits,
+        totalPaid,
         totalSpent,
       };
     } catch (error) {
       console.error('Error fetching balance:', error);
       return {
         balance: 0,
-        totalCredits: 0,
+        totalPaid: 0,
         totalSpent: 0,
       };
     }
@@ -251,7 +231,6 @@ export class EchoDbService {
   async createLlmTransaction(
     userId: string,
     echoAppId: string,
-    apiKeyId: string,
     transaction: {
       model: string;
       inputTokens: number;
@@ -262,7 +241,8 @@ export class EchoDbService {
       response?: string;
       status?: string;
       errorMessage?: string;
-    }
+    },
+    apiKeyId?: string
   ): Promise<string | null> {
     try {
       // Validate required fields
@@ -294,7 +274,7 @@ export class EchoDbService {
             errorMessage: transaction.errorMessage || null,
             userId: userId,
             echoAppId: echoAppId,
-            apiKeyId: apiKeyId,
+            apiKeyId: apiKeyId || null,
           },
         });
 

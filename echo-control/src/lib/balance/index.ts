@@ -3,7 +3,7 @@ import { User } from '@/generated/prisma';
 
 export interface BalanceResult {
   balance: number;
-  totalCredits: number;
+  totalPaid: number;
   totalSpent: number;
   currency: string;
   echoAppId: string | null;
@@ -21,7 +21,7 @@ export async function getBalance(
   echoAppId?: string | null
 ): Promise<BalanceResult> {
   let balance: number;
-  let totalCredits: number;
+  let totalPaid: number;
   let totalSpent: number;
   let echoAppName: string | null = null;
 
@@ -45,19 +45,19 @@ export async function getBalance(
     }
 
     echoAppName = appMembership.echoApp?.name || null;
-    totalCredits = Number(appMembership.user.totalPaid);
+    totalPaid = Number(appMembership.user.totalPaid);
     totalSpent = Number(appMembership.totalSpent);
-    balance = totalCredits - totalSpent;
+    balance = totalPaid - totalSpent;
   } else {
     // Overall balance: use User.totalPaid and User.totalSpent
-    totalCredits = Number(user.totalPaid);
+    totalPaid = Number(user.totalPaid);
     totalSpent = Number(user.totalSpent);
-    balance = totalCredits - totalSpent;
+    balance = totalPaid - totalSpent;
   }
 
   return {
     balance,
-    totalCredits,
+    totalPaid,
     totalSpent,
     currency: 'USD',
     echoAppId: echoAppId || null,

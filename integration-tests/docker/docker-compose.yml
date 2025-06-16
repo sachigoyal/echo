@@ -43,10 +43,37 @@ services:
       timeout: 5s
       retries: 10
 
+  echo-data-server-test:
+    build:
+      context: ../../
+      dockerfile: echo-server/docker/Dockerfile.local
+    env_file:
+      - ../.env.test
+      - ./.env.docker       # Docker-specific overrides
+    ports:
+      - "3069:3069"
+    depends_on:
+      echo-control-test:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=test
+      - ECHO_CONTROL_URL=http://echo-control-test:3000
+    command: |
+      sh -c "
+        echo 'Starting echo-data-server in test mode...' &&
+        pnpm start
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3069/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   playwright:
     image: mcr.microsoft.com/playwright:v1.40.0-focal
     environment:
       - ECHO_CONTROL_URL=http://echo-control-test:3000
+      - ECHO_DATA_SERVER_URL=http://echo-data-server-test:3069
       - HEADLESS=true
       - BROWSER_TIMEOUT=30000
     volumes:
@@ -54,6 +81,8 @@ services:
     working_dir: /workspace
     depends_on:
       echo-control-test:
+        condition: service_healthy
+      echo-data-server-test:
         condition: service_healthy
     command: npx playwright test
     profiles:

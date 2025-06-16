@@ -1,11 +1,10 @@
 import type {
-  User,
-  EchoApp,
-  CreateLlmTransactionRequest,
   ApiKeyValidationResult,
-  DatabaseClient,
-} from '@zdql/echo-typescript-sdk';
-import { EchoDbService } from '@zdql/echo-typescript-sdk';
+  EchoApp,
+  User,
+  CreateLlmTransactionRequest,
+} from '@zdql/echo-typescript-sdk/src/types';
+import { EchoDbService } from './DbService';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
@@ -35,7 +34,7 @@ export class EchoControlService {
         },
       },
     });
-    this.dbService = new EchoDbService(this.db as unknown as DatabaseClient);
+    this.dbService = new EchoDbService(this.db);
   }
 
   /**
@@ -126,8 +125,8 @@ export class EchoControlService {
       await this.dbService.createLlmTransaction(
         userId,
         echoAppId,
-        apiKeyId,
-        transaction
+        transaction,
+        apiKeyId
       );
     } catch (error) {
       console.error('Error creating transaction:', error);

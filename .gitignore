@@ -22,7 +22,6 @@ out/
 # Testing
 coverage/
 .nyc_output
-.jest-cache
 
 # Editor directories and files
 .vscode/
