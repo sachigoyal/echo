@@ -8,7 +8,11 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-const isOAuthRoute = createRouteMatcher(['/api/v1/(.*)', '/api/oauth(.*)']);
+const isOAuthRoute = createRouteMatcher([
+  '/api/v1/(.*)',
+  '/api/oauth(.*)',
+  '/api/validate-jwt-token(.*)',
+]);
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -23,19 +27,12 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   // Handle CORS for OAuth endpoints
-  if (isOAuthRoute(req)) {
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
-    }
-
-    // For actual requests, we'll add CORS headers in the response later
-    // Just continue with normal processing
-  }
-
   // For OAuth routes, add CORS headers to the response and pass through.
   // We do the authentication in the OAuth routes themselves (because they may require database access).
   if (isOAuthRoute(req)) {
+    if (req.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
+    }
     const response = NextResponse.next();
     Object.entries(CORS_HEADERS).forEach(([key, value]) => {
       response.headers.set(key, value);
