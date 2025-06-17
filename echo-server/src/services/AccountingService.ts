@@ -4,9 +4,9 @@ const costMap = {
   'gpt-4': 0.0015,
   'gpt-3.5-turbo': 0.0015,
   'gpt-3.5-turbo-1106': 0.0015,
-  'claude-3-5-sonnet': 0.015,
-  'claude-3-7-sonnet': 0.015,
-  'claude-3-5-sonnet-20240620': 0.015,
+  'claude-3-5-sonnet': 0.00015,
+  'claude-3-7-sonnet': 0.00015,
+  'claude-3-5-sonnet-20240620': 0.00015,
 };
 
 export const isValidModel = (model: string) => {

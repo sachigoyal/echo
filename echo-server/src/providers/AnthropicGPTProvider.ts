@@ -71,7 +71,7 @@ export class AnthropicGPTProvider extends GPTProvider {
         const chunks = parseSSEAnthropicGPTFormat(data);
 
         for (const chunk of chunks) {
-          if (chunk.usage !== null) {
+          if (chunk.usage) {
             prompt_tokens += chunk.usage.prompt_tokens;
             completion_tokens += chunk.usage.completion_tokens;
             total_tokens += chunk.usage.total_tokens;

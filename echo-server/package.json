@@ -14,7 +14,9 @@
     "prestart": "pnpm run copy-prisma",
     "dev": "npx tsx src/server.ts",
     "start": "node dist/server.js",
-    "client": "npx tsx src/client.ts",
+    "anthropic-client": "npx tsx src/clients/anthropic-client.ts",
+    "anthropic-gpt-client": "npx tsx src/clients/anthropic-gpt-client.ts",
+    "openai-client": "npx tsx src/clients/gpt-client.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsc && pnpm run copy-prisma-to-dist",
@@ -42,7 +44,6 @@
     "express": "^4.18.3",
     "jose": "^6.0.11",
     "node-fetch": "^2.7.0",
-    "openai": "^4.97.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "prisma": "^6.8.2"
@@ -55,6 +56,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
     "supertest": "^6.3.4",
-    "vitest": "^3.2.3"
+    "vitest": "^3.2.3",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "openai": "^4.97.0"
   }
 }
