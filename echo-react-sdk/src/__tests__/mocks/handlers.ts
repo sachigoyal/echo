@@ -264,7 +264,29 @@ export const handlers = [
     );
   }),
 
-  // Balance API Endpoint
+  // Balance API Endpoint (v1)
+  http.get(`${API_BASE}/v1/balance`, ({ request }) => {
+    const authHeader = request.headers.get('authorization');
+    const validation = validateJWTToken(authHeader);
+
+    if (!validation.valid) {
+      return HttpResponse.json(
+        {
+          error: validation.error,
+          error_description: 'Token validation failed',
+        },
+        { status: 401 }
+      );
+    }
+
+    // Mock successful balance response
+    return HttpResponse.json({
+      balance: 1000,
+      currency: 'USD',
+    });
+  }),
+
+  // Legacy Balance API Endpoint (for backward compatibility)
   http.get(`${API_BASE}/balance`, ({ request }) => {
     const authHeader = request.headers.get('authorization');
     const validation = validateJWTToken(authHeader);
@@ -287,7 +309,7 @@ export const handlers = [
   }),
 
   // Payment Link Creation Endpoint
-  http.post(`${API_BASE}/stripe/payment-link`, async ({ request }) => {
+  http.post(`${API_BASE}/v1/stripe/payment-link`, async ({ request }) => {
     const authHeader = request.headers.get('authorization');
     const validation = validateJWTToken(authHeader);
 
@@ -309,7 +331,13 @@ export const handlers = [
     }
 
     return HttpResponse.json({
-      url: `https://stripe.com/payment-link/mock-${amount}`,
+      paymentLink: {
+        id: `payment-link-${amount}`,
+        url: `https://stripe.com/payment-link/mock-${amount}`,
+        amount: amount * 100, // Amount in cents
+        currency: 'usd',
+        description: 'Echo Credits',
+      },
     });
   }),
 ];
@@ -392,14 +420,13 @@ export const errorHandlers = {
     });
   }),
 
-  // Unauthorized balance request
-  unauthorizedBalance: http.get(`${API_BASE}/balance`, () =>
+  // Unauthorized balance request (v1)
+  unauthorizedBalance: http.get(`${API_BASE}/v1/balance`, () =>
     HttpResponse.json(
       { error: 'token_expired', error_description: 'Access token has expired' },
       { status: 401 }
     )
   ),
-
   // Invalid refresh token
   invalidRefreshToken: http.post(`${API_BASE}/oauth/token`, ({ request }) => {
     const url = new URL(request.url);

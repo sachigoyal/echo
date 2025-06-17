@@ -5,17 +5,11 @@ import Link from 'next/link';
 
 export default function SignInPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/10 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative w-full max-w-md px-4 z-10">
+    <main className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mb-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl mb-4">
+          <div className="mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
               <svg
                 className="w-8 h-8 text-primary-foreground"
                 fill="none"
@@ -39,54 +33,52 @@ export default function SignInPage() {
           </p>
         </div>
 
-        <div className="bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 p-8 shadow-2xl">
-          <SignIn
-            appearance={{
-              elements: {
-                formButtonPrimary:
-                  'bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5',
-                card: 'bg-transparent shadow-none border-none p-0',
-                headerTitle: 'text-foreground font-bold text-xl',
-                headerSubtitle: 'text-muted-foreground',
-                socialButtonsBlockButton:
-                  'bg-card hover:bg-card/80 text-card-foreground border border-border/50 hover:border-border transition-all duration-200 shadow-sm hover:shadow-md',
-                formFieldInput:
-                  'bg-input/50 border-border/50 text-foreground focus:border-primary focus:ring-primary/20 transition-all duration-200',
-                formFieldLabel: 'text-foreground font-medium',
-                dividerLine: 'bg-border/30',
-                dividerText: 'text-muted-foreground text-sm',
-                footerActionLink:
-                  'text-primary hover:text-primary/80 font-medium transition-colors duration-200',
-                identityPreviewText: 'text-foreground',
-                identityPreviewEditButton:
-                  'text-primary hover:text-primary/80 transition-colors duration-200',
-                formFieldInputShowPasswordButton:
-                  'text-muted-foreground hover:text-foreground transition-colors duration-200',
-                formButtonReset:
-                  'text-primary hover:text-primary/80 transition-colors duration-200',
-                alertText: 'text-destructive text-sm',
-                formResendCodeLink:
-                  'text-primary hover:text-primary/80 transition-colors duration-200',
-              },
-              layout: {
-                socialButtonsPlacement: 'top',
-                showOptionalFields: false,
-              },
-              variables: {
-                colorPrimary: 'rgb(205, 27, 33)',
-                colorText: '#000000',
-                colorTextSecondary: '#6b7280',
-                colorBackground: 'transparent',
-                colorInputBackground: '#f9fafb',
-                colorInputText: '#000000',
-                borderRadius: '0.75rem',
-                fontFamily: 'inherit',
-              },
-            }}
-            routing="path"
-            path="/sign-in"
-            signUpUrl="/sign-up"
-          />
+        <div className="bg-card rounded-lg border border-border p-6 shadow-lg">
+          <div className="clerk-container">
+            <SignIn
+              routing="path"
+              path="/sign-in"
+              signUpUrl="/sign-up"
+              appearance={{
+                elements: {
+                  rootBox: 'w-full',
+                  card: 'bg-transparent border-none shadow-none',
+                  headerTitle: 'hidden',
+                  headerSubtitle: 'hidden',
+                  socialButtonsBlockButton:
+                    'bg-input hover:bg-accent text-foreground border border-border rounded-md h-10 text-sm font-medium transition-colors',
+                  socialButtonsBlockButtonText: 'text-foreground font-medium',
+                  dividerLine: 'bg-border',
+                  dividerText: 'text-muted-foreground text-sm',
+                  formFieldLabel: 'text-foreground text-sm font-medium',
+                  formFieldInput:
+                    'bg-input border border-border text-foreground rounded-md h-10 px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+                  formButtonPrimary:
+                    'bg-primary hover:bg-primary/90 text-primary-foreground rounded-md h-10 px-4 text-sm font-medium transition-colors w-full',
+                  footerActionLink:
+                    'text-primary hover:text-primary/80 text-sm font-medium',
+                  identityPreviewText: 'text-foreground',
+                  identityPreviewEditButton:
+                    'text-primary hover:text-primary/80',
+                  formFieldSuccessText: 'text-emerald-600',
+                  formFieldErrorText: 'text-destructive text-sm',
+                  alert:
+                    'border border-border bg-card text-foreground rounded-md',
+                  alertText: 'text-foreground text-sm',
+                  formFieldInputShowPasswordButton:
+                    'text-muted-foreground hover:text-foreground',
+                  otpCodeFieldInput:
+                    'bg-input border border-border text-foreground rounded-md h-10 w-10 text-center text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+                  formHeaderTitle: 'text-foreground text-lg font-semibold',
+                  formHeaderSubtitle: 'text-muted-foreground text-sm',
+                },
+                layout: {
+                  socialButtonsPlacement: 'top',
+                  showOptionalFields: false,
+                },
+              }}
+            />
+          </div>
         </div>
 
         <div className="mt-6 text-center">
@@ -94,13 +86,66 @@ export default function SignInPage() {
             Don&apos;t have an account?{' '}
             <Link
               href="/sign-up"
-              className="text-primary hover:text-primary/80 font-medium transition-colors duration-200"
+              className="text-primary hover:text-primary/80 font-medium transition-colors"
             >
               Sign up here
             </Link>
           </p>
         </div>
       </div>
+
+      {/* Custom CSS to override any remaining Clerk styles */}
+      <style jsx global>{`
+        .clerk-container .cl-internal-b3fm6y {
+          width: 100% !important;
+          max-width: none !important;
+        }
+
+        .clerk-container .cl-card {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+        }
+
+        .clerk-container .cl-main {
+          width: 100% !important;
+        }
+
+        .clerk-container .cl-footer {
+          background: transparent !important;
+        }
+
+        .clerk-container .cl-socialButtonsBlockButton {
+          width: 100% !important;
+          justify-content: center !important;
+        }
+
+        .clerk-container .cl-formButtonPrimary {
+          width: 100% !important;
+        }
+
+        .clerk-container .cl-formField {
+          margin-bottom: 1rem !important;
+        }
+
+        .clerk-container .cl-divider {
+          margin: 1.5rem 0 !important;
+        }
+
+        .clerk-container .cl-footer {
+          margin-top: 1.5rem !important;
+        }
+
+        /* Ensure proper spacing and layout */
+        .clerk-container .cl-rootBox {
+          width: 100% !important;
+        }
+
+        /* Hide any development mode indicators */
+        .clerk-container .cl-developerModeTag {
+          display: none !important;
+        }
+      `}</style>
     </main>
   );
 }
