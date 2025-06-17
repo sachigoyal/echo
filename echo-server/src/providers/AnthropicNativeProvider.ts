@@ -3,6 +3,7 @@ import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 
 export interface AnthropicUsage {
+  input_tokens: number;
   output_tokens: number;
   id: string;
 }
@@ -30,6 +31,7 @@ export const parseSSEAnthropicFormat = (
           parsed.id
         ) {
           usage = {
+            input_tokens: parsed.usage.input_tokens,
             output_tokens: parsed.usage.output_tokens,
             id: parsed.id,
           };
@@ -38,6 +40,7 @@ export const parseSSEAnthropicFormat = (
         // Also handle complete message responses
         if (parsed.type === 'message' && parsed.usage !== null && parsed.id) {
           usage = {
+            input_tokens: parsed.usage.input_tokens,
             output_tokens: parsed.usage.output_tokens,
             id: parsed.id,
           };
@@ -84,10 +87,14 @@ export class AnthropicNativeProvider extends BaseProvider {
         // Create transaction with proper model info and token details
         void this.getEchoControlService().createTransaction({
           model: this.getModel(),
-          inputTokens: 0, // Not available in Anthropic streaming
+          inputTokens: usage.input_tokens,
           outputTokens: usage.output_tokens,
           totalTokens: usage.output_tokens,
-          cost: usage.output_tokens * getCostPerToken(this.getModel()),
+          cost: getCostPerToken(
+            this.getModel(),
+            usage.input_tokens,
+            usage.output_tokens
+          ),
           status: 'success',
           providerId: usage.id || 'null',
         });
