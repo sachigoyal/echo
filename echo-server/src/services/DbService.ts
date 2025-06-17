@@ -236,6 +236,7 @@ export class EchoDbService {
       inputTokens: number;
       outputTokens: number;
       totalTokens: number;
+      providerId: string;
       cost: number;
       prompt?: string;
       response?: string;
@@ -251,13 +252,13 @@ export class EchoDbService {
         typeof transaction.inputTokens !== 'number' ||
         typeof transaction.outputTokens !== 'number' ||
         typeof transaction.totalTokens !== 'number' ||
-        typeof transaction.cost !== 'number'
+        typeof transaction.cost !== 'number' ||
+        !transaction.providerId
       ) {
         throw new Error(
-          'Missing required fields: model, inputTokens, outputTokens, totalTokens, cost'
+          'Missing required fields: model, inputTokens, outputTokens, totalTokens, cost, providerId'
         );
       }
-
       // Use a database transaction to atomically create the LLM transaction and update user balance
       const result = await this.db.$transaction(async tx => {
         // Create the LLM transaction
@@ -265,6 +266,7 @@ export class EchoDbService {
           data: {
             model: transaction.model,
             inputTokens: transaction.inputTokens,
+            providerId: transaction.providerId,
             outputTokens: transaction.outputTokens,
             totalTokens: transaction.totalTokens,
             cost: transaction.cost,

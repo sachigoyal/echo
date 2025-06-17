@@ -48,6 +48,12 @@ export abstract class BaseProvider {
   getModel(): string {
     return this.model;
   }
+
+  async getAppMarkup(): Promise<number> {
+    const markUp = await this.echoControlService.getAppMarkup();
+    return markUp.toNumber();
+  }
+
   // This is specific to OpenAI Format, Anthropic Native and others will need to override this
   ensureStreamUsage(reqBody: Record<string, unknown>): Record<string, unknown> {
     if (this.isStream) {

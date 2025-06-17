@@ -1,7 +1,9 @@
+import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 
 export interface CompletionStateBody {
+  id: string;
   usage: {
     prompt_tokens: number;
     completion_tokens: number;
@@ -10,6 +12,7 @@ export interface CompletionStateBody {
 }
 
 export interface StreamingChunkBody {
+  id: string;
   choices: {
     index: number;
     delta: {
@@ -69,6 +72,7 @@ export class GPTProvider extends BaseProvider {
       let prompt_tokens = 0;
       let completion_tokens = 0;
       let total_tokens = 0;
+      let providerId = 'null';
 
       if (this.getIsStream()) {
         const chunks = parseSSEGPTFormat(data);
@@ -79,26 +83,30 @@ export class GPTProvider extends BaseProvider {
             completion_tokens += chunk.usage.completion_tokens;
             total_tokens += chunk.usage.total_tokens;
           }
+          providerId = chunk.id || 'null';
         }
       } else {
         const parsed = JSON.parse(data) as CompletionStateBody;
         prompt_tokens += parsed.usage.prompt_tokens;
         completion_tokens += parsed.usage.completion_tokens;
         total_tokens += parsed.usage.total_tokens;
+        providerId = parsed.id || 'null';
       }
 
-      if (total_tokens > 0) {
-        console.log('usage tokens: ', total_tokens);
-        // Create transaction with proper model info and token details
-        void this.getEchoControlService().createTransaction({
-          model: this.getModel(),
-          inputTokens: prompt_tokens,
-          outputTokens: completion_tokens,
-          totalTokens: total_tokens,
-          cost: total_tokens * 0.001, // Convert tokens to cost (rough estimate - you should use proper pricing)
-          status: 'success',
-        });
-      }
+      // Create transaction with proper model info and token details
+      void this.getEchoControlService().createTransaction({
+        model: this.getModel(),
+        inputTokens: prompt_tokens,
+        outputTokens: completion_tokens,
+        totalTokens: total_tokens,
+        cost: getCostPerToken(
+          this.getModel(),
+          prompt_tokens,
+          completion_tokens
+        ),
+        status: 'success',
+        providerId: providerId,
+      });
     } catch (error) {
       console.error('Error processing data:', error);
     }

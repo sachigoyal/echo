@@ -5,6 +5,7 @@ import { ReadableStream } from 'stream/web';
 import { HttpError, PaymentRequiredError } from './errors/http';
 import { verifyUserHeaderCheck } from './auth/headers';
 import { getProvider } from './providers/ProviderFactory';
+import { isValidModel } from './services/AccountingService';
 
 dotenv.config();
 
@@ -47,6 +48,13 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     // assumption that "model" will always be passed in the body under this key
     // assumption that "stream" will always be passed in the body under this key
     // This currently works for everything implemented (OpenAI format + Anthropic native format)
+
+    if (!isValidModel(req.body.model)) {
+      return res.status(422).json({
+        error: `Invalid model: ${req.body.model} Echo does not yet support this model.`,
+      });
+    }
+
     const provider = getProvider(
       req.body.model,
       echoControlService,

@@ -2,6 +2,20 @@ import { db } from '../db';
 import { User, Payment } from '@/generated/prisma';
 import Stripe from 'stripe';
 
+/**
+ * PICO-CENT PRECISION SUPPORT
+ *
+ * This module now supports unlimited dollar amounts with pico-cent precision:
+ * - Database stores amounts as DECIMAL(65,14)
+ * - 51 digits before decimal point (virtually unlimited dollar amounts)
+ * - 14 digits after decimal point (pico-cent precision: 10^-14 dollars)
+ *
+ * Examples of supported values:
+ * - $0.00000000000001 (1 pico-cent)
+ * - $999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999,999.99999999999999
+ * - Any value in between with up to 14 decimal places
+ */
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 });
@@ -83,7 +97,7 @@ export async function createPaymentLink(
   const payment = await db.payment.create({
     data: {
       stripePaymentId: paymentLink.id,
-      amount: amountInCents,
+      amount: amount,
       currency: 'usd',
       status: 'pending',
       description: description,
@@ -95,7 +109,7 @@ export async function createPaymentLink(
     paymentLink: {
       id: paymentLink.id,
       url: paymentLink.url,
-      amount: amountInCents,
+      amount: amount,
       currency: 'usd',
       status: 'pending',
       created: Math.floor(Date.now() / 1000),

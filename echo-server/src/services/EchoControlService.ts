@@ -9,6 +9,7 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 
 import { PrismaClient } from '../generated/prisma';
+import { Decimal } from 'generated/prisma/runtime/library';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
@@ -108,6 +109,26 @@ export class EchoControlService {
     }
   }
 
+  async getAppMarkup(): Promise<Decimal> {
+    const appMarkup = await this.db.echoApp.findUnique({
+      where: {
+        id: this.getEchoAppId() ?? '',
+      },
+      select: {
+        markUp: true,
+      },
+    });
+
+    if (!appMarkup) {
+      throw new Error('EchoApp not found');
+    }
+    if (appMarkup.markUp.toNumber() < 1.0) {
+      throw new Error('App markup must be greater than 1.0');
+    }
+
+    return appMarkup.markUp;
+  }
+
   /**
    * Create an LLM transaction record directly in the database
    * Uses centralized logic from EchoDbService
@@ -120,6 +141,10 @@ export class EchoControlService {
         console.error('No authentication result available');
         return;
       }
+
+      const appMarkup = await this.getAppMarkup();
+      const cost = transaction.cost * appMarkup.toNumber();
+      transaction.cost = cost;
 
       const { userId, echoAppId, apiKeyId } = this.authResult;
       await this.dbService.createLlmTransaction(

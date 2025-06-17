@@ -306,9 +306,6 @@ importers:
       node-fetch:
         specifier: ^2.7.0
         version: 2.7.0
-      openai:
-        specifier: ^4.97.0
-        version: 4.104.0(ws@8.18.2)
       prisma:
         specifier: ^6.8.2
         version: 6.9.0(typescript@5.8.3)
@@ -319,6 +316,9 @@ importers:
         specifier: ^5.3.3
         version: 5.8.3
     devDependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.39.0
+        version: 0.39.0
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
@@ -337,6 +337,9 @@ importers:
       lint-staged:
         specifier: ^15.5.2
         version: 15.5.2
+      openai:
+        specifier: ^4.97.0
+        version: 4.104.0(ws@8.18.2)
       supertest:
         specifier: ^6.3.4
         version: 6.3.4
@@ -533,6 +536,9 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
+
+  '@anthropic-ai/sdk@0.39.0':
+    resolution: {integrity: sha512-eMyDIPRZbt1CCLErRCi3exlAvNkBtRe+kW5vvJyef93PmNr/clstYgHhtvmkxN82nlKgzyGPCyGxrm0JQ1ZIdg==}
 
   '@asamuzakjp/css-color@3.2.0':
     resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
@@ -5300,6 +5306,18 @@ snapshots:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
+
+  '@anthropic-ai/sdk@0.39.0':
+    dependencies:
+      '@types/node': 18.19.112
+      '@types/node-fetch': 2.6.12
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
 
   '@asamuzakjp/css-color@3.2.0':
     dependencies:

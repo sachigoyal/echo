@@ -187,14 +187,14 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <Link
-                    href={`/apps/${app.id}`}
+                    href={`/owner/apps/${app.id}/dashboard`}
                     className="flex items-center justify-center px-3 py-2 text-sm font-medium border border-border rounded-md hover:bg-accent"
                   >
                     <KeyIcon className="h-4 w-4 mr-2" />
                     Manage
                   </Link>
                   <Link
-                    href={`/owner/apps/${app.id}/dashboard`}
+                    href={`/apps/${app.id}`}
                     className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
                   >
                     <ChartBarIcon className="h-4 w-4 mr-2" />

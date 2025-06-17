@@ -14,6 +14,8 @@ import {
   CheckIcon,
   XIcon,
 } from 'lucide-react';
+import MarkupSettingsCard from './MarkupSettingsCard';
+import OAuthConfigSection from './OAuthConfigSection';
 
 interface AppAnalytics {
   totalUsers: number;
@@ -293,113 +295,112 @@ export default function OwnerAppDashboard({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Users */}
-        {analytics && analytics.topUsers.length > 0 && (
-          <div className="bg-card p-6 rounded-lg border border-border">
-            <div className="flex items-center mb-4">
-              <ChartBarIcon className="h-5 w-5 text-muted-foreground mr-2" />
-              <h3 className="text-lg font-semibold text-foreground">
-                Top Users by Spending
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {analytics.topUsers.slice(0, 5).map((user, index) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-medium text-primary">
-                      {index + 1}
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-foreground">
-                        {user.name || user.email}
-                      </p>
-                      {user.name && (
-                        <p className="text-xs text-muted-foreground">
-                          {user.email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">
-                      ${user.totalSpent.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {user.apiKeyCount} keys
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* Markup Settings */}
+      <MarkupSettingsCard appId={appId} appName={appName} />
 
-        {/* Customer List */}
+      {/* OAuth Config */}
+      <OAuthConfigSection appId={appId} />
+
+      {/* Top Users */}
+      {analytics && analytics.topUsers.length > 0 && (
         <div className="bg-card p-6 rounded-lg border border-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <UsersIcon className="h-5 w-5 text-muted-foreground mr-2" />
-              <h3 className="text-lg font-semibold text-foreground">
-                Customers
-              </h3>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              {customers.length} total
-            </span>
+          <div className="flex items-center mb-4">
+            <ChartBarIcon className="h-5 w-5 text-muted-foreground mr-2" />
+            <h3 className="text-lg font-semibold text-foreground">
+              Top Users by Spending
+            </h3>
           </div>
-
-          {customers.length === 0 ? (
-            <div className="text-center py-8">
-              <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-2 text-sm font-medium text-foreground">
-                No customers yet
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Invite customers to start using your app.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3 max-h-80 overflow-y-auto">
-              {customers.map(customer => (
-                <div
-                  key={customer.id}
-                  className="flex items-center justify-between p-3 bg-accent/50 rounded-md"
-                >
-                  <div>
+          <div className="space-y-3">
+            {analytics.topUsers.slice(0, 5).map((user, index) => (
+              <div key={user.id} className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-medium text-primary">
+                    {index + 1}
+                  </div>
+                  <div className="ml-3">
                     <p className="text-sm font-medium text-foreground">
-                      {customer.user.name || customer.user.email}
+                      {user.name || user.email}
                     </p>
-                    {customer.user.name && (
+                    {user.name && (
                       <p className="text-xs text-muted-foreground">
-                        {customer.user.email}
+                        {user.email}
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        customer.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : customer.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {customer.status}
-                    </span>
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                      {customer.role}
-                    </span>
-                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="text-right">
+                  <p className="text-sm font-medium text-foreground">
+                    ${user.totalSpent.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {user.apiKeyCount} keys
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* Customer List */}
+      <div className="bg-card p-6 rounded-lg border border-border">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <UsersIcon className="h-5 w-5 text-muted-foreground mr-2" />
+            <h3 className="text-lg font-semibold text-foreground">Customers</h3>
+          </div>
+          <span className="text-sm text-muted-foreground">
+            {customers.length} total
+          </span>
+        </div>
+
+        {customers.length === 0 ? (
+          <div className="text-center py-8">
+            <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-2 text-sm font-medium text-foreground">
+              No customers yet
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Invite customers to start using your app.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {customers.map(customer => (
+              <div
+                key={customer.id}
+                className="flex items-center justify-between p-3 bg-accent/50 rounded-md"
+              >
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {customer.user.name || customer.user.email}
+                  </p>
+                  {customer.user.name && (
+                    <p className="text-xs text-muted-foreground">
+                      {customer.user.email}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      customer.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : customer.status === 'pending'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {customer.status}
+                  </span>
+                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                    {customer.role}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

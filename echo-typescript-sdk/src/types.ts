@@ -123,6 +123,7 @@ export interface CreateLlmTransactionRequest {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  providerId: string;
   cost: number;
   prompt?: string;
   response?: string;
