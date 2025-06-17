@@ -170,6 +170,9 @@ importers:
 
   echo-react-sdk:
     dependencies:
+      '@zdql/echo-typescript-sdk':
+        specifier: file:../echo-typescript-sdk
+        version: link:../echo-typescript-sdk
       dompurify:
         specifier: ^3.2.6
         version: 3.2.6

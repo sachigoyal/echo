@@ -46,7 +46,8 @@
   },
   "dependencies": {
     "dompurify": "^3.2.6",
-    "oidc-client-ts": "^3.2.1"
+    "oidc-client-ts": "^3.2.1",
+    "@zdql/echo-typescript-sdk": "file:../echo-typescript-sdk"
   },
   "devDependencies": {
     "@storybook/addon-docs": "^9.0.10",

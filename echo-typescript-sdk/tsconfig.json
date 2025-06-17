@@ -4,7 +4,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": "./src",
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "module": "ES2022"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "__tests__/**/*"]

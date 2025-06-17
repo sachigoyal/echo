@@ -8,6 +8,8 @@ import React, {
 import { UserManager, User, UserManagerSettings } from 'oidc-client-ts';
 import { EchoConfig, EchoUser, EchoBalance } from '../types';
 import { sanitizeUserProfile } from '../utils/security';
+import { EchoClient } from '@zdql/echo-typescript-sdk';
+import type { Balance } from '@zdql/echo-typescript-sdk';
 
 interface EchoOAuthProfile {
   sub?: string;
@@ -18,15 +20,6 @@ interface EchoOAuthProfile {
   name?: string;
   given_name?: string;
   picture?: string;
-}
-
-interface BalanceResponse {
-  credits: number;
-  currency: string;
-}
-
-interface PaymentLinkResponse {
-  url: string;
 }
 
 export interface EchoContextValue {
@@ -96,6 +89,18 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
   const isAuthenticated = user !== null;
 
+  // Create EchoClient with OAuth access token as API key
+  const createClientWithToken = useCallback(
+    (accessToken: string) => {
+      const client = new EchoClient({
+        baseUrl: config.apiUrl || 'http://localhost:3000',
+        apiKey: accessToken,
+      });
+      return client;
+    },
+    [config.apiUrl]
+  );
+
   // Convert OIDC user to Echo user format with security sanitization
   const convertUser = (oidcUser: User): EchoUser => {
     // For Echo OAuth, user data might be in the token response or profile
@@ -126,8 +131,9 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         const echoUser = convertUser(oidcUser);
         setUser(echoUser);
 
-        // Fetch balance using access token
-        await loadBalance(oidcUser.access_token);
+        // Create client with access token and fetch balance
+        const client = createClientWithToken(oidcUser.access_token);
+        await loadBalanceWithClient(client);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to load user data';
@@ -135,34 +141,21 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         console.error('Error loading user data:', err);
       }
     },
-    [config.apiUrl]
+    [createClientWithToken]
   );
 
-  // Load balance helper function
-  const loadBalance = useCallback(
-    async (accessToken: string) => {
-      try {
-        const response = await fetch(
-          `${config.apiUrl || 'http://localhost:3000'}/api/balance`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const balanceData: BalanceResponse = await response.json();
-          setBalance(balanceData);
-        } else {
-          console.warn('Failed to fetch balance:', response.statusText);
-        }
-      } catch (err) {
-        console.error('Error loading balance:', err);
-      }
-    },
-    [config.apiUrl]
-  );
+  // Load balance using EchoClient
+  const loadBalanceWithClient = useCallback(async (client: EchoClient) => {
+    try {
+      const balanceData: Balance = await client.getBalance();
+      setBalance({
+        credits: balanceData.balance,
+        currency: 'USD', // Default currency as it's not in the Balance interface
+      });
+    } catch (err) {
+      console.error('Error loading balance:', err);
+    }
+  }, []);
 
   // Sign in
   const signIn = async () => {
@@ -195,18 +188,19 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     }
   };
 
-  // Refresh balance with debouncing to prevent API spam
+  // Refresh balance using EchoClient
   const refreshBalance = async () => {
     if (!userManager) {
       return;
     }
     const currentUser = await userManager.getUser();
     if (currentUser?.access_token) {
-      await loadBalance(currentUser.access_token);
+      const client = createClientWithToken(currentUser.access_token);
+      await loadBalanceWithClient(client);
     }
   };
 
-  // Create payment link
+  // Create payment link using EchoClient
   const createPaymentLink = useCallback(
     async (amount: number): Promise<string> => {
       if (!userManager) {
@@ -219,26 +213,9 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
       try {
         setError(null);
-        const response = await fetch(
-          `${config.apiUrl || 'http://localhost:3000'}/api/stripe/payment-link`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${currentUser.access_token}`,
-            },
-            body: JSON.stringify({ amount }),
-          }
-        );
-
-        if (response.ok) {
-          const { url }: PaymentLinkResponse = await response.json();
-          return url;
-        } else {
-          throw new Error(
-            `Failed to create payment link: ${response.statusText}`
-          );
-        }
+        const client = createClientWithToken(currentUser.access_token);
+        const url = await client.getPaymentUrl(amount, 'Echo Credits');
+        return url;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to create payment link';
@@ -246,7 +223,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         throw new Error(errorMessage);
       }
     },
-    [userManager, config.apiUrl]
+    [userManager, createClientWithToken]
   );
 
   // Initialize and handle OAuth callback

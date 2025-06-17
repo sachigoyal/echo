@@ -30,7 +30,30 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: [
+        'react',
+        'react-dom',
+        // Node.js modules that should not be bundled for browser
+        'inquirer',
+        'commander',
+        'chalk',
+        'open',
+        'fs',
+        'path',
+        'child_process',
+        'os',
+        'util',
+        'stream',
+        'readline',
+        'tty',
+        'crypto',
+        'assert',
+        'events',
+        // Node.js built-in modules
+        /^node:/,
+        // CLI helper functions from echo-typescript-sdk
+        /@zdql\/echo-typescript-sdk.*cli/,
+      ],
       output: {
         globals: {
           react: 'React',
