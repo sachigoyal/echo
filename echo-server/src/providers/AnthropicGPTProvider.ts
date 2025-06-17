@@ -1,3 +1,4 @@
+import { getCostPerToken } from '../services/AccountingService';
 import type { CompletionStateBody, StreamingChunkBody } from './GPTProvider';
 import { GPTProvider } from './GPTProvider';
 import { ProviderType } from './ProviderType';
@@ -64,6 +65,7 @@ export class AnthropicGPTProvider extends GPTProvider {
       let prompt_tokens = 0;
       let completion_tokens = 0;
       let total_tokens = 0;
+      let providerId = 'null';
 
       if (this.getIsStream()) {
         const chunks = parseSSEAnthropicGPTFormat(data);
@@ -74,26 +76,26 @@ export class AnthropicGPTProvider extends GPTProvider {
             completion_tokens += chunk.usage.completion_tokens;
             total_tokens += chunk.usage.total_tokens;
           }
+          providerId = chunk.id;
         }
       } else {
         const parsed = JSON.parse(data) as CompletionStateBody;
         prompt_tokens += parsed.usage.prompt_tokens;
         completion_tokens += parsed.usage.completion_tokens;
         total_tokens += parsed.usage.total_tokens;
+        providerId = parsed.id;
       }
 
-      if (total_tokens > 0) {
-        console.log('usage tokens: ', total_tokens);
-        // Create transaction with proper model info and token details
-        void this.getEchoControlService().createTransaction({
-          model: this.getModel(),
-          inputTokens: prompt_tokens,
-          outputTokens: completion_tokens,
-          totalTokens: total_tokens,
-          cost: total_tokens * 0.015, // Convert tokens to cost (rough estimate for Claude)
-          status: 'success',
-        });
-      }
+      // Create transaction with proper model info and token details
+      void this.getEchoControlService().createTransaction({
+        model: this.getModel(),
+        inputTokens: prompt_tokens,
+        outputTokens: completion_tokens,
+        totalTokens: total_tokens,
+        cost: total_tokens * getCostPerToken(this.getModel()),
+        status: 'success',
+        providerId: providerId,
+      });
     } catch (error) {
       console.error('Error processing data:', error);
     }

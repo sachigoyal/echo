@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/lib/db';
+import { PermissionService } from '@/lib/permissions/service';
+import { Permission } from '@/lib/permissions/types';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -34,6 +37,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         id: true,
         name: true,
         description: true,
+        markUp: true,
         appMemberships: {
           where: {
             role: 'owner',
@@ -69,6 +73,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       id: echoApp.id,
       name: echoApp.name,
       description: echoApp.description,
+      markup: echoApp.markUp,
       owner: owner
         ? {
             name: owner.user.name,
@@ -78,6 +83,101 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error('Error fetching app owner details:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/apps/[id]/owner-details - Update app markup
+export async function POST(req: NextRequest, { params }: RouteParams) {
+  try {
+    const { userId } = await auth();
+    const { id } = await params;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Validate UUID format
+    if (
+      !id ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id
+      )
+    ) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
+
+    // Get user from database
+    const user = await db.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if user is owner of the app
+    const hasPermission = await PermissionService.hasPermission(
+      user.id,
+      id,
+      Permission.EDIT_APP
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    // Parse request body
+    const body = await req.json();
+    const { markup } = body;
+
+    // Validate markup
+    if (typeof markup !== 'number' || markup <= 0) {
+      return NextResponse.json(
+        { error: 'Markup must be a positive decimal number' },
+        { status: 400 }
+      );
+    }
+
+    // Update the app markup
+    const updatedApp = await db.echoApp.update({
+      where: {
+        id,
+        isActive: true,
+        isArchived: false,
+      },
+      data: {
+        markUp: markup,
+      },
+      select: {
+        id: true,
+        name: true,
+        markUp: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      app: {
+        id: updatedApp.id,
+        name: updatedApp.name,
+        markup: updatedApp.markUp,
+      },
+    });
+  } catch (error) {
+    console.error('Error updating app markup:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

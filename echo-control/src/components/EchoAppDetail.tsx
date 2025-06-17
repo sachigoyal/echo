@@ -12,10 +12,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { AppRole } from '@/lib/permissions/types';
 import ApiKeyModal from './ApiKeyModal';
 import CreateApiKeyModal from './CreateApiKeyModal';
-import OAuthConfigSection from './OAuthConfigSection';
 
 interface EchoAppDetailProps {
   appId: string;
@@ -471,11 +469,6 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           </div>
         )}
       </div>
-
-      {/* OAuth Configuration - Only show for owners */}
-      {app && app.userRole === AppRole.OWNER && (
-        <OAuthConfigSection appId={app.id} />
-      )}
 
       {/* Recent Transactions */}
       <div className="bg-card rounded-lg border border-border p-6">

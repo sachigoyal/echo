@@ -39,6 +39,7 @@ model EchoApp {
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
+  markUp          Decimal          @db.Decimal(10, 6) @default(1.0)    // mark-up for per-token charging set by owner
   authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
   apiKeys         ApiKey[]         // API keys for the app 
   llmTransactions LlmTransaction[] // LLM transactions for that App
@@ -129,6 +130,7 @@ model Payment {
 
 model LlmTransaction {
   id           String   @id @default(uuid()) @db.Uuid
+  providerId   String
   model        String
   inputTokens  Int
   outputTokens Int

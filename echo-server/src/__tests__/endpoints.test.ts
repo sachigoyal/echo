@@ -154,6 +154,7 @@ const createMockAnthropicStreamingResponse = (
       // Send final usage chunk
       const usageChunk = {
         type: 'message_delta',
+        id: 'test-id',
         usage: {
           input_tokens: Math.floor(totalTokens * 0.3),
           output_tokens: Math.floor(totalTokens * 0.7),
@@ -707,8 +708,8 @@ describe('Endpoint Tests', () => {
           messages: [{ role: 'user', content: 'Test' }],
         });
 
-      expect(response.status).toBe(400);
-      expect(response.body.error).toContain('Unknown model');
+      expect(response.status).toBe(422);
+      expect(response.body.error).toContain('Invalid model');
     }, 10000);
   });
 

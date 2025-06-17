@@ -509,6 +509,7 @@ export const findEchoApp = async (
       id: true,
       name: true,
       description: true,
+      markUp: true,
       isActive: true,
       authorizedCallbackUrls: true,
       isArchived: true,
