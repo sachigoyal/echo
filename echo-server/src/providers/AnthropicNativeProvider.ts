@@ -113,7 +113,7 @@ export class AnthropicNativeProvider extends BaseProvider {
         inputTokens: inputTokens,
         outputTokens: outputTokens,
         totalTokens: totalTokens,
-        cost: totalTokens * getCostPerToken(this.getModel()),
+        cost: getCostPerToken(this.getModel(), inputTokens, outputTokens),
         status: 'success',
         providerId: parsed.id,
       });

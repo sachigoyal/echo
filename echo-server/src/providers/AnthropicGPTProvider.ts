@@ -92,7 +92,11 @@ export class AnthropicGPTProvider extends GPTProvider {
         inputTokens: prompt_tokens,
         outputTokens: completion_tokens,
         totalTokens: total_tokens,
-        cost: total_tokens * getCostPerToken(this.getModel()),
+        cost: getCostPerToken(
+          this.getModel(),
+          prompt_tokens,
+          completion_tokens
+        ),
         status: 'success',
         providerId: providerId,
       });

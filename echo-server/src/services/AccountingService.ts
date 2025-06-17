@@ -1,21 +1,21 @@
-const costMap = {
-  'gpt-4o': 0.0015,
-  'gpt-4o-mini': 0.0015,
-  'gpt-4': 0.0015,
-  'gpt-3.5-turbo': 0.0015,
-  'gpt-3.5-turbo-1106': 0.0015,
-  'claude-3-5-sonnet': 0.00015,
-  'claude-3-7-sonnet': 0.00015,
-  'claude-3-5-sonnet-20240620': 0.00015,
-};
+import modelPrices from '../../model_prices.json';
 
 export const isValidModel = (model: string) => {
-  return model in costMap;
+  return model in modelPrices;
 };
 
-export const getCostPerToken = (model: string) => {
+export const getCostPerToken = (
+  model: string,
+  inputTokens: number,
+  outputTokens: number
+) => {
   if (!isValidModel(model)) {
     throw new Error(`Invalid model: ${model}`);
   }
-  return costMap[model as keyof typeof costMap];
+
+  const modelPrice = modelPrices[model as keyof typeof modelPrices];
+  return (
+    modelPrice.input_cost_per_token * inputTokens +
+    modelPrice.output_cost_per_token * outputTokens
+  );
 };
