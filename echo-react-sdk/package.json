@@ -1,5 +1,5 @@
 {
-  "name": "@echo-systems/react-sdk",
+  "name": "@zdql/echo-react-sdk",
   "version": "0.1.0",
   "description": "React SDK for Echo OAuth2 + PKCE authentication and token management",
   "type": "module",
@@ -38,6 +38,9 @@
     "echo",
     "sdk"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Merit Systems",
   "license": "MIT",
   "peerDependencies": {
