@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DollarSignIcon, SettingsIcon, CheckIcon } from 'lucide-react';
+import { CheckIcon } from 'lucide-react';
+import { GlassButton } from './glass-button';
 
 interface MarkupSettingsCardProps {
   appId: string;
@@ -9,12 +10,22 @@ interface MarkupSettingsCardProps {
 }
 
 export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
-  const [markup, setMarkup] = useState<number>(0);
+  const [markupPercentage, setMarkupPercentage] = useState<number>(0);
   const [inputValue, setInputValue] = useState<string>('0');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Convert multiplier to percentage
+  const multiplierToPercentage = (multiplier: number): number => {
+    return Math.max(0, (multiplier - 1) * 100);
+  };
+
+  // Convert percentage to multiplier
+  const percentageToMultiplier = (percentage: number): number => {
+    return percentage / 100 + 1;
+  };
 
   // Fetch current markup value
   useEffect(() => {
@@ -25,8 +36,11 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
         const data = await response.json();
 
         if (response.ok && data.markup !== undefined) {
-          setMarkup(Number(data.markup));
-          setInputValue(Number(data.markup).toString());
+          const multiplier = Number(data.markup);
+          const percentage = multiplierToPercentage(multiplier);
+
+          setMarkupPercentage(percentage);
+          setInputValue(percentage.toString());
         }
       } catch (error) {
         console.error('Error fetching markup:', error);
@@ -44,19 +58,26 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
       setSaving(true);
       setError(null);
 
-      const newMarkup = parseFloat(inputValue);
+      const newPercentage = parseFloat(inputValue);
 
-      if (isNaN(newMarkup) || newMarkup <= 0) {
-        setError('Markup must be a positive number');
+      if (isNaN(newPercentage) || newPercentage < 0) {
+        setError('Markup must be 0% or higher');
         return;
       }
+
+      if (newPercentage > 1000) {
+        setError('Markup cannot exceed 1000%');
+        return;
+      }
+
+      const newMultiplier = percentageToMultiplier(newPercentage);
 
       const response = await fetch(`/api/apps/${appId}/owner-details`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ markup: newMarkup }),
+        body: JSON.stringify({ markup: newMultiplier }),
       });
 
       const data = await response.json();
@@ -65,7 +86,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
         throw new Error(data.error || 'Failed to update markup');
       }
 
-      setMarkup(newMarkup);
+      setMarkupPercentage(newPercentage);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
@@ -79,131 +100,141 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    const value = e.target.value;
+    setInputValue(value);
     setError(null);
   };
 
-  const isChanged = parseFloat(inputValue) !== markup;
+  const currentPercentage = parseFloat(inputValue) || 0;
+  const isChanged = currentPercentage !== markupPercentage;
+
+  // Calculate example costs for $10 base cost
+  const baseCost = 10;
+  const newTotalCost = baseCost * percentageToMultiplier(currentPercentage);
 
   if (loading) {
     return (
-      <div className="bg-card p-6 rounded-lg border border-border">
+      <div className="bg-card p-6 rounded-lg border">
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-card p-6 rounded-lg border border-border">
-      <div className="flex items-center mb-4">
-        <SettingsIcon className="h-5 w-5 text-muted-foreground mr-2" />
-        <h3 className="text-lg font-semibold text-foreground">Token Markup</h3>
+    <div className="bg-card rounded-lg border p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Markup Settings</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Set a percentage markup on top of base token costs. For example, a
+            50% markup means customers pay $15 for every $10 in base costs.
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-primary">
+            {markupPercentage.toFixed(0)}%
+          </div>
+          <div className="text-xs text-muted-foreground">Current Rate</div>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <p className="text-sm text-muted-foreground mb-3">
-            Set the markup multiplier for token costs charged to your customers.
-            This allows you to add a margin on top of the base token costs.
-          </p>
+      {/* Controls */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <label className="block text-sm font-medium">Markup Percentage</label>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <h4 className="font-semibold text-blue-800 mb-2">How it works:</h4>
-            <p className="text-sm text-blue-700">
-              If you set a markup of 1.2, customers will be charged 20% more
-              than the base token cost. A markup of 1.0 means no additional
-              charge (pass-through pricing).
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <label
-                htmlFor="markup-input"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Markup Multiplier
-              </label>
-              <div className="flex items-center space-x-3">
-                <div className="relative flex-1">
-                  <DollarSignIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    id="markup-input"
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="1.0"
-                  />
-                </div>
-                <button
-                  onClick={handleSave}
-                  disabled={saving || !isChanged}
-                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                    success
-                      ? 'bg-green-500 text-white'
-                      : isChanged && !saving
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-muted text-muted-foreground cursor-not-allowed'
-                  }`}
-                >
-                  {saving ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Saving...
-                    </div>
-                  ) : success ? (
-                    <div className="flex items-center">
-                      <CheckIcon className="h-4 w-4 mr-2" />
-                      Saved!
-                    </div>
-                  ) : (
-                    'Save'
-                  )}
-                </button>
-              </div>
+          {/* Input */}
+          <div className="flex items-center space-x-3">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                min="0"
+                max="1000"
+                step="1"
+                value={inputValue}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded-md text-center bg-background"
+                placeholder="0"
+              />
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                %
+              </span>
             </div>
 
-            {/* Current vs New Preview */}
-            {isChanged && (
-              <div className="bg-accent/50 rounded-lg p-3">
-                <div className="text-sm">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-muted-foreground">
-                      Current markup:
-                    </span>
-                    <span className="font-medium">{markup.toFixed(2)}x</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">New markup:</span>
-                    <span className="font-medium text-primary">
-                      {parseFloat(inputValue || '0').toFixed(2)}x
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+            <GlassButton
+              onClick={handleSave}
+              disabled={saving || !isChanged}
+              variant="secondary"
+            >
+              {saving ? (
+                'Saving...'
+              ) : success ? (
+                <>
+                  <CheckIcon className="h-4 w-4 mr-1" />
+                  Saved
+                </>
+              ) : (
+                'Save'
+              )}
+            </GlassButton>
           </div>
         </div>
 
-        {error && (
-          <div className="bg-destructive/20 border border-destructive rounded-md p-3">
-            <div className="text-sm text-destructive-foreground">{error}</div>
-          </div>
-        )}
+        {/* Preview */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium">Live Preview</h4>
 
-        {success && (
-          <div className="bg-green-50 border border-green-200 rounded-md p-3">
-            <div className="text-sm text-green-700">
-              Markup updated successfully! New rate: {markup.toFixed(2)}x
+          <div className="bg-muted/30 rounded-lg p-4">
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Markup:</span>
+                <span className="font-bold text-lg">
+                  {currentPercentage.toFixed(0)}%
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">
+                  $10.00 base:
+                </span>
+                <span className="font-semibold">
+                  ${newTotalCost.toFixed(2)}
+                </span>
+              </div>
+
+              {currentPercentage === 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded p-2 mt-3">
+                  <div className="text-xs text-amber-800">
+                    <span className="font-medium">⚠️ No profit margin:</span> 0%
+                    markup means no profit.
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Status Messages */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <div className="text-sm text-red-700">{error}</div>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <div className="flex items-center space-x-2">
+            <CheckIcon className="h-4 w-4 text-green-600" />
+            <div className="text-sm text-green-700">
+              Markup updated successfully! New rate:{' '}
+              {markupPercentage.toFixed(0)}% markup
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

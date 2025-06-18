@@ -1,8 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import CustomerAppsPage from '@/components/CustomerAppsPage';
+import OwnerAppsPage from '@/components/OwnerAppsPage';
 
-export default async function Home() {
+export default async function OwnerPage() {
   const { userId } = await auth();
 
   if (!userId) {
@@ -14,13 +14,13 @@ export default async function Home() {
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">
-            My Applications
+            App Owner Dashboard
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Access and manage applications where you have customer access.
+            Manage your Echo applications, invite customers, and view analytics.
           </p>
         </div>
-        <CustomerAppsPage />
+        <OwnerAppsPage />
       </div>
     </main>
   );

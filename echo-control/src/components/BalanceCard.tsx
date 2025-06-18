@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { CreditCardIcon, PlusIcon, MinusIcon } from 'lucide-react';
+import { GlassButton } from './glass-button';
 
 interface Balance {
   balance: string;
@@ -141,17 +142,18 @@ export default function BalanceCard() {
                 placeholder="Amount"
                 className="flex-1 text-sm border border-input bg-input text-input-foreground rounded px-2 py-1 placeholder-muted-foreground"
               />
-              <button
+              <GlassButton
                 onClick={handleBalanceAdjustment}
                 disabled={!adjustmentAmount}
-                className="px-3 py-1 bg-accent text-accent-foreground rounded text-sm hover:bg-accent/90 disabled:opacity-50"
+                variant="secondary"
+                className="!h-8 !w-10"
               >
                 {adjustmentType === 'increment' ? (
                   <PlusIcon className="h-4 w-4" />
                 ) : (
                   <MinusIcon className="h-4 w-4" />
                 )}
-              </button>
+              </GlassButton>
             </div>
           </div>
         </div>

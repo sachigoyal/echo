@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import ApiKeyModal from './ApiKeyModal';
 import CreateApiKeyModal from './CreateApiKeyModal';
+import { GlassButton } from './glass-button';
 
 interface EchoAppDetailProps {
   appId: string;
@@ -253,12 +254,13 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
               </p>
             </div>
           </div>
-          <button
+          <GlassButton
             onClick={() => setShowPaymentSuccess(false)}
-            className="text-green-500 hover:text-green-700"
+            className="!h-8 !w-8"
+            variant="secondary"
           >
             <X className="h-4 w-4" />
-          </button>
+          </GlassButton>
         </div>
       )}
 
@@ -330,7 +332,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 <CreditCard className="h-5 w-5 text-secondary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Cost</p>
+                <p className="text-sm text-muted-foreground">Total Spent</p>
                 <p className="text-xl font-bold text-card-foreground">
                   {formatCurrency(app.stats?.totalCost)}
                 </p>
@@ -351,36 +353,6 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
             </div>
           </div>
         </div>
-
-        {/* Total Spent Info Card */}
-        <div className="bg-gradient-to-br from-card to-card/80 rounded-lg border border-border p-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-card-foreground flex items-center">
-                <CreditCard className="h-5 w-5 mr-2 text-primary" />
-                Total spent on app
-              </h3>
-              <p className="text-2xl font-bold text-primary mt-2">
-                {formatCurrency(app.stats?.totalCost)}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Total spending for this app
-              </p>
-            </div>
-            <div className="text-center">
-              <Link
-                href="/"
-                className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Credits
-              </Link>
-              <p className="text-xs text-muted-foreground mt-2">
-                Manage billing on main dashboard
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* API Keys Section */}
@@ -389,13 +361,14 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
           <h2 className="text-lg font-semibold text-card-foreground">
             API Keys
           </h2>
-          <button
+          <GlassButton
             onClick={() => setShowCreateApiKeyModal(true)}
-            className="flex items-center px-3 py-1.5 bg-primary text-primary-foreground text-sm rounded hover:bg-primary/90 transition-colors"
+            variant="secondary"
+            className="mt-4"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Create Key
-          </button>
+            Create API Key
+          </GlassButton>
         </div>
 
         {!app?.apiKeys || app.apiKeys.length === 0 ? (

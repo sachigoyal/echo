@@ -2,6 +2,7 @@
 
 import { SignOutButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
+import { GlassButton } from '@/components/glass-button';
 
 export default function SignOutPage() {
   const { user } = useUser();
@@ -43,9 +44,9 @@ export default function SignOutPage() {
 
             <div className="space-y-4">
               <SignOutButton redirectUrl="/sign-in">
-                <button className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 focus:ring-offset-background">
+                <GlassButton className="w-full" variant="primary">
                   Sign Out
-                </button>
+                </GlassButton>
               </SignOutButton>
 
               <Link

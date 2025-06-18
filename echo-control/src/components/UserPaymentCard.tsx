@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CreditCard, DollarSign, Zap, TrendingUp } from 'lucide-react';
+import { GlassButton } from './glass-button';
 
 interface UserBalance {
   balance: number;
@@ -109,9 +110,6 @@ export default function UserPaymentCard() {
                 </>
               )}
             </div>
-            <div className="rounded-full bg-primary/10 p-3 lg:mt-4 lg:hidden xl:flex">
-              <CreditCard className="h-6 w-6 text-primary" />
-            </div>
           </div>
 
           {/* Balance Details */}
@@ -152,8 +150,8 @@ export default function UserPaymentCard() {
                   onClick={() => setSelectedPackage(pkg)}
                   className={`relative p-3 rounded-lg border-2 transition-all duration-200 text-left ${
                     selectedPackage.amount === pkg.amount
-                      ? 'border-primary bg-primary/5 shadow-md'
-                      : 'border-border bg-card hover:border-primary/50 hover:bg-primary/5'
+                      ? 'border-secondary bg-secondary/5 shadow-md'
+                      : 'border-border bg-card hover:border-secondary/50 hover:bg-secondary/5'
                   }`}
                 >
                   {pkg.popular && (
@@ -183,23 +181,24 @@ export default function UserPaymentCard() {
           </div>
 
           {/* Purchase Button */}
-          <button
+          <GlassButton
             onClick={() => handlePurchaseCredits(selectedPackage.amount)}
             disabled={loading}
-            className="mt-4 w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 disabled:from-primary/50 disabled:to-primary/40 text-primary-foreground font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:hover:shadow-lg transition-all duration-200"
+            variant="secondary"
+            className="mt-4 w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary/80 disabled:from-secondary/50 disabled:to-secondary/40 text-secondary-foreground font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none disabled:hover:shadow-lg transition-all duration-200"
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary-foreground mr-2"></div>
                 Processing...
               </>
             ) : (
               <>
-                <CreditCard className="h-4 w-4 mr-2" />
+                <CreditCard className="h-4 w-4 mr-2 font-semibold" />
                 Purchase ${selectedPackage.amount} Credits
               </>
             )}
-          </button>
+          </GlassButton>
 
           <div className="mt-2 text-xs text-muted-foreground text-center">
             Credits will be added to your account and can be used across all

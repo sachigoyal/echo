@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import MarkupSettingsCard from './MarkupSettingsCard';
 import OAuthConfigSection from './OAuthConfigSection';
+import { GlassButton } from './glass-button';
 
 interface AppAnalytics {
   totalUsers: number;
@@ -112,8 +113,8 @@ export default function OwnerAppDashboard({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
       </div>
     );
   }
@@ -138,13 +139,14 @@ export default function OwnerAppDashboard({
             </p>
           </div>
         </div>
-        <button
+        <GlassButton
           onClick={() => setShowInviteModal(true)}
-          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          variant="secondary"
+          className="flex items-center"
         >
           <UserPlusIcon className="h-4 w-4 mr-2" />
           Invite Customer
-        </button>
+        </GlassButton>
       </div>
 
       {/* Invite Modal */}
@@ -157,7 +159,7 @@ export default function OwnerAppDashboard({
               </h3>
               <button
                 onClick={() => setShowInviteModal(false)}
-                className="text-muted-foreground hover:text-foreground"
+                className="!h-8 !w-8"
               >
                 <XIcon className="h-4 w-4" />
               </button>
@@ -181,10 +183,7 @@ export default function OwnerAppDashboard({
                     readOnly
                     className="flex-1 px-3 py-2 border border-input bg-input text-input-foreground rounded-md text-sm"
                   />
-                  <button
-                    onClick={copyInviteLink}
-                    className="px-3 py-2 border border-input bg-input text-input-foreground rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
+                  <button onClick={copyInviteLink} className="!h-10 !w-10">
                     {inviteLinkCopied ? (
                       <CheckIcon className="h-4 w-4" />
                     ) : (
@@ -200,25 +199,26 @@ export default function OwnerAppDashboard({
                 </h4>
                 <ol className="text-sm text-blue-700 space-y-1">
                   <li>1. Customer clicks the invitation link</li>
-                  <li>2. They sign in or create an Echo account</li>
-                  <li>3. Your app is automatically selected</li>
-                  <li>4. They can generate API keys to use your app</li>
+                  <li>2. Your app is automatically selected</li>
+                  <li>3. They can generate API keys to use your app</li>
                 </ol>
               </div>
 
               <div className="flex gap-3">
-                <button
+                <GlassButton
                   onClick={() => setShowInviteModal(false)}
-                  className="flex-1 px-4 py-2 border border-input bg-input text-input-foreground rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                  variant="secondary"
+                  className="flex-1"
                 >
                   Close
-                </button>
-                <button
+                </GlassButton>
+                <GlassButton
                   onClick={copyInviteLink}
-                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  variant="primary"
+                  className="flex-1"
                 >
                   {inviteLinkCopied ? 'Copied!' : 'Copy Link'}
-                </button>
+                </GlassButton>
               </div>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function OwnerAppDashboard({
             {analytics.topUsers.slice(0, 5).map((user, index) => (
               <div key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-medium text-primary">
+                  <div className="w-8 h-8 bg-secondary/10 rounded-full flex items-center justify-center text-sm font-medium text-secondary">
                     {index + 1}
                   </div>
                   <div className="ml-3">
