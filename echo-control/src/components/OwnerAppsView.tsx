@@ -37,6 +37,8 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
   const handleCreateApp = async (appData: {
     name: string;
     description?: string;
+    githubType?: 'user' | 'repo';
+    githubId?: string;
   }) => {
     setError(null);
     try {

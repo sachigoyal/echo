@@ -69,6 +69,8 @@ export default function EchoAppsDashboard() {
   const handleCreateApp = async (appData: {
     name: string;
     description?: string;
+    githubType?: 'user' | 'repo';
+    githubId?: string;
   }) => {
     setError(null);
     const response = await fetch('/api/apps', {

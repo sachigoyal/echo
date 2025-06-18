@@ -6,7 +6,12 @@ import { GlassButton } from './glass-button';
 
 interface CreateEchoAppModalProps {
   onClose: () => void;
-  onSubmit: (data: { name: string; description?: string }) => Promise<void>;
+  onSubmit: (data: {
+    name: string;
+    description?: string;
+    githubType?: 'user' | 'repo';
+    githubId?: string;
+  }) => Promise<void>;
 }
 
 export default function CreateEchoAppModal({
@@ -15,6 +20,8 @@ export default function CreateEchoAppModal({
 }: CreateEchoAppModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [githubType, setGithubType] = useState<'user' | 'repo'>('user');
+  const [githubId, setGithubId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +37,8 @@ export default function CreateEchoAppModal({
       await onSubmit({
         name: name.trim(),
         description: description.trim() || undefined,
+        githubType: githubId.trim() ? githubType : undefined,
+        githubId: githubId.trim() || undefined,
       });
     } catch (err) {
       setError(
@@ -50,6 +59,8 @@ export default function CreateEchoAppModal({
       await onSubmit({
         name: name.trim(),
         description: description.trim() || undefined,
+        githubType: githubId.trim() ? githubType : undefined,
+        githubId: githubId.trim() || undefined,
       });
     } catch (err) {
       setError(
@@ -112,6 +123,48 @@ export default function CreateEchoAppModal({
               className="mt-1 block w-full px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground placeholder-muted-foreground transition-colors resize-none"
               placeholder="Describe what this app does..."
             />
+          </div>
+
+          <div>
+            <label
+              htmlFor="githubType"
+              className="block text-sm font-medium text-card-foreground"
+            >
+              GitHub Type
+            </label>
+            <select
+              id="githubType"
+              value={githubType}
+              onChange={e => setGithubType(e.target.value as 'user' | 'repo')}
+              className="mt-1 block w-full px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground transition-colors"
+            >
+              <option value="user">User</option>
+              <option value="repo">Repository</option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="githubId"
+              className="block text-sm font-medium text-card-foreground"
+            >
+              GitHub ID
+            </label>
+            <input
+              type="text"
+              id="githubId"
+              value={githubId}
+              onChange={e => setGithubId(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground placeholder-muted-foreground transition-colors"
+              placeholder={
+                githubType === 'user' ? 'username' : 'owner/repo-name'
+              }
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {githubType === 'user'
+                ? 'Enter the GitHub username (e.g., octocat)'
+                : 'Enter the repository path (e.g., owner/repo-name)'}
+            </p>
           </div>
 
           <div className="flex justify-end space-x-3">

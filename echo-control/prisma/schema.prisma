@@ -40,6 +40,8 @@ model EchoApp {
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
   markUp          Decimal          @db.Decimal(65, 14) @default(1.0)    // mark-up for per-token charging set by owner - supports unlimited precision
+  githubId        String?           
+  githubType      String?
   authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
   apiKeys         ApiKey[]         // API keys for the app 
   llmTransactions LlmTransaction[] // LLM transactions for that App
