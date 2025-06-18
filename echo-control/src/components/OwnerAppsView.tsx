@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { PlusIcon, KeyIcon, ChartBarIcon, TrashIcon } from 'lucide-react';
 import { AppRole } from '@/lib/permissions/types';
 import CreateEchoAppModal from './CreateEchoAppModal';
+import { GlassButton } from './glass-button';
+import { useRouter } from 'next/navigation';
 
 interface EchoAppWithRole {
   id: string;
@@ -31,10 +32,13 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingAppId, setDeletingAppId] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleCreateApp = async (appData: {
     name: string;
     description?: string;
+    githubType?: 'user' | 'repo';
+    githubId?: string;
   }) => {
     setError(null);
     try {
@@ -97,13 +101,13 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
             Manage your applications and view customer analytics
           </p>
         </div>
-        <button
+        <GlassButton
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
+          variant="secondary"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Create Echo App
-        </button>
+        </GlassButton>
       </div>
 
       {error && (
@@ -122,13 +126,13 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
             Get started by creating your first Echo application.
           </p>
           <div className="mt-6">
-            <button
+            <GlassButton
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
+              variant="secondary"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               Create Echo App
-            </button>
+            </GlassButton>
           </div>
         </div>
       ) : (
@@ -142,7 +146,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
               <button
                 onClick={e => handleArchiveApp(app.id, e)}
                 disabled={deletingAppId === app.id}
-                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-destructive rounded-md hover:bg-destructive/10 transition-colors"
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-destructive rounded-md hover:bg-destructive/10 transition-colors disabled:opacity-50"
                 title="Archive app"
               >
                 {deletingAppId === app.id ? (
@@ -186,20 +190,26 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
               {/* Action Buttons */}
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href={`/owner/apps/${app.id}/dashboard`}
-                    className="flex items-center justify-center px-3 py-2 text-sm font-medium border border-border rounded-md hover:bg-accent"
+                  <GlassButton
+                    variant="secondary"
+                    onClick={() => {
+                      router.push(`/owner/apps/${app.id}/dashboard`);
+                    }}
+                    className="flex items-center justify-center"
                   >
                     <KeyIcon className="h-4 w-4 mr-2" />
                     Manage
-                  </Link>
-                  <Link
-                    href={`/apps/${app.id}`}
-                    className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                  </GlassButton>
+                  <GlassButton
+                    variant="primary"
+                    onClick={() => {
+                      router.push(`/apps/${app.id}`);
+                    }}
+                    className="flex items-center justify-center"
                   >
                     <ChartBarIcon className="h-4 w-4 mr-2" />
                     Dashboard
-                  </Link>
+                  </GlassButton>
                 </div>
               </div>
             </div>

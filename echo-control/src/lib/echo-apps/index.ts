@@ -9,12 +9,16 @@ import { softDeleteEchoApp } from '../soft-delete';
 export interface AppCreateInput {
   name: string;
   description?: string;
+  githubType?: 'user' | 'repo';
+  githubId?: string;
 }
 
 export interface AppUpdateInput {
   name?: string;
   description?: string;
   isActive?: boolean;
+  githubType?: 'user' | 'repo';
+  githubId?: string;
 }
 
 export interface AppWithDetails {
@@ -97,6 +101,26 @@ export const validateAppDescription = (description?: string): string | null => {
   }
   if (description && description.length > 500) {
     return 'Description must be 500 characters or less';
+  }
+  return null;
+};
+
+export const validateGithubId = (githubId?: string): string | null => {
+  if (githubId && typeof githubId !== 'string') {
+    return 'GitHub ID must be a string';
+  }
+  if (githubId && githubId.trim().length === 0) {
+    return 'GitHub ID cannot be empty if provided';
+  }
+  if (githubId && githubId.length > 200) {
+    return 'GitHub ID must be 200 characters or less';
+  }
+  return null;
+};
+
+export const validateGithubType = (githubType?: string): string | null => {
+  if (githubType && !['user', 'repo'].includes(githubType)) {
+    return 'GitHub Type must be either "user" or "repo"';
   }
   return null;
 };
@@ -352,10 +376,22 @@ export const createEchoApp = async (userId: string, data: AppCreateInput) => {
     throw new Error(descriptionError);
   }
 
+  const githubIdError = validateGithubId(data.githubId);
+  if (githubIdError) {
+    throw new Error(githubIdError);
+  }
+
+  const githubTypeError = validateGithubType(data.githubType);
+  if (githubTypeError) {
+    throw new Error(githubTypeError);
+  }
+
   const echoApp = await db.echoApp.create({
     data: {
       name: data.name.trim(),
       description: data.description?.trim() || null,
+      githubType: data.githubType || null,
+      githubId: data.githubId?.trim() || null,
       appMemberships: {
         create: {
           userId,
@@ -372,6 +408,8 @@ export const createEchoApp = async (userId: string, data: AppCreateInput) => {
       id: true,
       name: true,
       description: true,
+      githubType: true,
+      githubId: true,
       isActive: true,
       createdAt: true,
       updatedAt: true,
@@ -413,6 +451,20 @@ export const updateEchoAppById = async (
     }
   }
 
+  if (data.githubId !== undefined) {
+    const githubIdError = validateGithubId(data.githubId);
+    if (githubIdError) {
+      throw new Error(githubIdError);
+    }
+  }
+
+  if (data.githubType !== undefined) {
+    const githubTypeError = validateGithubType(data.githubType);
+    if (githubTypeError) {
+      throw new Error(githubTypeError);
+    }
+  }
+
   // Verify the echo app exists and is not archived
   const existingApp = await db.echoApp.findFirst({
     where: {
@@ -434,6 +486,10 @@ export const updateEchoAppById = async (
         description: data.description?.trim() || null,
       }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
+      ...(data.githubType !== undefined && { githubType: data.githubType }),
+      ...(data.githubId !== undefined && {
+        githubId: data.githubId?.trim() || null,
+      }),
     },
     include: {
       apiKeys: {
@@ -510,6 +566,8 @@ export const findEchoApp = async (
       name: true,
       description: true,
       markUp: true,
+      githubId: true,
+      githubType: true,
       isActive: true,
       authorizedCallbackUrls: true,
       isArchived: true,

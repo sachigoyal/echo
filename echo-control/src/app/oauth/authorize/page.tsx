@@ -3,6 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { GlassButton } from '@/components/glass-button';
 
 interface AuthorizeParams {
   client_id: string;
@@ -176,12 +177,13 @@ export default function OAuthAuthorizePage() {
             </div>
             <div>
               <p className="text-destructive text-sm">{error}</p>
-              <button
+              <GlassButton
                 onClick={() => window.history.back()}
-                className="mt-4 w-full px-4 py-2 border border-border rounded-md hover:bg-accent text-foreground"
+                className="mt-4 w-full"
+                variant="secondary"
               >
                 Go Back
-              </button>
+              </GlassButton>
             </div>
           </div>
         </div>
@@ -290,20 +292,22 @@ export default function OAuthAuthorizePage() {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <GlassButton
                 onClick={handleDeny}
-                className="flex-1 px-4 py-2 border border-border rounded-md hover:bg-accent text-foreground disabled:opacity-50 transition-colors"
                 disabled={isAuthorizing}
+                variant="secondary"
+                className="flex-1"
               >
                 Deny
-              </button>
-              <button
+              </GlassButton>
+              <GlassButton
                 onClick={handleAuthorize}
-                className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
                 disabled={isAuthorizing}
+                variant="primary"
+                className="flex-1"
               >
                 {isAuthorizing ? 'Authorizing...' : 'Authorize'}
-              </button>
+              </GlassButton>
             </div>
 
             <p className="text-xs text-muted-foreground text-center">

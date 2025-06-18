@@ -1,7 +1,8 @@
 'use client';
 
-import { Check, Copy, ExternalLink, Plus, Shield, Trash } from 'lucide-react';
+import { Check, Copy, ExternalLink, Shield, Trash } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
+import { GlassButton } from './glass-button';
 
 interface OAuthConfigSectionProps {
   appId: string;
@@ -26,7 +27,6 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
   const [error, setError] = useState<string | null>(null);
   const [newUrl, setNewUrl] = useState('');
   const [adding, setAdding] = useState(false);
-  const [deletingUrl, setDeletingUrl] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const fetchOAuthConfig = useCallback(async () => {
@@ -79,7 +79,6 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
   };
 
   const handleRemoveCallbackUrl = async (url: string) => {
-    setDeletingUrl(url);
     try {
       const response = await fetch(`/api/apps/${appId}/oauth-config`, {
         method: 'DELETE',
@@ -95,8 +94,6 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
       }
     } catch {
       alert('Failed to remove callback URL');
-    } finally {
-      setDeletingUrl(null);
     }
   };
 
@@ -167,8 +164,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
               </code>
               <button
                 onClick={() => copyToClipboard(appId, 'client_id')}
-                className="flex items-center px-2 py-2 text-muted-foreground hover:text-card-foreground"
-                title="Copy Client ID"
+                className="!h-10 !w-10"
               >
                 {copiedField === 'client_id' ? (
                   <Check className="h-4 w-4" />
@@ -196,8 +192,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
                         'auth_url'
                       )
                     }
-                    className="flex items-center px-2 py-2 text-muted-foreground hover:text-card-foreground"
-                    title="Copy Authorization URL"
+                    className="!h-10 !w-10"
                   >
                     {copiedField === 'auth_url' ? (
                       <Check className="h-4 w-4" />
@@ -223,8 +218,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
                         'token_url'
                       )
                     }
-                    className="flex items-center px-2 py-2 text-muted-foreground hover:text-card-foreground"
-                    title="Copy Token URL"
+                    className="!h-10 !w-10"
                   >
                     {copiedField === 'token_url' ? (
                       <Check className="h-4 w-4" />
@@ -250,8 +244,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
                         'refresh_url'
                       )
                     }
-                    className="flex items-center px-2 py-2 text-muted-foreground hover:text-card-foreground"
-                    title="Copy Refresh URL"
+                    className="!h-10 !w-10"
                   >
                     {copiedField === 'refresh_url' ? (
                       <Check className="h-4 w-4" />
@@ -273,7 +266,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
             Authorized Callback URLs
           </h3>
           <a
-            href="https://oauth.net/2/redirect-uris/"
+            href="https://www.oauth.com/oauth2-servers/redirect-uris/"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center text-sm text-muted-foreground hover:text-card-foreground"
@@ -295,17 +288,15 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
             value={newUrl}
             onChange={e => setNewUrl(e.target.value)}
             placeholder="https://yourapp.com/auth/callback"
-            className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-card-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            onKeyPress={e => e.key === 'Enter' && handleAddCallbackUrl()}
+            className="flex-1 px-3 py-2 border border-input bg-input rounded-md text-card-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <button
+          <GlassButton
             onClick={handleAddCallbackUrl}
-            disabled={adding || !newUrl.trim()}
-            className="flex items-center px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!newUrl.trim() || adding}
+            variant="secondary"
           >
-            <Plus className="h-4 w-4 mr-1" />
-            {adding ? 'Adding...' : 'Add'}
-          </button>
+            Add URI
+          </GlassButton>
         </div>
 
         {/* List existing URLs */}
@@ -321,11 +312,9 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
                 </code>
                 <button
                   onClick={() => handleRemoveCallbackUrl(url)}
-                  disabled={deletingUrl === url}
-                  className="flex items-center px-2 py-1 text-destructive hover:text-destructive/80 disabled:opacity-50"
-                  title="Remove URL"
+                  className="!h-8 !w-8"
                 >
-                  <Trash className="h-4 w-4" />
+                  <Trash className="h-4 w-4 text-destructive" />
                 </button>
               </div>
             ))}

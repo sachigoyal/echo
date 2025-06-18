@@ -13,6 +13,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { GlassButton } from './glass-button';
 
 interface EchoApp {
   id: string;
@@ -68,6 +69,8 @@ export default function EchoAppsDashboard() {
   const handleCreateApp = async (appData: {
     name: string;
     description?: string;
+    githubType?: 'user' | 'repo';
+    githubId?: string;
   }) => {
     setError(null);
     const response = await fetch('/api/apps', {
@@ -135,18 +138,19 @@ export default function EchoAppsDashboard() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          <button
+          <GlassButton
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
+            variant="secondary"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
             Create Echo App
-          </button>
+          </GlassButton>
 
           <div className="relative">
-            <button
+            <GlassButton
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-accent"
+              className="flex items-center space-x-2"
+              variant="secondary"
             >
               {user?.imageUrl ? (
                 <Image
@@ -162,17 +166,18 @@ export default function EchoAppsDashboard() {
               <span className="text-sm font-medium text-foreground">
                 {user?.fullName || user?.emailAddresses[0]?.emailAddress}
               </span>
-            </button>
+            </GlassButton>
 
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
-                <button
+                <GlassButton
                   onClick={() => signOut()}
-                  className="w-full flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent rounded-md"
+                  className="w-full flex items-center !h-10"
+                  variant="secondary"
                 >
                   <LogOutIcon className="h-4 w-4 mr-2" />
                   Sign Out
-                </button>
+                </GlassButton>
               </div>
             )}
           </div>
@@ -206,13 +211,13 @@ export default function EchoAppsDashboard() {
               Get started by creating your first Echo application.
             </p>
             <div className="mt-6">
-              <button
+              <GlassButton
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
+                variant="secondary"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Create Echo App
-              </button>
+              </GlassButton>
             </div>
           </div>
         ) : (
@@ -238,16 +243,22 @@ export default function EchoAppsDashboard() {
                       >
                         {app.isActive ? 'Active' : 'Inactive'}
                       </span>
-                      <button
-                        onClick={e => handleArchiveApp(app.id, e)}
-                        className={`p-1 rounded-full hover:bg-destructive/10 group-hover:opacity-100 ${
+                      <GlassButton
+                        onClick={() => {
+                          const syntheticEvent = {
+                            preventDefault: () => {},
+                            stopPropagation: () => {},
+                          } as React.MouseEvent;
+                          handleArchiveApp(app.id, syntheticEvent);
+                        }}
+                        className={`!h-8 !w-8 rounded-full group-hover:opacity-100 ${
                           deletingAppId === app.id ? 'opacity-50' : 'opacity-0'
                         }`}
                         disabled={deletingAppId === app.id}
-                        aria-label="Archive app"
+                        variant="primary"
                       >
                         <TrashIcon className="h-4 w-4 text-destructive" />
-                      </button>
+                      </GlassButton>
                     </div>
                   </div>
 

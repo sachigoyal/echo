@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/nextjs';
 import Image from 'next/image';
-import { UserIcon, LogOutIcon } from 'lucide-react';
+import Link from 'next/link';
+import { UserIcon, LogOutIcon, Users } from 'lucide-react';
 import { AppRole } from '@/lib/permissions/types';
 import OwnerAppsView from './OwnerAppsView';
-import CustomerAppsView from './CustomerAppsView';
 import UserPaymentCard from './UserPaymentCard';
 
 interface EchoAppWithRole {
@@ -25,12 +25,10 @@ interface EchoAppWithRole {
   };
 }
 
-export default function EnhancedEchoAppsDashboard() {
+export default function OwnerAppsPage() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [ownedApps, setOwnedApps] = useState<EchoAppWithRole[]>([]);
-  const [customerApps, setCustomerApps] = useState<EchoAppWithRole[]>([]);
-  const [activeTab, setActiveTab] = useState<'owned' | 'customer'>('owned');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -65,18 +63,8 @@ export default function EnhancedEchoAppsDashboard() {
       const owned = allApps.filter(
         (app: EchoAppWithRole) => app.userRole === AppRole.OWNER
       );
-      const customer = allApps.filter(
-        (app: EchoAppWithRole) =>
-          app.userRole === AppRole.CUSTOMER || app.userRole === AppRole.ADMIN
-      );
 
       setOwnedApps(owned);
-      setCustomerApps(customer);
-
-      // Set default tab based on what the user has
-      if (owned.length === 0 && customer.length > 0) {
-        setActiveTab('customer');
-      }
     } catch (error) {
       console.error('Error fetching echo apps:', error);
       setError(
@@ -104,41 +92,53 @@ export default function EnhancedEchoAppsDashboard() {
             Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
           </h1>
           <p className="text-muted-foreground">
-            Manage your Echo applications and monitor usage.
+            Manage your Echo applications and monitor customer usage.
           </p>
         </div>
-        <div className="relative">
-          <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-accent"
+        <div className="flex items-center space-x-4">
+          {/* Link to Customer Apps */}
+          <Link
+            href="/"
+            className="flex items-center space-x-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-accent"
           >
-            {user?.imageUrl ? (
-              <Image
-                src={user.imageUrl}
-                alt="Profile"
-                width={32}
-                height={32}
-                className="h-8 w-8 rounded-full"
-              />
-            ) : (
-              <UserIcon className="h-8 w-8 text-muted-foreground" />
-            )}
-            <span className="text-sm font-medium text-foreground">
-              {user?.fullName || user?.emailAddresses[0]?.emailAddress}
-            </span>
-          </button>
+            <Users className="h-4 w-4" />
+            <span>Customer Apps</span>
+          </Link>
 
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
-              <button
-                onClick={() => signOut()}
-                className="w-full flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent rounded-md"
-              >
-                <LogOutIcon className="h-4 w-4 mr-2" />
-                Sign Out
-              </button>
-            </div>
-          )}
+          {/* User Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-accent"
+            >
+              {user?.imageUrl ? (
+                <Image
+                  src={user.imageUrl}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full"
+                />
+              ) : (
+                <UserIcon className="h-8 w-8 text-muted-foreground" />
+              )}
+              <span className="text-sm font-medium text-foreground">
+                {user?.fullName || user?.emailAddresses[0]?.emailAddress}
+              </span>
+            </button>
+
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => signOut()}
+                  className="w-full flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent rounded-md"
+                >
+                  <LogOutIcon className="h-4 w-4 mr-2" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -170,40 +170,8 @@ export default function EnhancedEchoAppsDashboard() {
       {/* User Payment Card */}
       <UserPaymentCard />
 
-      {/* Tab Navigation */}
-      <div className="border-b border-border">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('owned')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'owned'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-            }`}
-          >
-            My Apps ({ownedApps.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('customer')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'customer'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-            }`}
-          >
-            Customer Apps ({customerApps.length})
-          </button>
-        </nav>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'owned' && (
-        <OwnerAppsView apps={ownedApps} onRefresh={fetchApps} />
-      )}
-
-      {activeTab === 'customer' && (
-        <CustomerAppsView apps={customerApps} onRefresh={fetchApps} />
-      )}
+      {/* Owner Apps View */}
+      <OwnerAppsView apps={ownedApps} onRefresh={fetchApps} />
     </div>
   );
 }

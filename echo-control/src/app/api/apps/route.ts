@@ -40,8 +40,13 @@ export async function POST(req: NextRequest) {
     const user = await getCurrentUser();
     const body = await req.json();
 
-    const { name, description } = body;
-    const appData: AppCreateInput = { name, description };
+    const { name, description, githubType, githubId } = body;
+    const appData: AppCreateInput = {
+      name,
+      description,
+      githubType,
+      githubId,
+    };
 
     const echoApp = await createEchoApp(user.id, appData);
 
@@ -50,6 +55,8 @@ export async function POST(req: NextRequest) {
         id: echoApp.id,
         name: echoApp.name,
         description: echoApp.description,
+        github_type: echoApp.githubType,
+        github_id: echoApp.githubId,
         is_active: echoApp.isActive,
         created_at: echoApp.createdAt.toISOString(),
         updated_at: echoApp.updatedAt.toISOString(),

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, Copy, Check } from 'lucide-react';
+import { GlassButton } from './glass-button';
 
 interface ApiKeyModalProps {
   apiKey: {
@@ -53,12 +54,13 @@ export default function ApiKeyModal({
           <h3 className="text-lg font-semibold text-card-foreground">
             API Key Created
           </h3>
-          <button
+          <GlassButton
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="!h-8 !w-8"
+            variant="secondary"
           >
             <X className="h-6 w-6" />
-          </button>
+          </GlassButton>
         </div>
 
         <div className="space-y-4">
@@ -80,23 +82,25 @@ export default function ApiKeyModal({
                   className="flex-1 px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground"
                   placeholder="Enter API key name"
                 />
-                <button
+                <GlassButton
                   onClick={handleRename}
                   disabled={loading || !keyName.trim()}
-                  className="px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  variant="primary"
+                  className="!h-10"
                 >
                   Save
-                </button>
+                </GlassButton>
               </div>
             ) : (
               <div className="flex items-center justify-between px-3 py-2 border border-border bg-muted rounded-md">
                 <span className="text-card-foreground">{keyName}</span>
-                <button
+                <GlassButton
                   onClick={() => setIsEditing(true)}
-                  className="text-sm text-primary hover:text-primary/90 transition-colors"
+                  variant="secondary"
+                  className="!h-8"
                 >
                   Edit
-                </button>
+                </GlassButton>
               </div>
             )}
           </div>
@@ -109,16 +113,17 @@ export default function ApiKeyModal({
               <div className="flex items-center justify-between px-3 py-2 border border-border bg-muted rounded-md font-mono text-sm text-card-foreground break-all pr-12">
                 {apiKey.key}
               </div>
-              <button
+              <GlassButton
                 onClick={handleCopy}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                className="!h-8 !w-8 absolute right-2 top-1/2 transform -translate-y-1/2"
+                variant="secondary"
               >
                 {copied ? (
                   <Check className="h-5 w-5 text-green-500" />
                 ) : (
                   <Copy className="h-5 w-5" />
                 )}
-              </button>
+              </GlassButton>
             </div>
           </div>
 
@@ -131,13 +136,9 @@ export default function ApiKeyModal({
           </div>
 
           <div className="flex justify-end space-x-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
-            >
+            <GlassButton onClick={onClose} variant="primary">
               I&apos;ve Saved My API Key
-            </button>
+            </GlassButton>
           </div>
         </div>
       </div>

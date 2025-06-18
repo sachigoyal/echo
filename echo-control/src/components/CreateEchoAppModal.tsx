@@ -2,10 +2,16 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { GlassButton } from './glass-button';
 
 interface CreateEchoAppModalProps {
   onClose: () => void;
-  onSubmit: (data: { name: string; description?: string }) => Promise<void>;
+  onSubmit: (data: {
+    name: string;
+    description?: string;
+    githubType?: 'user' | 'repo';
+    githubId?: string;
+  }) => Promise<void>;
 }
 
 export default function CreateEchoAppModal({
@@ -14,6 +20,8 @@ export default function CreateEchoAppModal({
 }: CreateEchoAppModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [githubType, setGithubType] = useState<'user' | 'repo'>('user');
+  const [githubId, setGithubId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +37,30 @@ export default function CreateEchoAppModal({
       await onSubmit({
         name: name.trim(),
         description: description.trim() || undefined,
+        githubType: githubId.trim() ? githubType : undefined,
+        githubId: githubId.trim() || undefined,
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to create echo app'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleButtonClick = async () => {
+    if (!name.trim()) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await onSubmit({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        githubType: githubId.trim() ? githubType : undefined,
+        githubId: githubId.trim() || undefined,
       });
     } catch (err) {
       setError(
@@ -46,10 +78,7 @@ export default function CreateEchoAppModal({
           <h3 className="text-lg font-semibold text-card-foreground">
             Create New Echo App
           </h3>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <button onClick={onClose} className="!h-8 !w-8">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -96,21 +125,59 @@ export default function CreateEchoAppModal({
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md shadow-sm text-sm font-medium text-muted-foreground bg-card hover:bg-accent hover:text-accent-foreground transition-colors"
+          <div>
+            <label
+              htmlFor="githubType"
+              className="block text-sm font-medium text-card-foreground"
             >
+              GitHub Type
+            </label>
+            <select
+              id="githubType"
+              value={githubType}
+              onChange={e => setGithubType(e.target.value as 'user' | 'repo')}
+              className="mt-1 block w-full px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground transition-colors"
+            >
+              <option value="user">User</option>
+              <option value="repo">Repository</option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="githubId"
+              className="block text-sm font-medium text-card-foreground"
+            >
+              GitHub ID
+            </label>
+            <input
+              type="text"
+              id="githubId"
+              value={githubId}
+              onChange={e => setGithubId(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground placeholder-muted-foreground transition-colors"
+              placeholder={
+                githubType === 'user' ? 'username' : 'owner/repo-name'
+              }
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {githubType === 'user'
+                ? 'Enter the GitHub username (e.g., octocat)'
+                : 'Enter the repository path (e.g., owner/repo-name)'}
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <GlassButton onClick={onClose} variant="secondary">
               Cancel
-            </button>
-            <button
-              type="submit"
+            </GlassButton>
+            <GlassButton
+              onClick={handleButtonClick}
               disabled={!name.trim() || loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              variant="primary"
             >
               {loading ? 'Creating...' : 'Create App'}
-            </button>
+            </GlassButton>
           </div>
         </form>
       </div>
