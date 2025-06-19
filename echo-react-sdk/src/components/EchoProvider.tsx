@@ -28,10 +28,12 @@ export interface EchoContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  token: string | null;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshBalance: () => Promise<void>;
   createPaymentLink: (amount: number) => Promise<string>;
+  getToken: () => Promise<string | null>;
 }
 
 export const EchoContext = createContext<EchoContextValue | undefined>(
@@ -48,6 +50,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const [balance, setBalance] = useState<EchoBalance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [userManager] = useState(() => {
     // Check for existing mock UserManager in tests
     if (
@@ -130,6 +133,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         setError(null);
         const echoUser = convertUser(oidcUser);
         setUser(echoUser);
+        setToken(oidcUser.access_token);
 
         // Create client with access token and fetch balance
         const client = createClientWithToken(oidcUser.access_token);
@@ -175,6 +179,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       // Clear local state immediately
       setUser(null);
       setBalance(null);
+      setToken(null);
       setError(null);
 
       // Remove user from storage
@@ -283,6 +288,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     const handleUserUnloaded = () => {
       setUser(null);
       setBalance(null);
+      setToken(null);
     };
 
     const handleAccessTokenExpiring = () => {
@@ -320,10 +326,18 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     isAuthenticated,
     isLoading,
     error,
+    token,
     signIn,
     signOut,
     refreshBalance,
     createPaymentLink,
+    getToken: async () => {
+      if (!userManager) {
+        throw new Error('UserManager not initialized');
+      }
+      const user = await userManager.getUser();
+      return user?.access_token || null;
+    },
   };
 
   return (
