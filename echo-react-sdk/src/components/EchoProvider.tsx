@@ -69,12 +69,25 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       redirect_uri: config.redirectUri || window.location.origin,
       response_type: 'code',
       scope: config.scope || 'llm:invoke offline_access',
+
+      // Automatic token renewal configuration
       automaticSilentRenew: true,
-      includeIdTokenInSilentRenew: false,
-      // Echo-specific OAuth endpoints (not standard OIDC)
+      accessTokenExpiringNotificationTimeInSeconds: 10,
+      silentRequestTimeoutInSeconds: 5,
+
+      // Silent renewal configuration
+      silent_redirect_uri: config.redirectUri || window.location.origin,
+      includeIdTokenInSilentRenew: false, // Default is false
+      validateSubOnSilentRenew: true, // Default is true
+
+      // UserInfo endpoint configuration
+      loadUserInfo: true,
+
+      // Custom OAuth endpoints (non-standard OIDC)
       metadata: {
         authorization_endpoint: `${apiUrl}/api/oauth/authorize`,
         token_endpoint: `${apiUrl}/api/oauth/token`,
+        userinfo_endpoint: `${apiUrl}/api/oauth/userinfo`,
         issuer: apiUrl,
       },
     };
@@ -105,13 +118,19 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   );
 
   // Convert OIDC user to Echo user format with security sanitization
-  const convertUser = (oidcUser: User): EchoUser => {
-    // For Echo OAuth, user data might be in the token response or profile
+  const convertUser = async (oidcUser: User): Promise<EchoUser> => {
+    // With loadUserInfo: true, the OIDC library automatically calls the UserInfo endpoint
+    // and merges the data into oidcUser.profile, so we just use that directly
     const profile = oidcUser.profile as EchoOAuthProfile;
 
-    // Sanitize all user profile data to prevent XSS attacks
+    // Sanitize user profile data to prevent XSS attacks
     const rawProfile = {
-      name: profile?.name || profile?.given_name || profile?.email || 'User',
+      name:
+        profile?.name ||
+        profile?.given_name ||
+        profile?.preferred_username ||
+        profile?.email ||
+        'User',
       email: profile?.email || profile?.preferred_username || '',
       picture: profile?.picture || '',
     };
@@ -131,7 +150,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     async (oidcUser: User) => {
       try {
         setError(null);
-        const echoUser = convertUser(oidcUser);
+        const echoUser = await convertUser(oidcUser);
         setUser(echoUser);
         setToken(oidcUser.access_token);
 
@@ -278,6 +297,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   // Set up event listeners for token events
   useEffect(() => {
     if (!userManager) {
+      console.log('🔄 UserManager not initialized');
       return;
     }
 
@@ -292,7 +312,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     };
 
     const handleAccessTokenExpiring = () => {
-      console.log('Access token expiring, will attempt silent renewal');
+      console.log('Access token expiring, attempting custom refresh...');
     };
 
     const handleAccessTokenExpired = () => {
@@ -304,14 +324,15 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       console.error('Silent renew failed:', err);
       setError('Session renewal failed. Please sign in again.');
     };
-
+    console.log('🔄 Setting up event listeners');
     userManager.events.addUserLoaded(handleUserLoaded);
     userManager.events.addUserUnloaded(handleUserUnloaded);
     userManager.events.addAccessTokenExpiring(handleAccessTokenExpiring);
     userManager.events.addAccessTokenExpired(handleAccessTokenExpired);
     userManager.events.addSilentRenewError(handleSilentRenewError);
-
+    console.log('🔄 Event listeners added');
     return () => {
+      console.log('🔄 Removing event listeners');
       userManager.events.removeUserLoaded(handleUserLoaded);
       userManager.events.removeUserUnloaded(handleUserUnloaded);
       userManager.events.removeAccessTokenExpiring(handleAccessTokenExpiring);
@@ -335,8 +356,8 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       if (!userManager) {
         throw new Error('UserManager not initialized');
       }
-      const user = await userManager.getUser();
-      return user?.access_token || null;
+      const currentUser = await userManager.getUser();
+      return currentUser?.access_token || null;
     },
   };
 

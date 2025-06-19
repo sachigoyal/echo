@@ -3,7 +3,7 @@ import {
   EchoSignIn,
   EchoTokenPurchase,
   useEcho,
-} from '@echo-systems/react-sdk';
+} from '@zdql/echo-react-sdk';
 import React, { useState, useEffect, useCallback } from 'react';
 
 // Configuration constants
@@ -15,10 +15,21 @@ const CONFIG = {
 } as const;
 
 function Dashboard() {
-  const { isAuthenticated, user, balance, error, isLoading } = useEcho();
+  const { isAuthenticated, user, balance, error, isLoading, signOut } =
+    useEcho();
+
+  // Add debugging console logs
+  console.log('🔍 Dashboard render:', {
+    isAuthenticated,
+    user,
+    balance,
+    error,
+    isLoading,
+  });
 
   // Show loading state
   if (isLoading) {
+    console.log('📝 Dashboard: Showing loading state');
     return (
       <div
         style={{
@@ -38,6 +49,7 @@ function Dashboard() {
 
   // Show error state
   if (error) {
+    console.log('❌ Dashboard: Showing error state:', error);
     return (
       <div
         style={{
@@ -72,6 +84,7 @@ function Dashboard() {
 
   // Not signed in - show sign in button
   if (!isAuthenticated) {
+    console.log('🔐 Dashboard: User not authenticated');
     return (
       <div
         style={{
@@ -91,6 +104,7 @@ function Dashboard() {
 
   // Signed in but no balance - show token purchase
   if (balance?.credits === 0) {
+    console.log('💰 Dashboard: User has zero balance');
     return (
       <div
         style={{
@@ -110,6 +124,7 @@ function Dashboard() {
   }
 
   // Signed in - show success and JWT test (regardless of balance)
+  console.log('✅ Dashboard: User authenticated with balance');
   return (
     <div
       style={{
@@ -134,6 +149,20 @@ function Dashboard() {
           </p>
         )}
       </div>
+      <button
+        onClick={signOut}
+        style={{
+          padding: '10px 20px',
+          backgroundColor: '#dc3545',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '14px',
+        }}
+      >
+        Sign Out
+      </button>
       <JWTTestComponent />
       {balance?.credits === 0 && (
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
@@ -150,6 +179,7 @@ function JWTTestComponent() {
   const [isTestLoading, setIsTestLoading] = useState(false);
 
   const testJWTToken = useCallback(async () => {
+    console.log('🔐 Starting JWT token test...');
     setIsTestLoading(true);
     setTestResult(null);
 
@@ -161,11 +191,16 @@ function JWTTestComponent() {
       }
 
       const user = await userManager.getUser();
+      console.log('👤 Retrieved user from UserManager:', {
+        hasUser: !!user,
+        hasToken: !!user?.access_token,
+      });
       if (!user?.access_token) {
         throw new Error('No access token available');
       }
 
       // Test JWT validation endpoint
+      console.log('📡 Making JWT validation request...');
       const response = await fetch(
         `${CONFIG.ECHO_CONTROL_URL}/api/validate-jwt-token`,
         {
@@ -178,6 +213,10 @@ function JWTTestComponent() {
       );
 
       const result = await response.json();
+      console.log('📋 JWT validation response:', {
+        status: response.status,
+        result,
+      });
 
       if (!response.ok) {
         throw new Error(
@@ -185,15 +224,16 @@ function JWTTestComponent() {
         );
       }
 
-      setTestResult(
-        `✅ JWT Token Valid!\n• User ID: ${result.userId}\n• App ID: ${result.appId}\n• Scope: ${result.scope}\n• Valid: ${result.valid}`
-      );
+      const successMessage = `✅ JWT Token Valid!\n• User ID: ${result.userId}\n• App ID: ${result.appId}\n• Scope: ${result.scope}\n• Valid: ${result.valid}`;
+      console.log('✅ JWT validation successful:', result);
+      setTestResult(successMessage);
     } catch (error) {
-      setTestResult(
-        `❌ JWT Test Failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      const errorMessage = `❌ JWT Test Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      console.error('❌ JWT validation failed:', error);
+      setTestResult(errorMessage);
     } finally {
       setIsTestLoading(false);
+      console.log('🏁 JWT test completed');
     }
   }, []);
 
@@ -370,7 +410,10 @@ function App() {
     }
   });
 
+  console.log('🚀 App component render:', { clientId, echoConfig });
+
   const handleConfigSubmit = (submittedClientId: string) => {
+    console.log('📝 Config submitted:', submittedClientId);
     setClientId(submittedClientId);
     const config = {
       instanceId: submittedClientId,
@@ -384,27 +427,31 @@ function App() {
     try {
       localStorage.setItem('echo_oauth_client_id', submittedClientId);
       localStorage.setItem('echo_oauth_config', JSON.stringify(config));
+      console.log('💾 Config saved to localStorage');
     } catch (error) {
       console.warn('Failed to save config to localStorage:', error);
     }
   };
 
   const handleReset = () => {
+    console.log('🔄 Config reset requested');
     setClientId(null);
     setEchoConfig(null);
     try {
       localStorage.removeItem('echo_oauth_client_id');
       localStorage.removeItem('echo_oauth_config');
+      console.log('🧹 localStorage cleared');
     } catch (error) {
       console.warn('Failed to clear localStorage:', error);
     }
   };
-
   // Show config form if no client ID is set
   if (!clientId || !echoConfig) {
+    console.log('⚙️ Showing config form');
     return <ConfigForm onSubmit={handleConfigSubmit} />;
   }
 
+  console.log('🎯 Rendering EchoProvider with config:', echoConfig);
   return (
     <EchoProvider config={echoConfig}>
       <div>

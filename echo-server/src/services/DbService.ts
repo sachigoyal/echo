@@ -13,8 +13,7 @@ const API_KEY_SECRET =
   process.env.API_KEY_SECRET || 'change-this-in-production-very-secret-key';
 
 const API_ECHO_ACCESS_JWT_SECRET =
-  process.env.API_ECHO_ACCESS_JWT_SECRET ||
-  'api-jwt-secret-change-in-production';
+  process.env.API_JWT_SECRET || 'api-jwt-secret-change-in-production';
 
 /**
  * Hash an API key deterministically for O(1) database lookup
@@ -46,7 +45,6 @@ export class EchoDbService {
       if (isJWT) {
         const verifyResult = await jwtVerify(cleanApiKey, this.apiJwtSecret);
         const payload = verifyResult.payload as unknown as EchoAccessJwtPayload;
-        console.log('🔍 DEBUG: JWT payload:', payload);
 
         if (!payload) {
           return null;

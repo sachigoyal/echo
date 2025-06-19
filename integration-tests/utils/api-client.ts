@@ -134,7 +134,7 @@ export class EchoControlApiClient {
     refresh_token?: string;
     scope: string;
   }> {
-    return this.request('/api/oauth/refresh', {
+    return this.request('/api/oauth/token', {
       method: 'POST',
       body: JSON.stringify({
         grant_type: 'refresh_token',

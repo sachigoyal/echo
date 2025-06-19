@@ -28,7 +28,7 @@
     "lint:fix": "eslint **/*.ts --fix"
   },
   "dependencies": {
-    "@echo-systems/react-sdk": "workspace:*",
+    "@zdql/echo-react-sdk": "workspace:*",
     "@zdql/echo-typescript-sdk": "workspace:*",
     "jose": "^6.0.11",
     "nanoid": "^5.1.5",

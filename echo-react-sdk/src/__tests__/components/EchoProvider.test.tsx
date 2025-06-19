@@ -438,6 +438,8 @@ describe('EchoProvider', () => {
           userLoadedHandler(renewedUser);
         });
 
+        // With the new OIDC userinfo approach, the user data comes from the OIDC profile,
+        // which in tests includes the injected mock data
         await waitFor(() => {
           expect(screen.getByTestId('user')).toHaveTextContent(
             'User: Renewed User'

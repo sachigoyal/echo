@@ -116,14 +116,31 @@ export async function POST(req: NextRequest) {
       expiry: newEchoAccessTokenExpiry,
     });
 
+    const expiresIn = Math.floor(
+      (newEchoAccessTokenExpiry.getTime() - Date.now()) / 1000
+    );
+    const refreshTokenExpiresIn = Math.floor(
+      (newEchoRefreshTokenExpiry.getTime() - Date.now()) / 1000
+    );
+
+    console.log(
+      '🔄 DEBUG: Echo Access token expires in ',
+      expiresIn,
+      'seconds'
+    );
+    console.log(
+      '🔄 DEBUG: Echo Refresh token expires in ',
+      refreshTokenExpiresIn,
+      'seconds'
+    );
+
     /* 7️⃣ Return new JWT token */
     return NextResponse.json({
       access_token: echoAccessTokenJwtToken, // JWT instead of raw API key
       token_type: 'Bearer',
-      expires_in: newEchoAccessTokenExpiry.getTime() - Date.now(),
+      expires_in: expiresIn,
       refresh_token: newEchoRefreshToken.token,
-      refresh_token_expires_in:
-        newEchoRefreshTokenExpiry.getTime() - Date.now(),
+      refresh_token_expires_in: refreshTokenExpiresIn,
       scope: echoRefreshTokenRecord.scope,
       user: {
         id: echoRefreshTokenRecord.user.id,

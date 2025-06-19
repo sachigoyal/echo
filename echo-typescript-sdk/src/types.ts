@@ -33,6 +33,8 @@ export interface User {
   email: string;
   name?: string;
   clerkId: string;
+  totalPaid?: number;
+  totalSpent?: number;
   createdAt: string;
   updatedAt: string;
 }

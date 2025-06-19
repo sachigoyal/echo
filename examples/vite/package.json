@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@echo-systems/react-sdk": "file:../../echo-react-sdk",
+    "@zdql/echo-react-sdk": "file:../../echo-react-sdk",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

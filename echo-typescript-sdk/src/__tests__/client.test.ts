@@ -291,6 +291,46 @@ describe('EchoClient', () => {
     });
   });
 
+  describe('getUserInfo', () => {
+    it('should fetch user information successfully', async () => {
+      const mockUser = {
+        id: 'user123',
+        email: 'test@example.com',
+        name: 'Test User',
+        totalPaid: 100,
+        totalSpent: 50,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-02T00:00:00Z',
+      };
+
+      mockAxiosInstance.get.mockResolvedValue({ data: mockUser });
+
+      const user = await client.getUserInfo();
+
+      expect(user).toEqual(mockUser);
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/user');
+    });
+
+    it('should handle user info fetch errors', async () => {
+      const error = new Error('Network error');
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(client.getUserInfo()).rejects.toThrow(
+        'Failed to fetch user info'
+      );
+    });
+
+    it('should handle user not found errors', async () => {
+      const error = new Error('Not found') as ErrorWithResponse;
+      error.response = { status: 404, data: { error: 'User not found' } };
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(client.getUserInfo()).rejects.toThrow(
+        'Failed to fetch user info: User not found'
+      );
+    });
+  });
+
   describe('getAppUrl', () => {
     it('should generate correct app URL', async () => {
       const appId = 'test-app-123';

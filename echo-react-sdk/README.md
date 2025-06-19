@@ -5,13 +5,13 @@ React SDK for Echo OAuth2 + PKCE authentication and token management.
 ## Install
 
 ```bash
-pnpm install @echo-systems/react-sdk
+pnpm install @zdql/echo-react-sdk
 ```
 
 ## Setup
 
 ```tsx
-import { EchoProvider, EchoSignIn, useEcho } from '@echo-systems/react-sdk';
+import { EchoProvider, EchoSignIn, useEcho } from '@zdql/echo-react-sdk';
 
 // 1. Wrap your app
 <EchoProvider config={{ instanceId: 'your-app-id' }}>

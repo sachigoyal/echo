@@ -286,12 +286,10 @@ describe('Echo Data Server Client Integration Tests', () => {
 
     console.log('✅ Access token successfully used to get balance');
 
-    console.log(
-      `🔍 Access token expires in ${accessToken.expires_in / 1000} seconds`
-    );
+    console.log(`🔍 Access token expires in ${accessToken.expires_in} seconds`);
 
     // Wait for the access token to expire
-    const waitTime = accessToken.expires_in + 1000; // Add 1000ms buffer
+    const waitTime = accessToken.expires_in * 1000 + 1000; // Add 1000ms buffer
     console.log(`Waiting ${waitTime}ms for access token to expire...`);
     await new Promise(resolve => setTimeout(resolve, waitTime));
 
