@@ -1,3 +1,6 @@
+// Import instrumentation first before any other modules
+import './instrumentation';
+
 import express, { Request, Response, NextFunction, Express } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
