@@ -448,6 +448,140 @@ const apiCall = async () => {
 };
 ```
 
+# Client Or Server-side Chat Setup
+
+## Client-Side Setup
+
+You can configure LLM providers to run directly in the browser using the Echo token. This approach eliminates the need for a backend server by using the Echo router endpoint directly from your React application.
+
+### Basic Client-Side Configuration
+
+```tsx
+import { useEcho } from '@zdql/echo-react-sdk';
+import { createOpenAI } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+const ClientSideChat = () => {
+  const { token } = useEcho();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const sendMessage = async e => {
+    e.preventDefault();
+    if (!input.trim() || !token) return;
+
+    const userMessage = {
+      id: Date.now(),
+      role: 'user',
+      content: input,
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      // Configure OpenAI to use Echo token and router directly
+      const openai = createOpenAI({
+        apiKey: token, // Use the Echo token as the API key
+        baseURL: 'https://echo.router.merit.systems', // Echo router endpoint
+      });
+
+      // Generate response using the configured provider
+      const result = await streamText({
+        model: openai('gpt-4'), // or your preferred model
+        messages: [...messages, userMessage],
+      });
+
+      const response = await result.text;
+
+      const assistantMessage = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: response,
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Chat error:', error);
+    } finally {
+      setIsLoading(false);
+      setInput('');
+    }
+  };
+
+  return (
+    <div>
+      <div className="messages">
+        {messages.map(message => (
+          <div key={message.id} className={`message ${message.role}`}>
+            {message.content}
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={sendMessage}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Type your message..."
+          disabled={isLoading || !token}
+        />
+        <button type="submit" disabled={isLoading || !input.trim() || !token}>
+          Send
+        </button>
+      </form>
+    </div>
+  );
+};
+```
+
+### Alternative Client-Side LLM Providers
+
+The same pattern works with other LLM providers:
+
+```tsx
+// For Anthropic
+import { createAnthropic } from '@ai-sdk/anthropic';
+
+const anthropic = createAnthropic({
+  apiKey: token, // Echo token
+  baseURL: 'https://echo.router.merit.systems',
+});
+
+// For custom providers
+import { createProvider } from '@ai-sdk/provider';
+
+const customProvider = createProvider({
+  apiKey: token, // Echo token
+  baseURL: 'https://echo.router.merit.systems',
+});
+```
+
+### Required Client-Side Dependencies
+
+Install the AI SDK packages for client-side usage:
+
+```bash
+npm install @ai-sdk/openai ai
+# or for other providers:
+# npm install @ai-sdk/anthropic
+```
+
+### Key Configuration Points (Client-Side)
+
+1. **Use Echo Token as API Key**: The token from the Echo SDK must be used as the `apiKey` for your LLM provider
+2. **Echo Router URL**: Point your LLM provider's `baseURL` to `https://echo.router.merit.systems`
+3. **Automatic Billing**: The Echo system will automatically handle user authentication, credit deduction, and usage tracking
+4. **Token Availability**: Ensure the user is authenticated before making LLM requests
+
+### Benefits of Client-Side Setup
+
+- **Simplified Architecture**: No need for a backend API server
+- **Reduced Latency**: Direct communication with the Echo router
+- **Cost Effective**: Fewer server resources required
+- **Real-time Updates**: Direct access to user authentication state
+
 ## Server-Side Setup
 
 ### Backend Chat Endpoint Example

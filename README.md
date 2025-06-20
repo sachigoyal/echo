@@ -10,5 +10,3 @@ pnpm run test
 # Echo React SDK Setup
 
 Check out the [Echo SDK Documentation](ECHO_SDK_DOCUMENTATION.md)
-
-
