@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction, Express } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
+import cors from 'cors';
 import { ReadableStream } from 'stream/web';
 import { HttpError, PaymentRequiredError } from './errors/http';
 import { verifyUserHeaderCheck } from './auth/headers';
@@ -13,6 +14,17 @@ const app: Express = express();
 const port = 3069;
 
 // Add middleware
+app.use(
+  cors({
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+    allowedHeaders: '*', // Allow all headers
+    exposedHeaders: '*', // Expose all headers to the client
+    credentials: false, // Set to false when using origin: '*'
+    preflightContinue: false, // Handle preflight requests here
+    optionsSuccessStatus: 200, // Return 200 for preflight OPTIONS requests
+  })
+);
 app.use(express.json());
 app.use(compression());
 

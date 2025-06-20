@@ -288,6 +288,15 @@ export class EchoDbService {
           },
         });
 
+        if (apiKeyId) {
+          await tx.apiKey.update({
+            where: { id: apiKeyId },
+            data: {
+              lastUsed: new Date().toISOString(),
+            },
+          });
+        }
+
         return dbTransaction;
       });
 
