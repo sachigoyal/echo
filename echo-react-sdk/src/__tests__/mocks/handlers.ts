@@ -286,6 +286,93 @@ export const handlers = [
     });
   }),
 
+  // OIDC UserInfo Endpoint (OAuth standard) - GET method
+  // This endpoint simulates the real security behavior: it returns clean data from the "database"
+  // regardless of what malicious data might be in the OAuth profile
+  http.get(`${API_BASE}/oauth/userinfo`, ({ request }) => {
+    const authHeader = request.headers.get('authorization');
+    const validation = validateJWTToken(authHeader);
+
+    if (!validation.valid) {
+      return HttpResponse.json(
+        {
+          error: validation.error,
+          error_description: 'Token validation failed',
+        },
+        { status: 401 }
+      );
+    }
+
+    // SECURITY: This endpoint always returns clean, sanitized data from the "database"
+    // It ignores any potentially malicious data from OAuth providers
+    // This simulates the real userinfo endpoint behavior
+    return HttpResponse.json({
+      sub: 'user-123',
+      email: 'test@example.com',
+      name: 'Test User',
+      preferred_username: 'testuser',
+      given_name: 'Test',
+      family_name: 'User',
+      picture: 'https://example.com/avatar.jpg',
+      email_verified: true,
+    });
+  }),
+
+  // OIDC UserInfo Endpoint (OAuth standard) - POST method (some clients use POST)
+  http.post(`${API_BASE}/oauth/userinfo`, ({ request }) => {
+    const authHeader = request.headers.get('authorization');
+    const validation = validateJWTToken(authHeader);
+
+    if (!validation.valid) {
+      return HttpResponse.json(
+        {
+          error: validation.error,
+          error_description: 'Token validation failed',
+        },
+        { status: 401 }
+      );
+    }
+
+    // SECURITY: Same clean data as GET method - ignores OAuth profile data
+    return HttpResponse.json({
+      sub: 'user-123',
+      email: 'test@example.com',
+      name: 'Test User',
+      preferred_username: 'testuser',
+      given_name: 'Test',
+      family_name: 'User',
+      picture: 'https://example.com/avatar.jpg',
+      email_verified: true,
+    });
+  }),
+
+  // User Info API Endpoint (v1) - Keep for backward compatibility
+  http.get(`${API_BASE}/v1/user`, ({ request }) => {
+    const authHeader = request.headers.get('authorization');
+    const validation = validateJWTToken(authHeader);
+
+    if (!validation.valid) {
+      return HttpResponse.json(
+        {
+          error: validation.error,
+          error_description: 'Token validation failed',
+        },
+        { status: 401 }
+      );
+    }
+
+    // Mock successful user response
+    return HttpResponse.json({
+      id: 'user-123',
+      email: 'test@example.com',
+      name: 'Test User',
+      totalPaid: 1000,
+      totalSpent: 200,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-02T00:00:00Z',
+    });
+  }),
+
   // Legacy Balance API Endpoint (for backward compatibility)
   http.get(`${API_BASE}/balance`, ({ request }) => {
     const authHeader = request.headers.get('authorization');
@@ -422,6 +509,22 @@ export const errorHandlers = {
 
   // Unauthorized balance request (v1)
   unauthorizedBalance: http.get(`${API_BASE}/v1/balance`, () =>
+    HttpResponse.json(
+      { error: 'token_expired', error_description: 'Access token has expired' },
+      { status: 401 }
+    )
+  ),
+
+  // Unauthorized OIDC UserInfo request
+  unauthorizedUserInfo: http.get(`${API_BASE}/oauth/userinfo`, () =>
+    HttpResponse.json(
+      { error: 'token_expired', error_description: 'Access token has expired' },
+      { status: 401 }
+    )
+  ),
+
+  // Unauthorized user info request (v1)
+  unauthorizedUser: http.get(`${API_BASE}/v1/user`, () =>
     HttpResponse.json(
       { error: 'token_expired', error_description: 'Access token has expired' },
       { status: 401 }

@@ -9,7 +9,7 @@ export async function GET() {
     endpoints: {
       authorize: '/api/oauth/authorize',
       token: '/api/oauth/token',
-      refresh: '/api/oauth/refresh',
+      refresh: '/api/oauth/token',
     },
     oauth_config: {
       note: 'Configure authorized callback URLs via /api/echo-apps/{id}/oauth-config',

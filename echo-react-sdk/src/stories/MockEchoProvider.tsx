@@ -22,6 +22,7 @@ const createMockContext = (
   balance: mockBalance,
   isAuthenticated: true,
   isLoading: false,
+  token: 'mock-token',
   error: null,
   signIn: async () => {
     console.log('Mock sign in called');
@@ -35,6 +36,10 @@ const createMockContext = (
   createPaymentLink: async (amount: number) => {
     console.log(`Mock payment link created for ${amount} tokens`);
     return `https://checkout.stripe.com/mock-session-${amount}`;
+  },
+  getToken: async () => {
+    console.log('Mock get token called');
+    return 'mock-token';
   },
   ...overrides,
 });

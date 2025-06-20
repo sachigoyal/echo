@@ -21,10 +21,27 @@ function TestComponent() {
     isAuthenticated,
     isLoading,
     error,
+    token,
     signIn,
     signOut,
     refreshBalance,
+    getToken,
   } = useEcho();
+
+  const handleGetToken = async () => {
+    try {
+      const tokenFromMethod = await getToken();
+      const tokenDisplay = document.getElementById('token-from-method');
+      if (tokenDisplay) {
+        tokenDisplay.textContent = tokenFromMethod || 'No token';
+      }
+    } catch (err) {
+      const tokenDisplay = document.getElementById('token-from-method');
+      if (tokenDisplay) {
+        tokenDisplay.textContent = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      }
+    }
+  };
 
   return (
     <div>
@@ -37,6 +54,10 @@ function TestComponent() {
         {balance ? `Credits: ${balance.credits}` : 'No balance'}
       </div>
       <div data-testid="error">{error || 'No error'}</div>
+      <div data-testid="token">{token || 'No token'}</div>
+      <div data-testid="token-from-method" id="token-from-method">
+        Not called
+      </div>
       <button onClick={signIn} data-testid="sign-in">
         Sign In
       </button>
@@ -45,6 +66,9 @@ function TestComponent() {
       </button>
       <button onClick={refreshBalance} data-testid="refresh-balance">
         Refresh Balance
+      </button>
+      <button onClick={handleGetToken} data-testid="get-token">
+        Get Token
       </button>
     </div>
   );
@@ -414,9 +438,166 @@ describe('EchoProvider', () => {
           userLoadedHandler(renewedUser);
         });
 
+        // With the new OIDC userinfo approach, the user data comes from the OIDC profile,
+        // which in tests includes the injected mock data
         await waitFor(() => {
           expect(screen.getByTestId('user')).toHaveTextContent(
             'User: Renewed User'
+          );
+        });
+      }
+    });
+  });
+
+  describe('Token Availability', () => {
+    test('provides access token via token property when authenticated', async () => {
+      const mockUser = await createMockAuthenticatedUser();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(mockUser),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Authenticated'
+        );
+      });
+
+      // Token should be available as a property
+      const tokenElement = screen.getByTestId('token');
+      expect(tokenElement).not.toHaveTextContent('No token');
+      expect(tokenElement.textContent).toBe(mockUser.access_token);
+    });
+
+    test('provides access token via getToken method when authenticated', async () => {
+      const user = userEvent.setup();
+      const mockUser = await createMockAuthenticatedUser();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(mockUser),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Authenticated'
+        );
+      });
+
+      // Click the get token button to call getToken method
+      await user.click(screen.getByTestId('get-token'));
+
+      await waitFor(() => {
+        const tokenFromMethodElement = screen.getByTestId('token-from-method');
+        expect(tokenFromMethodElement).toHaveTextContent(mockUser.access_token);
+      });
+
+      expect(mockUserManager.getUser).toHaveBeenCalled();
+    });
+
+    test('returns null token when not authenticated', async () => {
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(null),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading')).toHaveTextContent('Ready');
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Not authenticated'
+        );
+      });
+
+      // Token property should be null
+      expect(screen.getByTestId('token')).toHaveTextContent('No token');
+    });
+
+    test('getToken method returns null when not authenticated', async () => {
+      const user = userEvent.setup();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(null),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Not authenticated'
+        );
+      });
+
+      // Click the get token button
+      await user.click(screen.getByTestId('get-token'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('token-from-method')).toHaveTextContent(
+          'No token'
+        );
+      });
+    });
+
+    test('clears token when user signs out', async () => {
+      const user = userEvent.setup();
+      const mockUser = await createMockAuthenticatedUser();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(mockUser),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Authenticated'
+        );
+      });
+
+      // Verify token is present
+      expect(screen.getByTestId('token')).toHaveTextContent(
+        mockUser.access_token
+      );
+
+      // Sign out
+      await user.click(screen.getByTestId('sign-out'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Not authenticated'
+        );
+        expect(screen.getByTestId('token')).toHaveTextContent('No token');
+      });
+    });
+
+    test('updates token when user is renewed', async () => {
+      const originalUser = await createMockAuthenticatedUser();
+      const renewedUser = await createMockAuthenticatedUser({
+        access_token: 'renewed-access-token',
+      });
+
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(originalUser),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('token')).toHaveTextContent(
+          originalUser.access_token
+        );
+      });
+
+      // Simulate successful renewal with user loaded event
+      const userLoadedHandler =
+        mockUserManager.events.addUserLoaded.mock.calls?.[0]?.[0];
+      if (userLoadedHandler) {
+        await act(async () => {
+          userLoadedHandler(renewedUser);
+        });
+
+        await waitFor(() => {
+          expect(screen.getByTestId('token')).toHaveTextContent(
+            renewedUser.access_token
           );
         });
       }

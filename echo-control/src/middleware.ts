@@ -21,7 +21,6 @@ const isPublicRoute = createRouteMatcher([
   '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
   '/api/oauth/authorize(.*)', // OAuth authorize endpoint - handles its own auth
   '/api/oauth/token(.*)', // OAuth token endpoint - handles its own auth
-  '/api/oauth/refresh(.*)', // OAuth refresh endpoint - handles its own auth
   '/api/health(.*)', // Health check endpoint - no auth needed
 ]);
 

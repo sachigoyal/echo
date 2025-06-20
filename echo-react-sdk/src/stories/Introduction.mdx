@@ -1,6 +1,5 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-
 <Meta title="Echo React SDK/Introduction" />
 
 # Echo React SDK
@@ -16,7 +15,7 @@ Echo is an LLM application platform that provides authentication, token manageme
 ### Installation
 
 ```bash
-npm install @echo-systems/react-sdk
+npm install @zdql/echo-react-sdk
 ```
 
 ### Basic Setup
@@ -24,7 +23,7 @@ npm install @echo-systems/react-sdk
 Wrap your application with the `EchoProvider`:
 
 ```tsx
-import { EchoProvider } from '@echo-systems/react-sdk';
+import { EchoProvider } from '@zdql/echo-react-sdk';
 
 function App() {
   return (
@@ -61,7 +60,7 @@ A component for purchasing tokens through Stripe payments.
 The main hook for accessing Echo functionality:
 
 ```tsx
-import { useEcho } from '@echo-systems/react-sdk';
+import { useEcho } from '@zdql/echo-react-sdk';
 
 function MyComponent() {
   const {

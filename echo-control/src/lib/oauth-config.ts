@@ -10,6 +10,7 @@
 export function getEchoRefreshTokenExpirySeconds(): number {
   // Check for seconds first (more granular control, useful for testing)
   const secondsEnv = process.env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS;
+  console.log('🔄 DEBUG: Refresh token expiry seconds: ', secondsEnv);
   if (secondsEnv) {
     const parsed = parseInt(secondsEnv, 10);
     if (!isNaN(parsed) && parsed > 0) {
@@ -30,11 +31,16 @@ export function createEchoRefreshTokenExpiry(): Date {
   const expiry = new Date();
   const expirySeconds = getEchoRefreshTokenExpirySeconds();
   expiry.setTime(expiry.getTime() + expirySeconds * 1000); // multiply by 1000 to convert to milliseconds
+  console.log(
+    '🔄 DEBUG: Echo Refresh token will expire at ',
+    expiry.toLocaleString('en-US', { timeZone: 'America/New_York' })
+  );
   return expiry;
 }
 
 export function getEchoAccessTokenExpirySeconds(): number {
   const secondsEnv = process.env.OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS;
+  console.log('🔄 DEBUG: Access token expiry seconds: ', secondsEnv);
   if (secondsEnv) {
     const parsed = parseInt(secondsEnv, 10);
     if (!isNaN(parsed) && parsed > 0) {
@@ -48,5 +54,9 @@ export function createEchoAccessTokenExpiry(): Date {
   const expiry = new Date();
   const expirySeconds = getEchoAccessTokenExpirySeconds();
   expiry.setTime(expiry.getTime() + expirySeconds * 1000);
+  console.log(
+    '🔄 DEBUG: Echo Access token will expire at ',
+    expiry.toLocaleString('en-US', { timeZone: 'America/New_York' })
+  );
   return expiry;
 }

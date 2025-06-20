@@ -24,7 +24,7 @@ describe('OAuth Refresh Token Tests', () => {
     test('rejects missing grant type in custom request', async () => {
       // Test direct API call without grant_type to ensure server validation
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
@@ -47,14 +47,14 @@ describe('OAuth Refresh Token Tests', () => {
 
     test('rejects wrong grant type in custom request', async () => {
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            grant_type: 'authorization_code', // Wrong type
+            grant_type: 'nonsense_grant_type', // Wrong type
             refresh_token: 'test-refresh-token',
             client_id: TEST_CLIENT_IDS.primary,
           }),
@@ -70,7 +70,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Refresh Token Validation', () => {
     test('rejects missing refresh token', async () => {
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
@@ -143,7 +143,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Client Validation', () => {
     test('rejects missing client_id', async () => {
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
@@ -197,7 +197,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Content-Type Handling', () => {
     test('supports application/json content-type', async () => {
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
@@ -226,7 +226,7 @@ describe('OAuth Refresh Token Tests', () => {
       });
 
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
@@ -247,7 +247,7 @@ describe('OAuth Refresh Token Tests', () => {
 
     test('rejects unsupported content-types', async () => {
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
@@ -274,7 +274,7 @@ describe('OAuth Refresh Token Tests', () => {
       });
 
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh?${params.toString()}`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token?${params.toString()}`,
         {
           method: 'GET',
         }
@@ -286,7 +286,7 @@ describe('OAuth Refresh Token Tests', () => {
 
     test('rejects PUT requests', async () => {
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'PUT',
           headers: {
@@ -308,7 +308,7 @@ describe('OAuth Refresh Token Tests', () => {
   describe('Error Response Format', () => {
     test('returns consistent OAuth error format', async () => {
       const response = await fetch(
-        `${TEST_CONFIG.services.echoControl}/api/oauth/refresh`,
+        `${TEST_CONFIG.services.echoControl}/api/oauth/token`,
         {
           method: 'POST',
           headers: {
@@ -397,14 +397,16 @@ describe('OAuth Refresh Token Tests', () => {
 
       expect(tokenResponse.refresh_token).toBeTruthy();
       console.log(
-        `Got refresh token that expires in ${tokenResponse.refresh_token_expires_in} ms`
+        `Got refresh token that expires in ${tokenResponse.refresh_token_expires_in} seconds`
       );
 
       console.log('The token response is', tokenResponse);
 
       // Step 3: Wait for the refresh token to expire
-      const waitTime = parseInt(expectedExpirySeconds) * 1000 + 1000; // Add 1000ms buffer
-      console.log(`Waiting ${waitTime}ms for refresh token to expire...`);
+      const waitTime = tokenResponse.refresh_token_expires_in! * 1000 + 2000; // Add 2000ms buffer
+      console.log(
+        `Waiting ${waitTime} milliseconds for refresh token to expire...`
+      );
       await new Promise(resolve => setTimeout(resolve, waitTime));
 
       // Step 4: Try to refresh with the expired token - should fail
@@ -422,26 +424,6 @@ describe('OAuth Refresh Token Tests', () => {
     });
 
     test('Succeeds with a valid refresh token, then fails when it expires', async () => {
-      // This test requires setting OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=1
-      // in the environment to make tokens expire quickly
-
-      // Skip test if we're not in a test environment with short token expiry
-      const expectedExpirySeconds =
-        process.env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS;
-      if (!expectedExpirySeconds || parseInt(expectedExpirySeconds) > 10) {
-        console.log(
-          'Skipping expired refresh token test - requires OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=1 or similar short duration'
-        );
-        return;
-      }
-
-      // log token expiry
-      console.log(
-        'The token expiry is set as',
-        expectedExpirySeconds,
-        'seconds for testing'
-      );
-
       // Step 1: Get a real authorization code through OAuth flow
       const { generateCodeVerifier, generateCodeChallenge, generateState } =
         await import('../../utils/auth-helpers.js');
@@ -493,9 +475,15 @@ describe('OAuth Refresh Token Tests', () => {
       console.log('New access token:', newAccessToken);
       expect(newAccessToken.access_token).toBeTruthy();
 
+      console.log(
+        '🔍 New access token expires in',
+        newAccessToken.expires_in,
+        'seconds'
+      );
+
       // Step 4: Wait for the refresh token to expire
-      const waitTime = parseInt(expectedExpirySeconds) * 1000 + 1000; // Add 1000ms buffer
-      console.log(`Waiting ${waitTime}ms for refresh token to expire...`);
+      const waitTime = newAccessToken.expires_in * 1000 + 2000; // Add 2000ms buffer
+      console.log(`Waiting ${waitTime}s for refresh token to expire...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
 
       // Step 4: Try to refresh with the expired token - should fail
@@ -554,11 +542,11 @@ describe('OAuth Refresh Token Tests', () => {
 
       // token expiry is in the token response
       console.log(
-        `Access token expires in ${tokenResponse.expires_in / 1000} seconds`
+        `Access token expires in ${tokenResponse.expires_in} seconds`
       );
 
       // wait for the access token to expire
-      const waitTime = tokenResponse.expires_in + 1000; // Add 1000ms buffer
+      const waitTime = tokenResponse.expires_in * 1000 + 2000; // Add 2000ms buffer
       console.log(`Waiting ${waitTime}ms for access token to expire...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
 
@@ -705,8 +693,8 @@ describe('OAuth Refresh Token Tests', () => {
       expect(balance).toBeTruthy();
 
       // Step 4: Wait for the access token to expire
-      const waitTime = tokenResponse.expires_in + 1000; // Add 1000ms buffer
-      console.log(`Waiting ${waitTime}ms for access token to expire...`);
+      const waitTime = tokenResponse.expires_in * 1000 + 2000; // Add 2000ms buffer
+      console.log(`Waiting ${waitTime}s for access token to expire...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
 
       // Step 5: Try to use the access token - should fail

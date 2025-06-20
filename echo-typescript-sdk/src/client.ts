@@ -6,6 +6,7 @@ import {
   CreatePaymentLinkResponse,
   EchoApp,
   ListEchoAppsResponse,
+  User,
 } from './types';
 
 export class EchoClient {
@@ -116,6 +117,18 @@ export class EchoClient {
       return response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch Echo app');
+    }
+  }
+
+  /**
+   * Get current user information
+   */
+  async getUserInfo(): Promise<User> {
+    try {
+      const response = await this.http.get('/api/v1/user');
+      return response.data as User;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to fetch user info');
     }
   }
 

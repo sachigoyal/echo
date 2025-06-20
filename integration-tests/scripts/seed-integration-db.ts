@@ -118,6 +118,7 @@ export async function seedIntegrationDatabase() {
     await prisma.llmTransaction.create({
       data: {
         ...TEST_DATA.llmTransactions.testTransaction,
+        providerId: 'openai',
         userId: testUser.id,
         echoAppId: testApp.id,
         apiKeyId: testApiKey.id,

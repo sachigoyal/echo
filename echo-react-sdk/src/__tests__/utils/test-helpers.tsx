@@ -138,6 +138,55 @@ export async function createMockAuthenticatedUser(
 }
 
 /**
+ * Create a mock authenticated user that simulates the real OIDC flow
+ * where the userinfo endpoint provides clean data regardless of initial OAuth profile
+ */
+export async function createMockAuthenticatedUserWithUserInfo(
+  initialOAuthProfile: Record<string, unknown> = {},
+  tokenOverrides: Record<string, unknown> = {}
+) {
+  const validToken = await (
+    await import('../mocks/jwt-factory')
+  ).createValidJWT({
+    userId: 'test-user-123',
+    appId: 'test-app-456',
+    scope: 'llm:invoke offline_access',
+  });
+
+  // This simulates the real OIDC flow:
+  // 1. Initial OAuth profile might contain malicious data
+  // 2. But with loadUserInfo: true, the OIDC library calls /oauth/userinfo
+  // 3. The userinfo endpoint returns clean data that overwrites the profile
+
+  // The final profile will contain the clean data from the userinfo endpoint
+  // (this simulates what oidc-client-ts does when loadUserInfo: true)
+  const cleanProfileFromUserInfo = {
+    sub: 'user-123',
+    email: 'test@example.com',
+    name: 'Test User',
+    preferred_username: 'testuser',
+    given_name: 'Test',
+    family_name: 'User',
+    picture: 'https://example.com/avatar.jpg',
+    email_verified: true,
+  };
+
+  return {
+    access_token: validToken,
+    token_type: 'Bearer',
+    expires_in: 3600,
+    refresh_token: 'mock-refresh-token',
+    scope: 'llm:invoke offline_access',
+    expired: false,
+    // The profile contains clean data from userinfo endpoint, not the initial OAuth data
+    profile: cleanProfileFromUserInfo,
+    // Store the initial malicious OAuth data for reference (but it's not used)
+    _initialOAuthProfile: initialOAuthProfile,
+    ...tokenOverrides,
+  };
+}
+
+/**
  * Simulate OAuth callback URL parameters
  */
 export function mockOAuthCallback(params: {

@@ -41,7 +41,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       oauth_endpoints: {
         authorization_url: `${req.nextUrl.origin}/api/oauth/authorize`,
         token_url: `${req.nextUrl.origin}/api/oauth/token`,
-        refresh_url: `${req.nextUrl.origin}/api/oauth/refresh`,
+        refresh_url: `${req.nextUrl.origin}/api/oauth/token`,
       },
     });
   } catch (error) {
@@ -145,7 +145,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       oauth_endpoints: {
         authorization_url: `${req.nextUrl.origin}/api/oauth/authorize`,
         token_url: `${req.nextUrl.origin}/api/oauth/token`,
-        refresh_url: `${req.nextUrl.origin}/api/oauth/refresh`,
+        refresh_url: `${req.nextUrl.origin}/api/oauth/token`,
       },
     });
   } catch (error) {

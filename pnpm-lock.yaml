@@ -404,7 +404,7 @@ importers:
 
   examples/vite:
     dependencies:
-      '@echo-systems/react-sdk':
+      '@zdql/echo-react-sdk':
         specifier: file:../../echo-react-sdk
         version: link:../../echo-react-sdk
       react:
@@ -450,7 +450,7 @@ importers:
 
   integration-tests:
     dependencies:
-      '@echo-systems/react-sdk':
+      '@zdql/echo-react-sdk':
         specifier: workspace:*
         version: link:../echo-react-sdk
       '@zdql/echo-typescript-sdk':
