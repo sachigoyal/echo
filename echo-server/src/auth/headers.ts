@@ -31,8 +31,9 @@ export const verifyUserHeaderCheck = async (
   } = headers;
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
-  if (!authorization && !xApiKey) {
-    throw new UnauthorizedError();
+  if (!(authorization || xApiKey)) {
+    console.error('Missing authentication headers: ', headers);
+    throw new UnauthorizedError('Please include auth headers.');
   }
 
   const apiKey = authorization ?? xApiKey;
@@ -43,7 +44,7 @@ export const verifyUserHeaderCheck = async (
   const authResult = await echoControlService.verifyApiKey();
 
   if (!authResult) {
-    throw new UnauthorizedError();
+    throw new UnauthorizedError('Authentication failed.');
   }
 
   return [
