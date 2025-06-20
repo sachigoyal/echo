@@ -10,13 +10,15 @@ import { PermissionService } from '@/lib/permissions/service';
 import { AppRole } from '@/lib/permissions/types';
 
 // JWT secret for API tokens (different from OAuth codes)
-const API_JWT_SECRET = new TextEncoder().encode(
-  process.env.API_JWT_SECRET || 'api-jwt-secret-change-in-production'
+const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
+  process.env.API_ECHO_ACCESS_JWT_SECRET ||
+    'api-jwt-secret-change-in-production'
 );
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.OAUTH_JWT_SECRET || 'your-secret-key-change-in-production'
+  process.env.OAUTH_CODE_SIGNING_JWT_SECRET ||
+    'your-secret-key-change-in-production'
 );
 
 export interface ApiTokenPayload {
@@ -72,7 +74,7 @@ export async function createEchoAccessJwtToken(params: {
     .setIssuedAt(now)
     // set expiration time to the expiry time of the access token
     .setExpirationTime(expirySeconds)
-    .sign(API_JWT_SECRET);
+    .sign(API_ECHO_ACCESS_JWT_SECRET);
 
   return token;
 }
@@ -86,7 +88,7 @@ export async function verifyEchoAccessJwtToken(
   token: string
 ): Promise<ApiTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, API_JWT_SECRET, {
+    const { payload } = await jwtVerify(token, API_ECHO_ACCESS_JWT_SECRET, {
       clockTolerance: 5, // 5 seconds clock skew tolerance
     });
 

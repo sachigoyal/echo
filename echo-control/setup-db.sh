@@ -20,7 +20,6 @@ STRIPE_WEBHOOK_SECRET="mock_webhook_secret"
 
 # Application
 ECHO_CONTROL_APP_BASE_URL="http://localhost:3000"
-# NEXTAUTH_SECRET is no longer needed (removed)
 API_KEY_PREFIX="echo_"
 EOF
     echo "✅ .env file created"

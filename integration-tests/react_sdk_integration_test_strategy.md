@@ -306,7 +306,6 @@ NODE_ENV=test
 # Mock External Services
 CLERK_SECRET_KEY=test_sk_clerk_mock_key_12345
 CLERK_PUBLISHABLE_KEY=test_pk_clerk_mock_key_12345
-NEXTAUTH_SECRET=test-nextauth-secret-for-integration-tests
 NEXTAUTH_URL=http://localhost:3001
 
 # Stripe Test Keys (real test keys, not mocks)
@@ -461,7 +460,6 @@ services:
       - NODE_ENV=test
       - INTEGRATION_TEST_MODE=true
       - CLERK_SECRET_KEY
-      - NEXTAUTH_SECRET
       - JWT_SECRET
       - JWT_ISSUER
       - JWT_AUDIENCE
