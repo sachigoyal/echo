@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: 'unsupported_grant_type',
-          error_description: 'Only authorization_code grant type is supported',
+          error_description:
+            'Error: unsupported grant type. Only authorization_code and refresh_token grant types are supported',
         },
         { status: 400 }
       );
@@ -37,8 +38,8 @@ export async function POST(req: NextRequest) {
       if (!refresh_token) {
         return NextResponse.json(
           {
-            error: 'invalid_grant',
-            error_description: 'Missing refresh token',
+            error: 'invalid_request',
+            error_description: 'refresh_token is required',
           },
           { status: 400 }
         );

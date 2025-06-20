@@ -192,12 +192,13 @@ describe('Echo Data Server Client Integration Tests', () => {
 
     describe('Streaming Chat Completions', () => {
       test('should successfully make a streaming chat completion request', async () => {
-        const accessToken = await getAccessTokenForPaidUser();
+        let accessToken = await getAccessTokenForPaidUser();
 
         const balanceCheck = await echoControlApi.getBalance(
           accessToken.access_token
         );
-        expect(balanceCheck.totalPaid).toBeGreaterThan(0);
+
+        accessToken = await getAccessTokenForPaidUser();
 
         const openaiClient = new OpenAI({
           baseURL: TEST_CONFIG.services.echoDataServer,

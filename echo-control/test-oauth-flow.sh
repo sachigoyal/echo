@@ -143,7 +143,7 @@ fi
 # Step 6: Test token refresh
 echo -e "\n${YELLOW}Step 6: Testing token refresh...${NC}"
 
-REFRESH_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/oauth/refresh" \
+REFRESH_RESPONSE=$(curl -s -X POST "${BASE_URL}/api/oauth/token" \
     -H "Content-Type: application/json" \
     -d "{
         \"grant_type\": \"refresh_token\",
