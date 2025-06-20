@@ -14,8 +14,9 @@ describe('Valid Token Creation Test', () => {
     );
 
     // Use the same secret as the OAuth token endpoint
-    const API_JWT_SECRET = new TextEncoder().encode(
-      process.env.API_JWT_SECRET || 'api-jwt-secret-change-in-production'
+    const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
+      process.env.API_ECHO_ACCESS_JWT_SECRET ||
+        'api-jwt-secret-change-in-production'
     );
 
     const tokenId = nanoid(16);
@@ -35,7 +36,7 @@ describe('Valid Token Creation Test', () => {
       .setJti(tokenId)
       .setIssuedAt(now)
       .setExpirationTime(now + 24 * 60 * 60) // 24 hours like OAuth
-      .sign(API_JWT_SECRET);
+      .sign(API_ECHO_ACCESS_JWT_SECRET);
 
     console.log('✅ Created valid token');
     console.log('Token preview:', validToken.substring(0, 100) + '...');

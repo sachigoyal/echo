@@ -108,7 +108,6 @@ STRIPE_WEBHOOK_SECRET="mock_webhook_secret"
 
 # Application
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key-here"
 API_KEY_PREFIX="echo_"
 ```
 

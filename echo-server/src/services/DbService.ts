@@ -9,17 +9,19 @@ import { PrismaClient } from 'generated/prisma';
 /**
  * Secret key for deterministic API key hashing (should match echo-control)
  */
-const API_KEY_SECRET =
-  process.env.API_KEY_SECRET || 'change-this-in-production-very-secret-key';
+const API_KEY_HASH_SECRET =
+  process.env.API_KEY_HASH_SECRET ||
+  'change-this-in-production-very-secret-key';
 
 const API_ECHO_ACCESS_JWT_SECRET =
-  process.env.API_JWT_SECRET || 'api-jwt-secret-change-in-production';
+  process.env.API_ECHO_ACCESS_JWT_SECRET ||
+  'api-jwt-secret-change-in-production';
 
 /**
  * Hash an API key deterministically for O(1) database lookup
  */
 function hashApiKey(apiKey: string): string {
-  return createHmac('sha256', API_KEY_SECRET).update(apiKey).digest('hex');
+  return createHmac('sha256', API_KEY_HASH_SECRET).update(apiKey).digest('hex');
 }
 
 export class EchoDbService {

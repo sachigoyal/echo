@@ -8,12 +8,12 @@ describe('Environment Debug Test', () => {
     // Check what secrets are configured
     console.log('Environment variables (redacted):');
     console.log(
-      '- API_JWT_SECRET:',
-      process.env.API_JWT_SECRET ? '[SET]' : '[NOT SET]'
+      '- API_ECHO_ACCESS_JWT_SECRET:',
+      process.env.API_ECHO_ACCESS_JWT_SECRET ? '[SET]' : '[NOT SET]'
     );
     console.log(
-      '- OAUTH_JWT_SECRET:',
-      process.env.OAUTH_JWT_SECRET ? '[SET]' : '[NOT SET]'
+      '- OAUTH_CODE_SIGNING_JWT_SECRET:',
+      process.env.OAUTH_CODE_SIGNING_JWT_SECRET ? '[SET]' : '[NOT SET]'
     );
     console.log(
       '- INTEGRATION_TEST_JWT:',
