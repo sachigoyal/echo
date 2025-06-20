@@ -54,13 +54,9 @@ export default function ApiKeyModal({
           <h3 className="text-lg font-semibold text-card-foreground">
             API Key Created
           </h3>
-          <GlassButton
-            onClick={onClose}
-            className="!h-8 !w-8"
-            variant="secondary"
-          >
+          <button onClick={onClose} className="!h-8 !w-8">
             <X className="h-6 w-6" />
-          </GlassButton>
+          </button>
         </div>
 
         <div className="space-y-4">
@@ -113,17 +109,16 @@ export default function ApiKeyModal({
               <div className="flex items-center justify-between px-3 py-2 border border-border bg-muted rounded-md font-mono text-sm text-card-foreground break-all pr-12">
                 {apiKey.key}
               </div>
-              <GlassButton
+              <button
                 onClick={handleCopy}
                 className="!h-8 !w-8 absolute right-2 top-1/2 transform -translate-y-1/2"
-                variant="secondary"
               >
                 {copied ? (
                   <Check className="h-5 w-5 text-green-500" />
                 ) : (
                   <Copy className="h-5 w-5" />
                 )}
-              </GlassButton>
+              </button>
             </div>
           </div>
 
