@@ -41,6 +41,9 @@ const createMockContext = (
     console.log('Mock get token called');
     return 'mock-token';
   },
+  clearAuth: async () => {
+    console.log('Mock clear auth called');
+  },
   ...overrides,
 });
 

@@ -7,7 +7,7 @@ import {
 } from '@/lib/oauth-config';
 import { createHash } from 'crypto';
 import { PermissionService } from '@/lib/permissions/service';
-import { AppRole } from '@/lib/permissions/types';
+import { AppRole, MembershipStatus } from '@/lib/permissions/types';
 
 // JWT secret for API tokens (different from OAuth codes)
 const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
@@ -412,7 +412,25 @@ export async function handleInitialTokenIssuance(
   }
 
   /* 9️⃣ Ensure the user has access to this Echo app */
-  const userRole = await PermissionService.getUserAppRole(user.id, echoApp.id);
+  let userRole = await PermissionService.getUserAppRole(user.id, echoApp.id);
+
+  if (!userRole) {
+    // User needs to join the app
+    const appMembership = await db.appMembership.create({
+      data: {
+        userId: user.id,
+        echoAppId: echoApp.id,
+        status: MembershipStatus.ACTIVE,
+        role: AppRole.CUSTOMER,
+        totalSpent: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    userRole = appMembership.role as AppRole;
+  }
+
   if (
     !userRole ||
     ![AppRole.OWNER, AppRole.ADMIN, AppRole.CUSTOMER].includes(userRole)
