@@ -63,7 +63,6 @@ ENV OTEL_SERVICE_VERSION=$OTEL_SERVICE_VERSION
 ENV OTEL_NODE_RESOURCE_DETECTORS=$OTEL_NODE_RESOURCE_DETECTORS
 ENV OTEL_TRACES_EXPORTER=$OTEL_TRACES_EXPORTER
 ENV OTEL_LOG_LEVEL=$OTEL_LOG_LEVEL
-ENV NODE_OPTIONS=$NODE_OPTIONS
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -104,6 +103,9 @@ RUN pnpm run copy-prisma
 
 # Step 3: Build echo-server
 RUN pnpm run build
+
+# Set NODE_OPTIONS to enable OpenTelemetry for echo-server
+ENV NODE_OPTIONS=$NODE_OPTIONS
 
 # Step 4: Install production dependencies only
 RUN pnpm install --prod --frozen-lockfile
