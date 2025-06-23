@@ -105,11 +105,11 @@ RUN pnpm run copy-prisma
 RUN pnpm run build
 
 # Set NODE_OPTIONS to enable OpenTelemetry for echo-server
-ENV NODE_OPTIONS=$NODE_OPTIONS
 
 # Step 4: Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install
 
+ENV NODE_OPTIONS=$NODE_OPTIONS
 # Expose the port that echo-server runs on
 EXPOSE 3069
 
