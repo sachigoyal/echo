@@ -82,7 +82,15 @@ const formatCurrency = (value: number | null | undefined): string => {
   if (value === null || value === undefined || isNaN(value)) {
     return '$0.00';
   }
-  return `$${Number(value).toFixed(2)}`;
+
+  const numValue = Number(value);
+
+  // Show <$0.01 for values greater than 0 but less than 0.01
+  if (numValue > 0 && numValue < 0.01) {
+    return '<$0.01';
+  }
+
+  return `$${numValue.toFixed(2)}`;
 };
 
 // Helper function to safely format cost with more precision
