@@ -34,7 +34,6 @@ ARG OTEL_SERVICE_VERSION
 ARG OTEL_NODE_RESOURCE_DETECTORS
 ARG OTEL_TRACES_EXPORTER
 ARG OTEL_LOG_LEVEL
-ARG NODE_OPTIONS
 
 # Set environment variables from build arguments
 ENV DATABASE_URL=$DATABASE_URL
@@ -112,5 +111,5 @@ RUN pnpm install
 # Expose the port that echo-server runs on
 EXPOSE 3069
 
-# Step 5: Start the server with NODE_OPTIONS applied only to this command
-CMD ["sh", "-c", "NODE_OPTIONS=\"$NODE_OPTIONS\" pnpm start"] 
+# Step 5: Start the server with NODE_OPTIONS for OpenTelemetry instrumentation
+CMD ["sh", "-c", "NODE_OPTIONS=\"--require @opentelemetry/auto-instrumentations-node/register\" pnpm start"] 
