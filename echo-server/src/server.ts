@@ -1,6 +1,3 @@
-// Import instrumentation first before any other modules
-import './instrumentation';
-
 import express, { Request, Response, NextFunction, Express } from 'express';
 import dotenv from 'dotenv';
 import compression from 'compression';
@@ -14,7 +11,7 @@ import { isValidModel } from './services/AccountingService';
 dotenv.config();
 
 const app: Express = express();
-const port = 3069;
+const port = process.env.PORT || 3069;
 
 // Add middleware
 app.use(

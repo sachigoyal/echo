@@ -144,7 +144,7 @@ describe('Echo Data Server Client Integration Tests', () => {
   describe('Non-streaming Chat Completions', () => {
     test('should successfully make a non-streaming chat completion request', async () => {
       // Get a valid access token for the paid user
-      const accessToken = await getAccessTokenForPaidUser();
+      let accessToken = await getAccessTokenForPaidUser();
 
       const balanceCheck = await echoControlApi.getBalance(
         accessToken.access_token
@@ -175,6 +175,8 @@ describe('Echo Data Server Client Integration Tests', () => {
       expect(completion.choices[0]?.message?.content!.length).toBeGreaterThan(
         0
       );
+
+      accessToken = await getAccessTokenForPaidUser();
 
       const secondBalanceCheck = await echoControlApi.getBalance(
         accessToken.access_token
