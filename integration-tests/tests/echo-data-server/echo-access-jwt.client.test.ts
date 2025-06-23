@@ -229,6 +229,8 @@ describe('Echo Data Server Client Integration Tests', () => {
         expect(chunkCount).toBeGreaterThan(0);
         expect(receivedContent.length).toBeGreaterThan(0);
 
+        accessToken = await getAccessTokenForPaidUser();
+
         const secondBalanceCheck = await echoControlApi.getBalance(
           accessToken.access_token
         );
