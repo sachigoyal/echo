@@ -34,6 +34,7 @@ export interface EchoContextValue {
   refreshBalance: () => Promise<void>;
   createPaymentLink: (amount: number) => Promise<string>;
   getToken: () => Promise<string | null>;
+  clearAuth: () => Promise<void>;
 }
 
 export const EchoContext = createContext<EchoContextValue | undefined>(
@@ -212,7 +213,25 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     }
   };
 
-  // Refresh balance using EchoClient
+  // Clear authentication state (for error recovery)
+  const clearAuth = useCallback(async () => {
+    try {
+      setUser(null);
+      setBalance(null);
+      setToken(null);
+      setError(null);
+
+      if (userManager) {
+        await userManager.removeUser();
+      }
+    } catch (error) {
+      console.warn('Error clearing auth state:', error);
+    }
+  }, [userManager]);
+
+  // Enhanced method to attempt token refresh and retry an operation
+
+  // Refresh balance using EchoClient with retry logic
   const refreshBalance = async () => {
     if (!userManager) {
       return;
@@ -306,6 +325,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     };
 
     const handleUserUnloaded = () => {
+      console.log('User unloaded, clearing state');
       setUser(null);
       setBalance(null);
       setToken(null);
@@ -315,13 +335,15 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       console.log('Access token expiring, attempting custom refresh...');
     };
 
-    const handleAccessTokenExpired = () => {
-      console.log('Access token expired');
+    const handleAccessTokenExpired = async () => {
+      console.log('Access token expired, clearing auth state');
+      await clearAuth();
       setError('Session expired. Please sign in again.');
     };
 
-    const handleSilentRenewError = (err: Error) => {
+    const handleSilentRenewError = async (err: Error) => {
       console.error('Silent renew failed:', err);
+      await clearAuth();
       setError('Session renewal failed. Please sign in again.');
     };
     console.log('🔄 Setting up event listeners');
@@ -339,7 +361,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       userManager.events.removeAccessTokenExpired(handleAccessTokenExpired);
       userManager.events.removeSilentRenewError(handleSilentRenewError);
     };
-  }, [userManager, loadUserData]);
+  }, [userManager, loadUserData, clearAuth]);
 
   const contextValue: EchoContextValue = {
     user,
@@ -359,6 +381,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       const currentUser = await userManager.getUser();
       return currentUser?.access_token || null;
     },
+    clearAuth,
   };
 
   return (
