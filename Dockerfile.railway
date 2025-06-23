@@ -105,8 +105,11 @@ RUN pnpm run copy-prisma
 # Step 3: Build echo-server
 RUN pnpm run build
 
+# Step 4: Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
 # Expose the port that echo-server runs on
 EXPOSE 3069
 
-# Step 4: Start the server
+# Step 5: Start the server
 CMD ["pnpm", "start"] 
