@@ -109,9 +109,8 @@ RUN pnpm run build
 # Step 4: Install production dependencies only
 RUN pnpm install
 
-ENV NODE_OPTIONS=$NODE_OPTIONS
 # Expose the port that echo-server runs on
 EXPOSE 3069
 
-# Step 5: Start the server
-CMD ["pnpm", "start"] 
+# Step 5: Start the server with NODE_OPTIONS applied only to this command
+CMD ["sh", "-c", "NODE_OPTIONS=\"$NODE_OPTIONS\" pnpm start"] 
