@@ -1,3 +1,5 @@
+import { EchoApp } from '@/generated/prisma';
+import { getOrCreateUserFromClerkId } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getAuth } from '@clerk/nextjs/server';
 import { SignJWT } from 'jose';
@@ -91,15 +93,36 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    /* 2️⃣ Validate client_id (Echo app) and redirect_uri */
-    const echoApp = await db.echoApp.findUnique({
-      where: { id: clientId, isActive: true },
-      select: {
-        id: true,
-        name: true,
-        authorizedCallbackUrls: true,
-      },
-    });
+    let echoApp: EchoApp | null = null;
+    try {
+      /* 2️⃣ Validate client_id (Echo app) and redirect_uri */
+      echoApp = await db.echoApp.findUnique({
+        where: { id: clientId, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          authorizedCallbackUrls: true,
+          description: true,
+          isActive: true,
+          isArchived: true,
+          archivedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          markUp: true,
+          githubId: true,
+          githubType: true,
+        },
+      });
+    } catch (error) {
+      console.error('Error fetching echo app:', error);
+      return NextResponse.json(
+        {
+          error: 'invalid_client',
+          error_description: 'Invalid or inactive client_id',
+        },
+        { status: 400 }
+      );
+    }
 
     if (!echoApp) {
       return NextResponse.json(
@@ -123,7 +146,7 @@ export async function GET(req: NextRequest) {
     }
 
     /* 2️⃣ Check if user is authenticated with Clerk */
-    const { userId } = await getAuth(req);
+    const { userId } = getAuth(req);
     if (!userId) {
       // Handle prompt=none for unauthenticated users - SECURITY FIX
       if (prompt === 'none') {
@@ -136,13 +159,23 @@ export async function GET(req: NextRequest) {
           { status: 400 }
         );
       }
-
       // Normal flow: preserve the original authorize URL so user can return after sign-in
       const currentUrl = req.url;
       const signInUrl = new URL('/sign-in', req.nextUrl.origin);
       signInUrl.searchParams.set('redirect_url', currentUrl);
 
       return NextResponse.redirect(signInUrl.toString(), 302);
+    }
+
+    // Create a new user in the database if they do not exist
+    try {
+      await getOrCreateUserFromClerkId(userId!);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      return NextResponse.json(
+        { error: 'server_error', error_description: 'Error creating user' },
+        { status: 500 }
+      );
     }
 
     /* 3️⃣ Handle prompt=none for authenticated users - skip consent page */

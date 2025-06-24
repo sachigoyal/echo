@@ -47,6 +47,39 @@ export async function getCurrentUser(): Promise<User> {
   return user;
 }
 
+export async function getOrCreateUserFromClerkId(
+  clerkId: string
+): Promise<User> {
+  // Get user from Clerk
+  const clerkUser = await currentUser();
+
+  if (!clerkUser) {
+    throw new Error('Clerk user not found');
+  }
+  // Try to find existing user in our database
+  let user = await db.user.findUnique({
+    where: { clerkId: clerkId },
+  });
+
+  // If user doesn't exist, create them
+  if (!user) {
+    console.log('Creating user from Clerk ID:', clerkId);
+    user = await db.user.create({
+      data: {
+        clerkId: clerkId,
+        email: clerkUser.emailAddresses[0]?.emailAddress || '',
+        name:
+          `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
+          null,
+        totalPaid: 0, // Initialize with zero paid amount
+        totalSpent: 0, // Initialize with zero spent amount
+      },
+    });
+  }
+
+  return user;
+}
+
 /**
  * Get the current user from an Echo API key or Echo Access JWT
  * Should be used for API requests on the /v1 endpoint
