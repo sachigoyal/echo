@@ -415,20 +415,34 @@ export async function handleInitialTokenIssuance(
   let userRole = await PermissionService.getUserAppRole(user.id, echoApp.id);
 
   if (!userRole) {
-    // User needs to join the app
-    const appMembership = await db.appMembership.create({
-      data: {
-        userId: user.id,
-        echoAppId: echoApp.id,
-        status: MembershipStatus.ACTIVE,
-        role: AppRole.CUSTOMER,
-        totalSpent: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    });
+    try {
+      console.log(
+        'Creating app membership for user:',
+        user.id,
+        'and app:',
+        echoApp.id
+      );
+      // User needs to join the app
+      const appMembership = await db.appMembership.create({
+        data: {
+          userId: user.id,
+          echoAppId: echoApp.id,
+          status: MembershipStatus.ACTIVE,
+          role: AppRole.CUSTOMER,
+          totalSpent: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
 
-    userRole = appMembership.role as AppRole;
+      userRole = appMembership.role as AppRole;
+    } catch (error) {
+      console.error('Error creating app membership:', error);
+      return {
+        error: 'server_error',
+        error_description: 'Error creating app membership',
+      };
+    }
   }
 
   if (
