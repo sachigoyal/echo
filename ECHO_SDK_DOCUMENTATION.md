@@ -6,6 +6,8 @@ Echo allows you to seamlessly connect payment rails and authentication to your L
 
 Echo currently supports all OpenAI and Anthropic models.
 
+You will first need to login to https://echo.merit.systems, navigate to the owner dashboard, and create a new app. On the app management page, you will find your app ID and will need to add your callback URL there.
+
 ## Installation
 
 ```bash
@@ -16,6 +18,8 @@ npm install @zdql/echo-react-sdk
 
 ### 1. Configure the EchoProvider
 
+The EchoProvider handles OAuth callbacks automatically - no separate callback route needed!
+
 ```tsx
 import { EchoProvider } from '@zdql/echo-react-sdk';
 import App from './App';
@@ -23,7 +27,8 @@ import App from './App';
 const echoConfig = {
   appId: 'your-app-id',
   apiUrl: 'https://echo.merit.systems',
-  redirectUri: window.location.origin + '/callback',
+  // OAuth callbacks are handled automatically at your app's root
+  redirectUri: window.location.origin,
 };
 
 function Root() {
@@ -37,11 +42,13 @@ function Root() {
 
 ### 2. Configuration Options
 
-| Option        | Type   | Required | Description                                              |
-| ------------- | ------ | -------- | -------------------------------------------------------- |
-| `appId`       | string | ✅       | Your unique Echo app identifier                          |
-| `apiUrl`      | string | ✅       | The Echo API base URL                                    |
-| `redirectUri` | string | ✅       | OAuth callback URL (must match your registered callback) |
+| Option        | Type   | Required | Description                                        |
+| ------------- | ------ | -------- | -------------------------------------------------- |
+| `appId`       | string | ✅       | Your unique Echo app identifier                    |
+| `apiUrl`      | string | ✅       | The Echo API base URL                              |
+| `redirectUri` | string | ✅       | OAuth callback URL (typically your app's root URL) |
+
+**Note**: The EchoProvider automatically handles OAuth callbacks on any route, so you can set `redirectUri` to your application's root URL.
 
 ## Authentication
 
@@ -79,28 +86,6 @@ function AuthPanel() {
       Sign In with Echo
     </EchoSignIn>
   );
-}
-```
-
-### OAuth Callback Handler
-
-```tsx
-import { useEcho } from '@zdql/echo-react-sdk';
-import { useNavigate } from 'react-router-dom';
-
-function CallbackHandler() {
-  const navigate = useNavigate();
-  const { isAuthenticated, error } = useEcho();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    } else if (error) {
-      navigate('/');
-    }
-  }, [isAuthenticated, error, navigate]);
-
-  return <div>Processing authentication...</div>;
 }
 ```
 
@@ -165,10 +150,9 @@ function TokenPurchase() {
 
 ## Complete Application Structure
 
-### App Component with Routing
+### Simple App Setup (No Routing Required)
 
 ```tsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useEcho } from '@zdql/echo-react-sdk';
 
 function AppContent() {
@@ -181,14 +165,7 @@ function AppContent() {
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppContent />} />
-        <Route path="/callback" element={<CallbackHandler />} />
-      </Routes>
-    </BrowserRouter>
-  );
+  return <AppContent />;
 }
 ```
 
