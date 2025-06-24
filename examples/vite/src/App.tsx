@@ -396,7 +396,7 @@ function App() {
   });
 
   const [echoConfig, setEchoConfig] = useState<{
-    instanceId: string;
+    appId: string;
     apiUrl: string;
     redirectUri: string;
     scope: string;
@@ -416,7 +416,7 @@ function App() {
     console.log('📝 Config submitted:', submittedClientId);
     setClientId(submittedClientId);
     const config = {
-      instanceId: submittedClientId,
+      appId: submittedClientId,
       apiUrl: CONFIG.ECHO_CONTROL_URL,
       redirectUri: CONFIG.REDIRECT_URI,
       scope: CONFIG.SCOPE,

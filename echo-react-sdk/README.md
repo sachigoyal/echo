@@ -14,7 +14,7 @@ pnpm install @zdql/echo-react-sdk
 import { EchoProvider, EchoSignIn, useEcho } from '@zdql/echo-react-sdk';
 
 // 1. Wrap your app
-<EchoProvider config={{ instanceId: 'your-app-id' }}>
+<EchoProvider config={{ appId: 'your-app-id' }}>
   <App />
 </EchoProvider>
 
@@ -62,7 +62,7 @@ const {
 
 ```tsx
 <EchoProvider config={{
-  instanceId: 'your-app-id',                    // required
+  appId: 'your-app-id',                    // required
   apiUrl: 'https://echo.merit.systems',         // optional (default)
   redirectUri: 'http://localhost:3000',         // optional
   scope: 'llm:invoke offline_access'            // optional

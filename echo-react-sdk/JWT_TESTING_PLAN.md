@@ -704,7 +704,7 @@ export function TestEchoProvider({
   mockResponses = {}
 }) {
   const config = {
-    instanceId: 'test-app-id',
+    appId: 'test-app-id',
     apiUrl: 'http://localhost:3000',
     ...mockConfig
   };

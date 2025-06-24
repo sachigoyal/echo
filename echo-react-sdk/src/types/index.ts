@@ -1,5 +1,5 @@
 export interface EchoConfig {
-  instanceId: string;
+  appId: string;
   apiUrl?: string;
   redirectUri?: string;
   scope?: string;
