@@ -29,7 +29,7 @@ function App() {
   return (
     <EchoProvider
       config={{
-        instanceId: 'your-echo-instance-id',
+        appId: 'your-echo-instance-id',
         apiUrl: 'https://your-echo-server.com',
       }}
     >
@@ -98,7 +98,7 @@ Users can purchase tokens using the EchoTokenPurchase component, which:
 
 The EchoProvider accepts a config object with:
 
-- `instanceId` (required): Your Echo instance identifier
+- `appId` (required): Your Echo instance identifier
 - `apiUrl` (required): Your Echo server URL
 - `redirectUri` (optional): Custom redirect URI for OAuth flow
 

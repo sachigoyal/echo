@@ -7,7 +7,7 @@ import { EchoConfig } from '../../types';
  * Default test configuration for EchoProvider
  */
 const defaultTestConfig: EchoConfig = {
-  instanceId: 'test-app-id',
+  appId: 'test-app-id',
   apiUrl: 'http://localhost:3000',
   redirectUri: 'http://localhost:3000/callback',
   scope: 'llm:invoke offline_access',

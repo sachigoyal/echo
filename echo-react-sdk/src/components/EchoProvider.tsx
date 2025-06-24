@@ -66,7 +66,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     const apiUrl = config.apiUrl || 'http://localhost:3000';
     const settings: UserManagerSettings = {
       authority: apiUrl,
-      client_id: config.instanceId,
+      client_id: config.appId,
       redirect_uri: config.redirectUri || window.location.origin,
       response_type: 'code',
       scope: config.scope || 'llm:invoke offline_access',
