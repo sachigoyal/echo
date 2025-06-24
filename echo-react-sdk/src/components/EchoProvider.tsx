@@ -316,7 +316,6 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   // Set up event listeners for token events
   useEffect(() => {
     if (!userManager) {
-      console.log('🔄 UserManager not initialized');
       return;
     }
 
@@ -331,9 +330,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       setToken(null);
     };
 
-    const handleAccessTokenExpiring = () => {
-      console.log('Access token expiring, attempting custom refresh...');
-    };
+    const handleAccessTokenExpiring = () => {};
 
     const handleAccessTokenExpired = async () => {
       console.log('Access token expired, clearing auth state');
@@ -346,15 +343,12 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       await clearAuth();
       setError('Session renewal failed. Please sign in again.');
     };
-    console.log('🔄 Setting up event listeners');
     userManager.events.addUserLoaded(handleUserLoaded);
     userManager.events.addUserUnloaded(handleUserUnloaded);
     userManager.events.addAccessTokenExpiring(handleAccessTokenExpiring);
     userManager.events.addAccessTokenExpired(handleAccessTokenExpired);
     userManager.events.addSilentRenewError(handleSilentRenewError);
-    console.log('🔄 Event listeners added');
     return () => {
-      console.log('🔄 Removing event listeners');
       userManager.events.removeUserLoaded(handleUserLoaded);
       userManager.events.removeUserUnloaded(handleUserUnloaded);
       userManager.events.removeAccessTokenExpiring(handleAccessTokenExpiring);
