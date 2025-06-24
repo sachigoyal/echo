@@ -65,24 +65,24 @@ export default function CustomerAppsView({ apps }: CustomerAppsViewProps) {
             <Link
               key={app.id}
               href={`/apps/${app.id}`}
-              className="group relative bg-gradient-to-br from-gray-900/80 to-gray-800/40 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10"
+              className="group relative bg-gradient-to-br from-gray-900/80 to-gray-800/40 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 h-64 flex flex-col"
             >
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               {/* Content */}
-              <div className="relative p-6">
-                <div className="flex items-start justify-between mb-4">
+              <div className="relative p-5 flex-1 flex flex-col">
+                <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors duration-300">
+                      <h3 className="text-lg font-bold text-white group-hover:text-blue-300 transition-colors duration-300 truncate flex-1">
                         {app.name}
                       </h3>
-                      <ArrowUpRightIcon className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
+                      <ArrowUpRightIcon className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
                     </div>
                     <div className="flex items-center">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           app.userRole === AppRole.ADMIN
                             ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
                             : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
@@ -95,16 +95,16 @@ export default function CustomerAppsView({ apps }: CustomerAppsViewProps) {
                 </div>
 
                 {app.description && (
-                  <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                  <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2">
                     {app.description}
                   </p>
                 )}
 
                 {/* Stats Grid */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
+                <div className="mt-auto">
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-white">
+                      <div className="text-xl font-bold text-white">
                         {app._count.apiKeys}
                       </div>
                       <div className="text-xs text-gray-400 font-medium">
@@ -112,7 +112,7 @@ export default function CustomerAppsView({ apps }: CustomerAppsViewProps) {
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-white">
+                      <div className="text-xl font-bold text-white">
                         {app._count.llmTransactions}
                       </div>
                       <div className="text-xs text-gray-400 font-medium">
@@ -120,7 +120,7 @@ export default function CustomerAppsView({ apps }: CustomerAppsViewProps) {
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-emerald-400">
+                      <div className="text-xl font-bold text-emerald-400">
                         ${app.totalCost.toFixed(2)}
                       </div>
                       <div className="text-xs text-gray-400 font-medium">
