@@ -163,62 +163,6 @@ function TokenPurchase() {
 }
 ```
 
-## AI Chat Integration
-
-### Basic Chat Setup
-
-```tsx
-import { useEcho } from '@zdql/echo-react-sdk';
-
-function ChatInterface() {
-  const { token } = useEcho();
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-
-  const sendMessage = async e => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
-
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'x-echo-token': token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ messages: [...messages, userMessage] }),
-    });
-
-    const data = await response.json();
-    setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
-    setInput('');
-  };
-
-  return (
-    <div>
-      <div>
-        {messages.map((message, i) => (
-          <div key={i}>
-            {message.role}: {message.content}
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={sendMessage}>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Type your message..."
-        />
-        <button type="submit">Send</button>
-      </form>
-    </div>
-  );
-}
-```
-
 ## Complete Application Structure
 
 ### App Component with Routing
