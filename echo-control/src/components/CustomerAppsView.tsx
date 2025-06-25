@@ -55,7 +55,7 @@ export default function CustomerAppsView({ apps }: CustomerAppsViewProps) {
             No applications
           </h3>
           <p className="mt-2 text-gray-400 max-w-sm mx-auto">
-            You haven't been invited to any applications yet
+            You haven&apos;t been invited to any applications yet
           </p>
         </div>
       ) : (

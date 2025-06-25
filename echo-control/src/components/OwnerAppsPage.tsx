@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { UserIcon, LogOutIcon, Users } from 'lucide-react';
 import { AppRole } from '@/lib/permissions/types';
 import OwnerAppsView from './OwnerAppsView';
-import UserPaymentCard from './UserPaymentCard';
 
 interface EchoAppWithRole {
   id: string;

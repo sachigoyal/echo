@@ -2,15 +2,31 @@ import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+interface ModelData {
+  max_tokens?: number;
+  max_input_tokens?: number;
+  max_output_tokens?: number;
+  input_cost_per_token?: number;
+  output_cost_per_token?: number;
+  litellm_provider?: string;
+  mode?: string;
+  supports_function_calling?: boolean;
+  supports_system_messages?: boolean;
+  supports_native_streaming?: boolean;
+  deprecation_date?: string;
+  supported_endpoints?: string[];
+  tool_use_system_prompt_tokens?: number;
+}
+
 const modelPricesPath = path.join(process.cwd(), 'model_prices.json');
 const modelPricesData = await fs.readFile(modelPricesPath, 'utf8');
-const modelPrices = JSON.parse(modelPricesData);
+const modelPrices: Record<string, ModelData> = JSON.parse(modelPricesData);
 
 export async function GET() {
   try {
     // Transform the data to return important information for users
     const supportedModels = Object.entries(modelPrices).map(
-      ([modelName, modelData]: [string, any]) => ({
+      ([modelName, modelData]) => ({
         name: modelName,
         provider: modelData.litellm_provider,
         pricing: {
@@ -55,10 +71,11 @@ export async function GET() {
     // Group by provider for easier consumption
     const groupedByProvider = supportedModels.reduce(
       (acc, model) => {
-        if (!acc[model.provider]) {
-          acc[model.provider] = [];
+        const provider = model.provider || 'unknown';
+        if (!acc[provider]) {
+          acc[provider] = [];
         }
-        acc[model.provider].push(model);
+        acc[provider].push(model);
         return acc;
       },
       {} as Record<string, typeof supportedModels>
