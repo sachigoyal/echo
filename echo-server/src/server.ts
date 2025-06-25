@@ -84,7 +84,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
     console.log(
       'new outbound request',
-      `${provider.getBaseUrl()}${req.path}`,
+      `${provider.getBaseUrl(req.path)}${req.path}`,
       req.method
     );
 
@@ -92,11 +92,14 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     req.body = provider.ensureStreamUsage(req.body);
 
     // Forward the request to Base Url API
-    const response = await fetch(`${provider.getBaseUrl()}${req.path}`, {
-      method: req.method,
-      headers: authenticatedHeaders,
-      ...(req.method !== 'GET' && { body: JSON.stringify(req.body) }),
-    });
+    const response = await fetch(
+      `${provider.getBaseUrl(req.path)}${req.path}`,
+      {
+        method: req.method,
+        headers: authenticatedHeaders,
+        ...(req.method !== 'GET' && { body: JSON.stringify(req.body) }),
+      }
+    );
 
     if (response.status != 200) {
       // decode the buffer

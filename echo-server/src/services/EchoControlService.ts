@@ -9,14 +9,13 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 
 import { PrismaClient } from '../generated/prisma';
-import { Decimal } from 'generated/prisma/runtime/library';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
   private readonly dbService: EchoDbService;
   private readonly apiKey: string;
   private authResult: ApiKeyValidationResult | null = null;
-  private appMarkup: Decimal | null = null;
+  private appMarkup: number | null = null;
 
   constructor(apiKey: string) {
     // Check if the generated Prisma client exists
@@ -46,12 +45,12 @@ export class EchoControlService {
   async verifyApiKey(): Promise<ApiKeyValidationResult | null> {
     try {
       this.authResult = await this.dbService.validateApiKey(this.apiKey);
-      this.appMarkup = await this.getAppMarkup();
-      return this.authResult;
     } catch (error) {
       console.error('Error verifying API key:', error);
       return null;
     }
+    this.appMarkup = await this.getAppMarkup();
+    return this.authResult;
   }
 
   /**
@@ -111,7 +110,12 @@ export class EchoControlService {
     }
   }
 
-  async getAppMarkup(): Promise<Decimal> {
+  async getAppMarkup(): Promise<number> {
+    if (!this.authResult) {
+      console.error('No authentication result available');
+      return 1.0;
+    }
+
     const appMarkup = await this.db.echoApp.findUnique({
       where: {
         id: this.getEchoAppId() ?? '',
@@ -128,7 +132,7 @@ export class EchoControlService {
       throw new Error('App markup must be greater than 1.0');
     }
 
-    return appMarkup.markUp;
+    return appMarkup.markUp.toNumber();
   }
 
   /**
@@ -149,7 +153,7 @@ export class EchoControlService {
         return;
       }
 
-      const cost = transaction.cost * this.appMarkup.toNumber();
+      const cost = transaction.cost * this.appMarkup;
       transaction.cost = cost;
 
       const { userId, echoAppId, apiKeyId } = this.authResult;

@@ -7,7 +7,7 @@ async function makeRequest(useStreaming: boolean = false) {
   try {
     // Initialize OpenAI client with custom baseURL
     const openai = new OpenAI({
-      baseURL: 'http://localhost:3069',
+      baseURL: 'http://localhost:3070',
       apiKey: process.env.ECHO_API_KEY, // Required by the client but not used with local server
     });
 
