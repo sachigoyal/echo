@@ -375,10 +375,10 @@ describe('EchoProvider', () => {
         await act(async () => {
           expiredHandler();
         });
-
+        // should re-authenticate
         await waitFor(() => {
-          expect(screen.getByTestId('error')).toHaveTextContent(
-            'Session expired. Please sign in again.'
+          expect(screen.getByTestId('authenticated')).toHaveTextContent(
+            'Authenticated'
           );
         });
       }
