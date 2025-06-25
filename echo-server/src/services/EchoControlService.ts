@@ -16,6 +16,7 @@ export class EchoControlService {
   private readonly dbService: EchoDbService;
   private readonly apiKey: string;
   private authResult: ApiKeyValidationResult | null = null;
+  private appMarkup: Decimal | null = null;
 
   constructor(apiKey: string) {
     // Check if the generated Prisma client exists
@@ -45,6 +46,7 @@ export class EchoControlService {
   async verifyApiKey(): Promise<ApiKeyValidationResult | null> {
     try {
       this.authResult = await this.dbService.validateApiKey(this.apiKey);
+      this.appMarkup = await this.getAppMarkup();
       return this.authResult;
     } catch (error) {
       console.error('Error verifying API key:', error);
@@ -142,8 +144,12 @@ export class EchoControlService {
         return;
       }
 
-      const appMarkup = await this.getAppMarkup();
-      const cost = transaction.cost * appMarkup.toNumber();
+      if (!this.appMarkup) {
+        console.error('User has not authenticated');
+        return;
+      }
+
+      const cost = transaction.cost * this.appMarkup.toNumber();
       transaction.cost = cost;
 
       const { userId, echoAppId, apiKeyId } = this.authResult;

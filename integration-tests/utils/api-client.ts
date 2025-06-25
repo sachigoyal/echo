@@ -109,6 +109,9 @@ export class EchoControlApiClient {
     code_verifier: string;
   }): Promise<{
     access_token: string;
+    echo_app: {
+      id: string;
+    };
     token_type: string;
     expires_in: number;
     refresh_token?: string;
