@@ -31,10 +31,10 @@ export default function CustomerAppsView({ apps }: CustomerAppsViewProps) {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-            Apps You&apos;re Using
+            Your Applications
           </h2>
           <p className="text-gray-400 mt-1">
-            Applications where you have customer access
+            AI applications you have access to
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -52,11 +52,10 @@ export default function CustomerAppsView({ apps }: CustomerAppsViewProps) {
             <ActivityIcon className="relative mx-auto h-16 w-16 text-gray-400" />
           </div>
           <h3 className="mt-6 text-lg font-semibold text-white">
-            No customer apps
+            No applications
           </h3>
           <p className="mt-2 text-gray-400 max-w-sm mx-auto">
-            You haven&apos;t been invited to use any apps yet. Check back later
-            or contact an app owner.
+            You haven&apos;t been invited to any applications yet
           </p>
         </div>
       ) : (

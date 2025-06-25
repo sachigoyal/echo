@@ -351,6 +351,146 @@ describe('EchoClient', () => {
     });
   });
 
+  describe('getSupportedModels', () => {
+    const mockSupportedModelsResponse = {
+      models: [
+        {
+          name: 'gpt-4',
+          provider: 'openai',
+          pricing: {
+            input_cost_per_token: 0.00003,
+            output_cost_per_token: 0.00006,
+          },
+          limits: {
+            max_tokens: 4096,
+            max_input_tokens: 8192,
+            max_output_tokens: 4096,
+          },
+          capabilities: {
+            mode: 'chat',
+            supports_function_calling: true,
+            supports_system_messages: true,
+            supports_native_streaming: true,
+          },
+          metadata: {
+            supported_endpoints: ['chat/completions'],
+            tool_use_system_prompt_tokens: 10,
+          },
+        },
+        {
+          name: 'claude-3-opus',
+          provider: 'anthropic',
+          pricing: {
+            input_cost_per_token: 0.000015,
+            output_cost_per_token: 0.000075,
+          },
+          limits: {
+            max_tokens: 4096,
+            max_input_tokens: 200000,
+            max_output_tokens: 4096,
+          },
+          capabilities: {
+            mode: 'chat',
+            supports_function_calling: true,
+            supports_system_messages: true,
+            supports_native_streaming: true,
+          },
+          metadata: {
+            supported_endpoints: ['messages'],
+            tool_use_system_prompt_tokens: 8,
+          },
+        },
+      ],
+      models_by_provider: {
+        openai: [
+          {
+            name: 'gpt-4',
+            provider: 'openai',
+            pricing: {
+              input_cost_per_token: 0.00003,
+              output_cost_per_token: 0.00006,
+            },
+            limits: {
+              max_tokens: 4096,
+              max_input_tokens: 8192,
+              max_output_tokens: 4096,
+            },
+            capabilities: {
+              mode: 'chat',
+              supports_function_calling: true,
+              supports_system_messages: true,
+              supports_native_streaming: true,
+            },
+            metadata: {
+              supported_endpoints: ['chat/completions'],
+              tool_use_system_prompt_tokens: 10,
+            },
+          },
+        ],
+        anthropic: [
+          {
+            name: 'claude-3-opus',
+            provider: 'anthropic',
+            pricing: {
+              input_cost_per_token: 0.000015,
+              output_cost_per_token: 0.000075,
+            },
+            limits: {
+              max_tokens: 4096,
+              max_input_tokens: 200000,
+              max_output_tokens: 4096,
+            },
+            capabilities: {
+              mode: 'chat',
+              supports_function_calling: true,
+              supports_system_messages: true,
+              supports_native_streaming: true,
+            },
+            metadata: {
+              supported_endpoints: ['messages'],
+              tool_use_system_prompt_tokens: 8,
+            },
+          },
+        ],
+      },
+    };
+
+    it('should fetch supported models successfully', async () => {
+      mockAxiosInstance.get.mockResolvedValue({
+        data: mockSupportedModelsResponse,
+      });
+
+      const response = await client.getSupportedModels();
+
+      expect(response).toEqual(mockSupportedModelsResponse);
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        '/api/v1/supported-models'
+      );
+    });
+
+    it('should handle supported models fetch errors', async () => {
+      const error = new Error('Network error');
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(client.getSupportedModels()).rejects.toThrow(
+        'Failed to fetch supported models'
+      );
+    });
+
+    it('should handle API error responses for supported models', async () => {
+      const apiError = new Error('API Error') as ErrorWithResponse;
+      apiError.response = {
+        status: 500,
+        data: { error: 'Internal server error' },
+      };
+      mockAxiosInstance.get.mockRejectedValue(apiError);
+
+      await expect(client.getSupportedModels()).rejects.toThrow(
+        'Failed to fetch supported models: Internal server error'
+      );
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle network errors gracefully', async () => {
       const networkError = new Error('Network Error');

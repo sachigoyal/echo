@@ -1,11 +1,13 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { EchoConfig, getConfig } from './config';
+import { EchoConfig, getConfig } from './config.js';
 import {
   Balance,
   CreatePaymentLinkRequest,
   CreatePaymentLinkResponse,
   EchoApp,
   ListEchoAppsResponse,
+  SupportedModel,
+  SupportedModelsResponse,
   User,
 } from './types';
 
@@ -130,6 +132,38 @@ export class EchoClient {
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch user info');
     }
+  }
+
+  /**
+   * Get supported models with pricing, limits, and capabilities
+   */
+  async getSupportedModels(): Promise<SupportedModelsResponse> {
+    try {
+      const response = await this.http.get<SupportedModelsResponse>(
+        '/api/v1/supported-models'
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to fetch supported models');
+    }
+  }
+
+  /**
+   * Get supported models as a flat array
+   */
+  async listSupportedModels(): Promise<SupportedModel[]> {
+    const response = await this.getSupportedModels();
+    return response.models;
+  }
+
+  /**
+   * Get supported models grouped by provider
+   */
+  async getSupportedModelsByProvider(): Promise<
+    Record<string, SupportedModel[]>
+  > {
+    const response = await this.getSupportedModels();
+    return response.models_by_provider;
   }
 
   private handleError(error: any, message: string): Error {

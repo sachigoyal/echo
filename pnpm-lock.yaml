@@ -177,8 +177,8 @@ importers:
   echo-react-sdk:
     dependencies:
       '@zdql/echo-typescript-sdk':
-        specifier: file:../echo-typescript-sdk
-        version: link:../echo-typescript-sdk
+        specifier: ^1.0.15
+        version: 1.0.15
       dompurify:
         specifier: ^3.2.6
         version: 3.2.6
@@ -2645,6 +2645,10 @@ packages:
 
   '@vue/shared@3.5.16':
     resolution: {integrity: sha512-c/0fWy3Jw6Z8L9FmTyYfkpM5zklnqqa9+a6dz3DvONRKW2NEbh46BP0FHuLFSWi2TnQEtp91Z6zOWNrU6QiyPg==}
+
+  '@zdql/echo-typescript-sdk@1.0.15':
+    resolution: {integrity: sha512-e2ocXMiu1guDIovR+YKMUFHYoHf5dlea6Gxz/KJA1cpWsqp/yMp7yMu6S2zLlW7zCeA9vSDk8AAQxCP7M058GQ==}
+    hasBin: true
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -8437,6 +8441,17 @@ snapshots:
       typescript: 5.8.3
 
   '@vue/shared@3.5.16': {}
+
+  '@zdql/echo-typescript-sdk@1.0.15':
+    dependencies:
+      axios: 1.10.0
+      chalk: 5.4.1
+      commander: 11.1.0
+      inquirer: 9.3.7
+      jose: 6.0.11
+      open: 9.1.0
+    transitivePeerDependencies:
+      - debug
 
   abort-controller@3.0.0:
     dependencies:

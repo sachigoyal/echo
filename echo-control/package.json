@@ -11,7 +11,8 @@
     "test": "echo 'All tests passed!'",
     "prisma:generate": "pnpx prisma generate",
     "prisma:push": "pnpx prisma db push",
-    "prisma:studio": "pnpx prisma studio"
+    "prisma:studio": "pnpx prisma studio",
+    "copy:model-prices": "cp ../echo-server/model_prices.json ./model_prices.json"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.20.2",

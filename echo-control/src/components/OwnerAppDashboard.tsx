@@ -17,6 +17,7 @@ import {
 import MarkupSettingsCard from './MarkupSettingsCard';
 import OAuthConfigSection from './OAuthConfigSection';
 import { GlassButton } from './glass-button';
+import { formatCurrency } from '@/lib/balance';
 
 interface AppAnalytics {
   totalUsers: number;
@@ -270,7 +271,7 @@ export default function OwnerAppDashboard({
                   Total Revenue
                 </p>
                 <p className="text-2xl font-bold text-foreground">
-                  ${analytics.totalSpent.toFixed(2)}
+                  {formatCurrency(analytics.totalSpent)}
                 </p>
               </div>
             </div>
@@ -330,7 +331,7 @@ export default function OwnerAppDashboard({
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-foreground">
-                    ${user.totalSpent.toFixed(2)}
+                    {formatCurrency(user.totalSpent)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {user.apiKeyCount} keys
