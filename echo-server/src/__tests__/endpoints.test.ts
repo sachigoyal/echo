@@ -139,6 +139,24 @@ const createMockAnthropicStreamingResponse = (
 ) => {
   return new ReadableStream({
     start: controller => {
+      // Send message_start event with initial usage, id, and model
+      const messageStartChunk = {
+        type: 'message_start',
+        message: {
+          id: 'test-message-id',
+          model: 'claude-3-5-sonnet-20240620',
+          usage: {
+            input_tokens: Math.floor(totalTokens * 0.3),
+            output_tokens: 0,
+          },
+        },
+      };
+      controller.enqueue(
+        new TextEncoder().encode(
+          `data: ${JSON.stringify(messageStartChunk)}\n\n`
+        )
+      );
+
       // Send content chunks
       const words = content.split(' ');
       words.forEach((word, index) => {
@@ -151,12 +169,10 @@ const createMockAnthropicStreamingResponse = (
         );
       });
 
-      // Send final usage chunk
+      // Send final usage chunk with output tokens
       const usageChunk = {
         type: 'message_delta',
-        id: 'test-id',
         usage: {
-          input_tokens: Math.floor(totalTokens * 0.3),
           output_tokens: Math.floor(totalTokens * 0.7),
         },
       };
@@ -510,14 +526,17 @@ describe('Endpoint Tests', () => {
 
             // Check token counts based on provider type
             if (name === 'AnthropicNative') {
-              // AnthropicNative only counts output tokens (70% of total)
+              // AnthropicNative counts both input and output tokens
+              const inputTokens = Math.floor(expectedTokens * 0.3);
               const outputTokens = Math.floor(expectedTokens * 0.7);
+              const totalTokens = inputTokens + outputTokens;
               expect(
                 mockEchoControlService.createTransaction
               ).toHaveBeenCalledWith(
                 expect.objectContaining({
+                  inputTokens: inputTokens,
                   outputTokens: outputTokens,
-                  totalTokens: outputTokens,
+                  totalTokens: totalTokens,
                 })
               );
             } else {

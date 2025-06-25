@@ -7,7 +7,7 @@ async function makeRequest(useStreaming: boolean = false) {
   try {
     // Initialize OpenAI client with custom baseURL
     const claude = new Anthropic({
-      baseURL: 'http://localhost:3069',
+      baseURL: 'http://localhost:3070',
       apiKey: process.env.ECHO_API_KEY, // Required by the client but not used with local server
     });
 
@@ -15,12 +15,13 @@ async function makeRequest(useStreaming: boolean = false) {
       // Make a completion request with streaming enabled
       const stream = claude.messages
         .stream({
-          model: 'claude-3-5-sonnet-20240620',
+          model: 'claude-sonnet-4-20250514',
+          // model: 'claude-3-5-sonnet-20240620',
           max_tokens: 1024,
           messages: [
             {
               role: 'user',
-              content: 'Tell me a long story about a cat!',
+              content: 'Hello world',
             },
           ],
         })
@@ -34,10 +35,9 @@ async function makeRequest(useStreaming: boolean = false) {
       // Make a regular completion request
       const completion = await claude.messages.create({
         max_tokens: 1024,
-        messages: [
-          { role: 'user', content: 'Tell me a long story about a cat!' },
-        ],
-        model: 'claude-3-5-sonnet-20240620',
+        messages: [{ role: 'user', content: 'Hello world' }],
+        model: 'claude-sonnet-4-20250514',
+        // model: 'claude-3-5-sonnet-20240620',
       });
       if (completion.content) {
         console.log('completion text:', completion.content);

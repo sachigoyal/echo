@@ -6,43 +6,64 @@ export interface AnthropicUsage {
   input_tokens: number;
   output_tokens: number;
   id: string;
+  model: string;
 }
 
 export const parseSSEAnthropicFormat = (
   data: string
 ): AnthropicUsage | null => {
-  // Split by double newlines to separate events
-  const events = data.split('\n\n');
-  let usage: AnthropicUsage | null = null;
+  // Split by lines to process each SSE event
+  const lines = data.split('\n');
+  let currentEvent = '';
+  let currentData = '';
 
-  for (const event of events) {
-    if (!event.trim()) continue;
-    // find the position of 'data: '
-    const dataIndex = event.indexOf('data: ');
-    if (dataIndex !== -1) {
-      const jsonStr = event.slice(dataIndex + 6); // Remove 'data: ' prefix
+  let messageStartUsage: Partial<AnthropicUsage> = {};
+  let messageDeltaUsage: Partial<AnthropicUsage> = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]?.trim();
+    if (!line) continue;
+
+    if (line.startsWith('event: ')) {
+      currentEvent = line.substring(7); // Remove 'event: ' prefix
+    } else if (line.startsWith('data: ')) {
+      currentData = line.substring(6); // Remove 'data: ' prefix
+
       try {
-        const parsed = JSON.parse(jsonStr);
+        const parsed = JSON.parse(currentData);
 
-        // Look for message_delta event which contains usage information
-        if (
-          parsed.type === 'message_delta' &&
-          parsed.usage !== null &&
-          parsed.id
-        ) {
-          usage = {
-            input_tokens: parsed.usage.input_tokens,
-            output_tokens: parsed.usage.output_tokens,
-            id: parsed.id,
+        // Handle message_start event - contains initial usage and model info
+        if (parsed.type === 'message_start' && parsed.message) {
+          const message = parsed.message;
+          if (message.usage && message.id && message.model) {
+            messageStartUsage = {
+              input_tokens: message.usage.input_tokens || 0,
+              output_tokens: message.usage.output_tokens || 0,
+              id: message.id,
+              model: message.model,
+            };
+          }
+        }
+
+        // Handle message_delta event - contains final output token count
+        if (parsed.type === 'message_delta' && parsed.usage) {
+          messageDeltaUsage = {
+            output_tokens: parsed.usage.output_tokens || 0,
           };
         }
 
-        // Also handle complete message responses
-        if (parsed.type === 'message' && parsed.usage !== null && parsed.id) {
-          usage = {
-            input_tokens: parsed.usage.input_tokens,
-            output_tokens: parsed.usage.output_tokens,
+        // Also handle complete message responses (non-streaming)
+        if (
+          parsed.type === 'message' &&
+          parsed.usage &&
+          parsed.id &&
+          parsed.model
+        ) {
+          return {
+            input_tokens: parsed.usage.input_tokens || 0,
+            output_tokens: parsed.usage.output_tokens || 0,
             id: parsed.id,
+            model: parsed.model,
           };
         }
       } catch (error) {
@@ -51,7 +72,18 @@ export const parseSSEAnthropicFormat = (
     }
   }
 
-  return usage;
+  // Combine usage data from message_start and message_delta
+  if (messageStartUsage.id && messageStartUsage.model) {
+    return {
+      input_tokens: messageStartUsage.input_tokens || 0,
+      output_tokens:
+        messageDeltaUsage.output_tokens || messageStartUsage.output_tokens || 0,
+      id: messageStartUsage.id,
+      model: messageStartUsage.model,
+    };
+  }
+
+  return null;
 };
 
 export class AnthropicNativeProvider extends BaseProvider {
@@ -59,8 +91,12 @@ export class AnthropicNativeProvider extends BaseProvider {
     return ProviderType.ANTHROPIC_NATIVE;
   }
 
-  getBaseUrl(): string {
-    return this.ANTHROPIC_BASE_URL;
+  getBaseUrl(reqPath?: string): string {
+    if (reqPath && reqPath.startsWith('/v1')) {
+      return this.ANTHROPIC_BASE_URL;
+    } else {
+      return this.ANTHROPIC_BASE_URL + '/v1';
+    }
   }
 
   getApiKey(): string | undefined {
@@ -83,22 +119,22 @@ export class AnthropicNativeProvider extends BaseProvider {
   override handleBody(data: string): void {
     if (this.getIsStream()) {
       const usage = parseSSEAnthropicFormat(data);
-      if (usage !== null) {
-        // Create transaction with proper model info and token details
-        void this.getEchoControlService().createTransaction({
-          model: this.getModel(),
-          inputTokens: usage.input_tokens,
-          outputTokens: usage.output_tokens,
-          totalTokens: usage.output_tokens,
-          cost: getCostPerToken(
-            this.getModel(),
-            usage.input_tokens,
-            usage.output_tokens
-          ),
-          status: 'success',
-          providerId: usage.id || 'null',
-        });
+
+      if (!usage) {
+        console.error('No usage data found');
+        throw new Error('No usage data found');
       }
+
+      const model = this.getModel();
+      void this.getEchoControlService().createTransaction({
+        model: model,
+        inputTokens: usage.input_tokens,
+        outputTokens: usage.output_tokens,
+        totalTokens: usage.input_tokens + usage.output_tokens,
+        cost: getCostPerToken(model, usage.input_tokens, usage.output_tokens),
+        status: 'success',
+        providerId: usage.id,
+      });
     } else {
       const parsed = JSON.parse(data);
 

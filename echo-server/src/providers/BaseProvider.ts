@@ -23,7 +23,7 @@ export abstract class BaseProvider {
   }
 
   abstract getType(): ProviderType;
-  abstract getBaseUrl(): string;
+  abstract getBaseUrl(reqPath?: string): string;
   abstract getApiKey(): string | undefined;
   formatAuthHeaders(headers: Record<string, string>): Record<string, string> {
     const apiKey = this.getApiKey();
@@ -51,7 +51,7 @@ export abstract class BaseProvider {
 
   async getAppMarkup(): Promise<number> {
     const markUp = await this.echoControlService.getAppMarkup();
-    return markUp.toNumber();
+    return markUp;
   }
 
   // This is specific to OpenAI Format, Anthropic Native and others will need to override this
