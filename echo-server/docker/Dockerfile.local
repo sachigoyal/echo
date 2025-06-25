@@ -44,6 +44,8 @@ RUN pnpm run build
 WORKDIR /app/echo-server
 RUN pnpm run setup-prisma
 
+ENV PORT=3069
+
 # Step 3: Build echo-server
 RUN pnpm run build
 

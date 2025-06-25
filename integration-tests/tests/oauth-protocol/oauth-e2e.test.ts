@@ -159,8 +159,10 @@ describe('OAuth End-to-End Flow Tests', () => {
       expect(validationResult.scope).toBe('llm:invoke offline_access');
     });
   });
-  describe('User should not be able to create a valid token for an app they are not a member of', () => {
-    test('should get 400 when trying to make a request', async () => {
+  // This would simulate a user who first authenticates with echo via a different app. They should be able to do this.
+  // It should create an app membership for the user with the app, with customer permission.
+  describe('User should be able to create a valid token for an app they are not a member of', () => {
+    test('should get 200 when trying to make a request', async () => {
       const { generateCodeVerifier, generateCodeChallenge, generateState } =
         await import('../../utils/auth-helpers.js');
 
@@ -198,14 +200,12 @@ describe('OAuth End-to-End Flow Tests', () => {
           code_verifier: codeVerifier,
         })
         .catch(error => {
-          expect(error.message).toContain(
-            'Client does not belong to the authenticated user'
-          );
+          console.log('Error:', error);
         });
 
-      expect(tokenResponse).toBeUndefined();
+      expect(tokenResponse?.echo_app.id).toBe(TEST_CLIENT_IDS.secondary);
       console.log(
-        '✅ User is not able to authenticate against an app they are not a member of'
+        '✅ User is able to authenticate against an app they are not a member of'
       );
     });
   });
