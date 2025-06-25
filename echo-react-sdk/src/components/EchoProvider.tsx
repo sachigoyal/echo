@@ -5,7 +5,12 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
-import { UserManager, User, UserManagerSettings } from 'oidc-client-ts';
+import {
+  UserManager,
+  User,
+  UserManagerSettings,
+  WebStorageStateStore,
+} from 'oidc-client-ts';
 import { EchoConfig, EchoUser, EchoBalance } from '../types';
 import { sanitizeUserProfile } from '../utils/security';
 import { EchoClient } from '@zdql/echo-typescript-sdk/client';
@@ -91,6 +96,8 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         userinfo_endpoint: `${apiUrl}/api/oauth/userinfo`,
         issuer: apiUrl,
       },
+
+      userStore: new WebStorageStateStore({ store: window.localStorage }),
     };
     const manager = new UserManager(settings);
 
@@ -333,9 +340,8 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     const handleAccessTokenExpiring = () => {};
 
     const handleAccessTokenExpired = async () => {
-      console.log('Access token expired, clearing auth state');
-      await clearAuth();
-      setError('Session expired. Please sign in again.');
+      console.log('Access token expired, reauthenticating');
+      await userManager.signinSilent();
     };
 
     const handleSilentRenewError = async (err: Error) => {
