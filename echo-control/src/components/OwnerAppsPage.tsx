@@ -78,7 +78,7 @@ export default function OwnerAppsPage() {
   if (!isLoaded || loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
       </div>
     );
   }
@@ -88,18 +88,18 @@ export default function OwnerAppsPage() {
       {/* Header with User Menu */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+            Welcome back{user?.firstName ? `, ${user.firstName}` : ''}
           </h1>
-          <p className="text-muted-foreground">
-            Manage your Echo applications and monitor customer usage.
+          <p className="text-gray-300">
+            Build and monetize your AI applications
           </p>
         </div>
         <div className="flex items-center space-x-4">
           {/* Link to Customer Apps */}
           <Link
             href="/"
-            className="flex items-center space-x-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-accent"
+            className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white bg-gray-800/50 border border-gray-700/50 rounded-md hover:bg-gray-800/80 backdrop-blur-sm transition-all duration-200"
           >
             <Users className="h-4 w-4" />
             <span>Customer Apps</span>
@@ -109,7 +109,7 @@ export default function OwnerAppsPage() {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-2 p-2 rounded-lg border border-border hover:bg-accent"
+              className="flex items-center space-x-2 p-2 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-800/80 backdrop-blur-sm transition-all duration-200"
             >
               {user?.imageUrl ? (
                 <Image
@@ -120,18 +120,18 @@ export default function OwnerAppsPage() {
                   className="h-8 w-8 rounded-full"
                 />
               ) : (
-                <UserIcon className="h-8 w-8 text-muted-foreground" />
+                <UserIcon className="h-8 w-8 text-gray-300" />
               )}
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-medium text-white">
                 {user?.fullName || user?.emailAddresses[0]?.emailAddress}
               </span>
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800/90 border border-gray-700/50 rounded-md shadow-lg backdrop-blur-sm z-10">
                 <button
                   onClick={() => signOut()}
-                  className="w-full flex items-center px-4 py-2 text-sm text-foreground hover:bg-accent rounded-md"
+                  className="w-full flex items-center px-4 py-2 text-sm text-white hover:bg-gray-700/50 rounded-md transition-all duration-200"
                 >
                   <LogOutIcon className="h-4 w-4 mr-2" />
                   Sign Out
@@ -144,15 +144,15 @@ export default function OwnerAppsPage() {
 
       {/* Payment Success Message */}
       {showPaymentSuccess && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-md p-4">
+        <div className="bg-emerald-500/20 border border-emerald-500/50 rounded-lg p-4 backdrop-blur-sm">
           <div className="flex items-center">
-            <div className="text-sm text-emerald-700">
+            <div className="text-sm text-emerald-300">
               ✅ Payment successful! Your credits have been added to your
               account.
             </div>
             <button
               onClick={() => setShowPaymentSuccess(false)}
-              className="ml-auto text-emerald-500 hover:text-emerald-700"
+              className="ml-auto text-emerald-400 hover:text-emerald-300"
             >
               ✕
             </button>
@@ -162,13 +162,10 @@ export default function OwnerAppsPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-destructive/20 border border-destructive rounded-md p-4">
-          <div className="text-sm text-destructive-foreground">{error}</div>
+        <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm">
+          <div className="text-sm text-red-300">{error}</div>
         </div>
       )}
-
-      {/* User Payment Card */}
-      <UserPaymentCard />
 
       {/* Owner Apps View */}
       <OwnerAppsView apps={ownedApps} onRefresh={fetchApps} />

@@ -99,14 +99,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-            Apps You Own
-          </h2>
-          <p className="text-gray-400 mt-1">
-            Manage your applications and view customer analytics
-          </p>
-        </div>
+        <div></div>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <div className="h-2 w-2 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -120,7 +113,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
             className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
-            Create Echo App
+            Create Application
           </GlassButton>
         </div>
       </div>
@@ -137,9 +130,11 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-full blur-xl"></div>
             <ActivityIcon className="relative mx-auto h-16 w-16 text-gray-400" />
           </div>
-          <h3 className="mt-6 text-lg font-semibold text-white">No apps yet</h3>
+          <h3 className="mt-6 text-lg font-semibold text-white">
+            No applications
+          </h3>
           <p className="mt-2 text-gray-400 max-w-sm mx-auto">
-            Get started by creating your first Echo application.
+            Create your first AI application with Echo
           </p>
           <div className="mt-6">
             <GlassButton
@@ -148,7 +143,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
               className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
-              Create Echo App
+              Create Application
             </GlassButton>
           </div>
         </div>

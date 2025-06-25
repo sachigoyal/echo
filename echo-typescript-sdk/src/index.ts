@@ -1,2 +1,2 @@
-export { EchoClient } from './client';
-export * from './types';
+export { EchoClient } from './client.js';
+export * from './types.js';

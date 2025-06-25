@@ -1,5 +1,6 @@
 import { UnknownModelError } from '../errors/http';
 import type { EchoControlService } from '../services/EchoControlService';
+import modelPricesData from '../../model_prices.json';
 
 import { AnthropicGPTProvider } from './AnthropicGPTProvider';
 import { AnthropicNativeProvider } from './AnthropicNativeProvider';
@@ -7,18 +8,45 @@ import type { BaseProvider } from './BaseProvider';
 import { GPTProvider } from './GPTProvider';
 import { ProviderType } from './ProviderType';
 
-export const MODEL_TO_PROVIDER: Record<string, ProviderType> = {
-  'gpt-4o': ProviderType.GPT,
-  'gpt-4o-mini': ProviderType.GPT,
-  'gpt-4o-2024-08-06': ProviderType.GPT,
-  'gpt-4o-2024-05-13': ProviderType.GPT,
-  'gpt-4o-2024-02-15': ProviderType.GPT,
-  'o1-preview': ProviderType.GPT,
-  'o3-preview': ProviderType.GPT,
-  'claude-3-5-sonnet-20240620': ProviderType.ANTHROPIC_GPT,
-  'claude-3-7-sonnet-20240307': ProviderType.ANTHROPIC_GPT,
-  'gpt-3.5-turbo': ProviderType.GPT,
+/**
+ * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
+ * This dynamically loads all supported models and maps them to their appropriate provider types
+ * based on the litellm_provider field in the JSON configuration.
+ */
+const createModelToProviderMapping = (): Record<string, ProviderType> => {
+  const mapping: Record<string, ProviderType> = {};
+
+  for (const [modelName, modelConfig] of Object.entries(modelPricesData)) {
+    // Skip the sample_spec entry
+    if (modelName === 'sample_spec') continue;
+
+    const config = modelConfig as any;
+    if (config.litellm_provider) {
+      switch (config.litellm_provider) {
+        case 'openai':
+          mapping[modelName] = ProviderType.GPT;
+          break;
+        case 'anthropic':
+          mapping[modelName] = ProviderType.ANTHROPIC_GPT;
+          break;
+        // Add other providers as needed
+        default:
+          // Skip models with unsupported providers
+          break;
+      }
+    }
+  }
+
+  return mapping;
 };
+
+/**
+ * Model-to-provider mapping loaded from model_prices_and_context_window.json
+ * This replaces the previous hardcoded mapping and automatically includes all
+ * supported models from the JSON configuration file.
+ */
+export const MODEL_TO_PROVIDER: Record<string, ProviderType> =
+  createModelToProviderMapping();
 
 export const getProvider = (
   model: string,

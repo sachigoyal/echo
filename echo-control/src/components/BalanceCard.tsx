@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { CreditCardIcon, PlusIcon, MinusIcon } from 'lucide-react';
 import { GlassButton } from './glass-button';
+import { formatCurrency } from '@/lib/balance';
 
 interface Balance {
   balance: string;
@@ -104,7 +105,7 @@ export default function BalanceCard() {
             <div>
               <div className="text-sm text-muted-foreground">Total Spent</div>
               <div className="font-semibold text-destructive">
-                -${balance.totalSpent}
+                {formatCurrency(Number(balance.totalSpent))}
               </div>
             </div>
           </div>
