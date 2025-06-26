@@ -40,12 +40,14 @@ export async function POST(req: NextRequest) {
     const user = await getCurrentUser();
     const body = await req.json();
 
-    const { name, description, githubType, githubId } = body;
+    const { name, description, githubType, githubId, authorizedCallbackUrls } =
+      body;
     const appData: AppCreateInput = {
       name,
       description,
       githubType,
       githubId,
+      authorizedCallbackUrls,
     };
 
     const echoApp = await createEchoApp(user.id, appData);

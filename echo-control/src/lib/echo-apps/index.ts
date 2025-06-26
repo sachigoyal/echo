@@ -11,6 +11,7 @@ export interface AppCreateInput {
   description?: string;
   githubType?: 'user' | 'repo';
   githubId?: string;
+  authorizedCallbackUrls?: string[];
 }
 
 export interface AppUpdateInput {
@@ -402,7 +403,7 @@ export const createEchoApp = async (userId: string, data: AppCreateInput) => {
         },
       },
       isActive: true,
-      authorizedCallbackUrls: [], // Start with empty callback URLs
+      authorizedCallbackUrls: data.authorizedCallbackUrls || [], // Start with empty callback URLs
     },
     select: {
       id: true,

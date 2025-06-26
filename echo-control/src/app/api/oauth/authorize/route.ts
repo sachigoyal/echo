@@ -135,7 +135,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Validate redirect_uri against authorized callback URLs
-    if (!echoApp.authorizedCallbackUrls.includes(redirectUri)) {
+    const isLocalhostUrl = redirectUri.startsWith('http://localhost:');
+    const isAuthorizedUrl =
+      echoApp.authorizedCallbackUrls.includes(redirectUri);
+
+    if (!isLocalhostUrl && !isAuthorizedUrl) {
       return NextResponse.json(
         {
           error: 'invalid_request',

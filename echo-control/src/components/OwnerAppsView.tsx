@@ -9,7 +9,7 @@ import {
   ActivityIcon,
 } from 'lucide-react';
 import { AppRole } from '@/lib/permissions/types';
-import CreateEchoAppModal from './CreateEchoAppModal';
+
 import { GlassButton } from './glass-button';
 import { useRouter } from 'next/navigation';
 
@@ -35,38 +35,9 @@ interface OwnerAppsViewProps {
 }
 
 export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingAppId, setDeletingAppId] = useState<string | null>(null);
   const router = useRouter();
-
-  const handleCreateApp = async (appData: {
-    name: string;
-    description?: string;
-    githubType?: 'user' | 'repo';
-    githubId?: string;
-  }) => {
-    setError(null);
-    try {
-      const response = await fetch('/api/apps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create echo app');
-      }
-
-      await onRefresh();
-      setShowCreateModal(false);
-    } catch (error) {
-      console.error('Error creating app:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create app');
-    }
-  };
 
   const handleArchiveApp = async (id: string, event: React.MouseEvent) => {
     event.preventDefault();
@@ -108,7 +79,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
             </span>
           </div>
           <GlassButton
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => router.push('/owner/apps/create')}
             variant="secondary"
             className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50"
           >
@@ -138,7 +109,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
           </p>
           <div className="mt-6">
             <GlassButton
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => router.push('/owner/apps/create')}
               variant="secondary"
               className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50"
             >
@@ -242,13 +213,6 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
             </div>
           ))}
         </div>
-      )}
-
-      {showCreateModal && (
-        <CreateEchoAppModal
-          onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreateApp}
-        />
       )}
     </div>
   );
