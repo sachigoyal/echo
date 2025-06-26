@@ -217,7 +217,7 @@ function Root() {
 export default Root;`;
   };
 
-  const createApp = async () => {
+  const createApp = useCallback(async () => {
     try {
       console.log('formData', formData);
 
@@ -256,7 +256,7 @@ export default Root;`;
       setError(error instanceof Error ? error.message : 'Failed to create app');
       throw error;
     }
-  };
+  }, [formData, setCreatedAppId, setError]);
 
   const checkForRefreshToken = async (appId: string): Promise<boolean> => {
     try {
@@ -360,23 +360,26 @@ export default Root;`;
     }
   }, [currentStep, formData, currentStepData.key]);
 
-  const shouldSkipStep = (stepIndex: number): boolean => {
+  const shouldSkipStep = useCallback((stepIndex: number): boolean => {
     const step = steps[stepIndex];
     if (!step) return false;
 
     // Don't skip any steps - let users verify their GitHub selection
     return false;
-  };
+  }, []);
 
-  const getNextStep = (currentStepIndex: number): number => {
-    let nextStep = currentStepIndex + 1;
-    while (nextStep < steps.length && shouldSkipStep(nextStep)) {
-      nextStep++;
-    }
-    return nextStep;
-  };
+  const getNextStep = useCallback(
+    (currentStepIndex: number): number => {
+      let nextStep = currentStepIndex + 1;
+      while (nextStep < steps.length && shouldSkipStep(nextStep)) {
+        nextStep++;
+      }
+      return nextStep;
+    },
+    [shouldSkipStep]
+  );
 
-  const handleNext = async () => {
+  const handleNext = useCallback(async () => {
     // Safety check: ensure we have valid step data
     if (!currentStepData || !canProceed) return;
 
@@ -442,7 +445,35 @@ export default Root;`;
         }, 150);
       }
     }
-  };
+  }, [
+    currentStepData,
+    canProceed,
+    formData,
+    currentValue,
+    isLastStep,
+    router,
+    createApp,
+    getNextStep,
+    currentStep,
+    createdAppId,
+    setIsSubmitting,
+    setFormData,
+    setError,
+    setIsTransitioning,
+    setCurrentStep,
+    setCurrentValue,
+  ]);
+
+  const getPreviousStep = useCallback(
+    (currentStepIndex: number): number => {
+      let prevStep = currentStepIndex - 1;
+      while (prevStep >= 0 && shouldSkipStep(prevStep)) {
+        prevStep--;
+      }
+      return prevStep;
+    },
+    [shouldSkipStep]
+  );
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -456,7 +487,7 @@ export default Root;`;
     }
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep === 0) {
       // On first step, go back to main screen
       router.push('/owner');
@@ -484,7 +515,15 @@ export default Root;`;
         setIsTransitioning(false);
       }, 150);
     }
-  };
+  }, [
+    currentStep,
+    router,
+    getPreviousStep,
+    formData,
+    setIsTransitioning,
+    setCurrentStep,
+    setCurrentValue,
+  ]);
 
   // Add document-level key handling for all steps
   useEffect(() => {
@@ -509,35 +548,7 @@ export default Root;`;
     return () => {
       document.removeEventListener('keydown', handleDocumentKeyDown);
     };
-  }, [currentStepData, canProceed]);
-
-  const getPreviousStep = (currentStepIndex: number): number => {
-    let prevStep = currentStepIndex - 1;
-    while (prevStep >= 0 && shouldSkipStep(prevStep)) {
-      prevStep--;
-    }
-    return prevStep;
-  };
-
-  const handleSkip = () => {
-    if (!currentStepData || currentStepData.required) return;
-
-    setCurrentValue('');
-    const nextStep = getNextStep(currentStep);
-
-    // Safety check: ensure next step is valid
-    if (nextStep >= steps.length) {
-      router.push('/owner');
-      return;
-    }
-
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentStep(nextStep);
-      setCurrentValue('');
-      setIsTransitioning(false);
-    }, 150);
-  };
+  }, [currentStepData, canProceed, handleNext, handleBack]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-3 sm:p-6">

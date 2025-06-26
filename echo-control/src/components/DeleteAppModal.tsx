@@ -84,8 +84,11 @@ export default function DeleteAppModal({
         <div className="mb-6">
           <p className="text-gray-300 mb-4">
             You are about to delete the application{' '}
-            <span className="font-semibold text-white">"{app.name}"</span>. This
-            will permanently remove the application and all associated data.
+            <span className="font-semibold text-white">
+              &ldquo;{app.name}&rdquo;
+            </span>
+            . This will permanently remove the application and all associated
+            data.
           </p>
 
           <p className="text-sm text-gray-400 mb-3">
