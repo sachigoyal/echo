@@ -12,6 +12,7 @@ import { AppRole } from '@/lib/permissions/types';
 
 import { GlassButton } from './glass-button';
 import { useRouter } from 'next/navigation';
+import DeleteAppModal from './DeleteAppModal';
 
 interface EchoAppWithRole {
   id: string;
@@ -37,17 +38,30 @@ interface OwnerAppsViewProps {
 export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [deletingAppId, setDeletingAppId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [appToDelete, setAppToDelete] = useState<EchoAppWithRole | null>(null);
   const router = useRouter();
 
-  const handleArchiveApp = async (id: string, event: React.MouseEvent) => {
+  const openDeleteModal = (app: EchoAppWithRole, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+    setAppToDelete(app);
+    setShowDeleteModal(true);
+    setError(null);
+  };
 
-    setDeletingAppId(id);
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setAppToDelete(null);
+    setError(null);
+  };
+
+  const handleDeleteApp = async (appId: string) => {
+    setDeletingAppId(appId);
     setError(null);
 
     try {
-      const response = await fetch(`/api/apps/${id}`, {
+      const response = await fetch(`/api/apps/${appId}`, {
         method: 'DELETE',
       });
 
@@ -62,6 +76,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
       setError(
         error instanceof Error ? error.message : 'Failed to archive echo app'
       );
+      throw error; // Re-throw so the modal can handle it
     } finally {
       setDeletingAppId(null);
     }
@@ -130,7 +145,7 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
 
               {/* Archive Button */}
               <button
-                onClick={e => handleArchiveApp(app.id, e)}
+                onClick={e => openDeleteModal(app, e)}
                 disabled={deletingAppId === app.id}
                 className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all duration-300 disabled:opacity-50"
                 title="Archive app"
@@ -214,6 +229,14 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
           ))}
         </div>
       )}
+
+      <DeleteAppModal
+        isOpen={showDeleteModal}
+        app={appToDelete}
+        isDeleting={deletingAppId === appToDelete?.id}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteApp}
+      />
     </div>
   );
 }
