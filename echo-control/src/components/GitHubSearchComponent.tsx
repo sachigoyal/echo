@@ -8,6 +8,7 @@ import {
   GitHubRepo,
   GitHubSearchResult,
 } from '../lib/github-api';
+import Image from 'next/image';
 
 interface GitHubSearchComponentProps {
   value: string;
@@ -217,13 +218,15 @@ export function GitHubSearchComponent({
                   onClick={() => handleSelectResult(result)}
                   className="w-full flex items-center space-x-3 p-3 hover:bg-gray-800/50 transition-colors text-left border-b border-gray-700/30 last:border-b-0"
                 >
-                  <img
+                  <Image
                     src={
                       'avatar_url' in data
                         ? data.avatar_url
                         : data.owner.avatar_url
                     }
                     alt={getDisplayName(data)}
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
@@ -267,13 +270,15 @@ export function GitHubSearchComponent({
               ) : verificationResult?.isValid && verificationResult.data ? (
                 <div className="space-y-2">
                   <div className="flex items-center space-x-3">
-                    <img
+                    <Image
                       src={
                         'avatar_url' in verificationResult.data
                           ? verificationResult.data.avatar_url
                           : verificationResult.data.owner.avatar_url
                       }
                       alt={getDisplayName(verificationResult.data)}
+                      width={24}
+                      height={24}
                       className="w-6 h-6 rounded-full flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
