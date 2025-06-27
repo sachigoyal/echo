@@ -13,6 +13,8 @@ import {
   CopyIcon,
   CheckIcon,
   XIcon,
+  EditIcon,
+  SaveIcon,
 } from 'lucide-react';
 import MarkupSettingsCard from './MarkupSettingsCard';
 import OAuthConfigSection from './OAuthConfigSection';
@@ -63,6 +65,13 @@ export default function OwnerAppDashboard({
   const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
 
+  // App name editing state
+  const [currentAppName, setCurrentAppName] = useState(appName);
+  const [editingAppName, setEditingAppName] = useState(false);
+  const [newAppName, setNewAppName] = useState(appName);
+  const [updatingAppName, setUpdatingAppName] = useState(false);
+  const [appNameError, setAppNameError] = useState<string | null>(null);
+
   // Generate the invite link client-side
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -112,6 +121,55 @@ export default function OwnerAppDashboard({
     }
   };
 
+  const updateAppName = async () => {
+    if (!newAppName.trim()) {
+      setAppNameError('App name cannot be empty');
+      return;
+    }
+
+    if (newAppName.trim() === currentAppName) {
+      setEditingAppName(false);
+      setAppNameError(null);
+      return;
+    }
+
+    try {
+      setUpdatingAppName(true);
+      setAppNameError(null);
+
+      const response = await fetch(`/api/apps/${appId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newAppName.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update app name');
+      }
+
+      setCurrentAppName(newAppName.trim());
+      setEditingAppName(false);
+    } catch (error) {
+      console.error('Error updating app name:', error);
+      setAppNameError(
+        error instanceof Error ? error.message : 'Failed to update app name'
+      );
+    } finally {
+      setUpdatingAppName(false);
+    }
+  };
+
+  const cancelEditAppName = () => {
+    setNewAppName(currentAppName);
+    setEditingAppName(false);
+    setAppNameError(null);
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -134,7 +192,9 @@ export default function OwnerAppDashboard({
           </Link>
           <div className="h-6 w-px bg-border"></div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{appName}</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              {currentAppName}
+            </h1>
             <p className="text-muted-foreground">
               Customer Analytics & Management
             </p>
@@ -170,7 +230,7 @@ export default function OwnerAppDashboard({
               <p className="text-sm text-muted-foreground">
                 Share this link with customers to invite them to use your app.
                 They&apos;ll be able to sign up and generate API keys for{' '}
-                <strong>{appName}</strong>.
+                <strong>{currentAppName}</strong>.
               </p>
 
               <div>
@@ -296,8 +356,75 @@ export default function OwnerAppDashboard({
         </div>
       )}
 
+      {/* App Settings */}
+      <div className="bg-card p-6 rounded-lg border border-border">
+        <div className="flex items-center mb-4">
+          <EditIcon className="h-5 w-5 text-muted-foreground mr-2" />
+          <h3 className="text-lg font-semibold text-foreground">
+            App Settings
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              App Name
+            </label>
+            {editingAppName ? (
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={newAppName}
+                  onChange={e => setNewAppName(e.target.value)}
+                  className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md text-sm"
+                  placeholder="Enter app name"
+                  disabled={updatingAppName}
+                />
+                {appNameError && (
+                  <p className="text-sm text-destructive">{appNameError}</p>
+                )}
+                <div className="flex gap-2">
+                  <GlassButton
+                    onClick={updateAppName}
+                    disabled={updatingAppName || !newAppName.trim()}
+                    variant="primary"
+                    className="flex items-center"
+                  >
+                    {updatingAppName ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <SaveIcon className="h-4 w-4 mr-2" />
+                    )}
+                    Save
+                  </GlassButton>
+                  <GlassButton
+                    onClick={cancelEditAppName}
+                    disabled={updatingAppName}
+                    variant="secondary"
+                  >
+                    Cancel
+                  </GlassButton>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-foreground">{currentAppName}</span>
+                <GlassButton
+                  onClick={() => setEditingAppName(true)}
+                  variant="secondary"
+                  className="flex items-center"
+                >
+                  <EditIcon className="h-4 w-4 mr-2" />
+                  Edit
+                </GlassButton>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Markup Settings */}
-      <MarkupSettingsCard appId={appId} appName={appName} />
+      <MarkupSettingsCard appId={appId} appName={currentAppName} />
 
       {/* OAuth Config */}
       <OAuthConfigSection appId={appId} />
