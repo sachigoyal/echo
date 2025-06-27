@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { createPaymentLink } from '@/lib/stripe/payment-link';
+import { createPaymentLink, isValidUrl } from '@/lib/stripe/payment-link';
 import Stripe from 'stripe';
 import { User } from '@/generated/prisma';
 
@@ -17,6 +17,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    // Validate callback URLs if provided
+    if (body.successUrl && !isValidUrl(body.successUrl)) {
+      return NextResponse.json(
+        { error: 'Invalid success URL format' },
+        { status: 400 }
+      );
+    }
 
     const result = await createPaymentLink(user, body);
 

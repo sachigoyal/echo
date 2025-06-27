@@ -26,6 +26,7 @@ function TestComponent() {
     signOut,
     refreshBalance,
     getToken,
+    createPaymentLink,
   } = useEcho();
 
   const handleGetToken = async () => {
@@ -39,6 +40,29 @@ function TestComponent() {
       const tokenDisplay = document.getElementById('token-from-method');
       if (tokenDisplay) {
         tokenDisplay.textContent = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      }
+    }
+  };
+
+  const handleCreatePaymentLink = async (
+    amount: number,
+    description?: string,
+    successUrl?: string
+  ) => {
+    try {
+      const paymentUrl = await createPaymentLink(
+        amount,
+        description,
+        successUrl
+      );
+      const paymentDisplay = document.getElementById('payment-link-result');
+      if (paymentDisplay) {
+        paymentDisplay.textContent = paymentUrl;
+      }
+    } catch (err) {
+      const paymentDisplay = document.getElementById('payment-link-result');
+      if (paymentDisplay) {
+        paymentDisplay.textContent = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
       }
     }
   };
@@ -58,6 +82,9 @@ function TestComponent() {
       <div data-testid="token-from-method" id="token-from-method">
         Not called
       </div>
+      <div data-testid="payment-link-result" id="payment-link-result">
+        No payment link
+      </div>
       <button onClick={signIn} data-testid="sign-in">
         Sign In
       </button>
@@ -69,6 +96,30 @@ function TestComponent() {
       </button>
       <button onClick={handleGetToken} data-testid="get-token">
         Get Token
+      </button>
+      <button
+        onClick={() => handleCreatePaymentLink(100)}
+        data-testid="create-payment-link-basic"
+      >
+        Create Basic Payment Link
+      </button>
+      <button
+        onClick={() => handleCreatePaymentLink(150, 'Premium Credits')}
+        data-testid="create-payment-link-description"
+      >
+        Create Payment Link with Description
+      </button>
+      <button
+        onClick={() =>
+          handleCreatePaymentLink(
+            200,
+            'Enterprise Credits',
+            'https://example.com/success'
+          )
+        }
+        data-testid="create-payment-link-full"
+      >
+        Create Payment Link with Success URL
       </button>
     </div>
   );
@@ -601,6 +652,109 @@ describe('EchoProvider', () => {
           );
         });
       }
+    });
+  });
+
+  describe('Payment Link Creation', () => {
+    test('creates payment link with only amount', async () => {
+      const user = userEvent.setup();
+      const mockUser = await createMockAuthenticatedUser();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(mockUser),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Authenticated'
+        );
+      });
+
+      // Click the basic payment link button
+      await user.click(screen.getByTestId('create-payment-link-basic'));
+
+      await waitFor(() => {
+        const paymentLinkResult = screen.getByTestId('payment-link-result');
+        expect(paymentLinkResult).toHaveTextContent(
+          'https://stripe.com/payment-link/mock-100'
+        );
+      });
+    });
+
+    test('creates payment link with amount and description', async () => {
+      const user = userEvent.setup();
+      const mockUser = await createMockAuthenticatedUser();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(mockUser),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Authenticated'
+        );
+      });
+
+      // Click the payment link with description button
+      await user.click(screen.getByTestId('create-payment-link-description'));
+
+      await waitFor(() => {
+        const paymentLinkResult = screen.getByTestId('payment-link-result');
+        expect(paymentLinkResult).toHaveTextContent(
+          'https://stripe.com/payment-link/mock-150'
+        );
+      });
+    });
+
+    test('creates payment link with amount, description, and success URL', async () => {
+      const user = userEvent.setup();
+      const mockUser = await createMockAuthenticatedUser();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(mockUser),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Authenticated'
+        );
+      });
+
+      // Click the full payment link button
+      await user.click(screen.getByTestId('create-payment-link-full'));
+
+      await waitFor(() => {
+        const paymentLinkResult = screen.getByTestId('payment-link-result');
+        expect(paymentLinkResult).toHaveTextContent(
+          'https://stripe.com/payment-link/mock-200'
+        );
+      });
+    });
+
+    test('handles payment link creation error when not authenticated', async () => {
+      const user = userEvent.setup();
+      const mockUserManager = createMockUserManager({
+        getUser: vi.fn().mockResolvedValue(null),
+      });
+
+      renderWithEcho(<TestComponent />, { mockUserManager });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('authenticated')).toHaveTextContent(
+          'Not authenticated'
+        );
+      });
+
+      // Try to create payment link while not authenticated
+      await user.click(screen.getByTestId('create-payment-link-basic'));
+
+      await waitFor(() => {
+        const paymentLinkResult = screen.getByTestId('payment-link-result');
+        expect(paymentLinkResult).toHaveTextContent('Error: Not authenticated');
+      });
     });
   });
 });

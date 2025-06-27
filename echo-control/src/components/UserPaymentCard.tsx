@@ -55,6 +55,7 @@ export default function UserPaymentCard() {
         body: JSON.stringify({
           amount,
           description: `Echo Account Credits`,
+          successUrl: `${window.location.origin}/`,
         }),
       });
 
