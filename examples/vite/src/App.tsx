@@ -8,8 +8,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 // Configuration constants
 const CONFIG = {
-  ECHO_CONTROL_URL: 'http://localhost:3000',
-  DEFAULT_CLIENT_ID: '36b42c99-10c4-45d6-a4ad-a82d0c72fd84',
+  ECHO_CONTROL_URL: 'https://echo.merit.systems',
+  DEFAULT_CLIENT_ID: '968f2c35-0bd5-4776-a6cf-dd88afba0148',
   REDIRECT_URI: window.location.origin,
   SCOPE: 'llm:invoke offline_access',
 } as const;

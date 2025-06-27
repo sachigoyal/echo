@@ -404,7 +404,10 @@ export async function handleInitialTokenIssuance(
   }
 
   /* 8️⃣ Validate redirect_uri against authorized callback URLs */
-  if (!echoApp.authorizedCallbackUrls.includes(redirect_uri)) {
+  const isLocalhostUrl = redirect_uri.startsWith('http://localhost:');
+  const isAuthorizedUrl = echoApp.authorizedCallbackUrls.includes(redirect_uri);
+
+  if (!isLocalhostUrl && !isAuthorizedUrl) {
     return {
       error: 'invalid_grant',
       error_description: 'redirect_uri is not authorized for this client',
