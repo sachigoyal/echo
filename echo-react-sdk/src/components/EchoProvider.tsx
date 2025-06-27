@@ -37,7 +37,11 @@ export interface EchoContextValue {
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshBalance: () => Promise<void>;
-  createPaymentLink: (amount: number) => Promise<string>;
+  createPaymentLink: (
+    amount: number,
+    description?: string,
+    successUrl?: string
+  ) => Promise<string>;
   getToken: () => Promise<string | null>;
   clearAuth: () => Promise<void>;
 }
@@ -252,7 +256,11 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
   // Create payment link using EchoClient
   const createPaymentLink = useCallback(
-    async (amount: number): Promise<string> => {
+    async (
+      amount: number,
+      description?: string,
+      successUrl?: string
+    ): Promise<string> => {
       if (!userManager) {
         throw new Error('UserManager not initialized');
       }
@@ -264,7 +272,11 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       try {
         setError(null);
         const client = createClientWithToken(currentUser.access_token);
-        const url = await client.getPaymentUrl(amount, 'Echo Credits');
+        const url = await client.getPaymentUrl(
+          amount,
+          description || 'Echo Credits',
+          successUrl
+        );
         return url;
       } catch (err) {
         const errorMessage =

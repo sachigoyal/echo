@@ -79,12 +79,23 @@ export class EchoClient {
    * Get payment URL for purchasing credits
    * @param amount Amount to purchase in USD
    * @param description Optional description for the payment
+   * @param successUrl Optional URL to redirect to after successful payment
    */
-  async getPaymentUrl(amount: number, description?: string): Promise<string> {
-    const response = await this.createPaymentLink({
+  async getPaymentUrl(
+    amount: number,
+    description?: string,
+    successUrl?: string
+  ): Promise<string> {
+    const request: CreatePaymentLinkRequest = {
       amount,
       description: description || 'Echo Credits',
-    });
+    };
+
+    if (successUrl) {
+      request.successUrl = successUrl;
+    }
+
+    const response = await this.createPaymentLink(request);
     return response.paymentLink.url;
   }
 

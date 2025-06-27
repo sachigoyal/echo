@@ -150,6 +150,62 @@ describe('EchoClient', () => {
       );
     });
 
+    it('should create payment link with success URL', async () => {
+      const paymentRequest = {
+        amount: 75.0,
+        description: 'Test payment with success URL',
+        successUrl: 'https://myapp.com/payment/success',
+      };
+
+      const mockResponse = {
+        paymentLink: {
+          id: 'link_callbacks',
+          url: 'https://checkout.stripe.com/pay/cs_test_callbacks',
+          amount: 75.0,
+          currency: 'usd',
+          description: 'Test payment with success URL',
+        },
+      };
+
+      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+
+      const response = await client.createPaymentLink(paymentRequest);
+
+      expect(response).toEqual(mockResponse);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/api/v1/stripe/payment-link',
+        paymentRequest
+      );
+    });
+
+    it('should create payment link with only success URL', async () => {
+      const paymentRequest = {
+        amount: 30.0,
+        description: 'Test payment with success URL only',
+        successUrl: 'https://myapp.com/payment/success',
+      };
+
+      const mockResponse = {
+        paymentLink: {
+          id: 'link_success_only',
+          url: 'https://checkout.stripe.com/pay/cs_test_success_only',
+          amount: 30.0,
+          currency: 'usd',
+          description: 'Test payment with success URL only',
+        },
+      };
+
+      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+
+      const response = await client.createPaymentLink(paymentRequest);
+
+      expect(response).toEqual(mockResponse);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/api/v1/stripe/payment-link',
+        paymentRequest
+      );
+    });
+
     it('should handle payment creation errors', async () => {
       const paymentRequest = {
         amount: -10.0,
@@ -217,6 +273,94 @@ describe('EchoClient', () => {
         {
           amount,
           description: 'Echo Credits',
+        }
+      );
+    });
+
+    it('should generate payment URL with success URL', async () => {
+      const amount = 150.0;
+      const description = 'Premium Credits';
+      const successUrl = 'https://myapp.com/success';
+
+      const mockResponse = {
+        paymentLink: {
+          id: 'link_with_success',
+          url: 'https://checkout.stripe.com/pay/cs_test_with_success',
+          amount: 150.0,
+          currency: 'usd',
+          description: 'Premium Credits',
+        },
+      };
+
+      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+
+      const url = await client.getPaymentUrl(amount, description, successUrl);
+
+      expect(url).toBe(mockResponse.paymentLink.url);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/api/v1/stripe/payment-link',
+        {
+          amount,
+          description,
+          successUrl,
+        }
+      );
+    });
+
+    it('should generate payment URL with only success URL', async () => {
+      const amount = 75.0;
+      const description = 'Standard Credits';
+      const successUrl = 'https://myapp.com/payment-complete';
+
+      const mockResponse = {
+        paymentLink: {
+          id: 'link_success_only_url',
+          url: 'https://checkout.stripe.com/pay/cs_test_success_only_url',
+          amount: 75.0,
+          currency: 'usd',
+          description: 'Standard Credits',
+        },
+      };
+
+      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+
+      const url = await client.getPaymentUrl(amount, description, successUrl);
+
+      expect(url).toBe(mockResponse.paymentLink.url);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/api/v1/stripe/payment-link',
+        {
+          amount,
+          description,
+          successUrl,
+        }
+      );
+    });
+
+    it('should generate payment URL with undefined success URL (should not include it)', async () => {
+      const amount = 25.0;
+      const description = 'Basic Credits';
+
+      const mockResponse = {
+        paymentLink: {
+          id: 'link_no_success_url',
+          url: 'https://checkout.stripe.com/pay/cs_test_no_success_url',
+          amount: 25.0,
+          currency: 'usd',
+          description: 'Basic Credits',
+        },
+      };
+
+      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+
+      const url = await client.getPaymentUrl(amount, description, undefined);
+
+      expect(url).toBe(mockResponse.paymentLink.url);
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/api/v1/stripe/payment-link',
+        {
+          amount,
+          description,
         }
       );
     });

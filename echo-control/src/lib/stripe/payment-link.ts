@@ -20,9 +20,24 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 });
 
+/**
+ * Helper function to validate URLs
+ * @param urlString - The URL string to validate
+ * @returns true if the URL is valid and uses HTTP/HTTPS protocol
+ */
+export function isValidUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export interface CreatePaymentLinkRequest {
   amount: number;
   description?: string;
+  successUrl?: string;
 }
 
 export interface CreatePaymentLinkResult {
@@ -51,7 +66,7 @@ export async function createPaymentLink(
   user: User,
   request: CreatePaymentLinkRequest
 ): Promise<CreatePaymentLinkResult> {
-  const { amount, description = 'Echo Credits' } = request;
+  const { amount, description = 'Echo Credits', successUrl } = request;
 
   if (!amount || amount <= 0) {
     throw new Error('Valid amount is required');
@@ -73,8 +88,18 @@ export async function createPaymentLink(
     product: product.id,
   });
 
-  // Create Stripe payment link
-  const paymentLink = await stripe.paymentLinks.create({
+  // Prepare after_completion configuration
+  const defaultSuccessUrl =
+    process.env.ECHO_CONTROL_APP_BASE_URL + `?payment=success`;
+  const afterCompletion: Stripe.PaymentLinkCreateParams.AfterCompletion = {
+    type: 'redirect',
+    redirect: {
+      url: successUrl || defaultSuccessUrl,
+    },
+  };
+
+  // Prepare payment link configuration
+  const paymentLinkConfig: Stripe.PaymentLinkCreateParams = {
     line_items: [
       {
         price: price.id,
@@ -85,13 +110,11 @@ export async function createPaymentLink(
       userId: user.id,
       description,
     },
-    after_completion: {
-      type: 'redirect',
-      redirect: {
-        url: process.env.ECHO_CONTROL_APP_BASE_URL + `?payment=success`,
-      },
-    },
-  });
+    after_completion: afterCompletion,
+  };
+
+  // Create Stripe payment link
+  const paymentLink = await stripe.paymentLinks.create(paymentLinkConfig);
 
   // Create pending payment record
   const payment = await db.payment.create({

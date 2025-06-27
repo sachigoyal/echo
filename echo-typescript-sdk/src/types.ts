@@ -108,6 +108,7 @@ export interface GetBalanceResponse {
 export interface CreatePaymentLinkRequest {
   amount: number;
   description?: string;
+  successUrl?: string;
 }
 
 export interface CreatePaymentLinkResponse {
