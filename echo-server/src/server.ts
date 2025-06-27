@@ -127,40 +127,53 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
       const reader1 = stream1.getReader();
       const reader2 = stream2.getReader();
 
-      (async () => {
-        // Pipe the main stream directly to the response
+      // Promise for streaming data to client
+      const streamToClientPromise = (async () => {
         try {
           while (true) {
             const { done, value } = await reader1.read();
             if (done) break;
             res.write(value);
           }
-          res.end();
         } catch (error) {
           console.error('Error reading stream:', error);
+          throw error;
         }
       })();
 
-      let data = '';
-      (async () => {
-        // Process the duped stream separately
+      // Promise for processing data and creating transaction
+      const processDataPromise = (async () => {
+        let data = '';
         try {
           while (true) {
             const { done, value } = await reader2.read();
             if (done) break;
             data += new TextDecoder().decode(value);
           }
-          provider.handleBody(data);
+          // Wait for transaction to complete before resolving
+          await provider.handleBody(data);
         } catch (error) {
           console.error('Error processing stream:', error);
+          throw error;
         }
       })();
+
+      // Wait for both streams to complete before ending response
+      try {
+        await Promise.all([streamToClientPromise, processDataPromise]);
+        res.end();
+      } catch (error) {
+        console.error('Error in stream coordination:', error);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Stream processing failed' });
+        }
+      }
 
       return;
     } else {
       // Handle non-streaming response
       const data = await response.json();
-      provider.handleBody(JSON.stringify(data));
+      await provider.handleBody(JSON.stringify(data));
       res.setHeader('content-type', 'application/json'); // Set the content type to json
       return res.json(data);
     }

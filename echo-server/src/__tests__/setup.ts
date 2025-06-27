@@ -10,7 +10,7 @@ vi.mock('../services/EchoControlService', () => {
     EchoControlService: vi.fn().mockImplementation(() => ({
       verifyApiKey: vi.fn(),
       getBalance: vi.fn(),
-      createTransaction: vi.fn(),
+      createTransaction: vi.fn().mockResolvedValue(undefined),
       getUserId: vi.fn(),
       getEchoAppId: vi.fn(),
       getUser: vi.fn(),

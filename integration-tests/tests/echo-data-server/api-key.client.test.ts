@@ -38,7 +38,7 @@ describe('API Key Client', () => {
     expect(chunkCount).toBeGreaterThan(0);
     expect(receivedContent.length).toBeGreaterThan(0);
 
-    await new Promise(resolve => setTimeout(resolve, 1000)); /// TODO BEN REALLY TODO: SPEED UP THE BALANCE UPDATE SO WE DON'T HAVE TO WAIT FOR 2 SECONDS
+    // await new Promise(resolve => setTimeout(resolve, 1000)); /// TODO BEN REALLY TODO: SPEED UP THE BALANCE UPDATE SO WE DON'T HAVE TO WAIT FOR 2 SECONDS
 
     const secondBalanceCheck = await echoControlApi.getBalance(apiKey);
     console.log('🔄 Second balance check: ', secondBalanceCheck);

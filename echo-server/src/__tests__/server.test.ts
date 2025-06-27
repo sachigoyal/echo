@@ -121,45 +121,89 @@ describe('Server Tests', () => {
         // Setup mock streaming response
         const mockStreamingResponse = new ReadableStream({
           start: controller => {
-            const chunk =
-              provider.path === '/messages'
-                ? { type: 'content_block_delta', delta: { text: 'Hello' } }
-                : {
-                    choices: [
-                      {
-                        index: 0,
-                        delta: { content: 'Hello' },
-                        finish_reason: null,
-                      },
-                    ],
-                    usage: null,
-                  };
+            if (provider.path === '/messages') {
+              // For Anthropic Native, send message_start event with proper SSE format
+              const messageStart = {
+                type: 'message_start',
+                message: {
+                  id: 'msg_test_123',
+                  type: 'message',
+                  role: 'assistant',
+                  model: provider.model,
+                  content: [],
+                  stop_reason: null,
+                  stop_sequence: null,
+                  usage: { input_tokens: 3, output_tokens: 1 },
+                },
+              };
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `event: message_start\ndata: ${JSON.stringify(messageStart)}\n\n`
+                )
+              );
 
-            controller.enqueue(
-              new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`)
-            );
+              // Then send content chunk
+              const chunk = {
+                type: 'content_block_delta',
+                delta: { text: 'Hello' },
+              };
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `event: content_block_delta\ndata: ${JSON.stringify(chunk)}\n\n`
+                )
+              );
+            } else {
+              // For GPT providers
+              const chunk = {
+                choices: [
+                  {
+                    index: 0,
+                    delta: { content: 'Hello' },
+                    finish_reason: null,
+                  },
+                ],
+                usage: null,
+              };
+              controller.enqueue(
+                new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`)
+              );
+            }
 
             // Send usage chunk
-            const usageChunk =
-              provider.path === '/messages'
-                ? {
-                    type: 'message_delta',
-                    usage: { input_tokens: 3, output_tokens: 7 },
-                  }
-                : {
-                    choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
-                    usage: {
-                      prompt_tokens: 3,
-                      completion_tokens: 7,
-                      total_tokens: 10,
-                    },
-                  };
+            if (provider.path === '/messages') {
+              const usageChunk = {
+                type: 'message_delta',
+                delta: { stop_reason: 'end_turn', stop_sequence: null },
+                usage: { output_tokens: 7 },
+              };
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `event: message_delta\ndata: ${JSON.stringify(usageChunk)}\n\n`
+                )
+              );
 
-            controller.enqueue(
-              new TextEncoder().encode(
-                `data: ${JSON.stringify(usageChunk)}\n\n`
-              )
-            );
+              // Send message_stop event
+              const stopChunk = { type: 'message_stop' };
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `event: message_stop\ndata: ${JSON.stringify(stopChunk)}\n\n`
+                )
+              );
+            } else {
+              const usageChunk = {
+                choices: [{ index: 0, delta: {}, finish_reason: 'stop' }],
+                usage: {
+                  prompt_tokens: 3,
+                  completion_tokens: 7,
+                  total_tokens: 10,
+                },
+              };
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `data: ${JSON.stringify(usageChunk)}\n\n`
+                )
+              );
+            }
             controller.close();
           },
         });
