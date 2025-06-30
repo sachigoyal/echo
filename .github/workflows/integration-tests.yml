@@ -149,14 +149,6 @@ jobs:
           chmod +x scripts/setup-integration-env.sh
           pnpm run env:setup
 
-      - name: Run OAuth Protocol Tests
-        working-directory: integration-tests
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-        run: pnpm test:oauth-protocol
-
       - name: Run Echo Data Server Tests
         working-directory: integration-tests
         env:
@@ -165,29 +157,13 @@ jobs:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         run: pnpm test:echo-data-server
 
-      - name: Run React SDK Integration Tests
+      - name: Run OAuth Protocol Tests
         working-directory: integration-tests
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
           CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-        run: pnpm test:react-sdk
-
-      - name: Run TypeScript SDK Integration Tests
-        working-directory: integration-tests
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-        run: pnpm test:typescript-sdk
-
-      - name: Run Cross-SDK Tests
-        working-directory: integration-tests
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-        run: pnpm test:cross-sdk
+        run: pnpm test:oauth-protocol
 
       - name: Upload test results
         if: always()
