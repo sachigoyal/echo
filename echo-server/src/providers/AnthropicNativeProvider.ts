@@ -116,50 +116,55 @@ export class AnthropicNativeProvider extends BaseProvider {
     };
   }
 
-  override handleBody(data: string): void {
-    if (this.getIsStream()) {
-      const usage = parseSSEAnthropicFormat(data);
+  override async handleBody(data: string): Promise<void> {
+    try {
+      if (this.getIsStream()) {
+        const usage = parseSSEAnthropicFormat(data);
 
-      if (!usage) {
-        console.error('No usage data found');
-        throw new Error('No usage data found');
+        if (!usage) {
+          console.error('No usage data found');
+          throw new Error('No usage data found');
+        }
+
+        const model = this.getModel();
+        await this.getEchoControlService().createTransaction({
+          model: model,
+          inputTokens: usage.input_tokens,
+          outputTokens: usage.output_tokens,
+          totalTokens: usage.input_tokens + usage.output_tokens,
+          cost: getCostPerToken(model, usage.input_tokens, usage.output_tokens),
+          status: 'success',
+          providerId: usage.id,
+        });
+      } else {
+        const parsed = JSON.parse(data);
+
+        const inputTokens = parsed.usage.input_tokens || 0;
+        const outputTokens = parsed.usage.output_tokens || 0;
+        const totalTokens = inputTokens + outputTokens;
+
+        console.log(
+          'Usage tokens (input/output/total): ',
+          inputTokens,
+          outputTokens,
+          totalTokens
+        );
+        console.log('Message ID: ', parsed.id);
+
+        // Create transaction with proper model info and token details
+        await this.getEchoControlService().createTransaction({
+          model: this.getModel(),
+          inputTokens: inputTokens,
+          outputTokens: outputTokens,
+          totalTokens: totalTokens,
+          cost: getCostPerToken(this.getModel(), inputTokens, outputTokens),
+          status: 'success',
+          providerId: parsed.id,
+        });
       }
-
-      const model = this.getModel();
-      void this.getEchoControlService().createTransaction({
-        model: model,
-        inputTokens: usage.input_tokens,
-        outputTokens: usage.output_tokens,
-        totalTokens: usage.input_tokens + usage.output_tokens,
-        cost: getCostPerToken(model, usage.input_tokens, usage.output_tokens),
-        status: 'success',
-        providerId: usage.id,
-      });
-    } else {
-      const parsed = JSON.parse(data);
-
-      const inputTokens = parsed.usage.input_tokens || 0;
-      const outputTokens = parsed.usage.output_tokens || 0;
-      const totalTokens = inputTokens + outputTokens;
-
-      console.log(
-        'Usage tokens (input/output/total): ',
-        inputTokens,
-        outputTokens,
-        totalTokens
-      );
-      console.log('Message ID: ', parsed.id);
-
-      // Create transaction with proper model info and token details
-      void this.getEchoControlService().createTransaction({
-        model: this.getModel(),
-        inputTokens: inputTokens,
-        outputTokens: outputTokens,
-        totalTokens: totalTokens,
-        cost: getCostPerToken(this.getModel(), inputTokens, outputTokens),
-        status: 'success',
-        providerId: parsed.id,
-      });
+    } catch (error) {
+      console.error('Error processing data:', error);
+      throw error;
     }
   }
 

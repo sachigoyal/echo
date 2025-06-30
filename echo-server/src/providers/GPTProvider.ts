@@ -67,7 +67,7 @@ export class GPTProvider extends BaseProvider {
     return process.env.OPENAI_API_KEY;
   }
 
-  handleBody(data: string): void {
+  async handleBody(data: string): Promise<void> {
     try {
       let prompt_tokens = 0;
       let completion_tokens = 0;
@@ -94,7 +94,7 @@ export class GPTProvider extends BaseProvider {
       }
 
       // Create transaction with proper model info and token details
-      void this.getEchoControlService().createTransaction({
+      await this.getEchoControlService().createTransaction({
         model: this.getModel(),
         inputTokens: prompt_tokens,
         outputTokens: completion_tokens,
@@ -109,6 +109,7 @@ export class GPTProvider extends BaseProvider {
       });
     } catch (error) {
       console.error('Error processing data:', error);
+      throw error;
     }
   }
 }

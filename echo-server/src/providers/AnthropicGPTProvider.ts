@@ -60,7 +60,7 @@ export class AnthropicGPTProvider extends GPTProvider {
     return process.env.ANTHROPIC_API_KEY;
   }
 
-  override handleBody(data: string): void {
+  override async handleBody(data: string): Promise<void> {
     try {
       let prompt_tokens = 0;
       let completion_tokens = 0;
@@ -87,7 +87,7 @@ export class AnthropicGPTProvider extends GPTProvider {
       }
 
       // Create transaction with proper model info and token details
-      void this.getEchoControlService().createTransaction({
+      await this.getEchoControlService().createTransaction({
         model: this.getModel(),
         inputTokens: prompt_tokens,
         outputTokens: completion_tokens,
@@ -102,6 +102,7 @@ export class AnthropicGPTProvider extends GPTProvider {
       });
     } catch (error) {
       console.error('Error processing data:', error);
+      throw error;
     }
   }
 }
