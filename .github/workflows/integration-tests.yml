@@ -83,6 +83,10 @@ jobs:
           INTEGRATION_TEST_JWT=${{ secrets.INTEGRATION_TEST_JWT }}
           INTEGRATION_TEST_JWT_USER_2=${{ secrets.INTEGRATION_TEST_JWT_USER_2 }}
           
+          # API Keys for Echo Server
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          
           # OAuth Configuration
           OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=5
           OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS=5
@@ -129,6 +133,8 @@ jobs:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           INTEGRATION_TEST_JWT: ${{ secrets.INTEGRATION_TEST_JWT }}
           INTEGRATION_TEST_JWT_USER_2: ${{ secrets.INTEGRATION_TEST_JWT_USER_2 }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS: 2592000
           OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS: 86400
           CI: true
@@ -237,6 +243,8 @@ jobs:
           JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}
           CLERK_PUBLISHABLE_KEY=${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
           INTEGRATION_TEST_JWT=${{ secrets.INTEGRATION_TEST_JWT }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=2592000
           CI=true
           NODE_ENV=test
