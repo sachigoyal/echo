@@ -16,9 +16,12 @@ import Stripe from 'stripe';
  * - Any value in between with up to 14 decimal places
  */
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-05-28.basil',
-});
+const stripe = new Stripe(
+  process.env.STRIPE_SECRET_KEY || 'test_secret_stripe_key',
+  {
+    apiVersion: '2025-05-28.basil',
+  }
+);
 
 /**
  * Helper function to validate URLs
