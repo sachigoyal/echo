@@ -109,6 +109,8 @@ jobs:
 
       - name: Setup Prisma schema
         working-directory: echo-control
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
         run: pnpm prisma:push
 
       - name: Seed integration test database
