@@ -107,6 +107,14 @@ jobs:
             sleep 2
           done'
 
+      - name: Setup Prisma schema
+        working-directory: echo-control
+        run: pnpm prisma:push
+
+      - name: Seed integration test database
+        working-directory: integration-tests
+        run: pnpm db:seed
+
       - name: Setup integration test environment
         working-directory: integration-tests
         run: |
