@@ -162,10 +162,10 @@ else
     INTEGRATION_TEST_MODE=true cd ../integration-tests && pnpm db:seed
     
     echo "🚀 Starting echo-control test server..."
-    pnpm build
+    cd ../echo-control && pnpm build
     
     # Start echo-control in background
-    pnpm start &
+    cd ../echo-control && pnpm start &
     ECHO_CONTROL_PID=$!
     
     # Wait for health check
