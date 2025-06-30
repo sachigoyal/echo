@@ -36,13 +36,35 @@ if [ "$IS_CI" != "true" ]; then
 else
     echo "📦 CI teardown - stopping background processes..."
     
-    # Kill any background echo-control processes
-    pkill -f "next start" || true
-    pkill -f "echo-control" || true
+    # Kill echo-control using stored PID if available
+    if [ -f "/tmp/echo-control.pid" ]; then
+        ECHO_CONTROL_PID=$(cat /tmp/echo-control.pid)
+        if ps -p "$ECHO_CONTROL_PID" >/dev/null 2>&1; then
+            echo "🛑 Stopping echo-control (PID: $ECHO_CONTROL_PID)..."
+            kill "$ECHO_CONTROL_PID" || true
+            sleep 2
+            # Force kill if still running
+            kill -9 "$ECHO_CONTROL_PID" 2>/dev/null || true
+        fi
+        rm -f /tmp/echo-control.pid
+    fi
     
-    # Kill any background echo-data-server processes
-    pkill -f "echo-server" || true
-    pkill -f "echo-data-server" || true
+    # Kill echo-data-server using stored PID if available
+    if [ -f "/tmp/echo-data-server.pid" ]; then
+        ECHO_DATA_SERVER_PID=$(cat /tmp/echo-data-server.pid)
+        if ps -p "$ECHO_DATA_SERVER_PID" >/dev/null 2>&1; then
+            echo "🛑 Stopping echo-data-server (PID: $ECHO_DATA_SERVER_PID)..."
+            kill "$ECHO_DATA_SERVER_PID" || true
+            sleep 2
+            # Force kill if still running
+            kill -9 "$ECHO_DATA_SERVER_PID" 2>/dev/null || true
+        fi
+        rm -f /tmp/echo-data-server.pid
+    fi
+    
+    # Fallback: Kill any remaining processes (less aggressive than before)
+    pkill -f "PORT=3001.*next start" || true
+    pkill -f "PORT=3069.*pnpm start" || true
     
     echo "🗃️ Cleaning up CI database..."
     cd ../echo-control

@@ -164,27 +164,55 @@ else
     echo "🚀 Starting echo-control test server..."
     cd ../echo-control && pnpm build
     
-    # Start echo-control in background
-    cd ../echo-control && pnpm start &
+    # Start echo-control in background with explicit port and all required environment variables
+    cd ../echo-control && \
+    PORT=3001 \
+    NODE_ENV=test \
+    CI="$CI" \
+    DATABASE_URL="$DATABASE_URL" \
+    JWT_SECRET="$JWT_SECRET" \
+    JWT_ISSUER="$JWT_ISSUER" \
+    JWT_AUDIENCE="$JWT_AUDIENCE" \
+    CLERK_PUBLISHABLE_KEY="$CLERK_PUBLISHABLE_KEY" \
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
+    INTEGRATION_TEST_MODE="$INTEGRATION_TEST_MODE" \
+    OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS="$OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS" \
+    OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS="$OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS" \
+    STRIPE_SECRET_KEY="${STRIPE_SECRET_KEY:-}" \
+    STRIPE_PUBLISHABLE_KEY="${STRIPE_PUBLISHABLE_KEY:-}" \
+    STRIPE_WEBHOOK_SECRET="${STRIPE_WEBHOOK_SECRET:-}" \
+    pnpm start &
     ECHO_CONTROL_PID=$!
+    echo "$ECHO_CONTROL_PID" > /tmp/echo-control.pid
     
-    # Wait for health check
+    # Wait for health check with improved debugging
     start_time=$(date +%s)
+    echo "🔍 Checking if echo-control process started (PID: $ECHO_CONTROL_PID)..."
+    
     while ! curl -f http://localhost:3001/api/health >/dev/null 2>&1; do
         current_time=$(date +%s)
         elapsed=$((current_time - start_time))
         if [ $elapsed -ge 60 ]; then
             echo "❌ echo-control failed to start within 60 seconds"
+            echo "🔍 Process status: $(ps -p $ECHO_CONTROL_PID >/dev/null 2>&1 && echo 'running' || echo 'not running')"
+            echo "🔍 Port status: $(netstat -tulpn 2>/dev/null | grep :3001 || echo 'no process listening on port 3001')"
+            echo "🔍 Port 3000 status: $(netstat -tulpn 2>/dev/null | grep :3000 || echo 'no process listening on port 3000')"
+            echo "🔍 Health endpoint response: $(curl -s http://localhost:3001/api/health 2>&1 || echo 'no response')"
             kill $ECHO_CONTROL_PID 2>/dev/null || true
             exit 1
         fi
+        
+        # Check if process is still running
+        if ! ps -p $ECHO_CONTROL_PID >/dev/null 2>&1; then
+            echo "❌ echo-control process died unexpectedly"
+            echo "🔍 Checking for any Next.js processes..."
+            ps aux | grep -i next || echo "No Next.js processes found"
+            exit 1
+        fi
+        
         echo "⏳ Waiting for echo-control health check... (${elapsed}s elapsed)"
         sleep 2
-    done || {
-        echo "❌ echo-control failed to start within 60 seconds"
-        kill $ECHO_CONTROL_PID 2>/dev/null || true
-        exit 1
-    }
+    done
     
     echo "✅ echo-control is healthy at http://localhost:3001"
     
@@ -198,6 +226,7 @@ else
     # Start echo-data-server in background
     ECHO_CONTROL_URL="http://localhost:3001" NODE_ENV=test PORT=3069 pnpm start &
     ECHO_DATA_SERVER_PID=$!
+    echo "$ECHO_DATA_SERVER_PID" > /tmp/echo-data-server.pid
     
     # Wait for echo-data-server health check
     start_time=$(date +%s)
