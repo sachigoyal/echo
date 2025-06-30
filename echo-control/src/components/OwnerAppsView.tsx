@@ -88,15 +88,15 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
         <div></div>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <div className="h-2 w-2 bg-emerald-400 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-gray-300">
+            <div className="h-2 w-2 bg-secondary rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
               {apps.length} {apps.length === 1 ? 'app' : 'apps'}
             </span>
           </div>
           <GlassButton
             onClick={() => router.push('/owner/apps/create')}
             variant="secondary"
-            className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50"
+            className="bg-secondary/10 border-secondary/20 hover:bg-secondary/15 hover:border-secondary/30"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
             Create Application
@@ -105,28 +105,28 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
       </div>
 
       {error && (
-        <div className="bg-gradient-to-r from-red-900/50 to-red-800/30 border border-red-500/50 rounded-2xl p-4 backdrop-blur-sm">
-          <div className="text-sm text-red-300">{error}</div>
+        <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4 shadow-sm">
+          <div className="text-sm text-red-700 dark:text-red-300">{error}</div>
         </div>
       )}
 
       {apps.length === 0 ? (
-        <div className="text-center py-16 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-2xl border border-gray-700/50 backdrop-blur-sm">
+        <div className="text-center py-16 bg-card border border-border rounded-xl shadow-sm">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-full blur-xl"></div>
-            <ActivityIcon className="relative mx-auto h-16 w-16 text-gray-400" />
+            <div className="absolute inset-0 bg-secondary/5 rounded-full blur-xl"></div>
+            <ActivityIcon className="relative mx-auto h-16 w-16 text-zinc-400" />
           </div>
-          <h3 className="mt-6 text-lg font-semibold text-white">
+          <h3 className="mt-6 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             No applications
           </h3>
-          <p className="mt-2 text-gray-400 max-w-sm mx-auto">
+          <p className="mt-2 text-zinc-600 dark:text-zinc-400 max-w-sm mx-auto">
             Create your first AI application with Echo
           </p>
           <div className="mt-6">
             <GlassButton
               onClick={() => router.push('/owner/apps/create')}
               variant="secondary"
-              className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50"
+              className="bg-secondary/10 border-secondary/20 hover:bg-secondary/15 hover:border-secondary/30"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               Create Application
@@ -138,33 +138,33 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
           {apps.map(app => (
             <div
               key={app.id}
-              className="group relative bg-gradient-to-br from-gray-900/80 to-gray-800/40 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 h-64 flex flex-col"
+              className="group relative bg-card border border-border rounded-xl shadow-lg shadow-zinc-100/50 dark:shadow-zinc-900/30 overflow-hidden transition-all duration-300 hover:border-secondary/50 hover:shadow-xl hover:shadow-secondary/10 hover:-translate-y-1 h-64 flex flex-col"
             >
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               {/* Archive Button */}
               <button
                 onClick={e => openDeleteModal(app, e)}
                 disabled={deletingAppId === app.id}
-                className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all duration-300 disabled:opacity-50"
+                className="absolute top-4 right-4 z-10 p-2 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-all duration-300 disabled:opacity-50"
                 title="Archive app"
               >
                 {deletingAppId === app.id ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-400"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-500"></div>
                 ) : (
                   <TrashIcon className="h-4 w-4" />
                 )}
               </button>
 
               {/* Content */}
-              <div className="relative p-5 flex-1 flex flex-col">
-                <div className="pr-8 mb-3">
-                  <h3 className="text-lg font-bold text-white group-hover:text-blue-300 transition-colors duration-300 mb-2 truncate">
+              <div className="relative p-6 flex-1 flex flex-col">
+                <div className="pr-8 mb-4">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-secondary transition-colors duration-300 mb-2 truncate">
                     {app.name}
                   </h3>
                   {app.description && (
-                    <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">
+                    <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed line-clamp-2">
                       {app.description}
                     </p>
                   )}
@@ -172,28 +172,28 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
 
                 {/* Stats Grid */}
                 <div className="flex-1 flex flex-col justify-center mb-4">
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-white">
+                      <div className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                         {app._count.apiKeys}
                       </div>
-                      <div className="text-xs text-gray-400 font-medium">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                         API Keys
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-white">
+                      <div className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                         {app._count.llmTransactions}
                       </div>
-                      <div className="text-xs text-gray-400 font-medium">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                         Transactions
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-emerald-400">
+                      <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                         ${app.totalCost.toFixed(2)}
                       </div>
-                      <div className="text-xs text-gray-400 font-medium">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                         Total Cost
                       </div>
                     </div>
@@ -206,16 +206,16 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
                     onClick={() => {
                       router.push(`/owner/apps/${app.id}/dashboard`);
                     }}
-                    className="flex items-center justify-center px-3 py-2 bg-gradient-to-r from-gray-700/50 to-gray-600/30 border border-gray-600/50 rounded-xl text-gray-300 hover:text-white hover:border-gray-500/70 transition-all duration-300 text-sm font-medium backdrop-blur-sm group/btn"
+                    className="flex items-center justify-center px-3 py-2 bg-zinc-100 dark:bg-zinc-800/50 border border-border rounded-lg text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800/80 transition-all duration-300 text-sm font-medium group/btn"
                   >
-                    <KeyIcon className="h-4 w-4 mr-2 group-hover/btn:text-blue-400 transition-colors duration-300" />
+                    <KeyIcon className="h-4 w-4 mr-2 group-hover/btn:text-secondary transition-colors duration-300" />
                     Manage
                   </button>
                   <button
                     onClick={() => {
                       router.push(`/apps/${app.id}`);
                     }}
-                    className="flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-600/30 to-purple-600/20 border border-blue-500/50 rounded-xl text-blue-300 hover:text-white hover:from-blue-600/40 hover:to-purple-600/30 hover:border-blue-400/70 transition-all duration-300 text-sm font-medium backdrop-blur-sm group/btn"
+                    className="flex items-center justify-center px-3 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary hover:text-white hover:bg-secondary hover:border-secondary transition-all duration-300 text-sm font-medium group/btn"
                   >
                     <ChartBarIcon className="h-4 w-4 mr-2 group-hover/btn:text-white transition-colors duration-300" />
                     Dashboard
@@ -223,8 +223,8 @@ export default function OwnerAppsView({ apps, onRefresh }: OwnerAppsViewProps) {
                 </div>
               </div>
 
-              {/* Bottom gradient border */}
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              {/* Bottom accent line */}
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-secondary opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
             </div>
           ))}
         </div>

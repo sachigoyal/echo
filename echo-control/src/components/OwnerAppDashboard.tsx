@@ -15,6 +15,7 @@ import {
   XIcon,
   EditIcon,
   SaveIcon,
+  SettingsIcon,
 } from 'lucide-react';
 import MarkupSettingsCard from './MarkupSettingsCard';
 import OAuthConfigSection from './OAuthConfigSection';
@@ -172,363 +173,424 @@ export default function OwnerAppDashboard({
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link
-            href="/"
-            className="flex items-center text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Back to Apps
-          </Link>
-          <div className="h-6 w-px bg-border"></div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {currentAppName}
-            </h1>
-            <p className="text-muted-foreground">
-              Customer Analytics & Management
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header Section - More Compact */}
+        <div className="mb-8">
+          <nav className="flex items-center space-x-4 mb-4">
+            <Link
+              href="/"
+              className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors duration-200"
+            >
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+              Back to Apps
+            </Link>
+            <div className="h-4 w-px bg-border"></div>
+            <span className="text-sm text-muted-foreground">Dashboard</span>
+          </nav>
         </div>
-        <GlassButton
-          onClick={() => setShowInviteModal(true)}
-          variant="secondary"
-          className="flex items-center"
-        >
-          <UserPlusIcon className="h-4 w-4 mr-2" />
-          Invite Customer
-        </GlassButton>
-      </div>
 
-      {/* Invite Modal */}
-      {showInviteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-card p-6 rounded-lg border border-border max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-foreground">
-                Invite Customer
-              </h3>
-              <button
-                onClick={() => setShowInviteModal(false)}
-                className="!h-8 !w-8"
-              >
-                <XIcon className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Share this link with customers to invite them to use your app.
-                They&apos;ll be able to sign up and generate API keys for{' '}
-                <strong>{currentAppName}</strong>.
-              </p>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Invitation Link
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={inviteLink}
-                    readOnly
-                    className="flex-1 px-3 py-2 border border-input bg-input text-input-foreground rounded-md text-sm"
-                  />
-                  <button onClick={copyInviteLink} className="!h-10 !w-10">
-                    {inviteLinkCopied ? (
-                      <CheckIcon className="h-4 w-4" />
-                    ) : (
-                      <CopyIcon className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-800 mb-2">
-                  How it works:
-                </h4>
-                <ol className="text-sm text-blue-700 space-y-1">
-                  <li>1. Customer clicks the invitation link</li>
-                  <li>2. Your app is automatically selected</li>
-                  <li>3. They can generate API keys to use your app</li>
-                </ol>
-              </div>
-
-              <div className="flex gap-3">
-                <GlassButton
+        {/* Modern Invite Modal */}
+        {showInviteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowInviteModal(false)}
+            />
+            <div className="relative bg-card/95 backdrop-blur-md p-8 rounded-2xl border border-border/50 shadow-2xl max-w-lg w-full">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-foreground">
+                  Invite Customer
+                </h3>
+                <button
                   onClick={() => setShowInviteModal(false)}
-                  variant="secondary"
-                  className="flex-1"
+                  className="p-2 hover:bg-muted/50 rounded-lg transition-colors duration-200"
                 >
-                  Close
-                </GlassButton>
-                <GlassButton
-                  onClick={copyInviteLink}
-                  variant="primary"
-                  className="flex-1"
-                >
-                  {inviteLinkCopied ? 'Copied!' : 'Copy Link'}
-                </GlassButton>
+                  <XIcon className="h-5 w-5 text-muted-foreground" />
+                </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {error && (
-        <div className="bg-destructive/20 border border-destructive rounded-md p-4">
-          <div className="text-sm text-destructive-foreground">{error}</div>
-        </div>
-      )}
+              <div className="space-y-6">
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Share this link with customers to invite them to use your
+                    app. They&apos;ll be able to sign up and generate API keys
+                    for{' '}
+                    <span className="font-semibold text-foreground">
+                      {currentAppName}
+                    </span>
+                    .
+                  </p>
+                </div>
 
-      {/* Analytics Overview */}
-      {analytics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-card p-6 rounded-lg border border-border">
-            <div className="flex items-center">
-              <UsersIcon className="h-8 w-8 text-blue-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total Users
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {analytics.totalUsers}
-                </p>
-              </div>
-            </div>
-          </div>
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-foreground">
+                    Invitation Link
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={inviteLink}
+                      readOnly
+                      className="flex-1 px-4 py-3 border border-input bg-input/50 text-input-foreground rounded-lg text-sm font-mono"
+                    />
+                    <button
+                      onClick={copyInviteLink}
+                      className="flex items-center justify-center w-12 h-12 bg-secondary/10 hover:bg-secondary/20 rounded-lg transition-colors duration-200"
+                    >
+                      {inviteLinkCopied ? (
+                        <CheckIcon className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <CopyIcon className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-          <div className="bg-card p-6 rounded-lg border border-border">
-            <div className="flex items-center">
-              <KeyIcon className="h-8 w-8 text-green-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  API Keys
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {analytics.totalApiKeys}
-                </p>
-              </div>
-            </div>
-          </div>
+                <div className="bg-blue-50/50 border border-blue-200/50 rounded-lg p-4 space-y-3">
+                  <h4 className="font-semibold text-blue-800">How it works:</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm text-blue-700">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold mr-3">
+                        1
+                      </div>
+                      Customer clicks the invitation link
+                    </div>
+                    <div className="flex items-center text-sm text-blue-700">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold mr-3">
+                        2
+                      </div>
+                      Your app is automatically selected
+                    </div>
+                    <div className="flex items-center text-sm text-blue-700">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-semibold mr-3">
+                        3
+                      </div>
+                      They can generate API keys to use your app
+                    </div>
+                  </div>
+                </div>
 
-          <div className="bg-card p-6 rounded-lg border border-border">
-            <div className="flex items-center">
-              <DollarSignIcon className="h-8 w-8 text-yellow-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total Revenue
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(analytics.totalSpent)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card p-6 rounded-lg border border-border">
-            <div className="flex items-center">
-              <TrendingUpIcon className="h-8 w-8 text-purple-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Avg per User
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  $
-                  {analytics.totalUsers > 0
-                    ? (analytics.totalSpent / analytics.totalUsers).toFixed(2)
-                    : '0.00'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* App Settings */}
-      <div className="bg-card p-6 rounded-lg border border-border">
-        <div className="flex items-center mb-4">
-          <EditIcon className="h-5 w-5 text-muted-foreground mr-2" />
-          <h3 className="text-lg font-semibold text-foreground">
-            App Settings
-          </h3>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              App Name
-            </label>
-            {editingAppName ? (
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={newAppName}
-                  onChange={e => setNewAppName(e.target.value)}
-                  className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md text-sm"
-                  placeholder="Enter app name"
-                  disabled={updatingAppName}
-                />
-                {appNameError && (
-                  <p className="text-sm text-destructive">{appNameError}</p>
-                )}
-                <div className="flex gap-2">
+                <div className="flex gap-3 pt-4">
                   <GlassButton
-                    onClick={updateAppName}
-                    disabled={updatingAppName || !newAppName.trim()}
-                    variant="primary"
-                    className="flex items-center"
-                  >
-                    {updatingAppName ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    ) : (
-                      <SaveIcon className="h-4 w-4 mr-2" />
-                    )}
-                    Save
-                  </GlassButton>
-                  <GlassButton
-                    onClick={cancelEditAppName}
-                    disabled={updatingAppName}
+                    onClick={() => setShowInviteModal(false)}
                     variant="secondary"
                   >
-                    Cancel
+                    Close
+                  </GlassButton>
+                  <GlassButton onClick={copyInviteLink} variant="primary">
+                    {inviteLinkCopied ? 'Copied!' : 'Copy Link'}
                   </GlassButton>
                 </div>
               </div>
-            ) : (
-              <div className="flex items-center justify-between">
-                <span className="text-foreground">{currentAppName}</span>
-                <GlassButton
-                  onClick={() => setEditingAppName(true)}
-                  variant="secondary"
-                  className="flex items-center"
-                >
-                  <EditIcon className="h-4 w-4 mr-2" />
-                  Edit
-                </GlassButton>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Markup Settings */}
-      <MarkupSettingsCard appId={appId} appName={currentAppName} />
-
-      {/* OAuth Config */}
-      <OAuthConfigSection appId={appId} />
-
-      {/* Top Users */}
-      {analytics && analytics.topUsers.length > 0 && (
-        <div className="bg-card p-6 rounded-lg border border-border">
-          <div className="flex items-center mb-4">
-            <ChartBarIcon className="h-5 w-5 text-muted-foreground mr-2" />
-            <h3 className="text-lg font-semibold text-foreground">
-              Top Users by Spending
-            </h3>
+        {error && (
+          <div className="mb-6 bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+            <div className="text-sm text-destructive-foreground">{error}</div>
           </div>
-          <div className="space-y-3">
-            {analytics.topUsers.slice(0, 5).map((user, index) => (
-              <div key={user.id} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-secondary/10 rounded-full flex items-center justify-center text-sm font-medium text-secondary">
-                    {index + 1}
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-foreground">
-                      {user.name || user.email}
+        )}
+
+        {/* Analytics Overview - More Compact */}
+        {analytics && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-foreground mb-4 flex items-center">
+              <ChartBarIcon className="h-5 w-5 mr-2 text-muted-foreground" />
+              Analytics Overview
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="group relative bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-300 p-4 rounded-xl border border-border/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                      Total Users
                     </p>
-                    {user.name && (
-                      <p className="text-xs text-muted-foreground">
-                        {user.email}
-                      </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {analytics.totalUsers}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                    <UsersIcon className="h-5 w-5 text-blue-500 group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-300 p-4 rounded-xl border border-border/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                      API Keys
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {analytics.totalApiKeys}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                    <KeyIcon className="h-5 w-5 text-green-500 group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-300 p-4 rounded-xl border border-border/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                      Total Revenue
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {formatCurrency(analytics.totalSpent)}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+                    <DollarSignIcon className="h-5 w-5 text-yellow-500 group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-300 p-4 rounded-xl border border-border/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">
+                      Avg per User
+                    </p>
+                    <p className="text-2xl font-bold text-foreground">
+                      $
+                      {analytics.totalUsers > 0
+                        ? (analytics.totalSpent / analytics.totalUsers).toFixed(
+                            2
+                          )
+                        : '0.00'}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                    <TrendingUpIcon className="h-5 w-5 text-purple-500 group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Grid - Left-aligned compact layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Combined App Settings Card - Top Row spanning full width */}
+          <div className="lg:col-span-3">
+            <div className="bg-card/60 backdrop-blur-sm rounded-xl border border-border/50 p-6 mb-6">
+              <h3 className="text-xl font-bold text-foreground mb-6 flex items-center">
+                <SettingsIcon className="h-5 w-5 mr-3 text-muted-foreground" />
+                App Settings
+              </h3>
+
+              <div className="space-y-8">
+                {/* App Name Section */}
+                <div className="pb-6 border-b border-border/30">
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      App Name
+                    </label>
+                    {editingAppName ? (
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          value={newAppName}
+                          onChange={e => setNewAppName(e.target.value)}
+                          className="w-full px-3 py-2.5 border border-input bg-input/50 text-input-foreground rounded-lg text-sm focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all duration-200"
+                          placeholder="Enter app name"
+                          disabled={updatingAppName}
+                        />
+                        {appNameError && (
+                          <p className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                            {appNameError}
+                          </p>
+                        )}
+                        <div className="flex gap-2">
+                          <GlassButton
+                            onClick={updateAppName}
+                            disabled={updatingAppName || !newAppName.trim()}
+                            variant="primary"
+                          >
+                            {updatingAppName ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                            ) : (
+                              <SaveIcon className="h-3 w-3 mr-1" />
+                            )}
+                            Save
+                          </GlassButton>
+                          <GlassButton
+                            onClick={cancelEditAppName}
+                            disabled={updatingAppName}
+                            variant="secondary"
+                          >
+                            Cancel
+                          </GlassButton>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between bg-muted/30 rounded-lg p-3 w-full">
+                        <span className="text-foreground font-medium">
+                          {currentAppName}
+                        </span>
+                        <GlassButton
+                          onClick={() => setEditingAppName(true)}
+                          variant="secondary"
+                        >
+                          <EditIcon className="h-3 w-3 mr-1" />
+                          Edit
+                        </GlassButton>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">
-                    {formatCurrency(user.totalSpent)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {user.apiKeyCount} keys
-                  </p>
+
+                {/* Markup Settings Section */}
+                <div className="pb-6 border-b border-border/30">
+                  <MarkupSettingsCard appId={appId} appName={currentAppName} />
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* Customer List */}
-      <div className="bg-card p-6 rounded-lg border border-border">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <UsersIcon className="h-5 w-5 text-muted-foreground mr-2" />
-            <h3 className="text-lg font-semibold text-foreground">Customers</h3>
-          </div>
-          <span className="text-sm text-muted-foreground">
-            {customers.length} total
-          </span>
-        </div>
-
-        {customers.length === 0 ? (
-          <div className="text-center py-8">
-            <UsersIcon className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-2 text-sm font-medium text-foreground">
-              No customers yet
-            </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Invite customers to start using your app.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3 max-h-80 overflow-y-auto">
-            {customers.map(customer => (
-              <div
-                key={customer.id}
-                className="flex items-center justify-between p-3 bg-accent/50 rounded-md"
-              >
+                {/* OAuth Configuration Section */}
                 <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {customer.user.name || customer.user.email}
-                  </p>
-                  {customer.user.name && (
-                    <p className="text-xs text-muted-foreground">
-                      {customer.user.email}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      customer.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : customer.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {customer.status}
-                  </span>
-                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                    {customer.role}
-                  </span>
+                  <OAuthConfigSection appId={appId} />
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-        )}
+
+          {/* Left Column - Analytics and Top Performers */}
+          <div className="lg:col-span-2">
+            {analytics && analytics.topUsers.length > 0 && (
+              <section className="bg-card/60 backdrop-blur-sm rounded-xl border border-border/50 p-5">
+                <h3 className="text-lg font-bold text-foreground mb-4 flex items-center">
+                  <TrendingUpIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Top Performers
+                </h3>
+                <div className="space-y-2">
+                  {analytics.topUsers.slice(0, 6).map((user, index) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-2 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors duration-200"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-secondary to-secondary/80 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                          {index + 1}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {user.name || user.email}
+                          </p>
+                          {user.name && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.email}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right ml-2">
+                        <p className="text-sm font-bold text-foreground">
+                          {formatCurrency(user.totalSpent)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.apiKeyCount} keys
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* Right Column - Placeholder for future content */}
+          <div className="lg:col-span-1">
+            {/* Future content can go here */}
+          </div>
+
+          {/* Customers Section - Bottom row spanning full width */}
+          <div className="lg:col-span-3">
+            <section className="bg-card/60 backdrop-blur-sm rounded-xl border border-border/50 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-foreground flex items-center">
+                  <UsersIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Customers
+                </h3>
+                <span className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-full">
+                  {customers.length} total
+                </span>
+              </div>
+
+              {customers.length === 0 ? (
+                <div className="text-center py-6">
+                  <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <UsersIcon className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <h4 className="text-base font-semibold text-foreground mb-1">
+                    No customers yet
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Invite customers to start using your app.
+                  </p>
+                  <GlassButton
+                    onClick={() => setShowInviteModal(true)}
+                    variant="primary"
+                  >
+                    <UserPlusIcon className="h-3 w-3 mr-1" />
+                    Invite First Customer
+                  </GlassButton>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {customers.map(customer => (
+                    <div
+                      key={customer.id}
+                      className="flex items-center justify-between p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors duration-200"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-semibold text-secondary">
+                            {(customer.user.name || customer.user.email)
+                              .charAt(0)
+                              .toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {customer.user.name || customer.user.email}
+                          </p>
+                          {customer.user.name && (
+                            <p className="text-xs text-muted-foreground">
+                              {customer.user.email}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <span
+                          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                            customer.status === 'active'
+                              ? 'bg-green-100 text-green-700 border border-green-200'
+                              : customer.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                                : 'bg-red-100 text-red-700 border border-red-200'
+                          }`}
+                        >
+                          {customer.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
       </div>
     </div>
   );
