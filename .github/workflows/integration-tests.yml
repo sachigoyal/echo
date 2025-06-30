@@ -113,15 +113,11 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
         run: pnpm prisma:push
 
-      - name: Seed integration test database
-        working-directory: integration-tests
-        run: pnpm db:seed
-
       - name: Setup integration test environment
         working-directory: integration-tests
         run: |
           chmod +x scripts/setup-integration-env.sh
-          ./scripts/setup-integration-env.sh
+          pnpm run env:setup
 
       - name: Run OAuth Protocol Tests
         working-directory: integration-tests
