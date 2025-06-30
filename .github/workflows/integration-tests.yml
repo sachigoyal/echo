@@ -116,28 +116,64 @@ jobs:
 
       - name: Setup integration test environment
         working-directory: integration-tests
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
+          ECHO_CONTROL_URL: http://localhost:3001
+          ECHO_DATA_SERVER_URL: http://localhost:3069
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          JWT_ISSUER: http://localhost:3001
+          JWT_AUDIENCE: echo-proxy
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          INTEGRATION_TEST_JWT: ${{ secrets.INTEGRATION_TEST_JWT }}
+          INTEGRATION_TEST_JWT_USER_2: ${{ secrets.INTEGRATION_TEST_JWT_USER_2 }}
+          OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS: 2592000
+          OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS: 86400
+          CI: true
+          NODE_ENV: test
+          INTEGRATION_TEST_MODE: true
+          STRIPE_SECRET_KEY: ${{ secrets.TEST_STRIPE_SECRET_KEY }}
+          STRIPE_PUBLISHABLE_KEY: ${{ secrets.TEST_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.TEST_STRIPE_WEBHOOK_SECRET }}
+          HEADLESS: true
+          LOG_LEVEL: error
         run: |
           chmod +x scripts/setup-integration-env.sh
           pnpm run env:setup
 
       - name: Run OAuth Protocol Tests
         working-directory: integration-tests
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
         run: pnpm test:oauth-protocol
 
       - name: Run Echo Data Server Tests
         working-directory: integration-tests
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
         run: pnpm test:echo-data-server
 
       - name: Run React SDK Integration Tests
         working-directory: integration-tests
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
         run: pnpm test:react-sdk
 
       - name: Run TypeScript SDK Integration Tests
         working-directory: integration-tests
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
         run: pnpm test:typescript-sdk
 
       - name: Run Cross-SDK Tests
         working-directory: integration-tests
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
         run: pnpm test:cross-sdk
 
       - name: Upload test results
