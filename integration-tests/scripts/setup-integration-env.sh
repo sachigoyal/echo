@@ -189,6 +189,7 @@ else
     start_time=$(date +%s)
     echo "🔍 Checking if echo-control process started (PID: $ECHO_CONTROL_PID)..."
     
+    
     while ! curl -f http://localhost:3001/api/health >/dev/null 2>&1; do
         current_time=$(date +%s)
         elapsed=$((current_time - start_time))
