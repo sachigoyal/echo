@@ -159,7 +159,7 @@ else
     
     # Seed integration test data
     echo "🌱 Seeding integration test database..."
-    INTEGRATION_TEST_MODE=true pnpm db:seed
+    INTEGRATION_TEST_MODE=true cd ../integration-tests && pnpm db:seed
     
     echo "🚀 Starting echo-control test server..."
     pnpm build
