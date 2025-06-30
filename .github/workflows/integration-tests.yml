@@ -8,6 +8,7 @@ on:
       - 'echo-react-sdk/**'
       - 'echo-typescript-sdk/**'
       - 'integration-tests/**'
+      - '.github/workflows/**'
       - 'pnpm-lock.yaml'
       - 'package.json'
   push:
@@ -18,6 +19,7 @@ on:
       - 'echo-react-sdk/**'
       - 'echo-typescript-sdk/**'
       - 'integration-tests/**'
+      - '.github/workflows/**'
 
 jobs:
   integration-tests:
