@@ -27,7 +27,7 @@ interface EchoAppWithRole {
 export default function OwnerAppsPage() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
-  const [ownedApps, setOwnedApps] = useState<EchoAppWithRole[]>([]);
+  const [ownerApps, setOwnerApps] = useState<EchoAppWithRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -59,11 +59,12 @@ export default function OwnerAppsPage() {
 
       const allApps = data.apps || [];
 
-      const owned = allApps.filter(
+      // Filter for owner apps
+      const owner = allApps.filter(
         (app: EchoAppWithRole) => app.userRole === AppRole.OWNER
       );
 
-      setOwnedApps(owned);
+      setOwnerApps(owner);
     } catch (error) {
       console.error('Error fetching echo apps:', error);
       setError(
@@ -76,8 +77,8 @@ export default function OwnerAppsPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+      <div className="flex items-center justify-center h-64 bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
       </div>
     );
   }
@@ -87,10 +88,10 @@ export default function OwnerAppsPage() {
       {/* Header with User Menu */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
             Welcome back{user?.firstName ? `, ${user.firstName}` : ''}
           </h1>
-          <p className="text-gray-300">
+          <p className="text-zinc-600 dark:text-zinc-400 mt-1">
             Build and monetize your AI applications
           </p>
         </div>
@@ -98,7 +99,7 @@ export default function OwnerAppsPage() {
           {/* Link to Customer Apps */}
           <Link
             href="/"
-            className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-300 hover:text-white bg-gray-800/50 border border-gray-700/50 rounded-md hover:bg-gray-800/80 backdrop-blur-sm transition-all duration-200"
+            className="flex items-center space-x-2 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 bg-card border border-border rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800/80 backdrop-blur-sm transition-all duration-200 shadow-sm"
           >
             <Users className="h-4 w-4" />
             <span>Customer Apps</span>
@@ -108,7 +109,7 @@ export default function OwnerAppsPage() {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-2 p-2 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:bg-gray-800/80 backdrop-blur-sm transition-all duration-200"
+              className="flex items-center space-x-3 p-3 rounded-lg bg-card border border-border hover:bg-zinc-100 dark:hover:bg-zinc-800/80 backdrop-blur-sm transition-all duration-200 shadow-sm"
             >
               {user?.imageUrl ? (
                 <Image
@@ -116,23 +117,23 @@ export default function OwnerAppsPage() {
                   alt="Profile"
                   width={32}
                   height={32}
-                  className="h-8 w-8 rounded-full"
+                  className="h-8 w-8 rounded-full ring-2 ring-secondary/20"
                 />
               ) : (
-                <UserIcon className="h-8 w-8 text-gray-300" />
+                <UserIcon className="h-8 w-8 text-zinc-600 dark:text-zinc-400" />
               )}
-              <span className="text-sm font-medium text-white">
+              <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 {user?.fullName || user?.emailAddresses[0]?.emailAddress}
               </span>
             </button>
 
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-gray-800/90 border border-gray-700/50 rounded-md shadow-lg backdrop-blur-sm z-10">
+              <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-xl backdrop-blur-sm z-10 overflow-hidden">
                 <button
                   onClick={() => signOut()}
-                  className="w-full flex items-center px-4 py-2 text-sm text-white hover:bg-gray-700/50 rounded-md transition-all duration-200"
+                  className="w-full flex items-center px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all duration-200"
                 >
-                  <LogOutIcon className="h-4 w-4 mr-2" />
+                  <LogOutIcon className="h-4 w-4 mr-3" />
                   Sign Out
                 </button>
               </div>
@@ -161,13 +162,13 @@ export default function OwnerAppsPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 backdrop-blur-sm">
-          <div className="text-sm text-red-300">{error}</div>
+        <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4 backdrop-blur-sm shadow-sm">
+          <div className="text-sm text-red-700 dark:text-red-300">{error}</div>
         </div>
       )}
 
       {/* Owner Apps View */}
-      <OwnerAppsView apps={ownedApps} onRefresh={fetchApps} />
+      <OwnerAppsView apps={ownerApps} onRefresh={fetchApps} />
     </div>
   );
 }

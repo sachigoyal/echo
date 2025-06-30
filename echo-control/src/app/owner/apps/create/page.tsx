@@ -6,7 +6,10 @@ import { ChevronRight, Check, Copy } from 'lucide-react';
 import { GitHubSearchComponent } from '../../../../components/GitHubSearchComponent';
 import { GitHubUser, GitHubRepo } from '../../../../lib/github-api';
 
+type AuthMethod = 'jwt' | 'apikey';
+
 interface FormData {
+  authMethod: AuthMethod;
   name: string;
   description: string;
   callbackUrl: string;
@@ -31,7 +34,20 @@ interface StepConfig {
   ) => string;
 }
 
-const steps: StepConfig[] = [
+const authMethodStep: StepConfig = {
+  key: 'authMethod',
+  prompt: 'How do you want users to authenticate with your app?',
+  placeholder: '',
+  required: true,
+  type: 'select' as const,
+  options: [
+    { value: 'jwt', label: 'JWT Authentication (OAuth Flow)' },
+    { value: 'apikey', label: 'API Key Authentication' },
+  ],
+  helpText: "Choose the authentication method that best fits your app's needs.",
+};
+
+const commonSteps: StepConfig[] = [
   {
     key: 'name',
     prompt: 'What would you like to name your application?',
@@ -46,6 +62,9 @@ const steps: StepConfig[] = [
     required: false,
     type: 'text' as const,
   },
+];
+
+const jwtSpecificSteps: StepConfig[] = [
   {
     key: 'callbackUrl',
     prompt: 'What is your production callback URL? (optional)',
@@ -55,56 +74,84 @@ const steps: StepConfig[] = [
     helpText:
       'Enter the URL where users will be redirected after signing in with Echo from your production app. Localhost URLs (like http://localhost:3000) are automatically allowed for development.',
   },
-  {
-    key: 'githubId',
-    prompt: 'Who should receive proceeds from this app? (optional)',
-    placeholder: 'Search for a GitHub user or repository...',
-    required: false,
-    type: 'github-search' as const,
-    helpText:
-      'Select a GitHub user or repository to receive payment proceeds from your Echo app. This determines who gets paid when users purchase tokens through your app.',
-    dynamicPrompt: (formData: FormData, searchParams: URLSearchParams) => {
-      const hasPrePopulated =
-        searchParams.get('githubId') ||
-        searchParams.get('repoId') ||
-        searchParams.get('userId');
-      if (hasPrePopulated) {
-        return 'Confirm who should receive proceeds from this app (optional)';
-      }
-      return 'Who should receive proceeds from this app? (optional)';
-    },
-    dynamicHelpText: (formData: FormData, searchParams: URLSearchParams) => {
-      const hasPrePopulated =
-        searchParams.get('githubId') ||
-        searchParams.get('repoId') ||
-        searchParams.get('userId');
-      if (hasPrePopulated) {
-        return "We've pre-selected a GitHub user or repository for you. Please verify this is correct, or search for a different one. This determines who gets paid when users purchase tokens through your app.";
-      }
-      return 'Select a GitHub user or repository to receive payment proceeds from your Echo app. This determines who gets paid when users purchase tokens through your app.';
-    },
-  },
-  {
-    key: 'configuration',
-    prompt: 'Review your configuration',
-    placeholder: '',
-    required: false,
-    type: 'code' as const,
-  },
-  {
-    key: 'testing',
-    prompt: 'Test your integration',
-    placeholder: '',
-    required: false,
-    type: 'verification' as const,
-  },
 ];
+
+const githubStep: StepConfig = {
+  key: 'githubId',
+  prompt: 'Who should receive proceeds from this app? (optional)',
+  placeholder: 'Search for a GitHub user or repository...',
+  required: false,
+  type: 'github-search' as const,
+  helpText:
+    'Select a GitHub user or repository to receive payment proceeds from your Echo app. This determines who gets paid when users purchase tokens through your app.',
+  dynamicPrompt: (formData: FormData, searchParams: URLSearchParams) => {
+    const hasPrePopulated =
+      searchParams.get('githubId') ||
+      searchParams.get('repoId') ||
+      searchParams.get('userId');
+    if (hasPrePopulated) {
+      return 'Confirm who should receive proceeds from this app (optional)';
+    }
+    return 'Who should receive proceeds from this app? (optional)';
+  },
+  dynamicHelpText: (formData: FormData, searchParams: URLSearchParams) => {
+    const hasPrePopulated =
+      searchParams.get('githubId') ||
+      searchParams.get('repoId') ||
+      searchParams.get('userId');
+    if (hasPrePopulated) {
+      return "We've pre-selected a GitHub user or repository for you. Please verify this is correct, or search for a different one. This determines who gets paid when users purchase tokens through your app.";
+    }
+    return 'Select a GitHub user or repository to receive payment proceeds from your Echo app. This determines who gets paid when users purchase tokens through your app.';
+  },
+};
+
+const configurationStep: StepConfig = {
+  key: 'configuration',
+  prompt: 'Review your configuration',
+  placeholder: '',
+  required: false,
+  type: 'code' as const,
+};
+
+const jwtTestingStep: StepConfig = {
+  key: 'testing',
+  prompt: 'Test your integration',
+  placeholder: '',
+  required: false,
+  type: 'verification' as const,
+};
+
+const apiKeyTestingStep: StepConfig = {
+  key: 'apiKeyTesting',
+  prompt: 'Your app is ready!',
+  placeholder: '',
+  required: false,
+  type: 'verification' as const,
+};
+
+function getStepsForAuthMethod(authMethod: AuthMethod): StepConfig[] {
+  const baseSteps = [authMethodStep, ...commonSteps];
+
+  if (authMethod === 'jwt') {
+    return [
+      ...baseSteps,
+      ...jwtSpecificSteps,
+      githubStep,
+      configurationStep,
+      jwtTestingStep,
+    ];
+  } else {
+    return [...baseSteps, githubStep, configurationStep, apiKeyTestingStep];
+  }
+}
 
 function CreateApplicationForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({
+    authMethod: 'jwt',
     name: '',
     description: '',
     callbackUrl: '',
@@ -121,6 +168,9 @@ function CreateApplicationForm() {
   const [isPolling, setIsPolling] = useState(false);
   const [integrationVerified, setIntegrationVerified] = useState(false);
   const [githubVerified, setGithubVerified] = useState(false);
+
+  // Get current steps based on auth method
+  const steps = getStepsForAuthMethod(formData.authMethod);
 
   const handleGithubChange = (
     value: string,
@@ -194,9 +244,10 @@ function CreateApplicationForm() {
       return 'Loading configuration...';
     }
 
-    const callbackUrl = formData.callbackUrl || 'http://localhost:3000';
+    if (formData.authMethod === 'jwt') {
+      const callbackUrl = formData.callbackUrl || 'http://localhost:3000';
 
-    return `import { EchoProvider } from '@zdql/echo-react-sdk';
+      return `import { EchoProvider } from '@zdql/echo-react-sdk';
 import App from './App';
 
 const echoConfig = {
@@ -215,6 +266,33 @@ function Root() {
 }
 
 export default Root;`;
+    } else {
+      // API Key configuration
+      return `import { OpenAI } from 'openai';
+
+// Initialize the Echo client with your app ID
+const echo = new OpenAI({
+  apiKey: process.env.ECHO_API_KEY,
+  baseURL: 'https://echo.router.merit.systems',
+});
+
+// Your users will need to provide their own API key
+async function makeRequest(userApiKey: string, prompt: string) {
+  const response = await echo.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      {
+        role: 'user',
+        content: prompt
+      }
+    ]
+  });
+  
+  return response;
+}
+
+export { echo, makeRequest };`;
+    }
   };
 
   const createApp = useCallback(async () => {
@@ -360,13 +438,21 @@ export default Root;`;
     }
   }, [currentStep, formData, currentStepData.key]);
 
-  const shouldSkipStep = useCallback((stepIndex: number): boolean => {
-    const step = steps[stepIndex];
-    if (!step) return false;
+  const shouldSkipStep = useCallback(
+    (stepIndex: number): boolean => {
+      const step = steps[stepIndex];
+      if (!step) return false;
 
-    // Don't skip any steps - let users verify their GitHub selection
-    return false;
-  }, []);
+      // Skip callback URL step for API key authentication
+      if (step.key === 'callbackUrl' && formData.authMethod === 'apikey') {
+        return true;
+      }
+
+      // Don't skip any other steps - let users verify their GitHub selection
+      return false;
+    },
+    [steps, formData.authMethod]
+  );
 
   const getNextStep = useCallback(
     (currentStepIndex: number): number => {
@@ -617,9 +703,48 @@ export default Root;`;
                       <div className="flex-1 relative">
                         {currentStepData.type === 'verification' ? (
                           <div className="space-y-8">
-                            {!integrationVerified ? (
+                            {currentStepData.key === 'apiKeyTesting' ? (
+                              /* API Key Success State */
+                              <div className="text-center space-y-4 sm:space-y-6">
+                                <div className="text-4xl sm:text-6xl">✅</div>
+                                <div className="space-y-2">
+                                  <h3 className="text-lg sm:text-2xl font-mono text-green-400">
+                                    App Created Successfully!
+                                  </h3>
+                                  <p className="text-gray-300 font-mono text-xs sm:text-sm">
+                                    Your Echo app is ready for API key
+                                    authentication.
+                                  </p>
+                                </div>
+                                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 text-left">
+                                  <h4 className="text-md font-mono text-white mb-3">
+                                    Next Steps:
+                                  </h4>
+                                  <div className="space-y-2 text-gray-300 text-xs sm:text-sm font-mono">
+                                    <p>
+                                      1. Users will need to create Echo API keys
+                                      at echo.merit.systems
+                                    </p>
+                                    <p>
+                                      2. They can then use those keys with your
+                                      app
+                                    </p>
+                                    <p>
+                                      3. Configure your app using the code from
+                                      the previous step
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => router.push('/owner')}
+                                  className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600/20 border border-green-500/30 rounded-lg text-green-300 hover:bg-green-600/30 transition-colors font-mono text-xs sm:text-sm"
+                                >
+                                  Go to Dashboard
+                                </button>
+                              </div>
+                            ) : !integrationVerified ? (
                               <>
-                                {/* Instructions */}
+                                {/* JWT Testing Instructions */}
                                 <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg sm:rounded-xl p-4 sm:p-6 backdrop-blur-sm">
                                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
                                     <h3 className="text-lg sm:text-xl font-mono text-white">
@@ -729,7 +854,9 @@ export default Root;`;
                                 <div className="bg-gray-900/50 border border-gray-700/50 rounded-lg sm:rounded-xl p-4 sm:p-6 backdrop-blur-sm w-full max-w-4xl">
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
                                     <h3 className="text-base sm:text-lg font-mono text-white text-center sm:text-left">
-                                      React Configuration
+                                      {formData.authMethod === 'jwt'
+                                        ? 'React Configuration'
+                                        : 'TypeScript Configuration'}
                                     </h3>
                                     <button
                                       onClick={() => {
@@ -761,8 +888,12 @@ export default Root;`;
                                     </h3>
                                     <button
                                       onClick={() => {
+                                        const installCmd =
+                                          formData.authMethod === 'jwt'
+                                            ? 'npm install @zdql/echo-react-sdk'
+                                            : 'npm install @zdql/echo-typescript-sdk';
                                         navigator.clipboard.writeText(
-                                          'npm install @zdql/echo-react-sdk'
+                                          installCmd
                                         );
                                       }}
                                       className="flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600/20 border border-blue-500/30 rounded-lg text-blue-300 hover:bg-blue-600/30 transition-colors text-xs sm:text-sm mx-auto sm:mx-0"
@@ -775,7 +906,9 @@ export default Root;`;
                                     <div className="bg-black/20 rounded p-3 sm:p-4 overflow-hidden">
                                       <pre className="text-xs sm:text-sm text-gray-300 font-mono whitespace-pre-wrap break-words w-full">
                                         <code className="block w-full">
-                                          npm install @zdql/echo-react-sdk
+                                          {formData.authMethod === 'jwt'
+                                            ? 'npm install @zdql/echo-react-sdk'
+                                            : 'npm install @zdql/echo-typescript-sdk'}
                                         </code>
                                       </pre>
                                     </div>
@@ -790,6 +923,29 @@ export default Root;`;
                             onChange={handleGithubChange}
                             placeholder={currentStepData.placeholder}
                           />
+                        ) : currentStepData.type === 'select' ? (
+                          <div className="space-y-4">
+                            {currentStepData.options?.map(option => (
+                              <button
+                                key={option.value}
+                                onClick={() => setCurrentValue(option.value)}
+                                className={`w-full p-4 rounded-lg border text-left transition-all duration-200 ${
+                                  currentValue === option.value
+                                    ? 'border-blue-500/50 bg-blue-900/20 text-blue-300'
+                                    : 'border-gray-600/30 bg-gray-800/20 text-gray-300 hover:border-gray-500/50 hover:bg-gray-800/30'
+                                }`}
+                              >
+                                <div className="font-mono text-lg mb-2">
+                                  {option.label}
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                  {option.value === 'jwt'
+                                    ? 'Users sign in through OAuth flow with automatic token management. Best for web apps that need user sessions.'
+                                    : 'Users authenticate with API keys they manage themselves. Best for server applications, CLI tools, or when you need direct API access.'}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
                         ) : (
                           <input
                             ref={focusCallback}
@@ -816,7 +972,9 @@ export default Root;`;
 
                         {/* Animated cursor - only show for input fields */}
                         {currentStepData.type !== 'code' &&
-                          currentStepData.type !== 'github-search' && (
+                          currentStepData.type !== 'github-search' &&
+                          currentStepData.type !== 'select' &&
+                          currentStepData.type !== 'verification' && (
                             <div className="absolute right-0 bottom-3 w-0.5 h-6 bg-blue-400 animate-pulse"></div>
                           )}
                       </div>

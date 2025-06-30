@@ -81,32 +81,32 @@ export default function UserPaymentCard() {
 
   if (balanceLoading) {
     return (
-      <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700/50 p-6 shadow-lg">
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
         <div className="animate-pulse">
-          <div className="h-4 bg-slate-700 rounded w-1/3 mb-4"></div>
-          <div className="h-8 bg-slate-700 rounded w-1/2 mb-2"></div>
-          <div className="h-4 bg-slate-700 rounded w-2/3"></div>
+          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/3 mb-4"></div>
+          <div className="h-8 bg-zinc-300 dark:bg-zinc-700 rounded w-1/2 mb-2"></div>
+          <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-2/3"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-700/50 p-6 shadow-xl">
+    <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="lg:w-1/3">
           <div className="flex items-center justify-between lg:flex-col lg:items-start">
             <div>
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <Zap className="h-5 w-5 mr-2 text-cyan-400" />
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center">
+                <Zap className="h-5 w-5 mr-2 text-secondary" />
                 Credits
               </h3>
               {balance && (
                 <>
-                  <p className="text-2xl font-bold text-cyan-400 mt-2">
+                  <p className="text-3xl font-bold text-secondary mt-2">
                     ${balance.balance.toFixed(2)}
                   </p>
-                  <p className="text-sm text-slate-300">
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
                     Available across all apps
                   </p>
                 </>
@@ -116,22 +116,22 @@ export default function UserPaymentCard() {
 
           {/* Balance Details */}
           {balance && (
-            <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-700/50">
+            <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-border">
               <div>
-                <div className="flex items-center text-slate-400 text-sm">
+                <div className="flex items-center text-zinc-500 dark:text-zinc-400 text-sm">
                   <TrendingUp className="h-3 w-3 mr-1" />
                   Total Credits
                 </div>
-                <div className="font-semibold text-emerald-600">
+                <div className="font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
                   +${balance.totalPaid.toFixed(2)}
                 </div>
               </div>
               <div>
-                <div className="flex items-center text-slate-400 text-sm">
+                <div className="flex items-center text-zinc-500 dark:text-zinc-400 text-sm">
                   <DollarSign className="h-3 w-3 mr-1" />
                   Total Spent
                 </div>
-                <div className="font-semibold text-amber-600">
+                <div className="font-semibold text-amber-600 dark:text-amber-400 mt-1">
                   {formatCurrency(balance.totalSpent)}
                 </div>
               </div>
@@ -142,7 +142,7 @@ export default function UserPaymentCard() {
         {/* Credit Packages */}
         <div className="lg:w-2/3">
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-white">
+            <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
               Purchase credits:
             </h4>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -150,29 +150,31 @@ export default function UserPaymentCard() {
                 <button
                   key={pkg.amount}
                   onClick={() => setSelectedPackage(pkg)}
-                  className={`relative p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                  className={`relative p-4 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-sm ${
                     selectedPackage.amount === pkg.amount
-                      ? 'border-cyan-400 bg-cyan-400/10 shadow-md shadow-cyan-400/20'
-                      : 'border-slate-600/50 bg-slate-700/30 hover:border-cyan-400/50 hover:bg-cyan-400/5'
+                      ? 'border-secondary bg-secondary/5 shadow-sm ring-1 ring-secondary/20'
+                      : 'border-border bg-zinc-50 dark:bg-zinc-900/50 hover:border-secondary/50 hover:bg-secondary/5'
                   }`}
                 >
                   {pkg.popular && (
                     <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-medium px-2 py-0.5 rounded-full shadow-lg">
+                      <span className="bg-secondary text-white text-xs font-medium px-2 py-0.5 rounded-full shadow-sm">
                         Popular
                       </span>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-lg font-bold text-white">
+                      <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                         ${pkg.amount}
                       </div>
-                      <div className="text-xs text-slate-300">credits</div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                        credits
+                      </div>
                     </div>
-                    <DollarSign className="h-4 w-4 text-slate-400" />
+                    <DollarSign className="h-4 w-4 text-zinc-400" />
                   </div>
-                  <div className="text-sm text-slate-300 mt-1">
+                  <div className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
                     Pay ${pkg.price}
                   </div>
                 </button>
@@ -185,7 +187,7 @@ export default function UserPaymentCard() {
             onClick={() => handlePurchaseCredits(selectedPackage.amount)}
             disabled={loading}
             variant="secondary"
-            className="mt-4 w-full flex items-center justify-center"
+            className="mt-6 w-full flex items-center justify-center"
           >
             {loading ? (
               <>
@@ -199,11 +201,6 @@ export default function UserPaymentCard() {
               </>
             )}
           </GlassButton>
-
-          <div className="mt-2 text-xs text-slate-400 text-center">
-            Credits will be added to your account and can be used across all
-            your apps
-          </div>
         </div>
       </div>
     </div>
