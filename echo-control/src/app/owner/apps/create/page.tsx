@@ -462,7 +462,7 @@ export { echo, makeRequest };`;
       }
       return nextStep;
     },
-    [shouldSkipStep]
+    [shouldSkipStep, steps.length]
   );
 
   const handleNext = useCallback(async () => {
@@ -548,6 +548,7 @@ export { echo, makeRequest };`;
     setIsTransitioning,
     setCurrentStep,
     setCurrentValue,
+    steps,
   ]);
 
   const getPreviousStep = useCallback(
@@ -606,6 +607,7 @@ export { echo, makeRequest };`;
     router,
     getPreviousStep,
     formData,
+    steps,
     setIsTransitioning,
     setCurrentStep,
     setCurrentValue,

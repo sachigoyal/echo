@@ -1,0 +1,264 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    paths:
+      - 'echo-control/**'
+      - 'echo-server/**'
+      - 'echo-react-sdk/**'
+      - 'echo-typescript-sdk/**'
+      - 'integration-tests/**'
+      - '.github/workflows/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+  push:
+    branches: [main]
+    paths:
+      - 'echo-control/**'
+      - 'echo-server/**'
+      - 'echo-react-sdk/**'
+      - 'echo-typescript-sdk/**'
+      - 'integration-tests/**'
+      - '.github/workflows/**'
+
+jobs:
+  integration-tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: echo_integration_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create integration test environment file
+        working-directory: integration-tests
+        run: |
+          cat > .env.test << EOF
+          # Database Configuration
+          DATABASE_URL=postgresql://test:test@localhost:5433/echo_integration_test
+          
+          # Service URLs
+          ECHO_CONTROL_URL=http://localhost:3001
+          ECHO_DATA_SERVER_URL=http://localhost:3069
+          
+          # Authentication Secrets
+          JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}
+          JWT_ISSUER=http://localhost:3001
+          JWT_AUDIENCE=echo-proxy
+          
+          # Clerk Configuration
+          CLERK_PUBLISHABLE_KEY=${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
+          
+          # Integration Test JWTs
+          INTEGRATION_TEST_JWT=${{ secrets.INTEGRATION_TEST_JWT }}
+          INTEGRATION_TEST_JWT_USER_2=${{ secrets.INTEGRATION_TEST_JWT_USER_2 }}
+          
+          # API Keys for Echo Server
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          
+          # OAuth Configuration
+          OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=5
+          OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS=5
+          
+          # Environment Flags
+          CI=true
+          NODE_ENV=test
+          INTEGRATION_TEST_MODE=true
+          
+          # Optional Stripe Configuration
+          STRIPE_SECRET_KEY=${{ secrets.TEST_STRIPE_SECRET_KEY }}
+          STRIPE_PUBLISHABLE_KEY=${{ secrets.TEST_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.TEST_STRIPE_WEBHOOK_SECRET }}
+          
+          # Test Configuration
+          HEADLESS=true
+          LOG_LEVEL=error
+          EOF
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          timeout 30 bash -c 'until pg_isready -h localhost -p 5433 -U test -d echo_integration_test; do 
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done'
+
+      - name: Setup Prisma schema
+        working-directory: echo-control
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
+        run: pnpm prisma:push
+
+      - name: Setup integration test environment
+        working-directory: integration-tests
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
+          ECHO_CONTROL_URL: http://localhost:3001
+          ECHO_DATA_SERVER_URL: http://localhost:3069
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          JWT_ISSUER: http://localhost:3001
+          JWT_AUDIENCE: echo-proxy
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          INTEGRATION_TEST_JWT: ${{ secrets.INTEGRATION_TEST_JWT }}
+          INTEGRATION_TEST_JWT_USER_2: ${{ secrets.INTEGRATION_TEST_JWT_USER_2 }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS: 2592000
+          OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS: 86400
+          CI: true
+          NODE_ENV: test
+          INTEGRATION_TEST_MODE: true
+          STRIPE_SECRET_KEY: ${{ secrets.TEST_STRIPE_SECRET_KEY }}
+          STRIPE_PUBLISHABLE_KEY: ${{ secrets.TEST_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.TEST_STRIPE_WEBHOOK_SECRET }}
+          HEADLESS: true
+          LOG_LEVEL: error
+        run: |
+          chmod +x scripts/setup-integration-env.sh
+          pnpm run env:setup
+
+      - name: Run Echo Data Server Tests
+        working-directory: integration-tests
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: pnpm test:echo-data-server
+
+      - name: Run OAuth Protocol Tests
+        working-directory: integration-tests
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+        run: pnpm test:oauth-protocol
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            integration-tests/test-results/
+            integration-tests/coverage/
+          retention-days: 30
+
+      - name: Cleanup integration environment
+        if: always()
+        working-directory: integration-tests
+        run: |
+          chmod +x scripts/teardown-integration-env.sh
+          ./scripts/teardown-integration-env.sh
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: integration-tests
+    if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'run-e2e')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        working-directory: integration-tests
+        run: npx playwright install --with-deps
+
+      - name: Create environment file for E2E tests
+        working-directory: integration-tests
+        run: |
+          cat > .env.test << EOF
+          DATABASE_URL=postgresql://test:test@postgres-test:5432/echo_integration_test
+          ECHO_CONTROL_URL=http://echo-control-test:3000
+          ECHO_DATA_SERVER_URL=http://echo-data-server-test:3069
+          JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}
+          CLERK_PUBLISHABLE_KEY=${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
+          INTEGRATION_TEST_JWT=${{ secrets.INTEGRATION_TEST_JWT }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=2592000
+          CI=true
+          NODE_ENV=test
+          HEADLESS=true
+          EOF
+
+      - name: Create Docker environment overrides
+        working-directory: integration-tests/docker
+        run: |
+          cat > .env.docker << EOF
+          DATABASE_URL=postgresql://test:test@postgres-test:5432/echo_integration_test
+          ECHO_CONTROL_URL=http://echo-control-test:3000
+          ECHO_DATA_SERVER_URL=http://echo-data-server-test:3069
+          EOF
+
+      - name: Start Docker services for E2E tests
+        working-directory: integration-tests
+        run: |
+          docker-compose -f docker/docker-compose.yml up -d
+          echo "Waiting for services to be healthy..."
+          timeout 300 bash -c 'until docker-compose -f docker/docker-compose.yml ps | grep -E "(healthy|Up).*echo-control-test" && docker-compose -f docker/docker-compose.yml ps | grep -E "(healthy|Up).*echo-data-server-test"; do 
+            echo "Still waiting for services..."
+            sleep 10
+          done'
+
+      - name: Run E2E tests
+        working-directory: integration-tests
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: integration-tests/playwright-report/
+          retention-days: 30
+
+      - name: Cleanup Docker services
+        if: always()
+        working-directory: integration-tests
+        run: docker-compose -f docker/docker-compose.yml down -v 
