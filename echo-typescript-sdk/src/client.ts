@@ -9,7 +9,7 @@ import {
   SupportedModel,
   SupportedModelsResponse,
   User,
-} from './types';
+} from './types.js';
 
 export class EchoClient {
   private http: AxiosInstance;
