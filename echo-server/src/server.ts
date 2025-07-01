@@ -7,6 +7,10 @@ import { HttpError, PaymentRequiredError } from './errors/http';
 import { verifyUserHeaderCheck } from './auth/headers';
 import { getProvider } from './providers/ProviderFactory';
 import { isValidModel } from './services/AccountingService';
+import {
+  extractIsStream,
+  extractModelName,
+} from './services/RequestDataService';
 
 dotenv.config();
 
@@ -61,18 +65,25 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     // assumption that "stream" will always be passed in the body under this key
     // This currently works for everything implemented (OpenAI format + Anthropic native format)
 
-    if (!isValidModel(req.body.model)) {
+    const model = extractModelName(req);
+
+    if (!model || !isValidModel(model)) {
+      console.error('Invalid model: ', model);
       return res.status(422).json({
-        error: `Invalid model: ${req.body.model} Echo does not yet support this model.`,
+        error: `Invalid model: ${model} Echo does not yet support this model.`,
       });
     }
 
-    const provider = getProvider(
-      req.body.model,
-      echoControlService,
-      req.body.stream,
-      req.path
-    );
+    const isStream = extractIsStream(req);
+
+    const provider = getProvider(model, echoControlService, isStream, req.path);
+
+    if (!provider.supportsStream() && isStream) {
+      return res.status(422).json({
+        error: `Model ${model} does not support streaming.`,
+      });
+    }
+
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
     const balance = await echoControlService.getBalance();
 
@@ -110,12 +121,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    // Check if this is a streaming response
-    const isStreaming = response.headers
-      .get('content-type')
-      ?.includes('text/event-stream');
-
-    if (isStreaming) {
+    if (isStream) {
       // Handle streaming response
       const bodyStream = response.body as ReadableStream<Uint8Array>;
       if (!bodyStream) {

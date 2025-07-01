@@ -6,6 +6,8 @@ export abstract class BaseProvider {
   protected readonly OPENAI_BASE_URL = 'https://api.openai.com/v1';
   protected readonly ANTHROPIC_BASE_URL = 'https://api.anthropic.com';
   protected readonly GEMINI_BASE_URL =
+    'https://generativelanguage.googleapis.com/';
+  protected readonly GEMINI_GPT_BASE_URL =
     'https://generativelanguage.googleapis.com/v1beta/openai';
 
   private readonly echoControlService: EchoControlService;
@@ -44,6 +46,9 @@ export abstract class BaseProvider {
   }
   getIsStream(): boolean {
     return this.isStream;
+  }
+  supportsStream(): boolean {
+    return true;
   }
   getModel(): string {
     return this.model;

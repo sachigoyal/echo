@@ -27,16 +27,17 @@ export const verifyUserHeaderCheck = async (
     'transfer-encoding': _transferEncoding,
     connection: _connection,
     'x-api-key': xApiKey,
+    'x-goog-api-key': xGoogleApiKey,
     ...restHeaders
   } = headers;
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
-  if (!(authorization || xApiKey)) {
+  if (!(authorization || xApiKey || xGoogleApiKey)) {
     console.error('Missing authentication headers: ', headers);
     throw new UnauthorizedError('Please include auth headers.');
   }
 
-  const apiKey = authorization ?? xApiKey;
+  const apiKey = authorization ?? xApiKey ?? xGoogleApiKey;
 
   const cleanApiKey = apiKey?.replace('Bearer ', '') ?? '';
 
