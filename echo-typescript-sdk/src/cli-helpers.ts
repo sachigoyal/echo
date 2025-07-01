@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import open from 'open';
-import { EchoClient } from './client';
-import type { EchoApp, Balance, CreatePaymentLinkResponse } from './types';
+import { EchoClient } from './client.js';
+import type { EchoApp, Balance, CreatePaymentLinkResponse } from './types.js';
 
 // Re-export the Balance type from types.ts as EchoBalance for backwards compatibility
 export type EchoBalance = Balance;
