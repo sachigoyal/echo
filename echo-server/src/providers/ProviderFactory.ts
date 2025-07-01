@@ -5,8 +5,10 @@ import modelPricesData from '../../model_prices.json';
 import { AnthropicGPTProvider } from './AnthropicGPTProvider';
 import { AnthropicNativeProvider } from './AnthropicNativeProvider';
 import type { BaseProvider } from './BaseProvider';
+import { GeminiProvider } from './GeminiProvider';
 import { GPTProvider } from './GPTProvider';
 import { ProviderType } from './ProviderType';
+import { GeminiGPTProvider } from './GeminiGPTProvider';
 
 /**
  * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
@@ -28,6 +30,9 @@ const createModelToProviderMapping = (): Record<string, ProviderType> => {
           break;
         case 'anthropic':
           mapping[modelName] = ProviderType.ANTHROPIC_GPT;
+          break;
+        case 'vertex_ai-language-models':
+          mapping[modelName] = ProviderType.GEMINI;
           break;
         // Add other providers as needed
         default:
@@ -69,6 +74,10 @@ export const getProvider = (
     type = ProviderType.ANTHROPIC_NATIVE;
   }
 
+  if (type === ProviderType.GEMINI && completionPath.includes('completions')) {
+    type = ProviderType.GEMINI_GPT;
+  }
+
   switch (type) {
     case ProviderType.GPT:
       return new GPTProvider(echoControlService, stream, model);
@@ -76,6 +85,10 @@ export const getProvider = (
       return new AnthropicGPTProvider(echoControlService, stream, model);
     case ProviderType.ANTHROPIC_NATIVE:
       return new AnthropicNativeProvider(echoControlService, stream, model);
+    case ProviderType.GEMINI:
+      return new GeminiProvider(echoControlService, stream, model);
+    case ProviderType.GEMINI_GPT:
+      return new GeminiGPTProvider(echoControlService, stream, model);
     default:
       throw new Error(`Unknown provider type: ${type}`);
   }
