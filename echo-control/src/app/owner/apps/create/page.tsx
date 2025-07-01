@@ -639,90 +639,85 @@ export { echo, makeRequest };`;
   }, [currentStepData, canProceed, handleNext, handleBack]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-3 sm:p-6">
-      {/* Terminal Background Effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent"></div>
+    <div className="min-h-screen bg-background">
+      {/* Background Pattern - Fixed to cover full screen */}
+      <div className="fixed inset-0 bg-[linear-gradient(90deg,transparent_24px,rgba(var(--border)/0.3)_25px,rgba(var(--border)/0.3)_26px,transparent_27px,transparent_74px,rgba(var(--border)/0.3)_75px,rgba(var(--border)/0.3)_76px,transparent_77px),linear-gradient(rgba(var(--border)/0.3)_24px,transparent_25px,transparent_26px,rgba(var(--border)/0.3)_27px,rgba(var(--border)/0.3)_74px,transparent_75px,transparent_76px,rgba(var(--border)/0.3)_77px)] bg-[length:100px_100px] pointer-events-none"></div>
 
-      {/* Animated Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_24px,rgba(255,255,255,0.02)_25px,rgba(255,255,255,0.02)_26px,transparent_27px,transparent_74px,rgba(255,255,255,0.02)_75px,rgba(255,255,255,0.02)_76px,transparent_77px),linear-gradient(rgba(255,255,255,0.02)_24px,transparent_25px,transparent_26px,rgba(255,255,255,0.02)_27px,rgba(255,255,255,0.02)_74px,transparent_75px,transparent_76px,rgba(255,255,255,0.02)_77px)] bg-[length:100px_100px]"></div>
-
-      <div className="relative w-full max-w-4xl mx-auto">
-        {/* Floating Content Container */}
-        <div className="bg-gradient-to-br from-gray-900/20 to-black/10 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-12 border border-white/5 shadow-2xl min-h-[500px] flex flex-col">
-          {/* Progress Bar */}
-          <div className="mb-6 sm:mb-8 lg:mb-12">
-            <div className="w-full bg-white/5 rounded-full h-0.5 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-500 ease-out"
-                style={{
-                  width: `${((currentStep + 1) / steps.length) * 100}%`,
-                }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6 lg:space-y-8">
-            {/* Safety check: only render if we have valid step data */}
-            {!currentStepData ? (
-              <div className="text-center">
-                <div className="text-red-400 font-mono text-sm mb-4">
-                  Invalid step configuration
-                </div>
-                <button
-                  onClick={() => router.push('/owner')}
-                  className="px-4 py-2 bg-gray-600/20 border border-gray-500/30 rounded-lg text-gray-300 hover:bg-gray-600/30 transition-colors font-mono text-sm"
-                >
-                  Return to Dashboard
-                </button>
-              </div>
-            ) : (
-              <>
-                {/* Prompt */}
+      <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-4xl">
+          {/* Main Content Container */}
+          <div className="bg-card/60 backdrop-blur-sm rounded-xl border border-border shadow-lg min-h-[500px] flex flex-col p-6 sm:p-8 lg:p-12">
+            {/* Progress Bar */}
+            <div className="mb-6 sm:mb-8 lg:mb-12">
+              <div className="w-full bg-muted/30 rounded-full h-1 overflow-hidden">
                 <div
-                  className={`transition-all duration-300 ${isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'}`}
-                >
-                  <div className="flex items-center space-x-2 mb-4 sm:mb-6">
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
-                    <span className="text-lg sm:text-xl font-mono text-gray-200">
-                      {currentStepData.dynamicPrompt
-                        ? currentStepData.dynamicPrompt(formData, searchParams)
-                        : currentStepData.prompt}
-                    </span>
-                  </div>
+                  className="h-full bg-secondary transition-all duration-500 ease-out"
+                  style={{
+                    width: `${((currentStep + 1) / steps.length) * 100}%`,
+                  }}
+                ></div>
+              </div>
+            </div>
 
-                  {/* Input Field */}
-                  <div
-                    className="relative mb-4 sm:mb-6 lg:mb-8"
-                    onKeyDown={handleKeyPress}
+            {/* Content */}
+            <div className="flex-1 flex flex-col justify-center space-y-4 sm:space-y-6 lg:space-y-8">
+              {/* Safety check: only render if we have valid step data */}
+              {!currentStepData ? (
+                <div className="text-center">
+                  <div className="text-destructive font-mono text-sm mb-4">
+                    Invalid step configuration
+                  </div>
+                  <button
+                    onClick={() => router.push('/owner')}
+                    className="px-4 py-2 bg-muted/50 border border-border rounded-lg text-muted-foreground hover:bg-muted/70 transition-colors"
                   >
-                    <div className="flex items-center space-x-2 sm:space-x-4">
-                      {currentStepData.type !== 'code' && (
-                        <span className="text-blue-400 font-mono text-base sm:text-lg">
-                          $
-                        </span>
-                      )}
-                      <div className="flex-1 relative">
+                    Return to Dashboard
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Prompt */}
+                  <div
+                    className={`transition-all duration-300 ${isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'}`}
+                  >
+                    <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+                      <ChevronRight className="h-5 w-5 text-secondary" />
+                      <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+                        {currentStepData.dynamicPrompt
+                          ? currentStepData.dynamicPrompt(
+                              formData,
+                              searchParams
+                            )
+                          : currentStepData.prompt}
+                      </h2>
+                    </div>
+
+                    {/* Input Field */}
+                    <div
+                      className="relative mb-6 sm:mb-8"
+                      onKeyDown={handleKeyPress}
+                    >
+                      <div className="space-y-6">
                         {currentStepData.type === 'verification' ? (
                           <div className="space-y-8">
                             {currentStepData.key === 'apiKeyTesting' ? (
                               /* API Key Success State */
-                              <div className="text-center space-y-4 sm:space-y-6">
-                                <div className="text-4xl sm:text-6xl">✅</div>
-                                <div className="space-y-2">
-                                  <h3 className="text-lg sm:text-2xl font-mono text-green-400">
+                              <div className="text-center space-y-6 py-8">
+                                <div className="text-6xl">✅</div>
+                                <div className="space-y-3">
+                                  <h3 className="text-2xl font-bold text-foreground">
                                     App Created Successfully!
                                   </h3>
-                                  <p className="text-gray-300 font-mono text-xs sm:text-sm">
+                                  <p className="text-muted-foreground">
                                     Your Echo app is ready for API key
                                     authentication.
                                   </p>
                                 </div>
-                                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 text-left">
-                                  <h4 className="text-md font-mono text-white mb-3">
+                                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-6 text-left max-w-lg mx-auto">
+                                  <h4 className="text-lg font-semibold text-foreground mb-4">
                                     Next Steps:
                                   </h4>
-                                  <div className="space-y-2 text-gray-300 text-xs sm:text-sm font-mono">
+                                  <div className="space-y-2 text-muted-foreground text-sm">
                                     <p>
                                       1. Users will need to create Echo API keys
                                       at echo.merit.systems
@@ -739,7 +734,7 @@ export { echo, makeRequest };`;
                                 </div>
                                 <button
                                   onClick={() => router.push('/owner')}
-                                  className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600/20 border border-green-500/30 rounded-lg text-green-300 hover:bg-green-600/30 transition-colors font-mono text-xs sm:text-sm"
+                                  className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
                                 >
                                   Go to Dashboard
                                 </button>
@@ -747,20 +742,20 @@ export { echo, makeRequest };`;
                             ) : !integrationVerified ? (
                               <>
                                 {/* JWT Testing Instructions */}
-                                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg sm:rounded-xl p-4 sm:p-6 backdrop-blur-sm">
-                                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
-                                    <h3 className="text-lg sm:text-xl font-mono text-white">
+                                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-6 backdrop-blur-sm">
+                                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 space-y-3 sm:space-y-0">
+                                    <h3 className="text-xl font-semibold text-foreground">
                                       🚀 Test Your Integration
                                     </h3>
                                     <button
                                       onClick={handleBack}
-                                      className="flex items-center space-x-2 px-3 py-1.5 bg-gray-600/20 border border-gray-500/30 rounded-lg text-gray-300 hover:bg-gray-600/30 transition-colors text-xs sm:text-sm font-mono"
+                                      className="flex items-center space-x-2 px-3 py-2 bg-muted/50 border border-border rounded-lg text-muted-foreground hover:bg-muted/70 transition-colors text-sm"
                                     >
-                                      <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 rotate-180" />
+                                      <ChevronRight className="h-4 w-4 rotate-180" />
                                       <span>Back to Configuration</span>
                                     </button>
                                   </div>
-                                  <div className="space-y-2 sm:space-y-3 text-gray-300 text-xs sm:text-sm font-mono leading-relaxed">
+                                  <div className="space-y-3 text-muted-foreground text-sm leading-relaxed">
                                     <p>
                                       1. Copy the configuration code from the
                                       previous step
@@ -774,20 +769,20 @@ export { echo, makeRequest };`;
                                       app
                                     </p>
                                     <p>
-                                      4. Run your app and click &quot;Sign In
-                                      with Echo&quot;
+                                      4. Run your app and click "Sign In with
+                                      Echo"
                                     </p>
                                     <p>5. Complete the OAuth flow</p>
                                   </div>
                                 </div>
 
                                 {/* Polling Status */}
-                                <div className="bg-gray-900/50 border border-gray-700/50 rounded-lg sm:rounded-xl p-4 sm:p-6 backdrop-blur-sm">
-                                  <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                                <div className="bg-card border border-border rounded-lg p-6 backdrop-blur-sm">
+                                  <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                                     {isPolling ? (
                                       <>
-                                        <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-blue-400 mx-auto sm:mx-0"></div>
-                                        <span className="text-gray-300 font-mono text-xs sm:text-sm text-center sm:text-left">
+                                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent mx-auto sm:mx-0"></div>
+                                        <span className="text-muted-foreground text-center sm:text-left">
                                           Waiting for your test login...
                                         </span>
                                       </>
@@ -797,17 +792,17 @@ export { echo, makeRequest };`;
                                           onClick={() =>
                                             startPolling(createdAppId)
                                           }
-                                          className="px-3 sm:px-4 py-2 bg-blue-600/20 border border-blue-500/30 rounded-lg text-blue-300 hover:bg-blue-600/30 transition-colors text-xs sm:text-sm"
+                                          className="px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary hover:bg-secondary/20 transition-colors"
                                         >
                                           Start Monitoring
                                         </button>
-                                        <span className="text-gray-400 font-mono text-xs sm:text-sm text-center sm:text-left">
+                                        <span className="text-muted-foreground text-center sm:text-left">
                                           Click to start monitoring for test
                                           login
                                         </span>
                                       </>
                                     ) : (
-                                      <span className="text-red-400 font-mono text-xs sm:text-sm text-center">
+                                      <span className="text-destructive text-center">
                                         App not created yet
                                       </span>
                                     )}
@@ -816,20 +811,20 @@ export { echo, makeRequest };`;
                               </>
                             ) : (
                               /* Success State */
-                              <div className="text-center space-y-4 sm:space-y-6">
-                                <div className="text-4xl sm:text-6xl">🎉</div>
-                                <div className="space-y-2">
-                                  <h3 className="text-lg sm:text-2xl font-mono text-green-400">
+                              <div className="text-center space-y-6 py-8">
+                                <div className="text-6xl">🎉</div>
+                                <div className="space-y-3">
+                                  <h3 className="text-2xl font-bold text-foreground">
                                     Integration Successful!
                                   </h3>
-                                  <p className="text-gray-300 font-mono text-xs sm:text-sm">
+                                  <p className="text-muted-foreground">
                                     Your Echo app is now configured and working
                                     properly.
                                   </p>
                                 </div>
                                 <button
                                   onClick={() => router.push('/owner')}
-                                  className="px-4 sm:px-6 py-2 sm:py-3 bg-green-600/20 border border-green-500/30 rounded-lg text-green-300 hover:bg-green-600/30 transition-colors font-mono text-xs sm:text-sm"
+                                  className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
                                 >
                                   Go to Dashboard
                                 </button>
@@ -837,25 +832,25 @@ export { echo, makeRequest };`;
                             )}
                           </div>
                         ) : currentStepData.type === 'code' ? (
-                          <div className="space-y-4 sm:space-y-6 max-w-full">
+                          <div className="space-y-6 w-full">
                             {!createdAppId ? (
                               /* Loading State */
-                              <div className="bg-gray-900/50 border border-gray-700/50 rounded-lg sm:rounded-xl p-6 sm:p-8 backdrop-blur-sm text-center mx-auto max-w-md">
-                                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
-                                <h3 className="text-base sm:text-lg font-mono text-white mb-2">
+                              <div className="bg-card border border-border rounded-lg p-8 text-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-2 border-secondary border-t-transparent mx-auto mb-4"></div>
+                                <h3 className="text-lg font-semibold text-foreground mb-2">
                                   Creating your Echo app...
                                 </h3>
-                                <p className="text-gray-400 font-mono text-xs sm:text-sm">
+                                <p className="text-muted-foreground text-sm">
                                   Please wait while we generate your
                                   configuration
                                 </p>
                               </div>
                             ) : (
-                              <div className="flex flex-col items-center space-y-4 sm:space-y-6 w-full">
+                              <div className="space-y-6 w-full">
                                 {/* Configuration Code Block */}
-                                <div className="bg-gray-900/50 border border-gray-700/50 rounded-lg sm:rounded-xl p-4 sm:p-6 backdrop-blur-sm w-full max-w-4xl">
+                                <div className="bg-card border border-border rounded-lg p-6 w-full">
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                                    <h3 className="text-base sm:text-lg font-mono text-white text-center sm:text-left">
+                                    <h3 className="text-lg font-semibold text-foreground">
                                       {formData.authMethod === 'jwt'
                                         ? 'React Configuration'
                                         : 'TypeScript Configuration'}
@@ -865,27 +860,23 @@ export { echo, makeRequest };`;
                                         const code = generateConfigCode();
                                         navigator.clipboard.writeText(code);
                                       }}
-                                      className="flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600/20 border border-blue-500/30 rounded-lg text-blue-300 hover:bg-blue-600/30 transition-colors text-xs sm:text-sm mx-auto sm:mx-0"
+                                      className="flex items-center space-x-2 px-3 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary hover:bg-secondary/20 transition-colors text-sm"
                                     >
-                                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                                      <Copy className="h-4 w-4" />
                                       <span>Copy</span>
                                     </button>
                                   </div>
-                                  <div className="w-full">
-                                    <div className="bg-black/20 rounded p-3 sm:p-4 overflow-hidden">
-                                      <pre className="text-xs sm:text-sm text-gray-300 font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap break-words w-full">
-                                        <code className="block w-full">
-                                          {generateConfigCode()}
-                                        </code>
-                                      </pre>
-                                    </div>
+                                  <div className="bg-muted/30 rounded-lg p-4 overflow-x-auto">
+                                    <pre className="text-sm text-foreground font-mono whitespace-pre-wrap break-words">
+                                      <code>{generateConfigCode()}</code>
+                                    </pre>
                                   </div>
                                 </div>
 
                                 {/* Installation Instructions */}
-                                <div className="bg-gray-900/50 border border-gray-700/50 rounded-lg sm:rounded-xl p-4 sm:p-6 backdrop-blur-sm w-full max-w-4xl">
+                                <div className="bg-card border border-border rounded-lg p-6 w-full">
                                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                                    <h3 className="text-base sm:text-lg font-mono text-white text-center sm:text-left">
+                                    <h3 className="text-lg font-semibold text-foreground">
                                       Installation
                                     </h3>
                                     <button
@@ -898,22 +889,18 @@ export { echo, makeRequest };`;
                                           installCmd
                                         );
                                       }}
-                                      className="flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600/20 border border-blue-500/30 rounded-lg text-blue-300 hover:bg-blue-600/30 transition-colors text-xs sm:text-sm mx-auto sm:mx-0"
+                                      className="flex items-center space-x-2 px-3 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary hover:bg-secondary/20 transition-colors text-sm"
                                     >
-                                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                                      <Copy className="h-4 w-4" />
                                       <span>Copy</span>
                                     </button>
                                   </div>
-                                  <div className="w-full">
-                                    <div className="bg-black/20 rounded p-3 sm:p-4 overflow-hidden">
-                                      <pre className="text-xs sm:text-sm text-gray-300 font-mono whitespace-pre-wrap break-words w-full">
-                                        <code className="block w-full">
-                                          {formData.authMethod === 'jwt'
-                                            ? 'npm install @zdql/echo-react-sdk'
-                                            : 'npm install @zdql/echo-typescript-sdk'}
-                                        </code>
-                                      </pre>
-                                    </div>
+                                  <div className="bg-muted/30 rounded-lg p-4">
+                                    <code className="text-sm text-foreground font-mono">
+                                      {formData.authMethod === 'jwt'
+                                        ? 'npm install @zdql/echo-react-sdk'
+                                        : 'npm install @zdql/echo-typescript-sdk'}
+                                    </code>
                                   </div>
                                 </div>
                               </div>
@@ -931,16 +918,16 @@ export { echo, makeRequest };`;
                               <button
                                 key={option.value}
                                 onClick={() => setCurrentValue(option.value)}
-                                className={`w-full p-4 rounded-lg border text-left transition-all duration-200 ${
+                                className={`w-full p-6 rounded-lg border text-left transition-all duration-200 ${
                                   currentValue === option.value
-                                    ? 'border-blue-500/50 bg-blue-900/20 text-blue-300'
-                                    : 'border-gray-600/30 bg-gray-800/20 text-gray-300 hover:border-gray-500/50 hover:bg-gray-800/30'
+                                    ? 'border-secondary bg-secondary/10 text-secondary'
+                                    : 'border-border bg-card hover:border-secondary/50 hover:bg-secondary/5 text-foreground'
                                 }`}
                               >
-                                <div className="font-mono text-lg mb-2">
+                                <div className="font-semibold text-lg mb-2">
                                   {option.label}
                                 </div>
-                                <div className="text-sm text-gray-400">
+                                <div className="text-sm text-muted-foreground">
                                   {option.value === 'jwt'
                                     ? 'Users sign in through OAuth flow with automatic token management. Best for web apps that need user sessions.'
                                     : 'Users authenticate with API keys they manage themselves. Best for server applications, CLI tools, or when you need direct API access.'}
@@ -949,182 +936,161 @@ export { echo, makeRequest };`;
                             ))}
                           </div>
                         ) : (
-                          <input
-                            ref={focusCallback}
-                            type="text"
-                            value={currentValue}
-                            onChange={e => setCurrentValue(e.target.value)}
-                            onKeyDown={handleKeyPress}
-                            placeholder={currentStepData.placeholder}
-                            className="w-full bg-transparent border-none outline-none text-lg sm:text-xl font-mono text-white placeholder-gray-500 pb-3"
-                            style={{
-                              borderBottom: '1px solid rgba(75, 85, 99, 0.3)',
-                              transition: 'border-color 0.3s ease',
-                            }}
-                            onFocus={e => {
-                              e.target.style.borderBottom =
-                                '1px solid rgba(59, 130, 246, 0.6)';
-                            }}
-                            onBlur={e => {
-                              e.target.style.borderBottom =
-                                '1px solid rgba(75, 85, 99, 0.3)';
-                            }}
-                          />
+                          <div className="relative">
+                            <input
+                              ref={focusCallback}
+                              type="text"
+                              value={currentValue}
+                              onChange={e => setCurrentValue(e.target.value)}
+                              onKeyDown={handleKeyPress}
+                              placeholder={currentStepData.placeholder}
+                              className="w-full bg-input border border-border rounded-lg px-4 py-3 text-lg text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-colors"
+                            />
+                          </div>
                         )}
+                      </div>
+                    </div>
 
-                        {/* Animated cursor - only show for input fields */}
-                        {currentStepData.type !== 'code' &&
-                          currentStepData.type !== 'github-search' &&
-                          currentStepData.type !== 'select' &&
-                          currentStepData.type !== 'verification' && (
-                            <div className="absolute right-0 bottom-3 w-0.5 h-6 bg-blue-400 animate-pulse"></div>
+                    {/* Help Text */}
+                    {(currentStepData.helpText ||
+                      currentStepData.dynamicHelpText) && (
+                      <div className="mb-6 text-sm text-muted-foreground">
+                        {currentStepData.dynamicHelpText
+                          ? currentStepData.dynamicHelpText(
+                              formData,
+                              searchParams
+                            )
+                          : currentStepData.helpText}
+                      </div>
+                    )}
+
+                    {/* Validation Errors */}
+                    {currentStepData.key === 'callbackUrl' &&
+                      currentValue.trim() &&
+                      !isValidUrl(currentValue.trim()) && (
+                        <div className="mb-4 text-sm text-destructive">
+                          Please enter a valid URL (must start with http:// or
+                          https://)
+                        </div>
+                      )}
+
+                    {currentStepData.type === 'github-search' &&
+                      currentValue.trim() &&
+                      !githubVerified && (
+                        <div className="mb-4 text-sm text-destructive">
+                          Please verify the GitHub user or repository before
+                          proceeding
+                        </div>
+                      )}
+
+                    {/* Controls */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+                        <div className="flex items-center justify-center sm:justify-start space-x-2 text-sm text-muted-foreground">
+                          <span>Press</span>
+                          <kbd
+                            className="px-3 py-1.5 text-xs bg-muted/50 rounded border border-border text-foreground cursor-pointer hover:bg-muted/70 transition-colors"
+                            onClick={() =>
+                              canProceed && currentStepData && handleNext()
+                            }
+                          >
+                            Enter
+                          </kbd>
+                          <span>to continue</span>
+                        </div>
+
+                        <div className="flex items-center justify-center sm:justify-start space-x-2 text-sm text-muted-foreground">
+                          <span>Press</span>
+                          <kbd
+                            className="px-3 py-1.5 text-xs bg-muted/50 rounded border border-border text-foreground cursor-pointer hover:bg-muted/70 transition-colors"
+                            onClick={handleBack}
+                          >
+                            Esc
+                          </kbd>
+                          <span>
+                            to {currentStep === 0 ? 'cancel' : 'go back'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {canProceed && (
+                        <button
+                          onClick={handleNext}
+                          disabled={isSubmitting}
+                          className="flex items-center justify-center space-x-2 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary-foreground border-t-transparent"></div>
+                              <span>Creating...</span>
+                            </>
+                          ) : isLastStep ? (
+                            <>
+                              <Check className="h-4 w-4" />
+                              <span>Done</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Next</span>
+                              <ChevronRight className="h-4 w-4" />
+                            </>
                           )}
-                      </div>
+                        </button>
+                      )}
                     </div>
                   </div>
-
-                  {/* Help Text */}
-                  {(currentStepData.helpText ||
-                    currentStepData.dynamicHelpText) && (
-                    <div className="mt-3 sm:mt-4 mb-4 sm:mb-6 text-xs sm:text-sm text-gray-400 font-mono">
-                      {currentStepData.dynamicHelpText
-                        ? currentStepData.dynamicHelpText(
-                            formData,
-                            searchParams
-                          )
-                        : currentStepData.helpText}
-                    </div>
-                  )}
-
-                  {/* URL Validation Error */}
-                  {currentStepData.key === 'callbackUrl' &&
-                    currentValue.trim() &&
-                    !isValidUrl(currentValue.trim()) && (
-                      <div className="mt-2 mb-3 sm:mb-4 text-xs sm:text-sm text-red-400 font-mono">
-                        Please enter a valid URL (must start with http:// or
-                        https://)
-                      </div>
-                    )}
-
-                  {/* GitHub Verification Error */}
-                  {currentStepData.type === 'github-search' &&
-                    currentValue.trim() &&
-                    !githubVerified && (
-                      <div className="mt-2 mb-3 sm:mb-4 text-xs sm:text-sm text-red-400 font-mono">
-                        Please verify the GitHub user or repository before
-                        proceeding
-                      </div>
-                    )}
-
-                  {/* Controls */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 sm:mt-8 space-y-4 sm:space-y-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
-                      <div className="flex items-center justify-center sm:justify-start space-x-2 text-xs sm:text-sm text-gray-400 font-mono">
-                        <span>Press</span>
-                        <kbd
-                          className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs bg-gray-700/40 rounded-md border border-gray-600/40 text-gray-300 cursor-pointer hover:bg-gray-600/40 hover:text-white transition-colors"
-                          onClick={() =>
-                            canProceed && currentStepData && handleNext()
-                          }
-                        >
-                          Enter
-                        </kbd>
-                        <span>to continue</span>
-                      </div>
-
-                      <div className="flex items-center justify-center sm:justify-start space-x-2 text-xs sm:text-sm text-gray-500 font-mono">
-                        <span>Press</span>
-                        <kbd
-                          className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs bg-gray-700/40 rounded-md border border-gray-600/40 text-gray-400 cursor-pointer hover:bg-gray-600/40 hover:text-gray-300 transition-colors"
-                          onClick={handleBack}
-                        >
-                          Esc
-                        </kbd>
-                        <span>
-                          to {currentStep === 0 ? 'cancel' : 'go back'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {canProceed && (
-                      <button
-                        onClick={handleNext}
-                        disabled={isSubmitting}
-                        className="flex items-center justify-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-mono text-xs sm:text-sm w-full sm:w-auto"
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
-                            <span>Creating...</span>
-                          </>
-                        ) : isLastStep ? (
-                          <>
-                            <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span>Done</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Next</span>
-                            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-red-900/50 to-red-800/30 border border-red-500/50 rounded-lg sm:rounded-xl">
-              <div className="text-xs sm:text-sm text-red-300 font-mono">
-                {error}
-              </div>
+                </>
+              )}
             </div>
-          )}
 
-          {/* Step History */}
-          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-700/50">
-            <div className="space-y-2">
-              {steps.slice(0, currentStep).map(step => {
-                const value = formData[step.key as keyof FormData];
+            {/* Error Display */}
+            {error && (
+              <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <div className="text-sm text-destructive">{error}</div>
+              </div>
+            )}
 
-                // Convert non-string values to displayable strings
-                let displayValue: string;
-                if (typeof value === 'string') {
-                  displayValue = value || '<skipped>';
-                } else if (typeof value === 'boolean') {
-                  displayValue = value ? 'Yes' : 'No';
-                } else if (value && typeof value === 'object') {
-                  // For GitHub metadata, show the name/login
-                  if ('login' in value) {
-                    displayValue = `@${value.login}`;
-                  } else if ('full_name' in value) {
-                    displayValue = value.full_name;
+            {/* Step History */}
+            <div className="mt-8 pt-6 border-t border-border">
+              <div className="space-y-2">
+                {steps.slice(0, currentStep).map(step => {
+                  const value = formData[step.key as keyof FormData];
+
+                  // Convert non-string values to displayable strings
+                  let displayValue: string;
+                  if (typeof value === 'string') {
+                    displayValue = value || '<skipped>';
+                  } else if (typeof value === 'boolean') {
+                    displayValue = value ? 'Yes' : 'No';
+                  } else if (value && typeof value === 'object') {
+                    // For GitHub metadata, show the name/login
+                    if ('login' in value) {
+                      displayValue = `@${value.login}`;
+                    } else if ('full_name' in value) {
+                      displayValue = value.full_name;
+                    } else {
+                      displayValue = '<configured>';
+                    }
                   } else {
-                    displayValue = '<configured>';
+                    displayValue = '<skipped>';
                   }
-                } else {
-                  displayValue = '<skipped>';
-                }
 
-                return (
-                  <div
-                    key={step.key}
-                    className="flex items-start sm:items-center space-x-3 text-xs sm:text-sm font-mono"
-                  >
-                    <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-400 mt-0.5 sm:mt-0 flex-shrink-0" />
-                    <span className="text-gray-400 flex-shrink-0">
-                      {step.prompt}
-                    </span>
-                    <span className="text-blue-300 break-all">
-                      {displayValue}
-                    </span>
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={step.key}
+                      className="flex items-start sm:items-center space-x-3 text-sm"
+                    >
+                      <Check className="h-4 w-4 text-secondary mt-0.5 sm:mt-0 flex-shrink-0" />
+                      <span className="text-muted-foreground flex-shrink-0">
+                        {step.prompt}
+                      </span>
+                      <span className="text-secondary break-all">
+                        {displayValue}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -1137,8 +1103,13 @@ export default function CreateApplicationPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-          <div className="text-white font-mono">Loading...</div>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="bg-card/60 backdrop-blur-sm rounded-xl border border-border shadow-lg p-8">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent"></div>
+              <span className="text-foreground">Loading...</span>
+            </div>
+          </div>
         </div>
       }
     >
