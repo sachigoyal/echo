@@ -769,8 +769,8 @@ export { echo, makeRequest };`;
                                       app
                                     </p>
                                     <p>
-                                      4. Run your app and click "Sign In with
-                                      Echo"
+                                      4. Run your app and click &quot;Sign In
+                                      with Echo&quot;
                                     </p>
                                     <p>5. Complete the OAuth flow</p>
                                   </div>
