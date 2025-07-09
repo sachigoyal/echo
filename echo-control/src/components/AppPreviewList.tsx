@@ -97,7 +97,7 @@ export const AppPreviewList: React.FC<AppPreviewListProps> = ({
               <AppCard
                 app={app}
                 href={`/apps/${app.id}`}
-                activityData={[]}
+                activityData={app.activityData || []}
                 size="small"
                 showChart={false}
               />

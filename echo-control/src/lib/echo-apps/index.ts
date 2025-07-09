@@ -4,6 +4,10 @@ import { AppRole, MembershipStatus } from '../permissions/types';
 import { PermissionService } from '../permissions/service';
 import { Permission } from '../permissions/types';
 import { softDeleteEchoApp } from '../soft-delete';
+import {
+  getAppActivity,
+  transformActivityToChartData,
+} from './activity/activity';
 
 // Types for better type safety
 export interface AppCreateInput {
@@ -50,6 +54,7 @@ export interface AppWithDetails {
     name: string | null;
     profilePictureUrl?: string | null;
   };
+  activityData: number[];
 }
 
 export interface DetailedAppInfo {
@@ -103,6 +108,7 @@ export interface DetailedAppInfo {
     status: string;
     createdAt: Date;
   }>;
+  activityData: number[];
 }
 
 // Validation functions
@@ -229,11 +235,28 @@ export const listAppsWithDetails = async (
     ])
   );
 
+  // Get activity data for all apps in batch
+  const activityDataMap = new Map<string, number[]>();
+  await Promise.all(
+    appIds.map(async appId => {
+      try {
+        const activity = await getAppActivity(appId);
+        const activityData = transformActivityToChartData(activity);
+        activityDataMap.set(appId, activityData);
+      } catch (error) {
+        console.error(`Failed to fetch activity for app ${appId}:`, error);
+        // Fallback to empty array if activity fetch fails
+        activityDataMap.set(appId, []);
+      }
+    })
+  );
+
   // Transform the results
   return userMemberships.map(membership => {
     const app = membership.echoApp;
     const owner = app.appMemberships[0]?.user || null;
     const stats = statsMap.get(app.id) || { totalTokens: 0, totalCost: 0 };
+    const activityData = activityDataMap.get(app.id) || [];
 
     return {
       id: app.id,
@@ -254,6 +277,7 @@ export const listAppsWithDetails = async (
         llmTransactions: app._count.llmTransactions,
       },
       owner: owner,
+      activityData,
     };
   });
 };
@@ -404,6 +428,10 @@ export const getDetailedAppInfo = async (
     take: 10,
   });
 
+  // Get activity data for the last 7 days
+  const activity = await getAppActivity(appId);
+  const activityData = transformActivityToChartData(activity);
+
   // Calculate total spent for each API key
   const apiKeysWithSpending = await Promise.all(
     app.apiKeys.map(async apiKey => {
@@ -451,6 +479,7 @@ export const getDetailedAppInfo = async (
       ...transaction,
       cost: Number(transaction.cost),
     })),
+    activityData,
   };
 };
 

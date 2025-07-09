@@ -20,11 +20,6 @@ const transformActivityData = (data: number[]) => {
   }));
 };
 
-// Generate mock activity data for apps
-const generateMockActivityData = (): number[] => {
-  return Array.from({ length: 7 }, () => Math.floor(Math.random() * 100) + 20);
-};
-
 interface CarouselProps {
   apps: EchoApp[];
   autoPlay?: boolean;
@@ -99,7 +94,7 @@ export const Carousel: React.FC<CarouselProps> = ({
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {apps.map(app => {
-              const activityData = generateMockActivityData();
+              const activityData = app.activityData || [];
               const ownerName = app.owner.name || app.owner.email;
 
               return (

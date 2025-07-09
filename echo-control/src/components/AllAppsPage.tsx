@@ -97,7 +97,7 @@ export const AllAppsPage: React.FC<AllAppsPageProps> = ({
               href={`/apps/${app.id}`}
               size="medium"
               showChart={true}
-              activityData={[]}
+              activityData={app.activityData || []}
             />
           );
         })}

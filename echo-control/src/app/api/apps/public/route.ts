@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import {
+  getAppActivity,
+  transformActivityToChartData,
+} from '@/lib/echo-apps/activity/activity';
 
 // GET /api/apps/public - List all publicly available Echo apps
 export async function GET() {
@@ -54,20 +58,27 @@ export async function GET() {
       },
     });
 
-    // Get transaction stats for each app
+    // Get transaction stats and activity data for each app
     const appsWithStats = await Promise.all(
       publicApps.map(async app => {
-        const transactionStats = await db.llmTransaction.aggregate({
-          where: {
-            echoAppId: app.id,
-            isArchived: false,
-          },
-          _sum: {
-            totalTokens: true,
-            cost: true,
-          },
-        });
+        const [transactionStats, activity] = await Promise.all([
+          db.llmTransaction.aggregate({
+            where: {
+              echoAppId: app.id,
+              isArchived: false,
+            },
+            _sum: {
+              totalTokens: true,
+              cost: true,
+            },
+          }),
+          getAppActivity(app.id).catch(error => {
+            console.error(`Failed to fetch activity for app ${app.id}:`, error);
+            return [];
+          }),
+        ]);
 
+        const activityData = transformActivityToChartData(activity);
         const owner = app.appMemberships[0]?.user;
 
         return {
@@ -93,6 +104,7 @@ export async function GET() {
             email: owner.email,
             profilePictureUrl: owner.profilePictureUrl,
           },
+          activityData,
         };
       })
     );

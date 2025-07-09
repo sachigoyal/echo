@@ -26,6 +26,7 @@ export interface PublicEchoApp {
     name: string | null;
     profilePictureUrl: string | null;
   };
+  activityData: number[];
 }
 
 /**
@@ -43,3 +44,11 @@ export interface AuthenticatedEchoApp extends PublicEchoApp {
  * Useful for components that can handle both public and authenticated app data.
  */
 export type EchoApp = PublicEchoApp | AuthenticatedEchoApp;
+
+export interface AppActivity {
+  timestamp: Date;
+  totalCost: number;
+  totalTokens: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+}
