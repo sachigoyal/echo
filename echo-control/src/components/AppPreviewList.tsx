@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import AppCard from './AppCard';
 import { Skeleton } from './skeleton';
-import { EchoApp } from '@/lib/types/echo-app';
+import { EchoApp } from '@/lib/types/apps';
 
 interface AppPreviewListProps {
   title: string;

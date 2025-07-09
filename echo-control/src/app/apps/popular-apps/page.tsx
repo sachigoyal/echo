@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { EchoApp } from '@/lib/types/echo-app';
+import { PublicEchoApp } from '@/lib/types/apps';
 import AllAppsPage from '@/components/AllAppsPage';
 
 const PopularAppsFullPage: React.FC = () => {
-  const fetchPopularApps = async (): Promise<EchoApp[]> => {
+  const fetchPopularApps = async (): Promise<PublicEchoApp[]> => {
     const response = await fetch('/api/apps/public');
     const data = await response.json();
 
@@ -13,7 +13,9 @@ const PopularAppsFullPage: React.FC = () => {
       throw new Error('Network response was not ok.');
     }
 
-    return data.apps.filter((app: EchoApp) => app.isActive);
+    return (data.apps as PublicEchoApp[]).filter(
+      (app: PublicEchoApp) => app.isActive
+    );
   };
 
   return (

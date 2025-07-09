@@ -14,11 +14,11 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/theme-provider';
-import { EchoApp } from '@/lib/types/echo-app';
+import { PublicEchoApp } from '@/lib/types/apps';
 
 export default function HomePage() {
   const { resolvedTheme } = useTheme();
-  const [publicApps, setPublicApps] = useState<EchoApp[]>([]);
+  const [publicApps, setPublicApps] = useState<PublicEchoApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ export default function HomePage() {
 
         const data = await response.json();
 
-        setPublicApps(data.apps);
+        setPublicApps(data.apps as PublicEchoApp[]);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : 'Failed to load public apps'

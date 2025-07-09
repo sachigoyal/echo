@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { AppRole } from '@/lib/permissions/types';
-import { EchoApp } from '@/lib/types/echo-app';
+import { AuthenticatedEchoApp } from '@/lib/types/apps';
 import AppPreviewList from './AppPreviewList';
 
 export const MemberApps: React.FC = () => {
   const { isLoaded } = useUser();
-  const [memberApps, setMemberApps] = useState<EchoApp[]>([]);
+  const [memberApps, setMemberApps] = useState<AuthenticatedEchoApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,15 +28,13 @@ export const MemberApps: React.FC = () => {
         throw new Error(data.error || 'Failed to fetch echo apps');
       }
 
-      const allApps = data.apps || [];
+      const allApps = (data.apps || []) as AuthenticatedEchoApp[];
 
       // Filter for apps where user is a member but not the owner
       const membershipApps = allApps
-        .filter(
-          (app: EchoApp) => app.isActive && app.userRole !== AppRole.OWNER
-        )
+        .filter(app => app.isActive && app.userRole !== AppRole.OWNER)
         .sort(
-          (a: EchoApp, b: EchoApp) =>
+          (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 

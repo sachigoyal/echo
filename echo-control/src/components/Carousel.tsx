@@ -8,7 +8,7 @@ import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { ProfileAvatar } from './ui/profile-avatar';
 import { CommitChart } from './activity-chart/chart';
-import { EchoApp } from '@/lib/types/echo-app';
+import { EchoApp } from '@/lib/types/apps';
 
 const transformActivityData = (data: number[]) => {
   return data.map((count, index) => ({

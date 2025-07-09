@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { AppRole } from '@/lib/permissions/types';
-import { EchoApp } from '@/lib/types/echo-app';
+import { AuthenticatedEchoApp } from '@/lib/types/apps';
 import AllAppsPage from '@/components/AllAppsPage';
 
 const MyAppsFullPage: React.FC = () => {
-  const fetchMyApps = async (): Promise<EchoApp[]> => {
+  const fetchMyApps = async (): Promise<AuthenticatedEchoApp[]> => {
     const response = await fetch('/api/owner/apps');
     const data = await response.json();
 
@@ -14,8 +14,10 @@ const MyAppsFullPage: React.FC = () => {
       throw new Error(data.error || 'Failed to fetch echo apps');
     }
 
-    const allApps = data.apps || [];
-    return allApps.filter((app: EchoApp) => app.userRole === AppRole.OWNER);
+    const allApps = (data.apps || []) as AuthenticatedEchoApp[];
+    return allApps.filter(
+      (app: AuthenticatedEchoApp) => app.userRole === AppRole.OWNER
+    );
   };
 
   return (

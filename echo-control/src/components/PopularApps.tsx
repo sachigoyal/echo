@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { EchoApp } from '@/lib/types/echo-app';
+import { PublicEchoApp } from '@/lib/types/apps';
 import AppPreviewList from './AppPreviewList';
 
 export const PopularApps: React.FC = () => {
-  const [apps, setApps] = useState<EchoApp[]>([]);
+  const [apps, setApps] = useState<PublicEchoApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +19,9 @@ export const PopularApps: React.FC = () => {
           throw new Error('Network response was not ok.');
         }
         const data = await response.json();
-        const popularApps = data.apps.filter((app: EchoApp) => app.isActive);
+        const popularApps = (data.apps as PublicEchoApp[]).filter(
+          app => app.isActive
+        );
         setApps(popularApps);
       } catch (error) {
         console.error('Error fetching popular apps:', error);

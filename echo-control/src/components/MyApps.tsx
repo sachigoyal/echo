@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { AppRole } from '@/lib/permissions/types';
-import { EchoApp } from '@/lib/types/echo-app';
+import { AuthenticatedEchoApp } from '@/lib/types/apps';
 import AppPreviewList from './AppPreviewList';
 
 export const MyApps: React.FC = () => {
   const { user, isLoaded } = useUser();
-  const [userApps, setUserApps] = useState<EchoApp[]>([]);
+  const [userApps, setUserApps] = useState<AuthenticatedEchoApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,12 +30,10 @@ export const MyApps: React.FC = () => {
         throw new Error(data.error || 'Failed to fetch echo apps');
       }
 
-      const allApps = data.apps || [];
+      const allApps = (data.apps || []) as AuthenticatedEchoApp[];
 
       // Filter for owner apps
-      const owner = allApps.filter(
-        (app: EchoApp) => app.userRole === AppRole.OWNER
-      );
+      const owner = allApps.filter(app => app.userRole === AppRole.OWNER);
 
       setUserApps(owner);
     } catch (error) {

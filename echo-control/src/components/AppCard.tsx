@@ -7,7 +7,7 @@ import { Badge } from './ui/badge';
 import { ProfileAvatar } from './ui/profile-avatar';
 import { CommitChart } from './activity-chart/chart';
 import { useRouter } from 'next/navigation';
-import { EchoApp } from '@/lib/types/echo-app';
+import { EchoApp } from '@/lib/types/apps';
 
 const transformActivityData = (data: number[]) => {
   return data.map((count, index) => ({

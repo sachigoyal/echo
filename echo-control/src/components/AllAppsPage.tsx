@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { EchoApp } from '@/lib/types/echo-app';
+import { EchoApp } from '@/lib/types/apps';
 import AppCard from '@/components/AppCard';
 import { Skeleton } from '@/components/skeleton';
 import { useUser } from '@clerk/nextjs';
