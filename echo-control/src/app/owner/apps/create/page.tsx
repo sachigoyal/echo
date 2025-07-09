@@ -5,6 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronRight, Check, Copy } from 'lucide-react';
 import { GitHubSearchComponent } from '../../../../components/GitHubSearchComponent';
 import { GitHubUser, GitHubRepo } from '../../../../lib/github-api';
+import { DotPattern } from '../../../../components/ui/dot-background';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
 
 type AuthMethod = 'jwt' | 'apikey';
 
@@ -491,7 +500,11 @@ export { echo, makeRequest };`;
 
     if (isLastStep) {
       // On the final step (verification), complete the flow
-      router.push('/owner');
+      if (createdAppId) {
+        router.push(`/apps/${createdAppId}`);
+      } else {
+        router.push('/owner');
+      }
     } else {
       // Get the next step, skipping any that should be skipped
       const nextStep = getNextStep(currentStep);
@@ -640,8 +653,15 @@ export { echo, makeRequest };`;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Background Pattern - Fixed to cover full screen */}
-      <div className="fixed inset-0 bg-[linear-gradient(90deg,transparent_24px,rgba(var(--border)/0.3)_25px,rgba(var(--border)/0.3)_26px,transparent_27px,transparent_74px,rgba(var(--border)/0.3)_75px,rgba(var(--border)/0.3)_76px,transparent_77px),linear-gradient(rgba(var(--border)/0.3)_24px,transparent_25px,transparent_26px,rgba(var(--border)/0.3)_27px,rgba(var(--border)/0.3)_74px,transparent_75px,transparent_76px,rgba(var(--border)/0.3)_77px)] bg-[length:100px_100px] pointer-events-none"></div>
+      {/* Background Pattern */}
+      <DotPattern
+        className="fixed inset-0 text-border/30"
+        width={24}
+        height={24}
+        cx={1}
+        cy={1}
+        cr={1}
+      />
 
       <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-4xl">
@@ -713,101 +733,119 @@ export { echo, makeRequest };`;
                                     authentication.
                                   </p>
                                 </div>
-                                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-6 text-left max-w-lg mx-auto">
-                                  <h4 className="text-lg font-semibold text-foreground mb-4">
-                                    Next Steps:
-                                  </h4>
-                                  <div className="space-y-2 text-muted-foreground text-sm">
-                                    <p>
-                                      1. Users will need to create Echo API keys
-                                      at echo.merit.systems
-                                    </p>
-                                    <p>
-                                      2. They can then use those keys with your
-                                      app
-                                    </p>
-                                    <p>
-                                      3. Configure your app using the code from
-                                      the previous step
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => router.push('/owner')}
-                                  className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
+                                <Card className="bg-secondary/10 border-secondary/20 max-w-lg mx-auto">
+                                  <CardHeader>
+                                    <CardTitle className="text-lg">
+                                      Next Steps:
+                                    </CardTitle>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="space-y-2 text-muted-foreground text-sm">
+                                      <p>
+                                        1. Users will need to create Echo API
+                                        keys at echo.merit.systems
+                                      </p>
+                                      <p>
+                                        2. They can then use those keys with
+                                        your app
+                                      </p>
+                                      <p>
+                                        3. Configure your app using the code
+                                        from the previous step
+                                      </p>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                                <Button
+                                  onClick={() => {
+                                    if (createdAppId) {
+                                      router.push(`/apps/${createdAppId}`);
+                                    } else {
+                                      router.push('/owner');
+                                    }
+                                  }}
+                                  variant="secondary"
+                                  size="lg"
                                 >
                                   Go to Dashboard
-                                </button>
+                                </Button>
                               </div>
                             ) : !integrationVerified ? (
                               <>
                                 {/* JWT Testing Instructions */}
-                                <div className="bg-secondary/10 border border-secondary/20 rounded-lg p-6 backdrop-blur-sm">
-                                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 space-y-3 sm:space-y-0">
-                                    <h3 className="text-xl font-semibold text-foreground">
-                                      🚀 Test Your Integration
-                                    </h3>
-                                    <button
-                                      onClick={handleBack}
-                                      className="flex items-center space-x-2 px-3 py-2 bg-muted/50 border border-border rounded-lg text-muted-foreground hover:bg-muted/70 transition-colors text-sm"
-                                    >
-                                      <ChevronRight className="h-4 w-4 rotate-180" />
-                                      <span>Back to Configuration</span>
-                                    </button>
-                                  </div>
-                                  <div className="space-y-3 text-muted-foreground text-sm leading-relaxed">
-                                    <p>
-                                      1. Copy the configuration code from the
-                                      previous step
-                                    </p>
-                                    <p>
-                                      2. Set up your React app with the
-                                      EchoProvider
-                                    </p>
-                                    <p>
-                                      3. Add the EchoSignIn component to your
-                                      app
-                                    </p>
-                                    <p>
-                                      4. Run your app and click &quot;Sign In
-                                      with Echo&quot;
-                                    </p>
-                                    <p>5. Complete the OAuth flow</p>
-                                  </div>
-                                </div>
+                                <Card className="bg-secondary/10 border-secondary/20 backdrop-blur-sm">
+                                  <CardHeader>
+                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+                                      <CardTitle className="text-xl">
+                                        🚀 Test Your Integration
+                                      </CardTitle>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleBack}
+                                      >
+                                        <ChevronRight className="h-4 w-4 rotate-180" />
+                                        Back to Configuration
+                                      </Button>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="space-y-3 text-muted-foreground text-sm leading-relaxed">
+                                      <p>
+                                        1. Copy the configuration code from the
+                                        previous step
+                                      </p>
+                                      <p>
+                                        2. Set up your React app with the
+                                        EchoProvider
+                                      </p>
+                                      <p>
+                                        3. Add the EchoSignIn component to your
+                                        app
+                                      </p>
+                                      <p>
+                                        4. Run your app and click &quot;Sign In
+                                        with Echo&quot;
+                                      </p>
+                                      <p>5. Complete the OAuth flow</p>
+                                    </div>
+                                  </CardContent>
+                                </Card>
 
                                 {/* Polling Status */}
-                                <div className="bg-card border border-border rounded-lg p-6 backdrop-blur-sm">
-                                  <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                                    {isPolling ? (
-                                      <>
-                                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent mx-auto sm:mx-0"></div>
-                                        <span className="text-muted-foreground text-center sm:text-left">
-                                          Waiting for your test login...
+                                <Card className="backdrop-blur-sm">
+                                  <CardContent className="p-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                                      {isPolling ? (
+                                        <>
+                                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent mx-auto sm:mx-0"></div>
+                                          <span className="text-muted-foreground text-center sm:text-left">
+                                            Waiting for your test login...
+                                          </span>
+                                        </>
+                                      ) : createdAppId ? (
+                                        <>
+                                          <Button
+                                            variant="secondaryOutline"
+                                            onClick={() =>
+                                              startPolling(createdAppId)
+                                            }
+                                          >
+                                            Start Monitoring
+                                          </Button>
+                                          <span className="text-muted-foreground text-center sm:text-left">
+                                            Click to start monitoring for test
+                                            login
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className="text-destructive text-center">
+                                          App not created yet
                                         </span>
-                                      </>
-                                    ) : createdAppId ? (
-                                      <>
-                                        <button
-                                          onClick={() =>
-                                            startPolling(createdAppId)
-                                          }
-                                          className="px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary hover:bg-secondary/20 transition-colors"
-                                        >
-                                          Start Monitoring
-                                        </button>
-                                        <span className="text-muted-foreground text-center sm:text-left">
-                                          Click to start monitoring for test
-                                          login
-                                        </span>
-                                      </>
-                                    ) : (
-                                      <span className="text-destructive text-center">
-                                        App not created yet
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
                               </>
                             ) : (
                               /* Success State */
@@ -822,12 +860,19 @@ export { echo, makeRequest };`;
                                     properly.
                                   </p>
                                 </div>
-                                <button
-                                  onClick={() => router.push('/owner')}
-                                  className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors"
+                                <Button
+                                  onClick={() => {
+                                    if (createdAppId) {
+                                      router.push(`/apps/${createdAppId}`);
+                                    } else {
+                                      router.push('/owner');
+                                    }
+                                  }}
+                                  variant="secondary"
+                                  size="lg"
                                 >
                                   Go to Dashboard
-                                </button>
+                                </Button>
                               </div>
                             )}
                           </div>
@@ -835,74 +880,86 @@ export { echo, makeRequest };`;
                           <div className="space-y-6 w-full">
                             {!createdAppId ? (
                               /* Loading State */
-                              <div className="bg-card border border-border rounded-lg p-8 text-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-2 border-secondary border-t-transparent mx-auto mb-4"></div>
-                                <h3 className="text-lg font-semibold text-foreground mb-2">
-                                  Creating your Echo app...
-                                </h3>
-                                <p className="text-muted-foreground text-sm">
-                                  Please wait while we generate your
-                                  configuration
-                                </p>
-                              </div>
+                              <Card className="text-center">
+                                <CardContent className="p-8">
+                                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-secondary border-t-transparent mx-auto mb-4"></div>
+                                  <CardTitle className="text-lg mb-2">
+                                    Creating your Echo app...
+                                  </CardTitle>
+                                  <CardDescription>
+                                    Please wait while we generate your
+                                    configuration
+                                  </CardDescription>
+                                </CardContent>
+                              </Card>
                             ) : (
                               <div className="space-y-6 w-full">
                                 {/* Configuration Code Block */}
-                                <div className="bg-card border border-border rounded-lg p-6 w-full">
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                                    <h3 className="text-lg font-semibold text-foreground">
-                                      {formData.authMethod === 'jwt'
-                                        ? 'React Configuration'
-                                        : 'TypeScript Configuration'}
-                                    </h3>
-                                    <button
-                                      onClick={() => {
-                                        const code = generateConfigCode();
-                                        navigator.clipboard.writeText(code);
-                                      }}
-                                      className="flex items-center space-x-2 px-3 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary hover:bg-secondary/20 transition-colors text-sm"
-                                    >
-                                      <Copy className="h-4 w-4" />
-                                      <span>Copy</span>
-                                    </button>
-                                  </div>
-                                  <div className="bg-muted/30 rounded-lg p-4 overflow-x-auto">
-                                    <pre className="text-sm text-foreground font-mono whitespace-pre-wrap break-words">
-                                      <code>{generateConfigCode()}</code>
-                                    </pre>
-                                  </div>
-                                </div>
+                                <Card className="w-full">
+                                  <CardHeader>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                      <CardTitle className="text-lg">
+                                        {formData.authMethod === 'jwt'
+                                          ? 'React Configuration'
+                                          : 'TypeScript Configuration'}
+                                      </CardTitle>
+                                      <Button
+                                        variant="secondaryOutline"
+                                        size="sm"
+                                        onClick={() => {
+                                          const code = generateConfigCode();
+                                          navigator.clipboard.writeText(code);
+                                        }}
+                                      >
+                                        <Copy className="h-4 w-4" />
+                                        Copy
+                                      </Button>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="bg-muted/30 rounded-lg p-4 overflow-x-auto">
+                                      <pre className="text-sm text-foreground font-mono whitespace-pre-wrap break-words">
+                                        <code>{generateConfigCode()}</code>
+                                      </pre>
+                                    </div>
+                                  </CardContent>
+                                </Card>
 
                                 {/* Installation Instructions */}
-                                <div className="bg-card border border-border rounded-lg p-6 w-full">
-                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                                    <h3 className="text-lg font-semibold text-foreground">
-                                      Installation
-                                    </h3>
-                                    <button
-                                      onClick={() => {
-                                        const installCmd =
-                                          formData.authMethod === 'jwt'
-                                            ? 'npm install @zdql/echo-react-sdk'
-                                            : 'npm install @zdql/echo-typescript-sdk';
-                                        navigator.clipboard.writeText(
-                                          installCmd
-                                        );
-                                      }}
-                                      className="flex items-center space-x-2 px-3 py-2 bg-secondary/10 border border-secondary/20 rounded-lg text-secondary hover:bg-secondary/20 transition-colors text-sm"
-                                    >
-                                      <Copy className="h-4 w-4" />
-                                      <span>Copy</span>
-                                    </button>
-                                  </div>
-                                  <div className="bg-muted/30 rounded-lg p-4">
-                                    <code className="text-sm text-foreground font-mono">
-                                      {formData.authMethod === 'jwt'
-                                        ? 'npm install @zdql/echo-react-sdk'
-                                        : 'npm install @zdql/echo-typescript-sdk'}
-                                    </code>
-                                  </div>
-                                </div>
+                                <Card className="w-full">
+                                  <CardHeader>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                      <CardTitle className="text-lg">
+                                        Installation
+                                      </CardTitle>
+                                      <Button
+                                        variant="secondaryOutline"
+                                        size="sm"
+                                        onClick={() => {
+                                          const installCmd =
+                                            formData.authMethod === 'jwt'
+                                              ? 'npm install @zdql/echo-react-sdk'
+                                              : 'npm install @zdql/echo-typescript-sdk';
+                                          navigator.clipboard.writeText(
+                                            installCmd
+                                          );
+                                        }}
+                                      >
+                                        <Copy className="h-4 w-4" />
+                                        Copy
+                                      </Button>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="bg-muted/30 rounded-lg p-4">
+                                      <code className="text-sm text-foreground font-mono">
+                                        {formData.authMethod === 'jwt'
+                                          ? 'npm install @zdql/echo-react-sdk'
+                                          : 'npm install @zdql/echo-typescript-sdk'}
+                                      </code>
+                                    </div>
+                                  </CardContent>
+                                </Card>
                               </div>
                             )}
                           </div>
@@ -915,24 +972,32 @@ export { echo, makeRequest };`;
                         ) : currentStepData.type === 'select' ? (
                           <div className="space-y-4">
                             {currentStepData.options?.map(option => (
-                              <button
+                              <Card
                                 key={option.value}
-                                onClick={() => setCurrentValue(option.value)}
-                                className={`w-full p-6 rounded-lg border text-left transition-all duration-200 ${
+                                className={`cursor-pointer transition-all duration-200 ${
                                   currentValue === option.value
-                                    ? 'border-secondary bg-secondary/10 text-secondary'
-                                    : 'border-border bg-card hover:border-secondary/50 hover:bg-secondary/5 text-foreground'
+                                    ? 'border-secondary bg-secondary/10'
+                                    : 'hover:border-secondary/50 hover:bg-secondary/5'
                                 }`}
+                                onClick={() => setCurrentValue(option.value)}
                               >
-                                <div className="font-semibold text-lg mb-2">
-                                  {option.label}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                  {option.value === 'jwt'
-                                    ? 'Users sign in through OAuth flow with automatic token management. Best for web apps that need user sessions.'
-                                    : 'Users authenticate with API keys they manage themselves. Best for server applications, CLI tools, or when you need direct API access.'}
-                                </div>
-                              </button>
+                                <CardContent className="p-6">
+                                  <div
+                                    className={`font-semibold text-lg mb-2 ${
+                                      currentValue === option.value
+                                        ? 'text-secondary'
+                                        : 'text-foreground'
+                                    }`}
+                                  >
+                                    {option.label}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {option.value === 'jwt'
+                                      ? 'Users sign in through OAuth flow with automatic token management. Best for web apps that need user sessions.'
+                                      : 'Users authenticate with API keys they manage themselves. Best for server applications, CLI tools, or when you need direct API access.'}
+                                  </div>
+                                </CardContent>
+                              </Card>
                             ))}
                           </div>
                         ) : (
@@ -1014,10 +1079,11 @@ export { echo, makeRequest };`;
                       </div>
 
                       {canProceed && (
-                        <button
+                        <Button
                           onClick={handleNext}
                           disabled={isSubmitting}
-                          className="flex items-center justify-center space-x-2 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          variant="secondary"
+                          size="lg"
                         >
                           {isSubmitting ? (
                             <>
@@ -1035,7 +1101,7 @@ export { echo, makeRequest };`;
                               <ChevronRight className="h-4 w-4" />
                             </>
                           )}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -1045,9 +1111,11 @@ export { echo, makeRequest };`;
 
             {/* Error Display */}
             {error && (
-              <div className="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <div className="text-sm text-destructive">{error}</div>
-              </div>
+              <Card className="mt-6 bg-destructive/10 border-destructive/20">
+                <CardContent className="p-4">
+                  <div className="text-sm text-destructive">{error}</div>
+                </CardContent>
+              </Card>
             )}
 
             {/* Step History */}

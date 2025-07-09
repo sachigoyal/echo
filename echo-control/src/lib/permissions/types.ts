@@ -2,6 +2,7 @@ export enum AppRole {
   OWNER = 'owner',
   ADMIN = 'admin',
   CUSTOMER = 'customer',
+  PUBLIC = 'public',
 }
 
 export enum MembershipStatus {

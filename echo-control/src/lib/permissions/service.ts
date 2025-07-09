@@ -31,6 +31,7 @@ export class PermissionService {
       Permission.VIEW_OWN_USAGE,
       Permission.USE_LLM_API,
     ],
+    [AppRole.PUBLIC]: [Permission.READ_APP],
   };
 
   static async getUserAppRole(
@@ -102,5 +103,20 @@ export class PermissionService {
     );
 
     return results;
+  }
+
+  /**
+   * Get permissions for a specific role (for frontend components)
+   */
+  static getPermissionsForRole(role: AppRole): Permission[] {
+    return this.rolePermissions[role] || [];
+  }
+
+  /**
+   * Check if a role has a specific permission (for frontend components)
+   */
+  static roleHasPermission(role: AppRole, permission: Permission): boolean {
+    const permissions = this.getPermissionsForRole(role);
+    return permissions.includes(permission);
   }
 }

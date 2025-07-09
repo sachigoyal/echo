@@ -13,6 +13,7 @@ model User {
   email           String           @unique
   name            String?
   clerkId         String           @unique
+  profilePictureUrl String?        // Profile picture URL from Clerk
   isArchived      Boolean          @default(false)
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
@@ -34,7 +35,10 @@ model EchoApp {
   id              String           @id @default(uuid()) @db.Uuid
   name            String
   description     String?
+  profilePictureUrl String?        // Custom profile picture for the app
+  bannerImageUrl    String?        // Custom banner image for the app
   isActive        Boolean          @default(true)
+  isPublic        Boolean          @default(false)
   isArchived      Boolean          @default(false)
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz

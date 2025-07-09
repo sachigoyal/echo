@@ -4,6 +4,7 @@ packages:
   - echo-typescript-sdk
   - create-echo-app
   - echo-react-sdk
+  - echo-shared-components
   - integration-tests
   - examples/*
 allowBuiltDependencies:
