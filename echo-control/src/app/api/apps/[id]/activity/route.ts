@@ -4,11 +4,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { getAppActivity } from '@/lib/echo-apps/activity/activity';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params;
 
   const user = await getCurrentUser();
 

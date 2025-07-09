@@ -11,6 +11,9 @@ import {
   X,
   Zap,
   TrendingUp,
+  Shield,
+  Users,
+  Eye,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -25,23 +28,18 @@ import { Separator } from './ui/separator';
 import { Button } from './ui/button';
 import { ProfileAvatar } from './ui/profile-avatar';
 import { CommitChart } from './activity-chart/chart';
-import { AppRole } from '@/lib/permissions/types';
+import { AppRole, Permission } from '@/lib/permissions/types';
+import { PermissionService } from '@/lib/permissions/service';
 import { githubApi, GitHubRepo, GitHubUser } from '@/lib/github-api';
 import { DotPattern } from './ui/dot-background';
+import { AuthenticatedEchoApp, PublicEchoApp } from '@/lib/types/apps';
 
 interface EchoAppDetailProps {
   appId: string;
 }
 
-interface EchoApp {
-  id: string;
-  name: string;
-  description?: string;
-  profilePictureUrl?: string;
-  bannerImageUrl?: string;
-  isActive: boolean;
-  createdAt: string;
-  userRole: string;
+// Detailed app info returned by the API with additional fields
+interface DetailedEchoApp extends AuthenticatedEchoApp {
   githubId?: string;
   githubType?: 'user' | 'repo';
   user: {
@@ -85,7 +83,12 @@ interface EchoApp {
     status: string;
     createdAt: string;
   }>;
-  activityData: number[];
+}
+
+interface UserPermissions {
+  isAuthenticated: boolean;
+  userRole: AppRole | null;
+  permissions: Permission[];
 }
 
 // Helper function to safely format numbers
@@ -118,7 +121,7 @@ const transformActivityData = (data: number[] | undefined) => {
 };
 
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
-  const [app, setApp] = useState<EchoApp | null>(null);
+  const [app, setApp] = useState<DetailedEchoApp | null>(null);
   const [githubData, setGithubData] = useState<GitHubUser | GitHubRepo | null>(
     null
   );
@@ -133,6 +136,34 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   } | null>(null);
   const [deletingKeyId, setDeletingKeyId] = useState<string | null>(null);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [userPermissions, setUserPermissions] = useState<UserPermissions>({
+    isAuthenticated: false,
+    userRole: null,
+    permissions: [],
+  });
+
+  // Helper function to determine user permissions based on app data
+  const determineUserPermissions = (app: DetailedEchoApp): UserPermissions => {
+    const roleString = app.userRole as string;
+    const userRole = roleString as AppRole;
+    const isAuthenticated = !!roleString && roleString !== AppRole.PUBLIC;
+
+    // Use the centralized permission service instead of duplicating logic
+    const permissions = userRole
+      ? PermissionService.getPermissionsForRole(userRole)
+      : [Permission.READ_APP];
+
+    return {
+      isAuthenticated,
+      userRole,
+      permissions,
+    };
+  };
+
+  // Helper function to check if user has specific permission
+  const hasPermission = (permission: Permission): boolean => {
+    return userPermissions.permissions.includes(permission);
+  };
 
   const fetchAppDetails = useCallback(async () => {
     try {
@@ -140,11 +171,50 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle 401/403 as potential public access
+        if (response.status === 401 || response.status === 403) {
+          // Try to fetch public app info if available
+          try {
+            const publicResponse = await fetch(`/api/apps/public`);
+            const publicData = await publicResponse.json();
+            const publicApp = publicData.apps?.find(
+              (app: PublicEchoApp) => app.id === appId
+            );
+
+            if (publicApp) {
+              const appData: DetailedEchoApp = {
+                ...publicApp,
+                userRole: AppRole.PUBLIC,
+                permissions: [Permission.READ_APP],
+                description: publicApp.description || '',
+                profilePictureUrl: publicApp.profilePictureUrl || '',
+                bannerImageUrl: publicApp.bannerImageUrl || '',
+                apiKeys: [],
+                stats: {
+                  totalTransactions: publicApp._count?.llmTransactions || 0,
+                  totalTokens: publicApp.totalTokens || 0,
+                  totalInputTokens: 0,
+                  totalOutputTokens: 0,
+                  totalCost: publicApp.totalCost || 0,
+                  modelUsage: [],
+                },
+                recentTransactions: [],
+                user: publicApp.owner,
+              };
+              setApp(appData);
+              setUserPermissions(determineUserPermissions(appData));
+              return;
+            }
+          } catch (publicError) {
+            console.error('Error fetching public app details:', publicError);
+          }
+        }
         setError(data.error || 'Failed to load app details');
         return;
       }
 
       setApp(data);
+      setUserPermissions(determineUserPermissions(data));
     } catch (error) {
       console.error('Error fetching app details:', error);
       setError('Failed to load app details');
@@ -257,6 +327,179 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   };
 
+  // PUBLIC VIEW COMPONENT - Limited information for unauthenticated users
+  const PublicView = () => {
+    if (!app) return null;
+
+    return (
+      <div className="min-h-screen bg-background relative">
+        <DotPattern
+          className="opacity-30"
+          width={20}
+          height={20}
+          cx={1}
+          cy={1}
+          cr={1}
+        />
+
+        {/* Header with back button */}
+        <div className="absolute top-8 left-8 z-50">
+          <Link href="/">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/20"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
+        {/* Banner Section */}
+        <div className="h-64 relative overflow-hidden shadow-lg shadow-blue-500/25">
+          {app.bannerImageUrl ? (
+            <>
+              <Image
+                src={app.bannerImageUrl}
+                alt={`${app.name} banner`}
+                fill
+                className="object-cover z-0"
+              />
+              <div className="absolute inset-0 bg-black/40 z-0"></div>
+            </>
+          ) : (
+            <>
+              <div className="h-full bg-gradient-to-r from-secondary via-muted to-secondary/80 z-0"></div>
+              <div className="absolute inset-0 bg-black/20 z-0"></div>
+            </>
+          )}
+        </div>
+
+        {/* Profile and Info Section */}
+        <div className="relative -mt-20 px-8 pb-8 z-10">
+          <Card className="p-8 bg-card shadow-2xl border border-border">
+            <div className="flex items-start gap-8">
+              <div className="relative flex-shrink-0">
+                <ProfileAvatar
+                  name={app.name}
+                  src={app.profilePictureUrl}
+                  size="2xl"
+                  rounded="2xl"
+                  className="shadow-lg"
+                />
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full border-2 border-background bg-blue-500 shadow-sm flex items-center justify-center">
+                  <Eye className="h-3 w-3 text-white" />
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h1 className="text-4xl font-bold text-foreground">
+                        {app.name}
+                      </h1>
+                      <Badge variant="outline" className="text-xs">
+                        Public App
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
+                      {app.description || 'No description provided'}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator className="mb-6" />
+
+                {/* Basic Public Stats */}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Created
+                    </p>
+                    <p className="text-sm text-foreground font-medium">
+                      {new Date(app.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Status
+                    </p>
+                    <Badge variant={app.isActive ? 'default' : 'secondary'}>
+                      {app.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Requests Served
+                    </p>
+                    <p className="text-lg font-bold text-foreground">
+                      {formatNumber(app.stats?.totalTransactions)}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator className="mb-6" />
+
+                {/* Call to Action */}
+                <div className="flex items-center gap-4">
+                  <Link href="/sign-in">
+                    <Button size="default">
+                      <Shield className="h-4 w-4" />
+                      Sign In to Access
+                    </Button>
+                  </Link>
+                  <Link href="/sign-up">
+                    <Button variant="outline" size="default">
+                      <Users className="h-4 w-4" />
+                      Create Account
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    <Shield className="h-4 w-4 inline mr-2" />
+                    This is a public application preview. Sign in to access full
+                    features, create API keys, and view detailed analytics.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Activity Chart for Public Users */}
+        <div className="px-6 mt-8 mb-8">
+          <h2 className="text-2xl font-bold mb-4">Activity</h2>
+          <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+            <div className="h-64">
+              <CommitChart
+                data={{
+                  data: transformActivityData(app.activityData),
+                  isLoading: false,
+                }}
+                numPoints={app.activityData?.length || 0}
+                timeWindowOption={{ value: '30d' }}
+                startDate={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}
+                endDate={new Date()}
+                chartHeight={240}
+                shouldAnimate={true}
+              />
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -272,6 +515,378 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
         <p className="mt-2 text-muted-foreground">{error}</p>
       </div>
     );
+  }
+
+  // CUSTOMER VIEW COMPONENT - Limited access for customers
+  const CustomerView = () => {
+    if (!app) return null;
+
+    return (
+      <div className="min-h-screen bg-background relative">
+        <DotPattern
+          className="opacity-30"
+          width={20}
+          height={20}
+          cx={1}
+          cy={1}
+          cr={1}
+        />
+
+        {/* Payment Success Notification */}
+        {showPaymentSuccess && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between mb-6 relative z-10">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+              <div>
+                <h4 className="text-sm font-medium text-green-800">
+                  Payment Successful!
+                </h4>
+                <p className="text-sm text-green-700">
+                  Credits have been added to your account.
+                </p>
+              </div>
+            </div>
+            <GlassButton
+              onClick={() => setShowPaymentSuccess(false)}
+              className="!h-8 !w-8"
+              variant="secondary"
+            >
+              <X className="h-4 w-4" />
+            </GlassButton>
+          </div>
+        )}
+
+        {/* Header with back button */}
+        <div className="absolute top-8 left-8 z-50">
+          <Link href="/">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/20"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
+        {/* Banner Section */}
+        <div className="h-64 relative overflow-hidden shadow-lg shadow-blue-500/25">
+          {app.bannerImageUrl ? (
+            <>
+              <Image
+                src={app.bannerImageUrl}
+                alt={`${app.name} banner`}
+                fill
+                className="object-cover z-0"
+              />
+              <div className="absolute inset-0 bg-black/40 z-0"></div>
+            </>
+          ) : (
+            <>
+              <div className="h-full bg-gradient-to-r from-secondary via-muted to-secondary/80 z-0"></div>
+              <div className="absolute inset-0 bg-black/20 z-0"></div>
+            </>
+          )}
+        </div>
+
+        {/* Profile and Info Section */}
+        <div className="relative -mt-20 px-8 pb-8 z-10">
+          <Card className="p-8 bg-card shadow-2xl border border-border">
+            <div className="flex items-start gap-8">
+              <div className="relative flex-shrink-0">
+                <ProfileAvatar
+                  name={app.name}
+                  src={app.profilePictureUrl}
+                  size="2xl"
+                  rounded="2xl"
+                  className="shadow-lg"
+                />
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full border-2 border-background bg-orange-500 shadow-sm flex items-center justify-center">
+                  <Users className="h-3 w-3 text-white" />
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h1 className="text-4xl font-bold text-foreground">
+                        {app.name}
+                      </h1>
+                      <Badge variant="outline" className="text-xs">
+                        Customer Access
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
+                      {app.description || 'No description provided'}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator className="mb-6" />
+
+                {/* Customer Usage Stats */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Your Requests
+                    </p>
+                    <p className="text-lg font-bold text-foreground">
+                      {formatNumber(app.stats?.totalTransactions)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Your Tokens
+                    </p>
+                    <p className="text-lg font-bold text-foreground">
+                      {formatNumber(app.stats?.totalTokens)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Your Spending
+                    </p>
+                    <p className="text-lg font-bold text-foreground">
+                      {formatCurrency(app.stats?.totalCost)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">
+                      Your API Keys
+                    </p>
+                    <p className="text-lg font-bold text-foreground">
+                      {app.apiKeys?.length || 0}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator className="mb-6" />
+
+                {/* Action Row */}
+                <div className="flex items-center gap-3">
+                  {hasPermission(Permission.MANAGE_OWN_API_KEYS) && (
+                    <Button
+                      onClick={() => setShowCreateApiKeyModal(true)}
+                      size="default"
+                      variant="default"
+                    >
+                      <Key className="h-4 w-4" />
+                      Create API Key
+                    </Button>
+                  )}
+                  <Link href="/credits">
+                    <Button size="default" variant="outline">
+                      <CreditCard className="h-4 w-4" />
+                      Add Credits
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Customer Data Cards Section */}
+        <div className="px-6 mt-8 mb-8 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Your API Keys Card */}
+            <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white">
+                    <Key className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold">Your API Keys</h3>
+                </div>
+                {hasPermission(Permission.MANAGE_OWN_API_KEYS) && (
+                  <button onClick={() => setShowCreateApiKeyModal(true)}>
+                    <Plus className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-3">
+                {app.apiKeys && app.apiKeys.length > 0 ? (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Active Keys</span>
+                      <span className="font-bold">{app.apiKeys.length}</span>
+                    </div>
+                    {app.apiKeys
+                      .slice(0, 3)
+                      .map((apiKey: DetailedEchoApp['apiKeys'][0]) => (
+                        <div
+                          key={apiKey.id}
+                          className="flex justify-between items-center text-sm"
+                        >
+                          <span className="truncate flex-1">
+                            {apiKey.name || 'Unnamed Key'}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">
+                              {formatCurrency(apiKey.totalSpent)}
+                            </span>
+                            {hasPermission(Permission.MANAGE_OWN_API_KEYS) && (
+                              <button
+                                onClick={() => handleArchiveApiKey(apiKey.id)}
+                                disabled={deletingKeyId === apiKey.id}
+                                className="text-destructive hover:text-destructive/80 disabled:opacity-50"
+                              >
+                                <Trash className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    {app.apiKeys.length > 3 && (
+                      <p className="text-xs text-muted-foreground">
+                        +{app.apiKeys.length - 3} more keys
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground text-sm">
+                      No API keys yet
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Create one to get started
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Your Recent Activity Card */}
+            <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white">
+                  <Zap className="h-5 w-5" />
+                </div>
+                <h3 className="text-xl font-bold">Your Recent Activity</h3>
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-3">
+                {app.recentTransactions && app.recentTransactions.length > 0 ? (
+                  <>
+                    {app.recentTransactions
+                      .slice(0, 4)
+                      .map(
+                        (
+                          transaction: DetailedEchoApp['recentTransactions'][0]
+                        ) => (
+                          <div
+                            key={transaction.id}
+                            className="flex justify-between items-start text-sm"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium truncate">
+                                {transaction.model}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(
+                                  transaction.createdAt
+                                ).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium">
+                                {formatCost(transaction.cost)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatNumber(transaction.totalTokens)} tokens
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    {app.recentTransactions.length > 4 && (
+                      <p className="text-xs text-muted-foreground">
+                        +{app.recentTransactions.length - 4} more transactions
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground text-sm">
+                      No transactions yet
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Activity will appear here
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* Activity Chart for Customer Users */}
+        <div className="px-6 mt-8 mb-8">
+          <h2 className="text-2xl font-bold mb-4">Your Activity</h2>
+          <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+            <div className="h-64">
+              <CommitChart
+                data={{
+                  data: transformActivityData(app.activityData),
+                  isLoading: false,
+                }}
+                numPoints={app.activityData?.length || 0}
+                timeWindowOption={{ value: '30d' }}
+                startDate={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}
+                endDate={new Date()}
+                chartHeight={240}
+                shouldAnimate={true}
+              />
+            </div>
+          </Card>
+        </div>
+
+        {/* Modals */}
+        <div className="relative z-50">
+          {showCreateApiKeyModal && app && (
+            <CreateApiKeyModal
+              echoAppId={app.id}
+              onClose={() => setShowCreateApiKeyModal(false)}
+              onSubmit={handleCreateApiKey}
+            />
+          )}
+
+          {showApiKeyModal && newApiKey && (
+            <ApiKeyModal
+              apiKey={newApiKey}
+              onClose={() => {
+                setShowApiKeyModal(false);
+                setNewApiKey(null);
+              }}
+              onRename={handleRenameApiKey}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render PUBLIC view for unauthenticated users or public role
+  if (
+    !userPermissions.isAuthenticated ||
+    userPermissions.userRole === AppRole.PUBLIC
+  ) {
+    return <PublicView />;
+  }
+
+  // Render CUSTOMER view for customers with limited access
+  if (userPermissions.userRole === AppRole.CUSTOMER) {
+    return <CustomerView />;
   }
 
   return (
@@ -375,9 +990,18 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-6">
                   <div>
-                    <h1 className="text-4xl font-bold text-foreground mb-3">
-                      {app.name}
-                    </h1>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h1 className="text-4xl font-bold text-foreground">
+                        {app.name}
+                      </h1>
+                      <Badge variant="outline" className="text-xs">
+                        {userPermissions.userRole === AppRole.OWNER
+                          ? 'Owner'
+                          : userPermissions.userRole === AppRole.ADMIN
+                            ? 'Administrator'
+                            : 'Full Access'}
+                      </Badge>
+                    </div>
                     <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl">
                       {app.description || 'No description provided'}
                     </p>
@@ -434,14 +1058,17 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     </p>
                   </div>
 
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">
-                      Owner
-                    </p>
-                    <p className="text-sm text-foreground font-medium truncate">
-                      {app.user?.name || app.user?.email || 'Unknown'}
-                    </p>
-                  </div>
+                  {/* Only show owner details to ADMIN/OWNER */}
+                  {hasPermission(Permission.VIEW_ANALYTICS) && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">
+                        Owner
+                      </p>
+                      <p className="text-sm text-foreground font-medium truncate">
+                        {app.user?.name || app.user?.email || 'Unknown'}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Usage Stats */}
                   <div>
@@ -478,14 +1105,16 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 <div className="flex items-center justify-between">
                   {/* Primary Actions */}
                   <div className="flex gap-3">
-                    <Button
-                      onClick={() => setShowCreateApiKeyModal(true)}
-                      size="default"
-                      variant="default"
-                    >
-                      <Key className="h-4 w-4" />
-                      Create API Key
-                    </Button>
+                    {hasPermission(Permission.CREATE_API_KEYS) && (
+                      <Button
+                        onClick={() => setShowCreateApiKeyModal(true)}
+                        size="default"
+                        variant="default"
+                      >
+                        <Key className="h-4 w-4" />
+                        Create API Key
+                      </Button>
+                    )}
                     <Link href="/credits">
                       <Button size="default" variant="outline">
                         <CreditCard className="h-4 w-4" />
@@ -496,7 +1125,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
                   {/* Secondary Actions */}
                   <div className="flex gap-2">
-                    {app.userRole === AppRole.OWNER && (
+                    {hasPermission(Permission.EDIT_APP) && (
                       <Link href={`/owner/${app.id}/settings`}>
                         <Button variant="ghost" size="sm">
                           Settings
@@ -515,33 +1144,6 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     </Button>
                   </div>
                 </div>
-
-                {/* Additional Info Row for API Keys */}
-                {app.apiKeys && app.apiKeys.length > 0 && (
-                  <>
-                    <Separator className="my-4" />
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground">
-                          Latest API Key:
-                        </span>
-                        <Badge variant="secondaryGlass" className="text-xs">
-                          {app.apiKeys[0]?.name || 'Unnamed Key'}
-                        </Badge>
-                        <span className="text-muted-foreground">•</span>
-                        <span className="text-muted-foreground">
-                          Created{' '}
-                          {new Date(
-                            app.apiKeys[0]?.createdAt || ''
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        Role: {app.userRole || 'Owner'}
-                      </Badge>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           </Card>
@@ -579,32 +1181,41 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
               <CardContent className="p-0 h-full">
                 {app.stats?.modelUsage && app.stats.modelUsage.length > 0 ? (
                   <div className="space-y-4">
-                    {app.stats.modelUsage.slice(0, 5).map((usage, index) => (
-                      <div
-                        key={usage.model}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-sm font-bold">
-                            {index + 1}
+                    {app.stats.modelUsage
+                      .slice(0, 5)
+                      .map(
+                        (
+                          usage: DetailedEchoApp['stats']['modelUsage'][0],
+                          index: number
+                        ) => (
+                          <div
+                            key={usage.model}
+                            className="flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-sm font-bold">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm">
+                                  {usage.model}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatNumber(usage._count)} requests
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium text-sm">
+                                {formatCost(usage._sum?.cost)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatNumber(usage._sum?.totalTokens)} tokens
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-sm">{usage.model}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatNumber(usage._count)} requests
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium text-sm">
-                            {formatCost(usage._sum?.cost)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatNumber(usage._sum?.totalTokens)} tokens
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                        )
+                      )}
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full text-center">
@@ -669,9 +1280,11 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 </div>
                 <h3 className="text-xl font-bold">API Keys</h3>
               </div>
-              <button onClick={() => setShowCreateApiKeyModal(true)}>
-                <Plus className="h-4 w-4" />
-              </button>
+              {hasPermission(Permission.CREATE_API_KEYS) && (
+                <button onClick={() => setShowCreateApiKeyModal(true)}>
+                  <Plus className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
             <Separator className="my-4" />
@@ -683,28 +1296,32 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                     <span className="text-muted-foreground">Active Keys</span>
                     <span className="font-bold">{app.apiKeys.length}</span>
                   </div>
-                  {app.apiKeys.slice(0, 3).map(apiKey => (
-                    <div
-                      key={apiKey.id}
-                      className="flex justify-between items-center text-sm"
-                    >
-                      <span className="truncate flex-1">
-                        {apiKey.name || 'Unnamed Key'}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">
-                          {formatCurrency(apiKey.totalSpent)}
+                  {app.apiKeys
+                    .slice(0, 3)
+                    .map((apiKey: DetailedEchoApp['apiKeys'][0]) => (
+                      <div
+                        key={apiKey.id}
+                        className="flex justify-between items-center text-sm"
+                      >
+                        <span className="truncate flex-1">
+                          {apiKey.name || 'Unnamed Key'}
                         </span>
-                        <button
-                          onClick={() => handleArchiveApiKey(apiKey.id)}
-                          disabled={deletingKeyId === apiKey.id}
-                          className="text-destructive hover:text-destructive/80 disabled:opacity-50"
-                        >
-                          <Trash className="h-3 w-3" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">
+                            {formatCurrency(apiKey.totalSpent)}
+                          </span>
+                          {hasPermission(Permission.MANAGE_ALL_API_KEYS) && (
+                            <button
+                              onClick={() => handleArchiveApiKey(apiKey.id)}
+                              disabled={deletingKeyId === apiKey.id}
+                              className="text-destructive hover:text-destructive/80 disabled:opacity-50"
+                            >
+                              <Trash className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                   {app.apiKeys.length > 3 && (
                     <p className="text-xs text-muted-foreground">
                       +{app.apiKeys.length - 3} more keys
@@ -738,29 +1355,37 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
             <div className="space-y-3">
               {app.recentTransactions && app.recentTransactions.length > 0 ? (
                 <>
-                  {app.recentTransactions.slice(0, 4).map(transaction => (
-                    <div
-                      key={transaction.id}
-                      className="flex justify-between items-start text-sm"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium truncate">
-                          {transaction.model}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(transaction.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">
-                          {formatCost(transaction.cost)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatNumber(transaction.totalTokens)} tokens
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                  {app.recentTransactions
+                    .slice(0, 4)
+                    .map(
+                      (
+                        transaction: DetailedEchoApp['recentTransactions'][0]
+                      ) => (
+                        <div
+                          key={transaction.id}
+                          className="flex justify-between items-start text-sm"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium truncate">
+                              {transaction.model}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(
+                                transaction.createdAt
+                              ).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">
+                              {formatCost(transaction.cost)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatNumber(transaction.totalTokens)} tokens
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    )}
                   {app.recentTransactions.length > 4 && (
                     <p className="text-xs text-muted-foreground">
                       +{app.recentTransactions.length - 4} more transactions
@@ -784,24 +1409,28 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
       {/* Modals */}
       <div className="relative z-50">
-        {showCreateApiKeyModal && app && (
-          <CreateApiKeyModal
-            echoAppId={app.id}
-            onClose={() => setShowCreateApiKeyModal(false)}
-            onSubmit={handleCreateApiKey}
-          />
-        )}
+        {showCreateApiKeyModal &&
+          app &&
+          hasPermission(Permission.CREATE_API_KEYS) && (
+            <CreateApiKeyModal
+              echoAppId={app.id}
+              onClose={() => setShowCreateApiKeyModal(false)}
+              onSubmit={handleCreateApiKey}
+            />
+          )}
 
-        {showApiKeyModal && newApiKey && (
-          <ApiKeyModal
-            apiKey={newApiKey}
-            onClose={() => {
-              setShowApiKeyModal(false);
-              setNewApiKey(null);
-            }}
-            onRename={handleRenameApiKey}
-          />
-        )}
+        {showApiKeyModal &&
+          newApiKey &&
+          hasPermission(Permission.MANAGE_ALL_API_KEYS) && (
+            <ApiKeyModal
+              apiKey={newApiKey}
+              onClose={() => {
+                setShowApiKeyModal(false);
+                setNewApiKey(null);
+              }}
+              onRename={handleRenameApiKey}
+            />
+          )}
       </div>
     </div>
   );

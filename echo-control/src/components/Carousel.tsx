@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Users, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from './ui/card';
@@ -37,6 +38,7 @@ export const Carousel: React.FC<CarouselProps> = ({
   showControls = true,
   showIndicators = true,
 }) => {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying] = useState(autoPlay);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -52,6 +54,10 @@ export const Carousel: React.FC<CarouselProps> = ({
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
+  };
+
+  const handleAppClick = (appId: string) => {
+    router.push(`/apps/${appId}`);
   };
 
   useEffect(() => {
@@ -103,7 +109,10 @@ export const Carousel: React.FC<CarouselProps> = ({
                   className="w-full flex-shrink-0 px-4 pb-8 h-full"
                 >
                   {/* App Card - Styled like MeritRepoCard */}
-                  <Card className="p-4 hover:border-secondary relative shadow-lg dark:shadow-secondary dark:shadow-[0_0_8px] w-full cursor-pointer flex flex-col gap-4 transition-all duration-300 h-[calc(100%-2rem)]">
+                  <Card
+                    className="p-4 hover:border-secondary relative shadow-lg dark:shadow-secondary dark:shadow-[0_0_8px] w-full cursor-pointer flex flex-col gap-4 transition-all duration-300 h-[calc(100%-2rem)]"
+                    onClick={() => handleAppClick(app.id)}
+                  >
                     {/* Header Section */}
                     <div className="flex items-center justify-between gap-4 w-full">
                       <div className="flex items-start gap-3 min-w-0 flex-1">
