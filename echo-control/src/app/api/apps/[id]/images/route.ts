@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { updateEchoAppById } from '@/lib/echo-apps';
+import { updateEchoAppById, getDetailedAppInfo } from '@/lib/echo-apps';
 import { isValidUUID } from '@/lib/oauth-config/index';
 import { PermissionService } from '@/lib/permissions/service';
 import { Permission } from '@/lib/permissions/types';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { randomUUID } from 'crypto';
+import { put, del } from '@vercel/blob';
 
 // POST /api/apps/[id]/images - Upload profile picture or banner image
 export async function POST(
@@ -71,43 +69,54 @@ export async function POST(
       );
     }
 
-    // Generate unique filename
-    const fileExtension = file.name.split('.').pop() || 'jpg';
-    const filename = `${appId}-${imageType}-${randomUUID()}.${fileExtension}`;
+    // Get current app details to check for existing images
+    const appDetails = await getDetailedAppInfo(appId, user.id);
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'public', 'uploads', 'apps');
-
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const filepath = join(uploadsDir, filename);
-
-    // Ensure directory exists
-    const fs = await import('fs');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    // Delete old image from blob storage if it exists
+    if (imageType === 'profile' && appDetails.profilePictureUrl) {
+      try {
+        await del(appDetails.profilePictureUrl);
+      } catch (error) {
+        console.warn(
+          'Failed to delete old profile picture from blob storage:',
+          error
+        );
+      }
+    } else if (imageType === 'banner' && appDetails.bannerImageUrl) {
+      try {
+        await del(appDetails.bannerImageUrl);
+      } catch (error) {
+        console.warn(
+          'Failed to delete old banner image from blob storage:',
+          error
+        );
+      }
     }
 
-    await writeFile(filepath, buffer);
+    // Generate filename for blob storage
+    const fileExtension = file.name.split('.').pop() || 'jpg';
+    const filename = `apps/${appId}/${imageType}-${Date.now()}.${fileExtension}`;
 
-    // Create the public URL
-    const imageUrl = `/uploads/apps/${filename}`;
+    // Upload file to Vercel Blob storage
+    const blob = await put(filename, file, {
+      access: 'public',
+      contentType: file.type,
+    });
 
     // Update the app with the new image URL
     const updateData: { profilePictureUrl?: string; bannerImageUrl?: string } =
       {};
     if (imageType === 'profile') {
-      updateData.profilePictureUrl = imageUrl;
+      updateData.profilePictureUrl = blob.url;
     } else {
-      updateData.bannerImageUrl = imageUrl;
+      updateData.bannerImageUrl = blob.url;
     }
 
     await updateEchoAppById(appId, user.id, updateData);
 
     return NextResponse.json({
       success: true,
-      imageUrl,
+      imageUrl: blob.url,
       type: imageType,
     });
   } catch (error) {
@@ -179,6 +188,26 @@ export async function DELETE(
         { error: 'Invalid image type. Must be "profile" or "banner"' },
         { status: 400 }
       );
+    }
+
+    // Get current app details to get the existing image URL
+    const appDetails = await getDetailedAppInfo(appId, user.id);
+
+    // Delete image from blob storage if it exists
+    let existingImageUrl: string | null = null;
+    if (imageType === 'profile' && appDetails.profilePictureUrl) {
+      existingImageUrl = appDetails.profilePictureUrl;
+    } else if (imageType === 'banner' && appDetails.bannerImageUrl) {
+      existingImageUrl = appDetails.bannerImageUrl;
+    }
+
+    if (existingImageUrl) {
+      try {
+        await del(existingImageUrl);
+      } catch (error) {
+        console.warn('Failed to delete image from blob storage:', error);
+        // Continue with database update even if blob deletion fails
+      }
     }
 
     // Update the app to remove the image URL

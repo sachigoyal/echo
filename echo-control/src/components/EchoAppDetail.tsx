@@ -311,6 +311,20 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
 
       {/* Banner Section */}
       <div className="relative z-10">
+        {/* Header with back button - positioned absolutely over banner */}
+        <div className="absolute top-8 left-8 z-50">
+          <Link href="/">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/20"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
         {/* Banner Background */}
         <div className="h-64 relative overflow-hidden shadow-lg shadow-blue-500/25">
           {app.bannerImageUrl ? (
@@ -319,36 +333,22 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
                 src={app.bannerImageUrl}
                 alt={`${app.name} banner`}
                 fill
-                className="object-cover"
+                className="object-cover z-0"
               />
-              <div className="absolute inset-0 bg-black/40"></div>
+              <div className="absolute inset-0 bg-black/40 z-0"></div>
             </>
           ) : (
             <>
-              <div className="h-full bg-gradient-to-r from-blue-500 via-purple-600 to-blue-700"></div>
+              <div className="h-full bg-gradient-to-r from-secondary via-muted to-secondary/80 z-0"></div>
               {/* Decorative elements */}
-              <div className="absolute inset-0 bg-black/20"></div>
-              <div className="absolute top-0 left-0 w-full h-full">
+              <div className="absolute inset-0 bg-black/20 z-0"></div>
+              <div className="absolute top-0 left-0 w-full h-full z-0">
                 <div className="absolute top-16 left-16 w-40 h-40 bg-white/8 rounded-full blur-xl"></div>
                 <div className="absolute bottom-12 right-20 w-32 h-32 bg-white/5 rounded-full blur-lg"></div>
                 <div className="absolute top-24 right-40 w-20 h-20 bg-white/12 rounded-full blur-md"></div>
               </div>
             </>
           )}
-
-          {/* Header with back button */}
-          <div className="relative z-10 p-8">
-            <Link href="/">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/20"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
         </div>
 
         {/* Profile and Info Section */}
