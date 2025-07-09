@@ -1,0 +1,17 @@
+/* Custom animation utilities */
+
+.color-burst-primary {
+  --color: var(--primary);
+}
+
+.color-burst-secondary {
+  --color: var(--secondary);
+}
+
+.color-burst-accent {
+  --color: var(--accent);
+}
+
+.color-burst-destructive {
+  --color: var(--destructive);
+}

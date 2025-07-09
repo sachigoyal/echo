@@ -38,10 +38,21 @@ export async function getCurrentUser(): Promise<User> {
         name:
           `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
           null,
+        profilePictureUrl: clerkUser.imageUrl || null, // Get profile picture from Clerk
         totalPaid: 0, // Initialize with zero paid amount
         totalSpent: 0, // Initialize with zero spent amount
       },
     });
+  } else {
+    // Update profile picture if it's changed in Clerk
+    if (user.profilePictureUrl !== clerkUser.imageUrl) {
+      user = await db.user.update({
+        where: { id: user.id },
+        data: {
+          profilePictureUrl: clerkUser.imageUrl || null,
+        },
+      });
+    }
   }
 
   return user;
@@ -71,10 +82,21 @@ export async function getOrCreateUserFromClerkId(
         name:
           `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
           null,
+        profilePictureUrl: clerkUser.imageUrl || null, // Get profile picture from Clerk
         totalPaid: 0, // Initialize with zero paid amount
         totalSpent: 0, // Initialize with zero spent amount
       },
     });
+  } else {
+    // Update profile picture if it's changed in Clerk
+    if (user.profilePictureUrl !== clerkUser.imageUrl) {
+      user = await db.user.update({
+        where: { id: user.id },
+        data: {
+          profilePictureUrl: clerkUser.imageUrl || null,
+        },
+      });
+    }
   }
 
   return user;

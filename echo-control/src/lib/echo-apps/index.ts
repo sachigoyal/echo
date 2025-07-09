@@ -12,14 +12,18 @@ export interface AppCreateInput {
   githubType?: 'user' | 'repo';
   githubId?: string;
   authorizedCallbackUrls?: string[];
+  isPublic?: boolean;
 }
 
 export interface AppUpdateInput {
   name?: string;
   description?: string;
   isActive?: boolean;
+  isPublic?: boolean;
   githubType?: 'user' | 'repo';
   githubId?: string;
+  profilePictureUrl?: string;
+  bannerImageUrl?: string;
 }
 
 export interface AppWithDetails {
@@ -27,6 +31,9 @@ export interface AppWithDetails {
   name: string;
   description: string | null;
   isActive: boolean;
+  isPublic: boolean;
+  profilePictureUrl?: string | null;
+  bannerImageUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   authorizedCallbackUrls: string[];
@@ -37,17 +44,30 @@ export interface AppWithDetails {
     apiKeys: number;
     llmTransactions: number;
   };
+  owner: {
+    id: string;
+    email: string;
+    name: string | null;
+    profilePictureUrl?: string | null;
+  };
 }
 
 export interface DetailedAppInfo {
   id: string;
   name: string;
   description: string | null;
+  profilePictureUrl: string | null;
+  bannerImageUrl: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   authorizedCallbackUrls: string[];
   userRole: AppRole;
+  user?: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
   apiKeys: Array<{
     id: string;
     name: string | null;
@@ -128,18 +148,47 @@ export const validateGithubType = (githubType?: string): string | null => {
 
 // Business logic functions
 export const listAppsWithDetails = async (
-  userId: string
+  userId: string,
+  role?: AppRole
 ): Promise<AppWithDetails[]> => {
-  // Use PermissionService to get accessible apps with roles
-  const accessibleApps = await PermissionService.getAccessibleApps(userId);
-
-  // Get additional data for each app (transaction stats, counts)
-  const appsWithDetails = await Promise.all(
-    accessibleApps.map(async ({ app, userRole }) => {
-      // Get counts for API keys and transactions
-      const counts = await db.echoApp.findUnique({
-        where: { id: app.id },
-        select: {
+  // Get user's accessible apps with memberships in a single query
+  const userMemberships = await db.appMembership.findMany({
+    where: {
+      userId,
+      status: MembershipStatus.ACTIVE,
+      isArchived: false,
+      ...(role && { role }),
+    },
+    include: {
+      echoApp: {
+        include: {
+          // Include the owner membership and their user details
+          appMemberships: {
+            where: {
+              role: AppRole.OWNER,
+              isArchived: false,
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                  profilePictureUrl: true,
+                },
+              },
+              echoApp: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  profilePictureUrl: true,
+                  bannerImageUrl: true,
+                },
+              },
+            },
+            take: 1, // There should only be one owner
+          },
           _count: {
             select: {
               apiKeys: {
@@ -151,40 +200,62 @@ export const listAppsWithDetails = async (
             },
           },
         },
-      });
+      },
+    },
+  });
 
-      // Get transaction totals
-      const transactionStats = await db.llmTransaction.aggregate({
-        where: {
-          echoAppId: app.id,
-          isArchived: false,
-        },
-        _sum: {
-          totalTokens: true,
-          cost: true,
-        },
-      });
+  // Get transaction totals for all apps in batch
+  const appIds = userMemberships.map(m => m.echoApp.id);
+  const transactionStats = await db.llmTransaction.groupBy({
+    by: ['echoAppId'],
+    where: {
+      echoAppId: { in: appIds },
+      isArchived: false,
+    },
+    _sum: {
+      totalTokens: true,
+      cost: true,
+    },
+  });
 
-      return {
-        id: app.id,
-        name: app.name,
-        description: app.description,
-        isActive: app.isActive,
-        createdAt: app.createdAt.toISOString(),
-        updatedAt: app.updatedAt.toISOString(),
-        authorizedCallbackUrls: app.authorizedCallbackUrls,
-        userRole,
-        totalTokens: transactionStats._sum.totalTokens || 0,
-        totalCost: Number(transactionStats._sum.cost || 0),
-        _count: {
-          apiKeys: counts?._count.apiKeys || 0,
-          llmTransactions: counts?._count.llmTransactions || 0,
-        },
-      };
-    })
+  // Create a map for quick lookup of transaction stats
+  const statsMap = new Map(
+    transactionStats.map(stat => [
+      stat.echoAppId,
+      {
+        totalTokens: stat._sum.totalTokens || 0,
+        totalCost: Number(stat._sum.cost || 0),
+      },
+    ])
   );
 
-  return appsWithDetails;
+  // Transform the results
+  return userMemberships.map(membership => {
+    const app = membership.echoApp;
+    const owner = app.appMemberships[0]?.user || null;
+    const stats = statsMap.get(app.id) || { totalTokens: 0, totalCost: 0 };
+
+    return {
+      id: app.id,
+      name: app.name,
+      description: app.description,
+      profilePictureUrl: app.profilePictureUrl,
+      bannerImageUrl: app.bannerImageUrl,
+      isActive: app.isActive,
+      isPublic: app.isPublic || false,
+      createdAt: app.createdAt.toISOString(),
+      updatedAt: app.updatedAt.toISOString(),
+      authorizedCallbackUrls: app.authorizedCallbackUrls,
+      userRole: membership.role as AppRole,
+      totalTokens: stats.totalTokens,
+      totalCost: stats.totalCost,
+      _count: {
+        apiKeys: app._count.apiKeys,
+        llmTransactions: app._count.llmTransactions,
+      },
+      owner: owner,
+    };
+  });
 };
 
 export const getDetailedAppInfo = async (
@@ -259,6 +330,23 @@ export const getDetailedAppInfo = async (
   if (!app) {
     throw new Error('Echo app not found or access denied');
   }
+
+  // Find the owner of the app
+  const ownerMembership = await db.appMembership.findFirst({
+    where: {
+      echoAppId: appId,
+      role: AppRole.OWNER,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
+    },
+  });
 
   // Get aggregated statistics for the app (filtered by user for customers)
   const stats = await db.llmTransaction.aggregate({
@@ -342,6 +430,7 @@ export const getDetailedAppInfo = async (
 
   return {
     ...app,
+    user: ownerMembership?.user,
     userRole,
     apiKeys: apiKeysWithSpending,
     stats: {
@@ -491,6 +580,12 @@ export const updateEchoAppById = async (
       ...(data.githubId !== undefined && {
         githubId: data.githubId?.trim() || null,
       }),
+      ...(data.profilePictureUrl !== undefined && {
+        profilePictureUrl: data.profilePictureUrl?.trim() || null,
+      }),
+      ...(data.bannerImageUrl !== undefined && {
+        bannerImageUrl: data.bannerImageUrl?.trim() || null,
+      }),
     },
     include: {
       apiKeys: {
@@ -566,10 +661,13 @@ export const findEchoApp = async (
       id: true,
       name: true,
       description: true,
+      profilePictureUrl: true,
+      bannerImageUrl: true,
       markUp: true,
       githubId: true,
       githubType: true,
       isActive: true,
+      isPublic: true,
       authorizedCallbackUrls: true,
       isArchived: true,
       archivedAt: true,

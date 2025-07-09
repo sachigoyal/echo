@@ -1,0 +1,64 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { AppRole } from '@/lib/permissions/types';
+import { EchoApp } from '@/lib/types/echo-app';
+import AppPreviewList from './AppPreviewList';
+
+export const MyApps: React.FC = () => {
+  const { user, isLoaded } = useUser();
+  const [userApps, setUserApps] = useState<EchoApp[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      fetchApps();
+    } else if (isLoaded && !user) {
+      setLoading(false);
+    }
+  }, [isLoaded, user]);
+
+  const fetchApps = async () => {
+    try {
+      setError(null);
+      const response = await fetch('/api/owner/apps');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch echo apps');
+      }
+
+      const allApps = data.apps || [];
+
+      // Filter for owner apps
+      const owner = allApps.filter(
+        (app: EchoApp) => app.userRole === AppRole.OWNER
+      );
+
+      setUserApps(owner);
+    } catch (error) {
+      console.error('Error fetching echo apps:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to fetch echo apps'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AppPreviewList
+      title="Your Apps"
+      description="Applications you've created and manage"
+      apps={userApps}
+      href="/apps/my-apps"
+      loading={loading}
+      error={error}
+      emptyStateMessage="You haven't created any apps yet"
+    />
+  );
+};
+
+export default MyApps;

@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { CreditCardIcon, PlusIcon, MinusIcon } from 'lucide-react';
+import {
+  CreditCardIcon,
+  PlusIcon,
+  MinusIcon,
+  ArrowUpRight,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { GlassButton } from './glass-button';
 import { formatCurrency } from '@/lib/balance';
 
@@ -13,8 +19,13 @@ interface Balance {
   currency: string;
 }
 
-export default function BalanceCard() {
+interface BalanceCardProps {
+  compact?: boolean;
+}
+
+export default function BalanceCard({ compact = false }: BalanceCardProps) {
   const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
   const [adjustmentAmount, setAdjustmentAmount] = useState('');
@@ -63,7 +74,20 @@ export default function BalanceCard() {
     }
   };
 
+  const handleNavigateToCredits = () => {
+    router.push('/credits');
+  };
+
   if (!isLoaded || loading) {
+    if (compact) {
+      return (
+        <div className="flex items-center space-x-2 animate-pulse">
+          <div className="h-6 w-6 bg-muted rounded"></div>
+          <div className="h-4 bg-muted rounded w-16"></div>
+        </div>
+      );
+    }
+
     return (
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="animate-pulse">
@@ -75,6 +99,24 @@ export default function BalanceCard() {
     );
   }
 
+  // Compact version for header
+  if (compact) {
+    return (
+      <button
+        onClick={handleNavigateToCredits}
+        className="flex items-center space-x-2 p-2 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm group"
+        title="View and manage credits"
+      >
+        <CreditCardIcon className="h-5 w-5 text-muted-foreground group-hover:text-secondary transition-colors" />
+        <span className="text-sm font-medium text-foreground">
+          ${balance?.balance || '0.00'}
+        </span>
+        <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover:text-secondary transition-colors" />
+      </button>
+    );
+  }
+
+  // Full version for standalone use
   return (
     <div className="bg-card rounded-lg border border-border p-6">
       <div className="flex items-center justify-between mb-4">

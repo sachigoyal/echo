@@ -31,6 +31,7 @@ export class PermissionService {
       Permission.VIEW_OWN_USAGE,
       Permission.USE_LLM_API,
     ],
+    [AppRole.PUBLIC]: [Permission.READ_APP],
   };
 
   static async getUserAppRole(

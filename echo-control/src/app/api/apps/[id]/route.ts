@@ -6,6 +6,7 @@ import {
   deleteEchoAppById,
   AppUpdateInput,
 } from '@/lib/echo-apps';
+import { isValidUUID } from '@/lib/oauth-config/index';
 
 // GET /api/apps/[id] - Get detailed app information
 export async function GET(
@@ -16,6 +17,14 @@ export async function GET(
     const user = await getCurrentUser();
     const resolvedParams = await params;
     const { id: appId } = resolvedParams;
+
+    // Validate UUID format
+    if (!isValidUUID(appId)) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
 
     const appWithStats = await getDetailedAppInfo(appId, user.id);
 
@@ -60,6 +69,14 @@ export async function PUT(
     const user = await getCurrentUser();
     const resolvedParams = await params;
     const { id: appId } = resolvedParams;
+
+    // Validate UUID format
+    if (!isValidUUID(appId)) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
 
     const body = await request.json();
     const { name, description, isActive } = body;
@@ -118,6 +135,14 @@ export async function DELETE(
     const user = await getCurrentUser();
     const resolvedParams = await params;
     const { id: appId } = resolvedParams;
+
+    // Validate UUID format
+    if (!isValidUUID(appId)) {
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
 
     const result = await deleteEchoAppById(appId, user.id);
 
