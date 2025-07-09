@@ -111,6 +111,26 @@ export interface DetailedAppInfo {
   activityData: number[];
 }
 
+export interface PublicAppInfo {
+  id: string;
+  name: string;
+  description: string | null;
+  profilePictureUrl: string | null;
+  bannerImageUrl: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  userRole: AppRole;
+  owner: {
+    id: string;
+    name: string | null;
+  };
+  stats: {
+    totalTransactions: number;
+  };
+  activityData: number[];
+}
+
 // Validation functions
 export const validateAppName = (name: string): string | null => {
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -282,26 +302,103 @@ export const listAppsWithDetails = async (
   });
 };
 
+export const getPublicAppInfo = async (
+  appId: string,
+  userId: string
+): Promise<PublicAppInfo> => {
+  // Find the app
+  const app = await db.echoApp.findFirst({
+    where: {
+      id: appId,
+      isArchived: false,
+      // Public apps should be accessible to everyone
+      isPublic: true,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      profilePictureUrl: true,
+      bannerImageUrl: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!app) {
+    throw new Error('Echo app not found or not publicly accessible');
+  }
+
+  // Find the owner of the app (only name, not email for privacy)
+  const ownerMembership = await db.appMembership.findFirst({
+    where: {
+      echoAppId: appId,
+      role: AppRole.OWNER,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  // Get minimal aggregated statistics (only transaction count, no cost info)
+  const stats = await db.llmTransaction.aggregate({
+    where: {
+      echoAppId: appId,
+      isArchived: false,
+    },
+    _count: true,
+  });
+
+  // Get activity data for the last 7 days
+  const activity = await getAppActivity(appId);
+  const activityData = transformActivityToChartData(activity);
+
+  return {
+    ...app,
+    userRole: AppRole.PUBLIC,
+    owner: ownerMembership?.user || { id: '', name: null },
+    stats: {
+      totalTransactions: stats._count || 0,
+    },
+    activityData,
+  };
+};
+
 export const getDetailedAppInfo = async (
   appId: string,
   userId: string
 ): Promise<DetailedAppInfo> => {
-  // Check if user has permission to read this app
-  const hasPermission = await PermissionService.hasPermission(
-    userId,
-    appId,
-    Permission.READ_APP
-  );
-
-  if (!hasPermission) {
-    throw new Error('Echo app not found or access denied');
-  }
-
   // Get user's role for this app to determine what data to show
   const userRole = await PermissionService.getUserAppRole(userId, appId);
 
-  if (!userRole) {
-    throw new Error('Echo app not found or access denied');
+  // If user has PUBLIC role, use the public function instead
+  if (userRole === AppRole.PUBLIC) {
+    const publicInfo = await getPublicAppInfo(appId, userId);
+    // Transform to match DetailedAppInfo structure for backward compatibility
+    return {
+      ...publicInfo,
+      authorizedCallbackUrls: [],
+      user: {
+        ...publicInfo.owner,
+        email: '', // Don't expose email for privacy reasons
+      },
+      apiKeys: [],
+      stats: {
+        ...publicInfo.stats,
+        totalTokens: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalCost: 0,
+        modelUsage: [],
+      },
+      recentTransactions: [],
+    };
   }
 
   // Find the app

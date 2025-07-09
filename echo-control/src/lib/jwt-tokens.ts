@@ -417,7 +417,7 @@ export async function handleInitialTokenIssuance(
   /* 9️⃣ Ensure the user has access to this Echo app */
   let userRole = await PermissionService.getUserAppRole(user.id, echoApp.id);
 
-  if (!userRole) {
+  if (userRole === AppRole.PUBLIC) {
     try {
       console.log(
         'Creating app membership for user:',
