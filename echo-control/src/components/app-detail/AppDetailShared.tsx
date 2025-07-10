@@ -358,13 +358,9 @@ export function ApiKeysCard({
           <h3 className="text-xl font-bold">API Keys</h3>
         </div>
         {hasCreatePermission && onCreateApiKey && (
-          <GlassButton
-            onClick={onCreateApiKey}
-            variant="primary"
-            className="!h-8 !w-8 !p-0"
-          >
+          <Button onClick={onCreateApiKey} className="!h-8 !w-8 !p-0">
             <Plus className="h-4 w-4" />
-          </GlassButton>
+          </Button>
         )}
       </div>
 

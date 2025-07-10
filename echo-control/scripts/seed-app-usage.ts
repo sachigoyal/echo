@@ -484,6 +484,50 @@ async function seedAppUsage(
     userSpending.set(tx.userId, current + tx.cost);
   });
 
+  // Ensure all users have sufficient balance before updating spending
+  for (const [userId, newSpending] of userSpending.entries()) {
+    // Get current user balance info
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { totalPaid: true, totalSpent: true },
+    });
+
+    if (!user) {
+      throw new Error(`User ${userId} not found when updating balance`);
+    }
+
+    // Convert Decimal values to numbers for arithmetic
+    const currentTotalPaid = user.totalPaid.toNumber();
+    const currentTotalSpent = user.totalSpent.toNumber();
+
+    // Calculate current balance (totalPaid - totalSpent)
+    const currentBalance = currentTotalPaid - currentTotalSpent;
+
+    // If the new spending would make balance negative, add sufficient funds
+    if (currentBalance < newSpending) {
+      // Add enough to cover the new spending plus a small buffer (10% or minimum $5)
+      const shortfall = newSpending - currentBalance;
+      const buffer = Math.max(shortfall * 0.1, 5.0);
+      const additionalFunds = shortfall + buffer;
+
+      if (verbose) {
+        console.log(
+          `  💰 Adding $${additionalFunds.toFixed(4)} to user balance (shortfall: $${shortfall.toFixed(4)})`
+        );
+      }
+
+      // Update user's totalPaid to ensure positive balance
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          totalPaid: {
+            increment: additionalFunds,
+          },
+        },
+      });
+    }
+  }
+
   // Update user and app membership totals
   for (const [userId, totalCost] of userSpending.entries()) {
     // Update user total spent
