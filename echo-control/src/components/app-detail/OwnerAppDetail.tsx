@@ -1,7 +1,7 @@
-import { CreditCard, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import Link from 'next/link';
 import { EnhancedAppData } from '@/hooks/useEchoAppDetail';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
@@ -13,13 +13,11 @@ import {
   AppProfile,
   ActivityChart,
   TopModelsCard,
-  OverviewStats,
   ApiKeysCard,
   RecentActivityCard,
   formatNumber,
 } from './AppDetailShared';
 import { AppHomepageCard } from './AppHomepageCard';
-import router from 'next/router';
 
 interface OwnerAppDetailProps {
   app: DetailedEchoApp;
@@ -47,7 +45,7 @@ export function OwnerAppDetail({
   const isGlobalView = viewMode[0] === 1;
 
   // Function to fetch global data
-  const fetchGlobalData = async () => {
+  const fetchGlobalData = useCallback(async () => {
     if (enhancedApp.globalStats) return; // Already fetched
 
     setIsLoadingGlobal(true);
@@ -68,14 +66,14 @@ export function OwnerAppDetail({
     } finally {
       setIsLoadingGlobal(false);
     }
-  };
+  }, [app.id, enhancedApp.globalStats]);
 
   // Fetch global data when switching to global view
   useEffect(() => {
     if (isGlobalView && !enhancedApp.globalStats) {
       fetchGlobalData();
     }
-  }, [isGlobalView, app.id, enhancedApp.globalStats]);
+  }, [isGlobalView, app.id, enhancedApp.globalStats, fetchGlobalData]);
 
   // Get current stats based on view
   const currentStats = isGlobalView

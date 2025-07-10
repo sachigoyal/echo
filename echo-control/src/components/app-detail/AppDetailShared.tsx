@@ -2,14 +2,10 @@ import {
   Activity,
   ArrowLeft,
   CheckCircle,
-  CreditCard,
   Key,
   Plus,
   Trash,
   X,
-  Zap,
-  TrendingUp,
-  Shield,
   Users,
   Eye,
 } from 'lucide-react';
@@ -17,7 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ReactNode } from 'react';
 import { formatCurrency } from '@/lib/balance';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -26,7 +22,7 @@ import { CommitChart } from '@/components/activity-chart/chart';
 import { DotPattern } from '@/components/ui/dot-background';
 import { GlassButton } from '@/components/glass-button';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
-import { AppRole, Permission } from '@/lib/permissions/types';
+import { AppRole } from '@/lib/permissions/types';
 
 // Helper functions
 export const formatNumber = (value: number | null | undefined): string => {

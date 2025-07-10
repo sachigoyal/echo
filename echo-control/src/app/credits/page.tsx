@@ -124,11 +124,6 @@ export default function CreditsPage() {
     }
   };
 
-  const handleRefresh = () => {
-    fetchBalance();
-    fetchPayments();
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',

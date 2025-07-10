@@ -1,12 +1,8 @@
-import { Shield, Users } from 'lucide-react';
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { AppRole } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 import { formatCurrency } from '@/lib/balance';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   AppDetailLayout,
   AppBanner,
@@ -57,7 +53,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
   const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
 
   // Function to fetch global data
-  const fetchGlobalData = async () => {
+  const fetchGlobalData = useCallback(async () => {
     if (enhancedApp.globalStats) return; // Already fetched
 
     setIsLoadingGlobal(true);
@@ -78,12 +74,12 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
     } finally {
       setIsLoadingGlobal(false);
     }
-  };
+  }, [app.id, enhancedApp.globalStats]);
 
   // Fetch global data on component mount
   useEffect(() => {
     fetchGlobalData();
-  }, [app.id]);
+  }, [app.id, fetchGlobalData]);
 
   // Always use global stats for public view
   const currentStats = enhancedApp.globalStats || app.stats;

@@ -350,8 +350,7 @@ export const listAppsWithDetails = async (
 };
 
 export const getPublicAppInfo = async (
-  appId: string,
-  userId: string
+  appId: string
 ): Promise<PublicAppInfo> => {
   // Find the app
   const app = await db.echoApp.findFirst({
@@ -487,7 +486,7 @@ export const getDetailedAppInfo = async (
 
   // If user has PUBLIC role, use the public function instead
   if (userRole === AppRole.PUBLIC) {
-    const publicInfo = await getPublicAppInfo(appId, userId);
+    const publicInfo = await getPublicAppInfo(appId);
     // Transform to match DetailedAppInfo structure for backward compatibility
     return {
       ...publicInfo,

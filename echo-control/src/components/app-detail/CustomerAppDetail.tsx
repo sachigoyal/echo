@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 import { formatCurrency } from '@/lib/balance';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   AppDetailLayout,
   AppBanner,
@@ -45,7 +45,7 @@ export function CustomerAppDetail({
   const isGlobalView = viewMode[0] === 1;
 
   // Function to fetch global data
-  const fetchGlobalData = async () => {
+  const fetchGlobalData = useCallback(async () => {
     if (enhancedApp.globalStats) return; // Already fetched
 
     setIsLoadingGlobal(true);
@@ -66,14 +66,14 @@ export function CustomerAppDetail({
     } finally {
       setIsLoadingGlobal(false);
     }
-  };
+  }, [app.id, enhancedApp.globalStats]);
 
   // Fetch global data when switching to global view
   useEffect(() => {
     if (isGlobalView && !enhancedApp.globalStats) {
       fetchGlobalData();
     }
-  }, [isGlobalView, app.id, enhancedApp.globalStats]);
+  }, [isGlobalView, app.id, enhancedApp.globalStats, fetchGlobalData]);
 
   // Get current stats based on view
   const currentStats = isGlobalView
