@@ -3,7 +3,8 @@ import { AppActivity } from '@/lib/types/apps';
 
 export const getAppActivity = async (
   appId: string,
-  lookbackDays: number = 7
+  lookbackDays: number = 7,
+  userId?: string
 ): Promise<AppActivity[]> => {
   // Generate array of the last N days
   const days = Array.from({ length: lookbackDays }, (_, i) => {
@@ -25,6 +26,9 @@ export const getAppActivity = async (
         gte: startDate,
         lt: endDate,
       },
+      isArchived: false,
+      // Filter by user if provided
+      ...(userId && { userId }),
     },
     select: {
       createdAt: true,

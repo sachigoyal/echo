@@ -34,10 +34,7 @@ export class PermissionService {
     [AppRole.PUBLIC]: [Permission.READ_APP],
   };
 
-  static async getUserAppRole(
-    userId: string,
-    appId: string
-  ): Promise<AppRole | null> {
+  static async getUserAppRole(userId: string, appId: string): Promise<AppRole> {
     // Check app membership
     const membership = await db.appMembership.findFirst({
       where: {
@@ -48,7 +45,7 @@ export class PermissionService {
       },
     });
 
-    return membership ? (membership.role as AppRole) : null;
+    return membership ? (membership.role as AppRole) : AppRole.PUBLIC;
   }
 
   static async hasPermission(

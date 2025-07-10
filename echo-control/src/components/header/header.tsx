@@ -90,7 +90,7 @@ export default function Header() {
               {user && (
                 <Link
                   href="/owner/apps/create"
-                  className="hidden md:block px-4 py-2 text-sm font-medium text-foreground bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm rounded-lg"
+                  className="hidden md:flex items-center px-4 py-2.5 text-sm font-medium text-foreground bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm rounded-lg h-10"
                 >
                   Create App
                 </Link>
@@ -99,7 +99,7 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setShowThemeMenu(!showThemeMenu)}
-                  className="p-2 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm"
                   title={`Current theme: ${theme}`}
                 >
                   <ThemeIcon className="h-5 w-5 text-muted-foreground" />
@@ -164,18 +164,18 @@ export default function Header() {
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-3 p-2 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm"
+                    className="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm h-10"
                   >
                     {user.imageUrl ? (
                       <Image
                         src={user.imageUrl}
                         alt="Profile"
-                        width={32}
-                        height={32}
-                        className="h-8 w-8 rounded-full ring-2 ring-secondary/20"
+                        width={20}
+                        height={20}
+                        className="h-5 w-5 rounded-full ring-2 ring-secondary/20"
                       />
                     ) : (
-                      <UserIcon className="h-8 w-8 text-muted-foreground" />
+                      <UserIcon className="h-5 w-5 text-muted-foreground" />
                     )}
                     <span className="text-sm font-medium text-foreground hidden sm:block">
                       {user.fullName || user.emailAddresses[0]?.emailAddress}
@@ -192,12 +192,12 @@ export default function Header() {
                             <Image
                               src={user.imageUrl}
                               alt="Profile"
-                              width={40}
-                              height={40}
-                              className="h-10 w-10 rounded-full ring-2 ring-secondary/20"
+                              width={32}
+                              height={32}
+                              className="h-8 w-8 rounded-full ring-2 ring-secondary/20"
                             />
                           ) : (
-                            <UserIcon className="h-10 w-10 text-muted-foreground" />
+                            <UserIcon className="h-8 w-8 text-muted-foreground" />
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">

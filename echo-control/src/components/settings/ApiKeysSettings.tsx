@@ -1,21 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { Key, Calendar } from 'lucide-react';
-
-interface ApiKey {
-  id: string;
-  name: string;
-  userId: string;
-  echoAppId: string;
-  scope: string;
-  createdAt: string;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-  };
-}
+import { Button } from '@/components/ui/button';
+import { useApiKeysSettings } from '@/hooks/useApiKeysSettings';
 
 interface ApiKeysSettingsProps {
   appId: string;
@@ -26,38 +14,8 @@ export default function ApiKeysSettings({
   appId,
   appName,
 }: ApiKeysSettingsProps) {
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchApiKeys = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch('/api/api-keys');
-
-      if (response.ok) {
-        const data = await response.json();
-        // Filter to only show keys for this specific app
-        const appApiKeys = data.apiKeys.filter(
-          (key: ApiKey) => key.echoAppId === appId
-        );
-        setApiKeys(appApiKeys);
-      } else {
-        throw new Error('Failed to fetch API keys');
-      }
-    } catch (error) {
-      console.error('Error fetching API keys:', error);
-      setError('Failed to load API keys');
-    } finally {
-      setLoading(false);
-    }
-  }, [appId]);
-
-  useEffect(() => {
-    fetchApiKeys();
-  }, [fetchApiKeys]);
+  const { apiKeys, loading, error, pagination, fetchApiKeys } =
+    useApiKeysSettings(appId);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -69,6 +27,14 @@ export default function ApiKeysSettings({
     });
   };
 
+  if (loading && !apiKeys.length) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -78,26 +44,29 @@ export default function ApiKeysSettings({
         </p>
       </div>
 
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+          <div className="text-sm text-destructive-foreground">{error}</div>
+        </div>
+      )}
+
       {/* API Keys List */}
       <div className="bg-card border border-border rounded-xl p-6">
-        <div className="flex items-center mb-4">
-          <Key className="h-5 w-5 mr-2 text-muted-foreground" />
-          <h4 className="text-sm font-semibold text-foreground">
-            API Keys for {appName}
-          </h4>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <Key className="h-5 w-5 mr-2 text-muted-foreground" />
+            <h4 className="text-sm font-semibold text-foreground">
+              API Keys for {appName} ({pagination?.totalCount || 0})
+            </h4>
+          </div>
+          {pagination && pagination.totalCount > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Page {pagination.page} of {pagination.totalPages}
+            </p>
+          )}
         </div>
 
-        {error && (
-          <div className="mb-4 bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-            <div className="text-sm text-destructive-foreground">{error}</div>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="flex items-center justify-center h-20">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-secondary"></div>
-          </div>
-        ) : apiKeys.length === 0 ? (
+        {apiKeys.length === 0 ? (
           <div className="text-center py-8">
             <div className="w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Key className="h-6 w-6 text-muted-foreground" />
@@ -146,10 +115,38 @@ export default function ApiKeysSettings({
           </div>
         )}
 
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex justify-center mt-6 pt-4 border-t border-border/30">
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={!pagination.hasPreviousPage || loading}
+                onClick={() => fetchApiKeys(pagination.page - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-xs text-muted-foreground px-2">
+                {pagination.page} of {pagination.totalPages}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={!pagination.hasNextPage || loading}
+                onClick={() => fetchApiKeys(pagination.page + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="mt-4 pt-4 border-t border-border/30">
           <p className="text-xs text-muted-foreground">
             Showing {apiKeys.length} API key{apiKeys.length !== 1 ? 's' : ''}{' '}
-            for this app. API keys are managed by individual users.
+            out of {pagination?.totalCount || 0} total. API keys are ordered by
+            creation date, most recent first.
           </p>
         </div>
       </div>

@@ -3,13 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Key, BarChart, Shield, ChevronRight } from 'lucide-react';
+import {
+  Settings,
+  Key,
+  BarChart,
+  Shield,
+  ChevronRight,
+  Users,
+  DollarSign,
+} from 'lucide-react';
 
 // Import individual settings components
 import GeneralSettings from '@/components/settings/GeneralSettings';
 import ApiKeysSettings from '@/components/settings/ApiKeysSettings';
 import AnalyticsSettings from '@/components/settings/AnalyticsSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
+import UsersSettings from '@/components/settings/UsersSettings';
+import EarningsSettings from '@/components/settings/EarningsSettings';
 
 interface SidebarItem {
   id: string;
@@ -36,6 +46,18 @@ const sidebarItems: SidebarItem[] = [
     label: 'Analytics',
     icon: <BarChart className="h-4 w-4" />,
     description: 'Usage metrics and performance data',
+  },
+  {
+    id: 'earnings',
+    label: 'Earnings',
+    icon: <DollarSign className="h-4 w-4" />,
+    description: 'LLM transaction earnings and revenue details',
+  },
+  {
+    id: 'users',
+    label: 'Users',
+    icon: <Users className="h-4 w-4" />,
+    description: 'All active users of your app with usage details',
   },
   {
     id: 'security',
@@ -90,6 +112,10 @@ const SettingsPage: React.FC = () => {
         return <ApiKeysSettings appId={appId} appName={appName} />;
       case 'analytics':
         return <AnalyticsSettings appId={appId} />;
+      case 'earnings':
+        return <EarningsSettings appId={appId} />;
+      case 'users':
+        return <UsersSettings appId={appId} />;
       case 'security':
         return <SecuritySettings appId={appId} />;
       default:

@@ -18,6 +18,10 @@ export async function GET(
     const resolvedParams = await params;
     const { id: appId } = resolvedParams;
 
+    // Check for view parameter
+    const { searchParams } = new URL(request.url);
+    const view = searchParams.get('view');
+
     // Validate UUID format
     if (!isValidUUID(appId)) {
       return NextResponse.json(
@@ -26,7 +30,12 @@ export async function GET(
       );
     }
 
-    const appWithStats = await getDetailedAppInfo(appId, user.id);
+    // For global view, fetch global data
+    const appWithStats = await getDetailedAppInfo(
+      appId,
+      user.id,
+      view === 'global'
+    );
 
     return NextResponse.json(appWithStats);
   } catch (error) {
@@ -79,8 +88,13 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, description, isActive } = body;
-    const updateData: AppUpdateInput = { name, description, isActive };
+    const { name, description, isActive, homepageUrl } = body;
+    const updateData: AppUpdateInput = {
+      name,
+      description,
+      isActive,
+      homepageUrl,
+    };
 
     const updatedApp = await updateEchoAppById(appId, user.id, updateData);
 

@@ -45,6 +45,13 @@ export default function GeneralSettings({
     banner?: string;
   }>({});
 
+  // Homepage URL state
+  const [homepageUrl, setHomepageUrl] = useState<string>('');
+  const [editingHomepageUrl, setEditingHomepageUrl] = useState(false);
+  const [newHomepageUrl, setNewHomepageUrl] = useState<string>('');
+  const [updatingHomepageUrl, setUpdatingHomepageUrl] = useState(false);
+  const [homepageUrlError, setHomepageUrlError] = useState<string | null>(null);
+
   const updateAppName = async () => {
     if (!newAppName.trim()) {
       setAppNameError('App name cannot be empty');
@@ -94,6 +101,70 @@ export default function GeneralSettings({
     setAppNameError(null);
   };
 
+  const updateHomepageUrl = async () => {
+    // Allow empty homepage URL
+    const trimmedUrl = newHomepageUrl.trim();
+
+    if (trimmedUrl === homepageUrl) {
+      setEditingHomepageUrl(false);
+      setHomepageUrlError(null);
+      return;
+    }
+
+    // Validate URL format if not empty
+    if (trimmedUrl && !isValidUrl(trimmedUrl)) {
+      setHomepageUrlError(
+        'Please enter a valid URL (including http:// or https://)'
+      );
+      return;
+    }
+
+    try {
+      setUpdatingHomepageUrl(true);
+      setHomepageUrlError(null);
+
+      const response = await fetch(`/api/apps/${appId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          homepageUrl: trimmedUrl || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update homepage URL');
+      }
+
+      setHomepageUrl(trimmedUrl);
+      setEditingHomepageUrl(false);
+    } catch (error) {
+      console.error('Error updating homepage URL:', error);
+      setHomepageUrlError(
+        error instanceof Error ? error.message : 'Failed to update homepage URL'
+      );
+    } finally {
+      setUpdatingHomepageUrl(false);
+    }
+  };
+
+  const cancelEditHomepageUrl = () => {
+    setNewHomepageUrl(homepageUrl);
+    setEditingHomepageUrl(false);
+    setHomepageUrlError(null);
+  };
+
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   // Fetch current app details including images
   useEffect(() => {
     const fetchAppDetails = async () => {
@@ -104,6 +175,8 @@ export default function GeneralSettings({
           setIsPublic(data.isPublic || false);
           setProfilePictureUrl(data.profilePictureUrl || null);
           setBannerImageUrl(data.bannerImageUrl || null);
+          setHomepageUrl(data.homepageUrl || '');
+          setNewHomepageUrl(data.homepageUrl || '');
         }
       } catch (error) {
         console.error('Error fetching app details:', error);
@@ -364,6 +437,73 @@ export default function GeneralSettings({
                 {publicError}
               </p>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Homepage URL Settings */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-foreground mb-3">
+              App Homepage URL
+            </label>
+            {editingHomepageUrl ? (
+              <div className="space-y-3">
+                <input
+                  type="url"
+                  value={newHomepageUrl}
+                  onChange={e => setNewHomepageUrl(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-input bg-input/50 text-input-foreground rounded-lg text-sm focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all duration-200"
+                  placeholder="https://example.com"
+                  disabled={updatingHomepageUrl}
+                />
+                {homepageUrlError && (
+                  <p className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+                    {homepageUrlError}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <GlassButton
+                    onClick={updateHomepageUrl}
+                    disabled={updatingHomepageUrl}
+                    variant="primary"
+                  >
+                    {updatingHomepageUrl ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                    ) : (
+                      <SaveIcon className="h-3 w-3 mr-1" />
+                    )}
+                    Save
+                  </GlassButton>
+                  <GlassButton
+                    onClick={cancelEditHomepageUrl}
+                    disabled={updatingHomepageUrl}
+                    variant="secondary"
+                  >
+                    <XIcon className="h-3 w-3 mr-1" />
+                    Cancel
+                  </GlassButton>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between bg-muted/30 rounded-lg p-3 w-full">
+                <span className="text-foreground font-medium">
+                  {homepageUrl || 'No homepage URL set'}
+                </span>
+                <GlassButton
+                  onClick={() => setEditingHomepageUrl(true)}
+                  variant="secondary"
+                >
+                  <EditIcon className="h-3 w-3 mr-1" />
+                  Edit
+                </GlassButton>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mt-2">
+              The URL where users can access your application. This will be
+              displayed in the public app directory.
+            </p>
           </div>
         </div>
       </div>
