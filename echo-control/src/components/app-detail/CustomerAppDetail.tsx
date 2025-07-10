@@ -1,9 +1,11 @@
-import { Key, CreditCard, Users } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 import { formatCurrency } from '@/lib/balance';
+import { useState, useEffect } from 'react';
 import {
   AppDetailLayout,
   AppBanner,
@@ -12,7 +14,10 @@ import {
   ApiKeysCard,
   RecentActivityCard,
   formatNumber,
+  TopModelsCard,
 } from './AppDetailShared';
+import { AppHomepageCard } from './AppHomepageCard';
+import { EnhancedAppData } from '@/hooks/useEchoAppDetail';
 
 interface CustomerAppDetailProps {
   app: DetailedEchoApp;
@@ -33,68 +38,137 @@ export function CustomerAppDetail({
   showPaymentSuccess,
   onDismissPaymentSuccess,
 }: CustomerAppDetailProps) {
-  const customerStats = (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-      {/* Owner Information */}
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">Owner</p>
-        <p className="text-sm text-foreground font-medium truncate">
-          {app.user?.name || app.user?.email || 'Unknown'}
-        </p>
-      </div>
+  // View toggle state - 0 for personal, 1 for global
+  const [viewMode, setViewMode] = useState([0]);
+  const [enhancedApp, setEnhancedApp] = useState<EnhancedAppData>(app);
+  const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
+  const isGlobalView = viewMode[0] === 1;
 
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Your Requests
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {formatNumber(app.stats?.totalTransactions)}
-        </p>
-      </div>
+  // Function to fetch global data
+  const fetchGlobalData = async () => {
+    if (enhancedApp.globalStats) return; // Already fetched
 
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Your Tokens
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {formatNumber(app.stats?.totalTokens)}
-        </p>
-      </div>
+    setIsLoadingGlobal(true);
+    try {
+      const response = await fetch(`/api/apps/${app.id}?view=global`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch global data');
+      }
+      const globalData = await response.json();
+      setEnhancedApp(prev => ({
+        ...prev,
+        globalStats: globalData.stats,
+        globalActivityData: globalData.activityData,
+        globalRecentTransactions: globalData.recentTransactions,
+      }));
+    } catch (error) {
+      console.error('Error fetching global data:', error);
+    } finally {
+      setIsLoadingGlobal(false);
+    }
+  };
 
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Your Spending
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {formatCurrency(app.stats?.totalCost)}
-        </p>
-      </div>
+  // Fetch global data when switching to global view
+  useEffect(() => {
+    if (isGlobalView && !enhancedApp.globalStats) {
+      fetchGlobalData();
+    }
+  }, [isGlobalView, app.id, enhancedApp.globalStats]);
 
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Your API Keys
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {app.apiKeys?.length || 0}
-        </p>
+  // Get current stats based on view
+  const currentStats = isGlobalView
+    ? enhancedApp.globalStats || app.stats
+    : app.stats;
+  const currentActivityData = isGlobalView
+    ? enhancedApp.globalActivityData || app.activityData
+    : app.activityData;
+  const currentRecentTransactions = isGlobalView
+    ? enhancedApp.globalRecentTransactions || app.recentTransactions
+    : app.recentTransactions;
+
+  // Clean stats display with slider in bottom right
+  const enhancedStats = (
+    <div className="relative">
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+        {/* Owner Information */}
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            Owner
+          </p>
+          <p className="text-sm text-foreground font-medium truncate">
+            {app.user?.name || app.user?.email || 'Unknown'}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {isGlobalView ? 'Total Requests' : 'Your Requests'}
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {isLoadingGlobal && isGlobalView
+              ? '...'
+              : formatNumber(currentStats?.totalTransactions)}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {isGlobalView ? 'Total Tokens' : 'Your Tokens'}
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {isLoadingGlobal && isGlobalView
+              ? '...'
+              : formatNumber(currentStats?.totalTokens)}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {isGlobalView ? 'Total Spending' : 'Your Spending'}
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {isLoadingGlobal && isGlobalView
+              ? '...'
+              : formatCurrency(currentStats?.totalCost)}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            Your API Keys
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {app.apiKeys?.length || 0}
+          </p>
+        </div>
       </div>
     </div>
   );
 
-  const customerActions = (
+  const enhancedActions = (
     <div className="flex items-center gap-3">
-      {hasPermission(Permission.MANAGE_OWN_API_KEYS) && onCreateApiKey && (
-        <Button onClick={onCreateApiKey} size="default" variant="default">
-          <Key className="h-4 w-4" />
-          Create API Key
-        </Button>
-      )}
       <Link href="/credits">
         <Button size="default" variant="outline">
           <CreditCard className="h-4 w-4" />
           Add Credits
         </Button>
       </Link>
+      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm rounded-lg border border-border px-2 py-1">
+        <span className="text-xs font-medium text-muted-foreground">
+          Personal
+        </span>
+        <div className="w-12">
+          <Switch
+            checked={isGlobalView}
+            onCheckedChange={checked => setViewMode([checked ? 1 : 0])}
+            className="cursor-pointer"
+          />
+        </div>
+        <span className="text-xs font-medium text-muted-foreground">
+          Global
+        </span>
+      </div>
     </div>
   );
 
@@ -110,15 +184,34 @@ export function CustomerAppDetail({
           app={app}
           userRole={AppRole.CUSTOMER}
           roleLabel="Customer Access"
-          actions={customerActions}
+          actions={enhancedActions}
         >
-          {customerStats}
+          {enhancedStats}
         </AppProfile>
       </div>
 
-      {/* Customer Data Cards Section */}
+      {/* Tokens Over Time Chart - Full Width */}
+      <div className="px-6 mb-32 relative z-10">
+        <div className="h-64">
+          <ActivityChart
+            app={{
+              ...app,
+              activityData: currentActivityData,
+            }}
+            title={
+              isGlobalView ? 'Global Tokens Over Time' : 'Your Tokens Over Time'
+            }
+          />
+        </div>
+      </div>
+
+      {/* Enhanced Content Section */}
       <div className="px-6 mt-8 mb-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* First Row - Homepage and API Keys */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Homepage Card */}
+          <AppHomepageCard app={app} />
+
           {/* API Keys Card */}
           <ApiKeysCard
             app={app}
@@ -128,15 +221,30 @@ export function CustomerAppDetail({
             onArchiveApiKey={onArchiveApiKey}
             deletingKeyId={deletingKeyId}
           />
-
-          {/* Recent Activity Card */}
-          <RecentActivityCard app={app} title="Your Recent Activity" />
         </div>
-      </div>
 
-      {/* Activity Chart for Customer Users */}
-      <div className="px-6 mt-8 mb-8">
-        <ActivityChart app={app} title="Your Activity" />
+        {/* Second Row - Activity and Recent Transactions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Recent Activity Card */}
+          <RecentActivityCard
+            app={{
+              ...app,
+              recentTransactions: currentRecentTransactions,
+            }}
+            title={
+              isGlobalView ? 'Global Recent Activity' : 'Your Recent Activity'
+            }
+          />
+
+          {/* Models Usage Card */}
+          <TopModelsCard
+            app={{
+              ...app,
+              stats: currentStats,
+            }}
+            title={isGlobalView ? 'Global Model Usage' : 'Your Model Usage'}
+          />
+        </div>
       </div>
     </AppDetailLayout>
   );

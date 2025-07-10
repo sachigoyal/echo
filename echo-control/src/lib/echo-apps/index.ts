@@ -28,6 +28,7 @@ export interface AppUpdateInput {
   githubId?: string;
   profilePictureUrl?: string;
   bannerImageUrl?: string;
+  homepageUrl?: string;
 }
 
 export interface AppWithDetails {
@@ -38,6 +39,7 @@ export interface AppWithDetails {
   isPublic: boolean;
   profilePictureUrl?: string | null;
   bannerImageUrl?: string | null;
+  homepageUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   authorizedCallbackUrls: string[];
@@ -63,6 +65,7 @@ export interface DetailedAppInfo {
   description: string | null;
   profilePictureUrl: string | null;
   bannerImageUrl: string | null;
+  homepageUrl: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -117,6 +120,7 @@ export interface PublicAppInfo {
   description: string | null;
   profilePictureUrl: string | null;
   bannerImageUrl: string | null;
+  homepageUrl: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -127,7 +131,27 @@ export interface PublicAppInfo {
   };
   stats: {
     totalTransactions: number;
+    totalTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCost: number;
+    modelUsage: Array<{
+      model: string;
+      _count: number;
+      _sum: {
+        totalTokens: number;
+        cost: number;
+      };
+    }>;
   };
+  recentTransactions: Array<{
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: Date;
+  }>;
   activityData: number[];
 }
 
@@ -168,6 +192,29 @@ export const validateGithubId = (githubId?: string): string | null => {
 export const validateGithubType = (githubType?: string): string | null => {
   if (githubType && !['user', 'repo'].includes(githubType)) {
     return 'GitHub Type must be either "user" or "repo"';
+  }
+  return null;
+};
+
+export const validateHomepageUrl = (homepageUrl?: string): string | null => {
+  if (homepageUrl && typeof homepageUrl !== 'string') {
+    return 'Homepage URL must be a string';
+  }
+  if (homepageUrl && homepageUrl.trim().length === 0) {
+    return 'Homepage URL cannot be empty if provided';
+  }
+  if (homepageUrl && homepageUrl.length > 500) {
+    return 'Homepage URL must be 500 characters or less';
+  }
+  if (homepageUrl) {
+    try {
+      const url = new URL(homepageUrl);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        return 'Homepage URL must start with http:// or https://';
+      }
+    } catch {
+      return 'Invalid Homepage URL format';
+    }
   }
   return null;
 };
@@ -320,6 +367,7 @@ export const getPublicAppInfo = async (
       description: true,
       profilePictureUrl: true,
       bannerImageUrl: true,
+      homepageUrl: true,
       isActive: true,
       createdAt: true,
       updatedAt: true,
@@ -346,13 +394,56 @@ export const getPublicAppInfo = async (
     },
   });
 
-  // Get minimal aggregated statistics (only transaction count, no cost info)
+  // Get full aggregated statistics for public view (always global)
   const stats = await db.llmTransaction.aggregate({
     where: {
       echoAppId: appId,
       isArchived: false,
     },
     _count: true,
+    _sum: {
+      totalTokens: true,
+      inputTokens: true,
+      outputTokens: true,
+      cost: true,
+    },
+  });
+
+  // Get model usage breakdown (always global for public view)
+  const modelUsage = await db.llmTransaction.groupBy({
+    by: ['model'],
+    where: {
+      echoAppId: appId,
+      isArchived: false,
+    },
+    _count: true,
+    _sum: {
+      totalTokens: true,
+      cost: true,
+    },
+    orderBy: {
+      _sum: {
+        totalTokens: 'desc',
+      },
+    },
+  });
+
+  // Get recent transactions (always global for public view)
+  const recentTransactions = await db.llmTransaction.findMany({
+    where: {
+      echoAppId: appId,
+      isArchived: false,
+    },
+    select: {
+      id: true,
+      model: true,
+      totalTokens: true,
+      cost: true,
+      status: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 10,
   });
 
   // Get activity data for the last 7 days
@@ -365,14 +456,31 @@ export const getPublicAppInfo = async (
     owner: ownerMembership?.user || { id: '', name: null },
     stats: {
       totalTransactions: stats._count || 0,
+      totalTokens: stats._sum.totalTokens || 0,
+      totalInputTokens: stats._sum.inputTokens || 0,
+      totalOutputTokens: stats._sum.outputTokens || 0,
+      totalCost: Number(stats._sum.cost || 0),
+      modelUsage: modelUsage.map(usage => ({
+        model: usage.model,
+        _count: usage._count,
+        _sum: {
+          totalTokens: usage._sum.totalTokens || 0,
+          cost: Number(usage._sum.cost || 0),
+        },
+      })),
     },
+    recentTransactions: recentTransactions.map(transaction => ({
+      ...transaction,
+      cost: Number(transaction.cost),
+    })),
     activityData,
   };
 };
 
 export const getDetailedAppInfo = async (
   appId: string,
-  userId: string
+  userId: string,
+  globalView: boolean = false
 ): Promise<DetailedAppInfo> => {
   // Get user's role for this app to determine what data to show
   const userRole = await PermissionService.getUserAppRole(userId, appId);
@@ -389,15 +497,8 @@ export const getDetailedAppInfo = async (
         email: '', // Don't expose email for privacy reasons
       },
       apiKeys: [],
-      stats: {
-        ...publicInfo.stats,
-        totalTokens: 0,
-        totalInputTokens: 0,
-        totalOutputTokens: 0,
-        totalCost: 0,
-        modelUsage: [],
-      },
-      recentTransactions: [],
+      stats: publicInfo.stats, // Use the full stats from public info
+      recentTransactions: publicInfo.recentTransactions, // Use the actual recent transactions
     };
   }
 
@@ -469,13 +570,13 @@ export const getDetailedAppInfo = async (
     },
   });
 
-  // Get aggregated statistics for the app (filtered by user for customers)
+  // Get aggregated statistics for the app (filtered by user for customers unless globalView is true)
   const stats = await db.llmTransaction.aggregate({
     where: {
       echoAppId: appId,
       isArchived: false,
-      // Filter by user for customers
-      ...(userRole === AppRole.CUSTOMER && { userId }),
+      // Filter by user for customers unless globalView is requested
+      ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
     },
     _count: true,
     _sum: {
@@ -486,13 +587,14 @@ export const getDetailedAppInfo = async (
     },
   });
 
-  // Get model usage breakdown (filtered by user for customers)
+  // Get model usage breakdown (filtered by user for customers unless globalView is true)
   const modelUsage = await db.llmTransaction.groupBy({
     by: ['model'],
     where: {
       echoAppId: appId,
       isArchived: false,
-      ...(userRole === AppRole.CUSTOMER && { userId }),
+      // Filter by user for customers unless globalView is requested
+      ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
     },
     _count: true,
     _sum: {
@@ -506,12 +608,13 @@ export const getDetailedAppInfo = async (
     },
   });
 
-  // Get recent transactions (filtered by user for customers)
+  // Get recent transactions (filtered by user for customers unless globalView is true)
   const recentTransactions = await db.llmTransaction.findMany({
     where: {
       echoAppId: appId,
       isArchived: false,
-      ...(userRole === AppRole.CUSTOMER && { userId }),
+      // Filter by user for customers unless globalView is requested
+      ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
     },
     select: {
       id: true,
@@ -525,8 +628,12 @@ export const getDetailedAppInfo = async (
     take: 10,
   });
 
-  // Get activity data for the last 7 days
-  const activity = await getAppActivity(appId);
+  // Get activity data for the last 7 days (filtered by user for customers unless globalView is true)
+  const activity = await getAppActivity(
+    appId,
+    7,
+    userRole === AppRole.CUSTOMER && !globalView ? userId : undefined
+  );
   const activityData = transformActivityToChartData(activity);
 
   // Calculate total spent for each API key
@@ -681,6 +788,13 @@ export const updateEchoAppById = async (
     }
   }
 
+  if (data.homepageUrl !== undefined) {
+    const homepageUrlError = validateHomepageUrl(data.homepageUrl);
+    if (homepageUrlError) {
+      throw new Error(homepageUrlError);
+    }
+  }
+
   // Verify the echo app exists and is not archived
   const existingApp = await db.echoApp.findFirst({
     where: {
@@ -711,6 +825,9 @@ export const updateEchoAppById = async (
       }),
       ...(data.bannerImageUrl !== undefined && {
         bannerImageUrl: data.bannerImageUrl?.trim() || null,
+      }),
+      ...(data.homepageUrl !== undefined && {
+        homepageUrl: data.homepageUrl?.trim() || null,
       }),
     },
     include: {
@@ -789,6 +906,7 @@ export const findEchoApp = async (
       description: true,
       profilePictureUrl: true,
       bannerImageUrl: true,
+      homepageUrl: true,
       markUp: true,
       githubId: true,
       githubType: true,

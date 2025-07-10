@@ -5,20 +5,95 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { AppRole } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
+import { formatCurrency } from '@/lib/balance';
+import { useState, useEffect } from 'react';
 import {
   AppDetailLayout,
   AppBanner,
   AppProfile,
   ActivityChart,
+  formatNumber,
+  TopModelsCard,
+  RecentActivityCard,
 } from './AppDetailShared';
+import { UserCountCard } from './UserCountCard';
+import { GlobalModelsCard } from './GlobalModelsCard';
+import { AppHomepageCard } from './AppHomepageCard';
+
+// Enhanced interfaces for global data
+interface EnhancedAppData extends DetailedEchoApp {
+  globalStats?: {
+    totalTransactions: number;
+    totalTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCost: number;
+    modelUsage: Array<{
+      model: string;
+      _sum: {
+        totalTokens: number | null;
+        cost: number | null;
+      };
+      _count: number;
+    }>;
+  };
+  globalActivityData?: number[];
+  globalRecentTransactions?: Array<{
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: string;
+  }>;
+}
 
 interface PublicAppDetailProps {
   app: DetailedEchoApp;
 }
 
 export function PublicAppDetail({ app }: PublicAppDetailProps) {
-  const basicStats = (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+  const [enhancedApp, setEnhancedApp] = useState<EnhancedAppData>(app);
+  const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
+
+  // Function to fetch global data
+  const fetchGlobalData = async () => {
+    if (enhancedApp.globalStats) return; // Already fetched
+
+    setIsLoadingGlobal(true);
+    try {
+      const response = await fetch(`/api/apps/${app.id}?view=global`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch global data');
+      }
+      const globalData = await response.json();
+      setEnhancedApp(prev => ({
+        ...prev,
+        globalStats: globalData.stats,
+        globalActivityData: globalData.activityData,
+        globalRecentTransactions: globalData.recentTransactions,
+      }));
+    } catch (error) {
+      console.error('Error fetching global data:', error);
+    } finally {
+      setIsLoadingGlobal(false);
+    }
+  };
+
+  // Fetch global data on component mount
+  useEffect(() => {
+    fetchGlobalData();
+  }, [app.id]);
+
+  // Always use global stats for public view
+  const currentStats = enhancedApp.globalStats || app.stats;
+  const currentActivityData =
+    enhancedApp.globalActivityData || app.activityData;
+  const currentRecentTransactions =
+    enhancedApp.globalRecentTransactions || app.recentTransactions;
+
+  const enhancedStats = (
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
       {/* Owner Information */}
       <div>
         <p className="text-sm font-medium text-muted-foreground mb-1">Owner</p>
@@ -29,14 +104,30 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
 
       <div>
         <p className="text-sm font-medium text-muted-foreground mb-1">
-          Created
+          Total Requests
         </p>
-        <p className="text-sm text-foreground font-medium">
-          {new Date(app.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
+        <p className="text-lg font-bold text-foreground">
+          {isLoadingGlobal
+            ? '...'
+            : formatNumber(currentStats?.totalTransactions)}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-sm font-medium text-muted-foreground mb-1">
+          Total Tokens
+        </p>
+        <p className="text-lg font-bold text-foreground">
+          {isLoadingGlobal ? '...' : formatNumber(currentStats?.totalTokens)}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-sm font-medium text-muted-foreground mb-1">
+          Total Spending
+        </p>
+        <p className="text-lg font-bold text-foreground">
+          {isLoadingGlobal ? '...' : formatCurrency(currentStats?.totalCost)}
         </p>
       </div>
 
@@ -46,42 +137,6 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           {app.isActive ? 'Active' : 'Inactive'}
         </Badge>
       </div>
-
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Requests Served
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {app.stats?.totalTransactions?.toLocaleString() || '0'}
-        </p>
-      </div>
-    </div>
-  );
-
-  const callToAction = (
-    <div className="flex items-center gap-4">
-      <Link href="/sign-in">
-        <Button size="default">
-          <Shield className="h-4 w-4" />
-          Sign In to Access
-        </Button>
-      </Link>
-      <Link href="/sign-up">
-        <Button variant="outline" size="default">
-          <Users className="h-4 w-4" />
-          Create Account
-        </Button>
-      </Link>
-    </div>
-  );
-
-  const publicNotice = (
-    <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-      <p className="text-sm text-muted-foreground">
-        <Shield className="h-4 w-4 inline mr-2" />
-        This is a public application preview. Sign in to access full features,
-        create API keys, and view detailed analytics.
-      </p>
     </div>
   );
 
@@ -94,20 +149,54 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           app={app}
           userRole={AppRole.PUBLIC}
           roleLabel="Public App"
-          actions={
-            <div>
-              {callToAction}
-              {publicNotice}
-            </div>
-          }
+          actions={<></>}
         >
-          {basicStats}
+          {enhancedStats}
         </AppProfile>
       </div>
 
-      {/* Activity Chart for Public Users */}
-      <div className="px-6 mt-8 mb-8">
-        <ActivityChart app={app} />
+      {/* Global Activity Chart - Full Width */}
+      <div className="px-6 mb-32 relative z-10">
+        <div className="h-64">
+          <ActivityChart
+            app={{
+              ...app,
+              activityData: currentActivityData,
+            }}
+            title="Global Tokens Over Time"
+          />
+        </div>
+      </div>
+
+      {/* Enhanced Content Section */}
+      <div className="px-6 mt-8 mb-8 relative z-10">
+        {/* First Row - Homepage and User Count */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <AppHomepageCard app={app} />
+          <UserCountCard app={app} />
+          <GlobalModelsCard app={app} />
+        </div>
+
+        {/* Second Row - Activity and Model Usage */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Recent Activity Card */}
+          <RecentActivityCard
+            app={{
+              ...app,
+              recentTransactions: currentRecentTransactions,
+            }}
+            title="Global Recent Activity"
+          />
+
+          {/* Models Usage Card */}
+          <TopModelsCard
+            app={{
+              ...app,
+              stats: currentStats,
+            }}
+            title="Global Model Usage"
+          />
+        </div>
       </div>
     </AppDetailLayout>
   );

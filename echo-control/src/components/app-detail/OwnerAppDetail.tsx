@@ -1,12 +1,12 @@
-import { Key, CreditCard } from 'lucide-react';
+import { CreditCard, Settings } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { EnhancedAppData } from '@/hooks/useEchoAppDetail';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 import { formatCurrency } from '@/lib/balance';
-import { githubApi, GitHubRepo, GitHubUser } from '@/lib/github-api';
+import { Switch } from '@/components/ui/switch';
 import {
   AppDetailLayout,
   AppBanner,
@@ -18,6 +18,8 @@ import {
   RecentActivityCard,
   formatNumber,
 } from './AppDetailShared';
+import { AppHomepageCard } from './AppHomepageCard';
+import router from 'next/router';
 
 interface OwnerAppDetailProps {
   app: DetailedEchoApp;
@@ -38,155 +40,136 @@ export function OwnerAppDetail({
   showPaymentSuccess,
   onDismissPaymentSuccess,
 }: OwnerAppDetailProps) {
-  const [githubData, setGithubData] = useState<GitHubUser | GitHubRepo | null>(
-    null
-  );
+  // View toggle state - 0 for personal, 1 for global
+  const [viewMode, setViewMode] = useState([1]);
+  const [enhancedApp, setEnhancedApp] = useState<EnhancedAppData>(app);
+  const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
+  const isGlobalView = viewMode[0] === 1;
 
-  useEffect(() => {
-    const fetchGithubData = async () => {
-      if (app?.githubId && app?.githubType) {
-        setGithubData(null);
-        let data = null;
-        if (app.githubType === 'user') {
-          data = await githubApi.verifyUserById(app.githubId);
-        } else if (app.githubType === 'repo') {
-          data = await githubApi.verifyRepoById(app.githubId);
-        }
-        setGithubData(data);
+  // Function to fetch global data
+  const fetchGlobalData = async () => {
+    if (enhancedApp.globalStats) return; // Already fetched
+
+    setIsLoadingGlobal(true);
+    try {
+      const response = await fetch(`/api/apps/${app.id}?view=global`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch global data');
       }
-    };
-    fetchGithubData();
-  }, [app?.githubId, app?.githubType]);
-
-  const getRoleLabel = () => {
-    if (hasPermission(Permission.EDIT_APP)) {
-      return app.user?.id ? 'Owner' : 'Administrator';
+      const globalData = await response.json();
+      setEnhancedApp(prev => ({
+        ...prev,
+        globalStats: globalData.stats,
+        globalActivityData: globalData.activityData,
+        globalRecentTransactions: globalData.recentTransactions,
+      }));
+    } catch (error) {
+      console.error('Error fetching global data:', error);
+    } finally {
+      setIsLoadingGlobal(false);
     }
-    return 'Full Access';
   };
 
-  const ownerStats = (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-      {/* Basic Info */}
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Created
-        </p>
-        <p className="text-sm text-foreground font-medium">
-          {new Date(app.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </p>
-      </div>
+  // Fetch global data when switching to global view
+  useEffect(() => {
+    if (isGlobalView && !enhancedApp.globalStats) {
+      fetchGlobalData();
+    }
+  }, [isGlobalView, app.id, enhancedApp.globalStats]);
 
-      {/* Owner Details */}
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">Owner</p>
-        <p className="text-sm text-foreground font-medium truncate">
-          {app.user?.name || app.user?.email || 'Unknown'}
-        </p>
-      </div>
+  // Get current stats based on view
+  const currentStats = isGlobalView
+    ? enhancedApp.globalStats || app.stats
+    : app.stats;
+  const currentActivityData = isGlobalView
+    ? enhancedApp.globalActivityData || app.activityData
+    : app.activityData;
+  const currentRecentTransactions = isGlobalView
+    ? enhancedApp.globalRecentTransactions || app.recentTransactions
+    : app.recentTransactions;
 
-      {/* Usage Stats */}
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Total Requests
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {formatNumber(app.stats?.totalTransactions)}
-        </p>
-      </div>
+  // Clean stats display with slider in bottom right
+  const enhancedStats = (
+    <div className="relative">
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+        {/* Owner Information */}
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            Owner
+          </p>
+          <p className="text-sm text-foreground font-medium truncate">
+            {app.user?.name || app.user?.email || 'Unknown'}
+          </p>
+        </div>
 
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Total Tokens
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {formatNumber(app.stats?.totalTokens)}
-        </p>
-      </div>
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {isGlobalView ? 'Total Requests' : 'Your Requests'}
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {isLoadingGlobal && isGlobalView
+              ? '...'
+              : formatNumber(currentStats?.totalTransactions)}
+          </p>
+        </div>
 
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
-          Total Spent
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {formatCurrency(app.stats?.totalCost)}
-        </p>
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {isGlobalView ? 'Total Tokens' : 'Your Tokens'}
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {isLoadingGlobal && isGlobalView
+              ? '...'
+              : formatNumber(currentStats?.totalTokens)}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {isGlobalView ? 'Total Spending' : 'Your Spending'}
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {isLoadingGlobal && isGlobalView
+              ? '...'
+              : formatCurrency(currentStats?.totalCost)}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            Your API Keys
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {app.apiKeys?.length || 0}
+          </p>
+        </div>
       </div>
     </div>
   );
 
-  const githubSection = githubData && (
-    <div className="bg-muted/30 p-3 rounded-lg">
-      <p className="text-sm font-medium text-muted-foreground mb-2">
-        Linked GitHub Account
-      </p>
-      <a
-        href={githubData.html_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-3 text-sm text-foreground font-medium hover:underline"
-      >
-        <Image
-          src={
-            app?.githubType === 'user'
-              ? (githubData as GitHubUser).avatar_url
-              : (githubData as GitHubRepo).owner.avatar_url
-          }
-          alt="avatar"
-          width={32}
-          height={32}
-          className="w-8 h-8 rounded-full"
-        />
-        <span className="truncate">
-          {app?.githubType === 'user'
-            ? (githubData as GitHubUser).login
-            : (githubData as GitHubRepo).full_name}
-        </span>
-      </a>
-    </div>
-  );
-
-  const ownerActions = (
-    <div className="flex items-center justify-between">
-      {/* Primary Actions */}
-      <div className="flex gap-3">
-        {hasPermission(Permission.CREATE_API_KEYS) && onCreateApiKey && (
-          <Button onClick={onCreateApiKey} size="default" variant="default">
-            <Key className="h-4 w-4" />
-            Create API Key
-          </Button>
-        )}
-        <Link href="/credits">
-          <Button size="default" variant="outline">
-            <CreditCard className="h-4 w-4" />
-            Add Credits
-          </Button>
-        </Link>
-      </div>
-
-      {/* Secondary Actions */}
-      <div className="flex gap-2">
-        {hasPermission(Permission.EDIT_APP) && (
-          <Link href={`/owner/${app.id}/settings`}>
-            <Button variant="ghost" size="sm">
-              Settings
-            </Button>
-          </Link>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            navigator.clipboard.writeText(app.id);
-            // Could add a toast notification here
-          }}
-        >
-          Copy App ID
+  const enhancedActions = (
+    <div className="flex items-center gap-3">
+      <Link href={`/owner/${app.id}/settings`}>
+        <Button size="default" variant="outline">
+          <Settings className="h-4 w-4" />
+          Settings
         </Button>
+      </Link>
+      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm rounded-lg border border-border px-2 py-1">
+        <span className="text-xs font-medium text-muted-foreground">
+          Personal
+        </span>
+        <div className="w-12">
+          <Switch
+            checked={isGlobalView}
+            onCheckedChange={checked => setViewMode([checked ? 1 : 0])}
+            className="cursor-pointer"
+          />
+        </div>
+        <span className="text-xs font-medium text-muted-foreground">
+          Global
+        </span>
       </div>
     </div>
   );
@@ -201,43 +184,68 @@ export function OwnerAppDetail({
 
         <AppProfile
           app={app}
-          userRole={null} // Will use default active/inactive indicator
-          roleLabel={getRoleLabel()}
-          actions={ownerActions}
+          userRole={AppRole.OWNER}
+          roleLabel="Owner Access"
+          actions={enhancedActions}
         >
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">{ownerStats}</div>
-            {githubSection && <div className="ml-8">{githubSection}</div>}
-          </div>
+          {enhancedStats}
         </AppProfile>
       </div>
 
-      {/* Activity and Top Models Section */}
-      <div className="px-6 mt-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-96">
-          <ActivityChart app={app} />
-          <TopModelsCard app={app} />
+      {/* Tokens Over Time Chart - Full Width */}
+      <div className="px-6 mb-32 relative z-10">
+        <div className="h-64">
+          <ActivityChart
+            app={{
+              ...app,
+              activityData: currentActivityData,
+            }}
+            title={
+              isGlobalView ? 'Global Tokens Over Time' : 'Your Tokens Over Time'
+            }
+          />
         </div>
       </div>
 
-      {/* Data Cards Section */}
-      <div className="px-6 mt-12 mb-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Overview Stats Card */}
-          <OverviewStats app={app} showAdvanced={true} />
+      {/* Enhanced Content Section */}
+      <div className="px-6 mt-8 mb-8 relative z-10">
+        {/* First Row - Homepage and API Keys */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Homepage Card */}
+          <AppHomepageCard app={app} />
 
           {/* API Keys Card */}
           <ApiKeysCard
             app={app}
-            hasCreatePermission={hasPermission(Permission.CREATE_API_KEYS)}
-            hasManagePermission={hasPermission(Permission.MANAGE_ALL_API_KEYS)}
+            hasCreatePermission={hasPermission(Permission.MANAGE_OWN_API_KEYS)}
+            hasManagePermission={hasPermission(Permission.MANAGE_OWN_API_KEYS)}
             onCreateApiKey={onCreateApiKey}
             onArchiveApiKey={onArchiveApiKey}
             deletingKeyId={deletingKeyId}
           />
+        </div>
 
+        {/* Second Row - Activity and Recent Transactions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Recent Activity Card */}
-          <RecentActivityCard app={app} />
+          <RecentActivityCard
+            app={{
+              ...app,
+              recentTransactions: currentRecentTransactions,
+            }}
+            title={
+              isGlobalView ? 'Global Recent Activity' : 'Your Recent Activity'
+            }
+          />
+
+          {/* Models Usage Card */}
+          <TopModelsCard
+            app={{
+              ...app,
+              stats: currentStats,
+            }}
+            title={isGlobalView ? 'Global Model Usage' : 'Your Model Usage'}
+          />
         </div>
       </div>
     </AppDetailLayout>

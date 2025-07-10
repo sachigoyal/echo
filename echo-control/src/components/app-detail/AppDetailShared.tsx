@@ -17,7 +17,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ReactNode } from 'react';
 import { formatCurrency } from '@/lib/balance';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -288,7 +288,7 @@ export function OverviewStats({
   showAdvanced = true,
 }: OverviewStatsProps) {
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white">
           <Activity className="h-5 w-5" />
@@ -298,7 +298,7 @@ export function OverviewStats({
 
       <Separator className="my-4" />
 
-      <div className="space-y-4">
+      <div className="space-y-4 flex-1">
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Transactions</span>
           <span className="font-bold">
@@ -353,24 +353,28 @@ export function ApiKeysCard({
   deletingKeyId,
 }: ApiKeysCardProps) {
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white">
             <Key className="h-5 w-5" />
           </div>
           <h3 className="text-xl font-bold">API Keys</h3>
         </div>
         {hasCreatePermission && onCreateApiKey && (
-          <button onClick={onCreateApiKey}>
+          <GlassButton
+            onClick={onCreateApiKey}
+            variant="primary"
+            className="!h-8 !w-8 !p-0"
+          >
             <Plus className="h-4 w-4" />
-          </button>
+          </GlassButton>
         )}
       </div>
 
       <Separator className="my-4" />
 
-      <div className="space-y-3">
+      <div className="space-y-3 flex-1 overflow-auto">
         {app.apiKeys && app.apiKeys.length > 0 ? (
           <>
             <div className="flex justify-between items-center">
@@ -431,17 +435,14 @@ export function RecentActivityCard({
   title = 'Recent Activity',
 }: RecentActivityCardProps) {
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white">
-          <Zap className="h-5 w-5" />
-        </div>
-        <h3 className="text-xl font-bold">{title}</h3>
+        <h1 className="text-2xl font-bold">{title}</h1>
       </div>
 
       <Separator className="my-4" />
 
-      <div className="space-y-3">
+      <div className="space-y-3 flex-1 overflow-auto">
         {app.recentTransactions && app.recentTransactions.length > 0 ? (
           <>
             {app.recentTransactions.slice(0, 4).map(transaction => (
@@ -470,11 +471,13 @@ export function RecentActivityCard({
             )}
           </>
         ) : (
-          <div className="text-center py-4">
-            <p className="text-muted-foreground text-sm">No transactions yet</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Activity will appear here
-            </p>
+          <div className="text-center py-8 flex-1 flex items-center justify-center">
+            <div>
+              <p className="text-muted-foreground text-sm">No activity yet</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Start using your API keys to see activity
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -485,14 +488,19 @@ export function RecentActivityCard({
 // Top Models Card
 interface TopModelsCardProps {
   app: DetailedEchoApp;
+  title?: string;
 }
 
-export function TopModelsCard({ app }: TopModelsCardProps) {
+export function TopModelsCard({
+  app,
+  title = 'Top Models',
+}: TopModelsCardProps) {
   return (
     <div className="flex flex-col">
-      <h2 className="text-2xl font-bold mb-4">Top Models</h2>
-      <Card className="flex-1 p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
-        <CardContent className="p-0 h-full">
+      <Card className="flex-1 p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
+        <h2 className="text-2xl font-bold mb-4">{title}</h2>
+        <Separator className="my-4" />
+        <CardContent className="p-0 h-full flex-1 overflow-auto">
           {app.stats?.modelUsage && app.stats.modelUsage.length > 0 ? (
             <div className="space-y-4">
               {app.stats.modelUsage.slice(0, 5).map((usage, index) => (
@@ -523,10 +531,14 @@ export function TopModelsCard({ app }: TopModelsCardProps) {
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full text-center">
+            <div className="text-center py-8 flex-1 flex items-center justify-center">
               <div>
-                <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">No model usage yet</p>
+                <p className="text-muted-foreground text-sm">
+                  No model usage yet
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Usage statistics will appear here
+                </p>
               </div>
             </div>
           )}

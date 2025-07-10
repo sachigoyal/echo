@@ -7,6 +7,7 @@ import { AuthenticatedEchoApp, PublicEchoApp } from '@/lib/types/apps';
 export interface DetailedEchoApp extends AuthenticatedEchoApp {
   githubId?: string;
   githubType?: 'user' | 'repo';
+  homepageUrl?: string | null;
   user: {
     id: string;
     email: string;
@@ -41,6 +42,33 @@ export interface DetailedEchoApp extends AuthenticatedEchoApp {
     }>;
   };
   recentTransactions: Array<{
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: string;
+  }>;
+}
+
+export interface EnhancedAppData extends DetailedEchoApp {
+  globalStats?: {
+    totalTransactions: number;
+    totalTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCost: number;
+    modelUsage: Array<{
+      model: string;
+      _sum: {
+        totalTokens: number | null;
+        cost: number | null;
+      };
+      _count: number;
+    }>;
+  };
+  globalActivityData?: number[];
+  globalRecentTransactions?: Array<{
     id: string;
     model: string;
     totalTokens: number;

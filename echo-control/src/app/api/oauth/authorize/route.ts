@@ -105,6 +105,7 @@ export async function GET(req: NextRequest) {
           isPublic: true,
           profilePictureUrl: true,
           bannerImageUrl: true,
+          homepageUrl: true,
           description: true,
           isActive: true,
           isArchived: true,

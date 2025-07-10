@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { formatCurrency } from '@/lib/balance';
 
 interface Balance {
   balance: string;
@@ -183,13 +184,6 @@ export default function CreditsPage() {
               <h1 className="text-2xl font-semibold text-foreground">
                 Credits
               </h1>
-              <button
-                onClick={handleRefresh}
-                className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <RefreshCw className="h-3 w-3" />
-                <span>Refresh</span>
-              </button>
             </div>
           </div>
         </div>
@@ -197,15 +191,15 @@ export default function CreditsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Top Row */}
           {/* Current Balance */}
-          <Card>
-            <CardContent className="p-6">
+          <Card className="h-80 flex flex-col">
+            <CardContent className="p-6 flex-1 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">
                     Current Balance
                   </p>
                   <p className="text-3xl font-bold text-foreground">
-                    ${balance?.balance || '0.00'}
+                    {formatCurrency(Number(balance?.balance) || 0)}
                   </p>
                 </div>
                 <div className="text-right text-sm text-muted-foreground">
@@ -219,11 +213,11 @@ export default function CreditsPage() {
           </Card>
 
           {/* Auto Top-Up */}
-          <Card>
+          <Card className="h-80 flex flex-col">
             <CardHeader>
               <CardTitle className="text-lg font-medium">Auto Top-Up</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 flex flex-col">
               <p className="text-sm text-muted-foreground mb-4">
                 To activate auto-top-up, you&apos;ll need a payment method that
                 supports offline charging.
@@ -236,11 +230,11 @@ export default function CreditsPage() {
 
           {/* Bottom Row */}
           {/* Buy Credits */}
-          <Card>
+          <Card className="h-80 flex flex-col">
             <CardHeader>
               <CardTitle className="text-lg font-medium">Buy Credits</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex-1 flex flex-col">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   Use crypto
@@ -288,26 +282,28 @@ export default function CreditsPage() {
           </Card>
 
           {/* Recent Transactions */}
-          <Card>
+          <Card className="h-80 flex flex-col">
             <CardHeader>
               <CardTitle className="text-lg font-medium">
                 Recent Transactions
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 overflow-hidden">
               {paymentsLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
-                  <p className="text-muted-foreground mt-2">
-                    Loading transactions...
-                  </p>
+                <div className="text-center py-8 flex items-center justify-center h-full">
+                  <div>
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+                    <p className="text-muted-foreground mt-2">
+                      Loading transactions...
+                    </p>
+                  </div>
                 </div>
               ) : payments.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="text-center py-8 flex items-center justify-center h-full">
                   <p className="text-muted-foreground">No credits purchased</p>
                 </div>
               ) : (
-                <div className="space-y-4 max-h-80 overflow-y-auto">
+                <div className="space-y-4 h-full overflow-y-auto">
                   {payments.map(payment => (
                     <div
                       key={payment.id}
@@ -323,7 +319,7 @@ export default function CreditsPage() {
                       </div>
                       <div className="text-right space-y-1 flex-shrink-0 ml-2">
                         <p className="font-semibold text-sm">
-                          ${payment.amount.toFixed(2)}
+                          {formatCurrency(payment.amount)}
                         </p>
                         <p
                           className={`text-xs capitalize ${getStatusColor(payment.status)}`}
