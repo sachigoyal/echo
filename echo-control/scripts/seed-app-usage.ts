@@ -59,11 +59,37 @@ const SAMPLE_RESPONSES = [
   'Let me walk you through the process with concrete examples...',
 ];
 
+// Sample user data for realistic generation
+const SAMPLE_USER_NAMES = [
+  'Alice Johnson',
+  'Bob Smith',
+  'Carol Davis',
+  'David Wilson',
+  'Emma Brown',
+  'Frank Miller',
+  'Grace Lee',
+  'Henry Taylor',
+  'Iris Chen',
+  'Jack Anderson',
+  'Kate Rodriguez',
+  'Liam Thompson',
+  'Maya Patel',
+  'Noah Garcia',
+  'Olivia Martinez',
+];
+
+const USER_ROLES = ['owner', 'admin', 'customer'] as const;
+const MEMBERSHIP_STATUS = ['active', 'pending'] as const;
+const API_KEY_SCOPES = ['owner', 'admin', 'customer'] as const;
+
 interface SeedOptions {
   appId?: string;
   days?: number;
   transactionsPerDay?: number;
   verbose?: boolean;
+  users?: number;
+  apiKeysPerUser?: number;
+  forceNewUsers?: boolean;
 }
 
 /**
@@ -102,6 +128,169 @@ function calculateTransactionCost(
   const inputCost = inputTokens * (modelData.input_cost_per_token || 0);
   const outputCost = outputTokens * (modelData.output_cost_per_token || 0);
   return inputCost + outputCost;
+}
+
+/**
+ * Generate a realistic email based on name
+ */
+function generateEmail(name: string, suffix: string = ''): string {
+  const nameParts = name.toLowerCase().split(' ');
+  const baseEmail = nameParts.join('.');
+  const timestamp = Date.now();
+  return `${baseEmail}${suffix ? '.' + suffix : ''}.${timestamp}@example.com`;
+}
+
+/**
+ * Create a single user with realistic data
+ */
+async function createTestUser(
+  name: string,
+  suffix: string = ''
+): Promise<string> {
+  const email = generateEmail(name, suffix);
+  const clerkId = `test_clerk_${crypto.randomUUID()}`;
+
+  const user = await prisma.user.create({
+    data: {
+      id: crypto.randomUUID(),
+      email,
+      name,
+      clerkId,
+      totalPaid: randomBetween(0, 10000) / 100, // $0-$100 in random paid amount
+      totalSpent: 0, // Will be updated as transactions are created
+    },
+  });
+
+  return user.id;
+}
+
+/**
+ * Create app membership for a user
+ */
+async function createAppMembership(
+  userId: string,
+  appId: string,
+  role: (typeof USER_ROLES)[number],
+  status: (typeof MEMBERSHIP_STATUS)[number] = 'active'
+): Promise<void> {
+  await prisma.appMembership.create({
+    data: {
+      userId,
+      echoAppId: appId,
+      role,
+      status,
+      totalSpent: 0, // Will be updated as transactions are created
+    },
+  });
+}
+
+/**
+ * Create API key for a user and app
+ */
+async function createApiKey(
+  userId: string,
+  appId: string,
+  name: string,
+  scope: (typeof API_KEY_SCOPES)[number]
+): Promise<string> {
+  const keyValue = `test-key-${crypto.randomUUID()}`;
+  const keyHash = crypto
+    .createHmac('sha256', 'test-secret')
+    .update(keyValue)
+    .digest('hex');
+
+  const apiKey = await prisma.apiKey.create({
+    data: {
+      id: crypto.randomUUID(),
+      keyHash,
+      name,
+      userId,
+      echoAppId: appId,
+      scope,
+      isActive: Math.random() > 0.1, // 90% chance of being active
+    },
+  });
+
+  return apiKey.id;
+}
+
+/**
+ * Create multiple users with memberships and API keys for an app
+ */
+async function createUsersForApp(
+  appId: string,
+  userCount: number,
+  apiKeysPerUser: number,
+  verbose: boolean = false
+): Promise<Array<{ userId: string; apiKeyIds: string[] }>> {
+  if (verbose) {
+    console.log(`👥 Creating ${userCount} users for app...`);
+  }
+
+  const users = [];
+
+  for (let i = 0; i < userCount; i++) {
+    // Pick a random name
+    const name = SAMPLE_USER_NAMES[i % SAMPLE_USER_NAMES.length];
+    const suffix =
+      i >= SAMPLE_USER_NAMES.length
+        ? `${Math.floor(i / SAMPLE_USER_NAMES.length)}`
+        : '';
+
+    // Create user
+    const userId = await createTestUser(name, suffix);
+
+    // Determine role - first user is always owner, then mix of admin/customer
+    let role: (typeof USER_ROLES)[number];
+    if (i === 0) {
+      role = 'owner';
+    } else if (i < Math.ceil(userCount * 0.2)) {
+      role = 'admin'; // 20% admins
+    } else {
+      role = 'customer'; // Rest are customers
+    }
+
+    // Create app membership
+    await createAppMembership(userId, appId, role);
+
+    // Create API keys for this user
+    const apiKeyIds = [];
+    for (let j = 0; j < apiKeysPerUser; j++) {
+      const keyName =
+        apiKeysPerUser === 1
+          ? `${name}'s API Key`
+          : `${name}'s API Key ${j + 1}`;
+
+      // API key scope should not exceed user's membership role
+      let keyScope: (typeof API_KEY_SCOPES)[number];
+      if (role === 'owner') {
+        keyScope = ['owner', 'admin', 'customer'][
+          Math.floor(Math.random() * 3)
+        ] as (typeof API_KEY_SCOPES)[number];
+      } else if (role === 'admin') {
+        keyScope = ['admin', 'customer'][
+          Math.floor(Math.random() * 2)
+        ] as (typeof API_KEY_SCOPES)[number];
+      } else {
+        keyScope = 'customer';
+      }
+
+      const apiKeyId = await createApiKey(userId, appId, keyName, keyScope);
+      apiKeyIds.push(apiKeyId);
+    }
+
+    users.push({ userId, apiKeyIds });
+
+    if (verbose && (i + 1) % 5 === 0) {
+      console.log(`  ✓ Created ${i + 1}/${userCount} users...`);
+    }
+  }
+
+  if (verbose) {
+    console.log(`✅ Created ${userCount} users with memberships and API keys`);
+  }
+
+  return users;
 }
 
 /**
@@ -162,93 +351,20 @@ function generateTransaction(
 }
 
 /**
- * Get or create a test user for the app
- */
-async function getOrCreateTestUser(
-  appId: string
-): Promise<{ userId: string; apiKeyId: string | null }> {
-  // Try to find existing owner/member of the app
-  const membership = await prisma.appMembership.findFirst({
-    where: {
-      echoAppId: appId,
-      role: { in: ['owner', 'admin'] },
-      status: 'active',
-    },
-    include: {
-      user: {
-        include: {
-          apiKeys: {
-            where: {
-              echoAppId: appId,
-              isActive: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (membership) {
-    const apiKey = membership.user.apiKeys[0];
-    return {
-      userId: membership.userId,
-      apiKeyId: apiKey?.id || null,
-    };
-  }
-
-  // If no membership found, create a test user and membership
-  const testUser = await prisma.user.create({
-    data: {
-      id: crypto.randomUUID(),
-      email: `test-user-${Date.now()}@example.com`,
-      name: 'Test User for Seeding',
-      clerkId: `test_clerk_${Date.now()}`,
-      totalPaid: 0,
-      totalSpent: 0,
-    },
-  });
-
-  // Create membership
-  await prisma.appMembership.create({
-    data: {
-      userId: testUser.id,
-      echoAppId: appId,
-      role: 'owner',
-      status: 'active',
-      totalSpent: 0,
-    },
-  });
-
-  // Create an API key
-  const apiKey = await prisma.apiKey.create({
-    data: {
-      id: crypto.randomUUID(),
-      keyHash: crypto
-        .createHmac('sha256', 'test-secret')
-        .update(`test-key-${Date.now()}`)
-        .digest('hex'),
-      name: 'Seeded Test Key',
-      userId: testUser.id,
-      echoAppId: appId,
-      scope: 'owner',
-      isActive: true,
-    },
-  });
-
-  return {
-    userId: testUser.id,
-    apiKeyId: apiKey.id,
-  };
-}
-
-/**
  * Seed usage data for a specific app
  */
 async function seedAppUsage(
   appId: string,
   options: SeedOptions
 ): Promise<number> {
-  const { days = 30, transactionsPerDay = 50, verbose = false } = options;
+  const {
+    days = 30,
+    transactionsPerDay = 50,
+    users = 5,
+    apiKeysPerUser = 2,
+    verbose = false,
+    forceNewUsers = false,
+  } = options;
 
   if (verbose) {
     console.log(`🌱 Seeding usage data for app: ${appId}`);
@@ -263,10 +379,58 @@ async function seedAppUsage(
     throw new Error(`App with ID ${appId} not found`);
   }
 
-  // Get or create test user for this app
-  const { userId, apiKeyId } = await getOrCreateTestUser(appId);
+  // Check if users already exist for this app
+  const existingMemberships = await prisma.appMembership.count({
+    where: { echoAppId: appId },
+  });
 
-  // Generate transactions
+  let appUsers: Array<{ userId: string; apiKeyIds: string[] }>;
+
+  if (existingMemberships > 0 && !forceNewUsers) {
+    if (verbose) {
+      console.log(
+        `📋 Found ${existingMemberships} existing memberships, using existing users`
+      );
+    }
+
+    // Use existing users
+    const memberships = await prisma.appMembership.findMany({
+      where: {
+        echoAppId: appId,
+        status: 'active',
+      },
+      include: {
+        user: {
+          include: {
+            apiKeys: {
+              where: {
+                echoAppId: appId,
+                isActive: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    appUsers = memberships.map(membership => ({
+      userId: membership.userId,
+      apiKeyIds: membership.user.apiKeys.map(key => key.id),
+    }));
+  } else {
+    if (verbose) {
+      console.log(`👥 No existing users found, creating ${users} new users`);
+    }
+
+    // Create new users with memberships and API keys
+    appUsers = await createUsersForApp(appId, users, apiKeysPerUser, verbose);
+  }
+
+  if (appUsers.length === 0) {
+    throw new Error('No users available for transaction generation');
+  }
+
+  // Generate transactions distributed across all users
   const transactions = [];
   for (let day = 0; day < days; day++) {
     // Variable number of transactions per day (some days more active than others)
@@ -277,8 +441,17 @@ async function seedAppUsage(
 
     for (let i = 0; i < dayTransactions; i++) {
       const createdAt = randomDateWithinDays(days - day);
+
+      // Pick a random user and one of their API keys
+      const userIndex = Math.floor(Math.random() * appUsers.length);
+      const user = appUsers[userIndex];
+      const apiKeyId =
+        user.apiKeyIds.length > 0
+          ? user.apiKeyIds[Math.floor(Math.random() * user.apiKeyIds.length)]
+          : null;
+
       transactions.push(
-        generateTransaction(appId, userId, apiKeyId, createdAt)
+        generateTransaction(appId, user.userId, apiKeyId, createdAt)
       );
     }
   }
@@ -304,34 +477,45 @@ async function seedAppUsage(
     }
   }
 
-  // Update user total spent
-  const totalCost = transactions.reduce((sum, tx) => sum + tx.cost, 0);
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      totalSpent: {
-        increment: totalCost,
-      },
-    },
+  // Update total spent for each user and their app membership
+  const userSpending = new Map<string, number>();
+  transactions.forEach(tx => {
+    const current = userSpending.get(tx.userId) || 0;
+    userSpending.set(tx.userId, current + tx.cost);
   });
 
-  // Update app membership total spent
-  await prisma.appMembership.update({
-    where: {
-      userId_echoAppId: {
-        userId,
-        echoAppId: appId,
+  // Update user and app membership totals
+  for (const [userId, totalCost] of userSpending.entries()) {
+    // Update user total spent
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        totalSpent: {
+          increment: totalCost,
+        },
       },
-    },
-    data: {
-      totalSpent: {
-        increment: totalCost,
+    });
+
+    // Update app membership total spent
+    await prisma.appMembership.update({
+      where: {
+        userId_echoAppId: {
+          userId,
+          echoAppId: appId,
+        },
       },
-    },
-  });
+      data: {
+        totalSpent: {
+          increment: totalCost,
+        },
+      },
+    });
+  }
 
   if (verbose) {
+    const totalCost = transactions.reduce((sum, tx) => sum + tx.cost, 0);
     console.log(`✅ Seeded ${totalInserted} transactions for app ${app.name}`);
+    console.log(`👥 Distributed across ${appUsers.length} users`);
     console.log(`💰 Total cost: $${totalCost.toFixed(4)}`);
   }
 
@@ -389,17 +573,33 @@ async function seedAllApps(options: SeedOptions): Promise<void> {
  */
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  const appId = args[0];
+
+  // Skip any leading '--' separators (added by npm/pnpm)
+  let startIndex = 0;
+  while (startIndex < args.length && args[startIndex] === '--') {
+    startIndex++;
+  }
+
+  // Find the app ID (first argument after -- that doesn't start with --)
+  let appId: string | undefined;
+  let argStartIndex = startIndex;
+
+  if (startIndex < args.length && !args[startIndex].startsWith('--')) {
+    appId = args[startIndex];
+    argStartIndex = startIndex + 1;
+  }
 
   // Parse options
   const options: SeedOptions = {
     days: 30,
     transactionsPerDay: 50,
+    users: 5,
+    apiKeysPerUser: 2,
     verbose: true,
   };
 
   // Override options from command line
-  for (let i = 1; i < args.length; i++) {
+  for (let i = argStartIndex; i < args.length; i++) {
     const arg = args[i];
     if (arg === '--days' && args[i + 1]) {
       options.days = parseInt(args[i + 1]);
@@ -407,15 +607,31 @@ async function main(): Promise<void> {
     } else if (arg === '--transactions-per-day' && args[i + 1]) {
       options.transactionsPerDay = parseInt(args[i + 1]);
       i++;
+    } else if (arg === '--users' && args[i + 1]) {
+      options.users = parseInt(args[i + 1]);
+      i++;
+    } else if (arg === '--api-keys-per-user' && args[i + 1]) {
+      options.apiKeysPerUser = parseInt(args[i + 1]);
+      i++;
     } else if (arg === '--quiet') {
       options.verbose = false;
+    } else if (arg === '--force-new-users') {
+      options.forceNewUsers = true;
     }
   }
 
   console.log('🚀 Starting app usage seeding...');
   console.log(`📊 Configuration:`);
+  if (appId) {
+    console.log(`   Target app: ${appId}`);
+  } else {
+    console.log(`   Target: All apps`);
+  }
   console.log(`   Days back: ${options.days}`);
   console.log(`   Transactions per day: ${options.transactionsPerDay}`);
+  console.log(`   Users to create: ${options.users}`);
+  console.log(`   API keys per user: ${options.apiKeysPerUser}`);
+  console.log(`   Force new users: ${options.forceNewUsers ? 'Yes' : 'No'}`);
   console.log();
 
   try {
@@ -446,13 +662,19 @@ Arguments:
 Options:
   --days <number>           Number of days back to generate data (default: 30)
   --transactions-per-day <number>  Average transactions per day (default: 50)
+  --users <number>          Number of users to create (default: 5)
+  --api-keys-per-user <number>     Number of API keys per user (default: 2)
   --quiet                   Suppress verbose output
+  --force-new-users         Force creation of new users even if existing ones are found
 
 Examples:
   tsx scripts/seed-app-usage.ts                                    # Seed all apps
   tsx scripts/seed-app-usage.ts 12345-app-id                      # Seed specific app
   tsx scripts/seed-app-usage.ts --days 7 --transactions-per-day 100  # Custom options
   tsx scripts/seed-app-usage.ts 12345-app-id --days 14            # Specific app, 14 days
+  tsx scripts/seed-app-usage.ts --users 10 --api-keys-per-user 3  # More users and keys
+  tsx scripts/seed-app-usage.ts 12345-app-id --users 3 --days 7   # Specific app with fewer users
+  tsx scripts/seed-app-usage.ts 12345-app-id --force-new-users    # Force new users for specific app
 `);
 }
 
