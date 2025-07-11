@@ -8,6 +8,9 @@ import {
   X,
   Users,
   Eye,
+  ExternalLink,
+  User as UserIcon,
+  GitBranch,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -23,6 +26,10 @@ import { DotPattern } from '@/components/ui/dot-background';
 import { GlassButton } from '@/components/glass-button';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 import { AppRole } from '@/lib/permissions/types';
+
+// Add GitHub API imports
+import { githubApi, GitHubUser, GitHubRepo } from '@/lib/github-api';
+import { useState, useEffect } from 'react';
 
 // Helper functions
 export const formatNumber = (value: number | null | undefined): string => {
@@ -159,6 +166,105 @@ interface AppProfileProps {
   children?: ReactNode;
 }
 
+// Add GitHubUserInfo component
+interface GitHubUserInfoProps {
+  githubId: string;
+  githubType: 'user' | 'repo';
+}
+
+function GitHubUserInfo({ githubId, githubType }: GitHubUserInfoProps) {
+  const [githubData, setGithubData] = useState<GitHubUser | GitHubRepo | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchGitHubData = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+
+        let data: GitHubUser | GitHubRepo | null = null;
+
+        if (githubType === 'user') {
+          data = await githubApi.verifyUserById(githubId);
+        } else if (githubType === 'repo') {
+          data = await githubApi.verifyRepoById(githubId);
+        }
+
+        setGithubData(data);
+        setError(data === null);
+      } catch (err) {
+        console.error('Error fetching GitHub data:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGitHubData();
+  }, [githubId, githubType]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center space-x-2 text-muted-foreground">
+        <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent"></div>
+        <span className="text-sm">Loading GitHub info...</span>
+      </div>
+    );
+  }
+
+  if (error || !githubData) {
+    return null; // Don't show anything if GitHub data couldn't be fetched
+  }
+
+  const isUser = 'login' in githubData;
+  const displayName = isUser
+    ? githubData.name || githubData.login
+    : githubData.full_name;
+  const username = isUser ? `@${githubData.login}` : githubData.full_name;
+  const avatarUrl = isUser
+    ? githubData.avatar_url
+    : githubData.owner.avatar_url;
+
+  return (
+    <div className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg">
+      <Image
+        src={avatarUrl}
+        alt={displayName}
+        width={32}
+        height={32}
+        className="w-8 h-8 rounded-full flex-shrink-0"
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center space-x-2">
+          {isUser ? (
+            <UserIcon className="h-3 w-3 text-secondary flex-shrink-0" />
+          ) : (
+            <GitBranch className="h-3 w-3 text-secondary flex-shrink-0" />
+          )}
+          <span className="text-foreground text-sm font-medium truncate">
+            {displayName}
+          </span>
+        </div>
+        <p className="text-muted-foreground text-xs truncate">
+          {isUser ? username : githubData.description || 'No description'}
+        </p>
+      </div>
+      <a
+        href={githubData.html_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-secondary hover:text-secondary/80 transition-colors"
+        title={`View on GitHub`}
+      >
+        <ExternalLink className="h-4 w-4" />
+      </a>
+    </div>
+  );
+}
+
 export function AppProfile({
   app,
   userRole,
@@ -224,6 +330,31 @@ export function AppProfile({
                   {app.description || 'No description provided'}
                 </p>
               </div>
+
+              {/* GitHub Card Section - Right Aligned with title */}
+              {app.githubId && app.githubType && (
+                <div className="w-80 flex-shrink-0">
+                  <div className="p-4 bg-muted/20 rounded-lg border border-border/50">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white">
+                        {app.githubType === 'user' ? (
+                          <UserIcon className="h-4 w-4" />
+                        ) : (
+                          <GitBranch className="h-4 w-4" />
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold">
+                        GitHub{' '}
+                        {app.githubType === 'user' ? 'User' : 'Repository'}
+                      </h3>
+                    </div>
+                    <GitHubUserInfo
+                      githubId={app.githubId}
+                      githubType={app.githubType}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <Separator className="mb-6" />

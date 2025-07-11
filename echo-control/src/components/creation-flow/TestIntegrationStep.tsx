@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle, useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useStepNavigation } from './hooks/useStepNavigation';
@@ -56,6 +56,13 @@ const TestIntegrationStep = forwardRef<
       }),
       [canGoNext, update]
     );
+
+    // Automatically start polling when component mounts and createdAppId is available
+    useEffect(() => {
+      if (createdAppId && !isPolling && !integrationVerified) {
+        startPolling(createdAppId);
+      }
+    }, [createdAppId, isPolling, integrationVerified, startPolling]);
 
     const handleGoToDashboard = () => {
       if (createdAppId) {
@@ -125,14 +132,12 @@ const TestIntegrationStep = forwardRef<
                         </>
                       ) : createdAppId ? (
                         <>
-                          <Button
-                            variant="secondaryOutline"
-                            onClick={() => startPolling(createdAppId)}
-                          >
-                            Start Monitoring
-                          </Button>
+                          <div className="h-5 w-5 bg-green-500/20 border-2 border-green-500 rounded-full flex items-center justify-center mx-auto sm:mx-0">
+                            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                          </div>
                           <span className="text-muted-foreground text-center sm:text-left">
-                            Click to start monitoring for test login
+                            Monitoring started - complete the OAuth flow in your
+                            app
                           </span>
                         </>
                       ) : (

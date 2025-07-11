@@ -73,19 +73,19 @@ export function useCreationFlowNavigation(
         // Call the step's update method
         await stepState.update();
 
-        // Refetch app state after update and wait for it to complete
-        await refetchAppState();
-
-        // Navigate to next step or finish
         if (isLastStep) {
           if (appId) {
             router.push(`/apps/${appId}`);
           } else {
             router.push(`/`);
           }
-        } else {
-          setCurrentStep(prev => prev + 1);
         }
+        // Refetch app state after update and wait for it to complete
+        await refetchAppState();
+
+        setCurrentStep(prev => prev + 1);
+
+        // Navigate to next step or finish
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'An error occurred';

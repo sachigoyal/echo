@@ -67,6 +67,8 @@ export interface DetailedAppInfo {
   profilePictureUrl: string | null;
   bannerImageUrl: string | null;
   homepageUrl: string | null;
+  githubId: string | null;
+  githubType: 'user' | 'repo' | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -122,6 +124,8 @@ export interface PublicAppInfo {
   profilePictureUrl: string | null;
   bannerImageUrl: string | null;
   homepageUrl: string | null;
+  githubId: string | null;
+  githubType: 'user' | 'repo' | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -368,6 +372,8 @@ export const getPublicAppInfo = async (
       profilePictureUrl: true,
       bannerImageUrl: true,
       homepageUrl: true,
+      githubId: true,
+      githubType: true,
       isActive: true,
       createdAt: true,
       updatedAt: true,
@@ -452,6 +458,7 @@ export const getPublicAppInfo = async (
 
   return {
     ...app,
+    githubType: app.githubType as 'user' | 'repo' | null,
     userRole: AppRole.PUBLIC,
     owner: ownerMembership?.user || { id: '', name: null },
     stats: {
@@ -491,6 +498,7 @@ export const getDetailedAppInfo = async (
     // Transform to match DetailedAppInfo structure for backward compatibility
     return {
       ...publicInfo,
+      githubType: publicInfo.githubType as 'user' | 'repo' | null,
       authorizedCallbackUrls: [],
       user: {
         ...publicInfo.owner,
@@ -508,7 +516,19 @@ export const getDetailedAppInfo = async (
       id: appId,
       isArchived: false,
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      profilePictureUrl: true,
+      bannerImageUrl: true,
+      homepageUrl: true,
+      githubId: true,
+      githubType: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+      authorizedCallbackUrls: true,
       apiKeys: {
         where: {
           isArchived: false,
@@ -662,6 +682,7 @@ export const getDetailedAppInfo = async (
 
   return {
     ...app,
+    githubType: app.githubType as 'user' | 'repo' | null,
     user: ownerMembership?.user,
     userRole,
     apiKeys: apiKeysWithSpending,

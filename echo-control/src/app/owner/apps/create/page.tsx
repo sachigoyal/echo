@@ -46,22 +46,22 @@ const steps: StepConfig[] = [
     required: false,
     type: 'verification' as const,
   },
-  {
-    key: 'callbackUrl',
-    prompt: 'What is your production callback URL? (optional)',
-    placeholder: 'https://yourdomain.com',
-    required: false,
-    type: 'text' as const,
-    helpText:
-      'Enter the URL where users will be redirected after signing in with Echo from your production app. Localhost URLs (like http://localhost:3000) are automatically allowed for development.',
-  },
-  {
-    key: 'githubId',
-    prompt: 'Who should receive proceeds from this app? (optional)',
-    placeholder: 'Search for a GitHub user or repository...',
-    required: false,
-    type: 'github-search' as const,
-  },
+  // {
+  //   key: 'callbackUrl',
+  //   prompt: 'What is your production callback URL? (optional)',
+  //   placeholder: 'https://yourdomain.com',
+  //   required: false,
+  //   type: 'text' as const,
+  //   helpText:
+  //     'Enter the URL where users will be redirected after signing in with Echo from your production app. Localhost URLs (like http://localhost:3000) are automatically allowed for development.',
+  // },
+  // {
+  //   key: 'githubId',
+  //   prompt: 'Who should receive proceeds from this app? (optional)',
+  //   placeholder: 'Search for a GitHub user or repository...',
+  //   required: false,
+  //   type: 'github-search' as const,
+  // },
 ];
 
 function CreateApplicationForm() {
