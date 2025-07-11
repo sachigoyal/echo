@@ -29,6 +29,7 @@ export interface AppUpdateInput {
   profilePictureUrl?: string;
   bannerImageUrl?: string;
   homepageUrl?: string;
+  authorizedCallbackUrls?: string[];
 }
 
 export interface AppWithDetails {
@@ -827,6 +828,9 @@ export const updateEchoAppById = async (
       }),
       ...(data.homepageUrl !== undefined && {
         homepageUrl: data.homepageUrl?.trim() || null,
+      }),
+      ...(data.authorizedCallbackUrls !== undefined && {
+        authorizedCallbackUrls: data.authorizedCallbackUrls,
       }),
     },
     include: {

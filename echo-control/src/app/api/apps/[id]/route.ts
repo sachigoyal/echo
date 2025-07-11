@@ -69,66 +69,73 @@ export async function GET(
   }
 }
 
-// PUT /api/apps/[id] - Update app information
+// PUT /api/apps/[id] - Update an existing Echo app
 export async function PUT(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getCurrentUser();
+    const body = await req.json();
     const resolvedParams = await params;
-    const { id: appId } = resolvedParams;
+    const appId = resolvedParams.id;
 
-    // Validate UUID format
-    if (!isValidUUID(appId)) {
-      return NextResponse.json(
-        { error: 'Invalid app ID format' },
-        { status: 400 }
-      );
-    }
-
-    const body = await request.json();
-    const { name, description, isActive, homepageUrl } = body;
-    const updateData: AppUpdateInput = {
+    // Extract allowed update fields
+    const {
       name,
       description,
-      isActive,
+      githubType,
+      githubId,
+      authorizedCallbackUrls,
+      profilePictureUrl,
+      bannerImageUrl,
       homepageUrl,
-    };
+      isActive,
+      isPublic,
+    } = body;
+
+    const updateData: AppUpdateInput = {};
+
+    // Only include provided fields in the update
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (githubType !== undefined) updateData.githubType = githubType;
+    if (githubId !== undefined) updateData.githubId = githubId;
+    if (profilePictureUrl !== undefined)
+      updateData.profilePictureUrl = profilePictureUrl;
+    if (bannerImageUrl !== undefined)
+      updateData.bannerImageUrl = bannerImageUrl;
+    if (homepageUrl !== undefined) updateData.homepageUrl = homepageUrl;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (isPublic !== undefined) updateData.isPublic = isPublic;
 
     const updatedApp = await updateEchoAppById(appId, user.id, updateData);
 
-    return NextResponse.json(updatedApp);
+    return NextResponse.json({
+      id: updatedApp.id,
+      name: updatedApp.name,
+      description: updatedApp.description,
+      github_type: updatedApp.githubType,
+      github_id: updatedApp.githubId,
+      is_active: updatedApp.isActive,
+      created_at: updatedApp.createdAt.toISOString(),
+      updated_at: updatedApp.updatedAt.toISOString(),
+      authorized_callback_urls: updatedApp.authorizedCallbackUrls,
+      profile_picture_url: updatedApp.profilePictureUrl,
+      banner_image_url: updatedApp.bannerImageUrl,
+      homepage_url: updatedApp.homepageUrl,
+    });
   } catch (error) {
-    console.error('Error updating echo app:', error);
-
-    if (
-      error instanceof Error &&
-      (error.message === 'Not authenticated' ||
-        error.message.includes('Invalid'))
-    ) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    if (
-      error instanceof Error &&
-      error.message.includes('not found or access denied')
-    ) {
-      return NextResponse.json(
-        { error: 'Echo app not found or access denied' },
-        { status: 404 }
-      );
-    }
+    console.error('Error updating Echo app:', error);
 
     // Handle validation errors
     if (
       error instanceof Error &&
       (error.message.includes('required') ||
         error.message.includes('must be') ||
-        error.message.includes('characters'))
+        error.message.includes('characters') ||
+        error.message.includes('not found') ||
+        error.message.includes('access denied'))
     ) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
