@@ -3,6 +3,8 @@ export { EchoSignIn } from './components/EchoSignIn';
 export { EchoTokenPurchase } from './components/EchoTokenPurchase';
 
 export { useEcho } from './hooks/useEcho';
+// OpenAI integration hook
+export { useEchoOpenAI } from './hooks/useEchoOpenAI';
 
 export type {
   EchoConfig,
