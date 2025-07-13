@@ -171,9 +171,7 @@ export default function CreditsPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="p-2">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+              <ArrowLeft className="h-4 w-4 hover:text-primary" />
             </Link>
             <div>
               <h1 className="text-2xl font-semibold text-foreground">
