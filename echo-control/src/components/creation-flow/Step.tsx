@@ -1,8 +1,9 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { DotPattern } from '../ui/dot-background';
 import StepHistory from './StepHistory';
 import StepError from './StepError';
 import StepControls from './StepControls';
+import { StepConfig } from '@/app/owner/apps/create/page';
 
 export interface StepProps {
   currentStep: number;
@@ -14,14 +15,14 @@ export interface StepProps {
 export interface StepComponentProps extends StepProps {
   children: React.ReactNode;
   canProceed: boolean;
-  currentStepData: any;
+  currentStepData: StepConfig | null;
   onNext: () => Promise<void>; // Updated to async
   onBack: () => Promise<void>; // Updated to async since goToBack is now async
   setTransitioning: (isTransitioning: boolean) => void; // From navigation hook
   isSubmitting: boolean;
   isLastStep: boolean;
-  formData: any;
-  steps: any[];
+  formData: Record<string, unknown>;
+  steps: StepConfig[];
 }
 
 export default function Step({

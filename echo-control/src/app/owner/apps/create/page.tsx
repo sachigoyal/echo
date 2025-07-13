@@ -15,7 +15,7 @@ import { useCallbackUrlComponent } from '../../../../components/creation-flow/ho
 import { useGitHubComponent } from '../../../../components/creation-flow/hooks/useGitHubComponent';
 import { useTestIntegrationComponent } from '../../../../components/creation-flow/hooks/useTestIntegrationComponent';
 
-interface StepConfig {
+export interface StepConfig {
   key: string;
   prompt: string;
   placeholder: string;

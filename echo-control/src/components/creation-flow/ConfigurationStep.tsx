@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useImperativeHandle } from 'react';
+import React from 'react';
 import { Copy, ChevronRight } from 'lucide-react';
 import {
   Card,
@@ -10,39 +10,20 @@ import {
   CardContent,
 } from '../ui/card';
 import { Button } from '../ui/button';
-import { StepComponentInterface, BaseStepProps } from './types';
+import { BaseStepProps } from './types';
+import { useCopyCode } from '@/hooks/useCopyCode';
 
 interface ConfigurationStepProps extends BaseStepProps {
-  createdAppId: string | null;
+  createdAppId: string;
 }
 
-const ConfigurationStep = forwardRef<
-  StepComponentInterface,
-  ConfigurationStepProps
->(({ isTransitioning, createdAppId }, ref) => {
+const ConfigurationStep = ({
+  isTransitioning,
+  createdAppId,
+}: ConfigurationStepProps) => {
+  const { handleCopyCode } = useCopyCode();
+
   // Always can proceed from configuration step (it's informational)
-  const canGoNext = true;
-
-  // Update method (no-op for configuration step as it's informational)
-  const update = async (): Promise<void> => {
-    // Configuration step doesn't need to update anything
-    return Promise.resolve();
-  };
-
-  // Expose the interface to parent via ref
-  useImperativeHandle(
-    ref,
-    () => ({
-      canGoNext,
-      update,
-    }),
-    [canGoNext, update]
-  );
-
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-  };
-
   if (!createdAppId) {
     return (
       <div
@@ -216,8 +197,8 @@ export default Root;`;
                 0. Create a new React app
               </CardTitle>
               <CardDescription>
-                We'll create a new React app to host our Echo app. This will be
-                the root of your application.
+                We&apos;ll create a new React app to host our Echo app. This
+                will be the root of your application.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -391,7 +372,7 @@ export default Root;`;
                 </Button>
               </div>
               <CardDescription>
-                Here's the complete code combining all the pieces above.
+                Here&apos;s the complete code combining all the pieces above.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -406,8 +387,6 @@ export default Root;`;
       </div>
     </div>
   );
-});
-
-ConfigurationStep.displayName = 'ConfigurationStep';
+};
 
 export default ConfigurationStep;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { GitHubSearchComponent } from '../GitHubSearchComponent';
@@ -18,7 +18,6 @@ const GitHubStep = ({
   isTransitioning,
   onError,
   githubId,
-  githubType,
   setGithubId,
   setGithubType,
   isUpdating,
