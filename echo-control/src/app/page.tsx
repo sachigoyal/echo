@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/theme-provider';
 import { PublicEchoApp } from '@/lib/types/apps';
+import Link from 'next/link';
 
 export default function HomePage() {
   const { resolvedTheme } = useTheme();
@@ -77,11 +78,8 @@ export default function HomePage() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-base">
-              Get Started
-            </Button>
-            <Button variant="outline" size="lg" className="text-base">
-              View Documentation
+            <Button asChild>
+              <Link href="/owner/apps/create">Create an app</Link>
             </Button>
           </div>
 

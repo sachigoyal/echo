@@ -5,9 +5,10 @@ import { AuthenticatedEchoApp, PublicEchoApp } from '@/lib/types/apps';
 
 // Detailed app info returned by the API with additional fields
 export interface DetailedEchoApp extends AuthenticatedEchoApp {
-  githubId?: string;
-  githubType?: 'user' | 'repo';
+  githubId: string | null;
+  githubType: 'user' | 'repo' | null;
   homepageUrl?: string | null;
+  authorizedCallbackUrls: string[];
   user: {
     id: string;
     email: string;
@@ -156,6 +157,7 @@ export function useEchoAppDetail(appId: string): UseEchoAppDetailReturn {
                 description: publicApp.description || '',
                 profilePictureUrl: publicApp.profilePictureUrl || '',
                 bannerImageUrl: publicApp.bannerImageUrl || '',
+                authorizedCallbackUrls: [], // Public users don't have access to callback URLs
                 apiKeys: [],
                 stats: {
                   totalTransactions: publicApp._count?.llmTransactions || 0,
