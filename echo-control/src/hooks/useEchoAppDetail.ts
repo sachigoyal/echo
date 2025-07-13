@@ -5,8 +5,8 @@ import { AuthenticatedEchoApp, PublicEchoApp } from '@/lib/types/apps';
 
 // Detailed app info returned by the API with additional fields
 export interface DetailedEchoApp extends AuthenticatedEchoApp {
-  githubId?: string;
-  githubType?: 'user' | 'repo';
+  githubId: string | null;
+  githubType: 'user' | 'repo' | null;
   homepageUrl?: string | null;
   authorizedCallbackUrls: string[];
   user: {
