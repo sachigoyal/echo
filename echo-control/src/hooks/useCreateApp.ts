@@ -81,7 +81,7 @@ export function useCreateApp(): UseCreateAppReturn {
         setIsCreating(false);
       }
     },
-    []
+    [router]
   );
 
   return {

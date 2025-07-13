@@ -1,22 +1,33 @@
-import { useEffect, useRef } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import { ChevronRight } from 'lucide-react';
 import { BaseStepProps } from './types';
 
 interface CreateApplicationStepProps extends BaseStepProps {
-  appName: string;
-  setCurrentAppName: (name: string) => void;
   isCreating: boolean;
   error: string | null;
 }
 
-const CreateApplicationStep = ({
-  onError,
-  appName,
-  setCurrentAppName,
-  isCreating,
-  error,
-}: CreateApplicationStepProps) => {
+export interface CreateApplicationStepRef {
+  getValue: () => string;
+}
+
+const CreateApplicationStep = forwardRef<
+  CreateApplicationStepRef,
+  CreateApplicationStepProps
+>(({ onError, isCreating, error }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [appName, setAppName] = useState('');
+
+  // Expose the getValue method to parent
+  useImperativeHandle(ref, () => ({
+    getValue: () => appName,
+  }));
 
   // Focus input when component mounts
   useEffect(() => {
@@ -49,7 +60,7 @@ const CreateApplicationStep = ({
               ref={inputRef}
               type="text"
               value={appName}
-              onChange={e => setCurrentAppName(e.target.value)}
+              onChange={e => setAppName(e.target.value)}
               placeholder="My Echo App"
               disabled={isCreating}
               className="w-full bg-input border border-border rounded-lg px-4 py-3 text-lg text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -64,6 +75,8 @@ const CreateApplicationStep = ({
       </div>
     </div>
   );
-};
+});
+
+CreateApplicationStep.displayName = 'CreateApplicationStep';
 
 export default CreateApplicationStep;
