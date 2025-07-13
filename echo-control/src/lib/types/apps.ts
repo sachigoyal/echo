@@ -16,6 +16,9 @@ export interface PublicEchoApp {
   updatedAt: string;
   totalTokens: number;
   totalCost: number;
+  githubId: string | null;
+  githubType: string | null;
+  authorizedCallbackUrls: string[];
   _count: {
     apiKeys: number;
     llmTransactions: number;

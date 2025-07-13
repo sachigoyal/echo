@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCurrentApp } from '../../../hooks/useCurrentApp';
+import { DetailedAppInfo } from '../../../lib/echo-apps';
 
 interface StepConfig {
   key: string;
@@ -23,7 +24,7 @@ interface UseCreationFlowNavigationReturn {
   error: string | null;
   currentStepData: StepConfig | null;
   isLastStep: boolean;
-  app: any; // App state from useCurrentApp
+  app: DetailedAppInfo | null; // Properly typed app state from useCurrentApp
   isLoadingApp: boolean; // Loading state from useCurrentApp
   appError: string | null; // Error state from useCurrentApp
   goToNext: (stepState: StepState) => Promise<void>;

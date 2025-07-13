@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import StepCanProceed from './StepCanProceed';
+import { StepConfig } from '@/app/owner/apps/create/page';
 
 interface StepControlsProps {
   canProceed: boolean;
-  currentStepData: any;
+  currentStepData: StepConfig | null;
   handleNext: () => Promise<void>; // Fix: Make this async
   handleBack: () => void;
   currentStep: number;

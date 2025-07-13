@@ -1,25 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-
-interface App {
-  id: string;
-  name: string;
-  callbackUrl?: string;
-  githubType?: 'user' | 'repo';
-  githubId?: string;
-  githubVerified?: boolean;
-  githubMetadata?: any;
-}
+import { DetailedAppInfo } from '../lib/echo-apps';
 
 interface UseCurrentAppReturn {
-  app: App | null;
+  app: DetailedAppInfo | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-  updateApp: (updates: Partial<App>) => void;
+  updateApp: (updates: Partial<DetailedAppInfo>) => void;
 }
 
 export function useCurrentApp(appId?: string): UseCurrentAppReturn {
-  const [app, setApp] = useState<App | null>(null);
+  const [app, setApp] = useState<DetailedAppInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +40,7 @@ export function useCurrentApp(appId?: string): UseCurrentAppReturn {
   }, [fetchApp]);
 
   const updateApp = useCallback(
-    (updates: Partial<App>) => {
+    (updates: Partial<DetailedAppInfo>) => {
       if (!app) return;
       setApp(prev => (prev ? { ...prev, ...updates } : null));
     },

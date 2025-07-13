@@ -89,7 +89,7 @@ function CreateApplicationForm() {
   const createAppHook = useCreateAppComponent();
   const callbackUrlHook = useCallbackUrlComponent(
     currentAppId || '',
-    app?.callbackUrl || ''
+    app?.authorizedCallbackUrls?.[0] || ''
   );
   const githubHook = useGitHubComponent(
     currentAppId || '',
@@ -151,7 +151,7 @@ function CreateApplicationForm() {
   // Build form data from current app state This is only used for the stepHistory component
   const formData = {
     name: app?.name || '',
-    callbackUrl: app?.callbackUrl || '',
+    callbackUrl: app?.authorizedCallbackUrls?.[0] || '',
     githubId: app?.githubId || '',
     // Add other form fields as needed
   };
@@ -253,6 +253,7 @@ function CreateApplicationForm() {
           isTransitioning={isTransitioning}
           createdAppId={app.id}
           onNext={handleNext}
+          handleKeyPress={() => handleNext()}
           onBack={goToBack}
           onError={setError}
           integrationVerified={testIntegrationHook.integrationVerified}

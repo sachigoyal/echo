@@ -7,9 +7,7 @@ export interface UseConfigurationComponentReturn {
   error: string | null;
 }
 
-export function useConfigurationComponent(
-  appId: string
-): UseConfigurationComponentReturn {
+export function useConfigurationComponent(): UseConfigurationComponentReturn {
   // Configuration step is always valid (it's informational)
   const canGoNext = true;
   const isUpdating = false;

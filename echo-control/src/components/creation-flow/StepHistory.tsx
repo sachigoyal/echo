@@ -1,8 +1,9 @@
 import { ChevronRight } from 'lucide-react';
+import { StepConfig } from '@/app/owner/apps/create/page';
 
 interface StepHistoryProps {
-  formData: any;
-  steps: any[];
+  formData: Record<string, any>;
+  steps: StepConfig[];
   currentStep: number;
 }
 

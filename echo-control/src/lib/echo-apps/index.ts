@@ -8,6 +8,7 @@ import {
   getAppActivity,
   transformActivityToChartData,
 } from './activity/activity';
+import { isValidUrl } from '../stripe/payment-link';
 
 // Types for better type safety
 export interface AppCreateInput {
@@ -218,10 +219,122 @@ export const validateHomepageUrl = (homepageUrl?: string): string | null => {
         return 'Homepage URL must start with http:// or https://';
       }
     } catch {
-      return 'Invalid Homepage URL format';
+      return 'Homepage URL must be a valid URL';
     }
   }
   return null;
+};
+
+export const verifyArgs = (data: {
+  name?: string;
+  description?: string;
+  githubType?: string;
+  githubId?: string;
+  authorizedCallbackUrls?: string[];
+  profilePictureUrl?: string;
+  bannerImageUrl?: string;
+  homepageUrl?: string;
+  isActive?: boolean;
+  isPublic?: boolean;
+}): string | null => {
+  // Validate name
+  if (data.name !== undefined) {
+    const nameError = validateAppName(data.name);
+    if (nameError) return nameError;
+  }
+
+  // Validate description
+  if (data.description !== undefined) {
+    const descriptionError = validateAppDescription(data.description);
+    if (descriptionError) return descriptionError;
+  }
+
+  // Validate githubType
+  if (data.githubType !== undefined) {
+    const githubTypeError = validateGithubType(data.githubType);
+    if (githubTypeError) return githubTypeError;
+  }
+
+  // Validate githubId
+  if (data.githubId !== undefined) {
+    const githubIdError = validateGithubId(data.githubId);
+    if (githubIdError) return githubIdError;
+  }
+
+  // Validate authorizedCallbackUrls
+  if (data.authorizedCallbackUrls !== undefined) {
+    if (!Array.isArray(data.authorizedCallbackUrls)) {
+      return 'Authorized callback URLs must be an array';
+    }
+
+    for (const url of data.authorizedCallbackUrls) {
+      if (typeof url !== 'string') {
+        return 'All callback URLs must be strings';
+      }
+
+      if (url.trim().length === 0) {
+        return 'Callback URLs cannot be empty';
+      }
+
+      // Allow localhost URLs for development
+      const isLocalhostUrl = url.startsWith('http://localhost:');
+      if (!isLocalhostUrl && !isValidUrl(url)) {
+        return `Invalid callback URL: ${url}`;
+      }
+    }
+  }
+
+  // Validate profilePictureUrl
+  if (data.profilePictureUrl !== undefined && data.profilePictureUrl !== null) {
+    if (typeof data.profilePictureUrl !== 'string') {
+      return 'Profile picture URL must be a string';
+    }
+
+    if (data.profilePictureUrl.trim().length === 0) {
+      return 'Profile picture URL cannot be empty if provided';
+    }
+
+    if (!isValidUrl(data.profilePictureUrl)) {
+      return 'Profile picture URL must be a valid URL';
+    }
+  }
+
+  // Validate bannerImageUrl
+  if (data.bannerImageUrl !== undefined && data.bannerImageUrl !== null) {
+    if (typeof data.bannerImageUrl !== 'string') {
+      return 'Banner image URL must be a string';
+    }
+
+    if (data.bannerImageUrl.trim().length === 0) {
+      return 'Banner image URL cannot be empty if provided';
+    }
+
+    if (!isValidUrl(data.bannerImageUrl)) {
+      return 'Banner image URL must be a valid URL';
+    }
+  }
+
+  // Validate homepageUrl
+  if (data.homepageUrl !== undefined) {
+    const homepageUrlError = validateHomepageUrl(data.homepageUrl);
+    if (homepageUrlError) return homepageUrlError;
+  }
+
+  // Validate isActive
+  if (data.isActive !== undefined) {
+    if (typeof data.isActive !== 'boolean') {
+      return 'isActive must be a boolean';
+    }
+  }
+
+  // Validate isPublic
+  if (data.isPublic !== undefined) {
+    if (typeof data.isPublic !== 'boolean') {
+      return 'isPublic must be a boolean';
+    }
+  }
+
+  return null; // No validation errors
 };
 
 // Business logic functions
@@ -853,6 +966,7 @@ export const updateEchoAppById = async (
       ...(data.authorizedCallbackUrls !== undefined && {
         authorizedCallbackUrls: data.authorizedCallbackUrls,
       }),
+      ...(data.isPublic !== undefined && { isPublic: data.isPublic }),
     },
     include: {
       apiKeys: {

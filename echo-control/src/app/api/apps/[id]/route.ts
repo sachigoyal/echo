@@ -5,6 +5,7 @@ import {
   updateEchoAppById,
   deleteEchoAppById,
   AppUpdateInput,
+  verifyArgs,
 } from '@/lib/echo-apps';
 import { isValidUUID } from '@/lib/oauth-config/index';
 
@@ -94,6 +95,24 @@ export async function PUT(
       isPublic,
     } = body;
 
+    // Validate input fields
+    const validationError = verifyArgs({
+      name,
+      description,
+      githubType,
+      githubId,
+      authorizedCallbackUrls,
+      profilePictureUrl,
+      bannerImageUrl,
+      homepageUrl,
+      isActive,
+      isPublic,
+    });
+
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
     const updateData: AppUpdateInput = {};
 
     // Only include provided fields in the update
@@ -101,6 +120,8 @@ export async function PUT(
     if (description !== undefined) updateData.description = description;
     if (githubType !== undefined) updateData.githubType = githubType;
     if (githubId !== undefined) updateData.githubId = githubId;
+    if (authorizedCallbackUrls !== undefined)
+      updateData.authorizedCallbackUrls = authorizedCallbackUrls;
     if (profilePictureUrl !== undefined)
       updateData.profilePictureUrl = profilePictureUrl;
     if (bannerImageUrl !== undefined)
