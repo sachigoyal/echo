@@ -150,7 +150,7 @@ function CreateApplicationForm() {
 
   // Build form data from current app state This is only used for the stepHistory component
   const formData = {
-    name: app?.name || '',
+    name: app?.name || createAppHook.stepRef.current?.getValue() || '',
     callbackUrl: app?.authorizedCallbackUrls?.[0] || '',
     githubId: app?.githubId || '',
     // Add other form fields as needed
@@ -207,12 +207,11 @@ function CreateApplicationForm() {
     >
       {currentStepData?.key === 'name' ? (
         <CreateApplicationStep
+          ref={createAppHook.stepRef}
           isTransitioning={isTransitioning}
           onNext={handleNext}
           onBack={goToBack}
           onError={setError}
-          appName={createAppHook.appName}
-          setCurrentAppName={createAppHook.setCurrentAppName}
           isCreating={createAppHook.isCreating}
           error={createAppHook.error}
         />
