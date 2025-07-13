@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useUpdateApp } from '../../../hooks/useUpdateApp';
+import { AppUpdateInput } from '@/lib/echo-apps';
 
 export interface UseGitHubComponentReturn {
   githubId: string;
@@ -66,15 +67,15 @@ export function useGitHubComponent(
     }
 
     try {
-      const updateData: any = {};
+      const updateData: AppUpdateInput = {};
 
       if (githubId.trim()) {
         updateData.githubId = githubId.trim();
         updateData.githubType = githubType;
       } else {
         // If githubId is empty, clear both fields
-        updateData.githubId = null;
-        updateData.githubType = null;
+        updateData.githubId = undefined;
+        updateData.githubType = undefined;
       }
 
       await updateApp(appId, updateData);

@@ -1,8 +1,7 @@
-import { forwardRef, useImperativeHandle, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useStepNavigation } from './hooks/useStepNavigation';
-import { StepComponentInterface, BaseStepProps } from './types';
+import { BaseStepProps } from './types';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 

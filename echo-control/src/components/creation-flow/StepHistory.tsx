@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { StepConfig } from '@/app/owner/apps/create/page';
 
 interface StepHistoryProps {
-  formData: Record<string, any>;
+  formData: Record<string, unknown>;
   steps: StepConfig[];
   currentStep: number;
 }
@@ -34,7 +34,7 @@ export default function StepHistory({
             if ('login' in value) {
               displayValue = `@${value.login}`;
             } else if ('full_name' in value) {
-              displayValue = value.full_name;
+              displayValue = (value.full_name as string) || '<skipped>';
             } else {
               displayValue = '<configured>';
             }
