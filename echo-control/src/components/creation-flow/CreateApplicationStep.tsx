@@ -11,6 +11,7 @@ import { BaseStepProps } from './types';
 interface CreateApplicationStepProps extends BaseStepProps {
   isCreating: boolean;
   error: string | null;
+  currentAppName: string;
 }
 
 export interface CreateApplicationStepRef {
@@ -20,9 +21,9 @@ export interface CreateApplicationStepRef {
 const CreateApplicationStep = forwardRef<
   CreateApplicationStepRef,
   CreateApplicationStepProps
->(({ onError, isCreating, error }, ref) => {
+>(({ onError, isCreating, error, currentAppName }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [appName, setAppName] = useState('');
+  const [appName, setAppName] = useState(currentAppName);
 
   // Expose the getValue method to parent
   useImperativeHandle(ref, () => ({

@@ -86,7 +86,7 @@ function CreateApplicationForm() {
   } = useCreationFlowNavigation(steps, 0, currentAppId);
 
   // Step-specific hooks
-  const createAppHook = useCreateAppComponent();
+  const createAppHook = useCreateAppComponent(currentAppId);
   const callbackUrlHook = useCallbackUrlComponent(
     currentAppId || '',
     app?.authorizedCallbackUrls?.[0] || ''
@@ -214,6 +214,9 @@ function CreateApplicationForm() {
           onError={setError}
           isCreating={createAppHook.isCreating}
           error={createAppHook.error}
+          currentAppName={
+            app?.name || createAppHook.stepRef.current?.getValue() || ''
+          }
         />
       ) : currentStepData?.key === 'callbackUrl' && app ? (
         <CallbackUrlStep
