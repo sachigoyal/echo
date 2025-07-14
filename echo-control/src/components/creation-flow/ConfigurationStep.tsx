@@ -106,7 +106,7 @@ export default Root;`;
 import { useState } from 'react';
 
 const echoConfig = {
-  appId: '7f5cf882-6213-42e2-b191-01a8bc7e46da',
+  appId: '${createdAppId}',
   apiUrl: 'https://echo.merit.systems',
   redirectUri: window.location.origin,
 };
