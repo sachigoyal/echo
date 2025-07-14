@@ -69,12 +69,8 @@ import { useState } from 'react';`;
 };`;
 
   const chatInterfaceCode = `function ChatInterface() {
-  const { user, token, signIn, isAuthenticated } = useEcho();
-  const openai = new OpenAI({
-    apiKey: token || '',
-    baseURL: 'https://echo.router.merit.systems',
-    dangerouslyAllowBrowser: true,
-  });
+  const { user, signIn, isAuthenticated } = useEcho();
+
   const [response, setResponse] = useState('');
   const [input, setInput] = useState('');
 

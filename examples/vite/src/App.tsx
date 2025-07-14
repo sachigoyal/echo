@@ -4,6 +4,7 @@ import {
   EchoTokenPurchase,
   useEcho,
 } from '@zdql/echo-react-sdk';
+import { OpenAIExample } from './OpenAIExample';
 import React, { useState, useEffect, useCallback } from 'react';
 
 // Configuration constants
@@ -472,6 +473,7 @@ function App() {
           >
             Reset Config
           </button>
+          <OpenAIExample />
         </div>
       </div>
     </EchoProvider>

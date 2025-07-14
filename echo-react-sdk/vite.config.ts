@@ -33,6 +33,7 @@ export default defineConfig({
       external: [
         'react',
         'react-dom',
+        'openai',
         // Node.js modules that should not be bundled for browser
         'inquirer',
         'commander',
@@ -58,6 +59,7 @@ export default defineConfig({
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          openai: 'OpenAI',
         },
       },
     },
