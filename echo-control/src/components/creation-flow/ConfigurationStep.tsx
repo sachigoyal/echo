@@ -58,8 +58,7 @@ const ConfigurationStep = ({
 
   const installCommand = 'npm install @zdql/echo-react-sdk openai';
 
-  const importsCode = `import { EchoProvider, useEcho } from '@zdql/echo-react-sdk';
-import OpenAI from 'openai';
+  const importsCode = `import { EchoProvider, useEcho, useEchoOpenAI } from '@zdql/echo-react-sdk';
 import { useState } from 'react';`;
 
   const configCode = `const echoConfig = {
@@ -70,6 +69,7 @@ import { useState } from 'react';`;
 
   const chatInterfaceCode = `function ChatInterface() {
   const { user, signIn, isAuthenticated } = useEcho();
+  const { openai } = useEchoOpenAI();
 
   const [response, setResponse] = useState('');
   const [input, setInput] = useState('');
@@ -84,19 +84,8 @@ import { useState } from 'react';`;
   
   return (
     <div>
-      {!isAuthenticated ? (
-        <button onClick={signIn}>Sign In</button>
-      ) : (
-        <div>
-          <p>Welcome, {user?.email}!</p>
-        </div>
-      )}
-      <input 
-        type="text" 
-        value={input} 
-        onChange={(e) => setInput(e.target.value)} 
-        placeholder="Type your message..."
-      />
+      {!isAuthenticated && <button onClick={signIn}>Sign In</button>}
+      <input type="text" value={input} onChange={(e) => setInput(e.target.value)} />
       <button onClick={getMessage}>Get Message</button>
       <p>{response}</p>
     </div>
@@ -113,49 +102,33 @@ import { useState } from 'react';`;
 
 export default Root;`;
 
-  const completeExampleCode = `import { EchoProvider, useEcho } from '@zdql/echo-react-sdk';
-import OpenAI from 'openai';
+  const completeExampleCode = `import { EchoProvider, useEcho, useEchoOpenAI } from '@zdql/echo-react-sdk';
 import { useState } from 'react';
 
 const echoConfig = {
-  appId: '${createdAppId}',
-  apiUrl: 'https://echo.merit.systems',
+  appId: '7f5cf882-6213-42e2-b191-01a8bc7e46da',
+  apiUrl: 'http://localhost:3000',
   redirectUri: window.location.origin,
 };
 
 function ChatInterface() {
-  const { user, token, signIn, isAuthenticated } = useEcho();
-  const openai = new OpenAI({
-    apiKey: token || '',
-    baseURL: 'https://echo.router.merit.systems',
-    dangerouslyAllowBrowser: true,
-  });
-  const [response, setResponse] = useState('');
-  const [input, setInput] = useState('');
+  const { signIn, isAuthenticated } = useEcho()
+  const { openai } = useEchoOpenAI()
+  const [response, setResponse] = useState('')
+  const [input, setInput] = useState('')
 
   const getMessage = async () => {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: input }],
-    });
-    setResponse(response.choices[0].message.content || '');
-  };
+    })
+    setResponse(response.choices[0].message.content || '')
+  }
   
   return (
     <div>
-      {!isAuthenticated ? (
-        <button onClick={signIn}>Sign In</button>
-      ) : (
-        <div>
-          <p>Welcome, {user?.email}!</p>
-        </div>
-      )}
-      <input 
-        type="text" 
-        value={input} 
-        onChange={(e) => setInput(e.target.value)} 
-        placeholder="Type your message..."
-      />
+      {!isAuthenticated && <button onClick={signIn}>Sign In</button>}
+      <input type="text" value={input} onChange={(e) => setInput(e.target.value)} />
       <button onClick={getMessage}>Get Message</button>
       <p>{response}</p>
     </div>
@@ -189,9 +162,19 @@ export default Root;`;
           {/* Section 0: Create React App */}
           <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-lg">
-                0. Create a new React app
-              </CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                <CardTitle className="text-lg">
+                  0. Create a new React app
+                </CardTitle>
+                <Button
+                  variant="secondaryOutline"
+                  size="sm"
+                  onClick={() => handleCopyCode(createReactAppCommand)}
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy
+                </Button>
+              </div>
               <CardDescription>
                 We&apos;ll create a new React app to host our Echo app. This
                 will be the root of your application.

@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { useCreateApp } from '../../../hooks/useCreateApp';
 import { CreateApplicationStepRef } from '../CreateApplicationStep';
+import { useUpdateApp } from '@/hooks/useUpdateApp';
 
 export interface UseCreateAppComponentReturn {
   stepRef: React.RefObject<CreateApplicationStepRef | null>;
@@ -10,12 +11,17 @@ export interface UseCreateAppComponentReturn {
   error: string | null;
 }
 
-export function useCreateAppComponent(): UseCreateAppComponentReturn {
+export function useCreateAppComponent(
+  existingAppId?: string
+): UseCreateAppComponentReturn {
   const stepRef = useRef<CreateApplicationStepRef>(null);
-  const { createApp, isCreating, error } = useCreateApp();
+  const { createApp, isCreating, error: createError } = useCreateApp();
+  const { updateApp, isUpdating, error: updateError } = useUpdateApp();
+
+  const error = createError || updateError;
 
   // Validation logic - check if we can proceed
-  const canGoNext = !isCreating;
+  const canGoNext = !isCreating && !isUpdating;
 
   // Update method that performs the app creation
   const handleCreateAppComponent = useCallback(async (): Promise<void> => {
@@ -28,13 +34,17 @@ export function useCreateAppComponent(): UseCreateAppComponentReturn {
     if (isCreating) {
       throw new Error('Cannot proceed: Already creating app');
     }
+    if (existingAppId) {
+      await updateApp(existingAppId, { name: appName.trim() });
+    } else {
+      await createApp({ name: appName.trim() });
+    }
 
     try {
-      await createApp({ name: appName.trim() });
     } catch (error) {
       throw error; // Re-throw to be handled by navigation hook
     }
-  }, [createApp, isCreating]);
+  }, [createApp, updateApp, existingAppId, isCreating]);
 
   return {
     stepRef,
