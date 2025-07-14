@@ -1,20 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  UserIcon,
-  LogOutIcon,
-  AppWindowIcon,
-  Sun,
-  Moon,
-  Monitor,
-} from 'lucide-react';
 import { useTheme } from '../theme-provider';
 import BalanceCard from '../BalanceCard';
-import { useRouter } from 'next/navigation';
 import { UserDropdown } from './user-dropdown';
 
 export default function Header() {

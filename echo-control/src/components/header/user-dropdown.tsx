@@ -1,12 +1,8 @@
 import {
   FileText,
-  Landmark,
   Laptop,
-  Loader2,
-  LogIn,
   LogOut,
   Moon,
-  Settings,
   Sun,
   User,
   UserLock,
