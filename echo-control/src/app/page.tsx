@@ -1,55 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Carousel from '@/components/Carousel';
-import MyApps from '@/components/MyApps';
 import PopularApps from '@/components/PopularApps';
-import MemberApps from '@/components/MemberApps';
 import {
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/theme-provider';
-import { PublicEchoApp } from '@/lib/types/apps';
 import Link from 'next/link';
 import { GlassButton } from '@/components/glass-button';
 
 export default function HomePage() {
   const { resolvedTheme } = useTheme();
-  const [publicApps, setPublicApps] = useState<PublicEchoApp[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchPublicApps = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/apps/public');
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch public apps: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        setPublicApps(data.apps as PublicEchoApp[]);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to load public apps'
-        );
-        setPublicApps([]); // Set empty array on error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPublicApps();
-  }, []);
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
