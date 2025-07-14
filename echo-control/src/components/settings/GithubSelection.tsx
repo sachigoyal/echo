@@ -23,9 +23,6 @@ export default function GithubSelection({
 }: GithubSelectionProps) {
   // Internal state for the GitHub selection
   const [pendingGithubId, setPendingGithubId] = useState(initialGithubId);
-  const [pendingGithubType, setPendingGithubType] = useState<
-    'user' | 'repo' | null
-  >(initialGithubType);
   const [isSaving, setIsSaving] = useState(false);
 
   // Handle GitHub selection from search component - auto-save on change
@@ -41,7 +38,6 @@ export default function GithubSelection({
 
       // Update local state immediately for UI responsiveness
       setPendingGithubId(trimmedValue);
-      setPendingGithubType(newType);
 
       // Auto-save the changes
       try {
@@ -54,7 +50,6 @@ export default function GithubSelection({
         console.error('Error saving GitHub info:', error);
         // Revert to previous values on error
         setPendingGithubId(initialGithubId || '');
-        setPendingGithubType(initialGithubType);
       } finally {
         setIsSaving(false);
       }
