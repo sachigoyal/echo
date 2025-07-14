@@ -71,6 +71,7 @@ export interface DetailedAppInfo {
   githubId: string | null;
   githubType: 'user' | 'repo' | null;
   isActive: boolean;
+  isPublic: boolean;
   createdAt: Date;
   updatedAt: Date;
   authorizedCallbackUrls: string[];
@@ -612,6 +613,7 @@ export const getDetailedAppInfo = async (
     return {
       ...publicInfo,
       githubType: publicInfo.githubType as 'user' | 'repo' | null,
+      isPublic: true, // Public apps are always public
       authorizedCallbackUrls: [],
       user: {
         ...publicInfo.owner,
@@ -639,6 +641,7 @@ export const getDetailedAppInfo = async (
       githubId: true,
       githubType: true,
       isActive: true,
+      isPublic: true,
       createdAt: true,
       updatedAt: true,
       authorizedCallbackUrls: true,

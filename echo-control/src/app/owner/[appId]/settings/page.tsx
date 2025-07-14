@@ -11,10 +11,12 @@ import {
   ChevronRight,
   Users,
   DollarSign,
+  Palette,
 } from 'lucide-react';
 
 // Import individual settings components
 import GeneralSettings from '@/components/settings/GeneralSettings';
+import PersonalizationSettings from '@/components/settings/PersonalizationSettings';
 import ApiKeysSettings from '@/components/settings/ApiKeysSettings';
 import AnalyticsSettings from '@/components/settings/AnalyticsSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
@@ -33,7 +35,13 @@ const sidebarItems: SidebarItem[] = [
     id: 'general',
     label: 'General',
     icon: <Settings className="h-4 w-4" />,
-    description: 'App name, billing settings, and basic configuration',
+    description: 'Markup settings and basic configuration',
+  },
+  {
+    id: 'personalization',
+    label: 'Personalization',
+    icon: <Palette className="h-4 w-4" />,
+    description: 'App name, images, and branding customization',
   },
   {
     id: 'api-keys',
@@ -74,8 +82,6 @@ const SettingsPage: React.FC = () => {
   const [appName, setAppName] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const activeItem = sidebarItems.find(item => item.id === activeTab);
-
   // Fetch app name for components that need it
   useEffect(() => {
     const fetchAppName = async () => {
@@ -107,7 +113,11 @@ const SettingsPage: React.FC = () => {
 
     switch (activeTab) {
       case 'general':
-        return <GeneralSettings appId={appId} initialAppName={appName} />;
+        return <GeneralSettings appId={appId} />;
+      case 'personalization':
+        return (
+          <PersonalizationSettings appId={appId} initialAppName={appName} />
+        );
       case 'api-keys':
         return <ApiKeysSettings appId={appId} appName={appName} />;
       case 'analytics':
@@ -132,8 +142,8 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">App Settings</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold mb-2">App Dashboard</h1>
+        <p className="text-foreground">
           Manage your application configuration and preferences
         </p>
       </div>
@@ -151,9 +161,9 @@ const SettingsPage: React.FC = () => {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between p-3 text-left transition-colors hover:bg-accent rounded-none ${
+                    className={`w-full flex items-center justify-between p-3 text-left transition-colors hover:bg-secondary/80 rounded-none ${
                       activeTab === item.id
-                        ? 'bg-accent text-accent-foreground border-r-2 border-primary'
+                        ? 'bg-secondary text-secondary-foreground border-r-2 border-secondary'
                         : 'text-muted-foreground'
                     }`}
                   >
@@ -173,16 +183,9 @@ const SettingsPage: React.FC = () => {
 
         {/* Main Content */}
         <div className="flex-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {activeItem?.icon}
-                {activeItem?.label}
-              </CardTitle>
-              <p className="text-muted-foreground">{activeItem?.description}</p>
-            </CardHeader>
-            <CardContent>{renderSettingsComponent()}</CardContent>
-          </Card>
+          <div className="bg-card border border-border rounded-xl p-6">
+            <div className="space-y-4">{renderSettingsComponent()}</div>
+          </div>
         </div>
       </div>
     </div>

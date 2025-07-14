@@ -76,7 +76,7 @@ export function useCreationFlowNavigation(
 
         if (isLastStep) {
           if (appId) {
-            router.push(`/apps/${appId}`);
+            router.push(`/owner/${appId}/settings`);
           } else {
             router.push(`/`);
           }
