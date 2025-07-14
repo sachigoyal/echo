@@ -155,6 +155,22 @@ module.exports = {
             opacity: '0.2',
           },
         },
+        marquee: {
+          from: {
+            transform: 'translateX(0)',
+          },
+          to: {
+            transform: 'translateX(calc(-100% - var(--gap)))',
+          },
+        },
+        'marquee-vertical': {
+          from: {
+            transform: 'translateY(0)',
+          },
+          to: {
+            transform: 'translateY(calc(-100% - var(--gap)))',
+          },
+        },
       },
       animation: {
         'spin-extra-slow': 'spin 25s linear infinite',
@@ -173,6 +189,8 @@ module.exports = {
         'pulse-shadow':
           'pulse-shadow var(--pulse-shadow-duration, 3s) ease-in-out var(--pulse-shadow-delay, 0s) infinite',
         'border-pulse': 'border-pulse 2s ease-in-out infinite',
+        marquee: 'marquee var(--duration) infinite linear',
+        'marquee-vertical': 'marquee-vertical var(--duration) linear infinite',
       },
       '--pulse-shadow-duration': {
         '2s': '2s',

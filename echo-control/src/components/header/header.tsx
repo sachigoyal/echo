@@ -7,13 +7,14 @@ import Link from 'next/link';
 import {
   UserIcon,
   LogOutIcon,
-  Settings,
+  AppWindowIcon,
   Sun,
   Moon,
   Monitor,
 } from 'lucide-react';
 import { useTheme } from '../theme-provider';
 import BalanceCard from '../BalanceCard';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { user, isLoaded } = useUser();
@@ -21,7 +22,7 @@ export default function Header() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
-
+  const router = useRouter();
   // Close menus when clicking outside
   const handleBackdropClick = () => {
     setShowUserMenu(false);
@@ -214,13 +215,12 @@ export default function Header() {
                       <div className="py-1">
                         <button
                           onClick={() => {
-                            setShowUserMenu(false);
-                            // Add settings navigation here if needed
+                            router.push('/apps/my-apps');
                           }}
                           className="w-full flex items-center px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200"
                         >
-                          <Settings className="h-4 w-4 mr-3" />
-                          Settings
+                          <AppWindowIcon className="h-4 w-4 mr-3" />
+                          Your Apps
                         </button>
                         <button
                           onClick={() => {
