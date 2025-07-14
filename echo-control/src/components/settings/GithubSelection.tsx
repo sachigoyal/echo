@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { GitHubSearchComponent } from '../GitHubSearchComponent';
 
 interface GithubSelectionProps {
@@ -34,7 +34,7 @@ export default function GithubSelection({
     (
       value: string,
       verified: boolean,
-      metadata?: any,
+      metadata?: unknown,
       detectedType?: 'user' | 'repo'
     ) => {
       const newType = detectedType || null;

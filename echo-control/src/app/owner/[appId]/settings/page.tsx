@@ -82,8 +82,6 @@ const SettingsPage: React.FC = () => {
   const [appName, setAppName] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const activeItem = sidebarItems.find(item => item.id === activeTab);
-
   // Fetch app name for components that need it
   useEffect(() => {
     const fetchAppName = async () => {
@@ -115,7 +113,7 @@ const SettingsPage: React.FC = () => {
 
     switch (activeTab) {
       case 'general':
-        return <GeneralSettings appId={appId} initialAppName={appName} />;
+        return <GeneralSettings appId={appId} />;
       case 'personalization':
         return (
           <PersonalizationSettings appId={appId} initialAppName={appName} />

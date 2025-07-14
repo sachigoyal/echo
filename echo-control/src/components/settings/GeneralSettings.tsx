@@ -8,13 +8,9 @@ import GithubSelection from './GithubSelection';
 
 interface GeneralSettingsProps {
   appId: string;
-  initialAppName: string;
 }
 
-export default function GeneralSettings({
-  appId,
-  initialAppName,
-}: GeneralSettingsProps) {
+export default function GeneralSettings({ appId }: GeneralSettingsProps) {
   // Local loading states for different operations
   const [isUpdatingPublic, setIsUpdatingPublic] = useState(false);
   const [isUpdatingGithub, setIsUpdatingGithub] = useState(false);
