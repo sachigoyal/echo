@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTheme } from '../theme-provider';
 import BalanceCard from '../BalanceCard';
 import { UserDropdown } from './user-dropdown';
+import { Logo } from '../ui/logo';
 
 export default function Header() {
   const { user, isLoaded } = useUser();
@@ -34,18 +35,7 @@ export default function Header() {
             {/* Logo - Left side */}
             <div className="font-bold flex items-center gap-2">
               <Link href="/" className="flex items-center">
-                <Image
-                  src={
-                    resolvedTheme === 'dark'
-                      ? '/logo/dark.svg'
-                      : '/logo/light.svg'
-                  }
-                  alt="Echo Logo"
-                  width={120}
-                  height={32}
-                  className="h-8 w-auto"
-                  priority
-                />
+                <Logo className="h-8 w-auto" />
               </Link>
               <span className="text-sm md:text-lg">
                 <span className="font-extrabold">Echo</span>

@@ -109,7 +109,7 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
         title="View and manage credits"
       >
         <Logo className="h-4 w-4 text-muted-foreground group-hover:text-secondary transition-colors" />
-        <span className="text-sm font-medium text-foreground">
+        <span className="text-sm font-extrabold text-foreground">
           {formatCurrency(Number(balance?.balance) || 0)}
         </span>
         <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover:text-secondary transition-colors" />
