@@ -1,16 +1,13 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useTheme } from '../theme-provider';
 import BalanceCard from '../BalanceCard';
 import { UserDropdown } from './user-dropdown';
 import { Logo } from '../ui/logo';
 
 export default function Header() {
   const { user, isLoaded } = useUser();
-  const { resolvedTheme } = useTheme();
 
   if (!isLoaded) {
     return (

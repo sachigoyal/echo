@@ -1,32 +1,32 @@
 import React from 'react';
+import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
 
-interface LogoProps extends React.HTMLAttributes<HTMLImageElement> {
+interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   onClick?: () => void;
 }
 
-export const Logo = React.forwardRef<HTMLImageElement, LogoProps>(
+export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
   ({ className, onClick, ...props }, ref) => {
     return (
-      <>
-        <img
-          ref={ref}
+      <div ref={ref} onClick={onClick} {...props}>
+        <Image
           src="/logo/light.svg"
           alt="Merit Systems Logo"
+          width={24}
+          height={24}
           className={cn('size-6 dark:hidden', className)}
-          onClick={onClick}
-          {...props}
         />
-        <img
+        <Image
           src="/logo/dark.svg"
           alt="Merit Systems Logo"
+          width={24}
+          height={24}
           className={cn('size-6 hidden dark:block', className)}
-          onClick={onClick}
-          {...props}
         />
-      </>
+      </div>
     );
   }
 );
