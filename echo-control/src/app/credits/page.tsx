@@ -8,120 +8,37 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/lib/balance';
-
-interface Balance {
-  balance: string;
-  totalPaid: string;
-  totalSpent: string;
-  currency: string;
-}
-
-interface Payment {
-  id: string;
-  stripePaymentId: string;
-  amount: number;
-  currency: string;
-  status: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface PaymentsPaginationInfo {
-  page: number;
-  limit: number;
-  totalCount: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-interface PaymentsResponse {
-  payments: Payment[];
-  pagination: PaymentsPaginationInfo;
-}
+import { usePaymentLink } from '@/hooks/usePaymentLink';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { useUserPayments } from '@/hooks/useUserPayments';
 
 export default function CreditsPage() {
   const { user, isLoaded } = useUser();
-  const [balance, setBalance] = useState<Balance | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const { createPaymentLink, loading: purchaseLoading } = usePaymentLink();
+  const { balance, loading, fetchBalance } = useUserBalance();
+  const {
+    payments,
+    loading: paymentsLoading,
+    pagination,
+    fetchPayments,
+  } = useUserPayments();
   const [customAmount, setCustomAmount] = useState('');
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [paymentsLoading, setPaymentsLoading] = useState(true);
-  const [pagination, setPagination] = useState<PaymentsPaginationInfo | null>(
-    null
-  );
+  const [showCustomAmount, setShowCustomAmount] = useState(false);
 
   useEffect(() => {
     if (isLoaded && user) {
       fetchBalance();
       fetchPayments();
     }
-  }, [isLoaded, user]);
-
-  const fetchBalance = async () => {
-    try {
-      const response = await fetch('/api/balance');
-      const data = await response.json();
-      setBalance(data);
-    } catch (error) {
-      console.error('Error fetching balance:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPayments = async (page: number = 1) => {
-    setPaymentsLoading(true);
-    try {
-      const response = await fetch(`/api/payments?page=${page}&limit=10`);
-      if (response.ok) {
-        const data: PaymentsResponse = await response.json();
-        setPayments(data.payments);
-        setPagination(data.pagination);
-      } else {
-        console.error('Error fetching payments:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error fetching payments:', error);
-    } finally {
-      setPaymentsLoading(false);
-    }
-  };
+  }, [isLoaded, user, fetchBalance, fetchPayments]);
 
   const handleAddCredits = async () => {
-    if (
-      !customAmount ||
-      isNaN(Number(customAmount)) ||
-      Number(customAmount) <= 0
-    ) {
-      return;
-    }
+    const amount = Number(customAmount);
+    await createPaymentLink({ amount });
+  };
 
-    setPurchaseLoading(true);
-    try {
-      const amount = Number(customAmount);
-      const response = await fetch('/api/stripe/payment-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: amount,
-          description: `Echo Credits - $${amount}`,
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        window.location.href = result.paymentLink.url;
-      } else {
-        console.error('Error creating payment link:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error creating payment link:', error);
-    } finally {
-      setPurchaseLoading(false);
-    }
+  const handleDefaultCredits = async () => {
+    await createPaymentLink();
   };
 
   const formatDate = (dateString: string) => {
@@ -195,80 +112,63 @@ export default function CreditsPage() {
                     {formatCurrency(Number(balance?.balance) || 0)}
                   </p>
                 </div>
-                <div className="text-right text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <span className="inline-block w-2 h-2 bg-muted-foreground rounded-full opacity-50"></span>
-                    <span>Help</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Auto Top-Up */}
-          <Card className="h-80 flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-lg font-medium">Auto Top-Up</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
-              <p className="text-sm text-muted-foreground mb-4">
-                To activate auto-top-up, you&apos;ll need a payment method that
-                supports offline charging.
-              </p>
-              <Button variant="outline" disabled>
-                Add a Payment Method
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Bottom Row */}
-          {/* Buy Credits */}
-          <Card className="h-80 flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-lg font-medium">Buy Credits</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 flex-1 flex flex-col">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Use crypto
-                </span>
-                <div className="w-10 h-6 bg-muted rounded-full relative">
-                  <div className="absolute left-1 top-1 w-4 h-4 bg-background rounded-full transition-transform"></div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex space-x-3">
-                  <Input
-                    type="number"
-                    min="1"
-                    step="0.01"
-                    placeholder="Enter amount ($)"
-                    value={customAmount}
-                    onChange={e => setCustomAmount(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={handleAddCredits}
-                    disabled={
-                      purchaseLoading ||
-                      !customAmount ||
-                      isNaN(Number(customAmount)) ||
-                      Number(customAmount) <= 0
-                    }
-                    className="px-6 bg-primary hover:bg-primary/90"
-                  >
-                    {purchaseLoading ? 'Processing...' : 'Add Credits'}
-                  </Button>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="link"
-                    className="text-sm text-muted-foreground hover:text-foreground p-0 h-auto"
-                  >
-                    View Usage →
-                  </Button>
+                <div className="flex flex-col items-end space-y-3">
+                  {!showCustomAmount ? (
+                    <>
+                      <Button
+                        onClick={handleDefaultCredits}
+                        disabled={purchaseLoading}
+                        className="px-6 bg-primary hover:bg-primary/90"
+                      >
+                        {purchaseLoading ? 'Processing...' : 'Add $10 Credits'}
+                      </Button>
+                      <button
+                        onClick={() => setShowCustomAmount(true)}
+                        className="text-sm text-muted-foreground hover:text-foreground underline"
+                      >
+                        Choose different amount
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-end space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          value={customAmount}
+                          onChange={e => setCustomAmount(e.target.value)}
+                          className="w-24 text-right"
+                          min="1"
+                          step="0.01"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowCustomAmount(false);
+                            setCustomAmount('');
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleAddCredits}
+                          disabled={
+                            purchaseLoading ||
+                            !customAmount ||
+                            Number(customAmount) <= 0
+                          }
+                          className="px-4 bg-primary hover:bg-primary/90"
+                          size="sm"
+                        >
+                          {purchaseLoading ? 'Processing...' : 'Add Credits'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
