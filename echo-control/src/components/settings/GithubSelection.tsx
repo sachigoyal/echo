@@ -26,65 +26,41 @@ export default function GithubSelection({
   const [pendingGithubType, setPendingGithubType] = useState<
     'user' | 'repo' | null
   >(initialGithubType);
-  const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Handle GitHub selection from search component - stabilized with useCallback
+  // Handle GitHub selection from search component - auto-save on change
   const handleGithubChange = useCallback(
-    (
+    async (
       value: string,
       verified: boolean,
       metadata?: unknown,
       detectedType?: 'user' | 'repo'
     ) => {
       const newType = detectedType || null;
+      const trimmedValue = value.trim();
 
-      // Only update if the value actually changed
-      setPendingGithubId(prevId => {
-        if (prevId === value) return prevId;
-        return value;
-      });
+      // Update local state immediately for UI responsiveness
+      setPendingGithubId(trimmedValue);
+      setPendingGithubType(newType);
 
-      setPendingGithubType(prevType => {
-        if (prevType === newType) return prevType;
-        return newType;
-      });
+      // Auto-save the changes
+      try {
+        setIsSaving(true);
+        const githubId = trimmedValue || undefined;
+        const githubType = githubId ? newType || undefined : undefined;
 
-      // Check for changes against initial values
-      const hasIdChange = value !== (initialGithubId || '');
-      const hasTypeChange = newType !== initialGithubType;
-      setHasChanges(hasIdChange || hasTypeChange);
+        await onSave(githubId, githubType);
+      } catch (error) {
+        console.error('Error saving GitHub info:', error);
+        // Revert to previous values on error
+        setPendingGithubId(initialGithubId || '');
+        setPendingGithubType(initialGithubType);
+      } finally {
+        setIsSaving(false);
+      }
     },
-    [initialGithubId, initialGithubType]
+    [initialGithubId, initialGithubType, onSave]
   );
-
-  // Handle save action
-  const handleSave = useCallback(async () => {
-    if (!hasChanges) return;
-
-    try {
-      setIsSaving(true);
-      const githubId = pendingGithubId.trim() || undefined;
-      const githubType = githubId ? pendingGithubType || undefined : undefined;
-
-      await onSave(githubId, githubType);
-
-      // Reset changes flag after successful save
-      setHasChanges(false);
-    } catch (error) {
-      console.error('Error saving GitHub info:', error);
-      // Don't reset hasChanges on error so user can retry
-    } finally {
-      setIsSaving(false);
-    }
-  }, [hasChanges, pendingGithubId, pendingGithubType, onSave]);
-
-  // Handle cancel action
-  const handleCancel = useCallback(() => {
-    setPendingGithubId(initialGithubId || '');
-    setPendingGithubType(initialGithubType);
-    setHasChanges(false);
-  }, [initialGithubId, initialGithubType]);
 
   return (
     <div className="bg-card border border-border rounded-xl p-6">
@@ -110,26 +86,6 @@ export default function GithubSelection({
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-secondary"></div>
                 {isSaving ? 'Saving...' : 'Loading...'}
-              </div>
-            )}
-
-            {/* Save/Cancel buttons - only show when there are changes */}
-            {hasChanges && !isLoading && (
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="px-3 py-1.5 bg-secondary text-secondary-foreground text-sm rounded-md hover:bg-secondary/80 transition-colors disabled:opacity-50"
-                >
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                  className="px-3 py-1.5 bg-muted text-muted-foreground text-sm rounded-md hover:bg-muted/80 transition-colors disabled:opacity-50"
-                >
-                  Cancel
-                </button>
               </div>
             )}
           </div>

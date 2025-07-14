@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Copy, ChevronRight } from 'lucide-react';
+import { Copy, ChevronRight, Check } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -21,7 +21,7 @@ const ConfigurationStep = ({
   isTransitioning,
   createdAppId,
 }: ConfigurationStepProps) => {
-  const { handleCopyCode } = useCopyCode();
+  const { handleCopyCode, isCopied } = useCopyCode();
 
   // Always can proceed from configuration step (it's informational)
   if (!createdAppId) {
@@ -107,7 +107,7 @@ import { useState } from 'react';
 
 const echoConfig = {
   appId: '7f5cf882-6213-42e2-b191-01a8bc7e46da',
-  apiUrl: 'http://localhost:3000',
+  apiUrl: 'https://echo.merit.systems',
   redirectUri: window.location.origin,
 };
 
@@ -169,10 +169,22 @@ export default Root;`;
                 <Button
                   variant="secondaryOutline"
                   size="sm"
-                  onClick={() => handleCopyCode(createReactAppCommand)}
+                  onClick={() =>
+                    handleCopyCode(createReactAppCommand, 'create-react-app')
+                  }
+                  className={`transition-all duration-300 ${isCopied('create-react-app') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy
+                  {isCopied('create-react-app') ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1 animate-pulse" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <CardDescription>
@@ -199,10 +211,20 @@ export default Root;`;
                 <Button
                   variant="secondaryOutline"
                   size="sm"
-                  onClick={() => handleCopyCode(installCommand)}
+                  onClick={() => handleCopyCode(installCommand, 'install-deps')}
+                  className={`transition-all duration-300 ${isCopied('install-deps') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy
+                  {isCopied('install-deps') ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1 animate-pulse" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <CardDescription>
@@ -227,10 +249,20 @@ export default Root;`;
                 <Button
                   variant="secondaryOutline"
                   size="sm"
-                  onClick={() => handleCopyCode(importsCode)}
+                  onClick={() => handleCopyCode(importsCode, 'imports')}
+                  className={`transition-all duration-300 ${isCopied('imports') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy
+                  {isCopied('imports') ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1 animate-pulse" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <CardDescription>
@@ -255,10 +287,20 @@ export default Root;`;
                 <Button
                   variant="secondaryOutline"
                   size="sm"
-                  onClick={() => handleCopyCode(configCode)}
+                  onClick={() => handleCopyCode(configCode, 'config')}
+                  className={`transition-all duration-300 ${isCopied('config') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy
+                  {isCopied('config') ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1 animate-pulse" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <CardDescription>
@@ -284,10 +326,22 @@ export default Root;`;
                 <Button
                   variant="secondaryOutline"
                   size="sm"
-                  onClick={() => handleCopyCode(chatInterfaceCode)}
+                  onClick={() =>
+                    handleCopyCode(chatInterfaceCode, 'chat-interface')
+                  }
+                  className={`transition-all duration-300 ${isCopied('chat-interface') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy
+                  {isCopied('chat-interface') ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1 animate-pulse" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <CardDescription>
@@ -314,10 +368,22 @@ export default Root;`;
                 <Button
                   variant="secondaryOutline"
                   size="sm"
-                  onClick={() => handleCopyCode(rootComponentCode)}
+                  onClick={() =>
+                    handleCopyCode(rootComponentCode, 'root-component')
+                  }
+                  className={`transition-all duration-300 ${isCopied('root-component') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy
+                  {isCopied('root-component') ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1 animate-pulse" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy
+                    </>
+                  )}
                 </Button>
               </div>
               <CardDescription>
@@ -344,10 +410,22 @@ export default Root;`;
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => handleCopyCode(completeExampleCode)}
+                  onClick={() =>
+                    handleCopyCode(completeExampleCode, 'complete-example')
+                  }
+                  className={`transition-all duration-300 ${isCopied('complete-example') ? 'bg-green-100 border-green-300 text-green-800 scale-105' : 'hover:scale-105'}`}
                 >
-                  <Copy className="h-4 w-4" />
-                  Copy All
+                  {isCopied('complete-example') ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1 animate-pulse" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy All
+                    </>
+                  )}
                 </Button>
               </div>
               <CardDescription>
