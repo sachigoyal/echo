@@ -91,12 +91,28 @@ export function GitHubSearchComponent({
         const isValid = result !== null;
         setVerificationResult({ isValid, data: result || undefined });
         setLastVerifiedValue(currentValue);
-        onChange(currentValue, isValid, result || undefined, detectedType);
+
+        // Only call onChange if this is a new verification or the result changed
+        if (
+          currentValue !== lastVerifiedValue ||
+          !verificationResult ||
+          verificationResult.isValid !== isValid
+        ) {
+          onChange(currentValue, isValid, result || undefined, detectedType);
+        }
       } catch (error) {
         console.error('Error verifying GitHub ID:', error);
         setVerificationResult({ isValid: false });
         setLastVerifiedValue(currentValue);
-        onChange(currentValue, false, undefined, undefined);
+
+        // Only call onChange if this is a new verification or the result changed
+        if (
+          currentValue !== lastVerifiedValue ||
+          !verificationResult ||
+          verificationResult.isValid !== false
+        ) {
+          onChange(currentValue, false, undefined, undefined);
+        }
       } finally {
         setIsVerifying(false);
       }
@@ -312,15 +328,6 @@ export function GitHubSearchComponent({
           </div>
         </div>
       )}
-
-      {/* Help Text */}
-      <div className="text-xs text-muted-foreground space-y-1">
-        <p>
-          • Search by username or repository name, or enter a numeric ID
-          directly
-        </p>
-        <p>• For repositories, you can also use the format: owner/repo-name</p>
-      </div>
     </div>
   );
 }

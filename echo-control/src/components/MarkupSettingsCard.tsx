@@ -128,7 +128,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
           <div>
             <h3 className="font-semibold text-foreground">Markup Settings</h3>
             <p className="text-sm text-muted-foreground">
-              Set your profit margin percentage
+              This is the premium applied to the token costs you will receive.
             </p>
           </div>
         </div>
@@ -151,7 +151,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
               step="1"
               value={inputValue}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-input bg-background text-foreground rounded-lg text-lg font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors"
+              className="w-full px-4 py-3 border border-input bg-background text-foreground rounded-lg text-lg font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
               placeholder="0"
             />
             <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
@@ -171,7 +171,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
                 Saving
               </div>
             ) : success ? (
-              <div className="flex items-center text-green-600">
+              <div className="flex items-center ">
                 <CheckIcon className="h-4 w-4 mr-2" />
                 Saved
               </div>

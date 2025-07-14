@@ -32,7 +32,7 @@ const ConfigurationStep = ({
         <div className="flex items-center space-x-3 mb-4 sm:mb-6">
           <ChevronRight className="h-5 w-5 text-secondary" />
           <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
-            Review your configuration
+            Install Echo
           </h2>
         </div>
 
@@ -152,7 +152,7 @@ export default Root;`;
       <div className="flex items-center space-x-3 mb-4 sm:mb-6">
         <ChevronRight className="h-5 w-5 text-secondary" />
         <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
-          Review your configuration
+          Install Echo
         </h2>
       </div>
 

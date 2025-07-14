@@ -67,20 +67,14 @@ export default function TestIntegrationStep({
               <Card className="bg-secondary/10 border-secondary/20 backdrop-blur-sm">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
-                    <CardTitle className="text-xl">
-                      🚀 Test Your Integration
-                    </CardTitle>
+                    <CardTitle className="text-xl">Connect with Echo</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 text-muted-foreground text-sm leading-relaxed">
-                    <p>1. Copy the configuration code from the previous step</p>
-                    <p>2. Set up your React app with the EchoProvider</p>
-                    <p>3. Add the EchoSignIn component to your app</p>
-                    <p>
-                      4. Run your app and click &quot;Sign In with Echo&quot;
-                    </p>
-                    <p>5. Complete the OAuth flow</p>
+                    <p>1. Implement the code from the previous step</p>
+                    <p>2. Run your app and click &quot;Sign In&quot;</p>
+                    <p>3. Begin developing your app!</p>
                   </div>
                 </CardContent>
               </Card>
@@ -93,7 +87,7 @@ export default function TestIntegrationStep({
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent mx-auto sm:mx-0"></div>
                         <span className="text-muted-foreground text-center sm:text-left">
-                          Waiting for your test login...
+                          Waiting for your login...
                         </span>
                       </>
                     ) : createdAppId ? (

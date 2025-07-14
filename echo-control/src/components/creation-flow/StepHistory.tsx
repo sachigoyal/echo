@@ -26,7 +26,7 @@ export default function StepHistory({
           // Convert non-string values to displayable strings
           let displayValue: string;
           if (typeof value === 'string') {
-            displayValue = value || '<skipped>';
+            displayValue = value || 'completed';
           } else if (typeof value === 'boolean') {
             displayValue = value ? 'Yes' : 'No';
           } else if (value && typeof value === 'object') {
@@ -34,12 +34,12 @@ export default function StepHistory({
             if ('login' in value) {
               displayValue = `@${value.login}`;
             } else if ('full_name' in value) {
-              displayValue = (value.full_name as string) || '<skipped>';
+              displayValue = (value.full_name as string) || 'completed';
             } else {
-              displayValue = '<configured>';
+              displayValue = 'completed';
             }
           } else {
-            displayValue = '<skipped>';
+            displayValue = 'completed';
           }
 
           return (
