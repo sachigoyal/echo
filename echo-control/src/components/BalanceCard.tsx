@@ -12,13 +12,7 @@ import { useRouter } from 'next/navigation';
 import { GlassButton } from './glass-button';
 import { formatCurrency } from '@/lib/balance';
 import { Logo } from './ui/logo';
-
-interface Balance {
-  balance: string;
-  totalPaid: string;
-  totalSpent: string;
-  currency: string;
-}
+import { Balance } from '@/lib/types/apps';
 
 interface BalanceCardProps {
   compact?: boolean;

@@ -9,6 +9,7 @@ import {
   transformActivityToChartData,
 } from './activity/activity';
 import { isValidUrl } from '../stripe/payment-link';
+import { DetailedEchoApp, PublicEchoApp } from '../types/apps';
 
 // Types for better type safety
 export interface AppCreateInput {
@@ -33,6 +34,7 @@ export interface AppUpdateInput {
   authorizedCallbackUrls?: string[];
 }
 
+// Legacy type for backward compatibility with existing list views
 export interface AppWithDetails {
   id: string;
   name: string;
@@ -58,107 +60,6 @@ export interface AppWithDetails {
     name: string | null;
     profilePictureUrl?: string | null;
   };
-  activityData: number[];
-}
-
-export interface DetailedAppInfo {
-  id: string;
-  name: string;
-  description: string | null;
-  profilePictureUrl: string | null;
-  bannerImageUrl: string | null;
-  homepageUrl: string | null;
-  githubId: string | null;
-  githubType: 'user' | 'repo' | null;
-  isActive: boolean;
-  isPublic: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  authorizedCallbackUrls: string[];
-  userRole: AppRole;
-  user?: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
-  apiKeys: Array<{
-    id: string;
-    name: string | null;
-    isActive: boolean;
-    createdAt: Date;
-    lastUsed: Date | null;
-    totalSpent: number;
-    creator: {
-      email: string;
-      name: string | null;
-    };
-  }>;
-  stats: {
-    totalTransactions: number;
-    totalTokens: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalCost: number;
-    modelUsage: Array<{
-      model: string;
-      _count: number;
-      _sum: {
-        totalTokens: number;
-        cost: number;
-      };
-    }>;
-  };
-  recentTransactions: Array<{
-    id: string;
-    model: string;
-    totalTokens: number;
-    cost: number;
-    status: string;
-    createdAt: Date;
-  }>;
-  activityData: number[];
-}
-
-export interface PublicAppInfo {
-  id: string;
-  name: string;
-  description: string | null;
-  profilePictureUrl: string | null;
-  bannerImageUrl: string | null;
-  homepageUrl: string | null;
-  githubId: string | null;
-  githubType: 'user' | 'repo' | null;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  userRole: AppRole;
-  owner: {
-    id: string;
-    name: string | null;
-  };
-  stats: {
-    totalTransactions: number;
-    totalTokens: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalCost: number;
-    modelUsage: Array<{
-      model: string;
-      _count: number;
-      _sum: {
-        totalTokens: number;
-        cost: number;
-      };
-    }>;
-  };
-  recentTransactions: Array<{
-    id: string;
-    model: string;
-    totalTokens: number;
-    cost: number;
-    status: string;
-    createdAt: Date;
-  }>;
   activityData: number[];
 }
 
@@ -470,7 +371,7 @@ export const listAppsWithDetails = async (
 
 export const getPublicAppInfo = async (
   appId: string
-): Promise<PublicAppInfo> => {
+): Promise<PublicEchoApp> => {
   // Find the app
   const app = await db.echoApp.findFirst({
     where: {
@@ -572,9 +473,32 @@ export const getPublicAppInfo = async (
 
   return {
     ...app,
+    createdAt: app.createdAt.toISOString(),
+    updatedAt: app.updatedAt.toISOString(),
     githubType: app.githubType as 'user' | 'repo' | null,
+    isPublic: true,
     userRole: AppRole.PUBLIC,
-    owner: ownerMembership?.user || { id: '', name: null },
+    permissions: [Permission.READ_APP],
+    totalTokens: stats._sum.totalTokens || 0,
+    totalCost: Number(stats._sum.cost || 0),
+    authorizedCallbackUrls: [],
+    _count: {
+      apiKeys: 0,
+      llmTransactions: stats._count || 0,
+    },
+    owner: ownerMembership?.user
+      ? {
+          id: ownerMembership.user.id,
+          email: '', // Don't expose email for public apps
+          name: ownerMembership.user.name,
+          profilePictureUrl: null,
+        }
+      : {
+          id: '',
+          email: '',
+          name: null,
+          profilePictureUrl: null,
+        },
     stats: {
       totalTransactions: stats._count || 0,
       totalTokens: stats._sum.totalTokens || 0,
@@ -593,6 +517,7 @@ export const getPublicAppInfo = async (
     recentTransactions: recentTransactions.map(transaction => ({
       ...transaction,
       cost: Number(transaction.cost),
+      createdAt: transaction.createdAt.toISOString(),
     })),
     activityData,
   };
@@ -602,7 +527,7 @@ export const getDetailedAppInfo = async (
   appId: string,
   userId: string,
   globalView: boolean = false
-): Promise<DetailedAppInfo> => {
+): Promise<DetailedEchoApp> => {
   // Get user's role for this app to determine what data to show
   const userRole = await PermissionService.getUserAppRole(userId, appId);
 
@@ -798,10 +723,55 @@ export const getDetailedAppInfo = async (
 
   return {
     ...app,
+    createdAt: app.createdAt.toISOString(),
+    updatedAt: app.updatedAt.toISOString(),
     githubType: app.githubType as 'user' | 'repo' | null,
-    user: ownerMembership?.user,
+    user: ownerMembership?.user
+      ? {
+          id: ownerMembership.user.id,
+          email: ownerMembership.user.email,
+          name: ownerMembership.user.name || undefined,
+          profilePictureUrl: undefined,
+        }
+      : {
+          id: '',
+          email: '',
+          name: undefined,
+          profilePictureUrl: undefined,
+        },
     userRole,
-    apiKeys: apiKeysWithSpending,
+    permissions: PermissionService.getPermissionsForRole(userRole),
+    totalTokens: stats._sum.totalTokens || 0,
+    totalCost: Number(stats._sum.cost || 0),
+    owner: ownerMembership?.user
+      ? {
+          id: ownerMembership.user.id,
+          email: ownerMembership.user.email,
+          name: ownerMembership.user.name,
+          profilePictureUrl: null,
+        }
+      : {
+          id: '',
+          email: '',
+          name: null,
+          profilePictureUrl: null,
+        },
+    _count: {
+      apiKeys: app._count.apiKeys,
+      llmTransactions: app._count.llmTransactions,
+    },
+    apiKeys: apiKeysWithSpending.map(key => ({
+      ...key,
+      name: key.name || undefined,
+      createdAt: key.createdAt.toISOString(),
+      lastUsed: key.lastUsed?.toISOString(),
+      creator: key.creator
+        ? {
+            email: key.creator.email,
+            name: key.creator.name || undefined,
+          }
+        : null,
+    })),
     stats: {
       totalTransactions: stats._count || 0,
       totalTokens: stats._sum.totalTokens || 0,
@@ -819,6 +789,7 @@ export const getDetailedAppInfo = async (
     recentTransactions: recentTransactions.map(transaction => ({
       ...transaction,
       cost: Number(transaction.cost),
+      createdAt: transaction.createdAt.toISOString(),
     })),
     activityData,
   };

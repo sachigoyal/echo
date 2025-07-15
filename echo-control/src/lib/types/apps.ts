@@ -19,6 +19,8 @@ export interface PublicEchoApp {
   githubId: string | null;
   githubType: string | null;
   authorizedCallbackUrls: string[];
+  userRole: AppRole;
+  permissions: Permission[];
   _count: {
     apiKeys: number;
     llmTransactions: number;
@@ -30,6 +32,29 @@ export interface PublicEchoApp {
     profilePictureUrl: string | null;
   };
   activityData: number[];
+  stats: {
+    totalTransactions: number;
+    totalTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCost: number;
+    modelUsage: Array<{
+      model: string;
+      _sum: {
+        totalTokens: number | null;
+        cost: number | null;
+      };
+      _count: number;
+    }>;
+  };
+  recentTransactions: Array<{
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: string;
+  }>;
 }
 
 /**
@@ -38,8 +63,87 @@ export interface PublicEchoApp {
  * with the app (e.g., role and permissions) is known.
  */
 export interface AuthenticatedEchoApp extends PublicEchoApp {
-  userRole: AppRole;
-  permissions: Permission[];
+  // Additional fields for authenticated users can be added here
+}
+
+/**
+ * Detailed app info returned by the API with additional fields for authenticated users.
+ * This is the primary type for app detail views and should be used throughout the frontend.
+ */
+export interface DetailedEchoApp extends AuthenticatedEchoApp {
+  homepageUrl?: string | null;
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    profilePictureUrl?: string;
+  };
+  apiKeys: Array<{
+    id: string;
+    name?: string;
+    isActive: boolean;
+    createdAt: string;
+    lastUsed?: string;
+    totalSpent: number;
+    creator: {
+      email: string;
+      name?: string;
+    } | null;
+  }>;
+  stats: {
+    totalTransactions: number;
+    totalTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCost: number;
+    modelUsage: Array<{
+      model: string;
+      _sum: {
+        totalTokens: number | null;
+        cost: number | null;
+      };
+      _count: number;
+    }>;
+  };
+  recentTransactions: Array<{
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: string;
+  }>;
+}
+
+/**
+ * Enhanced app data that includes global statistics and activity data.
+ * Used for comprehensive app analytics and reporting.
+ */
+export interface EnhancedAppData extends DetailedEchoApp {
+  globalStats?: {
+    totalTransactions: number;
+    totalTokens: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCost: number;
+    modelUsage: Array<{
+      model: string;
+      _sum: {
+        totalTokens: number | null;
+        cost: number | null;
+      };
+      _count: number;
+    }>;
+  };
+  globalActivityData?: number[];
+  globalRecentTransactions?: Array<{
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: string;
+  }>;
 }
 
 /**
@@ -54,4 +158,15 @@ export interface AppActivity {
   totalTokens: number;
   totalInputTokens: number;
   totalOutputTokens: number;
+}
+
+/**
+ * Represents user balance information with string values for display purposes.
+ * Used across UI components that need to show formatted balance data.
+ */
+export interface Balance {
+  balance: string;
+  totalPaid: string;
+  totalSpent: string;
+  currency: string;
 }
