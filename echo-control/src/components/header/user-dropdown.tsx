@@ -6,6 +6,7 @@ import {
   Sun,
   User,
   UserLock,
+  Users,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -66,6 +67,12 @@ export function UserDropdown() {
             <DropdownMenuItem>
               <User className="size-4" />
               My Apps
+            </DropdownMenuItem>
+          </Link>
+          <Link href={`/apps/member-apps`}>
+            <DropdownMenuItem>
+              <Users className="size-4" />
+              Apps I&apos;m Using
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>

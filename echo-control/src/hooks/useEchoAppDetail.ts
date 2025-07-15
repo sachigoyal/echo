@@ -1,83 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { PermissionService } from '@/lib/permissions/service';
-import { AuthenticatedEchoApp, PublicEchoApp } from '@/lib/types/apps';
+import { PublicEchoApp, DetailedEchoApp } from '@/lib/types/apps';
 
-// Detailed app info returned by the API with additional fields
-export interface DetailedEchoApp extends AuthenticatedEchoApp {
-  githubId: string | null;
-  githubType: 'user' | 'repo' | null;
-  homepageUrl?: string | null;
-  authorizedCallbackUrls: string[];
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-    profilePictureUrl?: string;
-  };
-  apiKeys: Array<{
-    id: string;
-    name?: string;
-    isActive: boolean;
-    createdAt: string;
-    lastUsed?: string;
-    totalSpent: number;
-    creator: {
-      email: string;
-      name?: string;
-    } | null;
-  }>;
-  stats: {
-    totalTransactions: number;
-    totalTokens: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalCost: number;
-    modelUsage: Array<{
-      model: string;
-      _sum: {
-        totalTokens: number | null;
-        cost: number | null;
-      };
-      _count: number;
-    }>;
-  };
-  recentTransactions: Array<{
-    id: string;
-    model: string;
-    totalTokens: number;
-    cost: number;
-    status: string;
-    createdAt: string;
-  }>;
-}
-
-export interface EnhancedAppData extends DetailedEchoApp {
-  globalStats?: {
-    totalTransactions: number;
-    totalTokens: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalCost: number;
-    modelUsage: Array<{
-      model: string;
-      _sum: {
-        totalTokens: number | null;
-        cost: number | null;
-      };
-      _count: number;
-    }>;
-  };
-  globalActivityData?: number[];
-  globalRecentTransactions?: Array<{
-    id: string;
-    model: string;
-    totalTokens: number;
-    cost: number;
-    status: string;
-    createdAt: string;
-  }>;
-}
+// Re-export types for backward compatibility
+export type { DetailedEchoApp, EnhancedAppData } from '@/lib/types/apps';
 
 export interface UserPermissions {
   isAuthenticated: boolean;
@@ -168,7 +95,13 @@ export function useEchoAppDetail(appId: string): UseEchoAppDetailReturn {
                   modelUsage: [],
                 },
                 recentTransactions: [],
-                user: publicApp.owner,
+                user: {
+                  id: publicApp.owner.id,
+                  email: publicApp.owner.email,
+                  name: publicApp.owner.name || undefined,
+                  profilePictureUrl:
+                    publicApp.owner.profilePictureUrl || undefined,
+                },
               };
               setApp(appData);
               setUserPermissions(determineUserPermissions(appData));
