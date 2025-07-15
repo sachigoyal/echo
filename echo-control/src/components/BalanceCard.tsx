@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { GlassButton } from './glass-button';
 import { formatCurrency } from '@/lib/balance';
+import { Logo } from './ui/logo';
 
 interface Balance {
   balance: string;
@@ -107,8 +108,8 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
         className="flex items-center space-x-2 px-3 py-2.5 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm group h-10"
         title="View and manage credits"
       >
-        <CreditCardIcon className="h-4 w-4 text-muted-foreground group-hover:text-secondary transition-colors" />
-        <span className="text-sm font-medium text-foreground">
+        <Logo className="h-4 w-4 text-muted-foreground group-hover:text-secondary transition-colors" />
+        <span className="text-sm font-extrabold text-foreground">
           {formatCurrency(Number(balance?.balance) || 0)}
         </span>
         <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover:text-secondary transition-colors" />

@@ -121,7 +121,6 @@ export default function GeneralSettings({ appId }: GeneralSettingsProps) {
       <div>
         <GithubSelection
           initialGithubId={app.githubId || ''}
-          initialGithubType={app.githubType}
           onSave={updateGitHubInfo}
           isLoading={isUpdatingGithub}
           error={updateError}

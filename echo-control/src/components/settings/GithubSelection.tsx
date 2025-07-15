@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { GitHubSearchComponent } from '../GitHubSearchComponent';
+import { Loader2 } from 'lucide-react';
 
 interface GithubSelectionProps {
   initialGithubId?: string;
@@ -16,14 +17,12 @@ interface GithubSelectionProps {
 
 export default function GithubSelection({
   initialGithubId = '',
-  initialGithubType = null,
   onSave,
   isLoading = false,
   error = null,
 }: GithubSelectionProps) {
   // Internal state for the GitHub selection
   const [pendingGithubId, setPendingGithubId] = useState(initialGithubId);
-  const [isSaving, setIsSaving] = useState(false);
 
   // Handle GitHub selection from search component - auto-save on change
   const handleGithubChange = useCallback(
@@ -41,7 +40,6 @@ export default function GithubSelection({
 
       // Auto-save the changes
       try {
-        setIsSaving(true);
         const githubId = trimmedValue || undefined;
         const githubType = githubId ? newType || undefined : undefined;
 
@@ -51,19 +49,20 @@ export default function GithubSelection({
         // Revert to previous values on error
         setPendingGithubId(initialGithubId || '');
       } finally {
-        setIsSaving(false);
       }
     },
-    [initialGithubId, initialGithubType, onSave]
+    [initialGithubId, onSave]
   );
 
   return (
     <div className="bg-card border border-border rounded-xl p-6">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-3">
-            GitHub User/Repository
+          <label className="flex items-center justify-between text-sm font-semibold text-foreground mb-3">
+            <span>GitHub User/Repository</span>
+            {isLoading && <Loader2 className="size-4 animate-spin" />}
           </label>
+
           <div className="space-y-3">
             <GitHubSearchComponent
               value={pendingGithubId}
@@ -76,19 +75,14 @@ export default function GithubSelection({
                 {error}
               </p>
             )}
-
-            {(isLoading || isSaving) && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-secondary"></div>
-                {isSaving ? 'Saving...' : 'Loading...'}
-              </div>
-            )}
           </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            Link your app to a GitHub user or repository. This dictates where
-            the profits of your app will be sent. This should be a repository or
-            user you control.
-          </p>
+          <div className="flex flex-row gap-2">
+            <p className="text-xs text-muted-foreground mt-3">
+              Link your app to a GitHub user or repository. This dictates where
+              the profits of your app will be sent. This should be a repository
+              or user you control.
+            </p>
+          </div>
         </div>
       </div>
     </div>
