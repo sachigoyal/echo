@@ -1,12 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { PermissionService } from '@/lib/permissions/service';
-import {
-  AuthenticatedEchoApp,
-  PublicEchoApp,
-  DetailedEchoApp,
-  EnhancedAppData,
-} from '@/lib/types/apps';
+import { PublicEchoApp, DetailedEchoApp } from '@/lib/types/apps';
 
 // Re-export types for backward compatibility
 export type { DetailedEchoApp, EnhancedAppData } from '@/lib/types/apps';

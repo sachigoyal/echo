@@ -3,7 +3,6 @@ import {
   Laptop,
   LogOut,
   Moon,
-  Settings,
   Sun,
   User,
   UserLock,
@@ -73,7 +72,7 @@ export function UserDropdown() {
           <Link href={`/apps/member-apps`}>
             <DropdownMenuItem>
               <Users className="size-4" />
-              Apps I'm Using
+              Apps I&apos;m Using
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>

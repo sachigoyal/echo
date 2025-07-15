@@ -630,6 +630,9 @@ export const getDetailedAppInfo = async (
       },
     },
   });
+  if (!ownerMembership) {
+    throw new Error('Owner not found');
+  }
 
   // Get aggregated statistics for the app (filtered by user for customers unless globalView is true)
   const stats = await db.llmTransaction.aggregate({
@@ -726,19 +729,12 @@ export const getDetailedAppInfo = async (
     createdAt: app.createdAt.toISOString(),
     updatedAt: app.updatedAt.toISOString(),
     githubType: app.githubType as 'user' | 'repo' | null,
-    user: ownerMembership?.user
-      ? {
-          id: ownerMembership.user.id,
-          email: ownerMembership.user.email,
-          name: ownerMembership.user.name || undefined,
-          profilePictureUrl: undefined,
-        }
-      : {
-          id: '',
-          email: '',
-          name: undefined,
-          profilePictureUrl: undefined,
-        },
+    user: {
+      id: ownerMembership.user.id,
+      email: ownerMembership.user.email,
+      name: ownerMembership.user.name,
+      profilePictureUrl: null,
+    },
     userRole,
     permissions: PermissionService.getPermissionsForRole(userRole),
     totalTokens: stats._sum.totalTokens || 0,

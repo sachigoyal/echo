@@ -350,7 +350,7 @@ export function AppProfile({
                     </div>
                     <GitHubUserInfo
                       githubId={app.githubId}
-                      githubType={app.githubType}
+                      githubType={app.githubType as 'user' | 'repo'}
                     />
                   </div>
                 </div>

@@ -62,6 +62,7 @@ export interface PublicEchoApp {
  * This type is used when a user is authenticated and their relationship
  * with the app (e.g., role and permissions) is known.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface AuthenticatedEchoApp extends PublicEchoApp {
   // Additional fields for authenticated users can be added here
 }
@@ -75,8 +76,8 @@ export interface DetailedEchoApp extends AuthenticatedEchoApp {
   user: {
     id: string;
     email: string;
-    name?: string;
-    profilePictureUrl?: string;
+    name: string | null;
+    profilePictureUrl: string | null;
   };
   apiKeys: Array<{
     id: string;
