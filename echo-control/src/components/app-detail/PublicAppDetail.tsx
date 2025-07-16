@@ -1,8 +1,9 @@
-import { Badge } from '@/components/ui/badge';
 import { AppRole } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 import { formatCurrency } from '@/lib/balance';
 import { useState, useEffect, useCallback } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { UserPlus } from 'lucide-react';
 import {
   AppDetailLayout,
   AppBanner,
@@ -15,6 +16,7 @@ import {
 import { UserCountCard } from './UserCountCard';
 import { GlobalModelsCard } from './GlobalModelsCard';
 import { AppHomepageCard } from './AppHomepageCard';
+import JoinAppModal from '../JoinAppModal';
 
 // Enhanced interfaces for global data
 interface EnhancedAppData extends DetailedEchoApp {
@@ -51,6 +53,9 @@ interface PublicAppDetailProps {
 export function PublicAppDetail({ app }: PublicAppDetailProps) {
   const [enhancedApp, setEnhancedApp] = useState<EnhancedAppData>(app);
   const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const { user, isLoaded } = useUser();
 
   // Function to fetch global data
   const fetchGlobalData = useCallback(async () => {
@@ -80,6 +85,48 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
   useEffect(() => {
     fetchGlobalData();
   }, [app.id, fetchGlobalData]);
+
+  // Function to handle joining the app as a customer
+  const handleJoinApp = async () => {
+    setJoining(true);
+    try {
+      const response = await fetch(`/api/owner/apps/${app.id}/customers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // Empty body for self-enrollment
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to join app');
+      }
+
+      // Success - redirect to refresh the page and show customer view
+      window.location.reload();
+    } catch (error) {
+      console.error('Error joining app:', error);
+      throw error;
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  // Show join button only for authenticated users who are not already customers
+  const joinActions =
+    isLoaded && user ? (
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setShowJoinModal(true)}
+          disabled={joining}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 disabled:opacity-50"
+        >
+          <UserPlus className="h-3.5 w-3.5" />
+          {joining ? 'Joining...' : 'Join'}
+        </button>
+      </div>
+    ) : (
+      <></>
+    );
 
   // Always use global stats for public view
   const currentStats = enhancedApp.globalStats || app.stats;
@@ -128,10 +175,10 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
       </div>
 
       <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">Status</p>
-        <Badge variant={app.isActive ? 'default' : 'secondary'}>
-          {app.isActive ? 'Active' : 'Inactive'}
-        </Badge>
+        <p className="text-sm font-medium text-muted-foreground mb-1">
+          Join App
+        </p>
+        <p className="text-sm text-foreground font-bold mt-2">{joinActions}</p>
       </div>
     </div>
   );
@@ -141,12 +188,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
       <div className="relative z-10">
         <AppBanner app={app} />
 
-        <AppProfile
-          app={app}
-          userRole={AppRole.PUBLIC}
-          roleLabel="Public App"
-          actions={<></>}
-        >
+        <AppProfile app={app} userRole={AppRole.PUBLIC} roleLabel="Public App">
           {enhancedStats}
         </AppProfile>
       </div>
@@ -194,6 +236,15 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           />
         </div>
       </div>
+
+      {/* Join App Modal */}
+      {showJoinModal && (
+        <JoinAppModal
+          app={app}
+          onClose={() => setShowJoinModal(false)}
+          onSubmit={handleJoinApp}
+        />
+      )}
     </AppDetailLayout>
   );
 }
