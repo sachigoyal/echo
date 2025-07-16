@@ -29,7 +29,7 @@ app.use(
     optionsSuccessStatus: 200, // Return 200 for preflight OPTIONS requests
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
 app.use(compression());
 
 // Health check route
