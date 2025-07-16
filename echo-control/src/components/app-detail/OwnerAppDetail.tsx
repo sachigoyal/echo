@@ -215,8 +215,8 @@ export function OwnerAppDetail({
           {/* API Keys Card */}
           <ApiKeysCard
             app={app}
-            hasCreatePermission={hasPermission(Permission.MANAGE_OWN_API_KEYS)}
-            hasManagePermission={hasPermission(Permission.MANAGE_OWN_API_KEYS)}
+            hasCreatePermission={hasPermission(Permission.CREATE_API_KEYS)}
+            hasManagePermission={hasPermission(Permission.MANAGE_ALL_API_KEYS)}
             onCreateApiKey={onCreateApiKey}
             onArchiveApiKey={onArchiveApiKey}
             deletingKeyId={deletingKeyId}
