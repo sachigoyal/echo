@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { AppRole } from '@/lib/permissions/types';
 import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 import { formatCurrency } from '@/lib/balance';
@@ -17,7 +16,6 @@ import {
 import { UserCountCard } from './UserCountCard';
 import { GlobalModelsCard } from './GlobalModelsCard';
 import { AppHomepageCard } from './AppHomepageCard';
-import { GlassButton } from '../glass-button';
 import JoinAppModal from '../JoinAppModal';
 
 // Enhanced interfaces for global data

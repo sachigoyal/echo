@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Users, CreditCard, Key } from 'lucide-react';
+import { X, Key } from 'lucide-react';
 import { GlassButton } from './glass-button';
-import { Badge } from './ui/badge';
-import ProfileAvatar from './ui/profile-avatar';
+import { ProfileAvatar } from './ui/profile-avatar';
 
 interface JoinAppModalProps {
   app: {
