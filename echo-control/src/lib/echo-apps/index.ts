@@ -527,270 +527,437 @@ export const getDetailedAppInfo = async (
   appId: string,
   userId: string,
   globalView: boolean = false
-): Promise<DetailedEchoApp> => {
-  // Get user's role for this app to determine what data to show
-  const userRole = await PermissionService.getUserAppRole(userId, appId);
+): Promise<DetailedEchoApp | null> => {
+  let userRole: AppRole = AppRole.PUBLIC;
 
-  console.log('Fetching user info with permissions', userRole);
+  try {
+    // Get user's role for this app to determine what data to show
+    try {
+      userRole = await PermissionService.getUserAppRole(userId, appId);
+    } catch (roleError) {
+      console.error('Failed to get user role:', {
+        appId,
+        userId,
+        error: roleError instanceof Error ? roleError.message : 'Unknown error',
+      });
+      return null;
+    }
 
-  // If user has PUBLIC role, use the public function instead
-  if (userRole === AppRole.PUBLIC) {
-    const publicInfo = await getPublicAppInfo(appId);
-    // Transform to match DetailedAppInfo structure for backward compatibility
-    return {
-      ...publicInfo,
-      githubType: publicInfo.githubType as 'user' | 'repo' | null,
-      isPublic: true, // Public apps are always public
-      authorizedCallbackUrls: [],
-      user: {
-        ...publicInfo.owner,
-        email: '', // Don't expose email for privacy reasons
-      },
-      apiKeys: [],
-      stats: publicInfo.stats, // Use the full stats from public info
-      recentTransactions: publicInfo.recentTransactions, // Use the actual recent transactions
-    };
-  }
+    console.log('Fetching user info with permissions', userRole);
 
-  // Find the app
-  const app = await db.echoApp.findFirst({
-    where: {
-      id: appId,
-      isArchived: false,
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      profilePictureUrl: true,
-      bannerImageUrl: true,
-      homepageUrl: true,
-      githubId: true,
-      githubType: true,
-      isActive: true,
-      isPublic: true,
-      createdAt: true,
-      updatedAt: true,
-      authorizedCallbackUrls: true,
-      apiKeys: {
+    // If user has PUBLIC role, use the public function instead
+    if (userRole === AppRole.PUBLIC) {
+      try {
+        const publicInfo = await getPublicAppInfo(appId);
+        // Transform to match DetailedAppInfo structure for backward compatibility
+        return {
+          ...publicInfo,
+          githubType: publicInfo.githubType as 'user' | 'repo' | null,
+          isPublic: true, // Public apps are always public
+          authorizedCallbackUrls: [],
+          user: {
+            ...publicInfo.owner,
+            email: '', // Don't expose email for privacy reasons
+          },
+          apiKeys: [],
+          stats: publicInfo.stats, // Use the full stats from public info
+          recentTransactions: publicInfo.recentTransactions, // Use the actual recent transactions
+        };
+      } catch (publicError) {
+        console.error('Failed to fetch public app info:', {
+          appId,
+          userId,
+          error:
+            publicError instanceof Error
+              ? publicError.message
+              : 'Unknown error',
+        });
+        return null;
+      }
+    }
+
+    // Find the app
+    let app;
+    try {
+      app = await db.echoApp.findFirst({
         where: {
+          id: appId,
           isArchived: false,
-          // Customers can only see their own API keys
-          ...(userRole === AppRole.CUSTOMER && { userId }),
         },
         select: {
           id: true,
           name: true,
+          description: true,
+          profilePictureUrl: true,
+          bannerImageUrl: true,
+          homepageUrl: true,
+          githubId: true,
+          githubType: true,
           isActive: true,
+          isPublic: true,
           createdAt: true,
-          lastUsed: true,
+          updatedAt: true,
+          authorizedCallbackUrls: true,
+          apiKeys: {
+            where: {
+              isArchived: false,
+              // Customers can only see their own API keys
+              ...(userRole === AppRole.CUSTOMER && { userId }),
+            },
+            select: {
+              id: true,
+              name: true,
+              isActive: true,
+              createdAt: true,
+              lastUsed: true,
+              user: {
+                select: {
+                  email: true,
+                  name: true,
+                },
+              },
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+          _count: {
+            select: {
+              apiKeys: {
+                where: {
+                  isArchived: false,
+                  ...(userRole === AppRole.CUSTOMER && { userId }),
+                },
+              },
+              llmTransactions: {
+                where: {
+                  isArchived: false,
+                  ...(userRole === AppRole.CUSTOMER && { userId }),
+                },
+              },
+            },
+          },
+        },
+      });
+    } catch (appQueryError) {
+      console.error('Database error while fetching app:', {
+        appId,
+        userId,
+        error:
+          appQueryError instanceof Error
+            ? appQueryError.message
+            : 'Unknown error',
+      });
+      return null;
+    }
+
+    if (!app) {
+      console.log('App not found or access denied:', {
+        appId,
+        userId,
+        userRole,
+      });
+      return null;
+    }
+
+    // Find the owner of the app
+    let ownerMembership;
+    try {
+      ownerMembership = await db.appMembership.findFirst({
+        where: {
+          echoAppId: appId,
+          role: AppRole.OWNER,
+        },
+        include: {
           user: {
             select: {
+              id: true,
               email: true,
               name: true,
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
-      },
-      _count: {
-        select: {
-          apiKeys: {
-            where: {
-              isArchived: false,
-              ...(userRole === AppRole.CUSTOMER && { userId }),
-            },
-          },
-          llmTransactions: {
-            where: {
-              isArchived: false,
-              ...(userRole === AppRole.CUSTOMER && { userId }),
-            },
-          },
-        },
-      },
-    },
-  });
+      });
+    } catch (ownerQueryError) {
+      console.error('Database error while fetching app owner:', {
+        appId,
+        userId,
+        error:
+          ownerQueryError instanceof Error
+            ? ownerQueryError.message
+            : 'Unknown error',
+      });
+      return null;
+    }
 
-  if (!app) {
-    throw new Error('Echo app not found or access denied');
-  }
+    if (!ownerMembership) {
+      console.log('App owner not found:', { appId, userId });
+      return null;
+    }
 
-  // Find the owner of the app
-  const ownerMembership = await db.appMembership.findFirst({
-    where: {
-      echoAppId: appId,
-      role: AppRole.OWNER,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
-        },
-      },
-    },
-  });
-  if (!ownerMembership) {
-    throw new Error('Owner not found');
-  }
-
-  // Get aggregated statistics for the app (filtered by user for customers unless globalView is true)
-  const stats = await db.llmTransaction.aggregate({
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-      // Filter by user for customers unless globalView is requested
-      ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
-    },
-    _count: true,
-    _sum: {
-      totalTokens: true,
-      inputTokens: true,
-      outputTokens: true,
-      cost: true,
-    },
-  });
-
-  // Get model usage breakdown (filtered by user for customers unless globalView is true)
-  const modelUsage = await db.llmTransaction.groupBy({
-    by: ['model'],
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-      // Filter by user for customers unless globalView is requested
-      ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
-    },
-    _count: true,
-    _sum: {
-      totalTokens: true,
-      cost: true,
-    },
-    orderBy: {
-      _sum: {
-        totalTokens: 'desc',
-      },
-    },
-  });
-
-  // Get recent transactions (filtered by user for customers unless globalView is true)
-  const recentTransactions = await db.llmTransaction.findMany({
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-      // Filter by user for customers unless globalView is requested
-      ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
-    },
-    select: {
-      id: true,
-      model: true,
-      totalTokens: true,
-      cost: true,
-      status: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  });
-
-  // Get activity data for the last 7 days (filtered by user for customers unless globalView is true)
-  const activity = await getAppActivity(
-    appId,
-    7,
-    userRole === AppRole.CUSTOMER && !globalView ? userId : undefined
-  );
-  const activityData = transformActivityToChartData(activity);
-
-  // Calculate total spent for each API key
-  const apiKeysWithSpending = await Promise.all(
-    app.apiKeys.map(async apiKey => {
-      // Get total spending for this API key using the new apiKeyId field
-      const spendingResult = await db.llmTransaction.aggregate({
+    // Get aggregated statistics for the app (filtered by user for customers unless globalView is true)
+    let stats;
+    try {
+      stats = await db.llmTransaction.aggregate({
         where: {
-          apiKeyId: apiKey.id,
+          echoAppId: appId,
           isArchived: false,
+          // Filter by user for customers unless globalView is requested
+          ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
         },
+        _count: true,
         _sum: {
+          totalTokens: true,
+          inputTokens: true,
+          outputTokens: true,
           cost: true,
         },
       });
-
-      const totalSpent = Number(spendingResult._sum.cost || 0);
-
-      return {
-        ...apiKey,
-        totalSpent,
-        creator: apiKey.user,
-      };
-    })
-  );
-
-  return {
-    ...app,
-    createdAt: app.createdAt.toISOString(),
-    updatedAt: app.updatedAt.toISOString(),
-    githubType: app.githubType as 'user' | 'repo' | null,
-    user: {
-      id: ownerMembership.user.id,
-      email: ownerMembership.user.email,
-      name: ownerMembership.user.name,
-      profilePictureUrl: null,
-    },
-    userRole,
-    permissions: PermissionService.getPermissionsForRole(userRole),
-    totalTokens: stats._sum.totalTokens || 0,
-    totalCost: Number(stats._sum.cost || 0),
-    owner: ownerMembership?.user
-      ? {
-          id: ownerMembership.user.id,
-          email: ownerMembership.user.email,
-          name: ownerMembership.user.name,
-          profilePictureUrl: null,
-        }
-      : {
-          id: '',
-          email: '',
-          name: null,
-          profilePictureUrl: null,
-        },
-    _count: {
-      apiKeys: app._count.apiKeys,
-      llmTransactions: app._count.llmTransactions,
-    },
-    apiKeys: apiKeysWithSpending.map(key => ({
-      ...key,
-      name: key.name || undefined,
-      createdAt: key.createdAt.toISOString(),
-      lastUsed: key.lastUsed?.toISOString(),
-      creator: key.creator
-        ? {
-            email: key.creator.email,
-            name: key.creator.name || undefined,
-          }
-        : null,
-    })),
-    stats: {
-      totalTransactions: stats._count || 0,
-      totalTokens: stats._sum.totalTokens || 0,
-      totalInputTokens: stats._sum.inputTokens || 0,
-      totalOutputTokens: stats._sum.outputTokens || 0,
-      totalCost: Number(stats._sum.cost || 0),
-      modelUsage: modelUsage.map(usage => ({
-        ...usage,
+    } catch (statsError) {
+      console.error('Database error while fetching app statistics:', {
+        appId,
+        userId,
+        error:
+          statsError instanceof Error ? statsError.message : 'Unknown error',
+      });
+      // Provide default stats
+      stats = {
+        _count: 0,
         _sum: {
-          totalTokens: usage._sum.totalTokens || 0,
-          cost: Number(usage._sum.cost || 0),
+          totalTokens: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          cost: 0,
         },
+      };
+    }
+
+    // Get model usage breakdown (filtered by user for customers unless globalView is true)
+    let modelUsage = [];
+    try {
+      modelUsage = await db.llmTransaction.groupBy({
+        by: ['model'],
+        where: {
+          echoAppId: appId,
+          isArchived: false,
+          // Filter by user for customers unless globalView is requested
+          ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
+        },
+        _count: true,
+        _sum: {
+          totalTokens: true,
+          cost: true,
+        },
+        orderBy: {
+          _sum: {
+            totalTokens: 'desc',
+          },
+        },
+      });
+    } catch (modelUsageError) {
+      console.error('Database error while fetching model usage:', {
+        appId,
+        userId,
+        error:
+          modelUsageError instanceof Error
+            ? modelUsageError.message
+            : 'Unknown error',
+      });
+      modelUsage = [];
+    }
+
+    // Get recent transactions (filtered by user for customers unless globalView is true)
+    let recentTransactions = [];
+    try {
+      recentTransactions = await db.llmTransaction.findMany({
+        where: {
+          echoAppId: appId,
+          isArchived: false,
+          // Filter by user for customers unless globalView is requested
+          ...(userRole === AppRole.CUSTOMER && !globalView && { userId }),
+        },
+        select: {
+          id: true,
+          model: true,
+          totalTokens: true,
+          cost: true,
+          status: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+    } catch (transactionsError) {
+      console.error('Database error while fetching recent transactions:', {
+        appId,
+        userId,
+        error:
+          transactionsError instanceof Error
+            ? transactionsError.message
+            : 'Unknown error',
+      });
+      recentTransactions = [];
+    }
+
+    // Get activity data for the last 7 days (filtered by user for customers unless globalView is true)
+    let activityData: number[] = [];
+    try {
+      const activity = await getAppActivity(
+        appId,
+        7,
+        userRole === AppRole.CUSTOMER && !globalView ? userId : undefined
+      );
+      activityData = transformActivityToChartData(activity);
+    } catch (activityError) {
+      console.error('Error while fetching app activity:', {
+        appId,
+        userId,
+        error:
+          activityError instanceof Error
+            ? activityError.message
+            : 'Unknown error',
+      });
+      activityData = [];
+    }
+
+    // Calculate total spent for each API key
+    let apiKeysWithSpending;
+    try {
+      apiKeysWithSpending = await Promise.all(
+        app.apiKeys.map(async apiKey => {
+          try {
+            // Get total spending for this API key using the new apiKeyId field
+            const spendingResult = await db.llmTransaction.aggregate({
+              where: {
+                apiKeyId: apiKey.id,
+                isArchived: false,
+              },
+              _sum: {
+                cost: true,
+              },
+            });
+
+            const totalSpent = Number(spendingResult._sum.cost || 0);
+
+            return {
+              ...apiKey,
+              totalSpent,
+              creator: apiKey.user,
+            };
+          } catch (apiKeySpendingError) {
+            console.error('Error fetching spending for API key:', {
+              apiKeyId: apiKey.id,
+              appId,
+              userId,
+              error:
+                apiKeySpendingError instanceof Error
+                  ? apiKeySpendingError.message
+                  : 'Unknown error',
+            });
+            // Return API key with zero spending if query fails
+            return {
+              ...apiKey,
+              totalSpent: 0,
+              creator: apiKey.user,
+            };
+          }
+        })
+      );
+    } catch (apiKeysError) {
+      console.error('Error processing API keys spending:', {
+        appId,
+        userId,
+        error:
+          apiKeysError instanceof Error
+            ? apiKeysError.message
+            : 'Unknown error',
+      });
+      // Return API keys without spending data
+      apiKeysWithSpending = app.apiKeys.map(apiKey => ({
+        ...apiKey,
+        totalSpent: 0,
+        creator: apiKey.user,
+      }));
+    }
+
+    return {
+      ...app,
+      createdAt: app.createdAt.toISOString(),
+      updatedAt: app.updatedAt.toISOString(),
+      githubType: app.githubType as 'user' | 'repo' | null,
+      user: {
+        id: ownerMembership.user.id,
+        email: ownerMembership.user.email,
+        name: ownerMembership.user.name,
+        profilePictureUrl: null,
+      },
+      userRole,
+      permissions: PermissionService.getPermissionsForRole(userRole),
+      totalTokens: stats._sum.totalTokens || 0,
+      totalCost: Number(stats._sum.cost || 0),
+      owner: ownerMembership?.user
+        ? {
+            id: ownerMembership.user.id,
+            email: ownerMembership.user.email,
+            name: ownerMembership.user.name,
+            profilePictureUrl: null,
+          }
+        : {
+            id: '',
+            email: '',
+            name: null,
+            profilePictureUrl: null,
+          },
+      _count: {
+        apiKeys: app._count.apiKeys,
+        llmTransactions: app._count.llmTransactions,
+      },
+      apiKeys: apiKeysWithSpending.map(key => ({
+        ...key,
+        name: key.name || undefined,
+        createdAt: key.createdAt.toISOString(),
+        lastUsed: key.lastUsed?.toISOString(),
+        creator: key.creator
+          ? {
+              email: key.creator.email,
+              name: key.creator.name || undefined,
+            }
+          : null,
       })),
-    },
-    recentTransactions: recentTransactions.map(transaction => ({
-      ...transaction,
-      cost: Number(transaction.cost),
-      createdAt: transaction.createdAt.toISOString(),
-    })),
-    activityData,
-  };
+      stats: {
+        totalTransactions: stats._count || 0,
+        totalTokens: stats._sum.totalTokens || 0,
+        totalInputTokens: stats._sum.inputTokens || 0,
+        totalOutputTokens: stats._sum.outputTokens || 0,
+        totalCost: Number(stats._sum.cost || 0),
+        modelUsage: modelUsage.map(usage => ({
+          ...usage,
+          _sum: {
+            totalTokens: usage._sum.totalTokens || 0,
+            cost: Number(usage._sum.cost || 0),
+          },
+        })),
+      },
+      recentTransactions: recentTransactions.map(transaction => ({
+        ...transaction,
+        cost: Number(transaction.cost),
+        createdAt: transaction.createdAt.toISOString(),
+      })),
+      activityData,
+    };
+  } catch (error) {
+    // Log detailed error information for debugging
+    console.error('Error in getDetailedAppInfo:', {
+      appId,
+      userId,
+      globalView,
+      userRole,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorStack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Return null instead of throwing
+    return null;
+  }
 };
 
 export const createEchoApp = async (userId: string, data: AppCreateInput) => {

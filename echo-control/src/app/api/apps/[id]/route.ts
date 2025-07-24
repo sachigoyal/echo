@@ -14,54 +14,110 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let user;
+  let appId;
+  let resolvedParams;
+
   try {
-    const user = await getCurrentUser();
-    const resolvedParams = await params;
-    const { id: appId } = resolvedParams;
-
-    // Check for view parameter
-    const { searchParams } = new URL(request.url);
-    const view = searchParams.get('view');
-
-    // Validate UUID format
-    if (!isValidUUID(appId)) {
-      return NextResponse.json(
-        { error: 'Invalid app ID format' },
-        { status: 400 }
-      );
-    }
-
-    // For global view, fetch global data
-    const appWithStats = await getDetailedAppInfo(
-      appId,
-      user.id,
-      view === 'global'
-    );
-
-    return NextResponse.json(appWithStats);
-  } catch (error) {
-    console.error('Error fetching echo app:', error);
-
-    if (
-      error instanceof Error &&
-      (error.message === 'Not authenticated' ||
-        error.message.includes('Invalid'))
-    ) {
+    // Step 1: Get current user with detailed error handling
+    try {
+      user = await getCurrentUser();
+      console.log('GET /api/apps/[id] - User authenticated:', {
+        userId: user.id,
+      });
+    } catch (authError) {
+      console.error('Authentication error in GET /api/apps/[id]:', {
+        error:
+          authError instanceof Error ? authError.message : 'Unknown auth error',
+        stack: authError instanceof Error ? authError.stack : undefined,
+        timestamp: new Date().toISOString(),
+      });
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    if (
-      error instanceof Error &&
-      error.message.includes('not found or access denied')
-    ) {
+    // Step 2: Parse parameters with error handling
+    try {
+      resolvedParams = await params;
+      appId = resolvedParams.id;
+      console.log('GET /api/apps/[id] - Processing request:', {
+        appId,
+        userId: user.id,
+      });
+    } catch (paramError) {
+      console.error('Parameter parsing error in GET /api/apps/[id]:', {
+        error:
+          paramError instanceof Error
+            ? paramError.message
+            : 'Unknown param error',
+        timestamp: new Date().toISOString(),
+      });
+      return NextResponse.json(
+        { error: 'Invalid request parameters' },
+        { status: 400 }
+      );
+    }
+
+    // Step 3: Validate UUID format
+    if (!isValidUUID(appId)) {
+      console.error('Invalid UUID format in GET /api/apps/[id]:', {
+        appId,
+        userId: user.id,
+      });
+      return NextResponse.json(
+        { error: 'Invalid app ID format' },
+        { status: 400 }
+      );
+    }
+
+    // Step 4: Parse query parameters
+    const { searchParams } = new URL(request.url);
+    const view = searchParams.get('view');
+    console.log('GET /api/apps/[id] - Query params:', {
+      view,
+      globalView: view === 'global',
+    });
+
+    // Step 5: Fetch app data with detailed error handling
+    const appWithStats = await getDetailedAppInfo(
+      appId,
+      user.id,
+      view === 'global'
+    );
+
+    if (!appWithStats) {
+      console.error(
+        'Failed to fetch app data - getDetailedAppInfo returned null:',
+        {
+          appId,
+          userId: user.id,
+        }
+      );
       return NextResponse.json(
         { error: 'Echo app not found or access denied' },
         { status: 404 }
       );
     }
+
+    console.log('GET /api/apps/[id] - Successfully fetched app data:', {
+      appId,
+      userId: user.id,
+      userRole: appWithStats.userRole,
+      appName: appWithStats.name,
+    });
+
+    return NextResponse.json(appWithStats);
+  } catch (error) {
+    // Catch-all for any other unexpected errors
+    console.error('Unexpected error in GET /api/apps/[id]:', {
+      appId: appId || 'unknown',
+      userId: user?.id || 'unknown',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
 
     return NextResponse.json(
       { error: 'Internal server error' },
