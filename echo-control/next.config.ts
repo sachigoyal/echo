@@ -1,6 +1,12 @@
 import type { NextConfig } from 'next';
+// @ts-ignore - No type declarations available for this package
+import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
+  experimental: {
+    authInterrupts: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -17,9 +23,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Experimental flag to help with Prisma bundling
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
+    return config;
   },
 };
 
