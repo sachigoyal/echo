@@ -731,8 +731,13 @@ export const getDetailedAppInfo = async (
     }
 
     // Get model usage breakdown (filtered by user for customers unless globalView is true)
-    let modelUsage = [];
+    let modelUsage: Array<{
+      model: string;
+      _count: number;
+      _sum: { totalTokens: number | null; cost: number | null };
+    }> = [];
     try {
+      // @ts-expect-error - Prisma groupBy return type conflict with TypeScript strict mode
       modelUsage = await db.llmTransaction.groupBy({
         by: ['model'],
         where: {
@@ -765,8 +770,16 @@ export const getDetailedAppInfo = async (
     }
 
     // Get recent transactions (filtered by user for customers unless globalView is true)
-    let recentTransactions = [];
+    let recentTransactions: Array<{
+      id: string;
+      model: string;
+      totalTokens: number;
+      cost: number;
+      status: string;
+      createdAt: Date;
+    }> = [];
     try {
+      // @ts-expect-error - Prisma findMany return type inference issue
       recentTransactions = await db.llmTransaction.findMany({
         where: {
           echoAppId: appId,
