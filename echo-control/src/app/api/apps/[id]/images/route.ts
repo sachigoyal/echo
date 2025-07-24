@@ -72,6 +72,13 @@ export async function POST(
     // Get current app details to check for existing images
     const appDetails = await getDetailedAppInfo(appId, user.id);
 
+    if (!appDetails) {
+      return NextResponse.json(
+        { error: 'App not found or access denied' },
+        { status: 404 }
+      );
+    }
+
     // Delete old image from blob storage if it exists
     if (imageType === 'profile' && appDetails.profilePictureUrl) {
       try {
@@ -192,6 +199,13 @@ export async function DELETE(
 
     // Get current app details to get the existing image URL
     const appDetails = await getDetailedAppInfo(appId, user.id);
+
+    if (!appDetails) {
+      return NextResponse.json(
+        { error: 'App not found or access denied' },
+        { status: 404 }
+      );
+    }
 
     // Delete image from blob storage if it exists
     let existingImageUrl: string | null = null;
