@@ -33,7 +33,7 @@ const steps: StepConfig[] = [
   },
   {
     key: 'configuration',
-    prompt: 'Review your configuration',
+    prompt: 'Install Echo',
     placeholder: '',
     required: false,
     type: 'code' as const,
@@ -76,11 +76,11 @@ function CreateApplicationForm() {
     goToBack,
     setTransitioning,
     setError,
-    setCreatedAppId,
-  } = useCreationFlowNavigation(steps, 0);
+    setApp,
+  } = useCreationFlowNavigation(steps);
 
-  // Step-specific hooks
-  const createAppHook = useCreateAppComponent(app?.id, setCreatedAppId);
+  // Initialize hooks for each step with the app data
+  const createAppHook = useCreateAppComponent(undefined, setApp);
   const callbackUrlHook = useCallbackUrlComponent(
     app?.id || '',
     app?.authorizedCallbackUrls?.[0] || ''
@@ -92,7 +92,7 @@ function CreateApplicationForm() {
   );
   const testIntegrationHook = useTestIntegrationComponent(app?.id || '');
 
-  // Get the current step's state
+  // Get the current step's state for validation and update logic
   const getCurrentStepState = () => {
     switch (currentStepData?.key) {
       case 'name':
@@ -175,7 +175,7 @@ function CreateApplicationForm() {
         formData={formData}
         steps={steps}
       >
-        <div className="flex items-center space-x-3 mb-4">
+        <div className="flex items-center space-x-3">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent"></div>
           <span className="text-foreground">Loading app data...</span>
         </div>

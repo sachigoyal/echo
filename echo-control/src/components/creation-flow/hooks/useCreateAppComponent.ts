@@ -2,10 +2,11 @@ import { useCallback, useRef } from 'react';
 import { useCreateApp } from '../../../hooks/useCreateApp';
 import { CreateApplicationStepRef } from '../CreateApplicationStep';
 import { useUpdateApp } from '@/hooks/useUpdateApp';
+import { DetailedEchoApp } from '@/lib/types/apps';
 
 export interface UseCreateAppComponentReturn {
   stepRef: React.RefObject<CreateApplicationStepRef | null>;
-  update: () => Promise<string>;
+  update: () => Promise<DetailedEchoApp>;
   canGoNext: boolean;
   isCreating: boolean;
   error: string | null;
@@ -13,7 +14,7 @@ export interface UseCreateAppComponentReturn {
 
 export function useCreateAppComponent(
   existingAppId?: string,
-  onAppCreated?: (appId: string) => void
+  onAppCreated?: (app: DetailedEchoApp) => void
 ): UseCreateAppComponentReturn {
   const stepRef = useRef<CreateApplicationStepRef>(null);
   const { createApp, isCreating, error: createError } = useCreateApp();
@@ -25,32 +26,40 @@ export function useCreateAppComponent(
   const canGoNext = !isCreating && !isUpdating;
 
   // Update method that performs the app creation
-  const handleCreateAppComponent = useCallback(async (): Promise<string> => {
-    const appName = stepRef.current?.getValue() || '';
+  const handleCreateAppComponent =
+    useCallback(async (): Promise<DetailedEchoApp> => {
+      const appName = stepRef.current?.getValue() || '';
 
-    if (!appName.trim()) {
-      throw new Error('Cannot proceed: App name is required');
-    }
-
-    if (isCreating) {
-      throw new Error('Cannot proceed: Already creating app');
-    }
-    let appId: string;
-    try {
-      if (existingAppId) {
-        appId = await updateApp(existingAppId, { name: appName.trim() });
-      } else {
-        appId = await createApp({ name: appName.trim() });
-        // Notify parent component of the created app ID
-        if (onAppCreated) {
-          onAppCreated(appId);
-        }
+      if (!appName.trim()) {
+        throw new Error('Cannot proceed: App name is required');
       }
-      return appId;
-    } catch (error) {
-      throw error; // Re-throw to be handled by navigation hook
-    }
-  }, [createApp, updateApp, existingAppId, isCreating, onAppCreated]);
+
+      if (isCreating) {
+        throw new Error('Cannot proceed: Already creating app');
+      }
+
+      try {
+        if (existingAppId) {
+          await updateApp(existingAppId, {
+            name: appName.trim(),
+          });
+          // For updates, we need to return a DetailedEchoApp, but updateApp returns string
+          // This is a limitation - we'd need to fetch the app or modify updateApp
+          throw new Error(
+            'Update flow not yet supported with new optimistic approach'
+          );
+        } else {
+          const createdApp = await createApp({ name: appName.trim() });
+          // Notify parent component of the created app data
+          if (onAppCreated) {
+            onAppCreated(createdApp);
+          }
+          return createdApp;
+        }
+      } catch (error) {
+        throw error; // Re-throw to be handled by navigation hook
+      }
+    }, [createApp, updateApp, existingAppId, isCreating, onAppCreated]);
 
   return {
     stepRef,
