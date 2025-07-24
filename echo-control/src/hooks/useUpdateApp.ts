@@ -14,7 +14,7 @@ export interface UpdateAppData {
 }
 
 export interface UseUpdateAppReturn {
-  updateApp: (appId: string, data: UpdateAppData) => Promise<void>;
+  updateApp: (appId: string, data: UpdateAppData) => Promise<string>;
   isUpdating: boolean;
   error: string | null;
   clearError: () => void;
@@ -29,7 +29,7 @@ export function useUpdateApp(): UseUpdateAppReturn {
   }, []);
 
   const updateApp = useCallback(
-    async (appId: string, data: UpdateAppData): Promise<void> => {
+    async (appId: string, data: UpdateAppData): Promise<string> => {
       try {
         setIsUpdating(true);
         setError(null);
@@ -51,6 +51,8 @@ export function useUpdateApp(): UseUpdateAppReturn {
         }
 
         console.log('App updated successfully:', responseData);
+
+        return responseData.id;
       } catch (error) {
         console.error('Error updating app:', error);
         const errorMessage =
