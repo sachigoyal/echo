@@ -64,7 +64,6 @@ import { useState } from 'react';`;
   const configCode = `const echoConfig = {
   appId: '${createdAppId}',
   apiUrl: 'https://echo.merit.systems',
-  redirectUri: window.location.origin,
 };`;
 
   const chatInterfaceCode = `function ChatInterface() {
@@ -108,7 +107,6 @@ import { useState } from 'react';
 const echoConfig = {
   appId: '${createdAppId}',
   apiUrl: 'https://echo.merit.systems',
-  redirectUri: window.location.origin,
 };
 
 function ChatInterface() {
