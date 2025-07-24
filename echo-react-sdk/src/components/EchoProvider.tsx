@@ -82,8 +82,8 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
       // Automatic token renewal configuration
       automaticSilentRenew: true,
-      accessTokenExpiringNotificationTimeInSeconds: 10,
-      silentRequestTimeoutInSeconds: 5,
+      accessTokenExpiringNotificationTimeInSeconds: 60,
+      silentRequestTimeoutInSeconds: 10,
 
       // Silent renewal configuration
       silent_redirect_uri: config.redirectUri || window.location.origin,
