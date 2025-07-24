@@ -4,6 +4,7 @@ import {
   listAppsWithDetails,
   createEchoApp,
   AppCreateInput,
+  getDetailedAppInfo,
 } from '@/lib/echo-apps';
 
 // GET /api/apps - List all Echo apps for the authenticated user
@@ -52,20 +53,14 @@ export async function POST(req: NextRequest) {
 
     const echoApp = await createEchoApp(user.id, appData);
 
-    return NextResponse.json(
-      {
-        id: echoApp.id,
-        name: echoApp.name,
-        description: echoApp.description,
-        github_type: echoApp.githubType,
-        github_id: echoApp.githubId,
-        is_active: echoApp.isActive,
-        created_at: echoApp.createdAt.toISOString(),
-        updated_at: echoApp.updatedAt.toISOString(),
-        authorized_callback_urls: echoApp.authorizedCallbackUrls,
-      },
-      { status: 201 }
-    );
+    // Get the complete app details to return to frontend
+    const detailedApp = await getDetailedAppInfo(echoApp.id, user.id);
+
+    if (!detailedApp) {
+      throw new Error('Failed to retrieve created app details');
+    }
+
+    return NextResponse.json(detailedApp, { status: 201 });
   } catch (error) {
     console.error('Error creating Echo app:', error);
 

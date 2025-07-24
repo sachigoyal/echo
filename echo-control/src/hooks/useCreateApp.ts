@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { DetailedEchoApp } from '../lib/types/apps';
 
 export interface CreateAppData {
   name: string;
@@ -7,35 +8,25 @@ export interface CreateAppData {
   githubId?: string;
 }
 
-export interface CreatedApp {
-  id: string;
-  name: string;
-  clientId: string;
-  clientSecret: string;
-  authorizedCallbackUrls: string[];
-  githubType?: 'user' | 'repo';
-  githubId?: string;
-}
-
 export interface UseCreateAppReturn {
-  createApp: (data: CreateAppData) => Promise<string>;
+  createApp: (data: CreateAppData) => Promise<DetailedEchoApp>;
   isCreating: boolean;
   error: string | null;
   clearError: () => void;
-  createdAppId: string | null;
+  createdApp: DetailedEchoApp | null;
 }
 
 export function useCreateApp(): UseCreateAppReturn {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createdAppId, setCreatedAppId] = useState<string | null>(null);
+  const [createdApp, setCreatedApp] = useState<DetailedEchoApp | null>(null);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
   const createApp = useCallback(
-    async (data: CreateAppData): Promise<string> => {
+    async (data: CreateAppData): Promise<DetailedEchoApp> => {
       try {
         setIsCreating(true);
         setError(null);
@@ -53,17 +44,17 @@ export function useCreateApp(): UseCreateAppReturn {
           }),
         });
 
-        const responseData = await response.json();
+        const detailedApp = await response.json();
 
         if (!response.ok) {
-          throw new Error(responseData.error || 'Failed to create echo app');
+          throw new Error(detailedApp.error || 'Failed to create echo app');
         }
 
-        console.log('App created successfully:', responseData);
+        console.log('App created successfully:', detailedApp);
 
-        setCreatedAppId(responseData.id);
+        setCreatedApp(detailedApp);
 
-        return responseData.id;
+        return detailedApp;
       } catch (error) {
         console.error('Error creating app:', error);
         const errorMessage =
@@ -82,6 +73,6 @@ export function useCreateApp(): UseCreateAppReturn {
     isCreating,
     error,
     clearError,
-    createdAppId,
+    createdApp,
   };
 }

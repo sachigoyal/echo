@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCurrentApp } from '../../../hooks/useCurrentApp';
 import { DetailedEchoApp } from '../../../lib/types/apps';
 
 interface StepConfig {
@@ -14,7 +13,7 @@ interface StepConfig {
 
 interface StepState {
   canGoNext: boolean;
-  update: () => Promise<void | string>;
+  update: () => Promise<void | string | DetailedEchoApp>;
   error: string | null;
 }
 
@@ -24,15 +23,12 @@ interface UseCreationFlowNavigationReturn {
   error: string | null;
   currentStepData: StepConfig | null;
   isLastStep: boolean;
-  app: DetailedEchoApp | null; // Properly typed app state from useCurrentApp
-  isLoadingApp: boolean; // Loading state from useCurrentApp
-  appError: string | null; // Error state from useCurrentApp
+  app: DetailedEchoApp | null;
   goToNext: (stepState: StepState) => Promise<void>;
   goToBack: () => Promise<void>;
   setTransitioning: (isTransitioning: boolean) => void;
   setError: (error: string | null) => void;
-  refetchAppState: () => Promise<void>;
-  setCreatedAppId: (appId: string) => void;
+  setApp: (app: DetailedEchoApp) => void;
 }
 
 export function useCreationFlowNavigation(
@@ -40,30 +36,13 @@ export function useCreationFlowNavigation(
   initialStep: number = 0
 ): UseCreationFlowNavigationReturn {
   const router = useRouter();
-  const [createdAppId, setCreatedAppIdState] = useState<string | null>(null);
-
-  // Use useCurrentApp internally to manage app state
-  const {
-    app,
-    isLoading: isLoadingApp,
-    error: appError,
-    refetch,
-  } = useCurrentApp(createdAppId || undefined);
-
+  const [app, setApp] = useState<DetailedEchoApp | null>(null);
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const currentStepData = steps[currentStep] || null;
   const isLastStep = currentStep === steps.length - 1;
-
-  const setCreatedAppId = useCallback((appId: string) => {
-    setCreatedAppIdState(appId);
-  }, []);
-
-  const refetchAppState = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
 
   const goToNext = useCallback(
     async (stepState: StepState) => {
@@ -77,21 +56,22 @@ export function useCreationFlowNavigation(
         setIsTransitioning(true);
 
         // Call the step's update method
-        await stepState.update();
+        const result = await stepState.update();
+
+        // If the result is a DetailedEchoApp (from createApp), store it
+        if (result && typeof result === 'object' && 'id' in result) {
+          setApp(result as DetailedEchoApp);
+        }
 
         if (isLastStep) {
-          if (createdAppId) {
-            router.push(`/owner/${createdAppId}/settings`);
+          if (app?.id) {
+            router.push(`/owner/${app.id}/settings`);
           } else {
             router.push(`/`);
           }
+        } else {
+          setCurrentStep(prev => prev + 1);
         }
-        // Refetch app state after update and wait for it to complete
-        await refetchAppState();
-
-        setCurrentStep(prev => prev + 1);
-
-        // Navigate to next step or finish
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'An error occurred';
@@ -100,7 +80,7 @@ export function useCreationFlowNavigation(
         setIsTransitioning(false);
       }
     },
-    [isLastStep, createdAppId, router, refetchAppState]
+    [isLastStep, app?.id, router]
   );
 
   const goToBack = useCallback(async () => {
@@ -108,8 +88,7 @@ export function useCreationFlowNavigation(
 
     setCurrentStep(prev => prev - 1);
     setError(null);
-    await refetchAppState();
-  }, [currentStep, refetchAppState]);
+  }, [currentStep]);
 
   const setTransitioningCallback = useCallback((transitioning: boolean) => {
     setIsTransitioning(transitioning);
@@ -119,6 +98,10 @@ export function useCreationFlowNavigation(
     setError(error);
   }, []);
 
+  const handleSetApp = useCallback((app: DetailedEchoApp) => {
+    setApp(app);
+  }, []);
+
   return {
     currentStep,
     isTransitioning,
@@ -126,13 +109,10 @@ export function useCreationFlowNavigation(
     currentStepData,
     isLastStep,
     app,
-    isLoadingApp,
-    appError,
     goToNext,
     goToBack,
     setTransitioning: setTransitioningCallback,
     setError: handleSetError,
-    refetchAppState,
-    setCreatedAppId,
+    setApp: handleSetApp,
   };
 }
