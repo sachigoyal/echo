@@ -81,11 +81,37 @@ export async function GET(
     });
 
     // Step 5: Fetch app data with detailed error handling
-    const appWithStats = await getDetailedAppInfo(
-      appId,
-      user.id,
-      view === 'global'
-    );
+    let appWithStats;
+    try {
+      appWithStats = await getDetailedAppInfo(
+        appId,
+        user.id,
+        view === 'global'
+      );
+    } catch (appFetchError) {
+      console.error(
+        'Failed to fetch app data - getDetailedAppInfo threw error:',
+        {
+          appId,
+          userId: user.id,
+          error:
+            appFetchError instanceof Error
+              ? appFetchError.message
+              : 'Unknown app fetch error',
+          stack:
+            appFetchError instanceof Error ? appFetchError.stack : undefined,
+        }
+      );
+      return NextResponse.json(
+        {
+          error:
+            appFetchError instanceof Error
+              ? appFetchError.message
+              : 'Echo app not found or access denied',
+        },
+        { status: 404 }
+      );
+    }
 
     if (!appWithStats) {
       console.error(

@@ -540,7 +540,10 @@ export const getDetailedAppInfo = async (
         userId,
         error: roleError instanceof Error ? roleError.message : 'Unknown error',
       });
-      return null;
+      // Re-throw the error so caller can handle it
+      throw new Error(
+        `Failed to get user role: ${roleError instanceof Error ? roleError.message : 'Unknown error'}`
+      );
     }
 
     console.log('Fetching user info with permissions', userRole);
@@ -572,7 +575,8 @@ export const getDetailedAppInfo = async (
               ? publicError.message
               : 'Unknown error',
         });
-        return null;
+        // Re-throw the error instead of returning null so caller can handle it
+        throw publicError;
       }
     }
 
@@ -646,7 +650,9 @@ export const getDetailedAppInfo = async (
             ? appQueryError.message
             : 'Unknown error',
       });
-      return null;
+      throw new Error(
+        `Database error while fetching app: ${appQueryError instanceof Error ? appQueryError.message : 'Unknown error'}`
+      );
     }
 
     if (!app) {
@@ -655,7 +661,7 @@ export const getDetailedAppInfo = async (
         userId,
         userRole,
       });
-      return null;
+      throw new Error('Echo app not found or access denied');
     }
 
     // Find the owner of the app
@@ -685,12 +691,14 @@ export const getDetailedAppInfo = async (
             ? ownerQueryError.message
             : 'Unknown error',
       });
-      return null;
+      throw new Error(
+        `Database error while fetching app owner: ${ownerQueryError instanceof Error ? ownerQueryError.message : 'Unknown error'}`
+      );
     }
 
     if (!ownerMembership) {
       console.log('App owner not found:', { appId, userId });
-      return null;
+      throw new Error('App owner not found');
     }
 
     // Get aggregated statistics for the app (filtered by user for customers unless globalView is true)
