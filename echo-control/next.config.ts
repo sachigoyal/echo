@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Experimental flag to help with Prisma bundling
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  },
 };
 
 export default nextConfig;
