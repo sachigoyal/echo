@@ -372,104 +372,271 @@ export const listAppsWithDetails = async (
 export const getPublicAppInfo = async (
   appId: string
 ): Promise<PublicEchoApp> => {
-  // Find the app
-  const app = await db.echoApp.findFirst({
-    where: {
-      id: appId,
-      isArchived: false,
-      // Public apps should be accessible to everyone
-      isPublic: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      profilePictureUrl: true,
-      bannerImageUrl: true,
-      homepageUrl: true,
-      githubId: true,
-      githubType: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  // Step 1: Find the app
+  let app;
+  try {
+    app = await db.echoApp.findFirst({
+      where: {
+        id: appId,
+        isArchived: false,
+        // Public apps should be accessible to everyone
+        isPublic: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        profilePictureUrl: true,
+        bannerImageUrl: true,
+        homepageUrl: true,
+        githubId: true,
+        githubType: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  } catch (appQueryError) {
+    console.error(
+      'getPublicAppInfo STEP 1 FAILED - Database error while fetching public app:',
+      {
+        appId,
+        operation: 'db.echoApp.findFirst (public app lookup)',
+        error:
+          appQueryError instanceof Error
+            ? appQueryError.message
+            : 'Unknown error',
+        errorStack:
+          appQueryError instanceof Error ? appQueryError.stack : undefined,
+        isDatabaseError: true,
+        prismaError:
+          appQueryError instanceof Error &&
+          appQueryError.message.includes('Prisma'),
+      }
+    );
+    throw new Error(
+      `Database error while fetching public app: ${appQueryError instanceof Error ? appQueryError.message : 'Unknown error'}`
+    );
+  }
 
   if (!app) {
+    console.error(
+      'getPublicAppInfo STEP 1 FAILED - App not found or not publicly accessible:',
+      {
+        appId,
+        operation: 'db.echoApp.findFirst result validation',
+        reason:
+          'Query returned null - app does not exist, is archived, or isPublic=false',
+        expectedConditions:
+          'App must exist, isArchived=false, and isPublic=true',
+      }
+    );
     throw new Error('Echo app not found or not publicly accessible');
   }
 
-  // Find the owner of the app (only name, not email for privacy)
-  const ownerMembership = await db.appMembership.findFirst({
-    where: {
-      echoAppId: appId,
-      role: AppRole.OWNER,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
+  // Step 2: Find the owner of the app (only name, not email for privacy)
+  let ownerMembership;
+  try {
+    ownerMembership = await db.appMembership.findFirst({
+      where: {
+        echoAppId: appId,
+        role: AppRole.OWNER,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (ownerQueryError) {
+    console.error(
+      'getPublicAppInfo STEP 2 FAILED - Database error while fetching app owner:',
+      {
+        appId,
+        operation: 'db.appMembership.findFirst (owner lookup for public app)',
+        error:
+          ownerQueryError instanceof Error
+            ? ownerQueryError.message
+            : 'Unknown error',
+        errorStack:
+          ownerQueryError instanceof Error ? ownerQueryError.stack : undefined,
+        isDatabaseError: true,
+        prismaError:
+          ownerQueryError instanceof Error &&
+          ownerQueryError.message.includes('Prisma'),
+      }
+    );
+    // For public apps, we can continue without owner info if needed
+    ownerMembership = null;
+  }
 
-  // Get full aggregated statistics for public view (always global)
-  const stats = await db.llmTransaction.aggregate({
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-    },
-    _count: true,
-    _sum: {
-      totalTokens: true,
-      inputTokens: true,
-      outputTokens: true,
-      cost: true,
-    },
-  });
-
-  // Get model usage breakdown (always global for public view)
-  const modelUsage = await db.llmTransaction.groupBy({
-    by: ['model'],
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-    },
-    _count: true,
-    _sum: {
-      totalTokens: true,
-      cost: true,
-    },
-    orderBy: {
-      _sum: {
-        totalTokens: 'desc',
+  // Step 3: Get full aggregated statistics for public view (always global)
+  let stats;
+  try {
+    stats = await db.llmTransaction.aggregate({
+      where: {
+        echoAppId: appId,
+        isArchived: false,
       },
-    },
-  });
+      _count: true,
+      _sum: {
+        totalTokens: true,
+        inputTokens: true,
+        outputTokens: true,
+        cost: true,
+      },
+    });
+  } catch (statsError) {
+    console.error(
+      'getPublicAppInfo STEP 3 FAILED - Database error while fetching public app statistics:',
+      {
+        appId,
+        operation: 'db.llmTransaction.aggregate (public stats)',
+        error:
+          statsError instanceof Error ? statsError.message : 'Unknown error',
+        errorStack: statsError instanceof Error ? statsError.stack : undefined,
+        isDatabaseError: true,
+        prismaError:
+          statsError instanceof Error && statsError.message.includes('Prisma'),
+      }
+    );
+    // Provide default stats for public view
+    stats = {
+      _count: 0,
+      _sum: {
+        totalTokens: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        cost: 0,
+      },
+    };
+  }
 
-  // Get recent transactions (always global for public view)
-  const recentTransactions = await db.llmTransaction.findMany({
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-    },
-    select: {
-      id: true,
-      model: true,
-      totalTokens: true,
-      cost: true,
-      status: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  });
+  // Step 4: Get model usage breakdown (always global for public view)
+  let modelUsage: Array<{
+    model: string;
+    _count: number;
+    _sum: { totalTokens: number | null; cost: number | null };
+  }> = [];
+  try {
+    // @ts-expect-error - Prisma groupBy return type conflict with TypeScript strict mode
+    modelUsage = await db.llmTransaction.groupBy({
+      by: ['model'],
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+      },
+      _count: true,
+      _sum: {
+        totalTokens: true,
+        cost: true,
+      },
+      orderBy: {
+        _sum: {
+          totalTokens: 'desc',
+        },
+      },
+    });
+  } catch (modelUsageError) {
+    console.error(
+      'getPublicAppInfo STEP 4 FAILED - Database error while fetching public app model usage:',
+      {
+        appId,
+        operation: 'db.llmTransaction.groupBy (public model usage)',
+        error:
+          modelUsageError instanceof Error
+            ? modelUsageError.message
+            : 'Unknown error',
+        errorStack:
+          modelUsageError instanceof Error ? modelUsageError.stack : undefined,
+        isDatabaseError: true,
+        prismaError:
+          modelUsageError instanceof Error &&
+          modelUsageError.message.includes('Prisma'),
+      }
+    );
+    modelUsage = [];
+  }
 
-  // Get activity data for the last 7 days
-  const activity = await getAppActivity(appId);
-  const activityData = transformActivityToChartData(activity);
+  // Step 5: Get recent transactions (always global for public view)
+  let recentTransactions: Array<{
+    id: string;
+    model: string;
+    totalTokens: number;
+    cost: number;
+    status: string;
+    createdAt: Date;
+  }> = [];
+  try {
+    // @ts-expect-error - Prisma findMany return type inference issue
+    recentTransactions = await db.llmTransaction.findMany({
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+      },
+      select: {
+        id: true,
+        model: true,
+        totalTokens: true,
+        cost: true,
+        status: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+  } catch (transactionsError) {
+    console.error(
+      'getPublicAppInfo STEP 5 FAILED - Database error while fetching public app recent transactions:',
+      {
+        appId,
+        operation: 'db.llmTransaction.findMany (public recent transactions)',
+        error:
+          transactionsError instanceof Error
+            ? transactionsError.message
+            : 'Unknown error',
+        errorStack:
+          transactionsError instanceof Error
+            ? transactionsError.stack
+            : undefined,
+        isDatabaseError: true,
+        prismaError:
+          transactionsError instanceof Error &&
+          transactionsError.message.includes('Prisma'),
+      }
+    );
+    recentTransactions = [];
+  }
+
+  // Step 6: Get activity data for the last 7 days
+  let activityData: number[] = [];
+  try {
+    const activity = await getAppActivity(appId);
+    activityData = transformActivityToChartData(activity);
+  } catch (activityError) {
+    console.error(
+      'getPublicAppInfo STEP 6 FAILED - Error while fetching public app activity:',
+      {
+        appId,
+        operation:
+          'getAppActivity + transformActivityToChartData (public activity)',
+        error:
+          activityError instanceof Error
+            ? activityError.message
+            : 'Unknown error',
+        errorStack:
+          activityError instanceof Error ? activityError.stack : undefined,
+        isDatabaseError:
+          activityError instanceof Error &&
+          (activityError.message.includes('Prisma') ||
+            activityError.message.includes('database')),
+      }
+    );
+    activityData = [];
+  }
 
   return {
     ...app,
@@ -531,14 +698,19 @@ export const getDetailedAppInfo = async (
   let userRole: AppRole = AppRole.PUBLIC;
 
   try {
-    // Get user's role for this app to determine what data to show
+    // Step 1: Get user's role for this app to determine what data to show
     try {
       userRole = await PermissionService.getUserAppRole(userId, appId);
     } catch (roleError) {
-      console.error('Failed to get user role:', {
+      console.error('STEP 1 FAILED - Failed to get user role:', {
         appId,
         userId,
         error: roleError instanceof Error ? roleError.message : 'Unknown error',
+        errorStack: roleError instanceof Error ? roleError.stack : undefined,
+        isDatabaseError:
+          roleError instanceof Error &&
+          (roleError.message.includes('Prisma') ||
+            roleError.message.includes('database')),
       });
       // Re-throw the error so caller can handle it
       throw new Error(
@@ -548,7 +720,7 @@ export const getDetailedAppInfo = async (
 
     console.log('Fetching user info with permissions', userRole);
 
-    // If user has PUBLIC role, use the public function instead
+    // Step 2: If user has PUBLIC role, use the public function instead
     if (userRole === AppRole.PUBLIC) {
       try {
         const publicInfo = await getPublicAppInfo(appId);
@@ -567,20 +739,32 @@ export const getDetailedAppInfo = async (
           recentTransactions: publicInfo.recentTransactions, // Use the actual recent transactions
         };
       } catch (publicError) {
-        console.error('Failed to fetch public app info:', {
+        console.error('STEP 2 FAILED - Failed to fetch public app info:', {
           appId,
           userId,
+          userRole: 'PUBLIC',
+          operation: 'getPublicAppInfo',
           error:
             publicError instanceof Error
               ? publicError.message
               : 'Unknown error',
+          errorStack:
+            publicError instanceof Error ? publicError.stack : undefined,
+          isDatabaseError:
+            publicError instanceof Error &&
+            (publicError.message.includes('Prisma') ||
+              publicError.message.includes('database')),
+          expectedError:
+            publicError instanceof Error &&
+            publicError.message ===
+              'Echo app not found or not publicly accessible',
         });
         // Re-throw the error instead of returning null so caller can handle it
         throw publicError;
       }
     }
 
-    // Find the app
+    // Step 3: Find the app (for non-public users)
     let app;
     try {
       app = await db.echoApp.findFirst({
@@ -642,13 +826,21 @@ export const getDetailedAppInfo = async (
         },
       });
     } catch (appQueryError) {
-      console.error('Database error while fetching app:', {
+      console.error('STEP 3 FAILED - Database error while fetching app:', {
         appId,
         userId,
+        userRole,
+        operation: 'db.echoApp.findFirst',
         error:
           appQueryError instanceof Error
             ? appQueryError.message
             : 'Unknown error',
+        errorStack:
+          appQueryError instanceof Error ? appQueryError.stack : undefined,
+        isDatabaseError: true,
+        prismaError:
+          appQueryError instanceof Error &&
+          appQueryError.message.includes('Prisma'),
       });
       throw new Error(
         `Database error while fetching app: ${appQueryError instanceof Error ? appQueryError.message : 'Unknown error'}`
@@ -656,15 +848,18 @@ export const getDetailedAppInfo = async (
     }
 
     if (!app) {
-      console.log('App not found or access denied:', {
+      console.error('STEP 3 FAILED - App not found or access denied:', {
         appId,
         userId,
         userRole,
+        operation: 'db.echoApp.findFirst result validation',
+        reason:
+          'Query returned null - app does not exist, is archived, or user lacks access',
       });
       throw new Error('Echo app not found or access denied');
     }
 
-    // Find the owner of the app
+    // Step 4: Find the owner of the app
     let ownerMembership;
     try {
       ownerMembership = await db.appMembership.findFirst({
@@ -683,25 +878,44 @@ export const getDetailedAppInfo = async (
         },
       });
     } catch (ownerQueryError) {
-      console.error('Database error while fetching app owner:', {
-        appId,
-        userId,
-        error:
-          ownerQueryError instanceof Error
-            ? ownerQueryError.message
-            : 'Unknown error',
-      });
+      console.error(
+        'STEP 4 FAILED - Database error while fetching app owner:',
+        {
+          appId,
+          userId,
+          userRole,
+          operation: 'db.appMembership.findFirst (owner)',
+          error:
+            ownerQueryError instanceof Error
+              ? ownerQueryError.message
+              : 'Unknown error',
+          errorStack:
+            ownerQueryError instanceof Error
+              ? ownerQueryError.stack
+              : undefined,
+          isDatabaseError: true,
+          prismaError:
+            ownerQueryError instanceof Error &&
+            ownerQueryError.message.includes('Prisma'),
+        }
+      );
       throw new Error(
         `Database error while fetching app owner: ${ownerQueryError instanceof Error ? ownerQueryError.message : 'Unknown error'}`
       );
     }
 
     if (!ownerMembership) {
-      console.log('App owner not found:', { appId, userId });
+      console.error('STEP 4 FAILED - App owner not found:', {
+        appId,
+        userId,
+        userRole,
+        operation: 'db.appMembership.findFirst (owner) result validation',
+        reason: 'No owner membership found - data integrity issue',
+      });
       throw new Error('App owner not found');
     }
 
-    // Get aggregated statistics for the app (filtered by user for customers unless globalView is true)
+    // Step 5: Get aggregated statistics for the app (filtered by user for customers unless globalView is true)
     let stats;
     try {
       stats = await db.llmTransaction.aggregate({
@@ -720,12 +934,24 @@ export const getDetailedAppInfo = async (
         },
       });
     } catch (statsError) {
-      console.error('Database error while fetching app statistics:', {
-        appId,
-        userId,
-        error:
-          statsError instanceof Error ? statsError.message : 'Unknown error',
-      });
+      console.error(
+        'STEP 5 FAILED - Database error while fetching app statistics:',
+        {
+          appId,
+          userId,
+          userRole,
+          globalView,
+          operation: 'db.llmTransaction.aggregate (stats)',
+          error:
+            statsError instanceof Error ? statsError.message : 'Unknown error',
+          errorStack:
+            statsError instanceof Error ? statsError.stack : undefined,
+          isDatabaseError: true,
+          prismaError:
+            statsError instanceof Error &&
+            statsError.message.includes('Prisma'),
+        }
+      );
       // Provide default stats
       stats = {
         _count: 0,
@@ -738,7 +964,7 @@ export const getDetailedAppInfo = async (
       };
     }
 
-    // Get model usage breakdown (filtered by user for customers unless globalView is true)
+    // Step 6: Get model usage breakdown (filtered by user for customers unless globalView is true)
     let modelUsage: Array<{
       model: string;
       _count: number;
@@ -766,18 +992,32 @@ export const getDetailedAppInfo = async (
         },
       });
     } catch (modelUsageError) {
-      console.error('Database error while fetching model usage:', {
-        appId,
-        userId,
-        error:
-          modelUsageError instanceof Error
-            ? modelUsageError.message
-            : 'Unknown error',
-      });
+      console.error(
+        'STEP 6 FAILED - Database error while fetching model usage:',
+        {
+          appId,
+          userId,
+          userRole,
+          globalView,
+          operation: 'db.llmTransaction.groupBy (model usage)',
+          error:
+            modelUsageError instanceof Error
+              ? modelUsageError.message
+              : 'Unknown error',
+          errorStack:
+            modelUsageError instanceof Error
+              ? modelUsageError.stack
+              : undefined,
+          isDatabaseError: true,
+          prismaError:
+            modelUsageError instanceof Error &&
+            modelUsageError.message.includes('Prisma'),
+        }
+      );
       modelUsage = [];
     }
 
-    // Get recent transactions (filtered by user for customers unless globalView is true)
+    // Step 7: Get recent transactions (filtered by user for customers unless globalView is true)
     let recentTransactions: Array<{
       id: string;
       model: string;
@@ -807,18 +1047,32 @@ export const getDetailedAppInfo = async (
         take: 10,
       });
     } catch (transactionsError) {
-      console.error('Database error while fetching recent transactions:', {
-        appId,
-        userId,
-        error:
-          transactionsError instanceof Error
-            ? transactionsError.message
-            : 'Unknown error',
-      });
+      console.error(
+        'STEP 7 FAILED - Database error while fetching recent transactions:',
+        {
+          appId,
+          userId,
+          userRole,
+          globalView,
+          operation: 'db.llmTransaction.findMany (recent transactions)',
+          error:
+            transactionsError instanceof Error
+              ? transactionsError.message
+              : 'Unknown error',
+          errorStack:
+            transactionsError instanceof Error
+              ? transactionsError.stack
+              : undefined,
+          isDatabaseError: true,
+          prismaError:
+            transactionsError instanceof Error &&
+            transactionsError.message.includes('Prisma'),
+        }
+      );
       recentTransactions = [];
     }
 
-    // Get activity data for the last 7 days (filtered by user for customers unless globalView is true)
+    // Step 8: Get activity data for the last 7 days (filtered by user for customers unless globalView is true)
     let activityData: number[] = [];
     try {
       const activity = await getAppActivity(
@@ -828,18 +1082,27 @@ export const getDetailedAppInfo = async (
       );
       activityData = transformActivityToChartData(activity);
     } catch (activityError) {
-      console.error('Error while fetching app activity:', {
+      console.error('STEP 8 FAILED - Error while fetching app activity:', {
         appId,
         userId,
+        userRole,
+        globalView,
+        operation: 'getAppActivity + transformActivityToChartData',
         error:
           activityError instanceof Error
             ? activityError.message
             : 'Unknown error',
+        errorStack:
+          activityError instanceof Error ? activityError.stack : undefined,
+        isDatabaseError:
+          activityError instanceof Error &&
+          (activityError.message.includes('Prisma') ||
+            activityError.message.includes('database')),
       });
       activityData = [];
     }
 
-    // Calculate total spent for each API key
+    // Step 9: Calculate total spent for each API key
     let apiKeysWithSpending;
     try {
       apiKeysWithSpending = await Promise.all(
@@ -864,15 +1127,28 @@ export const getDetailedAppInfo = async (
               creator: apiKey.user,
             };
           } catch (apiKeySpendingError) {
-            console.error('Error fetching spending for API key:', {
-              apiKeyId: apiKey.id,
-              appId,
-              userId,
-              error:
-                apiKeySpendingError instanceof Error
-                  ? apiKeySpendingError.message
-                  : 'Unknown error',
-            });
+            console.error(
+              'STEP 9 SUB-OPERATION FAILED - Error fetching spending for API key:',
+              {
+                apiKeyId: apiKey.id,
+                appId,
+                userId,
+                userRole,
+                operation: 'db.llmTransaction.aggregate (API key spending)',
+                error:
+                  apiKeySpendingError instanceof Error
+                    ? apiKeySpendingError.message
+                    : 'Unknown error',
+                errorStack:
+                  apiKeySpendingError instanceof Error
+                    ? apiKeySpendingError.stack
+                    : undefined,
+                isDatabaseError: true,
+                prismaError:
+                  apiKeySpendingError instanceof Error &&
+                  apiKeySpendingError.message.includes('Prisma'),
+              }
+            );
             // Return API key with zero spending if query fails
             return {
               ...apiKey,
@@ -883,13 +1159,22 @@ export const getDetailedAppInfo = async (
         })
       );
     } catch (apiKeysError) {
-      console.error('Error processing API keys spending:', {
+      console.error('STEP 9 FAILED - Error processing API keys spending:', {
         appId,
         userId,
+        userRole,
+        operation:
+          'Promise.all(apiKeys.map(...)) - API keys spending calculation',
         error:
           apiKeysError instanceof Error
             ? apiKeysError.message
             : 'Unknown error',
+        errorStack:
+          apiKeysError instanceof Error ? apiKeysError.stack : undefined,
+        isDatabaseError:
+          apiKeysError instanceof Error &&
+          (apiKeysError.message.includes('Prisma') ||
+            apiKeysError.message.includes('database')),
       });
       // Return API keys without spending data
       apiKeysWithSpending = app.apiKeys.map(apiKey => ({
@@ -965,15 +1250,21 @@ export const getDetailedAppInfo = async (
       activityData,
     };
   } catch (error) {
-    // Log detailed error information for debugging
-    console.error('Error in getDetailedAppInfo:', {
+    // Catch-all for any other unexpected errors - this should now be much rarer
+    console.error('UNEXPECTED ERROR in getDetailedAppInfo (outer catch-all):', {
       appId,
       userId,
       globalView,
       userRole,
+      operation: 'getDetailedAppInfo - unexpected error in outer try-catch',
       errorMessage: error instanceof Error ? error.message : 'Unknown error',
       errorStack: error instanceof Error ? error.stack : undefined,
+      isDatabaseError:
+        error instanceof Error &&
+        (error.message.includes('Prisma') ||
+          error.message.includes('database')),
       timestamp: new Date().toISOString(),
+      note: 'This should be rare now that all steps have specific error handling',
     });
 
     // Return null instead of throwing
