@@ -531,6 +531,8 @@ export const getDetailedAppInfo = async (
   // Get user's role for this app to determine what data to show
   const userRole = await PermissionService.getUserAppRole(userId, appId);
 
+  console.log('Fetching user info with permissions', userRole);
+
   // If user has PUBLIC role, use the public function instead
   if (userRole === AppRole.PUBLIC) {
     const publicInfo = await getPublicAppInfo(appId);
