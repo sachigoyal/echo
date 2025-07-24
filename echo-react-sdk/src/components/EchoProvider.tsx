@@ -349,7 +349,10 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       setToken(null);
     };
 
-    const handleAccessTokenExpiring = () => {};
+    const handleAccessTokenExpiring = () => {
+      console.log('Access token expiring, refreshing');
+      userManager.signinSilent();
+    };
 
     const handleAccessTokenExpired = async () => {
       console.log('Access token expired, reauthenticating');
