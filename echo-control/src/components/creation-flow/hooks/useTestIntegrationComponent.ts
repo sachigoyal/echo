@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 export interface UseTestIntegrationComponentReturn {
   integrationVerified: boolean;
@@ -17,11 +17,27 @@ export function useTestIntegrationComponent(
   const [isPolling, setIsPolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Refs to store timer IDs for cleanup
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // For this step, isUpdating is the same as isPolling
   const isUpdating = isPolling;
 
   // This step can always proceed (it's verification/informational)
   const canGoNext = true;
+
+  // Cleanup function to clear all timers
+  const clearTimers = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (pollingTimeoutRef.current) {
+      clearTimeout(pollingTimeoutRef.current);
+      pollingTimeoutRef.current = null;
+    }
+  }, []);
 
   const checkForRefreshToken = useCallback(
     async (appId: string): Promise<boolean> => {
@@ -42,25 +58,28 @@ export function useTestIntegrationComponent(
 
   const startPolling = useCallback(
     (appId: string) => {
+      // Clear any existing timers before starting new ones
+      clearTimers();
+
       setIsPolling(true);
       setError(null);
 
-      const interval = setInterval(async () => {
+      pollingIntervalRef.current = setInterval(async () => {
         const hasTokens = await checkForRefreshToken(appId);
         if (hasTokens) {
           setIntegrationVerified(true);
           setIsPolling(false);
-          clearInterval(interval);
+          clearTimers();
         }
       }, 3000); // Poll every 3 seconds
 
       // Stop polling after 5 minutes
-      setTimeout(() => {
-        clearInterval(interval);
+      pollingTimeoutRef.current = setTimeout(() => {
+        clearTimers();
         setIsPolling(false);
       }, 300000);
     },
-    [checkForRefreshToken]
+    [checkForRefreshToken, clearTimers]
   );
 
   // Update method (no-op for test step as it's verification only)
@@ -81,7 +100,15 @@ export function useTestIntegrationComponent(
     setIntegrationVerified(false);
     setIsPolling(false);
     setError(null);
-  }, [appId]);
+    clearTimers(); // Clear timers when appId changes
+  }, [appId, clearTimers]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      clearTimers();
+    };
+  }, [clearTimers]);
 
   return {
     integrationVerified,

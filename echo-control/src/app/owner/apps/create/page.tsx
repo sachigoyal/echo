@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 import Step from '../../../../components/creation-flow/Step';
 import CreateApplicationStep from '../../../../components/creation-flow/CreateApplicationStep';
@@ -65,12 +64,6 @@ const steps: StepConfig[] = [
 ];
 
 function CreateApplicationForm() {
-  const searchParams = useSearchParams();
-  const urlAppId = searchParams.get('appId');
-
-  // Use created app ID if available, otherwise use URL app ID
-  const currentAppId = urlAppId || undefined;
-
   // The navigation hook now manages app state internally
   const {
     currentStep,
@@ -83,20 +76,21 @@ function CreateApplicationForm() {
     goToBack,
     setTransitioning,
     setError,
-  } = useCreationFlowNavigation(steps, 0, currentAppId);
+    setCreatedAppId,
+  } = useCreationFlowNavigation(steps, 0);
 
   // Step-specific hooks
-  const createAppHook = useCreateAppComponent(currentAppId);
+  const createAppHook = useCreateAppComponent(app?.id, setCreatedAppId);
   const callbackUrlHook = useCallbackUrlComponent(
-    currentAppId || '',
+    app?.id || '',
     app?.authorizedCallbackUrls?.[0] || ''
   );
   const githubHook = useGitHubComponent(
-    currentAppId || '',
+    app?.id || '',
     app?.githubId || '',
     (app?.githubType as 'user' | 'repo') || 'user'
   );
-  const testIntegrationHook = useTestIntegrationComponent(currentAppId || '');
+  const testIntegrationHook = useTestIntegrationComponent(app?.id || '');
 
   // Get the current step's state
   const getCurrentStepState = () => {

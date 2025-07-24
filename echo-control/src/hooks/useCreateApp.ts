@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export interface CreateAppData {
   name: string;
@@ -30,7 +29,6 @@ export function useCreateApp(): UseCreateAppReturn {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdAppId, setCreatedAppId] = useState<string | null>(null);
-  const router = useRouter();
 
   const clearError = useCallback(() => {
     setError(null);
@@ -65,11 +63,6 @@ export function useCreateApp(): UseCreateAppReturn {
 
         setCreatedAppId(responseData.id);
 
-        // Update URL with the created app ID
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('appId', responseData.id);
-        router.replace(currentUrl.pathname + currentUrl.search);
-
         return responseData.id;
       } catch (error) {
         console.error('Error creating app:', error);
@@ -81,7 +74,7 @@ export function useCreateApp(): UseCreateAppReturn {
         setIsCreating(false);
       }
     },
-    [router]
+    []
   );
 
   return {

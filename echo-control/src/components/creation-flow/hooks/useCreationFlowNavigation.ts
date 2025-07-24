@@ -14,7 +14,7 @@ interface StepConfig {
 
 interface StepState {
   canGoNext: boolean;
-  update: () => Promise<void>;
+  update: () => Promise<void | string>;
   error: string | null;
 }
 
@@ -32,14 +32,15 @@ interface UseCreationFlowNavigationReturn {
   setTransitioning: (isTransitioning: boolean) => void;
   setError: (error: string | null) => void;
   refetchAppState: () => Promise<void>;
+  setCreatedAppId: (appId: string) => void;
 }
 
 export function useCreationFlowNavigation(
   steps: StepConfig[],
-  initialStep: number = 0,
-  appId?: string
+  initialStep: number = 0
 ): UseCreationFlowNavigationReturn {
   const router = useRouter();
+  const [createdAppId, setCreatedAppIdState] = useState<string | null>(null);
 
   // Use useCurrentApp internally to manage app state
   const {
@@ -47,7 +48,7 @@ export function useCreationFlowNavigation(
     isLoading: isLoadingApp,
     error: appError,
     refetch,
-  } = useCurrentApp(appId);
+  } = useCurrentApp(createdAppId || undefined);
 
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -55,6 +56,10 @@ export function useCreationFlowNavigation(
 
   const currentStepData = steps[currentStep] || null;
   const isLastStep = currentStep === steps.length - 1;
+
+  const setCreatedAppId = useCallback((appId: string) => {
+    setCreatedAppIdState(appId);
+  }, []);
 
   const refetchAppState = useCallback(async () => {
     await refetch();
@@ -75,8 +80,8 @@ export function useCreationFlowNavigation(
         await stepState.update();
 
         if (isLastStep) {
-          if (appId) {
-            router.push(`/owner/${appId}/settings`);
+          if (createdAppId) {
+            router.push(`/owner/${createdAppId}/settings`);
           } else {
             router.push(`/`);
           }
@@ -95,7 +100,7 @@ export function useCreationFlowNavigation(
         setIsTransitioning(false);
       }
     },
-    [isLastStep, appId, router, refetchAppState]
+    [isLastStep, createdAppId, router, refetchAppState]
   );
 
   const goToBack = useCallback(async () => {
@@ -128,5 +133,6 @@ export function useCreationFlowNavigation(
     setTransitioning: setTransitioningCallback,
     setError: handleSetError,
     refetchAppState,
+    setCreatedAppId,
   };
 }
