@@ -1,6 +1,6 @@
 {
   "name": "@zdql/echo-react-sdk",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "React SDK for Echo OAuth2 + PKCE authentication and token management",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -54,7 +54,7 @@
     }
   },
   "dependencies": {
-    "@zdql/echo-typescript-sdk": "^1.0.17",
+    "@zdql/echo-typescript-sdk": "^1.0.18",
     "dompurify": "^3.2.6",
     "oidc-client-ts": "^3.2.1"
   },
