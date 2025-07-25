@@ -91,7 +91,7 @@ import { useState } from 'react';`;
   );
 }`;
 
-  const rootComponentCode = `function Root() {
+  const rootComponentCode = `function App() {
   return (
     <EchoProvider config={echoConfig}>
       <ChatInterface />
@@ -99,7 +99,7 @@ import { useState } from 'react';`;
   );
 }
 
-export default Root;`;
+export default App;`;
 
   const completeExampleCode = `import { EchoProvider, useEcho, useEchoOpenAI } from '@zdql/echo-react-sdk';
 import { useState } from 'react';
@@ -133,7 +133,7 @@ function ChatInterface() {
   );
 }
 
-function Root() {
+function App() {
   return (
     <EchoProvider config={echoConfig}>
       <ChatInterface />
@@ -141,7 +141,7 @@ function Root() {
   );
 }
 
-export default Root;`;
+export default App;`;
 
   return (
     <div
@@ -186,8 +186,7 @@ export default Root;`;
                 </Button>
               </div>
               <CardDescription>
-                We&apos;ll create a new React app to host our Echo app. This
-                will be the root of your application.
+                We&apos;ll create a new React app to host our Echo app.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -264,8 +263,8 @@ export default Root;`;
                 </Button>
               </div>
               <CardDescription>
-                Import the necessary libraries at the top of your React
-                component file.
+                Import the necessary libraries at the top of your{' '}
+                <code>App.tsx</code>.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -428,6 +427,7 @@ export default Root;`;
               </div>
               <CardDescription>
                 Here&apos;s the complete code combining all the pieces above.
+                Copy and Paste into <code>App.tsx</code> to get started.
               </CardDescription>
             </CardHeader>
             <CardContent>
