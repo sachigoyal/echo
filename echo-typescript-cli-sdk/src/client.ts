@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { EchoConfig, getConfig } from './config';
+import { EchoConfig, getConfig } from './config.js';
 import {
   Balance,
   CreatePaymentLinkRequest,
@@ -9,7 +9,7 @@ import {
   SupportedModel,
   SupportedModelsResponse,
   User,
-} from './types';
+} from './types.js';
 
 export class EchoClient {
   private http: AxiosInstance;
