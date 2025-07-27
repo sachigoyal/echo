@@ -1,6 +1,6 @@
 {
   "name": "@zdql/echo-react-sdk",
-  "version": "0.1.18",
+  "version": "0.1.20",
   "description": "React SDK for Echo OAuth2 + PKCE authentication and token management",
   "type": "module",
   "main": "./dist/index.cjs",
