@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Key, Calendar } from 'lucide-react';
+import { useEffect } from 'react';
+import { Key, Calendar, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApiKeysSettings } from '@/hooks/useApiKeysSettings';
 
@@ -16,6 +17,8 @@ export default function ApiKeysSettings({
 }: ApiKeysSettingsProps) {
   const { apiKeys, loading, error, pagination, fetchApiKeys } =
     useApiKeysSettings(appId);
+  const [copied, setCopied] = React.useState(false);
+  const [apiKeyLink, setApiKeyLink] = React.useState('');
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -25,6 +28,20 @@ export default function ApiKeysSettings({
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  useEffect(() => {
+    setApiKeyLink(`${window.location.origin}/cli-auth?appId=${appId}`);
+  }, [appId]);
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(apiKeyLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+    }
   };
 
   if (loading && !apiKeys.length) {
@@ -49,6 +66,46 @@ export default function ApiKeysSettings({
           <div className="text-sm text-destructive-foreground">{error}</div>
         </div>
       )}
+
+      {/* Customer API Key Creation Link */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <div className="flex items-center mb-4">
+          <ExternalLink className="h-5 w-5 mr-2 text-muted-foreground" />
+          <h4 className="text-sm font-semibold text-foreground">
+            Share API Key Creation Link
+          </h4>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Share this link with your customers so they can create API keys for
+          your app. They'll be automatically enrolled as customers when they
+          visit this link.
+        </p>
+
+        <div className="flex items-center gap-2">
+          <div className="flex-1 px-3 py-2 bg-muted/20 border border-border rounded-lg font-mono text-sm text-foreground">
+            {apiKeyLink}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyToClipboard}
+            className="shrink-0"
+          >
+            {copied ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+            <span className="ml-1">{copied ? 'Copied!' : 'Copy'}</span>
+          </Button>
+          <Button variant="outline" size="sm" asChild className="shrink-0">
+            <a href={apiKeyLink} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4" />
+              <span className="ml-1">Preview</span>
+            </a>
+          </Button>
+        </div>
+      </div>
 
       {/* API Keys List */}
       <div className="bg-card border border-border rounded-xl p-6">
