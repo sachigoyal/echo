@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { EchoSignInProps } from '../types';
 import { useEcho } from '../hooks/useEcho';
 import { sanitizeText } from '../utils/security';
+import { Logo } from './Logo';
 
 export function EchoSignIn({
   onSuccess,
@@ -10,6 +11,7 @@ export function EchoSignIn({
   children,
 }: EchoSignInProps) {
   const { signIn, isAuthenticated, isLoading, user, error } = useEcho();
+  const [isHovered, setIsHovered] = useState(false);
 
   React.useEffect(() => {
     if (isAuthenticated && user && onSuccess) {
@@ -36,7 +38,25 @@ export function EchoSignIn({
   if (isAuthenticated) {
     return (
       <div className={`echo-signin-success ${className}`}>
-        <div>Welcome, {sanitizeText(user?.name || user?.email)}!</div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 16px',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            color: '#334155',
+            fontSize: '14px',
+            fontFamily: 'HelveticaNowDisplay, sans-serif',
+            fontWeight: '800',
+            width: 'fit-content',
+          }}
+        >
+          <Logo width={16} height={16} variant="light" />
+          <span>Signed in as {sanitizeText(user?.name || user?.email)}</span>
+        </div>
       </div>
     );
   }
@@ -53,18 +73,31 @@ export function EchoSignIn({
           disabled={isLoading}
           className="echo-signin-button"
           style={{
-            padding: '12px 24px',
-            backgroundColor: '#cd1b21',
-            color: 'white',
-            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 20px',
+            backgroundColor: isLoading
+              ? '#f3f4f6'
+              : isHovered
+                ? '#f1f5f9'
+                : '#ffffff',
+            color: isLoading ? '#9ca3af' : '#09090b',
+            border: '1px solid #e5e7eb',
             borderRadius: '8px',
             cursor: isLoading ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-            fontWeight: '500',
-            opacity: isLoading ? 0.7 : 1,
+            fontSize: '14px',
+            fontWeight: '800',
+            fontFamily: 'HelveticaNowDisplay, sans-serif',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            backdropFilter: 'blur(8px)',
           }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          {isLoading ? 'Signing in...' : 'Sign in with Echo'}
+          <Logo width={16} height={16} variant="light" />
+          <span>{isLoading ? 'Signing in...' : 'Sign in'}</span>
         </button>
       )}
 
@@ -72,15 +105,22 @@ export function EchoSignIn({
         <div
           className="echo-signin-error"
           style={{
-            marginTop: '8px',
-            padding: '8px 12px',
-            backgroundColor: '#fee2e2',
+            marginTop: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 16px',
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
             color: '#dc2626',
-            borderRadius: '4px',
             fontSize: '14px',
+            fontFamily: 'HelveticaNowDisplay, sans-serif',
+            fontWeight: '800',
+            width: 'fit-content',
           }}
         >
-          {error}
+          <span>{error}</span>
         </div>
       )}
     </div>
