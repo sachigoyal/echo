@@ -60,8 +60,11 @@ export abstract class BaseProvider {
   }
 
   // This is specific to OpenAI Format, Anthropic Native and others will need to override this
-  ensureStreamUsage(reqBody: Record<string, unknown>): Record<string, unknown> {
-    if (this.isStream) {
+  ensureStreamUsage(
+    reqBody: Record<string, unknown>,
+    reqPath: string
+  ): Record<string, unknown> {
+    if (this.isStream && !reqPath.includes('responses')) {
       reqBody.stream_options = {
         include_usage: true,
       };
