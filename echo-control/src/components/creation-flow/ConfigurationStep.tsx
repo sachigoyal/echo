@@ -58,7 +58,13 @@ const ConfigurationStep = ({
 
   const installCommand = 'npm install @zdql/echo-react-sdk openai';
 
-  const importsCode = `import { EchoProvider, useEcho, useEchoOpenAI } from '@zdql/echo-react-sdk';
+  const importsCode = `import {
+  EchoProvider,
+  useEcho,
+  useEchoOpenAI,
+  EchoSignIn,
+  EchoTokenPurchase,
+} from '@zdql/echo-react-sdk';
 import { useState } from 'react';`;
 
   const configCode = `const echoConfig = {
@@ -67,25 +73,32 @@ import { useState } from 'react';`;
 };`;
 
   const chatInterfaceCode = `function ChatInterface() {
-  const { user, signIn, isAuthenticated } = useEcho();
-  const { openai } = useEchoOpenAI();
-
-  const [response, setResponse] = useState('');
-  const [input, setInput] = useState('');
+  const { isAuthenticated } = useEcho()
+  const { openai } = useEchoOpenAI()
+  const [response, setResponse] = useState('')
+  const [input, setInput] = useState('')
 
   const getMessage = async () => {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: input }],
-    });
-    setResponse(response.choices[0].message.content || '');
-  };
+    })
+    setResponse(response.choices[0].message.content || '')
+  }
   
   return (
-    <div>
-      {!isAuthenticated && <button onClick={signIn}>Sign In</button>}
+    <div style={{
+      display: 'flex', 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+      gap: '.5rem',
+      height: '50vh',
+    }}>
+      {isAuthenticated ? <EchoTokenPurchase /> : <EchoSignIn />}
       <input type="text" value={input} onChange={(e) => setInput(e.target.value)} />
-      <button onClick={getMessage}>Get Message</button>
+      <button onClick={getMessage}>Send Message</button>
       <p>{response}</p>
     </div>
   );
@@ -101,47 +114,13 @@ import { useState } from 'react';`;
 
 export default App;`;
 
-  const completeExampleCode = `import { EchoProvider, useEcho, useEchoOpenAI } from '@zdql/echo-react-sdk';
-import { useState } from 'react';
+  const completeExampleCode = `${importsCode}
 
-const echoConfig = {
-  appId: '${createdAppId}',
-  apiUrl: 'https://echo.merit.systems',
-};
+${configCode}
 
-function ChatInterface() {
-  const { signIn, isAuthenticated } = useEcho()
-  const { openai } = useEchoOpenAI()
-  const [response, setResponse] = useState('')
-  const [input, setInput] = useState('')
+${chatInterfaceCode}
 
-  const getMessage = async () => {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: input }],
-    })
-    setResponse(response.choices[0].message.content || '')
-  }
-  
-  return (
-    <div>
-      {!isAuthenticated && <button onClick={signIn}>Sign In</button>}
-      <input type="text" value={input} onChange={(e) => setInput(e.target.value)} />
-      <button onClick={getMessage}>Get Message</button>
-      <p>{response}</p>
-    </div>
-  );
-}
-
-function App() {
-  return (
-    <EchoProvider config={echoConfig}>
-      <ChatInterface />
-    </EchoProvider>
-  );
-}
-
-export default App;`;
+${rootComponentCode}`;
 
   return (
     <div
