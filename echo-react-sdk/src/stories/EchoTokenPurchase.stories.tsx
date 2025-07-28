@@ -18,7 +18,7 @@ const meta: Meta<typeof EchoTokenPurchase> = {
   decorators: [
     Story => (
       <MockEchoProvider mockState={mockStates.authenticated}>
-        <div style={{ padding: '20px' }}>
+        <div style={{ padding: '20px', minHeight: '100px', height: '100px' }}>
           <Story />
         </div>
       </MockEchoProvider>
@@ -124,7 +124,7 @@ export const WithCallbacks: Story = {
 export const UnauthenticatedState: Story = {
   decorators: [
     Story => (
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '20px', minHeight: '600px', height: '100vh' }}>
         <p style={{ marginBottom: '16px', color: '#666' }}>
           This shows how the component appears when the user is not signed in:
         </p>

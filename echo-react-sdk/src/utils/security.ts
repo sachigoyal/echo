@@ -35,7 +35,6 @@ const purify = (() => {
       return DOMPurify(window);
     } catch (error) {
       // Fallback if JSDOM is not available
-      console.warn('JSDOM not available, using fallback sanitization');
       return {
         sanitize: (dirty: string) => dirty.replace(/<[^>]*>/g, ''),
       } as typeof DOMPurify;

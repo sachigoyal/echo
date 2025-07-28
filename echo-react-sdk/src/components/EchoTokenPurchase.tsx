@@ -1,7 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { EchoTokenPurchaseProps } from '../types';
 import { useEcho } from '../hooks/useEcho';
 import { openPaymentFlow } from '../utils/security';
+import { Logo } from './Logo';
+
+// Separate component for custom amount input to prevent parent re-renders
+const CustomAmountInput = ({
+  onAddCredits,
+  onCancel,
+  isProcessing,
+}: {
+  onAddCredits: (amount: number) => void;
+  onCancel: () => void;
+  isProcessing: boolean;
+}) => {
+  const [amount, setAmount] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  const handleAddCredits = () => {
+    const purchaseAmount = Number(amount);
+    if (purchaseAmount > 0) {
+      onAddCredits(purchaseAmount);
+    }
+  };
+
+  const isValidAmount = amount !== '' && Number(amount) > 0;
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: '8px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span
+          style={{
+            fontSize: '14px',
+            color: '#6b7280',
+            fontFamily: 'HelveticaNowDisplay, sans-serif',
+          }}
+        >
+          $
+        </span>
+        <input
+          ref={inputRef}
+          type="number"
+          placeholder="0.00"
+          value={amount}
+          onChange={e => setAmount(e.target.value)}
+          style={{
+            width: '96px',
+            textAlign: 'right',
+            padding: '8px 12px',
+            border: '1px solid #e5e7eb',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontFamily: 'HelveticaNowDisplay, sans-serif',
+            outline: 'none',
+            backgroundColor: '#ffffff',
+          }}
+          min="1"
+          step="0.01"
+        />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button
+          onClick={onCancel}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: 'transparent',
+            color: '#6b7280',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '14px',
+            cursor: 'pointer',
+            fontFamily: 'HelveticaNowDisplay, sans-serif',
+            textDecoration: 'none',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = '#111827';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = '#6b7280';
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleAddCredits}
+          disabled={isProcessing || !isValidAmount}
+          style={{
+            padding: '8px 16px',
+            backgroundColor:
+              isProcessing || !isValidAmount ? '#9ca3af' : '#dc2626',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: isProcessing || !isValidAmount ? 'not-allowed' : 'pointer',
+            fontFamily: 'HelveticaNowDisplay, sans-serif',
+          }}
+          onMouseEnter={e => {
+            if (!isProcessing && isValidAmount) {
+              e.currentTarget.style.backgroundColor = '#b91c1c';
+            }
+          }}
+          onMouseLeave={e => {
+            if (!isProcessing && isValidAmount) {
+              e.currentTarget.style.backgroundColor = '#dc2626';
+            }
+          }}
+        >
+          {isProcessing ? 'Processing...' : 'Add Credits'}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export function EchoTokenPurchase({
   amount = 100,
@@ -14,8 +139,17 @@ export function EchoTokenPurchase({
     useEcho();
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showCustomAmount, setShowCustomAmount] = useState(false);
 
-  const handlePurchase = async () => {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  };
+
+  const handlePurchase = async (purchaseAmount: number) => {
     if (!isAuthenticated) {
       const error = new Error('Please sign in to purchase tokens');
       setPurchaseError(error.message);
@@ -27,13 +161,14 @@ export function EchoTokenPurchase({
       setIsProcessing(true);
       setPurchaseError(null);
 
-      const paymentUrl = await createPaymentLink(amount);
+      const paymentUrl = await createPaymentLink(purchaseAmount);
 
-      // Use CSP-compatible payment flow instead of direct window.open()
       await openPaymentFlow(paymentUrl, {
         onComplete: async () => {
           try {
             await refreshBalance();
+            setIsModalOpen(false);
+            setShowCustomAmount(false);
             if (onPurchaseComplete && balance) {
               onPurchaseComplete(balance);
             }
@@ -66,6 +201,12 @@ export function EchoTokenPurchase({
     }
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setShowCustomAmount(false);
+    setPurchaseError(null);
+  };
+
   if (!isAuthenticated) {
     return (
       <div className={`echo-token-purchase ${className}`}>
@@ -85,81 +226,295 @@ export function EchoTokenPurchase({
     );
   }
 
-  return (
-    <div className={`echo-token-purchase ${className}`}>
-      <div
-        className="echo-token-purchase-info"
-        style={{ marginBottom: '16px' }}
+  // Compact button that exactly matches BalanceCard compact version
+  const CompactButton = () => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className={`echo-token-purchase-compact ${className}`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 12px',
+          borderRadius: '8px',
+          backgroundColor: isHovered ? '#f1f5f9' : '#ffffff',
+          border: '1px solid #e5e7eb',
+          color: '#09090b',
+          fontSize: '14px',
+          fontWeight: '800',
+          cursor: 'pointer',
+          backdropFilter: 'blur(8px)',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+          height: '40px',
+          fontFamily: 'HelveticaNowDisplay, sans-serif',
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {balance && (
-          <div
+        {/* Logo */}
+        <Logo width={16} height={16} variant="light" />
+        <span>
+          {balance ? formatCurrency(balance.credits) : 'Purchase Tokens'}
+        </span>
+        {/* Arrow Up Right Icon - matching lucide-react ArrowUpRight */}
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            color: isHovered ? '#dc2626' : '#6b7280',
+            transition: 'color 0.2s ease',
+          }}
+        >
+          <path d="M7 7h10v10" />
+          <path d="M7 17 17 7" />
+        </svg>
+      </button>
+    );
+  };
+
+  // Modal with credit purchase card design
+  const Modal = () => (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '16px',
+      }}
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          closeModal();
+        }
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb',
+          padding: '0',
+          width: '100%',
+          maxWidth: '450px',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          boxShadow:
+            '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          fontFamily: 'HelveticaNowDisplay, sans-serif',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '320px',
+        }}
+      >
+        {/* Header */}
+        <div style={{ padding: '24px 24px 0 24px', marginBottom: '24px' }}>
+          <h2
             style={{
-              fontSize: '14px',
-              color: '#6b7280',
-              marginBottom: '8px',
+              fontSize: '18px',
+              fontWeight: '500',
+              color: '#111827',
+              margin: 0,
+              fontFamily: 'HelveticaNowDisplay, sans-serif',
             }}
           >
-            Current balance: {balance.credits} {balance.currency}
+            Credits
+          </h2>
+        </div>
+
+        {/* Current Balance and Purchase Section */}
+        <div
+          style={{
+            marginBottom: '24px',
+            padding: '0 24px',
+            flex: '1 1 0%',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div style={{ flex: '1 1 0%', minWidth: '0' }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  margin: '0 0 4px 0',
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                Current Balance
+              </p>
+              <p
+                style={{
+                  fontSize: '30px',
+                  fontWeight: '700',
+                  color: '#111827',
+                  margin: 0,
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                {balance ? formatCurrency(balance.credits) : '$0.00'}
+              </p>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '12px',
+              }}
+            >
+              {!showCustomAmount ? (
+                <>
+                  <button
+                    onClick={() => handlePurchase(10)}
+                    disabled={isProcessing}
+                    style={{
+                      padding: '10px 24px',
+                      backgroundColor: isProcessing ? '#9ca3af' : '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: isProcessing ? 'not-allowed' : 'pointer',
+                      transition: 'background-color 0.2s ease',
+                      fontFamily: 'HelveticaNowDisplay, sans-serif',
+                    }}
+                    onMouseEnter={e => {
+                      if (!isProcessing) {
+                        e.currentTarget.style.backgroundColor = '#b91c1c';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isProcessing) {
+                        e.currentTarget.style.backgroundColor = '#dc2626';
+                      }
+                    }}
+                  >
+                    {isProcessing ? 'Processing...' : 'Add $10 Credits'}
+                  </button>
+                  <button
+                    onClick={() => setShowCustomAmount(true)}
+                    style={{
+                      fontSize: '14px',
+                      color: '#6b7280',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      fontFamily: 'HelveticaNowDisplay, sans-serif',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.color = '#111827';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.color = '#6b7280';
+                    }}
+                  >
+                    Choose different amount
+                  </button>
+                </>
+              ) : (
+                <CustomAmountInput
+                  onAddCredits={handlePurchase}
+                  onCancel={() => setShowCustomAmount(false)}
+                  isProcessing={isProcessing}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {purchaseError && (
+          <div
+            style={{
+              margin: '0 24px 16px 24px',
+              padding: '8px 12px',
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontFamily: 'HelveticaNowDisplay, sans-serif',
+            }}
+          >
+            {purchaseError}
           </div>
         )}
 
+        {/* Close Button */}
         <div
           style={{
-            fontSize: '16px',
-            fontWeight: '500',
-            color: '#374151',
+            padding: '16px 24px 24px 24px',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: 'auto',
           }}
         >
-          Purchase {amount} tokens
+          <button
+            onClick={closeModal}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#f3f4f6',
+              color: '#374151',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              fontFamily: 'HelveticaNowDisplay, sans-serif',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#e5e7eb';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = '#f3f4f6';
+            }}
+          >
+            Close
+          </button>
         </div>
       </div>
+    </div>
+  );
 
+  return (
+    <>
       {children ? (
         <div
-          onClick={handlePurchase}
+          onClick={() => setIsModalOpen(true)}
           style={{
-            cursor: isProcessing ? 'not-allowed' : 'pointer',
-            opacity: isProcessing ? 0.7 : 1,
+            cursor: 'pointer',
           }}
         >
           {children}
         </div>
       ) : (
-        <button
-          onClick={handlePurchase}
-          disabled={isProcessing}
-          className="echo-token-purchase-button"
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#1f9ae0',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: isProcessing ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-            fontWeight: '500',
-            opacity: isProcessing ? 0.7 : 1,
-          }}
-        >
-          {isProcessing ? 'Processing...' : `Purchase ${amount} Tokens`}
-        </button>
+        <CompactButton />
       )}
 
-      {purchaseError && (
-        <div
-          className="echo-token-purchase-error"
-          style={{
-            marginTop: '8px',
-            padding: '8px 12px',
-            backgroundColor: '#fee2e2',
-            color: '#dc2626',
-            borderRadius: '4px',
-            fontSize: '14px',
-          }}
-        >
-          {purchaseError}
-        </div>
-      )}
-    </div>
+      {isModalOpen && <Modal />}
+    </>
   );
 }

@@ -65,11 +65,11 @@ describe('Component Security Integration', () => {
       renderWithEcho(<EchoSignIn />, { mockUserManager });
 
       await waitFor(() => {
-        expect(screen.getByText(/Welcome/)).toBeInTheDocument();
+        expect(screen.getByText(/Signed in as/)).toBeInTheDocument();
       });
 
       // Verify no script tags in DOM
-      const welcomeElement = screen.getByText(/Welcome/);
+      const welcomeElement = screen.getByText(/Signed in as/);
       expect(welcomeElement.innerHTML).not.toContain('<script>');
       expect(welcomeElement.innerHTML).not.toContain('alert');
 
@@ -94,10 +94,10 @@ describe('Component Security Integration', () => {
       renderWithEcho(<EchoSignIn />, { mockUserManager });
 
       await waitFor(() => {
-        expect(screen.getByText(/Welcome/)).toBeInTheDocument();
+        expect(screen.getByText(/Signed in as/)).toBeInTheDocument();
       });
 
-      const welcomeElement = screen.getByText(/Welcome/);
+      const welcomeElement = screen.getByText(/Signed in as/);
       expect(welcomeElement.innerHTML).not.toContain('<img');
       expect(welcomeElement.innerHTML).not.toContain('onerror');
     });
@@ -152,16 +152,26 @@ describe('Component Security Integration', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/Purchase.*Tokens/)).toBeInTheDocument();
+        expect(screen.getByRole('button')).toBeInTheDocument();
       });
 
-      const purchaseButton = screen.getByText(/Purchase.*Tokens/);
+      const purchaseButton = screen.getByRole('button');
       await userEvent.click(purchaseButton);
+
+      // Should open the modal with purchase options
+      await waitFor(() => {
+        expect(screen.getByText('Credits')).toBeInTheDocument();
+        expect(screen.getByText('Add $10 Credits')).toBeInTheDocument();
+      });
+
+      // Click the Add Credits button to trigger the payment flow
+      const addCreditsButton = screen.getByText('Add $10 Credits');
+      await userEvent.click(addCreditsButton);
 
       // Should attempt to open payment flow (which will be mocked)
       await waitFor(() => {
         expect(window.open).toHaveBeenCalledWith(
-          expect.stringContaining('stripe.com/payment-link/mock-100'),
+          expect.stringContaining('stripe.com/payment-link/mock-10'),
           'echo-payment',
           'width=600,height=700,scrollbars=yes,resizable=yes'
         );
@@ -181,10 +191,10 @@ describe('Component Security Integration', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/Purchase.*Tokens/)).toBeInTheDocument();
+        expect(screen.getByRole('button')).toBeInTheDocument();
       });
 
-      const purchaseButton = screen.getByText(/Purchase.*Tokens/);
+      const purchaseButton = screen.getByRole('button');
 
       // Should handle malicious URL gracefully without throwing
       await expect(async () => {
@@ -216,16 +226,35 @@ describe('Component Security Integration', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/Purchase.*Tokens/)).toBeInTheDocument();
+        expect(screen.getByRole('button')).toBeInTheDocument();
       });
 
-      const purchaseButton = screen.getByText(/Purchase.*Tokens/);
+      const purchaseButton = screen.getByRole('button');
       await userEvent.click(purchaseButton);
 
-      // Should show error due to invalid amount (MSW handler validates this)
+      // Should open the modal with purchase options
       await waitFor(() => {
-        expect(screen.getByText(/invalid_amount/i)).toBeInTheDocument();
+        expect(screen.getByText('Credits')).toBeInTheDocument();
+        expect(screen.getByText('Add $10 Credits')).toBeInTheDocument();
       });
+
+      // Click "Choose different amount" to enable custom amount input
+      const chooseDifferentAmountButton = screen.getByText(
+        'Choose different amount'
+      );
+      await userEvent.click(chooseDifferentAmountButton);
+
+      // Enter the malicious negative amount
+      const amountInput = screen.getByRole('spinbutton');
+      await userEvent.clear(amountInput);
+      await userEvent.type(amountInput, '-100');
+
+      // Verify that the "Add Credits" button is disabled for invalid amounts
+      const addCreditsButton = screen.getByText('Add Credits');
+      expect(addCreditsButton).toBeDisabled();
+
+      // The component should prevent clicking when amount is invalid
+      // This is client-side protection against amount manipulation
     });
   });
 
