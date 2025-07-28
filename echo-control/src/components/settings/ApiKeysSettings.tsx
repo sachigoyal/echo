@@ -77,8 +77,8 @@ export default function ApiKeysSettings({
         </div>
         <p className="text-sm text-muted-foreground mb-4">
           Share this link with your customers so they can create API keys for
-          your app. They'll be automatically enrolled as customers when they
-          visit this link.
+          your app. They&apos;ll be automatically enrolled as customers when
+          they visit this link.
         </p>
 
         <div className="flex items-center gap-2">

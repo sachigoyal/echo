@@ -135,7 +135,7 @@ const SettingsPage: React.FC = () => {
       case 'users':
         return <UsersSettings appId={appId} />;
       case 'documentation':
-        return <DocumentationSettings appId={appId} />;
+        return <DocumentationSettings />;
       case 'security':
         return <SecuritySettings appId={appId} />;
       default:

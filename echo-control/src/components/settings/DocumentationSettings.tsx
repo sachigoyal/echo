@@ -1,15 +1,8 @@
 'use client';
 
 import React from 'react';
-import { BookOpen } from 'lucide-react';
 
-interface DocumentationSettingsProps {
-  appId: string;
-}
-
-export default function DocumentationSettings({
-  appId,
-}: DocumentationSettingsProps) {
+export default function DocumentationSettings() {
   return (
     <div className="space-y-6">
       <div>
