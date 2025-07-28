@@ -5,7 +5,10 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      // Use React 18 JSX runtime to ensure compatibility
+      jsxRuntime: 'automatic',
+    }),
     dts({
       insertTypesEntry: true,
       rollupTypes: true,
@@ -33,6 +36,8 @@ export default defineConfig({
       external: [
         'react',
         'react-dom',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
         'openai',
         // Node.js modules that should not be bundled for browser
         'inquirer',
@@ -59,6 +64,8 @@ export default defineConfig({
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          'react/jsx-runtime': 'jsxRuntime',
+          'react/jsx-dev-runtime': 'jsxDevRuntime',
           openai: 'OpenAI',
         },
       },
@@ -68,5 +75,7 @@ export default defineConfig({
   },
   esbuild: {
     target: 'es2020',
+    // Ensure JSX runtime is preserved as external
+    jsx: 'preserve',
   },
 });

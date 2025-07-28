@@ -61,15 +61,27 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [userManager] = useState(() => {
+  const [userManager, setUserManager] = useState<UserManager | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Handle client-side mounting
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Initialize UserManager only on client-side
+  useEffect(() => {
+    if (!isClient) {
+      return;
+    }
+
     // Check for existing mock UserManager in tests
-    if (
-      typeof window !== 'undefined' &&
-      (window as typeof window & { __echoUserManager?: unknown })
-        .__echoUserManager
-    ) {
-      return (window as typeof window & { __echoUserManager?: UserManager })
-        .__echoUserManager;
+    const existingManager = (
+      window as typeof window & { __echoUserManager?: UserManager }
+    ).__echoUserManager;
+    if (existingManager) {
+      setUserManager(existingManager);
+      return;
     }
 
     const apiUrl = config.apiUrl || 'http://localhost:3000';
@@ -77,7 +89,6 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       authority: apiUrl,
       client_id: config.appId,
       redirect_uri: config.redirectUri || window.location.origin,
-      response_type: 'code',
       scope: config.scope || 'llm:invoke offline_access',
 
       // Automatic token renewal configuration
@@ -106,14 +117,11 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     const manager = new UserManager(settings);
 
     // Make UserManager available globally for JWT testing
-    if (typeof window !== 'undefined') {
-      (
-        window as Window & { __echoUserManager?: UserManager }
-      ).__echoUserManager = manager;
-    }
+    (window as Window & { __echoUserManager?: UserManager }).__echoUserManager =
+      manager;
 
-    return manager;
-  });
+    setUserManager(manager);
+  }, [isClient, config.appId, config.apiUrl, config.redirectUri, config.scope]);
 
   const isAuthenticated = user !== null;
 
@@ -291,9 +299,14 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   // Initialize and handle OAuth callback
   useEffect(() => {
     const initializeAuth = async () => {
-      if (!userManager) {
+      // If not on client-side, just set loading to false
+      if (!isClient) {
         setIsLoading(false);
         return;
+      }
+
+      if (!userManager) {
+        return; // Keep loading until userManager is initialized
       }
 
       try {
@@ -330,7 +343,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     };
 
     initializeAuth();
-  }, [userManager, loadUserData]);
+  }, [isClient, userManager, loadUserData]);
 
   // Set up event listeners for token events
   useEffect(() => {
