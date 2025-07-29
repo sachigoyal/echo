@@ -12,6 +12,7 @@ import {
   Users,
   DollarSign,
   Palette,
+  BookOpen,
 } from 'lucide-react';
 
 // Import individual settings components
@@ -22,6 +23,7 @@ import AnalyticsSettings from '@/components/settings/AnalyticsSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import UsersSettings from '@/components/settings/UsersSettings';
 import EarningsSettings from '@/components/settings/EarningsSettings';
+import DocumentationSettings from '@/components/settings/DocumentationSettings';
 
 interface SidebarItem {
   id: string;
@@ -36,6 +38,12 @@ const sidebarItems: SidebarItem[] = [
     label: 'General',
     icon: <Settings className="h-4 w-4" />,
     description: 'Markup settings and basic configuration',
+  },
+  {
+    id: 'documentation',
+    label: 'Documentation',
+    icon: <BookOpen className="h-4 w-4" />,
+    description: 'Manage documentation links and guides for your app',
   },
   {
     id: 'personalization',
@@ -126,6 +134,8 @@ const SettingsPage: React.FC = () => {
         return <EarningsSettings appId={appId} />;
       case 'users':
         return <UsersSettings appId={appId} />;
+      case 'documentation':
+        return <DocumentationSettings />;
       case 'security':
         return <SecuritySettings appId={appId} />;
       default:
