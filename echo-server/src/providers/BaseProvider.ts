@@ -64,7 +64,7 @@ export abstract class BaseProvider {
     reqBody: Record<string, unknown>,
     reqPath: string
   ): Record<string, unknown> {
-    if (this.isStream && !reqPath.includes('responses')) {
+    if (this.isStream) {
       reqBody.stream_options = {
         include_usage: true,
       };
