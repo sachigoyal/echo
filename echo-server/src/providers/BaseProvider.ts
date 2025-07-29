@@ -9,6 +9,7 @@ export abstract class BaseProvider {
     'https://generativelanguage.googleapis.com/';
   protected readonly GEMINI_GPT_BASE_URL =
     'https://generativelanguage.googleapis.com/v1beta/openai';
+  protected readonly OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
   private readonly echoControlService: EchoControlService;
   private readonly isStream: boolean;
