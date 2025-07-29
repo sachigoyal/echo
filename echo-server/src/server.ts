@@ -100,7 +100,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     );
 
     // make sure that streamUsage is set to true (openAI Format)
-    req.body = provider.ensureStreamUsage(req.body);
+    req.body = provider.ensureStreamUsage(req.body, req.path);
 
     // Forward the request to Base Url API
     const response = await fetch(
@@ -189,7 +189,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // Error handling middleware
-app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((error: Error, req: Request, res: Response) => {
   console.error('Error handling request:', error);
 
   if (error instanceof HttpError) {

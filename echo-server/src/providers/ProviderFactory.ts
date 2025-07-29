@@ -9,6 +9,7 @@ import { GeminiProvider } from './GeminiProvider';
 import { GPTProvider } from './GPTProvider';
 import { ProviderType } from './ProviderType';
 import { GeminiGPTProvider } from './GeminiGPTProvider';
+import { OpenAIResponsesProvider } from './OpenAIResponsesProvider';
 
 /**
  * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
@@ -64,10 +65,14 @@ export const getProvider = (
     throw new UnknownModelError(`Unknown model: ${model}`);
   }
 
+  // Check if this is a Responses API endpoint
+  if (completionPath.includes('responses')) {
+    type = ProviderType.OPENAI_RESPONSES;
+  }
   // We select for Anthropic Native if the completionPath includes "messages"
   // The OpenAI Format does not hit /v1/messages, it hits /v1/chat/completions
   // but the anthropic native format hits /v1/messages
-  if (
+  else if (
     type === ProviderType.ANTHROPIC_GPT &&
     completionPath.includes('messages')
   ) {
@@ -89,6 +94,8 @@ export const getProvider = (
       return new GeminiProvider(echoControlService, stream, model);
     case ProviderType.GEMINI_GPT:
       return new GeminiGPTProvider(echoControlService, stream, model);
+    case ProviderType.OPENAI_RESPONSES:
+      return new OpenAIResponsesProvider(echoControlService, stream, model);
     default:
       throw new Error(`Unknown provider type: ${type}`);
   }
