@@ -1,15 +1,22 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import open from 'open';
-import { EchoClient } from './client.js';
-import type { EchoApp, Balance, CreatePaymentLinkResponse } from './types.js';
-
-// Re-export the Balance type from types.ts as EchoBalance for backwards compatibility
-export type EchoBalance = Balance;
+import { EchoClient } from '@zdql/echo-typescript-sdk';
+import type {
+  CreatePaymentLinkResponse,
+  Balance,
+} from '@zdql/echo-typescript-sdk';
+import { OpenAI } from 'openai';
+import { ECHO_APP_CONFIG } from './config.js';
+import * as fs from 'fs';
+import * as path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export interface LoginOptions {
   baseUrl?: string;
   silent?: boolean;
+  apiKey?: string;
 }
 
 export interface PaymentOptions {
@@ -23,7 +30,10 @@ export interface PaymentOptions {
  * @throws {Error} If no valid authentication is found
  */
 export async function getAuthenticatedEchoClient(): Promise<EchoClient> {
-  return new EchoClient({ apiKey: process.env.ECHO_API_KEY ?? '' });
+  return new EchoClient({
+    apiKey: process.env.ECHO_API_KEY ?? '',
+    baseUrl: process.env.ECHO_BASE_URL || 'https://echo.merit.systems',
+  });
 }
 
 /**
@@ -31,18 +41,80 @@ export async function getAuthenticatedEchoClient(): Promise<EchoClient> {
  * @param options - Login configuration options
  * @returns Promise that resolves when login is complete
  */
+function writeApiKeyToEnv(apiKey: string): void {
+  const envPath = path.join(process.cwd(), '.env');
+  let envContent = '';
+
+  // Read existing .env if it exists
+  if (fs.existsSync(envPath)) {
+    envContent = fs.readFileSync(envPath, 'utf8');
+  }
+
+  // Check if ECHO_API_KEY already exists
+  const lines = envContent.split('\n');
+  let foundApiKey = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line && line.startsWith('ECHO_API_KEY=')) {
+      lines[i] = `ECHO_API_KEY=${apiKey}`;
+      foundApiKey = true;
+      break;
+    }
+  }
+
+  // If ECHO_API_KEY doesn't exist, add it
+  if (!foundApiKey) {
+    // Add a newline if file exists and doesn't end with one
+    if (envContent && !envContent.endsWith('\n')) {
+      lines.push('');
+    }
+    lines.push(`ECHO_API_KEY=${apiKey}`);
+  }
+
+  // Write back to .env
+  fs.writeFileSync(envPath, lines.join('\n'));
+}
+
 export async function loginToEcho(options: LoginOptions = {}): Promise<void> {
   const {
-    baseUrl = process.env.ECHO_BASE_URL || 'http://localhost:3000',
+    baseUrl = process.env.ECHO_BASE_URL || 'https://echo.merit.systems',
     silent = false,
+    apiKey,
   } = options;
+
+  // If API key is provided, write it to .env and skip browser flow
+  if (apiKey) {
+    try {
+      writeApiKeyToEnv(apiKey);
+      if (!silent) {
+        console.log(chalk.green('✅ API key saved to .env file'));
+        console.log(
+          chalk.green(
+            '🎉 Authentication complete! You can now use Echo features.'
+          )
+        );
+      }
+      return;
+    } catch (error) {
+      if (!silent) {
+        console.log(
+          chalk.red(
+            '❌ Failed to save API key: ' +
+              (error instanceof Error ? error.message : 'Unknown error')
+          )
+        );
+      }
+      throw error;
+    }
+  }
 
   if (!silent) {
     console.log(chalk.blue('🔐 Echo Authentication'));
     console.log();
   }
 
-  const authUrl = `${baseUrl}/cli-auth`;
+  const authUrl = `${baseUrl}/cli-auth?appId=${ECHO_APP_CONFIG.appId}`;
 
   if (!silent) {
     console.log(
@@ -74,40 +146,45 @@ export async function loginToEcho(options: LoginOptions = {}): Promise<void> {
     console.log(chalk.cyan('3. Generate a new app-scoped API key'));
     console.log(chalk.cyan('4. Copy the API key'));
     console.log();
-    console.log(
-      chalk.yellow(
-        'Once you have your API key, run this command in your terminal:'
-      )
-    );
-    console.log(chalk.green('export ECHO_API_KEY="your_api_key_here"'));
-    console.log();
-    console.log(
-      chalk.gray('Replace "your_api_key_here" with your actual API key')
-    );
-    console.log(chalk.gray('Then run your Echo CLI command again.'));
-    console.log();
   }
 
-  // Check if API key is already set in environment
-  const cleanApiKey = process.env.ECHO_API_KEY?.trim();
+  // Wait for user to input their API key
+  const answer = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'apiKey',
+      message: 'Paste your API key here:',
+      validate: (input: string) => {
+        if (!input || input.trim().length === 0) {
+          return 'API key is required';
+        }
+        return true;
+      },
+    },
+  ]);
 
-  if (!cleanApiKey) {
-    const message =
-      'No API key found. Please export ECHO_API_KEY environment variable first.';
+  const userApiKey = answer.apiKey.trim();
+
+  try {
+    writeApiKeyToEnv(userApiKey);
     if (!silent) {
-      console.log(chalk.red('❌ ' + message));
-      console.log(chalk.yellow('Run: export ECHO_API_KEY="your_api_key_here"'));
+      console.log(chalk.green('✅ API key saved to .env file'));
+      console.log(
+        chalk.green(
+          '🎉 Authentication complete! You can now use Echo features.'
+        )
+      );
     }
-  }
-
-  // Store the API key
-  process.env.ECHO_API_KEY = cleanApiKey;
-  if (!silent) {
-    console.log(chalk.green('🔑 API key stored securely'));
-    console.log();
-    console.log(
-      chalk.green('🎉 Authentication complete! You can now use Echo features.')
-    );
+  } catch (error) {
+    if (!silent) {
+      console.log(
+        chalk.red(
+          '❌ Failed to save API key: ' +
+            (error instanceof Error ? error.message : 'Unknown error')
+        )
+      );
+    }
+    throw error;
   }
 }
 
@@ -123,62 +200,13 @@ export async function logoutFromEcho(silent: boolean = false): Promise<void> {
 }
 
 /**
- * Get list of Echo applications
- * @param silent - Whether to suppress console output
- * @returns Promise that resolves to array of Echo apps
- */
-export async function listEchoApps(
-  silent: boolean = false
-): Promise<EchoApp[]> {
-  const client = await getAuthenticatedEchoClient();
-
-  if (!silent) {
-    console.log(chalk.blue('📱 Fetching your Echo apps...'));
-  }
-
-  const echoApps = await client.listEchoApps();
-
-  if (!silent) {
-    if (echoApps.length === 0) {
-      console.log(chalk.yellow('No Echo apps found. Create one first!'));
-      return echoApps;
-    }
-
-    console.log(chalk.green(`\n✅ Found ${echoApps.length} Echo app(s):\n`));
-
-    echoApps.forEach((app, index) => {
-      console.log(
-        `${chalk.bold(`${index + 1}. ${app.name}`)} ${chalk.gray(`(${app.id})`)}`
-      );
-      if (app.description) {
-        console.log(`   ${chalk.gray(app.description)}`);
-      }
-      console.log(
-        `   Status: ${app.isActive ? chalk.green('Active') : chalk.red('Inactive')}`
-      );
-      if (app.totalTokens !== undefined) {
-        console.log(
-          `   Tokens: ${chalk.blue(app.totalTokens.toLocaleString())}`
-        );
-      }
-      if (app.totalCost !== undefined) {
-        console.log(`   Cost: ${chalk.green(`$${app.totalCost.toFixed(4)}`)}`);
-      }
-      console.log();
-    });
-  }
-
-  return echoApps;
-}
-
-/**
  * Get Echo account balance
  * @param silent - Whether to suppress console output
  * @returns Promise that resolves to balance information
  */
 export async function getEchoBalance(
   silent: boolean = false
-): Promise<EchoBalance> {
+): Promise<Balance> {
   const client = await getAuthenticatedEchoClient();
 
   if (!silent) {
@@ -214,7 +242,8 @@ export async function createEchoPaymentLink(
         type: 'number',
         name: 'amount',
         message: 'Enter the amount in USD:',
-        validate: input => input > 0 || 'Amount must be greater than 0',
+        validate: (input: number) =>
+          input > 0 || 'Amount must be greater than 0',
       },
       {
         type: 'input',
@@ -247,9 +276,28 @@ export async function createEchoPaymentLink(
   if (interactive) {
     console.log(chalk.green('✅ Payment link generated successfully!'));
     console.log(chalk.blue(`🔗 Link: ${response.paymentLink.url}`));
+    open(response.paymentLink.url); // open the payment link in the browser
   }
 
   return response;
+}
+
+export async function useModel(
+  message: string,
+  model: string = 'gpt-4o-mini'
+): Promise<string> {
+  const openai = new OpenAI({
+    apiKey: process.env.ECHO_API_KEY,
+    baseURL: 'https://echo.router.merit.systems/' + ECHO_APP_CONFIG.appId,
+  });
+
+  const response = await openai.chat.completions.create({
+    model: model,
+    messages: [{ role: 'user', content: message }],
+  });
+
+  console.log(response.choices[0]?.message?.content);
+  return response.choices[0]?.message?.content ?? '';
 }
 
 /**
