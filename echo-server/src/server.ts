@@ -11,6 +11,7 @@ import {
   extractIsStream,
   extractModelName,
 } from './services/RequestDataService';
+import { extractAppIdFromPath } from './services/PathDataService';
 
 dotenv.config();
 
@@ -57,10 +58,26 @@ function duplicateStream(
 // Main route handler
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Extract app ID from path if present
+    const { appId, remainingPath } = extractAppIdFromPath(req.path);
+
+    // Use the remaining path for provider forwarding, or original path if no app ID found
+    const forwardingPath = appId ? remainingPath : req.path;
+
     // Process headers and instantiate provider
     const [processedHeaders, echoControlService] = await verifyUserHeaderCheck(
       req.headers as Record<string, string>
     );
+
+    if (appId) {
+      const authResult = echoControlService.getAuthResult();
+      if (!authResult?.echoAppId || authResult.echoAppId !== appId) {
+        return res.status(401).json({
+          error: 'Unauthorized use of this app.',
+        });
+      }
+    }
+
     // assumption that "model" will always be passed in the body under this key
     // assumption that "stream" will always be passed in the body under this key
     // This currently works for everything implemented (OpenAI format + Anthropic native format)
@@ -76,7 +93,12 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
     const isStream = extractIsStream(req);
 
-    const provider = getProvider(model, echoControlService, isStream, req.path);
+    const provider = getProvider(
+      model,
+      echoControlService,
+      isStream,
+      forwardingPath
+    );
 
     if (!provider.supportsStream() && isStream) {
       return res.status(422).json({
@@ -95,16 +117,16 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
     console.log(
       'new outbound request',
-      `${provider.getBaseUrl(req.path)}${req.path}`,
+      `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
       req.method
     );
 
     // make sure that streamUsage is set to true (openAI Format)
-    req.body = provider.ensureStreamUsage(req.body, req.path);
+    req.body = provider.ensureStreamUsage(req.body, forwardingPath);
 
     // Forward the request to Base Url API
     const response = await fetch(
-      `${provider.getBaseUrl(req.path)}${req.path}`,
+      `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
       {
         method: req.method,
         headers: authenticatedHeaders,
