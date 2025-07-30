@@ -1,6 +1,7 @@
 import { UnknownModelError } from '../errors/http';
 import type { EchoControlService } from '../services/EchoControlService';
 import modelPricesData from '../../model_prices.json';
+import openRouterModelPrices from '../../open_router_model_prices.json';
 
 import { AnthropicGPTProvider } from './AnthropicGPTProvider';
 import { AnthropicNativeProvider } from './AnthropicNativeProvider';
@@ -10,6 +11,7 @@ import { GPTProvider } from './GPTProvider';
 import { ProviderType } from './ProviderType';
 import { GeminiGPTProvider } from './GeminiGPTProvider';
 import { OpenAIResponsesProvider } from './OpenAIResponsesProvider';
+import { OpenRouterProvider } from './OpenRouterProvider';
 
 /**
  * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
@@ -46,6 +48,18 @@ const createModelToProviderMapping = (): Record<string, ProviderType> => {
   return mapping;
 };
 
+const createOpenRouterModelToProviderMapping = (): Record<
+  string,
+  ProviderType
+> => {
+  const mapping: Record<string, ProviderType> = {};
+
+  for (const model of openRouterModelPrices['data']) {
+    mapping[model.id] = ProviderType.OPENROUTER;
+  }
+
+  return mapping;
+};
 /**
  * Model-to-provider mapping loaded from model_prices_and_context_window.json
  * This replaces the previous hardcoded mapping and automatically includes all
@@ -54,13 +68,22 @@ const createModelToProviderMapping = (): Record<string, ProviderType> => {
 export const MODEL_TO_PROVIDER: Record<string, ProviderType> =
   createModelToProviderMapping();
 
+export const OPEN_ROUTER_MODEL_TO_PROVIDER: Record<string, ProviderType> =
+  createOpenRouterModelToProviderMapping();
+
 export const getProvider = (
   model: string,
   echoControlService: EchoControlService,
   stream: boolean,
   completionPath: string
 ): BaseProvider => {
+  // First check if the model is in the model to provider mapping
   let type = MODEL_TO_PROVIDER[model];
+  // If the model is not in the model to provider mapping, check if it is in the OpenRouter model to provider mapping
+  if (type === undefined) {
+    type = OPEN_ROUTER_MODEL_TO_PROVIDER[model];
+  }
+  // If the model is not in either mapping, throw an error
   if (type === undefined) {
     throw new UnknownModelError(`Unknown model: ${model}`);
   }
@@ -96,6 +119,8 @@ export const getProvider = (
       return new GeminiGPTProvider(echoControlService, stream, model);
     case ProviderType.OPENAI_RESPONSES:
       return new OpenAIResponsesProvider(echoControlService, stream, model);
+    case ProviderType.OPENROUTER:
+      return new OpenRouterProvider(echoControlService, stream, model);
     default:
       throw new Error(`Unknown provider type: ${type}`);
   }

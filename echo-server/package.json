@@ -19,6 +19,7 @@
     "gemini-client": "npx tsx src/clients/gemini-client.ts",
     "gemini-gpt-client": "npx tsx src/clients/gemini-gpt-client.ts",
     "openai-client": "npx tsx src/clients/gpt-client.ts",
+    "openrouter-client": "npx tsx src/clients/openrouter-client.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "tsc && pnpm run copy-prisma-to-dist",
@@ -29,7 +30,8 @@
     "format:check": "prettier --check src/**/*.{ts,js}",
     "docker:build": "./scripts/build-local-docker.sh",
     "docker:run": "./scripts/run-local-docker.sh",
-    "docker:build-and-run": "pnpm run docker:build && pnpm run docker:run"
+    "docker:build-and-run": "pnpm run docker:build && pnpm run docker:run",
+    "fetch-openrouter-models": "npx tsx scripts/fetch-openrouter-models.ts"
   },
   "keywords": [],
   "author": "",
