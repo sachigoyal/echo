@@ -6,7 +6,7 @@ export interface EchoConfig {
 export const defaultConfig: EchoConfig = {
   baseUrl:
     (typeof process !== 'undefined' && process.env?.ECHO_BASE_URL) ||
-    'http://localhost:3000',
+    'https://echo.merit.systems',
 };
 
 export function getConfig(overrides?: Partial<EchoConfig>): EchoConfig {

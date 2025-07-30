@@ -6,27 +6,27 @@ import {
   displayEchoBanner,
   loginToEcho,
   logoutFromEcho,
-  listEchoApps,
   getEchoBalance,
   createEchoPaymentLink,
-} from './cli-helpers';
+  useModel,
+} from './cli-helpers.js';
 
 const program = new Command();
 
-displayEchoBanner();
-
 program
-  .name('echo-cli')
-  .description('CLI tool for managing Echo applications')
+  .name('echo-example')
+  .description('Example CLI tool for managing Echo applications')
   .version('1.0.0');
 
 // Login command
 program
   .command('login')
   .description('Authenticate with your Echo API key')
-  .action(async () => {
+  .option('-k, --key <apiKey>', 'API key to save to .env file')
+  .action(async options => {
     try {
-      await loginToEcho();
+      displayEchoBanner();
+      await loginToEcho({ apiKey: options.key });
     } catch (error) {
       console.error(chalk.red('Login failed:'), error);
       process.exit(1);
@@ -46,20 +46,6 @@ program
     }
   });
 
-// List apps command
-program
-  .command('apps')
-  .alias('ls')
-  .description('List your Echo applications')
-  .action(async () => {
-    try {
-      await listEchoApps();
-    } catch (error) {
-      console.error(chalk.red('Failed to fetch Echo apps:'), error);
-      process.exit(1);
-    }
-  });
-
 // Balance command
 program
   .command('balance')
@@ -71,6 +57,14 @@ program
       console.error(chalk.red('Failed to fetch balance:'), error);
       process.exit(1);
     }
+  });
+
+program
+  .command('chat')
+  .description('Chat with a language model, billed through Echo.')
+  .argument('<message>', 'The message to send to the model')
+  .action(async message => {
+    await useModel(message, 'gpt-4o-mini');
   });
 
 // Generate payment link command
