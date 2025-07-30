@@ -9,8 +9,8 @@ export function OpenAIExample() {
 
   // Use the standalone hook - no provider needed!
   const { openai, isReady, error, isLoading } = useEchoOpenAI({
-    // baseURL: 'https://echo.router.merit.systems', // Optional, has default
-    baseURL: 'http://localhost:3070',
+    baseURL: 'https://echo.router.merit.systems', // Optional, has default
+    // baseURL: 'http://localhost:3070',
     enabled: true, // Optional, defaults to true
   });
 
