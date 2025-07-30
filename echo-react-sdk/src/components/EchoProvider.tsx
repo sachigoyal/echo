@@ -84,7 +84,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       return;
     }
 
-    const apiUrl = config.apiUrl || 'http://localhost:3000';
+    const apiUrl = config.apiUrl || 'https://echo.merit.systems';
     const settings: UserManagerSettings = {
       authority: apiUrl,
       client_id: config.appId,
@@ -129,7 +129,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const createClientWithToken = useCallback(
     (accessToken: string) => {
       const client = new EchoClient({
-        baseUrl: config.apiUrl || 'http://localhost:3000',
+        baseUrl: config.apiUrl || 'https://echo.merit.systems',
         apiKey: accessToken,
       });
       return client;
