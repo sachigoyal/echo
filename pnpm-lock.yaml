@@ -514,8 +514,8 @@ importers:
   examples/nextjs15:
     dependencies:
       '@zdql/echo-react-sdk':
-        specifier: file:../../echo-react-sdk
-        version: file:echo-react-sdk(openai@5.10.2(ws@8.18.2)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: 0.1.25
+        version: 0.1.25(openai@5.10.2(ws@8.18.2)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next:
         specifier: ^15.1.4
         version: 15.3.3(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -3446,6 +3446,16 @@ packages:
 
   '@vue/shared@3.5.16':
     resolution: {integrity: sha512-c/0fWy3Jw6Z8L9FmTyYfkpM5zklnqqa9+a6dz3DvONRKW2NEbh46BP0FHuLFSWi2TnQEtp91Z6zOWNrU6QiyPg==}
+
+  '@zdql/echo-react-sdk@0.1.25':
+    resolution: {integrity: sha512-5R5PqXLxJIkgvRid1fux+O0LpDsNyBbaQl41T4ud8h6S8NTexVHs9sT3IdxyjtZGGDm4ASlHxOMEAfJuIxqqKw==}
+    peerDependencies:
+      openai: ^4.0.0 || ^5.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      openai:
+        optional: true
 
   '@zdql/echo-react-sdk@file:echo-react-sdk':
     resolution: {directory: echo-react-sdk, type: directory}
@@ -10603,7 +10613,7 @@ snapshots:
 
   '@vue/shared@3.5.16': {}
 
-  '@zdql/echo-react-sdk@file:echo-react-sdk(openai@5.10.2(ws@8.18.2)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@zdql/echo-react-sdk@0.1.25(openai@5.10.2(ws@8.18.2)(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@zdql/echo-typescript-sdk': 1.0.18
       dompurify: 3.2.6
