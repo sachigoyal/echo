@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
       body = await req.json();
     }
 
-    const { grant_type, code, redirect_uri, client_id, code_verifier } = body;
+    const { grant_type, code, redirect_uri, code_verifier } = body;
+
+    const client_id =
+      body.client_id || req.nextUrl.searchParams.get('client_id');
 
     // Validate required parameters
     if (grant_type !== 'authorization_code' && grant_type !== 'refresh_token') {
