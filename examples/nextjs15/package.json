@@ -12,7 +12,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@zdql/echo-react-sdk": "0.1.24",
+    "@zdql/echo-react-sdk": "0.1.25",
     "next": "^15.1.4",
     "openai": "^5.10.2",
     "react": "^19.1.0",
