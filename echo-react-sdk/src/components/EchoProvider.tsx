@@ -313,8 +313,16 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         setIsLoading(true);
         setError(null);
 
-        // Handle OAuth callback - check for authorization code in query params anywhere
-        if (window.location.search.includes('code=')) {
+        // Check for existing session first
+        const existingUser = await userManager.getUser();
+
+        // Handle OAuth callback - check for authorization code in query params
+        // Only process callback if no valid existing session
+        if (
+          window.location.search.includes('code=') &&
+          (!existingUser || existingUser.expired)
+        ) {
+          console.log('Authenticating with code');
           const oidcUser = await userManager.signinRedirectCallback();
           await loadUserData(oidcUser);
           // Clean up URL
@@ -323,12 +331,21 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
             document.title,
             window.location.pathname
           );
-        } else {
-          // Check for existing session
-          const oidcUser = await userManager.getUser();
-          if (oidcUser && !oidcUser.expired) {
-            await loadUserData(oidcUser);
-          }
+        } else if (existingUser && !existingUser.expired) {
+          // Use existing valid session
+          await loadUserData(existingUser);
+        }
+        // remove the code if it includes a code= and there is an existing user which is not expired
+        if (
+          window.location.search.includes('code=') &&
+          existingUser &&
+          !existingUser.expired
+        ) {
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
         }
       } catch (err) {
         const errorMessage =
@@ -341,7 +358,6 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         setIsLoading(false);
       }
     };
-
     initializeAuth();
   }, [isClient, userManager, loadUserData]);
 
