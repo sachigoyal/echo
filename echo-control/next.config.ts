@@ -21,6 +21,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'erjkmxp9url451wi.public.blob.vercel-storage.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'sbaaxpd5ro061s4a.public.blob.vercel-storage.com',
+      },
     ],
   },
   webpack: (config, { isServer }) => {
