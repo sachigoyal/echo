@@ -1382,5 +1382,12 @@
     "supports_parallel_function_calling": true,
     "supports_web_search": true,
     "supports_url_context": true
+  },
+  "gpt-image-1": {
+    "mode": "image_generation",
+    "input_cost_per_pixel": 4.0054321e-8,
+    "output_cost_per_pixel": 0.0,
+    "litellm_provider": "openai",
+    "supported_endpoints": ["/v1/images/generations"]
   }
 }
