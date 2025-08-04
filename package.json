@@ -48,8 +48,11 @@
     "create-echo-app/**/*.{ts,tsx,js,jsx}": [
       "cd create-echo-app && pnpm run lint"
     ],
-    "echo-react-sdk/**/*.{ts,tsx,js,jsx}": [
+    "echo-react-sdk/**/*.{ts}": [
       "cd echo-react-sdk && pnpm run lint"
+    ],
+    "echo-authjs-provider/**/*.{ts,tsx,js,jsx}": [
+      "cd echo-authjs-provider && pnpm run lint"
     ],
     "integration-tests/**/*.{ts,tsx,js,jsx}": [
       "cd integration-tests && pnpm run lint"
