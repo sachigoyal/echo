@@ -28,6 +28,7 @@ model User {
   payments        Payment[]        // payments made to the app
   refreshTokens   RefreshToken[]   // refresh tokens 
   appMemberships  AppMembership[]  // Apps you are a member of
+  spendPoolLimits SpendPoolLimit[] // Spend limits for pools this user has access to
 
   @@map("users")
 }
@@ -52,6 +53,7 @@ model EchoApp {
   appMemberships  AppMembership[]  // Customers of app and owners
   markUp          MarkUp?          // The markup rate for this app (one-to-one)
   githubLink      GithubLink?      // The GitHub link for this app (one-to-one)
+  spendPools      SpendPool[]      // Spend pools associated with this app
 
   @@map("echo_apps")
 }
@@ -67,6 +69,7 @@ model AppMembership {
   createdAt  DateTime  @default(now()) @db.Timestamptz
   updatedAt  DateTime  @updatedAt @db.Timestamptz
   totalSpent Decimal  @db.Decimal(65, 14)  // Aggregate for Total spent by user for this app - supports unlimited dollars with pico-cent precision
+  amountSpent Decimal @db.Decimal(65, 14) @default(0.0) // Materialized view of amount spent (maintained via triggers or app logic)
   
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   echoApp EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
@@ -129,8 +132,9 @@ model Payment {
   createdAt       DateTime @default(now()) @db.Timestamptz
   updatedAt       DateTime @updatedAt @db.Timestamptz
   userId          String   @db.Uuid
-  
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
+
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
+  spendPoolPayments SpendPoolPayment[] // Payments can be associated with multiple spend pools
 
   @@map("payments")
 }
@@ -190,16 +194,72 @@ model LlmTransaction {
   apiKeyId     String?   @db.Uuid  // API key used for this transaction (not required, won't be included if it was using a JWT)
   markUpId     String?   @db.Uuid  // MarkUp rate used for billing this transaction
   githubLinkId String?   @db.Uuid
+  spendPoolId  String?   @db.Uuid  // Optional spend pool this transaction was charged against
    
   echoApp    EchoApp     @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
   apiKey     ApiKey?     @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
   markUp     MarkUp?     @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
   githubLink GithubLink? @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
+  spendPool  SpendPool?  @relation(fields: [spendPoolId], references: [id]) // Spend pool this transaction was charged against
 
 
   @@map("llm_transactions")
 }
 
+model SpendPool {
+  id               String   @id @default(uuid()) @db.Uuid
+  name             String   // Name for the spend pool (e.g., "Q1 2024 Budget", "Marketing Campaign")
+  description      String?  // Optional description for the spend pool
+  totalAmount      Decimal  @db.Decimal(65, 14) @default(0.0) // Total amount available in this pool from payments
+  isActive         Boolean  @default(true)
+  isArchived       Boolean  @default(false)
+  archivedAt       DateTime? @db.Timestamptz
+  createdAt        DateTime @default(now()) @db.Timestamptz
+  updatedAt        DateTime @updatedAt @db.Timestamptz
+  echoAppId        String   @db.Uuid
 
+  echoApp           EchoApp            @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this spend pool belongs to
+  spendPoolPayments SpendPoolPayment[] // Payments that fund this spend pool
+  spendPoolLimits   SpendPoolLimit[]   // Per-user spend limits for this pool
+  llmTransactions   LlmTransaction[]   // LLM transactions charged against this pool
+
+  @@map("spend_pools")
+}
+
+model SpendPoolPayment {
+  id          String   @id @default(uuid()) @db.Uuid
+  amount      Decimal  @db.Decimal(65, 14) // Amount from the payment allocated to this pool
+  isArchived  Boolean  @default(false)
+  archivedAt  DateTime? @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+  paymentId   String   @db.Uuid
+  spendPoolId String   @db.Uuid
+
+  payment   Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade) // Payment that funds this allocation
+  spendPool SpendPool @relation(fields: [spendPoolId], references: [id], onDelete: Cascade) // Spend pool receiving the funds
+
+  @@unique([paymentId, spendPoolId]) // A payment can only be allocated to a specific pool once
+  @@map("spend_pool_payments")
+}
+
+model SpendPoolLimit {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  spendPoolId String   @db.Uuid
+  spendLimit  Decimal  @db.Decimal(65, 14) // Maximum amount this user can spend from this pool
+  spentAmount Decimal  @db.Decimal(65, 14) @default(0.0) // Amount already spent by this user from this pool (maintained via triggers or app logic)
+  isActive    Boolean  @default(true)
+  isArchived  Boolean  @default(false)
+  archivedAt  DateTime? @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade) // User with spend limit
+  spendPool SpendPool @relation(fields: [spendPoolId], references: [id], onDelete: Cascade) // Pool with the limit
+
+  @@unique([userId, spendPoolId]) // A user can only have one limit per spend pool
+  @@map("spend_pool_limits")
+}
 

@@ -13,6 +13,7 @@ import {
   DollarSign,
   Palette,
   BookOpen,
+  Gift,
 } from 'lucide-react';
 
 // Import individual settings components
@@ -24,6 +25,7 @@ import SecuritySettings from '@/components/settings/SecuritySettings';
 import UsersSettings from '@/components/settings/UsersSettings';
 import EarningsSettings from '@/components/settings/EarningsSettings';
 import DocumentationSettings from '@/components/settings/DocumentationSettings';
+import FreeTierCreditsSettings from '@/components/settings/FreeTierCreditsSettings';
 
 interface SidebarItem {
   id: string;
@@ -68,6 +70,12 @@ const sidebarItems: SidebarItem[] = [
     label: 'Earnings',
     icon: <DollarSign className="h-4 w-4" />,
     description: 'LLM transaction earnings and revenue details',
+  },
+  {
+    id: 'free-tier-credits',
+    label: 'Free Tier Credits',
+    icon: <Gift className="h-4 w-4" />,
+    description: 'Purchase shared credits for all app users',
   },
   {
     id: 'users',
@@ -132,6 +140,8 @@ const SettingsPage: React.FC = () => {
         return <AnalyticsSettings appId={appId} />;
       case 'earnings':
         return <EarningsSettings appId={appId} />;
+      case 'free-tier-credits':
+        return <FreeTierCreditsSettings appId={appId} />;
       case 'users':
         return <UsersSettings appId={appId} />;
       case 'documentation':
