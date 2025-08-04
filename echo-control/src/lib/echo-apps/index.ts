@@ -389,11 +389,21 @@ export const getPublicAppInfo = async (
         profilePictureUrl: true,
         bannerImageUrl: true,
         homepageUrl: true,
-        githubId: true,
-        githubType: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        githubLink: {
+          select: {
+            id: true,
+            githubId: true,
+            githubType: true,
+            description: true,
+            isActive: true,
+          },
+          where: {
+            isArchived: false,
+          },
+        },
       },
     });
   } catch (appQueryError) {
@@ -648,7 +658,8 @@ export const getPublicAppInfo = async (
     ...app,
     createdAt: app.createdAt.toISOString(),
     updatedAt: app.updatedAt.toISOString(),
-    githubType: app.githubType as 'user' | 'repo' | null,
+    githubId: app.githubLink?.githubId || null,
+    githubType: app.githubLink?.githubType as 'user' | 'repo' | null,
     isPublic: true,
     userRole: AppRole.PUBLIC,
     permissions: [Permission.READ_APP],
@@ -726,11 +737,21 @@ export const getPublicAppsInfo = async (
           profilePictureUrl: true,
           bannerImageUrl: true,
           homepageUrl: true,
-          githubId: true,
-          githubType: true,
           isActive: true,
           createdAt: true,
           updatedAt: true,
+          githubLink: {
+            select: {
+              id: true,
+              githubId: true,
+              githubType: true,
+              description: true,
+              isActive: true,
+            },
+            where: {
+              isArchived: false,
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -931,7 +952,8 @@ export const getPublicAppsInfo = async (
         ...app,
         createdAt: app.createdAt.toISOString(),
         updatedAt: app.updatedAt.toISOString(),
-        githubType: app.githubType as 'user' | 'repo' | null,
+        githubId: app.githubLink?.githubId || null,
+        githubType: app.githubLink?.githubType as 'user' | 'repo' | null,
         isPublic: true,
         userRole: AppRole.PUBLIC,
         permissions: [Permission.READ_APP],
@@ -1087,13 +1109,23 @@ export const getDetailedAppInfo = async (
           profilePictureUrl: true,
           bannerImageUrl: true,
           homepageUrl: true,
-          githubId: true,
-          githubType: true,
           isActive: true,
           isPublic: true,
           createdAt: true,
           updatedAt: true,
           authorizedCallbackUrls: true,
+          githubLink: {
+            select: {
+              id: true,
+              githubId: true,
+              githubType: true,
+              description: true,
+              isActive: true,
+            },
+            where: {
+              isArchived: false,
+            },
+          },
           apiKeys: {
             where: {
               isArchived: false,
@@ -1502,7 +1534,8 @@ export const getDetailedAppInfo = async (
       ...app,
       createdAt: app.createdAt.toISOString(),
       updatedAt: app.updatedAt.toISOString(),
-      githubType: app.githubType as 'user' | 'repo' | null,
+      githubId: app.githubLink?.githubId || null,
+      githubType: app.githubLink?.githubType as 'user' | 'repo' | null,
       user: {
         id: ownerMembership.user.id,
         email: ownerMembership.user.email,
@@ -1609,12 +1642,26 @@ export const createEchoApp = async (userId: string, data: AppCreateInput) => {
     throw new Error(githubTypeError);
   }
 
+  // Prepare Github link data if provided
+  const githubLinkData =
+    data.githubId?.trim() && data.githubType
+      ? {
+          githubLink: {
+            create: {
+              githubId: data.githubId.trim(),
+              githubType: data.githubType,
+              description: `GitHub ${data.githubType} link`,
+              isActive: true,
+              isArchived: false,
+            },
+          },
+        }
+      : {};
+
   const echoApp = await db.echoApp.create({
     data: {
       name: data.name.trim(),
       description: data.description?.trim() || null,
-      githubType: data.githubType || null,
-      githubId: data.githubId?.trim() || null,
       appMemberships: {
         create: {
           userId,
@@ -1626,17 +1673,25 @@ export const createEchoApp = async (userId: string, data: AppCreateInput) => {
       },
       isActive: true,
       authorizedCallbackUrls: data.authorizedCallbackUrls || [], // Start with empty callback URLs
+      ...githubLinkData,
     },
     select: {
       id: true,
       name: true,
       description: true,
-      githubType: true,
-      githubId: true,
       isActive: true,
       createdAt: true,
       updatedAt: true,
       authorizedCallbackUrls: true,
+      githubLink: {
+        select: {
+          id: true,
+          githubId: true,
+          githubType: true,
+          description: true,
+          isActive: true,
+        },
+      },
     },
   });
 
@@ -1707,6 +1762,79 @@ export const updateEchoAppById = async (
     throw new Error('Echo app not found or access denied');
   }
 
+  // Handle GitHub link updates separately
+  const needsGithubUpdate =
+    data.githubId !== undefined || data.githubType !== undefined;
+
+  if (needsGithubUpdate) {
+    // Check if we need to create, update, or delete the GitHub link
+    const githubId = data.githubId?.trim();
+    const githubType = data.githubType;
+
+    if (githubId && githubType) {
+      // Create or update GitHub link with both ID and type
+      await db.githubLink.upsert({
+        where: {
+          echoAppId: appId,
+        },
+        update: {
+          githubId,
+          githubType,
+          description: `GitHub ${githubType} link`,
+          isActive: true,
+          isArchived: false,
+        },
+        create: {
+          echoAppId: appId,
+          githubId,
+          githubType,
+          description: `GitHub ${githubType} link`,
+          isActive: true,
+          isArchived: false,
+        },
+      });
+    } else if (githubId && !githubType) {
+      // Update only the GitHub ID, keeping existing type or defaulting to 'repo'
+      const existingLink = await db.githubLink.findFirst({
+        where: { echoAppId: appId, isArchived: false },
+      });
+
+      const typeToUse = existingLink?.githubType || 'repo'; // default to 'repo' if no existing link
+
+      await db.githubLink.upsert({
+        where: {
+          echoAppId: appId,
+        },
+        update: {
+          githubId,
+          githubType: typeToUse,
+          description: `GitHub ${typeToUse} link`,
+          isActive: true,
+          isArchived: false,
+        },
+        create: {
+          echoAppId: appId,
+          githubId,
+          githubType: typeToUse,
+          description: `GitHub ${typeToUse} link`,
+          isActive: true,
+          isArchived: false,
+        },
+      });
+    } else if (githubId === null || githubId === '') {
+      // Delete GitHub link if githubId is explicitly set to null/empty
+      await db.githubLink.updateMany({
+        where: {
+          echoAppId: appId,
+        },
+        data: {
+          isArchived: true,
+          archivedAt: new Date(),
+        },
+      });
+    }
+  }
+
   // Update the app
   const updatedApp = await db.echoApp.update({
     where: { id: appId },
@@ -1716,10 +1844,6 @@ export const updateEchoAppById = async (
         description: data.description?.trim() || null,
       }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
-      ...(data.githubType !== undefined && { githubType: data.githubType }),
-      ...(data.githubId !== undefined && {
-        githubId: data.githubId?.trim() || null,
-      }),
       ...(data.profilePictureUrl !== undefined && {
         profilePictureUrl: data.profilePictureUrl?.trim() || null,
       }),
@@ -1741,6 +1865,15 @@ export const updateEchoAppById = async (
           name: true,
           isActive: true,
           createdAt: true,
+        },
+      },
+      githubLink: {
+        select: {
+          id: true,
+          githubId: true,
+          githubType: true,
+          description: true,
+          isActive: true,
         },
       },
       _count: {
@@ -1812,8 +1945,15 @@ export const findEchoApp = async (
       bannerImageUrl: true,
       homepageUrl: true,
       markUp: true,
-      githubId: true,
-      githubType: true,
+      githubLink: {
+        select: {
+          githubId: true,
+          githubType: true,
+        },
+        where: {
+          isArchived: false,
+        },
+      },
       isActive: true,
       isPublic: true,
       authorizedCallbackUrls: true,

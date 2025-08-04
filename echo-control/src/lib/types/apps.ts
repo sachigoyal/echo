@@ -17,7 +17,7 @@ export interface PublicEchoApp {
   totalTokens: number;
   totalCost: number;
   githubId: string | null;
-  githubType: string | null;
+  githubType: 'user' | 'repo' | null;
   authorizedCallbackUrls: string[];
   userRole: AppRole;
   permissions: Permission[];

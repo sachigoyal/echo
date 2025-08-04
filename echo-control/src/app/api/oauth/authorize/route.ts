@@ -113,8 +113,6 @@ export async function GET(req: NextRequest) {
           createdAt: true,
           updatedAt: true,
           markUp: true,
-          githubId: true,
-          githubType: true,
         },
       });
     } catch (error) {

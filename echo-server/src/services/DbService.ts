@@ -243,7 +243,9 @@ export class EchoDbService {
       status?: string;
       errorMessage?: string;
     },
-    apiKeyId?: string
+    apiKeyId?: string,
+    markUpId?: string,
+    githubLinkId?: string
   ): Promise<string | null> {
     try {
       // Validate required fields
@@ -277,6 +279,8 @@ export class EchoDbService {
             userId: userId,
             echoAppId: echoAppId,
             apiKeyId: apiKeyId || null,
+            markUpId: markUpId || null,
+            githubLinkId: githubLinkId || null,
           },
         });
 

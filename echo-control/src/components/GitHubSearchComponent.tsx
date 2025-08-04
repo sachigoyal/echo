@@ -171,7 +171,7 @@ export function GitHubSearchComponent({
     setShowResults(false);
 
     // Call onChange after setting local state
-    onChange(idValue, true, data);
+    onChange(idValue, true, data, result.type);
   };
 
   const getDisplayName = (data: GitHubUser | GitHubRepo) => {
