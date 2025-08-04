@@ -9,7 +9,12 @@ import {
   transformActivityToChartData,
 } from './activity/activity';
 import { isValidUrl } from '../stripe/payment-link';
-import { DetailedEchoApp, PublicEchoApp } from '../types/apps';
+import {
+  DetailedEchoApp,
+  PublicEchoApp,
+  AuthenticatedEchoApp,
+} from '../types/apps';
+import { Decimal } from '@/generated/prisma/runtime/library';
 
 // Types for better type safety
 export interface AppCreateInput {
@@ -35,33 +40,6 @@ export interface AppUpdateInput {
 }
 
 // Legacy type for backward compatibility with existing list views
-export interface AppWithDetails {
-  id: string;
-  name: string;
-  description: string | null;
-  isActive: boolean;
-  isPublic: boolean;
-  profilePictureUrl?: string | null;
-  bannerImageUrl?: string | null;
-  homepageUrl?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  authorizedCallbackUrls: string[];
-  userRole: AppRole;
-  totalTokens: number;
-  totalCost: number;
-  _count: {
-    apiKeys: number;
-    llmTransactions: number;
-  };
-  owner: {
-    id: string;
-    email: string;
-    name: string | null;
-    profilePictureUrl?: string | null;
-  };
-  activityData: number[];
-}
 
 // Validation functions
 export const validateAppName = (name: string): string | null => {
@@ -243,7 +221,7 @@ export const verifyArgs = (data: {
 export const listAppsWithDetails = async (
   userId: string,
   role?: AppRole
-): Promise<AppWithDetails[]> => {
+): Promise<AuthenticatedEchoApp[]> => {
   // Get user's accessible apps with memberships in a single query
   const userMemberships = await db.appMembership.findMany({
     where: {
@@ -297,53 +275,176 @@ export const listAppsWithDetails = async (
     },
   });
 
-  // Get transaction totals for all apps in batch
+  // Get transaction totals and detailed stats for all apps in batch
   const appIds = userMemberships.map(m => m.echoApp.id);
-  const transactionStats = await db.llmTransaction.groupBy({
-    by: ['echoAppId'],
-    where: {
-      echoAppId: { in: appIds },
-      isArchived: false,
-    },
-    _sum: {
-      totalTokens: true,
-      cost: true,
-    },
-  });
+  const [transactionStats, modelUsageStats, userCounts] = await Promise.all([
+    // Basic transaction totals
+    db.llmTransaction.groupBy({
+      by: ['echoAppId'],
+      where: {
+        echoAppId: { in: appIds },
+        isArchived: false,
+      },
+      _sum: {
+        totalTokens: true,
+        inputTokens: true,
+        outputTokens: true,
+        cost: true,
+      },
+      _count: true,
+    }),
+    // Model usage statistics
+    db.llmTransaction.groupBy({
+      by: ['echoAppId', 'model'],
+      where: {
+        echoAppId: { in: appIds },
+        isArchived: false,
+      },
+      _sum: {
+        totalTokens: true,
+        cost: true,
+      },
+      _count: true,
+    }),
+    // User counts for each app
+    Promise.all(
+      appIds.map(async appId => {
+        const count = await db.appMembership.count({
+          where: {
+            echoAppId: appId,
+            isArchived: false,
+          },
+        });
+        return { appId, numberOfUsers: count };
+      })
+    ),
+  ]);
 
-  // Create a map for quick lookup of transaction stats
+  // Create maps for quick lookup
   const statsMap = new Map(
     transactionStats.map(stat => [
       stat.echoAppId,
       {
+        totalTransactions: stat._count || 0,
         totalTokens: stat._sum.totalTokens || 0,
+        totalInputTokens: stat._sum.inputTokens || 0,
+        totalOutputTokens: stat._sum.outputTokens || 0,
         totalCost: Number(stat._sum.cost || 0),
       },
     ])
   );
 
-  // Get activity data for all apps in batch
-  const activityDataMap = new Map<string, number[]>();
-  await Promise.all(
-    appIds.map(async appId => {
-      try {
-        const activity = await getAppActivity(appId);
-        const activityData = transformActivityToChartData(activity);
-        activityDataMap.set(appId, activityData);
-      } catch (error) {
-        console.error(`Failed to fetch activity for app ${appId}:`, error);
-        // Fallback to empty array if activity fetch fails
-        activityDataMap.set(appId, []);
-      }
-    })
+  const modelUsageMap = new Map<
+    string,
+    {
+      model: string;
+      _count: number;
+      _sum: { totalTokens: number | null; cost: number | null };
+    }[]
+  >();
+  modelUsageStats.forEach(stat => {
+    const appUsage = modelUsageMap.get(stat.echoAppId) || [];
+    appUsage.push({
+      model: stat.model,
+      _count: stat._count,
+      _sum: {
+        totalTokens: stat._sum.totalTokens || 0,
+        cost: Number(stat._sum.cost || 0),
+      },
+    });
+    modelUsageMap.set(stat.echoAppId, appUsage);
+  });
+
+  const userCountMap = new Map(
+    userCounts.map(({ appId, numberOfUsers }) => [appId, numberOfUsers])
   );
+
+  // Get activity data and recent transactions for all apps in batch
+  const [activityDataMap, recentTransactionsMap] = await Promise.all([
+    // Activity data
+    Promise.all(
+      appIds.map(async appId => {
+        try {
+          const activity = await getAppActivity(appId);
+          const activityData = transformActivityToChartData(activity);
+          return { appId, activityData };
+        } catch (error) {
+          console.error(`Failed to fetch activity for app ${appId}:`, error);
+          return { appId, activityData: [] };
+        }
+      })
+    ).then(results => {
+      const map = new Map<string, number[]>();
+      results.forEach(({ appId, activityData }) => {
+        map.set(appId, activityData);
+      });
+      return map;
+    }),
+    // Recent transactions
+    Promise.all(
+      appIds.map(async appId => {
+        try {
+          const transactions = await db.llmTransaction.findMany({
+            where: {
+              echoAppId: appId,
+              isArchived: false,
+            },
+            select: {
+              id: true,
+              model: true,
+              totalTokens: true,
+              cost: true,
+              status: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          });
+          return { appId, transactions };
+        } catch (error) {
+          console.error(
+            `Failed to fetch recent transactions for app ${appId}:`,
+            error
+          );
+          return { appId, transactions: [] };
+        }
+      })
+    ).then(results => {
+      const map = new Map<
+        string,
+        {
+          id: string;
+          model: string;
+          totalTokens: number;
+          cost: Decimal;
+          status: string;
+          createdAt: Date;
+        }[]
+      >();
+      results.forEach(({ appId, transactions }) => {
+        map.set(appId, transactions);
+      });
+      return map;
+    }),
+  ]);
 
   // Transform the results
   return userMemberships.map(membership => {
     const app = membership.echoApp;
     const owner = app.appMemberships[0]?.user || null;
-    const stats = statsMap.get(app.id) || { totalTokens: 0, totalCost: 0 };
+    const stats = statsMap.get(app.id) || {
+      totalTransactions: 0,
+      totalTokens: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      totalCost: 0,
+    };
     const activityData = activityDataMap.get(app.id) || [];
+    const modelUsage = modelUsageMap.get(app.id) || [];
+    const numberOfUsers = userCountMap.get(app.id) || 0;
+    const recentTransactions = recentTransactionsMap.get(app.id) || [];
+    const userRole = membership.role as AppRole;
+    const permissions = PermissionService.getPermissionsForRole(userRole);
 
     return {
       id: app.id,
@@ -355,16 +456,45 @@ export const listAppsWithDetails = async (
       isPublic: app.isPublic || false,
       createdAt: app.createdAt.toISOString(),
       updatedAt: app.updatedAt.toISOString(),
-      authorizedCallbackUrls: app.authorizedCallbackUrls,
-      userRole: membership.role as AppRole,
       totalTokens: stats.totalTokens,
       totalCost: stats.totalCost,
+      githubId: null, // Will be null for this simplified version
+      githubType: null, // Will be null for this simplified version
+      authorizedCallbackUrls: app.authorizedCallbackUrls,
+      userRole,
+      permissions,
       _count: {
         apiKeys: app._count.apiKeys,
         llmTransactions: app._count.llmTransactions,
       },
-      owner: owner,
+      owner: owner
+        ? {
+            id: owner.id,
+            email: owner.email,
+            name: owner.name,
+            profilePictureUrl: owner.profilePictureUrl,
+          }
+        : {
+            id: '',
+            email: '',
+            name: null,
+            profilePictureUrl: null,
+          },
       activityData,
+      stats: {
+        totalTransactions: stats.totalTransactions,
+        totalTokens: stats.totalTokens,
+        totalInputTokens: stats.totalInputTokens,
+        totalOutputTokens: stats.totalOutputTokens,
+        totalCost: stats.totalCost,
+        modelUsage,
+        numberOfUsers,
+      },
+      recentTransactions: recentTransactions.map(transaction => ({
+        ...transaction,
+        cost: Number(transaction.cost),
+        createdAt: transaction.createdAt.toISOString(),
+      })),
     };
   });
 };
