@@ -1,115 +1,31 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import {
-  getAppActivity,
-  transformActivityToChartData,
-} from '@/lib/echo-apps/activity/activity';
+import { NextRequest, NextResponse } from 'next/server';
+import { getPublicAppsInfo } from '@/lib/echo-apps';
 
-// GET /api/apps/public - List all publicly available Echo apps
-export async function GET() {
+// GET /api/apps/public - List all publicly available Echo apps with pagination
+export async function GET(req: NextRequest) {
   try {
-    const publicApps = await db.echoApp.findMany({
-      where: {
-        isPublic: true,
-        isActive: true,
-        isArchived: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        profilePictureUrl: true,
-        bannerImageUrl: true,
-        isActive: true,
-        isPublic: true,
-        createdAt: true,
-        updatedAt: true,
-        authorizedCallbackUrls: true,
-        _count: {
-          select: {
-            apiKeys: {
-              where: { isActive: true, isArchived: false },
-            },
-            llmTransactions: {
-              where: { isArchived: false },
-            },
-          },
-        },
-        appMemberships: {
-          where: {
-            role: 'owner',
-            status: 'active',
-            isArchived: false,
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                profilePictureUrl: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-    // Get transaction stats and activity data for each app
-    const appsWithStats = await Promise.all(
-      publicApps.map(async app => {
-        const [transactionStats, activity] = await Promise.all([
-          db.llmTransaction.aggregate({
-            where: {
-              echoAppId: app.id,
-              isArchived: false,
-            },
-            _sum: {
-              totalTokens: true,
-              cost: true,
-            },
-          }),
-          getAppActivity(app.id).catch(error => {
-            console.error(`Failed to fetch activity for app ${app.id}:`, error);
-            return [];
-          }),
-        ]);
+    // Validate pagination parameters
+    if (page < 1) {
+      return NextResponse.json(
+        { error: 'Page must be a positive integer' },
+        { status: 400 }
+      );
+    }
 
-        const activityData = transformActivityToChartData(activity);
-        const owner = app.appMemberships[0]?.user;
+    if (limit < 1 || limit > 100) {
+      return NextResponse.json(
+        { error: 'Limit must be between 1 and 100' },
+        { status: 400 }
+      );
+    }
 
-        return {
-          id: app.id,
-          name: app.name,
-          description: app.description,
-          profilePictureUrl: app.profilePictureUrl,
-          bannerImageUrl: app.bannerImageUrl,
-          isActive: app.isActive,
-          isPublic: app.isPublic,
-          createdAt: app.createdAt.toISOString(),
-          updatedAt: app.updatedAt.toISOString(),
-          authorizedCallbackUrls: app.authorizedCallbackUrls,
-          totalTokens: transactionStats._sum.totalTokens || 0,
-          totalCost: Number(transactionStats._sum.cost || 0),
-          _count: {
-            apiKeys: app._count.apiKeys,
-            llmTransactions: app._count.llmTransactions,
-          },
-          owner: {
-            id: owner.id,
-            name: owner.name,
-            email: owner.email,
-            profilePictureUrl: owner.profilePictureUrl,
-          },
-          activityData,
-        };
-      })
-    );
+    const result = await getPublicAppsInfo(page, limit);
 
-    return NextResponse.json({ apps: appsWithStats });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching public Echo apps:', error);
 

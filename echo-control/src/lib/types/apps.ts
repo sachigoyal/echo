@@ -46,6 +46,7 @@ export interface PublicEchoApp {
       };
       _count: number;
     }>;
+    numberOfUsers: number;
   };
   recentTransactions: Array<{
     id: string;
@@ -105,6 +106,7 @@ export interface DetailedEchoApp extends AuthenticatedEchoApp {
       };
       _count: number;
     }>;
+    numberOfUsers: number;
   };
   recentTransactions: Array<{
     id: string;

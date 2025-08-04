@@ -638,6 +638,12 @@ export const getPublicAppInfo = async (
     activityData = [];
   }
 
+  const numberOfUsers = await db.appMembership.count({
+    where: {
+      echoAppId: appId,
+    },
+  });
+
   return {
     ...app,
     createdAt: app.createdAt.toISOString(),
@@ -680,6 +686,7 @@ export const getPublicAppInfo = async (
           cost: Number(usage._sum.cost || 0),
         },
       })),
+      numberOfUsers: numberOfUsers,
     },
     recentTransactions: recentTransactions.map(transaction => ({
       ...transaction,
@@ -688,6 +695,307 @@ export const getPublicAppInfo = async (
     })),
     activityData,
   };
+};
+
+export const getPublicAppsInfo = async (
+  page = 1,
+  limit = 10
+): Promise<{
+  apps: PublicEchoApp[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}> => {
+  try {
+    const offset = (page - 1) * limit;
+
+    // Step 1: Get paginated public apps with basic info
+    const [publicApps, totalCount] = await Promise.all([
+      db.echoApp.findMany({
+        where: {
+          isPublic: true,
+          isActive: true,
+          isArchived: false,
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          profilePictureUrl: true,
+          bannerImageUrl: true,
+          homepageUrl: true,
+          githubId: true,
+          githubType: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: offset,
+        take: limit,
+      }),
+      db.echoApp.count({
+        where: {
+          isPublic: true,
+          isActive: true,
+          isArchived: false,
+        },
+      }),
+    ]);
+
+    if (publicApps.length === 0) {
+      return {
+        apps: [],
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        hasNextPage: false,
+        hasPreviousPage: page > 1,
+      };
+    }
+
+    const appIds = publicApps.map(app => app.id);
+
+    // Step 2: Batch fetch owner information
+    const ownerMemberships = await db.appMembership.findMany({
+      where: {
+        echoAppId: { in: appIds },
+        role: AppRole.OWNER,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Step 3: Batch fetch transaction stats for all apps
+    const allStats = await Promise.all(
+      appIds.map(async appId => {
+        try {
+          const stats = await db.llmTransaction.aggregate({
+            where: {
+              echoAppId: appId,
+              isArchived: false,
+            },
+            _count: true,
+            _sum: {
+              totalTokens: true,
+              inputTokens: true,
+              outputTokens: true,
+              cost: true,
+            },
+          });
+          return { appId, stats };
+        } catch (error) {
+          console.error(`Error fetching stats for app ${appId}:`, error);
+          return {
+            appId,
+            stats: {
+              _count: 0,
+              _sum: {
+                totalTokens: 0,
+                inputTokens: 0,
+                outputTokens: 0,
+                cost: 0,
+              },
+            },
+          };
+        }
+      })
+    );
+
+    // Step 4: Batch fetch model usage for all apps
+    const allModelUsage = await Promise.all(
+      appIds.map(async appId => {
+        try {
+          const modelUsage = await db.llmTransaction.groupBy({
+            by: ['model'],
+            where: {
+              echoAppId: appId,
+              isArchived: false,
+            },
+            _count: true,
+            _sum: {
+              totalTokens: true,
+              cost: true,
+            },
+            orderBy: {
+              _sum: {
+                totalTokens: 'desc',
+              },
+            },
+          });
+          return { appId, modelUsage };
+        } catch (error) {
+          console.error(`Error fetching model usage for app ${appId}:`, error);
+          return { appId, modelUsage: [] };
+        }
+      })
+    );
+
+    // Step 5: Batch fetch recent transactions for all apps
+    const allRecentTransactions = await Promise.all(
+      appIds.map(async appId => {
+        try {
+          const recentTransactions = await db.llmTransaction.findMany({
+            where: {
+              echoAppId: appId,
+              isArchived: false,
+            },
+            select: {
+              id: true,
+              model: true,
+              totalTokens: true,
+              cost: true,
+              status: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          });
+          return { appId, recentTransactions };
+        } catch (error) {
+          console.error(
+            `Error fetching recent transactions for app ${appId}:`,
+            error
+          );
+          return { appId, recentTransactions: [] };
+        }
+      })
+    );
+
+    // Step 6: Batch fetch activity data for all apps
+    const allActivityData = await Promise.all(
+      appIds.map(async appId => {
+        try {
+          const activity = await getAppActivity(appId);
+          const activityData = transformActivityToChartData(activity);
+          return { appId, activityData };
+        } catch (error) {
+          console.error(`Error fetching activity for app ${appId}:`, error);
+          return { appId, activityData: [] };
+        }
+      })
+    );
+
+    // Step 7: Batch fetch user counts for all apps
+    const allUserCounts = await Promise.all(
+      appIds.map(async appId => {
+        try {
+          const numberOfUsers = await db.appMembership.count({
+            where: {
+              echoAppId: appId,
+            },
+          });
+          return { appId, numberOfUsers };
+        } catch (error) {
+          console.error(`Error fetching user count for app ${appId}:`, error);
+          return { appId, numberOfUsers: 0 };
+        }
+      })
+    );
+
+    // Step 8: Combine all data
+    const apps: PublicEchoApp[] = publicApps.map(app => {
+      const ownerMembership = ownerMemberships.find(
+        om => om.echoAppId === app.id
+      );
+      const { stats } = allStats.find(s => s.appId === app.id) || {
+        stats: {
+          _count: 0,
+          _sum: { totalTokens: 0, inputTokens: 0, outputTokens: 0, cost: 0 },
+        },
+      };
+      const { modelUsage } = allModelUsage.find(mu => mu.appId === app.id) || {
+        modelUsage: [],
+      };
+      const { recentTransactions } = allRecentTransactions.find(
+        rt => rt.appId === app.id
+      ) || { recentTransactions: [] };
+      const { activityData } = allActivityData.find(
+        ad => ad.appId === app.id
+      ) || { activityData: [] };
+      const { numberOfUsers } = allUserCounts.find(
+        uc => uc.appId === app.id
+      ) || { numberOfUsers: 0 };
+
+      return {
+        ...app,
+        createdAt: app.createdAt.toISOString(),
+        updatedAt: app.updatedAt.toISOString(),
+        githubType: app.githubType as 'user' | 'repo' | null,
+        isPublic: true,
+        userRole: AppRole.PUBLIC,
+        permissions: [Permission.READ_APP],
+        totalTokens: stats._sum.totalTokens || 0,
+        totalCost: Number(stats._sum.cost || 0),
+        authorizedCallbackUrls: [],
+        _count: {
+          apiKeys: 0,
+          llmTransactions: stats._count || 0,
+        },
+        owner: ownerMembership?.user
+          ? {
+              id: ownerMembership.user.id,
+              email: '', // Don't expose email for public apps
+              name: ownerMembership.user.name,
+              profilePictureUrl: null,
+            }
+          : {
+              id: '',
+              email: '',
+              name: null,
+              profilePictureUrl: null,
+            },
+        stats: {
+          totalTransactions: stats._count || 0,
+          totalTokens: stats._sum.totalTokens || 0,
+          totalInputTokens: stats._sum.inputTokens || 0,
+          totalOutputTokens: stats._sum.outputTokens || 0,
+          totalCost: Number(stats._sum.cost || 0),
+          modelUsage: modelUsage.map((usage: any) => ({
+            model: usage.model,
+            _count: usage._count,
+            _sum: {
+              totalTokens: usage._sum.totalTokens || 0,
+              cost: Number(usage._sum.cost || 0),
+            },
+          })),
+          numberOfUsers,
+        },
+        recentTransactions: recentTransactions.map((transaction: any) => ({
+          ...transaction,
+          cost: Number(transaction.cost),
+          createdAt: transaction.createdAt.toISOString(),
+        })),
+        activityData,
+      };
+    });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      apps,
+      totalCount,
+      totalPages,
+      currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    };
+  } catch (error) {
+    console.error('Error in getPublicAppsInfo:', error);
+    throw new Error(
+      `Failed to fetch public apps: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
 };
 
 export const getDetailedAppInfo = async (
@@ -1184,6 +1492,12 @@ export const getDetailedAppInfo = async (
       }));
     }
 
+    const numberOfUsers = await db.appMembership.count({
+      where: {
+        echoAppId: appId,
+      },
+    });
+
     return {
       ...app,
       createdAt: app.createdAt.toISOString(),
@@ -1241,6 +1555,7 @@ export const getDetailedAppInfo = async (
             cost: Number(usage._sum.cost || 0),
           },
         })),
+        numberOfUsers: numberOfUsers,
       },
       recentTransactions: recentTransactions.map(transaction => ({
         ...transaction,

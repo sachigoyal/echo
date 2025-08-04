@@ -45,9 +45,9 @@ export const AppCard: React.FC<AppCardProps> = ({
   };
 
   const stats = {
-    users: 0, // Not available in current data structure
+    users: app.stats.numberOfUsers, // Not available in current data structure
     requests: app._count.llmTransactions,
-    revenue: `${(app.totalCost / 100).toFixed(2)}`, // Convert from cents
+    revenue: `${app.totalCost.toFixed(2)}`, // Convert from cents
   };
 
   // Set consistent minimum heights based on size
@@ -150,7 +150,7 @@ export const AppCard: React.FC<AppCardProps> = ({
           <Badge
             className={`shrink-0 text-black dark:text-white border-[1px] bg-transparent shadow-none w-fit ${isSmall ? 'text-xs' : 'text-sm'}`}
           >
-            {stats.revenue}
+            ${stats.revenue}
           </Badge>
         </div>
       </div>
