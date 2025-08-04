@@ -89,10 +89,10 @@ export function useEchoAppDetail(appId: string): UseEchoAppDetailReturn {
                 stats: {
                   totalTransactions: publicApp._count?.llmTransactions || 0,
                   totalTokens: publicApp.totalTokens || 0,
-                  totalInputTokens: 0,
-                  totalOutputTokens: 0,
+                  totalInputTokens: publicApp.totalInputTokens || 0,
+                  totalOutputTokens: publicApp.totalOutputTokens || 0,
                   totalCost: publicApp.totalCost || 0,
-                  modelUsage: [],
+                  modelUsage: publicApp.modelUsage || [],
                 },
                 recentTransactions: [],
                 user: {

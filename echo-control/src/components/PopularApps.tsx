@@ -17,7 +17,8 @@ export const PopularApps: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/apps/public');
+        // Fetch all popular apps (large limit for marquee display)
+        const response = await fetch('/api/apps/public?limit=100');
         if (!response.ok) {
           throw new Error('Network response was not ok.');
         }

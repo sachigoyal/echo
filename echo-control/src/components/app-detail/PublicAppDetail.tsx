@@ -34,6 +34,7 @@ interface EnhancedAppData extends DetailedEchoApp {
       };
       _count: number;
     }>;
+    numberOfUsers: number;
   };
   globalActivityData?: number[];
   globalRecentTransactions?: Array<{
@@ -178,7 +179,9 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
         <p className="text-sm font-medium text-muted-foreground mb-1">
           Join App
         </p>
-        <p className="text-sm text-foreground font-bold mt-2">{joinActions}</p>
+        <div className="text-sm text-foreground font-bold mt-2">
+          {joinActions}
+        </div>
       </div>
     </div>
   );
