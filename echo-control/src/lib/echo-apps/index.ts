@@ -961,7 +961,7 @@ export const getPublicAppsInfo = async (
           totalInputTokens: stats._sum.inputTokens || 0,
           totalOutputTokens: stats._sum.outputTokens || 0,
           totalCost: Number(stats._sum.cost || 0),
-          modelUsage: modelUsage.map((usage: any) => ({
+          modelUsage: modelUsage.map(usage => ({
             model: usage.model,
             _count: usage._count,
             _sum: {
@@ -971,7 +971,7 @@ export const getPublicAppsInfo = async (
           })),
           numberOfUsers,
         },
-        recentTransactions: recentTransactions.map((transaction: any) => ({
+        recentTransactions: recentTransactions.map(transaction => ({
           ...transaction,
           cost: Number(transaction.cost),
           createdAt: transaction.createdAt.toISOString(),

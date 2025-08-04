@@ -137,6 +137,7 @@ export interface EnhancedAppData extends DetailedEchoApp {
       };
       _count: number;
     }>;
+    numberOfUsers: number;
   };
   globalActivityData?: number[];
   globalRecentTransactions?: Array<{
