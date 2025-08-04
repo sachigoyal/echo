@@ -45,14 +45,13 @@ model EchoApp {
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
-  markUp          Decimal          @db.Decimal(65, 14) @default(1.0)    // mark-up for per-token charging set by owner - supports unlimited precision
-  githubId        String?           
-  githubType      String?
   authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
   apiKeys         ApiKey[]         // API keys for the app 
   llmTransactions LlmTransaction[] // LLM transactions for that App
   refreshTokens   RefreshToken[]   // Refresh tokens
   appMemberships  AppMembership[]  // Customers of app and owners
+  markUp          MarkUp?          // The markup rate for this app (one-to-one)
+  githubLink      GithubLink?      // The GitHub link for this app (one-to-one)
 
   @@map("echo_apps")
 }
@@ -136,6 +135,41 @@ model Payment {
   @@map("payments")
 }
 
+model MarkUp {
+  id          String   @id @default(uuid()) @db.Uuid
+  amount      Decimal  @db.Decimal(65, 14) @default(1.0) // Mark-up multiplier for per-token charging - supports unlimited precision
+  description String?  // Optional description for the markup rate
+  isActive    Boolean  @default(true)
+  isArchived  Boolean  @default(false)
+  archivedAt  DateTime? @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+  echoAppId   String   @unique @db.Uuid    // Reference to the app this markup belongs to (one-to-one)
+  
+  echoApp         EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this markup belongs to
+  llmTransactions LlmTransaction[] // LLM transactions billed with this markup
+
+  @@map("markups")
+}
+
+model GithubLink {
+  id          String   @id @default(uuid()) @db.Uuid
+  githubId    String   // GitHub username or repository identifier
+  githubType  String   // 'user' or 'repo' to indicate the type of GitHub entity
+  description String?  // Optional description for the GitHub link
+  isActive    Boolean  @default(true)
+  isArchived  Boolean  @default(false)
+  archivedAt  DateTime? @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+  echoAppId   String   @unique @db.Uuid    // Reference to the app this GitHub link belongs to (one-to-one)
+  
+  echoApp         EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this GitHub link belongs to
+  llmTransactions LlmTransaction[] // LLM transactions associated with this GitHub link
+
+  @@map("github_links")
+}
+
 model LlmTransaction {
   id           String   @id @default(uuid()) @db.Uuid
   providerId   String
@@ -154,10 +188,18 @@ model LlmTransaction {
   userId       String   @db.Uuid
   echoAppId    String   @db.Uuid
   apiKeyId     String?   @db.Uuid  // API key used for this transaction (not required, won't be included if it was using a JWT)
-  
-  echoApp  EchoApp @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
-  apiKey   ApiKey?   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
+  markUpId     String?   @db.Uuid  // MarkUp rate used for billing this transaction
+  githubLinkId String?   @db.Uuid
+   
+  echoApp    EchoApp     @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
+  apiKey     ApiKey?     @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
+  markUp     MarkUp?     @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
+  githubLink GithubLink? @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
+
 
   @@map("llm_transactions")
 }
+
+
+

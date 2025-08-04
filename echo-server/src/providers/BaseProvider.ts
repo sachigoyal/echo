@@ -55,11 +55,6 @@ export abstract class BaseProvider {
     return this.model;
   }
 
-  async getAppMarkup(): Promise<number> {
-    const markUp = await this.echoControlService.getAppMarkup();
-    return markUp;
-  }
-
   // This is specific to OpenAI Format, Anthropic Native and others will need to override this
   ensureStreamUsage(
     reqBody: Record<string, unknown>,

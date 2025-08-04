@@ -37,7 +37,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         id: true,
         name: true,
         description: true,
-        markUp: true,
+        markUp: {
+          select: {
+            amount: true,
+            description: true,
+            isActive: true,
+          },
+        },
         appMemberships: {
           where: {
             role: 'owner',
@@ -73,7 +79,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       id: echoApp.id,
       name: echoApp.name,
       description: echoApp.description,
-      markup: echoApp.markUp,
+      markup: echoApp.markUp?.amount || 1.0, // Default to 1.0 if no markup is set
       owner: owner
         ? {
             name: owner.user.name,
@@ -151,29 +157,40 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Update the app markup
-    const updatedApp = await db.echoApp.update({
+    // Create or update the markup record
+    const markupRecord = await db.markUp.upsert({
       where: {
-        id,
+        echoAppId: id,
+      },
+      update: {
+        amount: markup,
         isActive: true,
         isArchived: false,
       },
-      data: {
-        markUp: markup,
+      create: {
+        echoAppId: id,
+        amount: markup,
+        description: 'App markup rate',
+        isActive: true,
+        isArchived: false,
       },
       select: {
-        id: true,
-        name: true,
-        markUp: true,
+        amount: true,
+        echoApp: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
     return NextResponse.json({
       success: true,
       app: {
-        id: updatedApp.id,
-        name: updatedApp.name,
-        markup: updatedApp.markUp,
+        id: markupRecord.echoApp.id,
+        name: markupRecord.echoApp.name,
+        markup: markupRecord.amount,
       },
     });
   } catch (error) {
