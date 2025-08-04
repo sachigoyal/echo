@@ -13,7 +13,7 @@ import {
   DollarSign,
   Palette,
   BookOpen,
-  Gift,
+  // Gift,
 } from 'lucide-react';
 
 // Import individual settings components
