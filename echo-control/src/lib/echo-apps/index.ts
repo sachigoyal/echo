@@ -14,6 +14,7 @@ import {
   PublicEchoApp,
   AuthenticatedEchoApp,
 } from '../types/apps';
+import { Decimal } from '@/generated/prisma/runtime/library';
 
 // Types for better type safety
 export interface AppCreateInput {
@@ -333,7 +334,14 @@ export const listAppsWithDetails = async (
     ])
   );
 
-  const modelUsageMap = new Map<string, any[]>();
+  const modelUsageMap = new Map<
+    string,
+    {
+      model: string;
+      _count: number;
+      _sum: { totalTokens: number | null; cost: number | null };
+    }[]
+  >();
   modelUsageStats.forEach(stat => {
     const appUsage = modelUsageMap.get(stat.echoAppId) || [];
     appUsage.push({
@@ -402,7 +410,17 @@ export const listAppsWithDetails = async (
         }
       })
     ).then(results => {
-      const map = new Map<string, any[]>();
+      const map = new Map<
+        string,
+        {
+          id: string;
+          model: string;
+          totalTokens: number;
+          cost: Decimal;
+          status: string;
+          createdAt: Date;
+        }[]
+      >();
       results.forEach(({ appId, transactions }) => {
         map.set(appId, transactions);
       });
