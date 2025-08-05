@@ -4,17 +4,17 @@ import { middleware } from '@/auth/middleware';
 import { NextResponse } from 'next/server';
 
 const isPublicRoute = createPathMatcher([
+  // public pages
   '/',
+  '/sign-in(.*)',
+  // public routes
   '/api/auth/(.*)',
   '/api/v1/(.*)',
   '/api/oauth(.*)',
   '/api/validate-jwt-token(.*)',
-  '/sign-in(.*)',
   '/api/apps/public',
   '/api/stripe/webhook(.*)',
   '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
-  '/api/oauth/authorize(.*)', // OAuth authorize endpoint - handles its own auth
-  '/api/oauth/token(.*)', // OAuth token endpoint - handles its own auth
   '/api/health(.*)', // Health check endpoint - no auth needed
 ]);
 
@@ -22,8 +22,6 @@ export default middleware(req => {
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }
-
-  console.log('req.auth', req.auth);
 
   if (!req.auth) {
     const newUrl = new URL('/sign-in', req.nextUrl.origin);
