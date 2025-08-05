@@ -6,8 +6,6 @@ import { HttpError } from './errors/http';
 import { authenticateRequest } from './auth';
 import { modelRequestService } from './services/ModelRequestService';
 import { checkBalance } from './services/BalanceCheckService';
-import { handleStreamService } from './services/HandleStreamService';
-import { handleNonStreamingService } from './services/HandleNonStreamingService';
 
 dotenv.config();
 
@@ -50,33 +48,13 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
     await checkBalance(echoControlService);
 
-    // Execute the model request using ModelRequestService
-    const result = await modelRequestService.executeModelRequest(
+    await modelRequestService.executeModelRequest(
       req,
+      res,
       processedHeaders,
       echoControlService,
       forwardingPath
     );
-
-    // Check if the result is an error
-    if (modelRequestService.isError(result)) {
-      return res.status(result.statusCode).json({
-        error: result.error,
-      });
-    }
-
-    // Extract response, provider, and stream flag from successful result
-    const { response, provider, isStream } = result;
-
-    if (isStream) {
-      await handleStreamService.handleStream(response, provider, res);
-    } else {
-      await handleNonStreamingService.handleNonStreaming(
-        response,
-        provider,
-        res
-      );
-    }
   } catch (error) {
     return next(error);
   }

@@ -1,46 +1,38 @@
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { BaseProvider } from '../providers/BaseProvider';
 import { getProvider } from '../providers/ProviderFactory';
 import { EchoControlService } from './EchoControlService';
 import { isValidModel } from './AccountingService';
 import { extractIsStream, extractModelName } from './RequestDataService';
-
-export interface ModelRequestResult {
-  response: Response;
-  provider: BaseProvider;
-  isStream: boolean;
-}
-
-export interface ModelRequestError {
-  statusCode: number;
-  error: string;
-}
+import { handleStreamService } from './HandleStreamService';
+import { handleNonStreamingService } from './HandleNonStreamingService';
 
 export class ModelRequestService {
   /**
-   * Validates and executes a model request
-   * Returns the raw response from the provider API
+   * Validates and executes a model request, handling the response directly
    * @param req - Express request object containing the model request
+   * @param res - Express response object to send the result to
    * @param processedHeaders - Headers processed for authentication
    * @param echoControlService - Service for Echo control operations
    * @param forwardingPath - Path to forward the request to
-   * @returns Promise with either the response or an error
+   * @returns Promise<void> - Handles the response directly
    */
   async executeModelRequest(
     req: Request,
+    res: Response,
     processedHeaders: Record<string, string>,
     echoControlService: EchoControlService,
     forwardingPath: string
-  ): Promise<ModelRequestResult | ModelRequestError> {
+  ): Promise<void> {
     // Extract and validate model
     const model = extractModelName(req);
 
     if (!model || !isValidModel(model)) {
       console.error('Invalid model: ', model);
-      return {
-        statusCode: 422,
+      res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
-      };
+      });
+      return;
     }
 
     // Extract stream flag
@@ -56,10 +48,10 @@ export class ModelRequestService {
 
     // Validate streaming support
     if (!provider.supportsStream() && isStream) {
-      return {
-        statusCode: 422,
+      res.status(422).json({
         error: `Model ${model} does not support streaming.`,
-      };
+      });
+      return;
     }
 
     // Format authentication headers
@@ -88,29 +80,22 @@ export class ModelRequestService {
     if (response.status !== 200) {
       const error = await response.json();
       console.error('Error response: ', error);
-      return {
-        statusCode: response.status,
+      res.status(response.status).json({
         error: error,
-      };
+      });
+      return;
     }
 
-    // Return successful response with provider and stream flag
-    return {
-      response,
-      provider,
-      isStream,
-    };
-  }
-
-  /**
-   * Type guard to check if result is an error
-   */
-  isError(
-    result: ModelRequestResult | ModelRequestError
-  ): result is ModelRequestError {
-    return (
-      'statusCode' in result && 'error' in result && !('response' in result)
-    );
+    // Handle the successful response based on stream type
+    if (isStream) {
+      await handleStreamService.handleStream(response, provider, res);
+    } else {
+      await handleNonStreamingService.handleNonStreaming(
+        response,
+        provider,
+        res
+      );
+    }
   }
 }
 
