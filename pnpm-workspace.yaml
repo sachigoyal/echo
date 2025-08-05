@@ -15,7 +15,6 @@ allowBuiltDependencies:
   - msw
   - prisma
 ignoredBuiltDependencies:
-  - '@clerk/shared'
   - '@prisma/client'
   - '@prisma/engines'
   - esbuild
