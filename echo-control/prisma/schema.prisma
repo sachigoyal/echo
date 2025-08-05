@@ -13,16 +13,19 @@ model User {
   id              String           @id @default(uuid()) @db.Uuid
   email           String           @unique
   name            String?
-  clerkId         String           @unique
-  profilePictureUrl String?        // Profile picture URL from Clerk
+  emailVerified   DateTime?
+  image           String?
   isArchived      Boolean          @default(false)
   archivedAt      DateTime?        @db.Timestamptz
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
   
-  totalPaid       Decimal  @db.Decimal(65, 14)   // Aggregate for Total payment amount - supports unlimited dollars with pico-cent precision
-  totalSpent      Decimal  @db.Decimal(65, 14)  // Aggregate for Total spent across apps - supports unlimited dollars with pico-cent precision
+  totalPaid       Decimal          @db.Decimal(65, 14)   // Aggregate for Total payment amount - supports unlimited dollars with pico-cent precision
+  totalSpent      Decimal          @db.Decimal(65, 14)  // Aggregate for Total spent across apps - supports unlimited dollars with pico-cent precision
   
+  accounts        Account[]
+  sessions        Session[]
+
   apiKeys         ApiKey[]         // API keys owned by user
   llmTransactions LlmTransaction[] // LLM transactions
   payments        Payment[]        // payments made to the app
@@ -31,6 +34,45 @@ model User {
   spendPoolLimits SpendPoolLimit[] // Spend limits for pools this user has access to
 
   @@map("users")
+}
+
+model Account {
+  userId            String           @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([provider, providerAccountId])
+}
+ 
+model Session {
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+ 
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@id([identifier, token])
 }
 
 model EchoApp {
