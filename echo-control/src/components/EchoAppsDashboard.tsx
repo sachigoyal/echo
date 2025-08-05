@@ -1,7 +1,10 @@
 'use client';
 
-import CreateEchoAppModal from '@/components/CreateEchoAppModal';
-import { useClerk, useUser } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
+
+import Image from 'next/image';
+import Link from 'next/link';
+
 import {
   ChartBarIcon,
   KeyIcon,
@@ -10,10 +13,14 @@ import {
   TrashIcon,
   UserIcon,
 } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+
+import { signOut } from 'next-auth/react';
+
+import CreateEchoAppModal from '@/components/CreateEchoAppModal';
+
 import { GlassButton } from './glass-button';
+
+import { useUser } from '@/hooks/use-user';
 
 interface EchoApp {
   id: string;
@@ -31,7 +38,6 @@ interface EchoApp {
 
 export default function EchoAppsDashboard() {
   const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
   const [echoApps, setEchoApps] = useState<EchoApp[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -131,7 +137,7 @@ export default function EchoAppsDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
+            Welcome back{user?.name ? `, ${user.name}` : ''}!
           </h1>
           <p className="text-muted-foreground">
             Manage your Echo applications and monitor usage.
@@ -152,9 +158,9 @@ export default function EchoAppsDashboard() {
               className="flex items-center space-x-2"
               variant="secondary"
             >
-              {user?.imageUrl ? (
+              {user?.image ? (
                 <Image
-                  src={user.imageUrl}
+                  src={user.image}
                   alt="Profile"
                   width={32}
                   height={32}
@@ -164,14 +170,14 @@ export default function EchoAppsDashboard() {
                 <UserIcon className="h-8 w-8 text-muted-foreground" />
               )}
               <span className="text-sm font-medium text-foreground">
-                {user?.fullName || user?.emailAddresses[0]?.emailAddress}
+                {user?.name || user?.email}
               </span>
             </GlassButton>
 
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
                 <GlassButton
-                  onClick={() => signOut()}
+                  onClick={() => signOut({ redirectTo: '/sign-in' })}
                   className="w-full flex items-center !h-10"
                   variant="secondary"
                 >

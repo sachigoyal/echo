@@ -1,10 +1,12 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
+
 import BalanceCard from '../BalanceCard';
 import { UserDropdown } from './user-dropdown';
 import { Logo } from '../ui/logo';
+
+import { useUser } from '@/hooks/use-user';
 
 export default function Header() {
   const { user, isLoaded } = useUser();

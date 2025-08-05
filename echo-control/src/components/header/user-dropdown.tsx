@@ -9,6 +9,12 @@ import {
   Users,
 } from 'lucide-react';
 
+import Link from 'next/link';
+
+import { signOut } from 'next-auth/react';
+
+import { useTheme } from 'next-themes';
+
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,13 +26,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/skeleton';
-
-import Link from 'next/link';
-
 import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
+
+import { useUser } from '@/hooks/use-user';
+
 import { cn } from '@/lib/utils';
-import { SignOutButton, useUser } from '@clerk/nextjs';
-import { useTheme } from 'next-themes';
 
 export function UserDropdown() {
   const { user, isLoaded } = useUser();
@@ -40,8 +44,8 @@ export function UserDropdown() {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
         <MinimalGithubAvatar
-          srcUrl={user?.imageUrl || ''}
-          alt={user?.username || ''}
+          srcUrl={user?.image || ''}
+          alt={user?.name || ''}
           className="h-10 w-10 rounded-lg border"
         />
       </DropdownMenuTrigger>
@@ -49,15 +53,13 @@ export function UserDropdown() {
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <MinimalGithubAvatar
-              srcUrl={user?.imageUrl || ''}
-              alt={user?.username || ''}
+              srcUrl={user?.image || ''}
+              alt={user?.name || ''}
               className="size-9 rounded-lg"
             />
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{user?.username}</span>
-              <span className="truncate text-xs">
-                {user?.emailAddresses[0]?.emailAddress}
-              </span>
+              <span className="truncate font-semibold">{user?.name}</span>
+              <span className="truncate text-xs">{user?.email}</span>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -124,12 +126,10 @@ export function UserDropdown() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <SignOutButton>
-          <DropdownMenuItem>
-            <LogOut className="size-4" />
-            Sign Out
-          </DropdownMenuItem>
-        </SignOutButton>
+        <DropdownMenuItem onClick={() => signOut({ redirectTo: '/sign-in' })}>
+          <LogOut className="size-4" />
+          Sign Out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

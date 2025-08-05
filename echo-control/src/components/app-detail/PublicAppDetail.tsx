@@ -1,9 +1,7 @@
-import { AppRole } from '@/lib/permissions/types';
-import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
-import { formatCurrency } from '@/lib/balance';
 import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
+
 import { UserPlus } from 'lucide-react';
+
 import {
   AppDetailLayout,
   AppBanner,
@@ -17,6 +15,12 @@ import { UserCountCard } from './UserCountCard';
 import { GlobalModelsCard } from './GlobalModelsCard';
 import { AppHomepageCard } from './AppHomepageCard';
 import JoinAppModal from '../JoinAppModal';
+
+import { useUser } from '@/hooks/use-user';
+import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
+
+import { AppRole } from '@/lib/permissions/types';
+import { formatCurrency } from '@/lib/balance';
 
 // Enhanced interfaces for global data
 interface EnhancedAppData extends DetailedEchoApp {

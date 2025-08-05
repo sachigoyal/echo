@@ -1,10 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
+
 import { Copy, Check, Terminal, Key } from 'lucide-react';
+
 import Link from 'next/link';
+
 import { useSearchParams } from 'next/navigation';
+
+import { useUser } from '@/hooks/use-user';
 
 interface EchoApp {
   id: string;

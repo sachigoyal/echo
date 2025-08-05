@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { EchoApp } from '@/lib/types/apps';
+
 import AppCard from '@/components/AppCard';
 import { Skeleton } from '@/components/skeleton';
-import { useUser } from '@clerk/nextjs';
+
+import { useUser } from '@/hooks/use-user';
+
+import { EchoApp } from '@/lib/types/apps';
 
 interface AllAppsPageProps {
   title: string;

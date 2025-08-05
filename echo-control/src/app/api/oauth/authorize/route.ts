@@ -1,7 +1,7 @@
+import { auth } from '@/auth';
 import { EchoApp } from '@/generated/prisma';
 import { getOrCreateUserFromClerkId } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { getAuth } from '@clerk/nextjs/server';
 import { SignJWT } from 'jose';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
@@ -152,8 +152,9 @@ export async function GET(req: NextRequest) {
     }
 
     /* 2️⃣ Check if user is authenticated with Clerk */
-    const { userId } = getAuth(req);
-    if (!userId) {
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!session?.user) {
       // Handle prompt=none for unauthenticated users - SECURITY FIX
       if (prompt === 'none') {
         return NextResponse.json(
@@ -165,6 +166,7 @@ export async function GET(req: NextRequest) {
           { status: 400 }
         );
       }
+
       // Normal flow: preserve the original authorize URL so user can return after sign-in
       const currentUrl = req.url;
       const signInUrl = new URL('/sign-in', req.nextUrl.origin);
@@ -239,7 +241,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     /* Handle authorization approval from consent page */
-    const { userId } = getAuth(req);
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId) {
       return NextResponse.json(
         { error: 'unauthorized', error_description: 'User not authenticated' },

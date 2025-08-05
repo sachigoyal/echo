@@ -1,8 +1,12 @@
 'use client';
 
-import { SignOutButton, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
+
+import { signOut } from 'next-auth/react';
+
 import { GlassButton } from '@/components/glass-button';
+
+import { useUser } from '@/hooks/use-user';
 
 export default function SignOutPage() {
   const { user } = useUser();
@@ -30,9 +34,7 @@ export default function SignOutPage() {
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Sign Out</h1>
           <p className="text-muted-foreground">
-            {user
-              ? `Goodbye, ${user.firstName || user.emailAddresses[0]?.emailAddress}!`
-              : 'Come back soon!'}
+            {user?.name ? `Goodbye, ${user.name}!` : 'Come back soon!'}
           </p>
         </div>
 
@@ -43,11 +45,13 @@ export default function SignOutPage() {
             </p>
 
             <div className="space-y-4">
-              <SignOutButton redirectUrl="/sign-in">
-                <GlassButton className="w-full" variant="primary">
-                  Sign Out
-                </GlassButton>
-              </SignOutButton>
+              <GlassButton
+                className="w-full"
+                variant="primary"
+                onClick={() => signOut({ redirectTo: '/sign-in' })}
+              >
+                Sign Out
+              </GlassButton>
 
               <Link
                 href="/"

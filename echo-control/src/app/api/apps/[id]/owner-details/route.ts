@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { db } from '@/lib/db';
 import { PermissionService } from '@/lib/permissions/service';
 import { Permission } from '@/lib/permissions/types';
+import { auth } from '@/auth';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -99,15 +99,16 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 // POST /api/apps/[id]/owner-details - Update app markup
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const { userId } = await auth();
-    const { id } = await params;
+    const session = await auth();
 
-    if (!userId) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
+
+    const { id } = await params;
 
     // Validate UUID format
     if (
@@ -124,7 +125,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     // Get user from database
     const user = await db.user.findUnique({
-      where: { clerkId: userId },
+      where: { id: session.user.id },
     });
 
     if (!user) {

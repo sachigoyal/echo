@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+
 import { AppRole } from '@/lib/permissions/types';
 import { AuthenticatedEchoApp } from '@/lib/types/apps';
 import AppPreviewList from './AppPreviewList';
+
+import { useUser } from '@/hooks/use-user';
 
 export const MemberApps: React.FC = () => {
   const { isLoaded } = useUser();
