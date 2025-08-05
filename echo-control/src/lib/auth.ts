@@ -5,11 +5,6 @@ import { hashApiKey } from './crypto';
 import { authenticateEchoAccessJwtToken } from './jwt-tokens';
 import { auth } from '@/auth';
 
-/**
- * Get the current user from Clerk
- * Should be used for endpoints coming from the merit-hosted echo client
- * @returns The current user
- */
 export async function getCurrentUser(): Promise<User> {
   const session = await auth();
 
@@ -28,13 +23,10 @@ export async function getCurrentUser(): Promise<User> {
       data: {
         email: session.user.email || '',
         name: session.user.name || null,
-        image: session.user.image || null, // Get profile picture from Clerk
-        totalPaid: 0, // Initialize with zero paid amount
-        totalSpent: 0, // Initialize with zero spent amount
+        image: session.user.image || null,
       },
     });
   } else {
-    // Update profile picture if it's changed in Clerk
     if (user.image !== session.user.image) {
       user = await db.user.update({
         where: { id: user.id },
@@ -48,10 +40,7 @@ export async function getCurrentUser(): Promise<User> {
   return user;
 }
 
-export async function getOrCreateUserFromClerkId(
-  clerkId: string
-): Promise<User> {
-  // Get user from Clerk
+export async function getOrCreateUser(userId: string): Promise<User> {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -65,18 +54,15 @@ export async function getOrCreateUserFromClerkId(
 
   // If user doesn't exist, create them
   if (!user) {
-    console.log('Creating user from Clerk ID:', clerkId);
     user = await db.user.create({
       data: {
+        id: userId,
         email: session.user.email || '',
         name: session.user.name || null,
-        image: session.user.image || null, // Get profile picture from Clerk
-        totalPaid: 0, // Initialize with zero paid amount
-        totalSpent: 0, // Initialize with zero spent amount
+        image: session.user.image || null,
       },
     });
   } else {
-    // Update profile picture if it's changed in Clerk
     if (user.image !== session.user.image) {
       user = await db.user.update({
         where: { id: user.id },

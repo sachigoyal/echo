@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { EchoApp } from '@/generated/prisma';
-import { getOrCreateUserFromClerkId } from '@/lib/auth';
+import { getOrCreateUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { SignJWT } from 'jose';
 import { nanoid } from 'nanoid';
@@ -151,7 +151,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    /* 2️⃣ Check if user is authenticated with Clerk */
+    /* 2️⃣ Check if user is authenticated */
     const session = await auth();
     const userId = session?.user?.id;
     if (!session?.user) {
@@ -177,7 +177,7 @@ export async function GET(req: NextRequest) {
 
     // Create a new user in the database if they do not exist
     try {
-      await getOrCreateUserFromClerkId(userId!);
+      await getOrCreateUser(userId!);
     } catch (error) {
       console.error('Error creating user:', error);
       return NextResponse.json(

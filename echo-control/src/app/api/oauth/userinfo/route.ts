@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        emailVerified: true,
         name: true,
-        clerkId: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     const userInfo = {
       sub: user.id, // Subject - unique user identifier
       email: user.email,
-      email_verified: true, // Since we use Clerk for auth, email is verified
+      email_verified: user.emailVerified,
       name: user.name || user.email,
       preferred_username: user.name || user.email,
       given_name: user.name?.split(' ')[0] || '',

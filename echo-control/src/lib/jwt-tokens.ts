@@ -378,7 +378,7 @@ export async function handleInitialTokenIssuance(
 
   /* 6️⃣ Get user and validate they exist */
   const user = await db.user.findUnique({
-    where: { clerkId: authData.userId },
+    where: { id: authData.userId },
   });
 
   if (!user) {

@@ -52,7 +52,7 @@ function parseDatabaseUrl(url: string) {
     user: match[1],
     password: match[2],
     host: match[3],
-    port: parseInt(match[4], 10),
+    port: parseInt(match[4]!, 10),
     database: match[5],
   };
 }
@@ -143,8 +143,8 @@ export const configHelpers = {
    * Get database URL for Docker environment
    */
   getDockerDatabaseUrl(): string {
-    const { user, password, database } = TEST_CONFIG.database;
-    return `postgresql://${user}:${password}@postgres-test:5432/${database}`;
+    const { user, password, name } = TEST_CONFIG.database;
+    return `postgresql://${user}:${password}@postgres-test:5432/${name}`;
   },
 
   /**

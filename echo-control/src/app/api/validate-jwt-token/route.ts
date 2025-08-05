@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // POST /api/validate-jwt-token - Fast JWT validation without DB lookup
 export async function POST(request: NextRequest) {
   try {
-    // Use X-Echo-Token header instead of Authorization to avoid Clerk middleware conflicts
+    // Use X-Echo-Token header instead of Authorization to avoid middleware conflicts
     const echoTokenHeader = request.headers.get('x-echo-token');
     const authHeader = request.headers.get('authorization');
 
