@@ -177,7 +177,7 @@ export default function EchoAppsDashboard() {
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
                 <GlassButton
-                  onClick={() => signOut({ redirectTo: '/sign-in' })}
+                  onClick={() => signOut({ redirectTo: '/' })}
                   className="w-full flex items-center !h-10"
                   variant="secondary"
                 >

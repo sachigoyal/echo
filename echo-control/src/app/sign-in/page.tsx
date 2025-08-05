@@ -2,7 +2,15 @@ import { signIn } from '@/auth';
 import { providers } from '@/auth/providers';
 import { ProviderButton } from './provider-button';
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { redirect } = await searchParams;
+
+  const redirectTo = redirect && typeof redirect === 'string' ? redirect : '/';
+
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -42,7 +50,9 @@ export default function SignInPage() {
                 throw new Error('Provider is required');
               }
 
-              await signIn(provider as string);
+              await signIn(provider as string, {
+                redirectTo,
+              });
             }}
           >
             {providers.map(provider => {

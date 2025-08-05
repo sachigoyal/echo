@@ -126,7 +126,7 @@ export function UserDropdown() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut({ redirectTo: '/sign-in' })}>
+        <DropdownMenuItem onClick={() => signOut({ redirectTo: '/' })}>
           <LogOut className="size-4" />
           Sign Out
         </DropdownMenuItem>

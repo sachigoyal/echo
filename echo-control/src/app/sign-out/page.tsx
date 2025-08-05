@@ -48,7 +48,7 @@ export default function SignOutPage() {
               <GlassButton
                 className="w-full"
                 variant="primary"
-                onClick={() => signOut({ redirectTo: '/sign-in' })}
+                onClick={() => signOut({ redirectTo: '/' })}
               >
                 Sign Out
               </GlassButton>
