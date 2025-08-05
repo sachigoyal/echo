@@ -1,4 +1,4 @@
-import { PrismaClient, SpendPool } from 'generated/prisma';
+import { PrismaClient, SpendPool, UserSpendPoolUsage } from 'generated/prisma';
 import { CreateLlmTransactionRequest } from '@zdql/echo-typescript-sdk/src/types';
 
 class FreeTierService {
@@ -13,8 +13,25 @@ class FreeTierService {
     appId: string,
     userId: string
   ): Promise<SpendPool[]> {
-    // Get all active spend pools for the app with their user usage data
-    const spendPoolsWithUsage = await this.db.spendPool.findMany({
+    const spendPoolsWithUsage = await this.fetchActiveSpendPoolsWithUsage(
+      appId,
+      userId
+    );
+
+    const availablePools = spendPoolsWithUsage
+      .filter(pool => this.isPoolAvailableForUser(pool))
+      .map(pool => this.calculatePoolWithRemainingBalance(pool))
+      .sort(this.sortByRemainingBalanceDescending)
+      .map(this.removeTemporaryFields);
+
+    return availablePools;
+  }
+
+  private async fetchActiveSpendPoolsWithUsage(
+    appId: string,
+    userId: string
+  ): Promise<(SpendPool & { userUsage: UserSpendPoolUsage[] })[]> {
+    return await this.db.spendPool.findMany({
       where: {
         echoAppId: appId,
         isActive: true,
@@ -28,46 +45,81 @@ class FreeTierService {
         },
       },
     });
+  }
 
-    // Filter and transform the results based on availability criteria
-    const availablePools = spendPoolsWithUsage
-      .filter(pool => {
-        const userUsage = pool.userUsage[0]; // Should be at most one due to unique constraint
+  private isPoolAvailableForUser(
+    pool: SpendPool & { userUsage: UserSpendPoolUsage[] }
+  ): boolean {
+    const userUsage = pool.userUsage[0]; // At most one due to unique constraint
 
-        if (!userUsage) {
-          // Case 1: No usage record exists AND (pool has no limit OR limit > 0)
-          return !pool.defaultSpendLimit || Number(pool.defaultSpendLimit) > 0;
-        } else {
-          // Case 2: Usage record exists AND user hasn't reached their limit
-          return (
-            userUsage.isActive &&
-            (userUsage.effectiveSpendLimit === null ||
-              Number(userUsage.totalSpent) <
-                Number(userUsage.effectiveSpendLimit))
-          );
-        }
-      })
-      .map(pool => {
-        const userUsage = pool.userUsage[0];
-        // Calculate remaining balance for sorting
-        // If no limit (null), use a very high number for sorting to prioritize unlimited pools
-        const remainingBalance = userUsage
-          ? Number(userUsage.effectiveSpendLimit) - Number(userUsage.totalSpent)
-          : pool.defaultSpendLimit
-            ? Number(pool.defaultSpendLimit)
-            : Number.MAX_SAFE_INTEGER;
+    if (!userUsage) {
+      return this.isNewUserEligibleForPool(pool);
+    }
 
-        // Remove the userUsage from the return object to match original SpendPool type
-        const { userUsage: _, ...spendPoolData } = pool;
-        return {
-          ...spendPoolData,
-          remainingBalance, // Temporary field for sorting
-        };
-      })
-      .sort((a, b) => Number(b.remainingBalance) - Number(a.remainingBalance))
-      .map(({ remainingBalance: _, ...pool }) => pool); // Remove temporary field
+    return this.hasUserRemainingBalance(userUsage);
+  }
 
-    return availablePools;
+  private isNewUserEligibleForPool(
+    pool: SpendPool & { userUsage: UserSpendPoolUsage[] }
+  ): boolean {
+    // New users can use pools that have no limit or a positive limit
+    const hasNoLimit = !pool.defaultSpendLimit;
+    const hasPositiveLimit = Number(pool.defaultSpendLimit) > 0;
+
+    return hasNoLimit || hasPositiveLimit;
+  }
+
+  private hasUserRemainingBalance(userUsage: UserSpendPoolUsage): boolean {
+    if (!userUsage.isActive) {
+      return false;
+    }
+
+    const hasUnlimitedSpend = userUsage.effectiveSpendLimit === null;
+    const hasRemainingCredit =
+      Number(userUsage.totalSpent) < Number(userUsage.effectiveSpendLimit);
+
+    return hasUnlimitedSpend || hasRemainingCredit;
+  }
+
+  private calculatePoolWithRemainingBalance(
+    pool: SpendPool & { userUsage: UserSpendPoolUsage[] }
+  ): SpendPool & { remainingBalance: number } {
+    const userUsage = pool.userUsage[0];
+    const remainingBalance = this.calculateRemainingBalance(pool, userUsage);
+
+    // Remove userUsage from the return object to match SpendPool type
+    const { userUsage: _, ...spendPoolData } = pool;
+
+    return {
+      ...spendPoolData,
+      remainingBalance, // Temporary field for sorting
+    };
+  }
+
+  private calculateRemainingBalance(pool: any, userUsage: any): number {
+    if (userUsage) {
+      // User has existing usage - calculate remaining from their effective limit
+      const effectiveLimit = userUsage.effectiveSpendLimit;
+      const totalSpent = userUsage.totalSpent;
+
+      return effectiveLimit === null
+        ? Number.MAX_SAFE_INTEGER // Unlimited
+        : Number(effectiveLimit) - Number(totalSpent);
+    }
+
+    // New user - use the pool's default limit
+    return pool.defaultSpendLimit === null
+      ? Number.MAX_SAFE_INTEGER // Unlimited
+      : Number(pool.defaultSpendLimit);
+  }
+
+  private sortByRemainingBalanceDescending(a: any, b: any): number {
+    return Number(b.remainingBalance) - Number(a.remainingBalance);
+  }
+
+  private removeTemporaryFields(pool: any): any {
+    const { remainingBalance: _, ...cleanPool } = pool;
+    return cleanPool;
   }
 
   async getOrNoneFreeTierSpendPool(
