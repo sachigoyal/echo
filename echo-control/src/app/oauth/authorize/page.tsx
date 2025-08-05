@@ -1,9 +1,12 @@
 'use client';
 
-import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+
 import { GlassButton } from '@/components/glass-button';
+
+import { useUser } from '@/hooks/use-user';
 
 interface AuthorizeParams {
   client_id: string;
@@ -26,7 +29,7 @@ interface AppOwnerDetails {
 }
 
 export default function OAuthAuthorizePage() {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,11 +97,11 @@ export default function OAuthAuthorizePage() {
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
-    if (isLoaded && !isSignedIn && !error) {
+    if (isLoaded && !user && !error) {
       const currentUrl = window.location.href;
       router.push(`/sign-in?redirect_url=${encodeURIComponent(currentUrl)}`);
     }
-  }, [isLoaded, isSignedIn, error, router]);
+  }, [isLoaded, user, error, router]);
 
   const handleAuthorize = async () => {
     setIsAuthorizing(true);
@@ -152,7 +155,7 @@ export default function OAuthAuthorizePage() {
     );
   }
 
-  if (!isSignedIn) {
+  if (!user) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
