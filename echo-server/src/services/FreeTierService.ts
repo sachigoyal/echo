@@ -17,7 +17,6 @@ class FreeTierService {
     const spendPoolsWithUsage = await this.db.spendPool.findMany({
       where: {
         echoAppId: appId,
-        consumed: false,
         isActive: true,
         isArchived: false,
       },
@@ -172,39 +171,19 @@ class FreeTierService {
         });
       }
 
-      // 5. Update totalSpent on the SpendPool and check if it's now consumed
-      const updatedSpendPool = await tx.spendPool.update({
+      // 5. Update totalSpent on the SpendPool
+      await tx.spendPool.update({
         where: { id: spendPoolId },
         data: {
           totalSpent: {
             increment: transactionData.cost,
           },
         },
-        select: {
-          totalSpent: true,
-          totalAmount: true,
-          consumed: true,
-        },
       });
-
-      // 6. Check if pool is now out of credits and mark as consumed
-      const isNowConsumed =
-        Number(updatedSpendPool.totalSpent) >=
-        Number(updatedSpendPool.totalAmount);
-
-      if (isNowConsumed && !updatedSpendPool.consumed) {
-        await tx.spendPool.update({
-          where: { id: spendPoolId },
-          data: {
-            consumed: true,
-          },
-        });
-      }
 
       return {
         llmTransaction,
         userSpendPoolUsage,
-        poolConsumed: isNowConsumed,
       };
     });
   }

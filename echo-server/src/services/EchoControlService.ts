@@ -121,7 +121,6 @@ export class EchoControlService {
       const { userId } = this.authResult;
       const balance = await this.dbService.getBalance(userId);
 
-      console.log('fetched balance', balance);
       return balance.balance;
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -150,11 +149,6 @@ export class EchoControlService {
         },
       },
     });
-    console.log(
-      'App Markup being Used: ',
-      appWithMarkup?.markUp?.id,
-      appWithMarkup?.markUp?.amount
-    );
 
     if (!appWithMarkup) {
       throw new Error('EchoApp not found');
@@ -208,13 +202,6 @@ export class EchoControlService {
       },
     });
 
-    console.log(
-      'Github Link being Used: ',
-      githubLink?.id,
-      githubLink?.githubId,
-      githubLink?.githubType
-    );
-
     // Return null values if no link exists or if it's inactive/archived
     if (!githubLink || githubLink.isArchived || !githubLink.isActive) {
       return { githubId: null, githubType: null, id: null };
@@ -248,20 +235,10 @@ export class EchoControlService {
       if (this.freeTierSpendPool) {
         await this.createFreeTierTransaction(transaction);
         return;
+      } else {
+        await this.createPaidTransaction(transaction);
+        return;
       }
-
-      const cost = transaction.cost * this.appMarkup;
-      transaction.cost = cost;
-
-      const { userId, echoAppId, apiKeyId } = this.authResult;
-      await this.dbService.createLlmTransaction(
-        userId,
-        echoAppId,
-        transaction,
-        apiKeyId,
-        this.markUpId || undefined,
-        this.githubLinkId || undefined
-      );
     } catch (error) {
       console.error('Error creating transaction:', error);
     }
@@ -319,6 +296,33 @@ export class EchoControlService {
       userId,
       this.freeTierSpendPool.id,
       transactionData
+    );
+  }
+
+  async createPaidTransaction(
+    transaction: CreateLlmTransactionRequest
+  ): Promise<void> {
+    if (!this.authResult) {
+      console.error('No authentication result available');
+      return;
+    }
+
+    if (!this.appMarkup) {
+      console.error('User has not authenticated');
+      return;
+    }
+
+    const cost = transaction.cost * this.appMarkup;
+    transaction.cost = cost;
+
+    const { userId, echoAppId, apiKeyId } = this.authResult;
+    await this.dbService.createLlmTransaction(
+      userId,
+      echoAppId,
+      transaction,
+      apiKeyId,
+      this.markUpId || undefined,
+      this.githubLinkId || undefined
     );
   }
 }

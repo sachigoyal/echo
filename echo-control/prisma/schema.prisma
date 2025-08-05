@@ -216,7 +216,6 @@ model SpendPool {
   totalAmount      Decimal  @db.Decimal(65, 14) @default(0.0) // Total amount available in this pool from payments
   defaultSpendLimit Decimal? @db.Decimal(65, 14) // Default spend limit for new users accessing this pool
   totalSpent       Decimal  @db.Decimal(65, 14) @default(0.0) // Total spent on this pool so far
-  consumed         Boolean @default(false)
   isActive         Boolean  @default(true)
   isArchived       Boolean  @default(false)
   archivedAt       DateTime? @db.Timestamptz
