@@ -99,8 +99,7 @@ export function useEchoAppDetail(appId: string): UseEchoAppDetailReturn {
                   id: publicApp.owner.id,
                   email: publicApp.owner.email,
                   name: publicApp.owner.name || undefined,
-                  profilePictureUrl:
-                    publicApp.owner.profilePictureUrl || undefined,
+                  profilePictureUrl: publicApp.owner.image || undefined,
                 },
               };
               setApp(appData);

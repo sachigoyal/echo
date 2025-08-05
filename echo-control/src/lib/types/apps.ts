@@ -29,7 +29,7 @@ export interface PublicEchoApp {
     id: string;
     email: string;
     name: string | null;
-    profilePictureUrl: string | null;
+    image: string | null;
   };
   activityData: number[];
   stats: {
@@ -78,7 +78,7 @@ export interface DetailedEchoApp extends AuthenticatedEchoApp {
     id: string;
     email: string;
     name: string | null;
-    profilePictureUrl: string | null;
+    image: string | null;
   };
   apiKeys: Array<{
     id: string;

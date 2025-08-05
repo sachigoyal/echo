@@ -118,9 +118,7 @@ export const Carousel: React.FC<CarouselProps> = ({
                       <div className="flex items-start gap-3 min-w-0 flex-1">
                         <ProfileAvatar
                           name={app.name}
-                          src={
-                            app.profilePictureUrl || app.owner.profilePictureUrl
-                          }
+                          src={app.profilePictureUrl || app.owner.image}
                           size="md"
                           className="mt-5"
                         />

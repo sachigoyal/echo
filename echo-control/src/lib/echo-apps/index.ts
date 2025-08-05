@@ -245,7 +245,7 @@ export const listAppsWithDetails = async (
                   id: true,
                   email: true,
                   name: true,
-                  profilePictureUrl: true,
+                  image: true,
                 },
               },
               echoApp: {
@@ -472,13 +472,13 @@ export const listAppsWithDetails = async (
             id: owner.id,
             email: owner.email,
             name: owner.name,
-            profilePictureUrl: owner.profilePictureUrl,
+            image: owner.image,
           }
         : {
             id: '',
             email: '',
             name: null,
-            profilePictureUrl: null,
+            image: null,
           },
       activityData,
       stats: {
@@ -805,13 +805,13 @@ export const getPublicAppInfo = async (
           id: ownerMembership.user.id,
           email: '', // Don't expose email for public apps
           name: ownerMembership.user.name,
-          profilePictureUrl: null,
+          image: null,
         }
       : {
           id: '',
           email: '',
           name: null,
-          profilePictureUrl: null,
+          image: null,
         },
     stats: {
       totalTransactions: stats._count || 0,
@@ -1099,13 +1099,13 @@ export const getPublicAppsInfo = async (
               id: ownerMembership.user.id,
               email: '', // Don't expose email for public apps
               name: ownerMembership.user.name,
-              profilePictureUrl: null,
+              image: null,
             }
           : {
               id: '',
               email: '',
               name: null,
-              profilePictureUrl: null,
+              image: null,
             },
         stats: {
           totalTransactions: stats._count || 0,
@@ -1670,7 +1670,7 @@ export const getDetailedAppInfo = async (
         id: ownerMembership.user.id,
         email: ownerMembership.user.email,
         name: ownerMembership.user.name,
-        profilePictureUrl: null,
+        image: null,
       },
       userRole,
       permissions: PermissionService.getPermissionsForRole(userRole),
@@ -1681,13 +1681,13 @@ export const getDetailedAppInfo = async (
             id: ownerMembership.user.id,
             email: ownerMembership.user.email,
             name: ownerMembership.user.name,
-            profilePictureUrl: null,
+            image: null,
           }
         : {
             id: '',
             email: '',
             name: null,
-            profilePictureUrl: null,
+            image: null,
           },
       _count: {
         apiKeys: app._count.apiKeys,

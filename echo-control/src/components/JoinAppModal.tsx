@@ -14,7 +14,7 @@ interface JoinAppModalProps {
     user: {
       name?: string | null;
       email: string;
-      profilePictureUrl: string | null;
+      image: string | null;
     };
   };
   onClose: () => void;
