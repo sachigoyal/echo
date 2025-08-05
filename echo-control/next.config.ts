@@ -2,6 +2,12 @@ import type { NextConfig } from 'next';
 // @ts-ignore - No type declarations available for this package
 import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
 
+const CORS_HEADERS = [
+  { key: 'Access-Control-Allow-Origin', value: 'http://localhost:3000' },
+  { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
+  { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+];
+
 const nextConfig: NextConfig = {
   devIndicators: false,
   experimental: {
@@ -32,6 +38,22 @@ const nextConfig: NextConfig = {
       config.plugins = [...config.plugins, new PrismaPlugin()];
     }
     return config;
+  },
+  async headers() {
+    return [
+      {
+        source: '/api/oauth/:path*',
+        headers: CORS_HEADERS,
+      },
+      {
+        source: '/api/v1/:path*',
+        headers: CORS_HEADERS,
+      },
+      {
+        source: '/api/validate-jwt-token',
+        headers: CORS_HEADERS,
+      },
+    ];
   },
 };
 
