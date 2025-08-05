@@ -64,43 +64,41 @@ jobs:
           cat > .env.test << EOF
           # Database Configuration
           DATABASE_URL=postgresql://test:test@localhost:5433/echo_integration_test
-          
+
           # Service URLs
           ECHO_CONTROL_URL=http://localhost:3001
           ECHO_DATA_SERVER_URL=http://localhost:3069
-          
+
           # Authentication Secrets
           JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}
           JWT_ISSUER=http://localhost:3001
           JWT_AUDIENCE=echo-proxy
-          
-          # Clerk Configuration
-          CLERK_PUBLISHABLE_KEY=${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
-          
+
+          # Auth.js Configuration
+          AUTH_SECRET=${{ secrets.TEST_AUTH_SECRET }}
+
           # Integration Test JWTs
           INTEGRATION_TEST_JWT=${{ secrets.INTEGRATION_TEST_JWT }}
           INTEGRATION_TEST_JWT_USER_2=${{ secrets.INTEGRATION_TEST_JWT_USER_2 }}
-          
+
           # API Keys for Echo Server
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
-          
+
           # OAuth Configuration
           OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=5
           OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS=5
-          
+
           # Environment Flags
           CI=true
           NODE_ENV=test
           INTEGRATION_TEST_MODE=true
-          
+
           # Optional Stripe Configuration
           STRIPE_SECRET_KEY=${{ secrets.TEST_STRIPE_SECRET_KEY }}
           STRIPE_PUBLISHABLE_KEY=${{ secrets.TEST_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_WEBHOOK_SECRET=${{ secrets.TEST_STRIPE_WEBHOOK_SECRET }}
-          
+
           # Test Configuration
           HEADLESS=true
           LOG_LEVEL=error
@@ -128,9 +126,6 @@ jobs:
           JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
           JWT_ISSUER: http://localhost:3001
           JWT_AUDIENCE: echo-proxy
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           INTEGRATION_TEST_JWT: ${{ secrets.INTEGRATION_TEST_JWT }}
           INTEGRATION_TEST_JWT_USER_2: ${{ secrets.INTEGRATION_TEST_JWT_USER_2 }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -151,18 +146,10 @@ jobs:
 
       - name: Run Echo Data Server Tests
         working-directory: integration-tests
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         run: pnpm test:echo-data-server
 
       - name: Run OAuth Protocol Tests
         working-directory: integration-tests
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_PUBLISHABLE_KEY: ${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         run: pnpm test:oauth-protocol
 
       - name: Upload test results
@@ -217,7 +204,6 @@ jobs:
           ECHO_CONTROL_URL=http://echo-control-test:3000
           ECHO_DATA_SERVER_URL=http://echo-data-server-test:3069
           JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}
-          CLERK_PUBLISHABLE_KEY=${{ secrets.TEST_CLERK_PUBLISHABLE_KEY }}
           INTEGRATION_TEST_JWT=${{ secrets.INTEGRATION_TEST_JWT }}
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
@@ -261,4 +247,4 @@ jobs:
       - name: Cleanup Docker services
         if: always()
         working-directory: integration-tests
-        run: docker-compose -f docker/docker-compose.yml down -v 
+        run: docker-compose -f docker/docker-compose.yml down -v

@@ -10,7 +10,7 @@ describe('Basic Connectivity Test', () => {
     expect(TEST_CONFIG.services.echoControl).toBeDefined();
     expect(process.env.DATABASE_URL).toBeDefined();
     expect(process.env.JWT_SECRET).toBeDefined();
-    expect(process.env.CLERK_PUBLISHABLE_KEY).toBeDefined();
+    expect(process.env.AUTH_SECRET).toBeDefined();
     expect(process.env.INTEGRATION_TEST_JWT).toBeDefined();
   });
 
