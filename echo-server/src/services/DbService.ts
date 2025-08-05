@@ -2,6 +2,7 @@ import {
   Balance,
   ApiKeyValidationResult,
   EchoAccessJwtPayload,
+  CreateLlmTransactionRequest,
 } from '@zdql/echo-typescript-sdk/src/types';
 import { createHmac } from 'crypto';
 import { jwtVerify } from 'jose';
@@ -231,18 +232,7 @@ export class EchoDbService {
   async createLlmTransaction(
     userId: string,
     echoAppId: string,
-    transaction: {
-      model: string;
-      inputTokens: number;
-      outputTokens: number;
-      totalTokens: number;
-      providerId: string;
-      cost: number;
-      prompt?: string;
-      response?: string;
-      status?: string;
-      errorMessage?: string;
-    },
+    transaction: CreateLlmTransactionRequest,
     apiKeyId?: string,
     markUpId?: string,
     githubLinkId?: string

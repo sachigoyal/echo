@@ -8,16 +8,19 @@ import { EchoDbService } from './DbService';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient, SpendPool } from '../generated/prisma';
+import FreeTierService from './FreeTierService';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
   private readonly dbService: EchoDbService;
+  private readonly freeTierService: FreeTierService;
   private readonly apiKey: string;
   private authResult: ApiKeyValidationResult | null = null;
   private appMarkup: number | null = null;
   private markUpId: string | null = null;
   private githubLinkId: string | null = null;
+  private freeTierSpendPool: SpendPool | null = null;
 
   constructor(apiKey: string) {
     // Check if the generated Prisma client exists
@@ -38,6 +41,7 @@ export class EchoControlService {
       },
     });
     this.dbService = new EchoDbService(this.db);
+    this.freeTierService = new FreeTierService(this.db);
   }
 
   /**
@@ -241,6 +245,11 @@ export class EchoControlService {
         return;
       }
 
+      if (this.freeTierSpendPool) {
+        await this.createFreeTierTransaction(transaction);
+        return;
+      }
+
       const cost = transaction.cost * this.appMarkup;
       transaction.cost = cost;
 
@@ -256,5 +265,60 @@ export class EchoControlService {
     } catch (error) {
       console.error('Error creating transaction:', error);
     }
+  }
+
+  async getOrNoneFreeTierSpendPool(
+    userId: string,
+    appId: string
+  ): Promise<SpendPool | null> {
+    this.freeTierSpendPool =
+      await this.freeTierService.getOrNoneFreeTierSpendPool(userId, appId);
+    return this.freeTierSpendPool;
+  }
+
+  async createFreeTierTransaction(
+    transaction: CreateLlmTransactionRequest
+  ): Promise<void> {
+    if (!this.authResult) {
+      console.error('No authentication result available');
+      return;
+    }
+
+    if (!this.freeTierSpendPool) {
+      console.error('No free tier spend pool available');
+      return;
+    }
+
+    const { userId, echoAppId, apiKeyId } = this.authResult;
+    if (!userId || !echoAppId) {
+      console.error('Missing required user or app information');
+      return;
+    }
+
+    if (!this.appMarkup) {
+      console.error('User has not authenticated');
+      return;
+    }
+
+    // Markup is checked, but not applied here because it is a free tier transaction
+    const githubLinkId = this.githubLinkId ?? undefined;
+
+    const transactionData: CreateLlmTransactionRequest & {
+      echoAppId: string;
+      apiKeyId?: string;
+      markUpId?: string;
+      githubLinkId?: string;
+    } = {
+      ...transaction,
+      echoAppId: echoAppId,
+      ...(apiKeyId && { apiKeyId }),
+      ...(githubLinkId && { githubLinkId }),
+    };
+
+    await this.freeTierService.createFreeTierTransaction(
+      userId,
+      this.freeTierSpendPool.id,
+      transactionData
+    );
   }
 }

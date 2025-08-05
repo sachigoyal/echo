@@ -22,13 +22,13 @@ model User {
   
   totalPaid       Decimal  @db.Decimal(65, 14)   // Aggregate for Total payment amount - supports unlimited dollars with pico-cent precision
   totalSpent      Decimal  @db.Decimal(65, 14)  // Aggregate for Total spent across apps - supports unlimited dollars with pico-cent precision
-  
-  apiKeys         ApiKey[]         // API keys owned by user
-  llmTransactions LlmTransaction[] // LLM transactions
-  payments        Payment[]        // payments made to the app
-  refreshTokens   RefreshToken[]   // refresh tokens 
-  appMemberships  AppMembership[]  // Apps you are a member of
-  spendPoolLimits SpendPoolLimit[] // Spend limits for pools this user has access to
+
+  apiKeys         ApiKey[]               // API keys owned by user
+  llmTransactions LlmTransaction[]       // LLM transactions
+  payments        Payment[]              // payments made to the app
+  refreshTokens   RefreshToken[]         // refresh tokens 
+  appMemberships  AppMembership[]        // Apps you are a member of
+  spendPoolUsage  UserSpendPoolUsage[]   // User's spend pool usage records
 
   @@map("users")
 }
@@ -132,9 +132,10 @@ model Payment {
   createdAt       DateTime @default(now()) @db.Timestamptz
   updatedAt       DateTime @updatedAt @db.Timestamptz
   userId          String   @db.Uuid
+  spendPoolId     String?  @db.Uuid  // Optional: which spend pool this payment funds
 
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
-  spendPoolPayments SpendPoolPayment[] // Payments can be associated with multiple spend pools
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
+  spendPool       SpendPool? @relation(fields: [spendPoolId], references: [id], onDelete: SetNull) // Spend pool this payment funds
 
   @@map("payments")
 }
@@ -175,34 +176,35 @@ model GithubLink {
 }
 
 model LlmTransaction {
-  id           String   @id @default(uuid()) @db.Uuid
-  providerId   String
-  model        String
-  inputTokens  Int
-  outputTokens Int
-  totalTokens  Int
-  cost         Decimal  @db.Decimal(65, 14)  // Supports unlimited cost values with pico-cent precision
-  prompt       String?
-  response     String?
-  status       String
-  errorMessage String?
-  isArchived   Boolean  @default(false)
-  archivedAt   DateTime? @db.Timestamptz
-  createdAt    DateTime @default(now()) @db.Timestamptz
-  userId       String   @db.Uuid
-  echoAppId    String   @db.Uuid
-  apiKeyId     String?   @db.Uuid  // API key used for this transaction (not required, won't be included if it was using a JWT)
-  markUpId     String?   @db.Uuid  // MarkUp rate used for billing this transaction
-  githubLinkId String?   @db.Uuid
-  spendPoolId  String?   @db.Uuid  // Optional spend pool this transaction was charged against
-   
-  echoApp    EchoApp     @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
-  apiKey     ApiKey?     @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
-  markUp     MarkUp?     @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
-  githubLink GithubLink? @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
-  spendPool  SpendPool?  @relation(fields: [spendPoolId], references: [id]) // Spend pool this transaction was charged against
+  id                     String   @id @default(uuid()) @db.Uuid
+  providerId             String
+  model                  String
+  inputTokens            Int
+  outputTokens           Int
+  totalTokens            Int
+  cost                   Decimal  @db.Decimal(65, 14)  // Supports unlimited cost values with pico-cent precision
+  prompt                 String?
+  response               String?
+  status                 String
+  errorMessage           String?
+  isArchived             Boolean  @default(false)
+  archivedAt             DateTime? @db.Timestamptz
+  createdAt              DateTime @default(now()) @db.Timestamptz
+  userId                 String   @db.Uuid
+  echoAppId              String   @db.Uuid
+  apiKeyId               String?   @db.Uuid  // API key used for this transaction (not required, won't be included if it was using a JWT)
+  markUpId               String?   @db.Uuid  // MarkUp rate used for billing this transaction
+  githubLinkId           String?   @db.Uuid
+  spendPoolId            String?   @db.Uuid  // Optional spend pool this transaction was charged against
+  userSpendPoolUsageId   String?   @db.Uuid  // Link to specific user pool usage record
 
+  echoApp                EchoApp                @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
+  apiKey                 ApiKey?                @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
+  markUp                 MarkUp?                @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
+  githubLink             GithubLink?            @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
+  spendPool              SpendPool?             @relation(fields: [spendPoolId], references: [id]) // Spend pool this transaction was charged against
+  userSpendPoolUsage     UserSpendPoolUsage?    @relation(fields: [userSpendPoolUsageId], references: [id]) // User pool usage this transaction was charged against
 
   @@map("llm_transactions")
 }
@@ -212,6 +214,9 @@ model SpendPool {
   name             String   // Name for the spend pool (e.g., "Q1 2024 Budget", "Marketing Campaign")
   description      String?  // Optional description for the spend pool
   totalAmount      Decimal  @db.Decimal(65, 14) @default(0.0) // Total amount available in this pool from payments
+  defaultSpendLimit Decimal? @db.Decimal(65, 14) // Default spend limit for new users accessing this pool
+  totalSpent       Decimal  @db.Decimal(65, 14) @default(0.0) // Total spent on this pool so far
+  consumed         Boolean @default(false)
   isActive         Boolean  @default(true)
   isArchived       Boolean  @default(false)
   archivedAt       DateTime? @db.Timestamptz
@@ -219,47 +224,31 @@ model SpendPool {
   updatedAt        DateTime @updatedAt @db.Timestamptz
   echoAppId        String   @db.Uuid
 
-  echoApp           EchoApp            @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this spend pool belongs to
-  spendPoolPayments SpendPoolPayment[] // Payments that fund this spend pool
-  spendPoolLimits   SpendPoolLimit[]   // Per-user spend limits for this pool
-  llmTransactions   LlmTransaction[]   // LLM transactions charged against this pool
+  echoApp           EchoApp                @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this spend pool belongs to
+  payments          Payment[]              // Payments that fund this spend pool
+  llmTransactions   LlmTransaction[]       // LLM transactions charged against this pool
+  userUsage         UserSpendPoolUsage[]   // User usage records for this pool
 
   @@map("spend_pools")
 }
 
-model SpendPoolPayment {
-  id          String   @id @default(uuid()) @db.Uuid
-  amount      Decimal  @db.Decimal(65, 14) // Amount from the payment allocated to this pool
-  isArchived  Boolean  @default(false)
-  archivedAt  DateTime? @db.Timestamptz
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
-  paymentId   String   @db.Uuid
-  spendPoolId String   @db.Uuid
+model UserSpendPoolUsage {
+  id                   String   @id @default(uuid()) @db.Uuid
+  userId               String   @db.Uuid
+  spendPoolId          String   @db.Uuid
+  effectiveSpendLimit  Decimal?  @db.Decimal(65, 14) // Effective spend limit (individual override or pool default)
+  totalSpent           Decimal  @db.Decimal(65, 14) @default(0.0) // Materialized sum of transaction costs charged to this usage
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now()) @db.Timestamptz
+  updatedAt            DateTime @updatedAt @db.Timestamptz
 
-  payment   Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade) // Payment that funds this allocation
-  spendPool SpendPool @relation(fields: [spendPoolId], references: [id], onDelete: Cascade) // Spend pool receiving the funds
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spendPool            SpendPool          @relation(fields: [spendPoolId], references: [id], onDelete: Cascade)
+  llmTransactions      LlmTransaction[]   // Transactions charged against this user pool usage
 
-  @@unique([paymentId, spendPoolId]) // A payment can only be allocated to a specific pool once
-  @@map("spend_pool_payments")
+  @@unique([userId, spendPoolId]) // One usage record per user per spend pool
+  @@map("user_spend_pool_usage")
 }
 
-model SpendPoolLimit {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
-  spendPoolId String   @db.Uuid
-  spendLimit  Decimal  @db.Decimal(65, 14) // Maximum amount this user can spend from this pool
-  spentAmount Decimal  @db.Decimal(65, 14) @default(0.0) // Amount already spent by this user from this pool (maintained via triggers or app logic)
-  isActive    Boolean  @default(true)
-  isArchived  Boolean  @default(false)
-  archivedAt  DateTime? @db.Timestamptz
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade) // User with spend limit
-  spendPool SpendPool @relation(fields: [spendPoolId], references: [id], onDelete: Cascade) // Pool with the limit
-
-  @@unique([userId, spendPoolId]) // A user can only have one limit per spend pool
-  @@map("spend_pool_limits")
-}
 

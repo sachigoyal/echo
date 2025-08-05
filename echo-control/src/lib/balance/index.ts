@@ -65,6 +65,28 @@ export async function getBalance(
   };
 }
 
+/**
+ * Update user balance from a payment within an existing transaction
+ * @param tx - The database transaction
+ * @param userId - The user ID to update
+ * @param amountInCents - The payment amount in cents
+ */
+export async function updateUserBalanceFromPayment(
+  tx: any,
+  userId: string,
+  amountInCents: number
+): Promise<void> {
+  // Convert from cents to dollars and update user's totalPaid balance
+  await tx.user.update({
+    where: { id: userId },
+    data: {
+      totalPaid: {
+        increment: amountInCents / 100,
+      },
+    },
+  });
+}
+
 // Helper function to safely format currency
 export const formatCurrency = (value: number | null | undefined): string => {
   if (value === null || value === undefined || isNaN(value)) {

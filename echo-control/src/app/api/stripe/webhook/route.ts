@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { processPaymentUpdate } from '@/lib/payment-processing';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -104,10 +105,11 @@ async function handleCheckoutSessionCompleted(
         },
       });
 
+      let paymentRecord;
       if (updatedPayment.count === 0) {
         console.warn(`No pending payment found for payment ID: ${paymentId}`);
         // Create a new payment record if one doesn't exist
-        await tx.payment.create({
+        paymentRecord = await tx.payment.create({
           data: {
             stripePaymentId: paymentId,
             amount: amount_total,
@@ -118,22 +120,31 @@ async function handleCheckoutSessionCompleted(
           },
         });
         console.log(`Created new payment record for payment ID: ${paymentId}`);
+      } else {
+        // Get the existing payment record
+        paymentRecord = await tx.payment.findFirst({
+          where: {
+            stripePaymentId: paymentId,
+          },
+        });
       }
 
-      // Atomically update user's totalPaid (amount_total is in cents, convert to dollars)
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          totalPaid: {
-            increment: amount_total / 100,
-          },
-        },
-      });
+      // Process the payment update using the cleaned up payment processing logic
+      if (paymentRecord) {
+        await processPaymentUpdate(tx, {
+          userId,
+          amountInCents: amount_total,
+          paymentRecord,
+          metadata: metadata || {},
+          echoAppId,
+        });
+      }
     });
 
     const creditsAdded = Math.floor(amount_total / 100);
+    const isFreeTier = metadata?.type === 'free-tier-credits';
     console.log(
-      `Checkout completed for user ${userId}${echoAppId ? ` and app ${echoAppId}` : ''}: ${creditsAdded} credits added, totalPaid updated`
+      `Checkout completed for user ${userId}${echoAppId ? ` and app ${echoAppId}` : ''}: ${creditsAdded} credits ${isFreeTier ? 'added to free tier pool' : 'added, totalPaid updated'}`
     );
   } catch (error) {
     console.error('Error handling checkout completion:', error);
@@ -153,7 +164,7 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     // Use a database transaction to atomically update payment status and user balance
     await db.$transaction(async tx => {
       // Update payment in database
-      await tx.payment.upsert({
+      const paymentRecord = await tx.payment.upsert({
         where: { stripePaymentId: id },
         update: { status: 'completed' },
         create: {
@@ -166,18 +177,20 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
         },
       });
 
-      // Atomically update user's totalPaid (amount is in cents, convert to dollars)
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          totalPaid: {
-            increment: amount / 100,
-          },
-        },
+      // Process the payment update using the cleaned up payment processing logic
+      await processPaymentUpdate(tx, {
+        userId,
+        amountInCents: amount,
+        paymentRecord,
+        metadata: metadata || {},
+        echoAppId: metadata?.echoAppId,
       });
     });
 
-    console.log(`Payment succeeded: ${id}, totalPaid updated`);
+    const isFreeTier = metadata?.type === 'free-tier-credits';
+    console.log(
+      `Payment succeeded: ${id}${isFreeTier ? ' (free tier pool)' : ', totalPaid updated'}`
+    );
   } catch (error) {
     console.error('Error handling payment success:', error);
   }

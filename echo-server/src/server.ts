@@ -12,6 +12,7 @@ import {
   extractModelName,
 } from './services/RequestDataService';
 import { extractAppIdFromPath } from './services/PathDataService';
+import { SpendPool } from 'generated/prisma';
 
 dotenv.config();
 
@@ -59,19 +60,19 @@ function duplicateStream(
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Extract app ID from path if present
-    const { appId, remainingPath } = extractAppIdFromPath(req.path);
+    const { appId: pathAppId, remainingPath } = extractAppIdFromPath(req.path);
 
     // Use the remaining path for provider forwarding, or original path if no app ID found
-    const forwardingPath = appId ? remainingPath : req.path;
+    const forwardingPath = pathAppId ? remainingPath : req.path;
 
     // Process headers and instantiate provider
     const [processedHeaders, echoControlService] = await verifyUserHeaderCheck(
       req.headers as Record<string, string>
     );
 
-    if (appId) {
+    if (pathAppId) {
       const authResult = echoControlService.getAuthResult();
-      if (!authResult?.echoAppId || authResult.echoAppId !== appId) {
+      if (!authResult?.echoAppId || authResult.echoAppId !== pathAppId) {
         return res.status(401).json({
           error: 'Unauthorized use of this app.',
         });
@@ -107,12 +108,34 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
-    const balance = await echoControlService.getBalance();
 
-    if (balance <= 0) {
-      const userId = echoControlService.getUserId();
-      console.log('Payment required for user:', userId);
-      throw new PaymentRequiredError();
+    let usingFreeTier = false;
+    let freeTierSpendPool: SpendPool | null = null;
+
+    const userId = echoControlService.getUserId();
+    const appId = echoControlService.getEchoAppId();
+
+    if (userId && appId) {
+      freeTierSpendPool = await echoControlService.getOrNoneFreeTierSpendPool(
+        userId,
+        appId
+      );
+      if (freeTierSpendPool) {
+        usingFreeTier = true;
+        console.log(
+          'Identified available free tier spend pool:',
+          freeTierSpendPool.id
+        );
+      }
+    }
+
+    let balance: number | null = null;
+
+    if (!usingFreeTier) {
+      balance = await echoControlService.getBalance();
+      if (balance <= 0) {
+        throw new PaymentRequiredError();
+      }
     }
 
     console.log(
