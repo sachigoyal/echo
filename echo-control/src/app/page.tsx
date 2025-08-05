@@ -1,9 +1,6 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
-
-import { useTheme } from 'next-themes';
 
 import PopularApps from '@/components/PopularApps';
 import {
@@ -16,7 +13,6 @@ import { GlassButton } from '@/components/glass-button';
 import { Logo } from '@/components/ui/logo';
 
 export default function HomePage() {
-  const { resolvedTheme } = useTheme();
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
