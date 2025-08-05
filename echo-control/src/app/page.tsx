@@ -1,6 +1,10 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
+
+import { useTheme } from 'next-themes';
+
 import PopularApps from '@/components/PopularApps';
 import {
   CardHeader,
@@ -8,8 +12,6 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import { useTheme } from '@/components/theme-provider';
-import Link from 'next/link';
 import { GlassButton } from '@/components/glass-button';
 
 export default function HomePage() {
