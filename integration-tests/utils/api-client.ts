@@ -75,7 +75,6 @@ export class EchoControlApiClient {
 
     const headers: Record<string, string> = {};
 
-    // Add Clerk JWT template token as Bearer token for authentication
     if (this.integrationJwt) {
       headers['Authorization'] = `Bearer ${this.integrationJwt}`;
     }
