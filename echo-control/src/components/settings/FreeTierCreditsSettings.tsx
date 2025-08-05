@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DollarSign, Plus, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +36,7 @@ export default function FreeTierCreditsSettings({
   const [editingPool, setEditingPool] = useState<SpendPoolData | null>(null);
 
   // Fetch spend pools data
-  const fetchSpendPools = async () => {
+  const fetchSpendPools = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/owner/apps/${appId}/free-tier-credits/spend-pools`
@@ -66,7 +66,7 @@ export default function FreeTierCreditsSettings({
         totalBalance: 0,
       });
     }
-  };
+  }, [appId]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -76,7 +76,7 @@ export default function FreeTierCreditsSettings({
     };
 
     loadData();
-  }, [appId]);
+  }, [appId, fetchSpendPools]);
 
   const handleDeposit = async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) return;

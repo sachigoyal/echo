@@ -1,10 +1,12 @@
 import { updateSpendPoolFromPayment } from './spend-pools';
 import { updateUserBalanceFromPayment } from './balance';
+import type { Payment } from '@/generated/prisma';
+import type { PrismaClient } from '@/generated/prisma';
 
 export interface PaymentProcessingData {
   userId: string;
   amountInCents: number;
-  paymentRecord: any;
+  paymentRecord: Payment;
   metadata?: Record<string, string>;
   echoAppId?: string;
 }
@@ -15,7 +17,7 @@ export interface PaymentProcessingData {
  * @param data - Payment processing data
  */
 export async function processPaymentUpdate(
-  tx: any,
+  tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   data: PaymentProcessingData
 ): Promise<void> {
   const { userId, amountInCents, paymentRecord, metadata, echoAppId } = data;

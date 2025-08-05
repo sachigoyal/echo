@@ -29,7 +29,11 @@ export async function PUT(
 
     const { name, description, defaultSpendLimit } = body;
 
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      description?: string;
+      defaultSpendLimit?: number;
+    } = {};
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (defaultSpendLimit !== undefined) {

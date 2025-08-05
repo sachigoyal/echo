@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { User } from '@/generated/prisma';
+import type { User, PrismaClient } from '@/generated/prisma';
 
 export interface BalanceResult {
   balance: number;
@@ -72,7 +72,7 @@ export async function getBalance(
  * @param amountInCents - The payment amount in cents
  */
 export async function updateUserBalanceFromPayment(
-  tx: any,
+  tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   userId: string,
   amountInCents: number
 ): Promise<void> {

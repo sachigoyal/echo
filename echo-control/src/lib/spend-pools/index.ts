@@ -1,5 +1,6 @@
 import { db } from '../db';
-import { User, SpendPool } from '@/generated/prisma';
+import type { SpendPool, Payment } from '@/generated/prisma';
+import type { PrismaClient } from '@/generated/prisma';
 
 export interface CreateSpendPoolRequest {
   name: string;
@@ -31,7 +32,7 @@ export interface UpdateSpendPoolRequest {
  * Internal function to fund a spend pool within an existing transaction
  */
 export async function fundSpendPoolInternal(
-  tx: any,
+  tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   spendPoolId: string,
   paymentId: string,
   amount: number
@@ -64,9 +65,9 @@ export async function fundSpendPoolInternal(
  * @param metadata - Payment metadata containing pool configuration
  */
 export async function updateSpendPoolFromPayment(
-  tx: any,
+  tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   echoAppId: string,
-  paymentRecord: any,
+  paymentRecord: Payment,
   amountInCents: number,
   metadata: Record<string, string>
 ): Promise<void> {
@@ -147,7 +148,7 @@ export async function getAppSpendPools(
  * Internal function to get or create a free tier spend pool within an existing transaction
  */
 export async function getOrCreateFreeTierSpendPoolInternal(
-  tx: any,
+  tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   appId: string,
   poolName?: string
 ): Promise<SpendPool> {
