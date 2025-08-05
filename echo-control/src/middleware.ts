@@ -10,7 +10,6 @@ const isPublicRoute = createPathMatcher([
   '/api/oauth(.*)',
   '/api/validate-jwt-token(.*)',
   '/sign-in(.*)',
-  '/sign-up(.*)',
   '/api/apps/public',
   '/api/stripe/webhook(.*)',
   '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed

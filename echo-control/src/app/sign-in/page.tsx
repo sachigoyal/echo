@@ -1,9 +1,8 @@
 'use client';
 
-import { SignUp } from '@clerk/nextjs';
-import Link from 'next/link';
+import { SignIn } from '@clerk/nextjs';
 
-export default function SignUpPage() {
+export default function SignInPage() {
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -25,18 +24,20 @@ export default function SignUpPage() {
               </svg>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Join Echo</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Welcome Back
+          </h1>
           <p className="text-muted-foreground">
-            Create your account to start building with Echo
+            Sign in to access your Echo Control Plane
           </p>
         </div>
 
         <div className="bg-card rounded-lg border border-border p-6 shadow-lg">
           <div className="clerk-container">
-            <SignUp
+            <SignIn
               routing="path"
-              path="/sign-up"
-              signInUrl="/sign-in"
+              path="/sign-in"
+              signUpUrl="/sign-up"
               appearance={{
                 elements: {
                   rootBox: 'w-full',
@@ -77,18 +78,6 @@ export default function SignUpPage() {
               }}
             />
           </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <p className="text-muted-foreground text-sm">
-            Already have an account?{' '}
-            <Link
-              href="/sign-in"
-              className="text-primary hover:text-primary/80 font-medium transition-colors"
-            >
-              Sign in here
-            </Link>
-          </p>
         </div>
       </div>
 
