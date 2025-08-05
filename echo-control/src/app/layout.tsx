@@ -1,7 +1,10 @@
-import type { Metadata } from 'next';
-import { ClerkProvider } from '@clerk/nextjs';
+import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
+
 import Header from '@/components/header/header';
+
+import type { Metadata } from 'next';
+
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -22,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <SessionProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased bg-background text-foreground min-h-screen">
           <ThemeProvider
@@ -36,6 +39,6 @@ export default function RootLayout({
           </ThemeProvider>
         </body>
       </html>
-    </ClerkProvider>
+    </SessionProvider>
   );
 }
