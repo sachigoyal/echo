@@ -1,6 +1,6 @@
 import { createPathMatcher } from 'next-path-matcher';
 
-import { auth } from '@/auth';
+import { middleware } from '@/auth/middleware';
 import { NextResponse } from 'next/server';
 
 const isPublicRoute = createPathMatcher([
@@ -18,7 +18,7 @@ const isPublicRoute = createPathMatcher([
   '/api/health(.*)', // Health check endpoint - no auth needed
 ]);
 
-export default auth(req => {
+export default middleware(req => {
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }

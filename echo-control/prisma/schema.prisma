@@ -20,8 +20,8 @@ model User {
   createdAt       DateTime         @default(now()) @db.Timestamptz
   updatedAt       DateTime         @updatedAt @db.Timestamptz
   
-  totalPaid       Decimal          @db.Decimal(65, 14)   // Aggregate for Total payment amount - supports unlimited dollars with pico-cent precision
-  totalSpent      Decimal          @db.Decimal(65, 14)  // Aggregate for Total spent across apps - supports unlimited dollars with pico-cent precision
+  totalPaid       Decimal          @default(0) @db.Decimal(65, 14)   // Aggregate for Total payment amount - supports unlimited dollars with pico-cent precision
+  totalSpent      Decimal          @default(0) @db.Decimal(65, 14)  // Aggregate for Total spent across apps - supports unlimited dollars with pico-cent precision
   
   accounts        Account[]
   sessions        Session[]
