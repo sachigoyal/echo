@@ -8,23 +8,26 @@ interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   onClick?: () => void;
 }
 
+const logoProps = {
+  alt: 'Merit Systems Logo',
+  width: 100,
+  height: 100,
+  className: 'size-6',
+};
+
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
   ({ className, onClick, ...props }, ref) => {
     return (
       <div ref={ref} onClick={onClick} {...props}>
         <Image
           src="/logo/light.svg"
-          alt="Merit Systems Logo"
-          width={24}
-          height={24}
-          className={cn('size-6 dark:hidden', className)}
+          {...logoProps}
+          className={cn('dark:hidden', logoProps.className, className)}
         />
         <Image
           src="/logo/dark.svg"
-          alt="Merit Systems Logo"
-          width={24}
-          height={24}
-          className={cn('size-6 hidden dark:block', className)}
+          {...logoProps}
+          className={cn('hidden dark:block', logoProps.className, className)}
         />
       </div>
     );
