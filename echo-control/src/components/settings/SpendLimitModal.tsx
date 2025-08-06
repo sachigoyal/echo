@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { X, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SpendPoolData } from '@/lib/spend-pools';
+import { SpendPoolData } from '@/lib/spend-pools/types';
 
 interface SpendLimitModalProps {
   pool: SpendPoolData;
@@ -75,7 +75,7 @@ export default function SpendLimitModal({
               <div>
                 <div className="text-muted-foreground">Total Pool</div>
                 <div className="font-semibold text-blue-600">
-                  {formatCurrency(pool.totalAmount)}
+                  {formatCurrency(pool.totalPaid)}
                 </div>
               </div>
               <div>

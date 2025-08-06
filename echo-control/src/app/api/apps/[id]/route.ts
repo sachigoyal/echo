@@ -1,155 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import {
-  getDetailedAppInfo,
   updateEchoAppById,
   deleteEchoAppById,
-  AppUpdateInput,
   verifyArgs,
-} from '@/lib/echo-apps';
+} from '@/lib/apps/crud';
 import { isValidUUID } from '@/lib/oauth-config/index';
+import { AppUpdateInput, getApp } from '@/lib/apps';
 
 // GET /api/apps/[id] - Get detailed app information
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  let user;
-  let appId;
-  let resolvedParams;
+  // Get current user
+  const user = await getCurrentUser();
+  const resolvedParams = await params;
+  const { id: appId } = resolvedParams;
 
-  try {
-    // Step 1: Get current user with detailed error handling
-    try {
-      user = await getCurrentUser();
-      console.log('GET /api/apps/[id] - User authenticated:', {
-        userId: user.id,
-      });
-    } catch (authError) {
-      console.error('Authentication error in GET /api/apps/[id]:', {
-        error:
-          authError instanceof Error ? authError.message : 'Unknown auth error',
-        stack: authError instanceof Error ? authError.stack : undefined,
-        timestamp: new Date().toISOString(),
-      });
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // Step 2: Parse parameters with error handling
-    try {
-      resolvedParams = await params;
-      appId = resolvedParams.id;
-      console.log('GET /api/apps/[id] - Processing request:', {
-        appId,
-        userId: user.id,
-      });
-    } catch (paramError) {
-      console.error('Parameter parsing error in GET /api/apps/[id]:', {
-        error:
-          paramError instanceof Error
-            ? paramError.message
-            : 'Unknown param error',
-        timestamp: new Date().toISOString(),
-      });
-      return NextResponse.json(
-        { error: 'Invalid request parameters' },
-        { status: 400 }
-      );
-    }
-
-    // Step 3: Validate UUID format
-    if (!isValidUUID(appId)) {
-      console.error('Invalid UUID format in GET /api/apps/[id]:', {
-        appId,
-        userId: user.id,
-      });
-      return NextResponse.json(
-        { error: 'Invalid app ID format' },
-        { status: 400 }
-      );
-    }
-
-    // Step 4: Parse query parameters
-    const { searchParams } = new URL(request.url);
-    const view = searchParams.get('view');
-    console.log('GET /api/apps/[id] - Query params:', {
-      view,
-      globalView: view === 'global',
-    });
-
-    // Step 5: Fetch app data with detailed error handling
-    let appWithStats;
-    try {
-      appWithStats = await getDetailedAppInfo(
-        appId,
-        user.id,
-        view === 'global'
-      );
-    } catch (appFetchError) {
-      console.error(
-        'Failed to fetch app data - getDetailedAppInfo threw error:',
-        {
-          appId,
-          userId: user.id,
-          error:
-            appFetchError instanceof Error
-              ? appFetchError.message
-              : 'Unknown app fetch error',
-          stack:
-            appFetchError instanceof Error ? appFetchError.stack : undefined,
-        }
-      );
-      return NextResponse.json(
-        {
-          error:
-            appFetchError instanceof Error
-              ? appFetchError.message
-              : 'Echo app not found or access denied',
-        },
-        { status: 404 }
-      );
-    }
-
-    if (!appWithStats) {
-      console.error(
-        'Failed to fetch app data - getDetailedAppInfo returned null:',
-        {
-          appId,
-          userId: user.id,
-        }
-      );
-      return NextResponse.json(
-        { error: 'Echo app not found or access denied' },
-        { status: 404 }
-      );
-    }
-
-    console.log('GET /api/apps/[id] - Successfully fetched app data:', {
-      appId,
-      userId: user.id,
-      userRole: appWithStats.userRole,
-      appName: appWithStats.name,
-    });
-
-    return NextResponse.json(appWithStats);
-  } catch (error) {
-    // Catch-all for any other unexpected errors
-    console.error('Unexpected error in GET /api/apps/[id]:', {
-      appId: appId || 'unknown',
-      userId: user?.id || 'unknown',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      timestamp: new Date().toISOString(),
-    });
-
+  // Validate UUID format
+  if (!isValidUUID(appId)) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: 'Invalid app ID format' },
+      { status: 400 }
     );
   }
+  const appData = await getApp(appId, user.id);
+
+  return NextResponse.json(appData);
 }
 
 // PUT /api/apps/[id] - Update an existing Echo app
@@ -173,7 +51,6 @@ export async function PUT(
       profilePictureUrl,
       bannerImageUrl,
       homepageUrl,
-      isActive,
       isPublic,
     } = body;
 
@@ -187,7 +64,6 @@ export async function PUT(
       profilePictureUrl,
       bannerImageUrl,
       homepageUrl,
-      isActive,
       isPublic,
     });
 
@@ -209,10 +85,16 @@ export async function PUT(
     if (bannerImageUrl !== undefined)
       updateData.bannerImageUrl = bannerImageUrl;
     if (homepageUrl !== undefined) updateData.homepageUrl = homepageUrl;
-    if (isActive !== undefined) updateData.isActive = isActive;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
 
     const updatedApp = await updateEchoAppById(appId, user.id, updateData);
+
+    if (!updatedApp) {
+      return NextResponse.json(
+        { error: 'Echo app not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       id: updatedApp.id,
@@ -220,7 +102,6 @@ export async function PUT(
       description: updatedApp.description,
       githubType: updatedApp.githubLink?.githubType,
       githubId: updatedApp.githubLink?.githubId,
-      isActive: updatedApp.isActive,
       createdAt: updatedApp.createdAt.toISOString(),
       updatedAt: updatedApp.updatedAt.toISOString(),
       authorizedCallbackUrls: updatedApp.authorizedCallbackUrls,

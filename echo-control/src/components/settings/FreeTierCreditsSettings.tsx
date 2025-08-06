@@ -5,7 +5,7 @@ import { DollarSign, Plus, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { SpendPoolData } from '@/lib/spend-pools';
+import { SpendPoolData } from '@/lib/spend-pools/types';
 import { CreateFreeTierPaymentLinkRequest } from '@/lib/stripe/payment-link';
 import SpendLimitModal from './SpendLimitModal';
 
@@ -274,16 +274,6 @@ export default function FreeTierCreditsSettings({
                       )}
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <div className="text-sm text-muted-foreground">
-                          Status
-                        </div>
-                        <div
-                          className={`text-sm font-medium ${pool.isActive ? 'text-green-600' : 'text-red-600'}`}
-                        >
-                          {pool.isActive ? 'Active' : 'Inactive'}
-                        </div>
-                      </div>
                       <Button
                         variant="outline"
                         size="sm"
@@ -302,7 +292,7 @@ export default function FreeTierCreditsSettings({
                         Total Amount
                       </div>
                       <div className="text-lg font-semibold text-blue-600">
-                        {formatCurrency(pool.totalAmount)}
+                        {formatCurrency(pool.totalPaid)}
                       </div>
                     </div>
                     <div>
@@ -340,9 +330,7 @@ export default function FreeTierCreditsSettings({
                     <div className="flex justify-between text-xs text-muted-foreground mb-1">
                       <span>Usage</span>
                       <span>
-                        {((pool.spentAmount / pool.totalAmount) * 100).toFixed(
-                          1
-                        )}
+                        {((pool.spentAmount / pool.totalPaid) * 100).toFixed(1)}
                         %
                       </span>
                     </div>
@@ -350,7 +338,7 @@ export default function FreeTierCreditsSettings({
                       <div
                         className="bg-orange-500 h-2 rounded-full transition-all duration-300"
                         style={{
-                          width: `${Math.min((pool.spentAmount / pool.totalAmount) * 100, 100)}%`,
+                          width: `${Math.min((pool.spentAmount / pool.totalPaid) * 100, 100)}%`,
                         }}
                       ></div>
                     </div>

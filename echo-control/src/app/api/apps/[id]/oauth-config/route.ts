@@ -1,7 +1,7 @@
 import { getCurrentUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidUUID } from '@/lib/oauth-config/index';
-import { findEchoApp, updateEchoApp } from '@/lib/echo-apps/index';
+import { findEchoApp, updateEchoApp } from '@/lib/apps/crud';
 
 interface RouteParams {
   params: Promise<{
@@ -36,7 +36,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       client_id: echoApp.id,
       name: echoApp.name,
       description: echoApp.description,
-      is_active: echoApp.isActive,
       authorized_callback_urls: echoApp.authorizedCallbackUrls,
       oauth_endpoints: {
         authorization_url: `${req.nextUrl.origin}/api/oauth/authorize`,
@@ -131,7 +130,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
         id: true,
         name: true,
         description: true,
-        isActive: true,
         authorizedCallbackUrls: true,
       }
     );
@@ -140,7 +138,6 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
       client_id: updatedApp.id,
       name: updatedApp.name,
       description: updatedApp.description,
-      is_active: updatedApp.isActive,
       authorized_callback_urls: updatedApp.authorizedCallbackUrls,
       oauth_endpoints: {
         authorization_url: `${req.nextUrl.origin}/api/oauth/authorize`,

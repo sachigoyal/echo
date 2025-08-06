@@ -1,14 +1,6 @@
 import { db } from '../db';
 import type { User, PrismaClient } from '@/generated/prisma';
-
-export interface BalanceResult {
-  balance: number;
-  totalPaid: number;
-  totalSpent: number;
-  currency: string;
-  echoAppId: string | null;
-  echoAppName: string | null;
-}
+import { BalanceResult } from './types';
 
 /**
  * Get balance for a user, optionally for a specific app

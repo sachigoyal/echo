@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/theme-provider';
+import { TRPCProvider } from '@/components/providers/TRPCProvider';
 import Header from '@/components/header/header';
 import './globals.css';
 
@@ -25,10 +26,12 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased bg-background text-foreground min-h-screen">
-          <ThemeProvider defaultTheme="dark" storageKey="echo-theme">
-            <Header />
-            <main>{children}</main>
-          </ThemeProvider>
+          <TRPCProvider>
+            <ThemeProvider defaultTheme="dark" storageKey="echo-theme">
+              <Header />
+              <main>{children}</main>
+            </ThemeProvider>
+          </TRPCProvider>
         </body>
       </html>
     </ClerkProvider>

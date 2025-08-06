@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { DetailedEchoApp } from '../lib/types/apps';
+import { OwnerEchoApp } from '../lib/apps/types';
 
 export interface CreateAppData {
   name: string;
@@ -9,24 +9,24 @@ export interface CreateAppData {
 }
 
 export interface UseCreateAppReturn {
-  createApp: (data: CreateAppData) => Promise<DetailedEchoApp>;
+  createApp: (data: CreateAppData) => Promise<OwnerEchoApp>;
   isCreating: boolean;
   error: string | null;
   clearError: () => void;
-  createdApp: DetailedEchoApp | null;
+  createdApp: OwnerEchoApp | null;
 }
 
 export function useCreateApp(): UseCreateAppReturn {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createdApp, setCreatedApp] = useState<DetailedEchoApp | null>(null);
+  const [createdApp, setCreatedApp] = useState<OwnerEchoApp | null>(null);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
   const createApp = useCallback(
-    async (data: CreateAppData): Promise<DetailedEchoApp> => {
+    async (data: CreateAppData): Promise<OwnerEchoApp> => {
       try {
         setIsCreating(true);
         setError(null);

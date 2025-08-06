@@ -1,33 +1,8 @@
 import { db } from '../db';
 import type { SpendPool, Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
+import { SpendPoolData, UpdateSpendPoolRequest } from './types';
 
-export interface CreateSpendPoolRequest {
-  name: string;
-  description?: string;
-  totalAmount: number;
-  echoAppId: string;
-  defaultSpendLimit?: number;
-}
-
-export interface SpendPoolData {
-  id: string;
-  name: string;
-  description?: string;
-  totalAmount: number;
-  spentAmount: number;
-  remainingAmount: number;
-  defaultSpendLimit?: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface UpdateSpendPoolRequest {
-  name?: string;
-  description?: string;
-  defaultSpendLimit?: number;
-}
 /**
  * Internal function to fund a spend pool within an existing transaction
  */
@@ -49,7 +24,7 @@ export async function fundSpendPoolInternal(
   await tx.spendPool.update({
     where: { id: spendPoolId },
     data: {
-      totalAmount: {
+      totalPaid: {
         increment: amount,
       },
     },
@@ -117,10 +92,9 @@ export async function getAppSpendPools(
       id: true,
       name: true,
       description: true,
-      totalAmount: true,
-      defaultSpendLimit: true,
+      totalPaid: true,
       totalSpent: true,
-      isActive: true,
+      perUserSpendLimit: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -131,14 +105,13 @@ export async function getAppSpendPools(
       id: spendPool.id,
       name: spendPool.name,
       description: spendPool.description || undefined,
-      totalAmount: Number(spendPool.totalAmount),
+      totalPaid: Number(spendPool.totalPaid),
       spentAmount: Number(spendPool.totalSpent),
       remainingAmount:
-        Number(spendPool.totalAmount) - Number(spendPool.totalSpent),
-      defaultSpendLimit: spendPool.defaultSpendLimit
-        ? Number(spendPool.defaultSpendLimit)
+        Number(spendPool.totalPaid) - Number(spendPool.totalSpent),
+      defaultSpendLimit: spendPool.perUserSpendLimit
+        ? Number(spendPool.perUserSpendLimit)
         : undefined,
-      isActive: spendPool.isActive,
       createdAt: spendPool.createdAt,
       updatedAt: spendPool.updatedAt,
     };
@@ -171,7 +144,7 @@ export async function getOrCreateFreeTierSpendPoolInternal(
           poolName ||
           `Free Tier Credits - ${new Date().toISOString().split('T')[0]}`,
         description: 'Free tier credits pool for app users',
-        totalAmount: 0, // Will be funded by payments
+        totalPaid: 0, // Will be funded by payments
         echoAppId: appId,
       },
     });
@@ -188,27 +161,13 @@ export async function updateSpendPool(
   request: UpdateSpendPoolRequest
 ): Promise<SpendPool> {
   // Check if the spend pool exists
-  const spendPool = await db.spendPool.findUnique({
+  // Update the spend pool
+  const updatedSpendPool = await db.spendPool.update({
     where: { id: spendPoolId },
+    data: {
+      perUserSpendLimit: request.defaultSpendLimit,
+    },
   });
-
-  if (!spendPool) {
-    throw new Error('Spend pool not found');
-  }
-
-  // Update the spend pool and all userSpendPoolUsage in a transaction
-  const [updatedSpendPool] = await db.$transaction([
-    db.spendPool.update({
-      where: { id: spendPoolId },
-      data: request,
-    }),
-    db.userSpendPoolUsage.updateMany({
-      where: { spendPoolId: spendPoolId },
-      data: {
-        effectiveSpendLimit: request.defaultSpendLimit,
-      },
-    }),
-  ]);
 
   return updatedSpendPool;
 }
