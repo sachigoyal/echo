@@ -27,6 +27,7 @@ const requiredVars = [
   'ECHO_CONTROL_URL',
   'JWT_SECRET',
   'INTEGRATION_TEST_JWT',
+  'AUTH_SECRET',
 ];
 
 const missing = requiredVars.filter(varName => !process.env[varName]);
