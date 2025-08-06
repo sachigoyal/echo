@@ -1,3 +1,4 @@
+import { Transaction } from '../types';
 import type { EchoControlService } from '../services/EchoControlService';
 
 import type { ProviderType } from './ProviderType';
@@ -38,7 +39,7 @@ export abstract class BaseProvider {
       Authorization: `Bearer ${apiKey}`,
     };
   }
-  abstract handleBody(data: string): Promise<void>;
+  abstract handleBody(data: string): Promise<Transaction>;
   getEchoControlService(): EchoControlService {
     return this.echoControlService;
   }

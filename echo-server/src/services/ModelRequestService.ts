@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { BaseProvider } from '../providers/BaseProvider';
 import { getProvider } from '../providers/ProviderFactory';
 import { EchoControlService } from './EchoControlService';
 import { isValidModel } from './AccountingService';
 import { extractIsStream, extractModelName } from './RequestDataService';
 import { handleStreamService } from './HandleStreamService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
+import { Transaction } from 'types';
+import { HttpError, UnknownModelError } from 'errors/http';
 
 export class ModelRequestService {
   /**
@@ -23,7 +24,7 @@ export class ModelRequestService {
     processedHeaders: Record<string, string>,
     echoControlService: EchoControlService,
     forwardingPath: string
-  ): Promise<void> {
+  ): Promise<Transaction> {
     // Extract and validate model
     const model = extractModelName(req);
 
@@ -32,7 +33,7 @@ export class ModelRequestService {
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
       });
-      return;
+      throw new UnknownModelError('Invalid model');
     }
 
     // Extract stream flag
@@ -51,7 +52,7 @@ export class ModelRequestService {
       res.status(422).json({
         error: `Model ${model} does not support streaming.`,
       });
-      return;
+      throw new UnknownModelError('Invalid model');
     }
 
     // Format authentication headers
@@ -83,18 +84,24 @@ export class ModelRequestService {
       res.status(response.status).json({
         error: error,
       });
-      return;
+      throw new HttpError(response.status, error);
     }
 
     // Handle the successful response based on stream type
     if (isStream) {
-      await handleStreamService.handleStream(response, provider, res);
-    } else {
-      await handleNonStreamingService.handleNonStreaming(
+      const transaction = await handleStreamService.handleStream(
         response,
         provider,
         res
       );
+      return transaction;
+    } else {
+      const transaction = await handleNonStreamingService.handleNonStreaming(
+        response,
+        provider,
+        res
+      );
+      return transaction;
     }
   }
 }

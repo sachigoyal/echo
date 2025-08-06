@@ -8,6 +8,8 @@ export interface BalanceCheckResult {
   balance: number | null;
 }
 
+const MINIMUM_SPEND_AMOUNT_SAFETY_BUFFER = 0.0001;
+
 /**
  * Check if the user has sufficient balance or free tier access
  * @throws PaymentRequiredError if user has no balance and no free tier access
@@ -28,10 +30,14 @@ export async function checkBalance(
     appId
   );
 
+  if (freeTierSpendPool) {
+    return true;
+  }
+
   // If no free tier, check regular balance
   const balance = await echoControlService.getBalance();
 
-  if (balance > 0 || !!freeTierSpendPool) {
+  if (balance > MINIMUM_SPEND_AMOUNT_SAFETY_BUFFER) {
     return true;
   }
   throw new PaymentRequiredError('Payment Required');

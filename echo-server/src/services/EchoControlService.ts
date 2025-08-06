@@ -2,14 +2,16 @@ import type {
   ApiKeyValidationResult,
   EchoApp,
   User,
-  CreateLlmTransactionRequest,
-} from '@zdql/echo-typescript-sdk/src/types';
+  Transaction,
+  TransactionRequest,
+} from '../types';
 import { EchoDbService } from './DbService';
 import { existsSync } from 'fs';
 import { join } from 'path';
 
 import { PrismaClient, SpendPool } from '../generated/prisma';
 import FreeTierService from './FreeTierService';
+import { PaymentRequiredError, UnauthorizedError } from 'errors/http';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
@@ -143,7 +145,6 @@ export class EchoControlService {
           select: {
             id: true,
             amount: true,
-            isActive: true,
             isArchived: true,
           },
         },
@@ -159,8 +160,7 @@ export class EchoControlService {
       return { amount: 1.0, id: null };
     }
 
-    // Check if markup is active
-    if (appWithMarkup.markUp.isArchived || !appWithMarkup.markUp.isActive) {
+    if (appWithMarkup.markUp.isArchived) {
       return { amount: 1.0, id: null };
     }
 
@@ -197,13 +197,12 @@ export class EchoControlService {
         id: true,
         githubId: true,
         githubType: true,
-        isActive: true,
         isArchived: true,
       },
     });
 
     // Return null values if no link exists or if it's inactive/archived
-    if (!githubLink || githubLink.isArchived || !githubLink.isActive) {
+    if (!githubLink || githubLink.isArchived) {
       return { githubId: null, githubType: null, id: null };
     }
 
@@ -218,9 +217,7 @@ export class EchoControlService {
    * Create an LLM transaction record directly in the database
    * Uses centralized logic from EchoDbService
    */
-  async createTransaction(
-    transaction: CreateLlmTransactionRequest
-  ): Promise<void> {
+  async createTransaction(transaction: Transaction): Promise<void> {
     try {
       if (!this.authResult) {
         console.error('No authentication result available');
@@ -249,80 +246,78 @@ export class EchoControlService {
     appId: string
   ): Promise<SpendPool | null> {
     this.freeTierSpendPool =
-      await this.freeTierService.getOrNoneFreeTierSpendPool(userId, appId);
+      await this.freeTierService.getOrNoneFreeTierSpendPool(appId, userId);
     return this.freeTierSpendPool;
   }
 
-  async createFreeTierTransaction(
-    transaction: CreateLlmTransactionRequest
-  ): Promise<void> {
+  async createFreeTierTransaction(transaction: Transaction): Promise<void> {
     if (!this.authResult) {
       console.error('No authentication result available');
-      return;
+      throw new UnauthorizedError('No authentication result available');
     }
 
     if (!this.freeTierSpendPool) {
       console.error('No free tier spend pool available');
-      return;
+      throw new PaymentRequiredError('No free tier spend pool available');
     }
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
     if (!userId || !echoAppId) {
       console.error('Missing required user or app information');
-      return;
+      throw new UnauthorizedError('Missing required user or app information');
     }
 
     if (!this.appMarkup) {
       console.error('User has not authenticated');
-      return;
+      throw new UnauthorizedError('User has not authenticated');
     }
 
     // Markup is checked, but not applied here because it is a free tier transaction
     const githubLinkId = this.githubLinkId ?? undefined;
 
-    const transactionData: CreateLlmTransactionRequest & {
-      echoAppId: string;
-      apiKeyId?: string;
-      markUpId?: string;
-      githubLinkId?: string;
-    } = {
+    const transactionData: TransactionRequest = {
       ...transaction,
+      userId: userId,
       echoAppId: echoAppId,
       ...(apiKeyId && { apiKeyId }),
       ...(githubLinkId && { githubLinkId }),
+      ...(this.markUpId && { markUpId: this.markUpId }),
+      ...(this.freeTierSpendPool.id && {
+        spendPoolId: this.freeTierSpendPool.id,
+      }),
     };
 
     await this.freeTierService.createFreeTierTransaction(
-      userId,
-      this.freeTierSpendPool.id,
-      transactionData
+      transactionData,
+      this.freeTierSpendPool.id
     );
   }
 
-  async createPaidTransaction(
-    transaction: CreateLlmTransactionRequest
-  ): Promise<void> {
+  async createPaidTransaction(transaction: Transaction): Promise<void> {
     if (!this.authResult) {
       console.error('No authentication result available');
-      return;
+      throw new UnauthorizedError('No authentication result available');
     }
 
     if (!this.appMarkup) {
       console.error('User has not authenticated');
-      return;
+      throw new UnauthorizedError('User has not authenticated');
     }
 
     const cost = transaction.cost * this.appMarkup;
     transaction.cost = cost;
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
-    await this.dbService.createLlmTransaction(
-      userId,
-      echoAppId,
-      transaction,
-      apiKeyId,
-      this.markUpId || undefined,
-      this.githubLinkId || undefined
-    );
+
+    const transactionData: TransactionRequest = {
+      ...transaction,
+      userId: userId,
+      echoAppId: echoAppId,
+      ...(apiKeyId && { apiKeyId }),
+      ...(this.githubLinkId && { githubLinkId: this.githubLinkId }),
+      ...(this.markUpId && { markUpId: this.markUpId }),
+    };
+
+    await this.dbService.createPaidTransaction(transactionData);
   }
 }

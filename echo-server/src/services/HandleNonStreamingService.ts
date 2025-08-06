@@ -1,5 +1,6 @@
 import { Response as ExpressResponse } from 'express';
 import { BaseProvider } from '../providers/BaseProvider';
+import { Transaction } from 'types';
 
 export class HandleNonStreamingService {
   /**
@@ -13,18 +14,20 @@ export class HandleNonStreamingService {
     response: Response,
     provider: BaseProvider,
     res: ExpressResponse
-  ): Promise<void> {
+  ): Promise<Transaction> {
     // Parse the JSON response
     const data = await response.json();
 
     // Process the response body for accounting/transaction creation
-    await provider.handleBody(JSON.stringify(data));
+    const transaction = await provider.handleBody(JSON.stringify(data));
 
     // Set the appropriate content type
     res.setHeader('content-type', 'application/json');
 
     // Send the response to the client
     res.json(data);
+
+    return transaction;
   }
 }
 

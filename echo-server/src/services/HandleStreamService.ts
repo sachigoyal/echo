@@ -1,6 +1,7 @@
 import { Response as ExpressResponse } from 'express';
 import { ReadableStream } from 'stream/web';
 import { BaseProvider } from '../providers/BaseProvider';
+import { Transaction } from 'types';
 
 export class HandleStreamService {
   /**
@@ -25,7 +26,7 @@ export class HandleStreamService {
     response: Response,
     provider: BaseProvider,
     res: ExpressResponse
-  ): Promise<void> {
+  ): Promise<Transaction> {
     const bodyStream = response.body as ReadableStream<Uint8Array>;
     if (!bodyStream) {
       throw new Error('No body stream returned from API');
@@ -42,12 +43,16 @@ export class HandleStreamService {
     const streamToClientPromise = this.streamToClient(reader1, res);
 
     // Promise for processing data and creating transaction
-    const processDataPromise = this.processStreamData(reader2, provider);
+    const transactionPromise = this.processStreamData(reader2, provider);
 
     // Wait for both streams to complete before ending response
     try {
-      await Promise.all([streamToClientPromise, processDataPromise]);
+      const [_, transaction] = await Promise.all([
+        streamToClientPromise,
+        transactionPromise,
+      ]);
       res.end();
+      return transaction;
     } catch (error) {
       console.error('Error in stream coordination:', error);
       if (!res.headersSent) {
@@ -86,7 +91,7 @@ export class HandleStreamService {
   private async processStreamData(
     reader: ReadableStreamDefaultReader<Uint8Array>,
     provider: BaseProvider
-  ): Promise<void> {
+  ): Promise<Transaction> {
     let data = '';
     try {
       while (true) {
@@ -95,7 +100,7 @@ export class HandleStreamService {
         data += new TextDecoder().decode(value);
       }
       // Wait for transaction to complete before resolving
-      await provider.handleBody(data);
+      return await provider.handleBody(data);
     } catch (error) {
       console.error('Error processing stream:', error);
       throw error;

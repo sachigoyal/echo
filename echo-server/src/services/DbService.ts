@@ -2,11 +2,16 @@ import {
   Balance,
   ApiKeyValidationResult,
   EchoAccessJwtPayload,
-  CreateLlmTransactionRequest,
-} from '@zdql/echo-typescript-sdk/src/types';
+  TransactionRequest,
+} from '../types';
 import { createHmac } from 'crypto';
 import { jwtVerify } from 'jose';
-import { PrismaClient } from 'generated/prisma';
+import {
+  PrismaClient,
+  Prisma,
+  Transaction,
+  UserSpendPoolUsage,
+} from 'generated/prisma';
 /**
  * Secret key for deterministic API key hashing (should match echo-control)
  */
@@ -90,7 +95,6 @@ export class EchoDbService {
             id: true,
             name: true,
             description: true,
-            isActive: true,
             isArchived: true,
             createdAt: true,
             updatedAt: true,
@@ -116,7 +120,6 @@ export class EchoDbService {
             id: app.id,
             name: app.name,
             ...(app.description && { description: app.description }),
-            isActive: app.isActive,
             createdAt: app.createdAt.toISOString(),
             updatedAt: app.updatedAt.toISOString(),
           },
@@ -139,11 +142,9 @@ export class EchoDbService {
       // Verify the API key is valid and all related entities are active
       if (
         !apiKeyRecord ||
-        !apiKeyRecord.isActive ||
         apiKeyRecord.isArchived ||
         apiKeyRecord.user.isArchived ||
-        apiKeyRecord.echoApp.isArchived ||
-        !apiKeyRecord.echoApp.isActive
+        apiKeyRecord.echoApp.isArchived
       ) {
         return null;
       }
@@ -165,7 +166,6 @@ export class EchoDbService {
           ...(apiKeyRecord.echoApp.description && {
             description: apiKeyRecord.echoApp.description,
           }),
-          isActive: apiKeyRecord.echoApp.isActive,
           createdAt: apiKeyRecord.echoApp.createdAt.toISOString(),
           updatedAt: apiKeyRecord.echoApp.updatedAt.toISOString(),
         },
@@ -226,84 +226,218 @@ export class EchoDbService {
   }
 
   /**
+   * Update API key's last used timestamp
+   * @param tx - Prisma transaction client
+   * @param apiKeyId - The API key ID to update
+   */
+  private async updateApiKeyLastUsed(
+    tx: Prisma.TransactionClient,
+    apiKeyId: string
+  ): Promise<void> {
+    await tx.apiKey.update({
+      where: { id: apiKeyId },
+      data: { lastUsed: new Date().toISOString() },
+    });
+  }
+
+  /**
+   * Update user's total spent amount
+   * @param tx - Prisma transaction client
+   * @param userId - The user ID to update
+   * @param amount - The amount to increment totalSpent by
+   */
+  private async updateUserTotalSpent(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    amount: number
+  ): Promise<void> {
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        totalSpent: {
+          increment: amount,
+        },
+      },
+    });
+  }
+
+  /**
+   * Create a new transaction record
+   * @param tx - Prisma transaction client
+   * @param transaction - The transaction data to create
+   */
+  private async createTransactionRecord(
+    tx: Prisma.TransactionClient,
+    transaction: TransactionRequest
+  ): Promise<Transaction> {
+    return await tx.transaction.create({
+      data: {
+        ...transaction,
+        metadata: transaction.metadata as any,
+      },
+    });
+  }
+
+  /**
+   * Update spend pool's total spent amount
+   * @param tx - Prisma transaction client
+   * @param spendPoolId - The spend pool ID to update
+   * @param amount - The amount to increment totalSpent by
+   */
+  private async updateSpendPoolTotalSpent(
+    tx: Prisma.TransactionClient,
+    spendPoolId: string,
+    amount: number
+  ): Promise<void> {
+    await tx.spendPool.update({
+      where: { id: spendPoolId },
+      data: {
+        totalSpent: {
+          increment: amount,
+        },
+      },
+    });
+  }
+
+  /**
+   * Upsert user spend pool usage record
+   * @param tx - Prisma transaction client
+   * @param userId - The user ID
+   * @param spendPoolId - The spend pool ID
+   * @param amount - The amount to add to totalSpent
+   */
+  private async upsertUserSpendPoolUsage(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    spendPoolId: string,
+    amount: number
+  ): Promise<UserSpendPoolUsage> {
+    return await tx.userSpendPoolUsage.upsert({
+      where: {
+        userId_spendPoolId: {
+          userId,
+          spendPoolId,
+        },
+      },
+      create: {
+        userId,
+        spendPoolId,
+        totalSpent: amount,
+      },
+      update: {
+        totalSpent: {
+          increment: amount,
+        },
+      },
+    });
+  }
+
+  /**
    * Create an LLM transaction record and atomically update user's totalSpent
    * Centralized logic for transaction creation with atomic balance updates
    */
-  async createLlmTransaction(
-    userId: string,
-    echoAppId: string,
-    transaction: CreateLlmTransactionRequest,
-    apiKeyId?: string,
-    markUpId?: string,
-    githubLinkId?: string
-  ): Promise<string | null> {
+  async createPaidTransaction(
+    transaction: TransactionRequest
+  ): Promise<Transaction | null> {
     try {
-      // Validate required fields
-      if (
-        !transaction.model ||
-        typeof transaction.inputTokens !== 'number' ||
-        typeof transaction.outputTokens !== 'number' ||
-        typeof transaction.totalTokens !== 'number' ||
-        typeof transaction.cost !== 'number' ||
-        !transaction.providerId
-      ) {
-        throw new Error(
-          'Missing required fields: model, inputTokens, outputTokens, totalTokens, cost, providerId'
-        );
-      }
       // Use a database transaction to atomically create the LLM transaction and update user balance
       const result = await this.db.$transaction(async tx => {
-        // Create the LLM transaction
-        const dbTransaction = await tx.llmTransaction.create({
-          data: {
-            model: transaction.model,
-            inputTokens: transaction.inputTokens,
-            providerId: transaction.providerId,
-            outputTokens: transaction.outputTokens,
-            totalTokens: transaction.totalTokens,
-            cost: transaction.cost,
-            prompt: transaction.prompt || null,
-            response: transaction.response || null,
-            status: transaction.status || 'success',
-            errorMessage: transaction.errorMessage || null,
-            userId: userId,
-            echoAppId: echoAppId,
-            apiKeyId: apiKeyId || null,
-            markUpId: markUpId || null,
-            githubLinkId: githubLinkId || null,
-          },
-        });
+        // Create the LLM transaction record
+        const dbTransaction = await this.createTransactionRecord(
+          tx,
+          transaction
+        );
 
-        // Atomically update user's totalSpent
-        await tx.user.update({
-          where: { id: userId },
-          data: {
-            totalSpent: {
-              increment: transaction.cost,
-            },
-          },
-        });
+        // Update user's total spent amount
+        await this.updateUserTotalSpent(
+          tx,
+          transaction.userId,
+          transaction.cost
+        );
 
-        if (apiKeyId) {
-          await tx.apiKey.update({
-            where: { id: apiKeyId },
-            data: {
-              lastUsed: new Date().toISOString(),
-            },
-          });
+        // Update API key's last used timestamp if provided
+        if (transaction.apiKeyId) {
+          await this.updateApiKeyLastUsed(tx, transaction.apiKeyId);
         }
 
         return dbTransaction;
       });
 
       console.log(
-        `Created transaction for model ${transaction.model}: $${transaction.cost}, updated user totalSpent`,
+        `Created transaction for model ${transaction.metadata.model}: $${transaction.cost}, updated user totalSpent`,
         result.id
       );
-      return result.id;
+      return result;
     } catch (error) {
       console.error('Error creating transaction and updating balance:', error);
       return null;
+    }
+  }
+
+  /**
+   * Create a free tier transaction and update all related records atomically
+   * @param userId - The user ID
+   * @param spendPoolId - The spend pool ID
+   * @param transactionData - The transaction data to create
+   */
+  async createFreeTierTransaction(
+    transactionData: TransactionRequest,
+    spendPoolId: string
+  ): Promise<{
+    transaction: Transaction;
+    userSpendPoolUsage: UserSpendPoolUsage;
+  }> {
+    try {
+      return await this.db.$transaction(async tx => {
+        // 1. Verify the spend pool exists
+        const spendPool = await tx.spendPool.findUnique({
+          where: { id: spendPoolId },
+          select: { perUserSpendLimit: true },
+        });
+
+        if (!spendPool) {
+          throw new Error('Spend pool not found');
+        }
+
+        // 2. Upsert UserSpendPoolUsage record using helper
+        const userSpendPoolUsage = await this.upsertUserSpendPoolUsage(
+          tx,
+          transactionData.userId,
+          spendPoolId,
+          transactionData.cost
+        );
+
+        // 3. Create the transaction record
+        const transaction = await this.createTransactionRecord(
+          tx,
+          transactionData
+        );
+
+        // 4. Update API key lastUsed if apiKeyId is provided
+        if (transactionData.apiKeyId) {
+          await this.updateApiKeyLastUsed(tx, transactionData.apiKeyId);
+        }
+
+        // 5. Update totalSpent on the SpendPool using helper
+        await this.updateSpendPoolTotalSpent(
+          tx,
+          spendPoolId,
+          transactionData.cost
+        );
+
+        console.log(
+          `Created free tier transaction for model ${transactionData.metadata.model}: $${transactionData.cost}`,
+          transaction.id
+        );
+
+        return {
+          transaction,
+          userSpendPoolUsage,
+        };
+      });
+    } catch (error) {
+      console.error('Error creating free tier transaction:', error);
+      throw error;
     }
   }
 }

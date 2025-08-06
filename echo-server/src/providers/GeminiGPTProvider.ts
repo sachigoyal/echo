@@ -1,3 +1,4 @@
+import { LlmTransactionMetadata, Transaction } from 'types';
 import { getCostPerToken } from '../services/AccountingService';
 import type { CompletionStateBody, StreamingChunkBody } from './GPTProvider';
 import { GPTProvider } from './GPTProvider';
@@ -57,7 +58,7 @@ export class GeminiGPTProvider extends GPTProvider {
     return process.env.GEMINI_API_KEY;
   }
 
-  override async handleBody(data: string): Promise<void> {
+  override async handleBody(data: string): Promise<Transaction> {
     try {
       let prompt_tokens = 0;
       let completion_tokens = 0;
@@ -83,20 +84,26 @@ export class GeminiGPTProvider extends GPTProvider {
         providerId = parsed.id;
       }
 
-      // Create transaction with proper model info and token details
-      await this.getEchoControlService().createTransaction({
+      const metadata: LlmTransactionMetadata = {
         model: this.getModel(),
+        providerId: providerId,
+        provider: this.getType(),
         inputTokens: prompt_tokens,
         outputTokens: completion_tokens,
         totalTokens: total_tokens,
+      };
+
+      const transaction: Transaction = {
+        metadata: metadata,
         cost: getCostPerToken(
           this.getModel(),
           prompt_tokens,
           completion_tokens
         ),
         status: 'success',
-        providerId: providerId,
-      });
+      };
+
+      return transaction;
     } catch (error) {
       console.error('Error processing data:', error);
       throw error;

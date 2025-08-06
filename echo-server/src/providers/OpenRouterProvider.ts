@@ -1,6 +1,7 @@
-import { getCostPerToken } from '../services/AccountingService';
+import { LlmTransactionMetadata, Transaction } from 'types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
+import { getCostPerToken } from 'services/AccountingService';
 
 export interface CompletionStateBody {
   id: string;
@@ -67,7 +68,7 @@ export class OpenRouterProvider extends BaseProvider {
     return process.env.OPENROUTER_API_KEY;
   }
 
-  async handleBody(data: string): Promise<void> {
+  async handleBody(data: string): Promise<Transaction> {
     try {
       let prompt_tokens = 0;
       let completion_tokens = 0;
@@ -93,20 +94,26 @@ export class OpenRouterProvider extends BaseProvider {
         providerId = parsed.id || 'null';
       }
 
-      // Create transaction with proper model info and token details
-      await this.getEchoControlService().createTransaction({
+      const cost = getCostPerToken(
+        this.getModel(),
+        prompt_tokens,
+        completion_tokens
+      );
+
+      const metadata: LlmTransactionMetadata = {
+        providerId: providerId,
+        provider: this.getType(),
         model: this.getModel(),
         inputTokens: prompt_tokens,
         outputTokens: completion_tokens,
         totalTokens: total_tokens,
-        cost: getCostPerToken(
-          this.getModel(),
-          prompt_tokens,
-          completion_tokens
-        ),
+      };
+
+      return {
+        metadata: metadata,
+        cost: cost,
         status: 'success',
-        providerId: providerId,
-      });
+      };
     } catch (error) {
       console.error('Error processing data:', error);
       throw error;
