@@ -88,7 +88,6 @@ The shared ESLint configuration includes:
 For the best development experience:
 
 1. **VS Code Extensions**:
-
    - ESLint
    - Prettier
    - TypeScript Importer
