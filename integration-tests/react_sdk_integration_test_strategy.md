@@ -125,14 +125,12 @@ _Test real HTTP calls between services using fetch/axios_
 #### OAuth Core Flows
 
 - [ ] **Authorization Code Generation**
-
   - ✅ Real: echo-control OAuth endpoint validation
   - ✅ Real: PKCE challenge/verifier generation & validation
   - ✅ Real: Client ID validation against DB
   - ✅ Real: Redirect URI allowlist validation
 
 - [ ] **Token Exchange Flow**
-
   - ✅ Real: Authorization code → Access Token exchange
   - ✅ Real: JWT signing with real secrets
   - ✅ Real: Refresh token generation & rotation
@@ -148,7 +146,6 @@ _Test real HTTP calls between services using fetch/axios_
 #### Security Scenarios
 
 - [ ] **PKCE Attack Prevention**
-
   - ✅ Real: Code challenge/verifier validation
   - ✅ Real: Replay attack prevention
   - ✅ Real: Code interception scenarios
@@ -166,13 +163,11 @@ _Test complete user journeys with real browser automation_
 #### Critical User Flows
 
 - [ ] **First-Time OAuth Flow**
-
   - ✅ Real: Complete browser-based OAuth redirect
   - ✅ Real: User consent/authorization simulation
   - ✅ Real: Callback handling & token storage
 
 - [ ] **Silent Renewal**
-
   - ✅ Real: Iframe-based silent renewal
   - ✅ Real: Token refresh without user interaction
   - ✅ Real: Fallback to login when renewal fails

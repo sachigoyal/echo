@@ -46,7 +46,6 @@ Below is a battle-tested pattern that lets **any customer SPA complete a PKCE fl
    ```
 
 5. **Store tokens**
-
    - `access_token` (JWT, 5–10 min TTL) → **memory** (React context)
    - `refresh_token` → **HttpOnly, Secure, SameSite=None cookie set by `/oauth/token` response**
      _Because the request is a direct cross-origin call to Echo (not a passive third-party cookie), Chrome’s 3P-cookie phase-out does **not** block this cookie._
