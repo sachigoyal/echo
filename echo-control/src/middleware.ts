@@ -9,6 +9,7 @@ const isPublicRoute = createPathMatcher([
   '/sign-in(.*)',
   // public routes
   '/api/auth/(.*)',
+  '/auth/signin(.*)',
   '/api/v1/(.*)',
   '/api/oauth(.*)',
   '/api/validate-jwt-token(.*)',

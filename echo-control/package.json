@@ -16,6 +16,7 @@
     "seed-app": "tsx scripts/seed-app-usage.ts"
   },
   "dependencies": {
+    "@auth/core": "^0.40.0",
     "@auth/prisma-adapter": "^2.10.0",
     "@headlessui/react": "^2.2.4",
     "@icons-pack/react-simple-icons": "^13.7.0",

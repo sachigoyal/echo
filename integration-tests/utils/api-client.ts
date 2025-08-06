@@ -7,15 +7,32 @@ export interface EchoControlApiClient {
 }
 
 export class EchoControlApiClient {
-  private integrationJwt: string | undefined;
+  private _cookiePromise: Promise<string> | null = null;
 
-  constructor(
-    baseUrl: string = TEST_CONFIG.services.echoControl,
-    integrationJwt: string = TEST_CONFIG.auth.integrationJwt
-  ) {
+  constructor(baseUrl: string = TEST_CONFIG.services.echoControl) {
     this.baseUrl = baseUrl;
     this.fetch = fetch;
-    this.integrationJwt = integrationJwt;
+  }
+
+  get cookie(): Promise<string> {
+    if (!this._cookiePromise) {
+      console.log('🔧 Getting cookie');
+      this._cookiePromise = this.fetch(
+        `${this.baseUrl}/api/auth/callback/test`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          redirect: 'manual',
+        }
+      ).then(response => {
+        const setCookieHeader = response.headers.get('set-cookie');
+        if (!setCookieHeader) {
+          throw new Error('No set-cookie header found');
+        }
+        return setCookieHeader;
+      });
+    }
+    return this._cookiePromise;
   }
 
   private async request<T>(
@@ -75,13 +92,12 @@ export class EchoControlApiClient {
 
     const headers: Record<string, string> = {};
 
-    if (this.integrationJwt) {
-      headers['Authorization'] = `Bearer ${this.integrationJwt}`;
-    }
+    headers['cookie'] = await this.cookie;
 
     const response = await this.fetch(url, {
       method: 'GET',
       headers,
+      credentials: 'include',
       redirect: 'manual', // Don't follow redirects
     });
 
