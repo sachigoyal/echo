@@ -5,7 +5,7 @@ import { isValidModel } from './AccountingService';
 import { extractIsStream, extractModelName } from './RequestDataService';
 import { handleStreamService } from './HandleStreamService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
-import { Transaction } from 'types';
+import { Transaction } from '../types';
 import { HttpError, UnknownModelError } from '../errors/http';
 
 export class ModelRequestService {

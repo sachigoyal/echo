@@ -11,7 +11,7 @@ import {
   Prisma,
   Transaction,
   UserSpendPoolUsage,
-} from 'generated/prisma';
+} from '../generated/prisma';
 /**
  * Secret key for deterministic API key hashing (should match echo-control)
  */

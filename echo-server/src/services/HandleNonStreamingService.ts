@@ -1,6 +1,6 @@
 import { Response as ExpressResponse } from 'express';
 import { BaseProvider } from '../providers/BaseProvider';
-import { Transaction } from 'types';
+import { Transaction } from '../types';
 
 export class HandleNonStreamingService {
   /**

@@ -1,4 +1,4 @@
-import { LlmTransactionMetadata, Transaction } from 'types';
+import { LlmTransactionMetadata, Transaction } from '../types';
 import { getCostPerToken } from '../services/AccountingService';
 import type { CompletionStateBody, StreamingChunkBody } from './GPTProvider';
 import { GPTProvider } from './GPTProvider';

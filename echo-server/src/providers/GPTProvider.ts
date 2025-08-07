@@ -1,4 +1,4 @@
-import { LlmTransactionMetadata, Transaction } from 'types';
+import { LlmTransactionMetadata, Transaction } from '../types';
 import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';

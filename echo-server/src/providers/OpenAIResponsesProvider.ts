@@ -1,7 +1,7 @@
 import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-import { LlmTransactionMetadata, Transaction } from 'types';
+import { LlmTransactionMetadata, Transaction } from '../types';
 
 export interface ResponseCompletionBody {
   id: string;

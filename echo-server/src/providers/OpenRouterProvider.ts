@@ -1,7 +1,7 @@
-import { LlmTransactionMetadata, Transaction } from 'types';
+import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-import { getCostPerToken } from 'services/AccountingService';
+import { getCostPerToken } from '../services/AccountingService';
 
 export interface CompletionStateBody {
   id: string;
