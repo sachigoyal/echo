@@ -153,6 +153,7 @@ export async function GET(req: NextRequest) {
 
     /* 2️⃣ Check if user is authenticated */
     const session = await auth();
+    console.log('🔧 session:', session);
     const userId = session?.user?.id;
     if (!session?.user) {
       // Handle prompt=none for unauthenticated users - SECURITY FIX

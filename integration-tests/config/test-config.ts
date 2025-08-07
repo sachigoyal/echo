@@ -26,8 +26,8 @@ const requiredVars = [
   'DATABASE_URL',
   'ECHO_CONTROL_URL',
   'JWT_SECRET',
-  'CLERK_PUBLISHABLE_KEY',
   'INTEGRATION_TEST_JWT',
+  'AUTH_SECRET',
 ];
 
 const missing = requiredVars.filter(varName => !process.env[varName]);
@@ -87,9 +87,6 @@ export const TEST_CONFIG = {
     jwtSecret: process.env.JWT_SECRET!,
     jwtIssuer: process.env.JWT_ISSUER || process.env.ECHO_CONTROL_URL!,
     jwtAudience: process.env.JWT_AUDIENCE || 'echo-proxy',
-
-    // Clerk configuration (required by echo-control frontend)
-    clerkPublishable: process.env.CLERK_PUBLISHABLE_KEY!,
 
     // Integration test JWT (pre-generated for testing)
     integrationJwt: process.env.INTEGRATION_TEST_JWT!,

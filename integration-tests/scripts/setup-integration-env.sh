@@ -47,7 +47,6 @@ required_vars=(
     "ECHO_CONTROL_URL"
     "ECHO_DATA_SERVER_URL"
     "JWT_SECRET"
-    "CLERK_PUBLISHABLE_KEY"
     "INTEGRATION_TEST_JWT"
     "OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS"
 )
@@ -83,7 +82,8 @@ if [ "$IS_CI" != "true" ]; then
     
     # Start services with rebuild
     echo "🏗️  Rebuilding and starting services..."
-    docker-compose -f docker/docker-compose.yml up -d --build
+    docker-compose -f docker/docker-compose.yml build --no-cache
+    docker-compose -f docker/docker-compose.yml up -d
     
     # Wait for services to be healthy
     echo "⏳ Waiting for services to be ready..."
@@ -162,7 +162,7 @@ else
     INTEGRATION_TEST_MODE=true cd ../integration-tests && pnpm db:seed
     
     echo "🚀 Starting echo-control test server..."
-    cd ../echo-control && pnpm build
+    cd ../echo-control && INTEGRATION_TEST_MODE=true pnpm build
     
     # Start echo-control in background with explicit port and all required environment variables
     cd ../echo-control && \
@@ -173,9 +173,6 @@ else
     JWT_SECRET="$JWT_SECRET" \
     JWT_ISSUER="$JWT_ISSUER" \
     JWT_AUDIENCE="$JWT_AUDIENCE" \
-    CLERK_SECRET_KEY="$CLERK_SECRET_KEY" \
-    CLERK_PUBLISHABLE_KEY="$CLERK_PUBLISHABLE_KEY" \
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
     INTEGRATION_TEST_MODE="$INTEGRATION_TEST_MODE" \
     OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS="$OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS" \
     OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS="$OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS" \

@@ -98,12 +98,12 @@ describe('Echo Data Server Client Integration Tests', () => {
     const codeChallenge = generateCodeChallenge(codeVerifier);
     const state = generateState();
 
-    const testUserApi = new EchoControlApiClient(
+    const echoControlApi = new EchoControlApiClient(
       TEST_CONFIG.services.echoControl,
-      TEST_CONFIG.auth.integrationJwtForUser2
+      'test-user-2'
     );
 
-    const redirectUrl = await testUserApi.validateOAuthAuthorizeRequest({
+    const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
       client_id: TEST_CLIENT_IDS.secondary,
       redirect_uri: 'http://localhost:3000/callback',
       state,
@@ -117,7 +117,7 @@ describe('Echo Data Server Client Integration Tests', () => {
     const authCode = callbackUrl.searchParams.get('code');
     expect(authCode).toBeTruthy();
 
-    const tokenResponse = await testUserApi.exchangeCodeForToken({
+    const tokenResponse = await echoControlApi.exchangeCodeForToken({
       code: authCode!,
       client_id: TEST_CLIENT_IDS.secondary,
       redirect_uri: 'http://localhost:3000/callback',

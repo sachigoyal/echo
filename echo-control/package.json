@@ -9,7 +9,6 @@
     "lint": "next lint",
     "setup-webhook": "node scripts/setup-webhook.js",
     "test": "echo 'All tests passed!'",
-    "postinstall": "prisma generate",
     "prisma:generate": "pnpx prisma generate",
     "prisma:push": "pnpx prisma db push",
     "prisma:studio": "pnpx prisma studio",
@@ -17,6 +16,7 @@
     "seed-app": "tsx scripts/seed-app-usage.ts"
   },
   "dependencies": {
+    "@auth/core": "^0.40.0",
     "@auth/prisma-adapter": "^2.10.0",
     "@headlessui/react": "^2.2.4",
     "@icons-pack/react-simple-icons": "^13.7.0",

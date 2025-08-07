@@ -23,7 +23,7 @@ Below is a battle-tested pattern that lets **any customer SPA complete a PKCE fl
    window.location.href = authUrl;
    ```
 
-2. **User lands on Clerk UI at `echo.merit.systems`, signs in with GitHub.**
+2. **User lands on sign in at `echo.merit.systems`, signs in with GitHub.**
 
 3. **Echo redirects back to the SPA**
    `https://app.customer.tld/echo/callback?code=XYZ&state=…`
