@@ -1,7 +1,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 
-import Header from '@/components/header/header';
+import Header from '@/components/header';
 
 import type { Metadata } from 'next';
 
