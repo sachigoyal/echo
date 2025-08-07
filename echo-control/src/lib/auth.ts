@@ -1,55 +1,37 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from './db';
 import { User, EchoApp } from '@/generated/prisma';
 import { NextRequest } from 'next/server';
 import { hashApiKey } from './crypto';
 import { authenticateEchoAccessJwtToken } from './jwt-tokens';
+import { auth } from '@/auth';
 
-/**
- * Get the current user from Clerk
- * Should be used for endpoints coming from the merit-hosted echo client
- * @returns The current user
- */
 export async function getCurrentUser(): Promise<User> {
-  const { userId } = await auth();
+  const session = await auth();
 
-  if (!userId) {
+  if (!session?.user?.id) {
     throw new Error('Not authenticated');
-  }
-
-  // Get user from Clerk
-  const clerkUser = await currentUser();
-
-  if (!clerkUser) {
-    throw new Error('Clerk user not found');
   }
 
   // Try to find existing user in our database
   let user = await db.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: session.user.id },
   });
 
   // If user doesn't exist, create them
   if (!user) {
     user = await db.user.create({
       data: {
-        clerkId: userId,
-        email: clerkUser.emailAddresses[0]?.emailAddress || '',
-        name:
-          `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
-          null,
-        profilePictureUrl: clerkUser.imageUrl || null, // Get profile picture from Clerk
-        totalPaid: 0, // Initialize with zero paid amount
-        totalSpent: 0, // Initialize with zero spent amount
+        email: session.user.email || '',
+        name: session.user.name || null,
+        image: session.user.image || null,
       },
     });
   } else {
-    // Update profile picture if it's changed in Clerk
-    if (user.profilePictureUrl !== clerkUser.imageUrl) {
+    if (user.image !== session.user.image) {
       user = await db.user.update({
         where: { id: user.id },
         data: {
-          profilePictureUrl: clerkUser.imageUrl || null,
+          image: session.user.image || null,
         },
       });
     }
@@ -58,42 +40,34 @@ export async function getCurrentUser(): Promise<User> {
   return user;
 }
 
-export async function getOrCreateUserFromClerkId(
-  clerkId: string
-): Promise<User> {
-  // Get user from Clerk
-  const clerkUser = await currentUser();
+export async function getOrCreateUser(userId: string): Promise<User> {
+  const session = await auth();
 
-  if (!clerkUser) {
-    throw new Error('Clerk user not found');
+  if (!session?.user?.id) {
+    throw new Error('Not authenticated');
   }
+
   // Try to find existing user in our database
   let user = await db.user.findUnique({
-    where: { clerkId: clerkId },
+    where: { id: session.user.id },
   });
 
   // If user doesn't exist, create them
   if (!user) {
-    console.log('Creating user from Clerk ID:', clerkId);
     user = await db.user.create({
       data: {
-        clerkId: clerkId,
-        email: clerkUser.emailAddresses[0]?.emailAddress || '',
-        name:
-          `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
-          null,
-        profilePictureUrl: clerkUser.imageUrl || null, // Get profile picture from Clerk
-        totalPaid: 0, // Initialize with zero paid amount
-        totalSpent: 0, // Initialize with zero spent amount
+        id: userId,
+        email: session.user.email || '',
+        name: session.user.name || null,
+        image: session.user.image || null,
       },
     });
   } else {
-    // Update profile picture if it's changed in Clerk
-    if (user.profilePictureUrl !== clerkUser.imageUrl) {
+    if (user.image !== session.user.image) {
       user = await db.user.update({
         where: { id: user.id },
         data: {
-          profilePictureUrl: clerkUser.imageUrl || null,
+          image: session.user.image || null,
         },
       });
     }

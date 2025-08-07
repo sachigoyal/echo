@@ -7,15 +7,47 @@ export interface EchoControlApiClient {
 }
 
 export class EchoControlApiClient {
-  private integrationJwt: string | undefined;
+  private providerId: string;
 
   constructor(
     baseUrl: string = TEST_CONFIG.services.echoControl,
-    integrationJwt: string = TEST_CONFIG.auth.integrationJwt
+    providerId: string = 'test-user-1'
   ) {
     this.baseUrl = baseUrl;
+    this.providerId = providerId;
     this.fetch = fetch;
-    this.integrationJwt = integrationJwt;
+  }
+
+  async getCookies(): Promise<string> {
+    const response = await this.fetch(
+      `${this.baseUrl}/api/auth/callback/${this.providerId}`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        redirect: 'manual',
+      }
+    );
+
+    // Handle multiple Set-Cookie headers
+    // Note: Headers.getAll() is not available in all environments, so we'll use a different approach
+    const setCookieHeader = response.headers.get('set-cookie');
+    if (!setCookieHeader) {
+      throw new Error('No set-cookie header found');
+    }
+
+    // Split by ', ' to handle multiple cookies in a single header
+    // This handles the case where multiple cookies are concatenated
+    const cookieStrings = setCookieHeader.split(', ');
+
+    // Extract just the cookie name=value part from each Set-Cookie header
+    const cookies = cookieStrings.map((header: string) => {
+      // Set-Cookie format: name=value; Path=/; HttpOnly; SameSite=Lax
+      const cookiePart = header.split(';')[0]; // Get just the name=value part
+      return cookiePart;
+    });
+
+    // Join multiple cookies with '; ' separator
+    return cookies.join('; ');
   }
 
   private async request<T>(
@@ -75,14 +107,12 @@ export class EchoControlApiClient {
 
     const headers: Record<string, string> = {};
 
-    // Add Clerk JWT template token as Bearer token for authentication
-    if (this.integrationJwt) {
-      headers['Authorization'] = `Bearer ${this.integrationJwt}`;
-    }
+    headers['cookie'] = await this.getCookies();
 
     const response = await this.fetch(url, {
       method: 'GET',
       headers,
+      credentials: 'include',
       redirect: 'manual', // Don't follow redirects
     });
 

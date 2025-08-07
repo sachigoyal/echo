@@ -1,9 +1,7 @@
-import { AppRole } from '@/lib/permissions/types';
-import { PublicEchoApp } from '@/lib/apps/types';
-import { formatCurrency } from '@/lib/balance';
 import { useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+
 import { UserPlus } from 'lucide-react';
+
 import {
   AppDetailLayout,
   AppBanner,
@@ -17,6 +15,12 @@ import { GlobalModelsCard } from './GlobalModelsCard';
 import { AppHomepageCard } from './AppHomepageCard';
 import { PublicRecentActivityCard } from './RecentActivityDetail';
 import JoinAppModal from '../JoinAppModal';
+
+import { useUser } from '@/hooks/use-user';
+
+import { AppRole } from '@/lib/permissions/types';
+import { PublicEchoApp } from '@/lib/apps/types';
+import { formatCurrency } from '@/lib/balance';
 
 interface PublicAppDetailProps {
   app: PublicEchoApp;

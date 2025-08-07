@@ -246,7 +246,7 @@ function Root() {
                   </div>
                   <div className="mt-6">
                     <Link
-                      href="/sign-up"
+                      href="/sign-in"
                       className="inline-block w-full text-center px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200"
                     >
                       Start Building with Echo
@@ -404,9 +404,6 @@ function Root() {
             <div className="flex space-x-8">
               <Link href="/sign-in" className="text-gray-300 hover:text-white">
                 Sign In
-              </Link>
-              <Link href="/sign-up" className="text-gray-300 hover:text-white">
-                Sign Up
               </Link>
               <a
                 href="https://echo.merit.systems"

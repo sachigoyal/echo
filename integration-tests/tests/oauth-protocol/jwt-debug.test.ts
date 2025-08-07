@@ -8,8 +8,7 @@ describe('JWT Debug Test', () => {
 
     console.log('🔧 Testing with manual fetch to isolate issue...');
 
-    // Try with Authorization header (Clerk JWT) + X-Echo-Token (our token)
-    const clerkJwt = process.env.INTEGRATION_TEST_JWT;
+    const jwt = process.env.INTEGRATION_TEST_JWT;
 
     const responseBoth = await fetch(
       `${TEST_CONFIG.services.echoControl}/api/validate-jwt-token`,
@@ -17,7 +16,7 @@ describe('JWT Debug Test', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${clerkJwt}`, // Clerk JWT for auth
+          Authorization: `Bearer ${jwt}`,
           'X-Echo-Token': accessToken, // Our Echo token to validate
         },
         body: JSON.stringify({}),

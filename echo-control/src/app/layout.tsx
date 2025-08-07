@@ -1,8 +1,12 @@
-import type { Metadata } from 'next';
-import { ClerkProvider } from '@clerk/nextjs';
-import { TRPCProvider } from '@/components/providers/TRPCProvider';
+import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
-import Header from '@/components/header/header';
+
+import { TRPCProvider } from '@/components/providers/TRPCProvider';
+
+import Header from '@/components/header';
+
+import type { Metadata } from 'next';
+
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,9 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <SessionProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className="antialiased bg-background text-foreground min-h-screen">
+        <body className="antialiased bg-background text-foreground h-dvh overflow-y-auto">
           <TRPCProvider>
             <ThemeProvider
               attribute="class"
@@ -34,11 +38,13 @@ export default function RootLayout({
               enableSystem={true}
             >
               <Header />
-              <main>{children}</main>
+              <main className="w-screen overflow-x-hidden pt-16 h-full">
+                {children}
+              </main>
             </ThemeProvider>
           </TRPCProvider>
         </body>
       </html>
-    </ClerkProvider>
+    </SessionProvider>
   );
 }

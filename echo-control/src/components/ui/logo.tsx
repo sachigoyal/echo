@@ -14,15 +14,15 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
         <Image
           src="/logo/light.svg"
           alt="Merit Systems Logo"
-          width={100}
-          height={100}
+          width={200}
+          height={200}
           className={cn('dark:hidden size-6', className)}
         />
         <Image
           src="/logo/dark.svg"
           alt="Merit Systems Logo"
-          width={100}
-          height={100}
+          width={200}
+          height={200}
           className={cn('hidden dark:block size-6', className)}
         />
       </div>

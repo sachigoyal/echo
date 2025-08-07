@@ -148,14 +148,12 @@ async function createTestUser(
   suffix: string = ''
 ): Promise<string> {
   const email = generateEmail(name, suffix);
-  const clerkId = `test_clerk_${crypto.randomUUID()}`;
 
   const user = await prisma.user.create({
     data: {
       id: crypto.randomUUID(),
       email,
       name,
-      clerkId,
       totalPaid: randomBetween(0, 10000) / 100, // $0-$100 in random paid amount
       totalSpent: 0, // Will be updated as transactions are created
     },

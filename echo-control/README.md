@@ -17,7 +17,7 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 
 ### Backend API (Next.js API Routes)
 
-1. **Authentication** - Ready for Clerk integration (currently mocked)
+1. **Authentication**
 2. **API Key Management** - Create and manage API keys for users
 3. **Stripe Integration** - Payment links and webhook handling (mocked)
 4. **Balance Operations** - Increment/decrement user balances
@@ -25,7 +25,7 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 
 ### Database Schema (PostgreSQL + Prisma)
 
-- **Users** - User accounts with Clerk integration support
+- **Users** - User accounts with Auth.js integration support
 - **Echo Apps** - Individual Echo applications
 - **API Keys** - API keys associated with users and apps
 - **Payments** - Payment records with Stripe integration
@@ -37,7 +37,7 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 - **Database**: PostgreSQL with Prisma ORM
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
-- **Authentication**: Clerk (mocked)
+- **Authentication**: Auth.js
 - **Payments**: Stripe (mocked)
 - **TypeScript**: Full type safety
 
@@ -97,10 +97,6 @@ Create a `.env` file with the following variables:
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5469/echo_control"
 
-# Authentication (Mocked)
-CLERK_SECRET_KEY="mock_clerk_secret_key"
-CLERK_PUBLISHABLE_KEY="mock_clerk_publishable_key"
-
 # Stripe (Mocked)
 STRIPE_SECRET_KEY="mock_stripe_secret_key"
 STRIPE_PUBLISHABLE_KEY="mock_stripe_publishable_key"
@@ -123,7 +119,7 @@ API_KEY_PREFIX="echo_"
 ### API Keys
 
 - `GET /api/api-keys?userId={id}` - List user's API keys
-- `POST /api/api-keys` - Store API key from Clerk
+- `POST /api/api-keys` - Create API Key
 
 ### Balance Management
 
@@ -146,7 +142,6 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
-  clerkId   String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -216,12 +211,6 @@ model LlmTransaction {
 - Admin controls for balance adjustments
 - Stripe payment integration
 
-### Mock Integrations
-
-- **Clerk Authentication**: Ready for real Clerk integration
-- **Stripe Payments**: Mock payment links and webhooks
-- **API Key Generation**: Prepared for Clerk-managed API keys
-
 ## Development
 
 ### Running Tests
@@ -249,15 +238,6 @@ npx prisma generate
 pnpm run build
 pnpm start
 ```
-
-## Next Steps
-
-1. **Integrate Clerk Authentication**: Replace mock authentication with real Clerk integration
-2. **Connect Stripe**: Implement real Stripe payment processing
-3. **Add API Key Generation**: Connect with Clerk for API key management
-4. **Implement Rate Limiting**: Add rate limiting for API endpoints
-5. **Add Monitoring**: Implement logging and error tracking
-6. **Deploy**: Set up production deployment with proper environment variables
 
 ## Contributing
 

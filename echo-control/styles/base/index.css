@@ -20,31 +20,31 @@ html {
     140 140 140 
     */
 
-    --background: 250, 250, 250;
+    --background: 0 0% 100%;
     --background-gradient: 255 255 255;
     --navbar: 255 255 255;
-    --foreground: 14 14 14;
-    --card: 255 255 255;
-    --card-foreground: 14 14 14;
-    --popover: 250 250 248;
-    --popover-foreground: 14 14 14;
-    --muted: 223 226 217;
-    --muted-foreground: 14 14 14;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
 
-    --accent: 128 102 111;
-    --accent-foreground: 222 226 211;
-    --destructive: 255 59 48;
-    --destructive-foreground: 238 240 232;
-    --primary: 205 27 33;
-    --primary-foreground: 238 241 231;
-    --secondary: 0 157 200;
-    --secondary-foreground: 222 226 211;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
 
-    --border: 223 226 217;
-    --input: 255 255 255;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
     --input-foreground: 14 14 14;
 
-    --ring: 111 153 174;
+    --ring: 0 0% 3.9%;
 
     --sidebar-background: 245 245 245;
     --sidebar-foreground: 67 67 67;
@@ -55,11 +55,11 @@ html {
     --sidebar-border: 232 232 232;
     --sidebar-ring: 66 153 225;
 
-    --chart-1: var(--primary); /* Primary color */
-    --chart-2: var(--secondary); /* Secondary color */
-    --chart-3: var(--accent); /* Accent color */
-    --chart-4: 255 204 0;
-    --chart-5: 255 149 0;
+    --chart-1: 12 76% 61%; /* Primary color */
+    --chart-2: 173 58% 39%; /* Secondary color */
+    --chart-3: 197 37% 24%; /* Accent color */
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
 
     --face-border: 0 0 0;
     --face-color: 250 250 248;
@@ -121,36 +121,36 @@ html {
 
   .dark {
     /* --background: 18 18 18; */
-    --background: 0 0 0;
+    --background: 0 0% 3.9%;
     --background-gradient: 0 0 0;
-    --foreground: 223 226 217;
+    --foreground: 0 0% 98%;
 
     --navbar: 18 18 18;
 
-    --card: 10 10 10;
-    --card-foreground: 241 242 237;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 28 28 30;
-    --popover-foreground: 242 242 242;
-    --primary: 205 27 33;
-    --primary-foreground: 238 241 231;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
 
-    --secondary: 1 153 174;
-    --secondary-foreground: 222 226 211;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 28 28 28;
-    --muted-foreground: 200 200 200;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
 
-    --accent: 128 102 111;
-    --accent-foreground: 222 226 211;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 205 27 33;
-    --destructive-foreground: 238 241 231;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 64 64 64;
+    --border: 0 0% 14.9%;
 
-    --input: 42 42 42;
-    --ring: 111 153 174;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
 
     --face-border: 255 255 255;
     --face-color: 0 0 0;
@@ -174,11 +174,11 @@ html {
     --inner-top: 1 111 119;
     --inner-right: 2 79 81; */
 
-    --chart-1: var(--primary); /* Primary color */
-    --chart-2: var(--secondary); /* Secondary color */
-    --chart-3: var(--accent); /* Accent color */
-    --chart-4: 255 182 193; /* Light Pink */
-    --chart-5: 123 104 238; /* Medium Slate Blue */
+    --chart-1: 220 70% 50%; /* Primary color */
+    --chart-2: 160 60% 45%; /* Secondary color */
+    --chart-3: 30 80% 55%; /* Accent color */
+    --chart-4: 280 65% 60%; /* Light Pink */
+    --chart-5: 340 75% 55%; /* Medium Slate Blue */
 
     --diff-selection-background-color: rgb(59, 83, 100);
     --diff-gutter-insert-background-color: rgb(61, 114, 71);

@@ -26,8 +26,8 @@ const requiredVars = [
   'DATABASE_URL',
   'ECHO_CONTROL_URL',
   'JWT_SECRET',
-  'CLERK_PUBLISHABLE_KEY',
   'INTEGRATION_TEST_JWT',
+  'AUTH_SECRET',
 ];
 
 const missing = requiredVars.filter(varName => !process.env[varName]);
@@ -52,7 +52,7 @@ function parseDatabaseUrl(url: string) {
     user: match[1],
     password: match[2],
     host: match[3],
-    port: parseInt(match[4], 10),
+    port: parseInt(match[4]!, 10),
     database: match[5],
   };
 }
@@ -87,9 +87,6 @@ export const TEST_CONFIG = {
     jwtSecret: process.env.JWT_SECRET!,
     jwtIssuer: process.env.JWT_ISSUER || process.env.ECHO_CONTROL_URL!,
     jwtAudience: process.env.JWT_AUDIENCE || 'echo-proxy',
-
-    // Clerk configuration (required by echo-control frontend)
-    clerkPublishable: process.env.CLERK_PUBLISHABLE_KEY!,
 
     // Integration test JWT (pre-generated for testing)
     integrationJwt: process.env.INTEGRATION_TEST_JWT!,
@@ -143,8 +140,8 @@ export const configHelpers = {
    * Get database URL for Docker environment
    */
   getDockerDatabaseUrl(): string {
-    const { user, password, database } = TEST_CONFIG.database;
-    return `postgresql://${user}:${password}@postgres-test:5432/${database}`;
+    const { user, password, name } = TEST_CONFIG.database;
+    return `postgresql://${user}:${password}@postgres-test:5432/${name}`;
   },
 
   /**

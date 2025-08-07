@@ -39,7 +39,7 @@ export type Owner = {
   id: string;
   email: string;
   name: string | null;
-  profilePictureUrl: string | null;
+  image: string | null;
 };
 
 export type ModelUsage = {

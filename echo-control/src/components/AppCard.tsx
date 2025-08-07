@@ -41,7 +41,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   // Get creator info from owner property
   const creator = {
     name: app.owner?.name || app.owner?.email || 'App Owner',
-    avatar: app.owner?.profilePictureUrl || null,
+    avatar: app.owner?.image || null,
   };
 
   // Access stats based on app type - all types have stats property

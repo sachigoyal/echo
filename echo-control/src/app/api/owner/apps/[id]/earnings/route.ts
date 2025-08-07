@@ -42,7 +42,7 @@ export async function GET(
             id: true,
             email: true,
             name: true,
-            profilePictureUrl: true,
+            image: true,
           },
         },
         apiKey: {
@@ -85,7 +85,7 @@ export async function GET(
           id: transaction.user.id,
           email: transaction.user.email,
           name: transaction.user.name,
-          profilePictureUrl: transaction.user.profilePictureUrl,
+          image: transaction.user.image,
         },
         apiKey: transaction.apiKey
           ? {

@@ -1,15 +1,9 @@
-import {
-  FileText,
-  Laptop,
-  LogOut,
-  Moon,
-  Sun,
-  User,
-  UserLock,
-  Users,
-} from 'lucide-react';
+import React from 'react';
 
-import { Button } from '@/components/ui/button';
+import { FileText, LogOut, User, UserLock, Users } from 'lucide-react';
+
+import Link from 'next/link';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,45 +13,39 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/skeleton';
 
-import Link from 'next/link';
+import { ColorModeToggle } from './color-mode-toggle';
 
-import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
-import { cn } from '@/lib/utils';
-import { SignOutButton, useUser } from '@clerk/nextjs';
-import { useTheme } from 'next-themes';
+import type { User as NextAuthUser } from 'next-auth';
+import { signOut } from '@/auth';
 
-export function UserDropdown() {
-  const { user, isLoaded } = useUser();
-  const { theme, setTheme } = useTheme();
+interface Props {
+  user: NextAuthUser;
+}
 
-  if (!isLoaded) {
-    return <Skeleton className="h-10 w-10 rounded-lg border shrink-0" />;
-  }
-
+export const UserDropdown: React.FC<Props> = ({ user }) => {
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger>
-        <MinimalGithubAvatar
-          srcUrl={user?.imageUrl || ''}
-          alt={user?.username || ''}
+      <DropdownMenuTrigger asChild>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={user?.image || ''}
+          alt={user?.name || ''}
           className="h-10 w-10 rounded-lg border"
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <MinimalGithubAvatar
-              srcUrl={user?.imageUrl || ''}
-              alt={user?.username || ''}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={user?.image || ''}
+              alt={user?.name || ''}
               className="size-9 rounded-lg"
             />
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{user?.username}</span>
-              <span className="truncate text-xs">
-                {user?.emailAddresses[0]?.emailAddress}
-              </span>
+              <span className="truncate font-semibold">{user?.name}</span>
+              <span className="truncate text-xs">{user?.email}</span>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -79,26 +67,7 @@ export function UserDropdown() {
         <DropdownMenuSeparator />
         <div className="flex gap-2">
           <DropdownMenuLabel className="font-normal">Theme</DropdownMenuLabel>
-          <div className="flex items-center  gap-2 text-left text-sm">
-            {[
-              { theme: 'light' as const, Icon: Sun },
-              { theme: 'dark' as const, Icon: Moon },
-              { theme: 'system' as const, Icon: Laptop },
-            ].map(({ theme: themeOption, Icon }) => (
-              <Button
-                key={themeOption}
-                variant="ghost"
-                onClick={() => setTheme(themeOption)}
-                className={cn(
-                  'size-fit p-1 hover:bg-foreground/10',
-                  theme === themeOption &&
-                    'bg-foreground/10 hover:bg-foreground/20'
-                )}
-              >
-                <Icon className="size-4" />
-              </Button>
-            ))}
-          </div>
+          <ColorModeToggle />
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -124,13 +93,20 @@ export function UserDropdown() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <SignOutButton>
-          <DropdownMenuItem>
-            <LogOut className="size-4" />
-            Sign Out
+        <form
+          action={async () => {
+            'use server';
+            await signOut({ redirectTo: '/' });
+          }}
+        >
+          <DropdownMenuItem asChild>
+            <button type="submit" className="w-full">
+              <LogOut className="size-4" />
+              Sign Out
+            </button>
           </DropdownMenuItem>
-        </SignOutButton>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};

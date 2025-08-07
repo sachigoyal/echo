@@ -32,7 +32,6 @@ export interface User {
   id: string;
   email: string;
   name?: string;
-  clerkId: string;
   totalPaid?: number;
   totalSpent?: number;
   createdAt: string;

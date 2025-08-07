@@ -1,16 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatCurrency } from '@/lib/balance';
+
 import { usePaymentLink } from '@/hooks/usePaymentLink';
 import { useUserBalance } from '@/hooks/useUserBalance';
 import { useUserPayments } from '@/hooks/useUserPayments';
+import { useUser } from '@/hooks/use-user';
+
+import { formatCurrency } from '@/lib/balance';
 
 export default function CreditsPage() {
   const { user, isLoaded } = useUser();

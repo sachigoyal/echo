@@ -130,7 +130,6 @@ _Test real HTTP calls between services using fetch/axios_
   - ✅ Real: PKCE challenge/verifier generation & validation
   - ✅ Real: Client ID validation against DB
   - ✅ Real: Redirect URI allowlist validation
-  - 🚫 Mock: User authentication (skip Clerk login)
 
 - [ ] **Token Exchange Flow**
 
@@ -171,7 +170,6 @@ _Test complete user journeys with real browser automation_
   - ✅ Real: Complete browser-based OAuth redirect
   - ✅ Real: User consent/authorization simulation
   - ✅ Real: Callback handling & token storage
-  - 🚫 Mock: Clerk user authentication (test user)
 
 - [ ] **Silent Renewal**
 
@@ -258,16 +256,15 @@ describe('Browser Compatibility', () => {
 
 ## Mock vs Real Decision Matrix
 
-| Component                    | Integration Tests  | E2E Tests | Reason                              |
-| ---------------------------- | ------------------ | --------- | ----------------------------------- |
-| echo-control OAuth endpoints | ✅ Real            | ✅ Real   | Core functionality under test       |
-| PostgreSQL database          | ✅ Real            | ✅ Real   | Data persistence critical           |
-| JWT token generation         | ✅ Real            | ✅ Real   | Crypto operations must be real      |
-| Clerk user authentication    | 🚫 Mock            | 🚫 Mock   | External dependency, use test users |
-| Browser redirects            | 🚫 Mock (API only) | ✅ Real   | Integration = API, E2E = full flow  |
-| Network timeouts/failures    | 🚫 Mock            | 🚫 Mock   | Use MSW for network simulation      |
-| Stripe webhooks              | 🚫 Mock            | 🚫 Mock   | External payment system             |
-| SMTP email sending           | 🚫 Mock            | 🚫 Mock   | External service                    |
+| Component                    | Integration Tests  | E2E Tests | Reason                             |
+| ---------------------------- | ------------------ | --------- | ---------------------------------- |
+| echo-control OAuth endpoints | ✅ Real            | ✅ Real   | Core functionality under test      |
+| PostgreSQL database          | ✅ Real            | ✅ Real   | Data persistence critical          |
+| JWT token generation         | ✅ Real            | ✅ Real   | Crypto operations must be real     |
+| Browser redirects            | 🚫 Mock (API only) | ✅ Real   | Integration = API, E2E = full flow |
+| Network timeouts/failures    | 🚫 Mock            | 🚫 Mock   | Use MSW for network simulation     |
+| Stripe webhooks              | 🚫 Mock            | 🚫 Mock   | External payment system            |
+| SMTP email sending           | 🚫 Mock            | 🚫 Mock   | External service                   |
 
 ## Test Infrastructure Requirements
 
@@ -304,8 +301,6 @@ ECHO_CONTROL_INTERNAL_URL=http://echo-control-test:3000
 NODE_ENV=test
 
 # Mock External Services
-CLERK_SECRET_KEY=test_sk_clerk_mock_key_12345
-CLERK_PUBLISHABLE_KEY=test_pk_clerk_mock_key_12345
 NEXTAUTH_URL=http://localhost:3001
 
 # Stripe Test Keys (real test keys, not mocks)
@@ -355,12 +350,7 @@ export function loadIntegrationTestEnv() {
   }
 
   // Validate required environment variables
-  const requiredVars = [
-    'DATABASE_URL',
-    'ECHO_CONTROL_URL',
-    'JWT_SECRET',
-    'CLERK_SECRET_KEY',
-  ];
+  const requiredVars = ['DATABASE_URL', 'ECHO_CONTROL_URL', 'JWT_SECRET'];
 
   const missing = requiredVars.filter(varName => !process.env[varName]);
 
@@ -459,7 +449,6 @@ services:
       - DATABASE_URL
       - NODE_ENV=test
       - INTEGRATION_TEST_MODE=true
-      - CLERK_SECRET_KEY
       - JWT_SECRET
       - JWT_ISSUER
       - JWT_AUDIENCE
@@ -558,7 +547,6 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
           JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
-          CLERK_SECRET_KEY: ${{ secrets.TEST_CLERK_SECRET_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.TEST_STRIPE_SECRET_KEY }}
 
       - name: Setup Prisma database
@@ -621,7 +609,6 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
           JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
-          CLERK_SECRET_KEY: ${{ secrets.TEST_CLERK_SECRET_KEY }}
 
       - name: Setup test environment
         run: |
@@ -694,7 +681,6 @@ jobs:
           timeout 120 bash -c 'until docker-compose -f docker/docker-compose.yml ps | grep healthy; do sleep 5; done'
         env:
           JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
-          CLERK_SECRET_KEY: ${{ secrets.TEST_CLERK_SECRET_KEY }}
 
       - name: Run E2E Tests
         run: |
@@ -732,7 +718,6 @@ export async function seedIntegrationDatabase() {
       id: 'test-user-456',
       email: 'test@example.com',
       name: 'Integration Test User',
-      clerkUserId: 'user_clerk_test_123',
       credits: 1000,
     },
   });
@@ -950,12 +935,7 @@ export function loadIntegrationTestEnv() {
   }
 
   // Validate required environment variables
-  const requiredVars = [
-    'DATABASE_URL',
-    'ECHO_CONTROL_URL',
-    'JWT_SECRET',
-    'CLERK_SECRET_KEY',
-  ];
+  const requiredVars = ['DATABASE_URL', 'ECHO_CONTROL_URL', 'JWT_SECRET'];
 
   const missing = requiredVars.filter(varName => !process.env[varName]);
 
