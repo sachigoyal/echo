@@ -7,7 +7,6 @@ interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   onClick?: () => void;
 }
-
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
   ({ className, onClick, ...props }, ref) => {
     return (
@@ -15,16 +14,16 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
         <Image
           src="/logo/light.svg"
           alt="Merit Systems Logo"
-          width={24}
-          height={24}
-          className={cn('size-6 dark:hidden', className)}
+          width={100}
+          height={100}
+          className={cn('dark:hidden size-6', className)}
         />
         <Image
           src="/logo/dark.svg"
           alt="Merit Systems Logo"
-          width={24}
-          height={24}
-          className={cn('size-6 hidden dark:block', className)}
+          width={100}
+          height={100}
+          className={cn('hidden dark:block size-6', className)}
         />
       </div>
     );
