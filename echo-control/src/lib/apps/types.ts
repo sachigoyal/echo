@@ -69,6 +69,7 @@ export type CustomerApiKey = Omit<
 >;
 
 export type CustomerStatistics = GlobalStatistics & {
+  personalTotalTransactions: number;
   personalTotalRevenue: number;
   personalTotalTokens: number;
   personalTotalInputTokens: number;

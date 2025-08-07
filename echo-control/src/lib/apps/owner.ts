@@ -135,6 +135,12 @@ export async function getOwnerEchoApp(
     // The type system will handle the correct shape based on OwnerEchoApp type
     return {
       ...echoApp,
+      markUp: echoApp.markUp
+        ? {
+            ...echoApp.markUp,
+            amount: Number(echoApp.markUp.amount),
+          }
+        : null,
       owner,
       stats,
       type: 'owner',
@@ -214,6 +220,12 @@ export async function getAllOwnerEchoApps(
 
       ownerApps.push({
         ...echoApp,
+        markUp: echoApp.markUp
+          ? {
+              ...echoApp.markUp,
+              amount: Number(echoApp.markUp.amount),
+            }
+          : null,
         owner,
         stats,
         type: 'owner',

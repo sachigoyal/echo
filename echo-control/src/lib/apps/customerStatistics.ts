@@ -66,6 +66,7 @@ export async function getCustomerStatistics(
   let personalTotalTokens = 0;
   let personalTotalInputTokens = 0;
   let personalTotalOutputTokens = 0;
+  let personalTotalTransactions = 0;
 
   // Use raw SQL to get aggregated personal stats in a single query
   const [personalAggregatedResult] = await client.$queryRaw<
@@ -74,13 +75,15 @@ export async function getCustomerStatistics(
       totalTokens: bigint | null;
       totalInputTokens: bigint | null;
       totalOutputTokens: bigint | null;
+      totalTransactions: bigint | null;
     }>
   >`
     SELECT 
       COALESCE(SUM(t.cost), 0)::text as "totalRevenue",
       COALESCE(SUM(tm."totalTokens"), 0)::bigint as "totalTokens",
       COALESCE(SUM(tm."inputTokens"), 0)::bigint as "totalInputTokens", 
-      COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens"
+      COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens",
+      COUNT(t.id)::bigint as "totalTransactions"
     FROM transactions t
     LEFT JOIN transaction_metadata tm ON t."transactionMetadataId" = tm.id AND tm."isArchived" = false
     WHERE t."echoAppId" = ${echoAppId}::uuid
@@ -96,7 +99,9 @@ export async function getCustomerStatistics(
   personalTotalOutputTokens = Number(
     personalAggregatedResult?.totalOutputTokens || 0
   );
-
+  personalTotalTransactions = Number(
+    personalAggregatedResult?.totalTransactions || 0
+  );
   // Get personal activity data (last 7 days)
   const personalActivityData = await getAppActivity(
     echoAppId,
@@ -120,6 +125,7 @@ export async function getCustomerStatistics(
     personalModelUsage,
     personalActivityData,
     personalApiKeys: apiKeys,
+    personalTotalTransactions,
   };
 }
 
@@ -181,6 +187,7 @@ export async function getCustomerStatisticsBatch(
       totalTokens: bigint | null;
       totalInputTokens: bigint | null;
       totalOutputTokens: bigint | null;
+      totalTransactions: bigint | null;
     }>
   >`
     SELECT 
@@ -188,7 +195,8 @@ export async function getCustomerStatisticsBatch(
       COALESCE(SUM(t.cost), 0)::text as "totalRevenue",
       COALESCE(SUM(tm."totalTokens"), 0)::bigint as "totalTokens",
       COALESCE(SUM(tm."inputTokens"), 0)::bigint as "totalInputTokens", 
-      COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens"
+      COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens",
+      COUNT(t.id)::bigint as "totalTransactions"
     FROM transactions t
     LEFT JOIN transaction_metadata tm ON t."transactionMetadataId" = tm.id AND tm."isArchived" = false
     WHERE t."echoAppId" = ANY(${echoAppIds}::uuid[])
@@ -274,6 +282,9 @@ export async function getCustomerStatisticsBatch(
       personalModelUsage,
       personalActivityData,
       personalApiKeys,
+      personalTotalTransactions: Number(
+        personalAggregated?.totalTransactions || 0
+      ),
     });
   }
 

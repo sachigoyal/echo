@@ -8,10 +8,10 @@ import {
   AppDetailLayout,
   AppBanner,
   AppProfile,
-  ActivityChart,
+  GlobalActivityChart,
   formatNumber,
-  TopModelsCard,
 } from './AppDetailShared';
+import { GlobalTopModelsCard } from './GlobalTopModelsCard';
 import { UserCountCard } from './UserCountCard';
 import { GlobalModelsCard } from './GlobalModelsCard';
 import { AppHomepageCard } from './AppHomepageCard';
@@ -130,7 +130,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
       {/* Global Activity Chart - Full Width */}
       <div className="px-6 mb-32 relative z-10">
         <div className="h-64">
-          <ActivityChart app={app} title="Global Tokens Over Time" />
+          <GlobalActivityChart app={app} title="Global Tokens Over Time" />
         </div>
       </div>
 
@@ -149,7 +149,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           <PublicRecentActivityCard app={app} title="Global Recent Activity" />
 
           {/* Models Usage Card */}
-          <TopModelsCard app={app} title="Global Model Usage" />
+          <GlobalTopModelsCard app={app} title="Global Model Usage" />
         </div>
       </div>
 

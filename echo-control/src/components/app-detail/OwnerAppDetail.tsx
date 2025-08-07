@@ -10,13 +10,13 @@ import {
   AppDetailLayout,
   AppBanner,
   AppProfile,
-  ActivityChart,
-  TopModelsCard,
   formatNumber,
 } from './AppDetailShared';
+import { CustomerActivityChart } from './CustomerActivityChart';
 import { OwnerApiKeysCard } from './ApiKeyDetail';
 import { OwnerRecentActivityCard } from './RecentActivityDetail';
 import { AppHomepageCard } from './AppHomepageCard';
+import { CustomerTopModelsCard } from './CustomerTopModelsCard';
 
 interface OwnerAppDetailProps {
   app: OwnerEchoApp;
@@ -154,11 +154,12 @@ export function OwnerAppDetail({
       {/* Tokens Over Time Chart - Full Width */}
       <div className="px-6 mb-32 relative z-10">
         <div className="h-64">
-          <ActivityChart
+          <CustomerActivityChart
             app={app}
             title={
               isGlobalView ? 'Global Tokens Over Time' : 'Your Tokens Over Time'
             }
+            isGlobalView={isGlobalView}
           />
         </div>
       </div>
@@ -193,9 +194,10 @@ export function OwnerAppDetail({
           />
 
           {/* Models Usage Card */}
-          <TopModelsCard
+          <CustomerTopModelsCard
             app={app}
             title={isGlobalView ? 'Global Model Usage' : 'Your Model Usage'}
+            isGlobalView={isGlobalView}
           />
         </div>
       </div>

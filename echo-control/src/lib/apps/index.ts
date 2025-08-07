@@ -35,4 +35,4 @@ export {
   getAppActivityBatch,
   transformActivityToChartData,
 } from './appActivity';
-export { getModelUsage, getModelUsageBatch, getTopModels } from './modelUsage';
+export { getModelUsage, getModelUsageBatch } from './modelUsage';

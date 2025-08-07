@@ -10,13 +10,14 @@ import {
   AppDetailLayout,
   AppBanner,
   AppProfile,
-  ActivityChart,
   formatNumber,
-  TopModelsCard,
 } from './AppDetailShared';
+import { CustomerActivityChart } from './CustomerActivityChart';
+
 import { CustomerApiKeysCard } from './ApiKeyDetail';
 import { CustomerRecentActivityCard } from './RecentActivityDetail';
 import { AppHomepageCard } from './AppHomepageCard';
+import { CustomerTopModelsCard } from './CustomerTopModelsCard';
 
 interface CustomerAppDetailProps {
   app: CustomerEchoApp;
@@ -61,7 +62,9 @@ export function CustomerAppDetail({
             {isGlobalView ? 'Total Requests' : 'Your Requests'}
           </p>
           <p className="text-lg font-bold text-foreground">
-            {formatNumber(app.stats?.globalTotalTransactions || 0)}
+            {isGlobalView
+              ? formatNumber(app.stats?.globalTotalTransactions || 0)
+              : formatNumber(app.stats?.personalTotalTransactions || 0)}
           </p>
         </div>
 
@@ -70,7 +73,9 @@ export function CustomerAppDetail({
             {isGlobalView ? 'Total Tokens' : 'Your Tokens'}
           </p>
           <p className="text-lg font-bold text-foreground">
-            {formatNumber(app.stats?.globalTotalTokens || 0)}
+            {isGlobalView
+              ? formatNumber(app.stats?.globalTotalTokens || 0)
+              : formatNumber(app.stats?.personalTotalTokens || 0)}
           </p>
         </div>
 
@@ -79,7 +84,9 @@ export function CustomerAppDetail({
             {isGlobalView ? 'Total Spending' : 'Your Spending'}
           </p>
           <p className="text-lg font-bold text-foreground">
-            {formatCurrency(app.stats?.globalTotalRevenue || 0)}
+            {isGlobalView
+              ? formatCurrency(app.stats?.globalTotalRevenue || 0)
+              : formatCurrency(app.stats?.personalTotalRevenue || 0)}
           </p>
         </div>
 
@@ -142,11 +149,12 @@ export function CustomerAppDetail({
       {/* Tokens Over Time Chart - Full Width */}
       <div className="px-6 mb-32 relative z-10">
         <div className="h-64">
-          <ActivityChart
+          <CustomerActivityChart
             app={app}
             title={
               isGlobalView ? 'Global Tokens Over Time' : 'Your Tokens Over Time'
             }
+            isGlobalView={isGlobalView}
           />
         </div>
       </div>
@@ -174,16 +182,14 @@ export function CustomerAppDetail({
           {/* Recent Activity Card */}
           <CustomerRecentActivityCard
             app={app}
-            title={
-              isGlobalView ? 'Global Recent Activity' : 'Your Recent Activity'
-            }
-            isGlobalView={isGlobalView}
+            title={'Your Recent Activity'}
           />
 
           {/* Models Usage Card */}
-          <TopModelsCard
+          <CustomerTopModelsCard
             app={app}
             title={isGlobalView ? 'Global Model Usage' : 'Your Model Usage'}
+            isGlobalView={isGlobalView}
           />
         </div>
       </div>

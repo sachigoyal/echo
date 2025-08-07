@@ -12,7 +12,6 @@ interface CustomerRecentActivityCardProps {
 export function CustomerRecentActivityCard({
   app,
   title = 'Recent Activity',
-  isGlobalView = false,
 }: CustomerRecentActivityCardProps) {
   const transactions: SerializedTransaction[] =
     app.stats?.personalRecentTransactions || [];
@@ -54,16 +53,7 @@ export function CustomerRecentActivityCard({
         ) : (
           <div className="text-center py-8 flex-1 flex items-center justify-center">
             <div>
-              <p className="text-muted-foreground text-sm">
-                {isGlobalView
-                  ? 'Global activity view not available for customers'
-                  : 'No activity yet'}
-              </p>
-              {!isGlobalView && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Start using your API keys to see activity
-                </p>
-              )}
+              <p className="text-muted-foreground text-sm">No activity yet</p>
             </div>
           </div>
         )}
