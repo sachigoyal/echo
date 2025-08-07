@@ -29,7 +29,6 @@ const IS_TEST_MODE = process.env.INTEGRATION_TEST_MODE === 'true';
 export const authConfig = {
   providers: IS_TEST_MODE ? testProviders : providers,
   skipCSRFCheck: IS_TEST_MODE ? skipCSRFCheck : undefined,
-  debug: true,
   callbacks: {
     jwt: ({ token, user }) => {
       if (user) {
