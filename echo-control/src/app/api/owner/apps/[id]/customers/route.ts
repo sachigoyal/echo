@@ -80,7 +80,6 @@ export async function POST(
     const app = await db.echoApp.findFirst({
       where: {
         id: appId,
-        isActive: true,
         isArchived: false,
       },
     });

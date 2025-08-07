@@ -30,7 +30,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const echoApp = await db.echoApp.findUnique({
       where: {
         id,
-        isActive: true,
         isArchived: false,
       },
       select: {
@@ -41,7 +40,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           select: {
             amount: true,
             description: true,
-            isActive: true,
           },
         },
         appMemberships: {
@@ -164,14 +162,12 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       },
       update: {
         amount: markup,
-        isActive: true,
         isArchived: false,
       },
       create: {
         echoAppId: id,
         amount: markup,
         description: 'App markup rate',
-        isActive: true,
         isArchived: false,
       },
       select: {

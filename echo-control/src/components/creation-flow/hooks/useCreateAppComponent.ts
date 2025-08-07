@@ -2,11 +2,11 @@ import { useCallback, useRef } from 'react';
 import { useCreateApp } from '../../../hooks/useCreateApp';
 import { CreateApplicationStepRef } from '../CreateApplicationStep';
 import { useUpdateApp } from '@/hooks/useUpdateApp';
-import { DetailedEchoApp } from '@/lib/types/apps';
+import { OwnerEchoApp } from '@/lib/apps/types';
 
 export interface UseCreateAppComponentReturn {
   stepRef: React.RefObject<CreateApplicationStepRef | null>;
-  update: () => Promise<DetailedEchoApp>;
+  update: () => Promise<OwnerEchoApp>;
   canGoNext: boolean;
   isCreating: boolean;
   error: string | null;
@@ -14,7 +14,7 @@ export interface UseCreateAppComponentReturn {
 
 export function useCreateAppComponent(
   existingAppId?: string,
-  onAppCreated?: (app: DetailedEchoApp) => void
+  onAppCreated?: (app: OwnerEchoApp) => void
 ): UseCreateAppComponentReturn {
   const stepRef = useRef<CreateApplicationStepRef>(null);
   const { createApp, isCreating, error: createError } = useCreateApp();
@@ -27,7 +27,7 @@ export function useCreateAppComponent(
 
   // Update method that performs the app creation
   const handleCreateAppComponent =
-    useCallback(async (): Promise<DetailedEchoApp> => {
+    useCallback(async (): Promise<OwnerEchoApp> => {
       const appName = stepRef.current?.getValue() || '';
 
       if (!appName.trim()) {

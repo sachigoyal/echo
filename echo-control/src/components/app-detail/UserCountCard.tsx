@@ -1,10 +1,10 @@
 import { Users, TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatNumber } from './AppDetailShared';
-import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
+import { EchoApp } from '@/lib/types/apps';
 
 interface UserCountCardProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   title?: string;
 }
 
@@ -16,7 +16,7 @@ export function UserCountCard({
   // This provides a rough metric while maintaining privacy
   const estimatedUsers = Math.max(
     1,
-    Math.floor((app.stats?.totalTransactions || 0) / 10)
+    Math.floor((app.stats?.globalTotalTransactions || 0) / 10)
   );
 
   return (
@@ -46,7 +46,7 @@ export function UserCountCard({
                 Total Requests
               </span>
               <span className="text-xs font-medium text-foreground">
-                {formatNumber(app.stats?.totalTransactions || 0)}
+                {formatNumber(app.stats?.globalTotalTransactions || 0)}
               </span>
             </div>
           </div>

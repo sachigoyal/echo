@@ -1,10 +1,10 @@
 import { ExternalLink, Globe, ArrowUpRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
+import { EchoApp } from '@/lib/types/apps';
 
 interface AppHomepageCardProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   title?: string;
 }
 

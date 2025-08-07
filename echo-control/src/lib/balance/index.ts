@@ -1,14 +1,6 @@
 import { db } from '../db';
-import { User } from '@/generated/prisma';
-
-export interface BalanceResult {
-  balance: number;
-  totalPaid: number;
-  totalSpent: number;
-  currency: string;
-  echoAppId: string | null;
-  echoAppName: string | null;
-}
+import type { User, PrismaClient } from '@/generated/prisma';
+import { BalanceResult } from './types';
 
 /**
  * Get balance for a user, optionally for a specific app
@@ -63,6 +55,28 @@ export async function getBalance(
     echoAppId: echoAppId || null,
     echoAppName,
   };
+}
+
+/**
+ * Update user balance from a payment within an existing transaction
+ * @param tx - The database transaction
+ * @param userId - The user ID to update
+ * @param amountInCents - The payment amount in cents
+ */
+export async function updateUserBalanceFromPayment(
+  tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
+  userId: string,
+  amountInCents: number
+): Promise<void> {
+  // Convert from cents to dollars and update user's totalPaid balance
+  await tx.user.update({
+    where: { id: userId },
+    data: {
+      totalPaid: {
+        increment: amountInCents / 100,
+      },
+    },
+  });
 }
 
 // Helper function to safely format currency

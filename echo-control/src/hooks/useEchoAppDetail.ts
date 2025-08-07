@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+'use client';
+
+import { useCallback, useMemo } from 'react';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { PermissionService } from '@/lib/permissions/service';
-import { PublicEchoApp, DetailedEchoApp } from '@/lib/types/apps';
-
-// Re-export types for backward compatibility
-export type { DetailedEchoApp, EnhancedAppData } from '@/lib/types/apps';
+import { trpc } from '@/components/providers/TRPCProvider';
+import type { EchoApp } from '@/lib/types/apps';
 
 export interface UserPermissions {
   isAuthenticated: boolean;
@@ -13,7 +13,7 @@ export interface UserPermissions {
 }
 
 export interface UseEchoAppDetailReturn {
-  app: DetailedEchoApp | null;
+  app: EchoApp | null;
   loading: boolean;
   error: string | null;
   userPermissions: UserPermissions;
@@ -22,32 +22,62 @@ export interface UseEchoAppDetailReturn {
 }
 
 export function useEchoAppDetail(appId: string): UseEchoAppDetailReturn {
-  const [app, setApp] = useState<DetailedEchoApp | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [userPermissions, setUserPermissions] = useState<UserPermissions>({
-    isAuthenticated: false,
-    userRole: null,
-    permissions: [],
-  });
+  // Use TRPC query to fetch app details
+  // The server-side getApp function already handles permissions properly
+  const {
+    data: app,
+    isLoading,
+    error: queryError,
+    refetch: trpcRefetch,
+  } = trpc.apps.getApp.useQuery(
+    { appId },
+    {
+      enabled: !!appId,
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (
+          error?.data?.code === 'NOT_FOUND' ||
+          error?.data?.code === 'FORBIDDEN' ||
+          error?.data?.code === 'UNAUTHORIZED'
+        ) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+    }
+  );
 
-  // Helper function to determine user permissions based on app data
-  const determineUserPermissions = (app: DetailedEchoApp): UserPermissions => {
-    const roleString = app.userRole as string;
-    const userRole = roleString as AppRole;
-    const isAuthenticated = !!roleString && roleString !== AppRole.PUBLIC;
+  // Determine user permissions based on app data
+  const userPermissions = useMemo<UserPermissions>(() => {
+    if (!app) {
+      return {
+        isAuthenticated: false,
+        userRole: null,
+        permissions: [],
+      };
+    }
 
-    // Use the centralized permission service instead of duplicating logic
-    const permissions = userRole
-      ? PermissionService.getPermissionsForRole(userRole)
-      : [Permission.READ_APP];
+    // Determine role based on app type
+    let userRole: AppRole;
+    if (app.type === 'owner') {
+      userRole = AppRole.OWNER;
+    } else if (app.type === 'customer') {
+      // Could be CUSTOMER or ADMIN, but we'll use CUSTOMER as default
+      // The server already handled the distinction
+      userRole = AppRole.CUSTOMER;
+    } else {
+      userRole = AppRole.PUBLIC;
+    }
+
+    const isAuthenticated = userRole !== AppRole.PUBLIC;
+    const permissions = PermissionService.getPermissionsForRole(userRole);
 
     return {
       isAuthenticated,
       userRole,
       permissions,
     };
-  };
+  }, [app]);
 
   // Helper function to check if user has specific permission
   const hasPermission = useCallback(
@@ -57,84 +87,34 @@ export function useEchoAppDetail(appId: string): UseEchoAppDetailReturn {
     [userPermissions.permissions]
   );
 
-  const fetchAppDetails = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Wrap refetch to match the expected Promise<void> signature
+  const refetch = useCallback(async () => {
+    await trpcRefetch();
+  }, [trpcRefetch]);
 
-      const response = await fetch(`/api/apps/${appId}`);
-      const data = await response.json();
+  // Format error message
+  const error = useMemo(() => {
+    if (!queryError) return null;
 
-      if (!response.ok) {
-        // Handle 401/403 as potential public access
-        if (response.status === 401 || response.status === 403) {
-          // Try to fetch public app info if available
-          try {
-            const publicResponse = await fetch(`/api/apps/public`);
-            const publicData = await publicResponse.json();
-            const publicApp = publicData.apps?.find(
-              (app: PublicEchoApp) => app.id === appId
-            );
-
-            if (publicApp) {
-              const appData: DetailedEchoApp = {
-                ...publicApp,
-                userRole: AppRole.PUBLIC,
-                permissions: [Permission.READ_APP],
-                description: publicApp.description || '',
-                profilePictureUrl: publicApp.profilePictureUrl || '',
-                bannerImageUrl: publicApp.bannerImageUrl || '',
-                authorizedCallbackUrls: [], // Public users don't have access to callback URLs
-                apiKeys: [],
-                stats: {
-                  totalTransactions: publicApp._count?.llmTransactions || 0,
-                  totalTokens: publicApp.totalTokens || 0,
-                  totalInputTokens: publicApp.totalInputTokens || 0,
-                  totalOutputTokens: publicApp.totalOutputTokens || 0,
-                  totalCost: publicApp.totalCost || 0,
-                  modelUsage: publicApp.modelUsage || [],
-                },
-                recentTransactions: [],
-                user: {
-                  id: publicApp.owner.id,
-                  email: publicApp.owner.email,
-                  name: publicApp.owner.name || undefined,
-                  profilePictureUrl:
-                    publicApp.owner.profilePictureUrl || undefined,
-                },
-              };
-              setApp(appData);
-              setUserPermissions(determineUserPermissions(appData));
-              return;
-            }
-          } catch (publicError) {
-            console.error('Error fetching public app details:', publicError);
-          }
-        }
-        setError(data.error || 'Failed to load app details');
-        return;
-      }
-
-      setApp(data);
-      setUserPermissions(determineUserPermissions(data));
-    } catch (error) {
-      console.error('Error fetching app details:', error);
-      setError('Failed to load app details');
-    } finally {
-      setLoading(false);
+    if (queryError.data?.code === 'NOT_FOUND') {
+      return 'App not found';
     }
-  }, [appId]);
+    if (
+      queryError.data?.code === 'FORBIDDEN' ||
+      queryError.data?.code === 'UNAUTHORIZED'
+    ) {
+      return 'You do not have permission to view this app';
+    }
 
-  useEffect(() => {
-    fetchAppDetails();
-  }, [fetchAppDetails]);
+    return queryError.message || 'Failed to load app details';
+  }, [queryError]);
 
   return {
-    app,
-    loading,
+    app: app || null,
+    loading: isLoading,
     error,
     userPermissions,
-    refetch: fetchAppDetails,
+    refetch,
     hasPermission,
   };
 }

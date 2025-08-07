@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useUpdateApp } from '../../../hooks/useUpdateApp';
-import { AppUpdateInput } from '@/lib/echo-apps';
+import { AppUpdateInput } from '@/lib/apps/types';
 
 export interface UseGitHubComponentReturn {
   githubId: string;

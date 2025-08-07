@@ -1,3 +1,4 @@
+import { LlmTransactionMetadata, Transaction } from '../types';
 import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
@@ -116,7 +117,7 @@ export class AnthropicNativeProvider extends BaseProvider {
     };
   }
 
-  override async handleBody(data: string): Promise<void> {
+  override async handleBody(data: string): Promise<Transaction> {
     try {
       if (this.getIsStream()) {
         const usage = parseSSEAnthropicFormat(data);
@@ -127,15 +128,21 @@ export class AnthropicNativeProvider extends BaseProvider {
         }
 
         const model = this.getModel();
-        await this.getEchoControlService().createTransaction({
+        const metadata: LlmTransactionMetadata = {
           model: model,
+          providerId: usage.id,
+          provider: this.getType(),
           inputTokens: usage.input_tokens,
           outputTokens: usage.output_tokens,
           totalTokens: usage.input_tokens + usage.output_tokens,
+        };
+        const transaction: Transaction = {
+          metadata: metadata,
           cost: getCostPerToken(model, usage.input_tokens, usage.output_tokens),
           status: 'success',
-          providerId: usage.id,
-        });
+        };
+
+        return transaction;
       } else {
         const parsed = JSON.parse(data);
 
@@ -151,16 +158,22 @@ export class AnthropicNativeProvider extends BaseProvider {
         );
         console.log('Message ID: ', parsed.id);
 
-        // Create transaction with proper model info and token details
-        await this.getEchoControlService().createTransaction({
+        const metadata: LlmTransactionMetadata = {
           model: this.getModel(),
+          providerId: parsed.id,
+          provider: this.getType(),
           inputTokens: inputTokens,
           outputTokens: outputTokens,
           totalTokens: totalTokens,
+        };
+
+        const transaction: Transaction = {
+          metadata: metadata,
           cost: getCostPerToken(this.getModel(), inputTokens, outputTokens),
           status: 'success',
-          providerId: parsed.id,
-        });
+        };
+
+        return transaction;
       }
     } catch (error) {
       console.error('Error processing data:', error);

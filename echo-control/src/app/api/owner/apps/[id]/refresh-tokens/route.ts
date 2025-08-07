@@ -1,7 +1,7 @@
 import { getCurrentUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidUUID } from '@/lib/oauth-config/index';
-import { findEchoApp } from '@/lib/echo-apps/index';
+import { findEchoApp } from '@/lib/apps/crud';
 import { db } from '@/lib/db';
 import { AppRole, PermissionService } from '@/lib/permissions';
 
@@ -49,7 +49,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const activeTokens = await db.refreshToken.findMany({
       where: {
         echoAppId: id,
-        isActive: true,
         isArchived: false,
         expiresAt: {
           gt: new Date(), // Only tokens that haven't expired
