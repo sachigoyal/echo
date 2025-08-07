@@ -50,4 +50,27 @@ export const authConfig = {
       return !!auth;
     },
   },
+  cookies: {
+    sessionToken: {
+      name: 'echo_session',
+    },
+    callbackUrl: {
+      name: 'echo_callback',
+    },
+    pkceCodeVerifier: {
+      name: 'echo_pkce_code_verifier',
+    },
+    state: {
+      name: 'echo_state',
+    },
+    nonce: {
+      name: 'echo_nonce',
+    },
+    csrfToken: {
+      name: 'echo_csrf_token',
+    },
+    webauthnChallenge: {
+      name: 'echo_webauthn_challenge',
+    },
+  },
 } satisfies NextAuthConfig;

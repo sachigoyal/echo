@@ -35,11 +35,8 @@ export default middleware(req => {
       return NextResponse.next();
     }
     const newUrl = new URL('/sign-in', req.nextUrl.origin);
-    const redirectUrl = new URL(req.nextUrl.pathname);
-    for (const [key, value] of req.nextUrl.searchParams.entries()) {
-      redirectUrl.searchParams.set(key, value);
-    }
-    newUrl.searchParams.set('redirect_url', redirectUrl.toString());
+    const redirectUrl = `${req.nextUrl.pathname}${req.nextUrl.search}`;
+    newUrl.searchParams.set('redirect_url', redirectUrl);
     return Response.redirect(newUrl);
   }
 });
