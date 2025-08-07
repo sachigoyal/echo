@@ -51,7 +51,6 @@ export class HandleStreamService {
         streamToClientPromise,
         transactionPromise,
       ]);
-      res.end();
       return transaction;
     } catch (error) {
       console.error('Error in stream coordination:', error);

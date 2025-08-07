@@ -24,7 +24,7 @@ export class ModelRequestService {
     processedHeaders: Record<string, string>,
     echoControlService: EchoControlService,
     forwardingPath: string
-  ): Promise<Transaction> {
+  ): Promise<{ transaction: Transaction; isStream: boolean }> {
     // Extract and validate model
     const model = extractModelName(req);
 
@@ -94,15 +94,22 @@ export class ModelRequestService {
         provider,
         res
       );
-      return transaction;
+      return { transaction, isStream: true };
     } else {
       const transaction = await handleNonStreamingService.handleNonStreaming(
         response,
         provider,
         res
       );
-      return transaction;
+      return { transaction, isStream: false };
     }
+  }
+
+  handleResolveStreamingRequest(res: Response, isStream: boolean) {
+    if (isStream) {
+      res.end();
+    }
+    // Request has already been handled by the handleNonStreamingService
   }
 }
 

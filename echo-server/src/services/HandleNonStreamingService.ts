@@ -24,7 +24,6 @@ export class HandleNonStreamingService {
     // Set the appropriate content type
     res.setHeader('content-type', 'application/json');
 
-    // Send the response to the client
     res.json(data);
 
     return transaction;
