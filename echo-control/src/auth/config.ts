@@ -26,12 +26,10 @@ declare module 'next-auth/jwt' {
 
 const IS_TEST_MODE = process.env.INTEGRATION_TEST_MODE === 'true';
 
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-
 export const authConfig = {
   providers: IS_TEST_MODE ? testProviders : providers,
-  // Only allow skipCSRFCheck in test mode AND never in production
-  skipCSRFCheck: IS_TEST_MODE && !IS_PRODUCTION ? skipCSRFCheck : undefined,
+  // Only allow skipCSRFCheck in test mode
+  skipCSRFCheck: IS_TEST_MODE ? skipCSRFCheck : undefined,
   callbacks: {
     jwt: ({ token, user }) => {
       if (user) {
