@@ -26,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/skeleton';
-import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
 
 import { useUser } from '@/hooks/use-user';
 
@@ -43,8 +42,8 @@ export function UserDropdown() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
-        <MinimalGithubAvatar
-          srcUrl={user?.image || ''}
+        <img
+          src={user?.image || ''}
           alt={user?.name || ''}
           className="h-10 w-10 rounded-lg border"
         />
@@ -52,8 +51,8 @@ export function UserDropdown() {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <MinimalGithubAvatar
-              srcUrl={user?.image || ''}
+            <img
+              src={user?.image || ''}
               alt={user?.name || ''}
               className="size-9 rounded-lg"
             />
