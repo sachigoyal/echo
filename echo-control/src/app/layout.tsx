@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <SessionProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className="antialiased bg-background text-foreground min-h-screen">
+        <body className="antialiased bg-background text-foreground h-dvh overflow-y-auto">
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -35,7 +35,9 @@ export default function RootLayout({
             enableSystem={true}
           >
             <Header />
-            <main>{children}</main>
+            <main className="w-screen overflow-x-hidden pt-16 h-full">
+              {children}
+            </main>
           </ThemeProvider>
         </body>
       </html>

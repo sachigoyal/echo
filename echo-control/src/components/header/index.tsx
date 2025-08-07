@@ -13,7 +13,7 @@ export default async function Header() {
   const session = await auth();
 
   return (
-    <header className="bg-card border-b shadow-sm sticky top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-2 md:px-4">
+    <header className="bg-card border-b shadow-sm fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-2 md:px-4">
       <div className="font-bold flex items-center gap-2">
         <Link href="/" className="flex items-center gap-2">
           <Logo />
