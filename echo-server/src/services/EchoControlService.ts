@@ -11,7 +11,7 @@ import { join } from 'path';
 
 import { PrismaClient, SpendPool } from '../generated/prisma';
 import FreeTierService from './FreeTierService';
-import { PaymentRequiredError, UnauthorizedError } from 'errors/http';
+import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
 
 export class EchoControlService {
   private readonly db: PrismaClient;

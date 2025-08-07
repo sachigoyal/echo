@@ -6,7 +6,7 @@ import { extractIsStream, extractModelName } from './RequestDataService';
 import { handleStreamService } from './HandleStreamService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { Transaction } from 'types';
-import { HttpError, UnknownModelError } from 'errors/http';
+import { HttpError, UnknownModelError } from '../errors/http';
 
 export class ModelRequestService {
   /**
@@ -84,7 +84,7 @@ export class ModelRequestService {
       res.status(response.status).json({
         error: error,
       });
-      throw new HttpError(response.status, error);
+      throw new HttpError(response.status, JSON.stringify(error));
     }
 
     // Handle the successful response based on stream type
