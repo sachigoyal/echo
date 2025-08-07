@@ -1,4 +1,4 @@
-import { db } from './db';
+import { db } from '@/lib/db';
 
 /**
  * Standard where clause to filter out archived records
@@ -26,7 +26,7 @@ export async function softDeleteEchoApp(appId: string) {
   });
 
   // Archive related transactions
-  await db.llmTransaction.updateMany({
+  await db.transaction.updateMany({
     where: {
       echoAppId: appId,
       isArchived: false,
@@ -146,7 +146,7 @@ export async function softDeleteUser(userId: string) {
     },
   });
 
-  await db.llmTransaction.updateMany({
+  await db.transaction.updateMany({
     where: {
       userId,
       isArchived: false,

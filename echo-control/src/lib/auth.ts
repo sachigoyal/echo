@@ -174,11 +174,9 @@ export async function getCurrentUserByApiKeyOrEchoJwt(
     // Verify the API key is valid and all related entities are active
     if (
       !apiKeyRecord ||
-      !apiKeyRecord.isActive ||
       apiKeyRecord.isArchived ||
       apiKeyRecord.user.isArchived ||
-      apiKeyRecord.echoApp.isArchived ||
-      !apiKeyRecord.echoApp.isActive
+      apiKeyRecord.echoApp.isArchived
     ) {
       throw new Error('Invalid or inactive API key');
     }

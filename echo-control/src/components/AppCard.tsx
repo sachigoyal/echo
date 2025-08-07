@@ -44,10 +44,13 @@ export const AppCard: React.FC<AppCardProps> = ({
     avatar: app.owner?.profilePictureUrl || null,
   };
 
+  // Access stats based on app type - all types have stats property
   const stats = {
-    users: app.stats.numberOfUsers, // Not available in current data structure
-    requests: app._count.llmTransactions,
-    revenue: `${app.totalCost.toFixed(2)}`, // Convert from cents
+    users: 0, // Not available in current data structure
+    requests: app.stats?.globalTotalTransactions || 0,
+    revenue: app.stats?.globalTotalRevenue
+      ? `${(app.stats.globalTotalRevenue / 100).toFixed(2)}`
+      : '0.00',
   };
 
   // Set consistent minimum heights based on size

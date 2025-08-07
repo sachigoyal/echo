@@ -2,9 +2,6 @@ import {
   Activity,
   ArrowLeft,
   CheckCircle,
-  Key,
-  Plus,
-  Trash,
   X,
   Users,
   Eye,
@@ -24,7 +21,7 @@ import { ProfileAvatar } from '@/components/ui/profile-avatar';
 import { CommitChart } from '@/components/activity-chart/chart';
 import { DotPattern } from '@/components/ui/dot-background';
 import { GlassButton } from '@/components/glass-button';
-import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
+import { EchoApp } from '@/lib/types/apps';
 import { AppRole } from '@/lib/permissions/types';
 
 // Add GitHub API imports
@@ -113,7 +110,7 @@ export function AppDetailLayout({
 
 // Shared Banner Component
 interface AppBannerProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   backUrl?: string;
 }
 
@@ -159,7 +156,7 @@ export function AppBanner({ app, backUrl = '/' }: AppBannerProps) {
 
 // App Profile Section
 interface AppProfileProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   userRole: AppRole | null;
   roleLabel?: string;
   actions?: ReactNode;
@@ -290,7 +287,7 @@ export function AppProfile({
       case AppRole.CUSTOMER:
         return 'bg-orange-500';
       default:
-        return app.isActive ? 'bg-green-500' : 'bg-gray-400';
+        return 'bg-green-500';
     }
   };
 
@@ -332,12 +329,12 @@ export function AppProfile({
               </div>
 
               {/* GitHub Card Section - Right Aligned with title */}
-              {app.githubId && app.githubType && (
+              {app.githubLink?.githubId && app.githubLink?.githubType && (
                 <div className="w-80 flex-shrink-0">
                   <div className="p-4 bg-muted/20 rounded-lg border border-border/50">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white">
-                        {app.githubType === 'user' ? (
+                        {app.githubLink?.githubType === 'user' ? (
                           <UserIcon className="h-4 w-4" />
                         ) : (
                           <GitBranch className="h-4 w-4" />
@@ -345,12 +342,14 @@ export function AppProfile({
                       </div>
                       <h3 className="text-lg font-bold">
                         GitHub{' '}
-                        {app.githubType === 'user' ? 'User' : 'Repository'}
+                        {app.githubLink?.githubType === 'user'
+                          ? 'User'
+                          : 'Repository'}
                       </h3>
                     </div>
                     <GitHubUserInfo
-                      githubId={app.githubId}
-                      githubType={app.githubType as 'user' | 'repo'}
+                      githubId={app.githubLink?.githubId}
+                      githubType={app.githubLink?.githubType as 'user' | 'repo'}
                     />
                   </div>
                 </div>
@@ -376,7 +375,7 @@ export function AppProfile({
 
 // Activity Chart Card
 interface ActivityChartProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   title?: string;
 }
 
@@ -388,10 +387,14 @@ export function ActivityChart({ app, title = 'Activity' }: ActivityChartProps) {
         <div className="h-64">
           <CommitChart
             data={{
-              data: transformActivityData(app.activityData),
+              data: transformActivityData(
+                app.stats?.globalActivityData.map(
+                  activity => activity.totalTokens
+                ) || []
+              ),
               isLoading: false,
             }}
-            numPoints={app.activityData?.length || 0}
+            numPoints={app.stats?.globalActivityData?.length || 0}
             timeWindowOption={{ value: '30d' }}
             startDate={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}
             endDate={new Date()}
@@ -406,7 +409,7 @@ export function ActivityChart({ app, title = 'Activity' }: ActivityChartProps) {
 
 // Overview Stats Card
 interface OverviewStatsProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   showAdvanced?: boolean;
 }
 
@@ -429,19 +432,19 @@ export function OverviewStats({
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Transactions</span>
           <span className="font-bold">
-            {formatNumber(app.stats?.totalTransactions)}
+            {formatNumber(app.stats?.globalTotalTransactions || 0)}
           </span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Tokens</span>
           <span className="font-bold">
-            {formatNumber(app.stats?.totalTokens)}
+            {formatNumber(app.stats?.globalTotalTokens || 0)}
           </span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Spent</span>
           <Badge className="text-black dark:text-white border-[1px] bg-transparent shadow-none">
-            {formatCurrency(app.stats?.totalCost)}
+            {formatCurrency(app.stats?.globalTotalRevenue || 0)}
           </Badge>
         </div>
         {showAdvanced && (
@@ -461,156 +464,9 @@ export function OverviewStats({
   );
 }
 
-// API Keys Card
-interface ApiKeysCardProps {
-  app: DetailedEchoApp;
-  hasCreatePermission: boolean;
-  hasManagePermission: boolean;
-  onCreateApiKey?: () => void;
-  onArchiveApiKey?: (id: string) => void;
-  deletingKeyId?: string | null;
-}
-
-export function ApiKeysCard({
-  app,
-  hasCreatePermission,
-  hasManagePermission,
-  onCreateApiKey,
-  onArchiveApiKey,
-  deletingKeyId,
-}: ApiKeysCardProps) {
-  return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white">
-            <Key className="h-5 w-5" />
-          </div>
-          <h3 className="text-xl font-bold">API Keys</h3>
-        </div>
-        {hasCreatePermission && onCreateApiKey && (
-          <Button onClick={onCreateApiKey} className="!h-8 !w-8 !p-0">
-            <Plus className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      <Separator className="my-4" />
-
-      <div className="space-y-3 flex-1 overflow-auto">
-        {app.apiKeys && app.apiKeys.length > 0 ? (
-          <>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Active Keys</span>
-              <span className="font-bold">{app.apiKeys.length}</span>
-            </div>
-            {app.apiKeys.slice(0, 3).map(apiKey => (
-              <div
-                key={apiKey.id}
-                className="flex justify-between items-center text-sm"
-              >
-                <span className="truncate flex-1">
-                  {apiKey.name || 'Unnamed Key'}
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">
-                    {formatCurrency(apiKey.totalSpent)}
-                  </span>
-                  {hasManagePermission && onArchiveApiKey && (
-                    <button
-                      onClick={() => onArchiveApiKey(apiKey.id)}
-                      disabled={deletingKeyId === apiKey.id}
-                      className="text-destructive hover:text-destructive/80 disabled:opacity-50"
-                    >
-                      <Trash className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-            {app.apiKeys.length > 3 && (
-              <p className="text-xs text-muted-foreground">
-                +{app.apiKeys.length - 3} more keys
-              </p>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-4">
-            <p className="text-muted-foreground text-sm">No API keys yet</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Create one to get started
-            </p>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
-
-// Recent Activity Card
-interface RecentActivityCardProps {
-  app: DetailedEchoApp;
-  title?: string;
-}
-
-export function RecentActivityCard({
-  app,
-  title = 'Recent Activity',
-}: RecentActivityCardProps) {
-  return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
-      <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-2xl font-bold">{title}</h1>
-      </div>
-
-      <Separator className="my-4" />
-
-      <div className="space-y-3 flex-1 overflow-auto">
-        {app.recentTransactions && app.recentTransactions.length > 0 ? (
-          <>
-            {app.recentTransactions.slice(0, 4).map(transaction => (
-              <div
-                key={transaction.id}
-                className="flex justify-between items-start text-sm"
-              >
-                <div className="flex-1">
-                  <p className="font-medium truncate">{transaction.model}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(transaction.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium">{formatCost(transaction.cost)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatNumber(transaction.totalTokens)} tokens
-                  </p>
-                </div>
-              </div>
-            ))}
-            {app.recentTransactions.length > 4 && (
-              <p className="text-xs text-muted-foreground">
-                +{app.recentTransactions.length - 4} more transactions
-              </p>
-            )}
-          </>
-        ) : (
-          <div className="text-center py-8 flex-1 flex items-center justify-center">
-            <div>
-              <p className="text-muted-foreground text-sm">No activity yet</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Start using your API keys to see activity
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}
-
 // Top Models Card
 interface TopModelsCardProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   title?: string;
 }
 
@@ -624,9 +480,10 @@ export function TopModelsCard({
         <h2 className="text-2xl font-bold mb-4">{title}</h2>
         <Separator className="my-4" />
         <CardContent className="p-0 h-full flex-1 overflow-auto">
-          {app.stats?.modelUsage && app.stats.modelUsage.length > 0 ? (
+          {app.stats?.globalModelUsage &&
+          app.stats?.globalModelUsage.length > 0 ? (
             <div className="space-y-4">
-              {app.stats.modelUsage.slice(0, 5).map((usage, index) => (
+              {app.stats?.globalModelUsage.slice(0, 5).map((usage, index) => (
                 <div
                   key={usage.model}
                   className="flex items-center justify-between"
@@ -638,16 +495,16 @@ export function TopModelsCard({
                     <div>
                       <p className="font-medium text-sm">{usage.model}</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatNumber(usage._count)} requests
+                        {formatNumber(usage.totalTokens)} requests
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-sm">
-                      {formatCost(usage._sum?.cost)}
+                      {formatCost(usage.totalModelCost)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatNumber(usage._sum?.totalTokens)} tokens
+                      {formatNumber(usage.totalTokens)} tokens
                     </p>
                   </div>
                 </div>

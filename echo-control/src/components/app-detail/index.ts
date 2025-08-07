@@ -4,8 +4,6 @@ export {
   AppProfile,
   ActivityChart,
   OverviewStats,
-  ApiKeysCard,
-  RecentActivityCard,
   TopModelsCard,
   formatNumber,
   formatCost,
