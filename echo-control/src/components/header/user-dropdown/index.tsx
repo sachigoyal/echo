@@ -1,21 +1,9 @@
-import {
-  FileText,
-  Laptop,
-  LogOut,
-  Moon,
-  Sun,
-  User,
-  UserLock,
-  Users,
-} from 'lucide-react';
+import React from 'react';
+
+import { FileText, LogOut, User, UserLock, Users } from 'lucide-react';
 
 import Link from 'next/link';
 
-import { signOut } from 'next-auth/react';
-
-import { useTheme } from 'next-themes';
-
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,23 +13,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/skeleton';
 
-import { useUser } from '@/hooks/use-user';
+import { ColorModeToggle } from './color-mode-toggle';
 
-import { cn } from '@/lib/utils';
+import type { User as NextAuthUser } from 'next-auth';
+import { signOut } from '@/auth';
 
-export function UserDropdown() {
-  const { user, isLoaded } = useUser();
-  const { theme, setTheme } = useTheme();
+interface Props {
+  user: NextAuthUser;
+}
 
-  if (!isLoaded) {
-    return <Skeleton className="h-10 w-10 rounded-lg border shrink-0" />;
-  }
-
+export const UserDropdown: React.FC<Props> = ({ user }) => {
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <img
           src={user?.image || ''}
           alt={user?.name || ''}
@@ -80,26 +65,7 @@ export function UserDropdown() {
         <DropdownMenuSeparator />
         <div className="flex gap-2">
           <DropdownMenuLabel className="font-normal">Theme</DropdownMenuLabel>
-          <div className="flex items-center  gap-2 text-left text-sm">
-            {[
-              { theme: 'light' as const, Icon: Sun },
-              { theme: 'dark' as const, Icon: Moon },
-              { theme: 'system' as const, Icon: Laptop },
-            ].map(({ theme: themeOption, Icon }) => (
-              <Button
-                key={themeOption}
-                variant="ghost"
-                onClick={() => setTheme(themeOption)}
-                className={cn(
-                  'size-fit p-1 hover:bg-foreground/10',
-                  theme === themeOption &&
-                    'bg-foreground/10 hover:bg-foreground/20'
-                )}
-              >
-                <Icon className="size-4" />
-              </Button>
-            ))}
-          </div>
+          <ColorModeToggle />
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -125,11 +91,20 @@ export function UserDropdown() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut({ redirectTo: '/' })}>
-          <LogOut className="size-4" />
-          Sign Out
-        </DropdownMenuItem>
+        <form
+          action={async () => {
+            'use server';
+            await signOut({ redirectTo: '/' });
+          }}
+        >
+          <DropdownMenuItem asChild>
+            <button type="submit" className="w-full">
+              <LogOut className="size-4" />
+              Sign Out
+            </button>
+          </DropdownMenuItem>
+        </form>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
