@@ -1,26 +1,25 @@
 import { Settings } from 'lucide-react';
 import Link from 'next/link';
-import { EnhancedAppData } from '@/hooks/useEchoAppDetail';
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppRole, Permission } from '@/lib/permissions/types';
-import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
+import { OwnerEchoApp } from '@/lib/apps/types';
 import { formatCurrency } from '@/lib/balance';
 import { Switch } from '@/components/ui/switch';
 import {
   AppDetailLayout,
   AppBanner,
   AppProfile,
-  ActivityChart,
-  TopModelsCard,
-  ApiKeysCard,
-  RecentActivityCard,
   formatNumber,
 } from './AppDetailShared';
+import { CustomerActivityChart } from './CustomerActivityChart';
+import { OwnerApiKeysCard } from './ApiKeyDetail';
+import { OwnerRecentActivityCard } from './RecentActivityDetail';
 import { AppHomepageCard } from './AppHomepageCard';
+import { CustomerTopModelsCard } from './CustomerTopModelsCard';
 
 interface OwnerAppDetailProps {
-  app: DetailedEchoApp;
+  app: OwnerEchoApp;
   hasPermission: (permission: Permission) => boolean;
   onCreateApiKey?: () => void;
   onArchiveApiKey?: (id: string) => void;
@@ -40,51 +39,7 @@ export function OwnerAppDetail({
 }: OwnerAppDetailProps) {
   // View toggle state - 0 for personal, 1 for global
   const [viewMode, setViewMode] = useState([1]);
-  const [enhancedApp, setEnhancedApp] = useState<EnhancedAppData>(app);
-  const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
   const isGlobalView = viewMode[0] === 1;
-
-  // Function to fetch global data
-  const fetchGlobalData = useCallback(async () => {
-    if (enhancedApp.globalStats) return; // Already fetched
-
-    setIsLoadingGlobal(true);
-    try {
-      const response = await fetch(`/api/apps/${app.id}?view=global`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch global data');
-      }
-      const globalData = await response.json();
-      setEnhancedApp(prev => ({
-        ...prev,
-        globalStats: globalData.stats,
-        globalActivityData: globalData.activityData,
-        globalRecentTransactions: globalData.recentTransactions,
-      }));
-    } catch (error) {
-      console.error('Error fetching global data:', error);
-    } finally {
-      setIsLoadingGlobal(false);
-    }
-  }, [app.id, enhancedApp.globalStats]);
-
-  // Fetch global data when switching to global view
-  useEffect(() => {
-    if (isGlobalView && !enhancedApp.globalStats) {
-      fetchGlobalData();
-    }
-  }, [isGlobalView, app.id, enhancedApp.globalStats, fetchGlobalData]);
-
-  // Get current stats based on view
-  const currentStats = isGlobalView
-    ? enhancedApp.globalStats || app.stats
-    : app.stats;
-  const currentActivityData = isGlobalView
-    ? enhancedApp.globalActivityData || app.activityData
-    : app.activityData;
-  const currentRecentTransactions = isGlobalView
-    ? enhancedApp.globalRecentTransactions || app.recentTransactions
-    : app.recentTransactions;
 
   // Clean stats display with slider in bottom right
   const enhancedStats = (
@@ -97,7 +52,7 @@ export function OwnerAppDetail({
             Owner
           </p>
           <p className="text-sm text-foreground font-medium truncate">
-            {app.user?.name || app.user?.email || 'Unknown'}
+            {app.owner?.name || app.owner?.email || 'Unknown'}
           </p>
         </div>
 
@@ -106,9 +61,11 @@ export function OwnerAppDetail({
             {isGlobalView ? 'Total Requests' : 'Your Requests'}
           </p>
           <p className="text-lg font-bold text-foreground">
-            {isLoadingGlobal && isGlobalView
-              ? '...'
-              : formatNumber(currentStats?.totalTransactions)}
+            {formatNumber(
+              isGlobalView
+                ? app.stats?.globalTotalTransactions
+                : app.stats?.personalRecentTransactions?.length || 0
+            )}
           </p>
         </div>
 
@@ -117,9 +74,11 @@ export function OwnerAppDetail({
             {isGlobalView ? 'Total Tokens' : 'Your Tokens'}
           </p>
           <p className="text-lg font-bold text-foreground">
-            {isLoadingGlobal && isGlobalView
-              ? '...'
-              : formatNumber(currentStats?.totalTokens)}
+            {formatNumber(
+              isGlobalView
+                ? app.stats?.globalTotalTokens
+                : app.stats?.personalTotalTokens
+            )}
           </p>
         </div>
 
@@ -128,9 +87,11 @@ export function OwnerAppDetail({
             {isGlobalView ? 'Total Spending' : 'Your Spending'}
           </p>
           <p className="text-lg font-bold text-foreground">
-            {isLoadingGlobal && isGlobalView
-              ? '...'
-              : formatCurrency(currentStats?.totalCost)}
+            {formatCurrency(
+              isGlobalView
+                ? app.stats?.globalTotalRevenue
+                : app.stats?.personalTotalRevenue
+            )}
           </p>
         </div>
 
@@ -139,7 +100,7 @@ export function OwnerAppDetail({
             Your API Keys
           </p>
           <p className="text-lg font-bold text-foreground">
-            {app.apiKeys?.length || 0}
+            {app.stats?.globalApiKeys?.length || 0}
           </p>
         </div>
       </div>
@@ -193,14 +154,12 @@ export function OwnerAppDetail({
       {/* Tokens Over Time Chart - Full Width */}
       <div className="px-6 mb-32 relative z-10">
         <div className="h-64">
-          <ActivityChart
-            app={{
-              ...app,
-              activityData: currentActivityData,
-            }}
+          <CustomerActivityChart
+            app={app}
             title={
               isGlobalView ? 'Global Tokens Over Time' : 'Your Tokens Over Time'
             }
+            isGlobalView={isGlobalView}
           />
         </div>
       </div>
@@ -213,7 +172,7 @@ export function OwnerAppDetail({
           <AppHomepageCard app={app} />
 
           {/* API Keys Card */}
-          <ApiKeysCard
+          <OwnerApiKeysCard
             app={app}
             hasCreatePermission={hasPermission(Permission.CREATE_API_KEYS)}
             hasManagePermission={hasPermission(Permission.MANAGE_ALL_API_KEYS)}
@@ -226,23 +185,19 @@ export function OwnerAppDetail({
         {/* Second Row - Activity and Recent Transactions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Recent Activity Card */}
-          <RecentActivityCard
-            app={{
-              ...app,
-              recentTransactions: currentRecentTransactions,
-            }}
+          <OwnerRecentActivityCard
+            app={app}
             title={
               isGlobalView ? 'Global Recent Activity' : 'Your Recent Activity'
             }
+            isGlobalView={isGlobalView}
           />
 
           {/* Models Usage Card */}
-          <TopModelsCard
-            app={{
-              ...app,
-              stats: currentStats,
-            }}
+          <CustomerTopModelsCard
+            app={app}
             title={isGlobalView ? 'Global Model Usage' : 'Your Model Usage'}
+            isGlobalView={isGlobalView}
           />
         </div>
       </div>

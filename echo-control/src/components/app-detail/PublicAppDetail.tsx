@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 
 import { UserPlus } from 'lucide-react';
 
@@ -6,90 +6,30 @@ import {
   AppDetailLayout,
   AppBanner,
   AppProfile,
-  ActivityChart,
+  GlobalActivityChart,
   formatNumber,
-  TopModelsCard,
-  RecentActivityCard,
 } from './AppDetailShared';
+import { GlobalTopModelsCard } from './GlobalTopModelsCard';
 import { UserCountCard } from './UserCountCard';
 import { GlobalModelsCard } from './GlobalModelsCard';
 import { AppHomepageCard } from './AppHomepageCard';
+import { PublicRecentActivityCard } from './RecentActivityDetail';
 import JoinAppModal from '../JoinAppModal';
 
 import { useUser } from '@/hooks/use-user';
-import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
 
 import { AppRole } from '@/lib/permissions/types';
+import { PublicEchoApp } from '@/lib/apps/types';
 import { formatCurrency } from '@/lib/balance';
 
-// Enhanced interfaces for global data
-interface EnhancedAppData extends DetailedEchoApp {
-  globalStats?: {
-    totalTransactions: number;
-    totalTokens: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalCost: number;
-    modelUsage: Array<{
-      model: string;
-      _sum: {
-        totalTokens: number | null;
-        cost: number | null;
-      };
-      _count: number;
-    }>;
-    numberOfUsers: number;
-  };
-  globalActivityData?: number[];
-  globalRecentTransactions?: Array<{
-    id: string;
-    model: string;
-    totalTokens: number;
-    cost: number;
-    status: string;
-    createdAt: string;
-  }>;
-}
-
 interface PublicAppDetailProps {
-  app: DetailedEchoApp;
+  app: PublicEchoApp;
 }
 
 export function PublicAppDetail({ app }: PublicAppDetailProps) {
-  const [enhancedApp, setEnhancedApp] = useState<EnhancedAppData>(app);
-  const [isLoadingGlobal, setIsLoadingGlobal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [joining, setJoining] = useState(false);
   const { user, isLoaded } = useUser();
-
-  // Function to fetch global data
-  const fetchGlobalData = useCallback(async () => {
-    if (enhancedApp.globalStats) return; // Already fetched
-
-    setIsLoadingGlobal(true);
-    try {
-      const response = await fetch(`/api/apps/${app.id}?view=global`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch global data');
-      }
-      const globalData = await response.json();
-      setEnhancedApp(prev => ({
-        ...prev,
-        globalStats: globalData.stats,
-        globalActivityData: globalData.activityData,
-        globalRecentTransactions: globalData.recentTransactions,
-      }));
-    } catch (error) {
-      console.error('Error fetching global data:', error);
-    } finally {
-      setIsLoadingGlobal(false);
-    }
-  }, [app.id, enhancedApp.globalStats]);
-
-  // Fetch global data on component mount
-  useEffect(() => {
-    fetchGlobalData();
-  }, [app.id, fetchGlobalData]);
 
   // Function to handle joining the app as a customer
   const handleJoinApp = async () => {
@@ -133,20 +73,13 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
       <></>
     );
 
-  // Always use global stats for public view
-  const currentStats = enhancedApp.globalStats || app.stats;
-  const currentActivityData =
-    enhancedApp.globalActivityData || app.activityData;
-  const currentRecentTransactions =
-    enhancedApp.globalRecentTransactions || app.recentTransactions;
-
   const enhancedStats = (
     <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
       {/* Owner Information */}
       <div>
         <p className="text-sm font-medium text-muted-foreground mb-1">Owner</p>
         <p className="text-sm text-foreground font-medium truncate">
-          {app.user?.name || app.user?.email || 'Unknown'}
+          {app.owner?.name || app.owner?.email || 'Unknown'}
         </p>
       </div>
 
@@ -155,9 +88,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           Total Requests
         </p>
         <p className="text-lg font-bold text-foreground">
-          {isLoadingGlobal
-            ? '...'
-            : formatNumber(currentStats?.totalTransactions)}
+          {formatNumber(app.stats?.globalTotalTransactions || 0)}
         </p>
       </div>
 
@@ -166,7 +97,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           Total Tokens
         </p>
         <p className="text-lg font-bold text-foreground">
-          {isLoadingGlobal ? '...' : formatNumber(currentStats?.totalTokens)}
+          {formatNumber(app.stats?.globalTotalTokens || 0)}
         </p>
       </div>
 
@@ -175,7 +106,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           Total Spending
         </p>
         <p className="text-lg font-bold text-foreground">
-          {isLoadingGlobal ? '...' : formatCurrency(currentStats?.totalCost)}
+          {formatCurrency(app.stats?.globalTotalRevenue || 0)}
         </p>
       </div>
 
@@ -203,13 +134,7 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
       {/* Global Activity Chart - Full Width */}
       <div className="px-6 mb-32 relative z-10">
         <div className="h-64">
-          <ActivityChart
-            app={{
-              ...app,
-              activityData: currentActivityData,
-            }}
-            title="Global Tokens Over Time"
-          />
+          <GlobalActivityChart app={app} title="Global Tokens Over Time" />
         </div>
       </div>
 
@@ -225,22 +150,10 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
         {/* Second Row - Activity and Model Usage */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Recent Activity Card */}
-          <RecentActivityCard
-            app={{
-              ...app,
-              recentTransactions: currentRecentTransactions,
-            }}
-            title="Global Recent Activity"
-          />
+          <PublicRecentActivityCard app={app} title="Global Recent Activity" />
 
           {/* Models Usage Card */}
-          <TopModelsCard
-            app={{
-              ...app,
-              stats: currentStats,
-            }}
-            title="Global Model Usage"
-          />
+          <GlobalTopModelsCard app={app} title="Global Model Usage" />
         </div>
       </div>
 

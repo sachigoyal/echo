@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { getDetailedAppInfo } from '@/lib/echo-apps';
 import { EchoApp, User } from '@/generated/prisma';
+import { getApp } from '@/lib/apps';
 
 // GET /api/v1/apps/[id] - Get detailed app information
 export async function GET(
@@ -31,7 +31,7 @@ export async function GET(
       );
     }
 
-    const appWithStats = await getDetailedAppInfo(appId, user.id);
+    const appWithStats = await getApp(appId, user.id);
 
     return NextResponse.json(appWithStats);
   } catch (error) {

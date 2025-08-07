@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Balance } from '@/lib/types/apps';
+import { Balance } from '@/lib/balance/types';
 
 export function useUserBalance() {
   const [balance, setBalance] = useState<Balance | null>(null);

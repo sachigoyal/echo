@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
@@ -27,11 +27,11 @@ model User {
   sessions        Session[]
 
   apiKeys         ApiKey[]         // API keys owned by user
-  llmTransactions LlmTransaction[] // LLM transactions
   payments        Payment[]        // payments made to the app
+  transactions    Transaction[] // LLM transactions
   refreshTokens   RefreshToken[]   // refresh tokens 
   appMemberships  AppMembership[]  // Apps you are a member of
-  spendPoolLimits SpendPoolLimit[] // Spend limits for pools this user has access to
+  spendPoolUsage UserSpendPoolUsage[] // User's spend pool usage records
 
   @@map("users")
 }
@@ -76,43 +76,42 @@ model VerificationToken {
 }
 
 model EchoApp {
-  id              String           @id @default(uuid()) @db.Uuid
-  name            String
-  description     String?
-  profilePictureUrl String?        // Custom profile picture for the app
-  bannerImageUrl    String?        // Custom banner image for the app
-  homepageUrl     String?          // Homepage URL for the app
-  isActive        Boolean          @default(true)
-  isPublic        Boolean          @default(false)
-  isArchived      Boolean          @default(false)
-  archivedAt      DateTime?        @db.Timestamptz
-  createdAt       DateTime         @default(now()) @db.Timestamptz
-  updatedAt       DateTime         @updatedAt @db.Timestamptz
+  id                     String          @id @default(uuid()) @db.Uuid
+  name                   String
+  description            String?
+  profilePictureUrl      String? // Custom profile picture for the app
+  bannerImageUrl         String? // Custom banner image for the app
+  homepageUrl            String? // Homepage URL for the app
+  isPublic               Boolean         @default(false)
+  isArchived             Boolean         @default(false)
+  archivedAt             DateTime?       @db.Timestamptz
+  createdAt              DateTime        @default(now()) @db.Timestamptz
+  updatedAt              DateTime        @updatedAt @db.Timestamptz
   authorizedCallbackUrls String[]        @default([]) // Array of allowed redirect URIs
-  apiKeys         ApiKey[]         // API keys for the app 
-  llmTransactions LlmTransaction[] // LLM transactions for that App
-  refreshTokens   RefreshToken[]   // Refresh tokens
-  appMemberships  AppMembership[]  // Customers of app and owners
-  markUp          MarkUp?          // The markup rate for this app (one-to-one)
-  githubLink      GithubLink?      // The GitHub link for this app (one-to-one)
-  spendPools      SpendPool[]      // Spend pools associated with this app
+  apiKeys                ApiKey[] // API keys for the app 
+  Transactions           Transaction[] // LLM transactions for that App
+  refreshTokens          RefreshToken[] // Refresh tokens
+  appMemberships         AppMembership[] // Customers of app and owners
+  markUp                 MarkUp? // The markup rate for this app (one-to-one)
+  githubLink             GithubLink? // The GitHub link for this app (one-to-one)
+  spendPools             SpendPool[] // Spend pools associated with this app
 
   @@map("echo_apps")
 }
 
 model AppMembership {
-  id         String    @id @default(uuid()) @db.Uuid
-  userId     String    @db.Uuid
-  echoAppId  String    @db.Uuid
-  role       String    // 'owner', 'admin', 'customer'
-  status     String    @default("active") // 'active', 'pending', 'revoked'
-  isArchived Boolean   @default(false)
-  archivedAt DateTime? @db.Timestamptz
-  createdAt  DateTime  @default(now()) @db.Timestamptz
-  updatedAt  DateTime  @updatedAt @db.Timestamptz
-  totalSpent Decimal  @db.Decimal(65, 14)  // Aggregate for Total spent by user for this app - supports unlimited dollars with pico-cent precision
-  amountSpent Decimal @db.Decimal(65, 14) @default(0.0) // Materialized view of amount spent (maintained via triggers or app logic)
-  
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  echoAppId   String    @db.Uuid
+  role        String // 'owner', 'admin', 'customer'
+  status      String    @default("active") // 'active', 'pending', 'revoked'
+  isArchived  Boolean   @default(false)
+  archivedAt  DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+  totalSpent  Decimal   @db.Decimal(65, 14) // Aggregate for Total spent by user for this app - supports unlimited dollars with pico-cent precision
+  amountSpent Decimal   @default(0.0) @db.Decimal(65, 14) // Materialized view of amount spent (maintained via triggers or app logic)
+
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   echoApp EchoApp @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
 
@@ -121,187 +120,181 @@ model AppMembership {
 }
 
 model ApiKey {
-  id              String    @id @default(uuid()) @db.Uuid
-  keyHash         String    @unique /// Deterministic HMAC-SHA256 hash of the API key for secure storage and O(1) lookup
-  name            String?
-  isActive        Boolean   @default(true)
-  isArchived      Boolean   @default(false)
-  archivedAt      DateTime? @db.Timestamptz
-  lastUsed        DateTime? @db.Timestamptz
-  metadata        Json?
-  createdAt       DateTime  @default(now()) @db.Timestamptz
-  updatedAt       DateTime  @updatedAt @db.Timestamptz
-  userId          String    @db.Uuid
-  echoAppId       String    @db.Uuid
-  
-  scope           String    @default("owner") 
+  id         String    @id @default(uuid()) @db.Uuid
+  keyHash    String    @unique /// Deterministic HMAC-SHA256 hash of the API key for secure storage and O(1) lookup
+  name       String?
+  isArchived Boolean   @default(false)
+  archivedAt DateTime? @db.Timestamptz
+  lastUsed   DateTime? @db.Timestamptz
+  metadata   Json?
+  createdAt  DateTime  @default(now()) @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @db.Timestamptz
+  userId     String    @db.Uuid
+  echoAppId  String    @db.Uuid
+
+  scope String @default("owner")
   // Permissions available to API key - can be <= to AppMembership.role for same (userId, echoAppId) pair
-  
-  echoApp       EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  llmTransactions LlmTransaction[] // LLM transactions using this API key
+
+  echoApp      EchoApp       @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Transactions Transaction[] // LLM transactions using this API key
 
   @@map("api_keys")
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid()) @db.Uuid
-  token     String   @unique
-  isArchived      Boolean   @default(false)
-  archivedAt      DateTime? @db.Timestamptz
-  expiresAt DateTime @db.Timestamptz
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
-  userId    String   @db.Uuid
-  echoAppId String   @db.Uuid
-  scope     String   @default("llm:invoke offline_access")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  echoApp   EchoApp  @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid()) @db.Uuid
+  token      String    @unique
+  isArchived Boolean   @default(false)
+  archivedAt DateTime? @db.Timestamptz
+  expiresAt  DateTime  @db.Timestamptz
+  createdAt  DateTime  @default(now()) @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @db.Timestamptz
+  userId     String    @db.Uuid
+  echoAppId  String    @db.Uuid
+  scope      String    @default("llm:invoke offline_access")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp    EchoApp   @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
 }
 
 model Payment {
-  id              String   @id @default(uuid()) @db.Uuid
-  stripePaymentId String   @unique
-  amount          Decimal  @db.Decimal(65, 14)  // Supports unlimited dollar amounts with pico-cent precision
-  currency        String   @default("usd")
+  id              String    @id @default(uuid()) @db.Uuid
+  stripePaymentId String    @unique
+  amount          Decimal   @db.Decimal(65, 14) // Supports unlimited dollar amounts with pico-cent precision
+  currency        String    @default("usd")
   status          String
   description     String?
-  isArchived      Boolean  @default(false)
+  isArchived      Boolean   @default(false)
   archivedAt      DateTime? @db.Timestamptz
-  createdAt       DateTime @default(now()) @db.Timestamptz
-  updatedAt       DateTime @updatedAt @db.Timestamptz
-  userId          String   @db.Uuid
+  createdAt       DateTime  @default(now()) @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @db.Timestamptz
+  userId          String    @db.Uuid
+  spendPoolId     String?   @db.Uuid // Optional: which spend pool this payment funds
 
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
-  spendPoolPayments SpendPoolPayment[] // Payments can be associated with multiple spend pools
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade) // THE USER IS ALWAYS THE PAYER
+  spendPool SpendPool? @relation(fields: [spendPoolId], references: [id], onDelete: SetNull) // Spend pool this payment funds
 
   @@map("payments")
 }
 
 model MarkUp {
-  id          String   @id @default(uuid()) @db.Uuid
-  amount      Decimal  @db.Decimal(65, 14) @default(1.0) // Mark-up multiplier for per-token charging - supports unlimited precision
-  description String?  // Optional description for the markup rate
-  isActive    Boolean  @default(true)
-  isArchived  Boolean  @default(false)
+  id          String    @id @default(uuid()) @db.Uuid
+  amount      Decimal   @default(1.0) @db.Decimal(65, 14) // Mark-up multiplier for per-token charging - supports unlimited precision
+  description String? // Optional description for the markup rate
+  isArchived  Boolean   @default(false)
   archivedAt  DateTime? @db.Timestamptz
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
-  echoAppId   String   @unique @db.Uuid    // Reference to the app this markup belongs to (one-to-one)
-  
-  echoApp         EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this markup belongs to
-  llmTransactions LlmTransaction[] // LLM transactions billed with this markup
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+  echoAppId   String    @unique @db.Uuid // Reference to the app this markup belongs to (one-to-one)
+
+  echoApp      EchoApp       @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this markup belongs to
+  Transactions Transaction[] // LLM transactions billed with this markup
 
   @@map("markups")
 }
 
 model GithubLink {
-  id          String   @id @default(uuid()) @db.Uuid
-  githubId    String   // GitHub username or repository identifier
-  githubType  String   // 'user' or 'repo' to indicate the type of GitHub entity
-  description String?  // Optional description for the GitHub link
-  isActive    Boolean  @default(true)
-  isArchived  Boolean  @default(false)
+  id          String    @id @default(uuid()) @db.Uuid
+  githubId    String // GitHub username or repository identifier
+  githubType  String // 'user' or 'repo' to indicate the type of GitHub entity
+  description String? // Optional description for the GitHub link
+  isArchived  Boolean   @default(false)
   archivedAt  DateTime? @db.Timestamptz
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
-  echoAppId   String   @unique @db.Uuid    // Reference to the app this GitHub link belongs to (one-to-one)
-  
-  echoApp         EchoApp          @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this GitHub link belongs to
-  llmTransactions LlmTransaction[] // LLM transactions associated with this GitHub link
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+  echoAppId   String    @unique @db.Uuid // Reference to the app this GitHub link belongs to (one-to-one)
+
+  echoApp      EchoApp       @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this GitHub link belongs to
+  Transactions Transaction[] // LLM transactions associated with this GitHub link
 
   @@map("github_links")
 }
 
-model LlmTransaction {
-  id           String   @id @default(uuid()) @db.Uuid
-  providerId   String
-  model        String
-  inputTokens  Int
-  outputTokens Int
-  totalTokens  Int
-  cost         Decimal  @db.Decimal(65, 14)  // Supports unlimited cost values with pico-cent precision
-  prompt       String?
-  response     String?
-  status       String
-  errorMessage String?
-  isArchived   Boolean  @default(false)
-  archivedAt   DateTime? @db.Timestamptz
-  createdAt    DateTime @default(now()) @db.Timestamptz
-  userId       String   @db.Uuid
-  echoAppId    String   @db.Uuid
-  apiKeyId     String?   @db.Uuid  // API key used for this transaction (not required, won't be included if it was using a JWT)
-  markUpId     String?   @db.Uuid  // MarkUp rate used for billing this transaction
-  githubLinkId String?   @db.Uuid
-  spendPoolId  String?   @db.Uuid  // Optional spend pool this transaction was charged against
-   
-  echoApp    EchoApp     @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
-  apiKey     ApiKey?     @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
-  markUp     MarkUp?     @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
-  githubLink GithubLink? @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
-  spendPool  SpendPool?  @relation(fields: [spendPoolId], references: [id]) // Spend pool this transaction was charged against
+model Transaction {
+  id                   String    @id @default(uuid()) @db.Uuid
+  transactionMetadataId String?   @db.Uuid // Link to structured metadata
+  cost                 Decimal   @db.Decimal(65, 14) // Supports unlimited cost values with pico-cent precision
+  status               String?
+  isArchived           Boolean   @default(false)
+  archivedAt           DateTime? @db.Timestamptz
+  createdAt            DateTime  @default(now()) @db.Timestamptz
+  userId               String    @db.Uuid
+  echoAppId            String    @db.Uuid
+  apiKeyId             String?   @db.Uuid // API key used for this transaction (not required, won't be included if it was using a JWT)
+  markUpId             String?   @db.Uuid // MarkUp rate used for billing this transaction
+  githubLinkId         String?   @db.Uuid
+  spendPoolId          String?   @db.Uuid // Optional spend pool this transaction was charged against
+  userSpendPoolUsageId String?   @db.Uuid // Link to specific user pool usage record
 
+  echoApp            EchoApp              @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
+  apiKey             ApiKey?              @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
+  markUp             MarkUp?              @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
+  githubLink         GithubLink?          @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
+  spendPool          SpendPool?           @relation(fields: [spendPoolId], references: [id]) // Spend pool this transaction was charged against
+  userSpendPoolUsage UserSpendPoolUsage?  @relation(fields: [userSpendPoolUsageId], references: [id]) // User pool usage this transaction was charged against
+  transactionMetadata TransactionMetadata? @relation(fields: [transactionMetadataId], references: [id]) // Structured transaction metadata
 
-  @@map("llm_transactions")
+  @@map("transactions")
 }
 
 model SpendPool {
-  id               String   @id @default(uuid()) @db.Uuid
-  name             String   // Name for the spend pool (e.g., "Q1 2024 Budget", "Marketing Campaign")
-  description      String?  // Optional description for the spend pool
-  totalAmount      Decimal  @db.Decimal(65, 14) @default(0.0) // Total amount available in this pool from payments
-  isActive         Boolean  @default(true)
-  isArchived       Boolean  @default(false)
-  archivedAt       DateTime? @db.Timestamptz
-  createdAt        DateTime @default(now()) @db.Timestamptz
-  updatedAt        DateTime @updatedAt @db.Timestamptz
-  echoAppId        String   @db.Uuid
+  id                String    @id @default(uuid()) @db.Uuid
+  name              String // Name for the spend pool (e.g., "Q1 2024 Budget", "Marketing Campaign")
+  description       String? // Optional description for the spend pool
+  totalPaid         Decimal   @default(0.0) @db.Decimal(65, 14) // Total amount available in this pool from payments
+  perUserSpendLimit Decimal?  @db.Decimal(65, 14) // Default spend limit for new users accessing this pool; If null, there is no limit
+  totalSpent        Decimal   @default(0.0) @db.Decimal(65, 14) // Total spent on this pool so far
+  isArchived        Boolean   @default(false)
+  archivedAt        DateTime? @db.Timestamptz
+  createdAt         DateTime  @default(now()) @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @db.Timestamptz
+  echoAppId         String    @db.Uuid
 
-  echoApp           EchoApp            @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this spend pool belongs to
-  spendPoolPayments SpendPoolPayment[] // Payments that fund this spend pool
-  spendPoolLimits   SpendPoolLimit[]   // Per-user spend limits for this pool
-  llmTransactions   LlmTransaction[]   // LLM transactions charged against this pool
+  echoApp      EchoApp              @relation(fields: [echoAppId], references: [id], onDelete: Cascade) // App this spend pool belongs to
+  payments     Payment[] // Payments that fund this spend pool
+  Transactions Transaction[] // LLM transactions charged against this pool
+  userUsage    UserSpendPoolUsage[] // User usage records for this pool
 
   @@map("spend_pools")
 }
 
-model SpendPoolPayment {
-  id          String   @id @default(uuid()) @db.Uuid
-  amount      Decimal  @db.Decimal(65, 14) // Amount from the payment allocated to this pool
-  isArchived  Boolean  @default(false)
+model UserSpendPoolUsage {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  spendPoolId String    @db.Uuid
+  totalSpent  Decimal   @default(0.0) @db.Decimal(65, 14) // Materialized sum of transaction costs charged to this usage
+  isArchived  Boolean   @default(false)
   archivedAt  DateTime? @db.Timestamptz
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
-  paymentId   String   @db.Uuid
-  spendPoolId String   @db.Uuid
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
 
-  payment   Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade) // Payment that funds this allocation
-  spendPool SpendPool @relation(fields: [spendPoolId], references: [id], onDelete: Cascade) // Spend pool receiving the funds
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spendPool    SpendPool     @relation(fields: [spendPoolId], references: [id], onDelete: Cascade)
+  Transactions Transaction[] // Transactions charged against this user pool usage
 
-  @@unique([paymentId, spendPoolId]) // A payment can only be allocated to a specific pool once
-  @@map("spend_pool_payments")
+  @@unique([userId, spendPoolId]) // One usage record per user per spend pool
+  @@map("user_spend_pool_usage")
 }
 
-model SpendPoolLimit {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
-  spendPoolId String   @db.Uuid
-  spendLimit  Decimal  @db.Decimal(65, 14) // Maximum amount this user can spend from this pool
-  spentAmount Decimal  @db.Decimal(65, 14) @default(0.0) // Amount already spent by this user from this pool (maintained via triggers or app logic)
-  isActive    Boolean  @default(true)
-  isArchived  Boolean  @default(false)
-  archivedAt  DateTime? @db.Timestamptz
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade) // User with spend limit
-  spendPool SpendPool @relation(fields: [spendPoolId], references: [id], onDelete: Cascade) // Pool with the limit
+model TransactionMetadata {
+  id           String    @id @default(uuid()) @db.Uuid
+  providerId   String
+  provider     String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
+  prompt       String?
+  isArchived   Boolean   @default(false)
+  archivedAt   DateTime? @db.Timestamptz
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
 
-  @@unique([userId, spendPoolId]) // A user can only have one limit per spend pool
-  @@map("spend_pool_limits")
+  transactions Transaction[] // One-to-many relation back to transactions
+
+  @@map("transaction_metadata")
 }
-

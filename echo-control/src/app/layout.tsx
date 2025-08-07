@@ -1,6 +1,8 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 
+import { TRPCProvider } from '@/components/providers/TRPCProvider';
+
 import Header from '@/components/header';
 
 import type { Metadata } from 'next';
@@ -28,17 +30,19 @@ export default function RootLayout({
     <SessionProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased bg-background text-foreground h-dvh overflow-y-auto">
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            storageKey="echo-theme"
-            enableSystem={true}
-          >
-            <Header />
-            <main className="w-screen overflow-x-hidden pt-16 h-full">
-              {children}
-            </main>
-          </ThemeProvider>
+          <TRPCProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              storageKey="echo-theme"
+              enableSystem={true}
+            >
+              <Header />
+              <main className="w-screen overflow-x-hidden pt-16 h-full">
+                {children}
+              </main>
+            </ThemeProvider>
+          </TRPCProvider>
         </body>
       </html>
     </SessionProvider>

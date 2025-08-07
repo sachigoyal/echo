@@ -9,7 +9,7 @@ import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { ProfileAvatar } from './ui/profile-avatar';
 import { CommitChart } from './activity-chart/chart';
-import { EchoApp } from '@/lib/types/apps';
+import { PublicEchoApp } from '@/lib/apps/types';
 
 const transformActivityData = (data: number[]) => {
   return data.map((count, index) => ({
@@ -22,7 +22,7 @@ const transformActivityData = (data: number[]) => {
 };
 
 interface CarouselProps {
-  apps: EchoApp[];
+  apps: PublicEchoApp[];
   autoPlay?: boolean;
   autoPlayInterval?: number;
   className?: string;
@@ -100,7 +100,8 @@ export const Carousel: React.FC<CarouselProps> = ({
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {apps.map(app => {
-              const activityData = app.activityData || [];
+              const activityData =
+                app.stats?.globalActivityData?.map(d => d.totalTokens) || [];
               const ownerName = app.owner.name || app.owner.email;
 
               return (
@@ -171,19 +172,21 @@ export const Carousel: React.FC<CarouselProps> = ({
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1 text-lg text-muted-foreground">
                           <Users className="h-5 w-5" />
-                          <span>{app._count.apiKeys.toLocaleString()}</span>
+                          <span>
+                            {app.stats?.globalTotalTransactions.toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1 text-lg text-muted-foreground">
                           <Zap className="h-5 w-5" />
                           <span>
-                            {app._count.llmTransactions.toLocaleString()}
+                            {app.stats?.globalTotalTokens.toLocaleString()}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <Badge className="shrink-0 text-black dark:text-white border-[1px] bg-transparent shadow-none w-fit text-base">
-                          ${(app.totalCost / 100).toFixed(1)}k
+                          ${(app.stats?.globalTotalRevenue / 100).toFixed(1)}k
                         </Badge>
                       </div>
                     </div>

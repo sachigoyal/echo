@@ -91,13 +91,7 @@ export const TEST_DATA = {
   llmTransactions: {
     testTransaction: {
       id: '66666666-6666-6666-6666-666666666666',
-      model: 'claude-3-5-sonnet-20241022',
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
       cost: 0.15,
-      prompt: 'Test prompt for integration testing',
-      response: 'Test response from integration testing',
       status: 'completed',
     },
   },

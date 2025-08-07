@@ -1,6 +1,7 @@
 import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
+import { LlmTransactionMetadata, Transaction } from '../types';
 
 export interface ResponseCompletionBody {
   id: string;
@@ -84,7 +85,7 @@ export class OpenAIResponsesProvider extends BaseProvider {
     return process.env.OPENAI_API_KEY;
   }
 
-  async handleBody(data: string): Promise<void> {
+  async handleBody(data: string): Promise<Transaction> {
     try {
       let input_tokens = 0;
       let output_tokens = 0;
@@ -126,16 +127,22 @@ export class OpenAIResponsesProvider extends BaseProvider {
         providerId = parsed.id || 'null';
       }
 
-      // Create transaction with proper model info and token details
-      await this.getEchoControlService().createTransaction({
+      const metadata: LlmTransactionMetadata = {
         model: this.getModel(),
+        providerId: providerId,
+        provider: this.getType(),
         inputTokens: input_tokens,
         outputTokens: output_tokens,
         totalTokens: total_tokens,
+      };
+
+      const transaction: Transaction = {
+        metadata: metadata,
         cost: getCostPerToken(this.getModel(), input_tokens, output_tokens),
         status: 'success',
-        providerId: providerId,
-      });
+      };
+
+      return transaction;
     } catch (error) {
       console.error('Error processing OpenAI Responses API data:', error);
       throw error;

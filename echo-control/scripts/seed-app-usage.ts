@@ -205,7 +205,6 @@ async function createApiKey(
       userId,
       echoAppId: appId,
       scope,
-      isActive: Math.random() > 0.1, // 90% chance of being active
     },
   });
 
@@ -403,7 +402,6 @@ async function seedAppUsage(
             apiKeys: {
               where: {
                 echoAppId: appId,
-                isActive: true,
               },
             },
           },
@@ -463,7 +461,7 @@ async function seedAppUsage(
 
   for (let i = 0; i < transactions.length; i += batchSize) {
     const batch = transactions.slice(i, i + batchSize);
-    await prisma.llmTransaction.createMany({
+    await prisma.transaction.createMany({
       data: batch,
     });
     totalInserted += batch.length;
@@ -576,7 +574,6 @@ async function seedAllApps(options: SeedOptions): Promise<void> {
 
   const apps = await prisma.echoApp.findMany({
     where: {
-      isActive: true,
       isArchived: false,
     },
     select: {

@@ -11,12 +11,13 @@ import {
 
 import { useRouter } from 'next/navigation';
 
+import { Logo } from '@/components/ui/logo';
+
 import { GlassButton } from './glass-button';
-import { Logo } from './ui/logo';
 
 import { useUser } from '@/hooks/use-user';
 
-import { Balance } from '@/lib/types/apps';
+import { Balance } from '@/lib/balance/types';
 import { formatCurrency } from '@/lib/balance';
 
 interface BalanceCardProps {
