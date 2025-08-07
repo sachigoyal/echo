@@ -35,25 +35,30 @@ Comprehensive provider-specific tests including:
 **Test Categories:**
 
 1. **Non-streaming endpoints** (for each provider):
+
    - Successful request handling
    - Transaction creation verification
    - Correct content-type headers
 
 2. **Streaming endpoints** (for each provider):
+
    - Successful streaming request handling
    - Transaction creation with proper token counts
    - Multi-chunk content handling
 
 3. **Authentication Tests**:
+
    - Bearer token support (OpenAI format)
    - x-api-key support (Anthropic native)
    - Invalid token rejection
 
 4. **Error Handling**:
+
    - Upstream API errors (400, 429, etc.)
    - Unknown model errors
 
 5. **Account Balance Tests**:
+
    - Payment required (402) when balance is zero
    - Successful requests with sufficient balance
 

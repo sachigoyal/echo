@@ -25,6 +25,15 @@ export default middleware(req => {
   }
 
   if (!req.auth) {
+    // If the route does not exist (404), do not redirect to sign-in
+    if (
+      req.nextUrl.pathname.startsWith('/api/') ||
+      req.nextUrl.pathname === '/404' ||
+      req.nextUrl.pathname === '/_error'
+    ) {
+      // Let the request continue so the API or 404 handler can respond
+      return NextResponse.next();
+    }
     const newUrl = new URL('/sign-in', req.nextUrl.origin);
     return Response.redirect(newUrl);
   }

@@ -5,6 +5,7 @@ import {
   echoControlApi,
   TEST_CLIENT_IDS,
 } from '../../utils/index.js';
+import { EchoControlApiClient } from '../../utils/api-client.js';
 
 describe('Echo Data Server Client Integration Tests', () => {
   beforeAll(async () => {
@@ -96,6 +97,11 @@ describe('Echo Data Server Client Integration Tests', () => {
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = generateCodeChallenge(codeVerifier);
     const state = generateState();
+
+    const echoControlApi = new EchoControlApiClient(
+      TEST_CONFIG.services.echoControl,
+      'test-user-2'
+    );
 
     const redirectUrl = await echoControlApi.validateOAuthAuthorizeRequest({
       client_id: TEST_CLIENT_IDS.secondary,

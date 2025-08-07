@@ -162,7 +162,7 @@ else
     INTEGRATION_TEST_MODE=true cd ../integration-tests && pnpm db:seed
     
     echo "🚀 Starting echo-control test server..."
-    cd ../echo-control && TEST_MODE=true pnpm build
+    cd ../echo-control && INTEGRATION_TEST_MODE=true pnpm build
     
     # Start echo-control in background with explicit port and all required environment variables
     cd ../echo-control && \

@@ -140,6 +140,7 @@ jobs:
           STRIPE_WEBHOOK_SECRET: ${{ secrets.TEST_STRIPE_WEBHOOK_SECRET }}
           HEADLESS: true
           LOG_LEVEL: error
+          AUTH_SECRET: ${{ secrets.TEST_AUTH_SECRET }}
         run: |
           chmod +x scripts/setup-integration-env.sh
           pnpm run env:setup
@@ -211,6 +212,7 @@ jobs:
           CI=true
           NODE_ENV=test
           HEADLESS=true
+          AUTH_SECRET: ${{ secrets.TEST_AUTH_SECRET }}
           EOF
 
       - name: Create Docker environment overrides

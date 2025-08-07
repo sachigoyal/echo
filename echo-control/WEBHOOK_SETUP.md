@@ -136,11 +136,13 @@ The webhook endpoint includes several security measures:
 ### Common Issues
 
 1. **Webhook not receiving events**
+
    - Ensure your endpoint is publicly accessible via HTTPS
    - Check that the webhook URL is correct in Stripe dashboard
    - Verify your server is running and responding to POST requests
 
 2. **Signature verification failures**
+
    - Ensure `STRIPE_WEBHOOK_SECRET` is set correctly
    - Make sure you're using the raw request body for verification
    - Check that your webhook secret matches the one in Stripe dashboard

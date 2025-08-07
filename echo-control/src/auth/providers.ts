@@ -21,13 +21,13 @@ export const providers: OAuthProvider[] = [
 
 export const testProviders: Provider[] = [
   Credentials({
-    id: 'test',
-    name: 'Test',
+    id: 'test-user-1',
+    name: 'Test1',
     credentials: {},
     authorize: async () => {
       const existingUser = await db.user.findUnique({
         where: {
-          email: 'test@merit.systems',
+          email: 'test@example.com',
         },
       });
 
@@ -42,8 +42,46 @@ export const testProviders: Provider[] = [
 
       const user = await db.user.create({
         data: {
-          name: 'Test User',
-          email: 'test@merit.systems',
+          id: '11111111-1111-1111-1111-111111111111',
+          name: 'Integration Test User',
+          email: 'test@example.com',
+          image: 'http://echo.merit.systems/logo/light.svg',
+        },
+      });
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+      };
+    },
+  }),
+  Credentials({
+    id: 'test-user-2',
+    name: 'Second Test User',
+    credentials: {},
+    authorize: async () => {
+      const existingUser = await db.user.findUnique({
+        where: {
+          email: 'test2@example.com',
+        },
+      });
+
+      if (existingUser) {
+        return {
+          id: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          image: existingUser.image,
+        };
+      }
+
+      const user = await db.user.create({
+        data: {
+          id: '33333333-3333-3333-3333-333333333333',
+          name: 'Integration Test User',
+          email: 'test2@example.com',
           image: 'http://echo.merit.systems/logo/light.svg',
         },
       });

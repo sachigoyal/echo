@@ -1,8 +1,5 @@
 import { providers, testProviders } from './providers';
 
-// Example of importing from local package
-import EchoProvider from '../../../echo-authjs-provider/src/index';
-
 import type { DefaultSession, NextAuthConfig } from 'next-auth';
 import type { DefaultJWT } from 'next-auth/jwt';
 import { skipCSRFCheck } from '@auth/core';
@@ -27,7 +24,7 @@ declare module 'next-auth/jwt' {
   }
 }
 
-const IS_TEST_MODE = process.env.TEST_MODE === 'true';
+const IS_TEST_MODE = process.env.INTEGRATION_TEST_MODE === 'true';
 
 export const authConfig = {
   providers: IS_TEST_MODE ? testProviders : providers,
