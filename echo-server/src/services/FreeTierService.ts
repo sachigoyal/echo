@@ -33,17 +33,22 @@ class FreeTierService {
 
     return this.checkExistingUserUsage(
       existingUserUsage,
-      Number(spendPool.perUserSpendLimit)
+      Number(spendPool.perUserSpendLimit) || null
     );
   }
 
   checkExistingUserUsage(
     userUsage: UserSpendPoolUsage,
-    perUserSpendLimit: number
+    perUserSpendLimit: number | null
   ): boolean {
-    if (Number(userUsage.totalSpent) < perUserSpendLimit) {
+    if (!perUserSpendLimit) {
       return true;
     }
+
+    if (perUserSpendLimit && Number(userUsage.totalSpent) < perUserSpendLimit) {
+      return true;
+    }
+
     return false;
   }
 
