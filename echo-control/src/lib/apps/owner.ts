@@ -28,7 +28,7 @@ export async function getOwnerDetails(
           id: true,
           email: true,
           name: true,
-          profilePictureUrl: true,
+          image: true,
         },
       },
     },
@@ -42,7 +42,7 @@ export async function getOwnerDetails(
     id: ownerMembership.user.id,
     email: ownerMembership.user.email,
     name: ownerMembership.user.name,
-    profilePictureUrl: ownerMembership.user.profilePictureUrl,
+    image: ownerMembership.user.image,
   };
 }
 
@@ -71,7 +71,7 @@ export async function getOwnerDetailsBatch(
           id: true,
           email: true,
           name: true,
-          profilePictureUrl: true,
+          image: true,
         },
       },
     },
@@ -85,7 +85,7 @@ export async function getOwnerDetailsBatch(
       id: membership.user.id,
       email: membership.user.email,
       name: membership.user.name,
-      profilePictureUrl: membership.user.profilePictureUrl,
+      image: membership.user.image,
     });
   }
 

@@ -29,7 +29,7 @@ export const appsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       try {
-        const app = await getApp(input.appId, ctx.userId ?? undefined);
+        const app = await getApp(input.appId, ctx.session?.user?.id);
         return app;
       } catch (error) {
         throw new TRPCError({
@@ -51,7 +51,7 @@ export const appsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       // Check if user is owner
       const role = await PermissionService.getUserAppRole(
-        ctx.userId,
+        ctx.session.user.id,
         input.appId
       );
       if (role !== AppRole.OWNER) {
@@ -61,7 +61,7 @@ export const appsRouter = createTRPCRouter({
         });
       }
 
-      return getOwnerEchoApp(input.appId, ctx.userId);
+      return getOwnerEchoApp(input.appId, ctx.session.user.id);
     }),
 
   /**
@@ -76,7 +76,7 @@ export const appsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       // Check if user has at least customer access
       const role = await PermissionService.getUserAppRole(
-        ctx.userId,
+        ctx.session.user.id,
         input.appId
       );
       if (role === AppRole.PUBLIC || !role) {
@@ -86,7 +86,7 @@ export const appsRouter = createTRPCRouter({
         });
       }
 
-      return getCustomerEchoApp(input.appId, ctx.userId);
+      return getCustomerEchoApp(input.appId, ctx.session.user.id);
     }),
 
   /**
@@ -170,7 +170,7 @@ export const appsRouter = createTRPCRouter({
       const limit = input?.limit ?? 10;
       const search = input?.search;
 
-      const apps = await getAllCustomerEchoApps(ctx.userId);
+      const apps = await getAllCustomerEchoApps(ctx.session.user.id);
 
       // Apply search filter if provided
       let filteredApps = apps;
@@ -220,7 +220,7 @@ export const appsRouter = createTRPCRouter({
       const limit = input?.limit ?? 10;
       const search = input?.search;
 
-      const apps = await getAllOwnerEchoApps(ctx.userId);
+      const apps = await getAllOwnerEchoApps(ctx.session.user.id);
 
       // Apply search filter if provided
       let filteredApps = apps;

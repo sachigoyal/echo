@@ -1,16 +1,15 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
-import { auth } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
 import { ZodError } from 'zod';
-import { db } from '@/lib/db';
+import { auth } from '@/auth';
+import { Session } from 'next-auth';
 
 /**
  * Context that is passed to all TRPC procedures
  */
 export interface Context {
-  userId: string | null;
-  auth: Awaited<ReturnType<typeof auth>>;
+  session: Session | null;
   headers: Headers;
 }
 
@@ -18,22 +17,11 @@ export interface Context {
  * Create context for each request
  */
 export async function createContext(): Promise<Context> {
-  const authResult = await auth();
+  const session = await auth();
   const requestHeaders = await headers();
 
-  // Get the actual database user ID from the Clerk ID
-  let dbUserId: string | null = null;
-  if (authResult.userId) {
-    const user = await db.user.findUnique({
-      where: { clerkId: authResult.userId },
-      select: { id: true },
-    });
-    dbUserId = user?.id || null;
-  }
-
   return {
-    userId: dbUserId,
-    auth: authResult,
+    session,
     headers: requestHeaders,
   };
 }
@@ -66,14 +54,13 @@ export const createCallerFactory = t.createCallerFactory;
  * Protected procedure that requires authentication
  */
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  if (!ctx.userId) {
+  if (!ctx.session?.user) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   return next({
     ctx: {
-      ...ctx,
-      userId: ctx.userId,
+      session: { ...ctx.session, user: ctx.session.user },
     },
   });
 });
