@@ -26,7 +26,7 @@ import Link from 'next/link';
 import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
 import { cn } from '@/lib/utils';
 import { SignOutButton, useUser } from '@clerk/nextjs';
-import { useTheme } from '../theme-provider';
+import { useTheme } from 'next-themes';
 
 export function UserDropdown() {
   const { user, isLoaded } = useUser();
