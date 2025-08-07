@@ -28,7 +28,9 @@ const IS_TEST_MODE = process.env.INTEGRATION_TEST_MODE === 'true';
 
 export const authConfig = {
   providers: IS_TEST_MODE ? testProviders : providers,
-  skipCSRFCheck: IS_TEST_MODE ? skipCSRFCheck : undefined,
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+// Only allow skipCSRFCheck in test mode AND never in production
+skipCSRFCheck: IS_TEST_MODE && !IS_PRODUCTION ? skipCSRFCheck : undefined,
   callbacks: {
     jwt: ({ token, user }) => {
       if (user) {
