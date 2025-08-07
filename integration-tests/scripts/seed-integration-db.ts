@@ -112,10 +112,9 @@ export async function seedIntegrationDatabase() {
     console.log('💳 Created test payment');
 
     // Create some test LLM transactions
-    await prisma.llmTransaction.create({
+    await prisma.transaction.create({
       data: {
         ...TEST_DATA.llmTransactions.testTransaction,
-        providerId: 'openai',
         userId: testUser.id,
         echoAppId: testApp.id,
         apiKeyId: testApiKey.id,
