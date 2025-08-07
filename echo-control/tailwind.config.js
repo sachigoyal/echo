@@ -17,43 +17,43 @@ module.exports = {
         102: '1.02',
       },
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        border: 'rgb(var(--border))',
+        input: 'rgb(var(--input))',
+        ring: 'rgb(var(--ring))',
+        background: 'rgb(var(--background))',
+        foreground: 'rgb(var(--foreground))',
         'chart-1': 'rgb(var(--chart-1))',
         'chart-2': 'rgb(var(--chart-2))',
         'chart-3': 'rgb(var(--chart-3))',
         'chart-4': 'rgb(var(--chart-4))',
         'chart-5': 'rgb(var(--chart-5))',
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
+          DEFAULT: 'rgb(var(--primary))',
+          foreground: 'rgb(var(--primary-foreground))',
         },
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
+          DEFAULT: 'rgb(var(--secondary))',
+          foreground: 'rgb(var(--secondary-foreground))',
         },
         destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+          DEFAULT: 'rgb(var(--destructive))',
+          foreground: 'rgb(var(--destructive-foreground))',
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+          DEFAULT: 'rgb(var(--muted))',
+          foreground: 'rgb(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
+          DEFAULT: 'rgb(var(--accent))',
+          foreground: 'rgb(var(--accent-foreground))',
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+          DEFAULT: 'rgb(var(--popover))',
+          foreground: 'rgb(var(--popover-foreground))',
         },
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+          DEFAULT: 'rgb(var(--card))',
+          foreground: 'rgb(var(--card-foreground))',
         },
         sidebar: {
           DEFAULT: 'rgb(var(--sidebar-background))',
@@ -65,22 +65,11 @@ module.exports = {
           border: 'rgb(var(--sidebar-border))',
           ring: 'rgb(var(--sidebar-ring))',
         },
-        chart: {
-          1: 'hsl(var(--chart-1))',
-          2: 'hsl(var(--chart-2))',
-          3: 'hsl(var(--chart-3))',
-          4: 'hsl(var(--chart-4))',
-          5: 'hsl(var(--chart-5))',
-        },
       },
       keyframes: {
         'fade-in': {
-          '0%': {
-            opacity: '0',
-          },
-          '100%': {
-            opacity: '1',
-          },
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
         'fade-in-down': {
           '0%': {
@@ -103,20 +92,12 @@ module.exports = {
           },
         },
         'collapsible-down': {
-          from: {
-            height: '0',
-          },
-          to: {
-            height: 'var(--radix-collapsible-content-height)',
-          },
+          from: { height: '0' },
+          to: { height: 'var(--radix-collapsible-content-height)' },
         },
         'collapsible-up': {
-          from: {
-            height: 'var(--radix-collapsible-content-height)',
-          },
-          to: {
-            height: '0',
-          },
+          from: { height: 'var(--radix-collapsible-content-height)' },
+          to: { height: '0' },
         },
         'color-burst': {
           '0%': {
@@ -141,12 +122,8 @@ module.exports = {
           },
         },
         blink: {
-          '0%, 100%': {
-            opacity: '1',
-          },
-          '50%': {
-            opacity: '0',
-          },
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
         },
         'shiny-text': {
           '0%, 90%, 100%': {
@@ -157,12 +134,8 @@ module.exports = {
           },
         },
         'caret-blink': {
-          '0%,70%,100%': {
-            opacity: '1',
-          },
-          '20%,50%': {
-            opacity: '0',
-          },
+          '0%,70%,100%': { opacity: '1' },
+          '20%,50%': { opacity: '0' },
         },
         'pulse-shadow': {
           '0%, 12.5%, 37.5%, 100%': {
