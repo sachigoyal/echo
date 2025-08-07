@@ -7,9 +7,10 @@ export default async function SignInPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { redirect } = await searchParams;
+  const { redirect_url } = await searchParams;
 
-  const redirectTo = redirect && typeof redirect === 'string' ? redirect : '/';
+  const redirectTo =
+    redirect_url && typeof redirect_url === 'string' ? redirect_url : '/';
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
