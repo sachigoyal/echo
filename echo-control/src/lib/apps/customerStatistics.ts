@@ -1,10 +1,6 @@
 import { db } from '@/lib/db';
-import {
-  CustomerStatistics,
-  CustomerApiKey,
-  LlmTransactionMetadata,
-} from './types';
-import { Prisma } from '@/generated/prisma';
+import { CustomerStatistics, CustomerApiKey } from './types';
+import { Prisma, Transaction } from '@/generated/prisma';
 import {
   getGlobalStatistics,
   getGlobalStatisticsBatch,
@@ -71,39 +67,35 @@ export async function getCustomerStatistics(
   let personalTotalInputTokens = 0;
   let personalTotalOutputTokens = 0;
 
-  // Get all user's transactions for totals calculation
-  const allPersonalTransactions = await client.transaction.findMany({
-    where: {
-      echoAppId,
-      userId,
-      isArchived: false,
-    },
-    select: {
-      cost: true,
-      metadata: true,
-      createdAt: true,
-    },
-  });
+  // Use raw SQL to get aggregated personal stats in a single query
+  const [personalAggregatedResult] = await client.$queryRaw<
+    Array<{
+      totalRevenue: string;
+      totalTokens: bigint | null;
+      totalInputTokens: bigint | null;
+      totalOutputTokens: bigint | null;
+    }>
+  >`
+    SELECT 
+      COALESCE(SUM(t.cost), 0)::text as "totalRevenue",
+      COALESCE(SUM(tm."totalTokens"), 0)::bigint as "totalTokens",
+      COALESCE(SUM(tm."inputTokens"), 0)::bigint as "totalInputTokens", 
+      COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens"
+    FROM transactions t
+    LEFT JOIN transaction_metadata tm ON t."transactionMetadataId" = tm.id AND tm."isArchived" = false
+    WHERE t."echoAppId" = ${echoAppId}::uuid
+      AND t."userId" = ${userId}::uuid
+      AND t."isArchived" = false
+  `;
 
-  // Process each transaction
-  for (const transaction of allPersonalTransactions) {
-    personalTotalRevenue += Number(transaction.cost);
-
-    // Extract token information from metadata
-    const metadata = transaction.metadata as LlmTransactionMetadata | null;
-    if (metadata) {
-      // Token counts
-      if (metadata.totalTokens) {
-        personalTotalTokens += metadata.totalTokens;
-      }
-      if (metadata.inputTokens) {
-        personalTotalInputTokens += metadata.inputTokens;
-      }
-      if (metadata.outputTokens) {
-        personalTotalOutputTokens += metadata.outputTokens;
-      }
-    }
-  }
+  personalTotalRevenue = Number(personalAggregatedResult?.totalRevenue || 0);
+  personalTotalTokens = Number(personalAggregatedResult?.totalTokens || 0);
+  personalTotalInputTokens = Number(
+    personalAggregatedResult?.totalInputTokens || 0
+  );
+  personalTotalOutputTokens = Number(
+    personalAggregatedResult?.totalOutputTokens || 0
+  );
 
   // Get personal activity data (last 7 days)
   const personalActivityData = await getAppActivity(
@@ -181,71 +173,56 @@ export async function getCustomerStatisticsBatch(
     }
   }
 
-  // Step 3: Get all user's transactions for all apps
-  const allPersonalTransactions = await client.transaction.findMany({
-    where: {
-      echoAppId: { in: echoAppIds },
-      userId,
-      isArchived: false,
-    },
+  // Step 3: Use raw SQL to get aggregated personal stats for all apps in one query
+  const personalAggregatedResults = await client.$queryRaw<
+    Array<{
+      echoAppId: string;
+      totalRevenue: string;
+      totalTokens: bigint | null;
+      totalInputTokens: bigint | null;
+      totalOutputTokens: bigint | null;
+    }>
+  >`
+    SELECT 
+      t."echoAppId",
+      COALESCE(SUM(t.cost), 0)::text as "totalRevenue",
+      COALESCE(SUM(tm."totalTokens"), 0)::bigint as "totalTokens",
+      COALESCE(SUM(tm."inputTokens"), 0)::bigint as "totalInputTokens", 
+      COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens"
+    FROM transactions t
+    LEFT JOIN transaction_metadata tm ON t."transactionMetadataId" = tm.id AND tm."isArchived" = false
+    WHERE t."echoAppId" = ANY(${echoAppIds}::uuid[])
+      AND t."userId" = ${userId}::uuid
+      AND t."isArchived" = false
+    GROUP BY t."echoAppId"
+  `;
+
+  // Step 4: Get recent transactions for each app (still need individual queries for ordering and limiting)
+  const recentTransactionsMap = new Map<string, Transaction[]>();
+
+  // Get recent transactions for each app separately since we need ordering and limiting
+  const recentTransactionPromises = echoAppIds.map(async appId => {
+    const recentTransactions = await client.transaction.findMany({
+      where: {
+        echoAppId: appId,
+        userId,
+        isArchived: false,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: RECENT_TRANSACTIONS_LIMIT,
+    });
+    return { appId, transactions: recentTransactions };
   });
 
-  // Group transactions by app and calculate statistics
-  type PersonalStats = {
-    allTransactions: typeof allPersonalTransactions;
-    recentTransactions: typeof allPersonalTransactions;
-    personalTotalRevenue: number;
-    personalTotalTokens: number;
-    personalTotalInputTokens: number;
-    personalTotalOutputTokens: number;
-  };
+  const recentTransactionResults = await Promise.all(recentTransactionPromises);
 
-  const personalStatsMap = new Map<string, PersonalStats>();
-
-  // Initialize stats for each app
-  for (const appId of echoAppIds) {
-    personalStatsMap.set(appId, {
-      allTransactions: [],
-      recentTransactions: [],
-      personalTotalRevenue: 0,
-      personalTotalTokens: 0,
-      personalTotalInputTokens: 0,
-      personalTotalOutputTokens: 0,
-    });
+  for (const result of recentTransactionResults) {
+    recentTransactionsMap.set(result.appId, result.transactions);
   }
 
-  // Process transactions
-  for (const transaction of allPersonalTransactions) {
-    const appStats = personalStatsMap.get(transaction.echoAppId);
-    if (!appStats) continue;
-
-    appStats.allTransactions.push(transaction);
-    appStats.personalTotalRevenue += Number(transaction.cost);
-
-    // Extract token information from metadata
-    const metadata = transaction.metadata as LlmTransactionMetadata | null;
-    if (metadata) {
-      // Token counts
-      if (metadata.totalTokens) {
-        appStats.personalTotalTokens += metadata.totalTokens;
-      }
-      if (metadata.inputTokens) {
-        appStats.personalTotalInputTokens += metadata.inputTokens;
-      }
-      if (metadata.outputTokens) {
-        appStats.personalTotalOutputTokens += metadata.outputTokens;
-      }
-    }
-  }
-
-  // Sort and limit recent transactions for each app
-  for (const stats of personalStatsMap.values()) {
-    stats.recentTransactions = stats.allTransactions
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, RECENT_TRANSACTIONS_LIMIT);
-  }
-
-  // Step 4: Get personal activity data for all apps
+  // Step 5: Get personal activity data for all apps
   const personalActivityMap = await getAppActivityBatch(
     echoAppIds,
     7,
@@ -253,39 +230,47 @@ export async function getCustomerStatisticsBatch(
     client
   );
 
-  // Step 5: Get personal model usage for all apps
+  // Step 6: Get personal model usage for all apps
   const personalModelUsageMap = await getModelUsageBatch(
     echoAppIds,
     userId,
     client
   );
 
-  // Step 6: Combine all data into final statistics
+  // Create lookup map for personal aggregated results
+  const personalAggregatedMap = new Map(
+    personalAggregatedResults.map(result => [result.echoAppId, result])
+  );
+
+  // Step 7: Combine all data into final statistics
   const resultMap = new Map<string, CustomerStatistics>();
 
   for (const appId of echoAppIds) {
     const globalStats = globalStatsMap.get(appId);
-    const personalStats = personalStatsMap.get(appId);
+    const personalAggregated = personalAggregatedMap.get(appId);
     const personalApiKeys = apiKeysByApp.get(appId) || [];
     const personalActivityData = personalActivityMap.get(appId) || [];
     const personalModelUsage = personalModelUsageMap.get(appId) || [];
+    const recentTransactions = recentTransactionsMap.get(appId) || [];
 
-    if (!globalStats || !personalStats) {
-      console.error(`Missing stats for app ${appId}`);
+    if (!globalStats) {
+      console.error(`Missing global stats for app ${appId}`);
       continue;
     }
 
     resultMap.set(appId, {
       // Spread global statistics
       ...globalStats,
-      // Add personal statistics
-      personalTotalRevenue: personalStats.personalTotalRevenue,
-      personalTotalTokens: personalStats.personalTotalTokens,
-      personalTotalInputTokens: personalStats.personalTotalInputTokens,
-      personalTotalOutputTokens: personalStats.personalTotalOutputTokens,
-      personalRecentTransactions: serializeTransactions(
-        personalStats.recentTransactions
+      // Add personal statistics from aggregated results
+      personalTotalRevenue: Number(personalAggregated?.totalRevenue || 0),
+      personalTotalTokens: Number(personalAggregated?.totalTokens || 0),
+      personalTotalInputTokens: Number(
+        personalAggregated?.totalInputTokens || 0
       ),
+      personalTotalOutputTokens: Number(
+        personalAggregated?.totalOutputTokens || 0
+      ),
+      personalRecentTransactions: serializeTransactions(recentTransactions),
       personalModelUsage,
       personalActivityData,
       personalApiKeys,

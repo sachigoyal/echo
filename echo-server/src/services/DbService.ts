@@ -270,10 +270,31 @@ export class EchoDbService {
     tx: Prisma.TransactionClient,
     transaction: TransactionRequest
   ): Promise<Transaction> {
+    // First create the transaction metadata record
+    const transactionMetadata = await tx.transactionMetadata.create({
+      data: {
+        providerId: transaction.metadata.providerId,
+        provider: transaction.metadata.provider,
+        model: transaction.metadata.model,
+        inputTokens: transaction.metadata.inputTokens,
+        outputTokens: transaction.metadata.outputTokens,
+        totalTokens: transaction.metadata.totalTokens,
+        prompt: transaction.metadata.prompt || null,
+      },
+    });
+
+    // Then create the transaction record with the linked metadata ID
     return await tx.transaction.create({
       data: {
-        ...transaction,
-        metadata: transaction.metadata as any,
+        cost: transaction.cost,
+        status: transaction.status,
+        userId: transaction.userId,
+        echoAppId: transaction.echoAppId,
+        apiKeyId: transaction.apiKeyId || null,
+        markUpId: transaction.markUpId || null,
+        githubLinkId: transaction.githubLinkId || null,
+        spendPoolId: transaction.spendPoolId || null,
+        transactionMetadataId: transactionMetadata.id,
       },
     });
   }

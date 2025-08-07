@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { AppActivity, LlmTransactionMetadata } from './types';
+import { AppActivity } from './types';
 import { Prisma } from '@/generated/prisma';
 
 /**
@@ -44,7 +44,7 @@ export async function getAppActivity(
     },
     select: {
       cost: true,
-      metadata: true,
+      transactionMetadata: true,
       createdAt: true,
     },
   });
@@ -70,8 +70,7 @@ export async function getAppActivity(
       totalCost = totalCost.add(cost);
 
       // Extract token information from metadata
-      const metadata =
-        transaction.metadata as unknown as LlmTransactionMetadata;
+      const metadata = transaction.transactionMetadata;
       if (metadata) {
         // Token counts
         if (metadata.totalTokens) {
@@ -150,7 +149,7 @@ export async function getAppActivityBatch(
     select: {
       echoAppId: true,
       cost: true,
-      metadata: true,
+      transactionMetadata: true,
       createdAt: true,
     },
   });
@@ -186,8 +185,7 @@ export async function getAppActivityBatch(
         totalCost = totalCost.add(cost);
 
         // Extract token information from metadata
-        const metadata =
-          transaction.metadata as unknown as LlmTransactionMetadata;
+        const metadata = transaction.transactionMetadata;
         if (metadata) {
           // Token counts
           if (metadata.totalTokens) {

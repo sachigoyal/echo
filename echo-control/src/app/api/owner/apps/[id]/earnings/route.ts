@@ -3,7 +3,6 @@ import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { PermissionService } from '@/lib/permissions/service';
 import { Permission } from '@/lib/permissions/types';
-import { LlmTransactionMetadata } from '@/lib/apps/types';
 
 // GET /api/owner/apps/[id]/earnings - List all LLM transactions for the app with pagination
 export async function GET(
@@ -52,6 +51,7 @@ export async function GET(
             name: true,
           },
         },
+        transactionMetadata: true,
       },
       orderBy: { createdAt: 'desc' },
       skip,
@@ -70,15 +70,14 @@ export async function GET(
 
     // Format transactions for the response
     const formattedTransactions = transactions.map(transaction => {
-      const metadata =
-        transaction.metadata as unknown as LlmTransactionMetadata;
+      const metadata = transaction.transactionMetadata;
       return {
         id: transaction.id,
-        model: metadata.model,
-        providerId: metadata.providerId,
-        inputTokens: metadata.inputTokens,
-        outputTokens: metadata.outputTokens,
-        totalTokens: metadata.totalTokens,
+        model: metadata?.model,
+        providerId: metadata?.providerId,
+        inputTokens: metadata?.inputTokens,
+        outputTokens: metadata?.outputTokens,
+        totalTokens: metadata?.totalTokens,
         cost: Number(transaction.cost),
         status: transaction.status,
         createdAt: transaction.createdAt.toISOString(),
@@ -103,8 +102,7 @@ export async function GET(
       0
     );
     const totalTokens = transactions.reduce(
-      (sum, tx) =>
-        sum + (tx.metadata as unknown as LlmTransactionMetadata).totalTokens,
+      (sum, tx) => sum + (tx.transactionMetadata?.totalTokens || 0),
       0
     );
 

@@ -172,7 +172,7 @@ model GithubLink {
 
 model Transaction {
   id                   String    @id @default(uuid()) @db.Uuid
-  metadata             Json      @default("{}")
+  transactionMetadataId String?   @db.Uuid // Link to structured metadata
   cost                 Decimal   @db.Decimal(65, 14) // Supports unlimited cost values with pico-cent precision
   status               String?
   isArchived           Boolean   @default(false)
@@ -186,15 +186,16 @@ model Transaction {
   spendPoolId          String?   @db.Uuid // Optional spend pool this transaction was charged against
   userSpendPoolUsageId String?   @db.Uuid // Link to specific user pool usage record
 
-  echoApp            EchoApp             @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
-  apiKey             ApiKey?             @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
-  markUp             MarkUp?             @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
-  githubLink         GithubLink?         @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
-  spendPool          SpendPool?          @relation(fields: [spendPoolId], references: [id]) // Spend pool this transaction was charged against
-  userSpendPoolUsage UserSpendPoolUsage? @relation(fields: [userSpendPoolUsageId], references: [id]) // User pool usage this transaction was charged against
+  echoApp            EchoApp              @relation(fields: [echoAppId], references: [id]) // Required relation, every LLM transaction must be bound to an app
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade) // Always the user who spent their balance on the tx
+  apiKey             ApiKey?              @relation(fields: [apiKeyId], references: [id], onDelete: Cascade) // API key that was used for this transaction
+  markUp             MarkUp?              @relation(fields: [markUpId], references: [id]) // MarkUp rate applied to this transaction
+  githubLink         GithubLink?          @relation(fields: [githubLinkId], references: [id]) // GitHub link associated with this transaction
+  spendPool          SpendPool?           @relation(fields: [spendPoolId], references: [id]) // Spend pool this transaction was charged against
+  userSpendPoolUsage UserSpendPoolUsage?  @relation(fields: [userSpendPoolUsageId], references: [id]) // User pool usage this transaction was charged against
+  transactionMetadata TransactionMetadata? @relation(fields: [transactionMetadataId], references: [id]) // Structured transaction metadata
 
-  @@map("llm_transactions")
+  @@map("transactions")
 }
 
 model SpendPool {
@@ -234,4 +235,24 @@ model UserSpendPoolUsage {
 
   @@unique([userId, spendPoolId]) // One usage record per user per spend pool
   @@map("user_spend_pool_usage")
+}
+
+
+model TransactionMetadata {
+  id           String    @id @default(uuid()) @db.Uuid
+  providerId   String
+  provider     String
+  model        String
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
+  prompt       String?
+  isArchived   Boolean   @default(false)
+  archivedAt   DateTime? @db.Timestamptz
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+
+  transactions Transaction[] // One-to-many relation back to transactions
+
+  @@map("transaction_metadata")
 }

@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { LlmTransactionMetadata, ModelUsage } from './types';
+import { ModelUsage } from './types';
 import { Prisma } from '@/generated/prisma';
 
 /**
@@ -26,7 +26,7 @@ export async function getModelUsage(
     },
     select: {
       cost: true,
-      metadata: true,
+      transactionMetadata: true,
     },
   });
 
@@ -34,7 +34,7 @@ export async function getModelUsage(
   const modelUsageMap = new Map<string, ModelUsage>();
 
   for (const transaction of transactions) {
-    const metadata = transaction.metadata as unknown as LlmTransactionMetadata;
+    const metadata = transaction.transactionMetadata;
 
     if (metadata && metadata.model) {
       const model = String(metadata.model);
@@ -108,7 +108,7 @@ export async function getModelUsageForPeriod(
     },
     select: {
       cost: true,
-      metadata: true,
+      transactionMetadata: true,
     },
   });
 
@@ -116,7 +116,7 @@ export async function getModelUsageForPeriod(
   const modelUsageMap = new Map<string, ModelUsage>();
 
   for (const transaction of transactions) {
-    const metadata = transaction.metadata as unknown as LlmTransactionMetadata;
+    const metadata = transaction.transactionMetadata;
 
     if (metadata && metadata.model) {
       const model = String(metadata.model);
@@ -201,7 +201,7 @@ export async function getModelUsageBatch(
     select: {
       echoAppId: true,
       cost: true,
-      metadata: true,
+      transactionMetadata: true,
     },
   });
 
@@ -219,8 +219,7 @@ export async function getModelUsageBatch(
     const modelUsageMap = new Map<string, ModelUsage>();
 
     for (const transaction of appTransactions) {
-      const metadata =
-        transaction.metadata as unknown as LlmTransactionMetadata;
+      const metadata = transaction.transactionMetadata;
 
       if (metadata && metadata.model) {
         const model = String(metadata.model);
