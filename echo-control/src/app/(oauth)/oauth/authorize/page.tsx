@@ -6,27 +6,13 @@ import { useUser } from '@/hooks/use-user';
 import { api } from '@/trpc/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-
-const authorizeParamsSchema = z.object({
-  client_id: z.string().min(1, 'client_id is required'),
-  redirect_uri: z.url('redirect_uri must be a valid URL'),
-  code_challenge: z.string().min(1, 'code_challenge is required'),
-  code_challenge_method: z.literal('S256', {
-    error: 'Only S256 code challenge method is supported',
-  }),
-  scope: z.string().min(1, 'scope is required'),
-  response_type: z.literal('code', {
-    error: 'Only authorization code flow (response_type=code) is supported',
-  }),
-  state: z.string().optional(),
-});
-
-type AuthorizeParams = z.infer<typeof authorizeParamsSchema>;
+import { authorizeParamsSchema } from '../../_lib/authorize';
+import { AuthorizeButtons } from './_components/buttons';
 
 export default async function OAuthAuthorizePage({
   searchParams,
 }: {
-  searchParams: Promise<AuthorizeParams>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await searchParams;
 
@@ -45,7 +31,10 @@ export default async function OAuthAuthorizePage({
   const authParams = parseResult.data;
 
   const session = await auth();
-  const redirectUrl = new URL('/oauth/authorize');
+  const redirectUrl = new URL(
+    '/oauth/authorize',
+    process.env.ECHO_CONTROL_APP_BASE_URL
+  );
   for (const [key, value] of Object.entries(authParams)) {
     redirectUrl.searchParams.set(key, value);
   }
@@ -66,47 +55,8 @@ export default async function OAuthAuthorizePage({
 
   const {
     name,
-    description,
     owner: { name: ownerName },
   } = appDetails;
-
-  const handleAuthorize = async () => {
-    try {
-      // Call the authorization API endpoint
-      const response = await fetch('/api/oauth/authorize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authParams),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        // Redirect to the provided redirect URI with authorization code
-        window.location.href = result.redirect_url;
-      } else {
-        setError(result.error_description || 'Authorization failed');
-      }
-    } catch {
-      setError('Failed to authorize application');
-    }
-  };
-
-  const handleDeny = () => {
-    if (!authParams) return;
-
-    // Redirect back with error
-    const redirectUrl = new URL(authParams.redirect_uri);
-    redirectUrl.searchParams.set('error', 'access_denied');
-    redirectUrl.searchParams.set(
-      'error_description',
-      'User denied authorization'
-    );
-    if (authParams.state) {
-      redirectUrl.searchParams.set('state', authParams.state);
-    }
-    window.location.href = redirectUrl.toString();
-  };
 
   const scopes = authParams.scope.split(' ');
 
@@ -205,26 +155,7 @@ export default async function OAuthAuthorizePage({
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Link href={redirectUrl.toString()}>
-                <GlassButton
-                  onClick={handleDeny}
-                  disabled={isAuthorizing}
-                  variant="secondary"
-                  className="flex-1"
-                >
-                  Deny
-                </GlassButton>
-              </Link>
-              <GlassButton
-                onClick={handleAuthorize}
-                disabled={isAuthorizing}
-                variant="primary"
-                className="flex-1"
-              >
-                {isAuthorizing ? 'Authorizing...' : 'Authorize'}
-              </GlassButton>
-            </div>
+            <AuthorizeButtons params={authParams} />
 
             <p className="text-xs text-muted-foreground text-center">
               By authorizing, you allow this application to access your Echo
