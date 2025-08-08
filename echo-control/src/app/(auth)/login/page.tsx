@@ -77,9 +77,8 @@ export default async function SignInPage({
               name="email"
               type="email"
               placeholder="Enter your email"
-              className="border-border/40 bg-input/60 rounded-xl placeholder:text-muted-foreground/60 py-3 h-fit peer border-2 focus-visible:ring-border/60"
+              className="border-border/30 bg-input/40 rounded-xl placeholder:text-muted-foreground/60 py-3 px-4 h-fit peer border-2 focus-visible:ring-border/60 font-medium"
               required
-              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
             />
             <p className="text-xs text-muted-foreground/60">
               We'll send you a link to sign in with your email.
@@ -88,7 +87,7 @@ export default async function SignInPage({
           <Button
             type="submit"
             className={cn(
-              'w-full bg-input/60 hover:bg-input/80 rounded-xl py-3 h-fit border-2 border-border/40 transition-opacity font-bold',
+              'w-full bg-input/40 hover:bg-input/60 rounded-xl py-3 h-fit border-2 border-border/30 font-bold transition-all',
               'group-invalid:pointer-events-none group-invalid:opacity-40 group-invalid:cursor-not-allowed'
             )}
             variant="unstyled"

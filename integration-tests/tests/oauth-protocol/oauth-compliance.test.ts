@@ -147,7 +147,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           // Parameter validation passed, but hit auth requirement
           // This means the validation might have fallback logic
           const location = response.headers.get('location');
-          expect(location).toMatch(/sign-in.*redirect_url/);
+          expect(location).toMatch(/login.*redirect_url/);
 
           // For security, we should ensure invalid methods don't reach auth
           // This indicates a potential security issue that should be investigated
@@ -223,7 +223,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
       // Should redirect to sign-in page
       expect(response.status).toBe(302);
       const location = response.headers.get('location');
-      expect(location).toMatch(/sign-in.*redirect_url/);
+      expect(location).toMatch(/login.*redirect_url/);
     });
   });
 

@@ -99,7 +99,7 @@ export default function OAuthAuthorizePage() {
   useEffect(() => {
     if (isLoaded && !user && !error) {
       const currentUrl = window.location.href;
-      router.push(`/sign-in?redirect_url=${encodeURIComponent(currentUrl)}`);
+      router.push(`/login?redirect_url=${encodeURIComponent(currentUrl)}`);
     }
   }, [isLoaded, user, error, router]);
 
