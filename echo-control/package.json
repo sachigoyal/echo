@@ -14,7 +14,8 @@
     "prisma:studio": "pnpx prisma studio",
     "copy:model-prices": "cp ../echo-server/model_prices.json ./model_prices.json",
     "seed-app": "tsx scripts/seed-app-usage.ts",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
