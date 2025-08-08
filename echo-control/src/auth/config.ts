@@ -1,4 +1,4 @@
-import { emailProviders, oauthProviders, testProviders } from './providers';
+import { oauthProviders, testProviders } from './providers';
 
 import type { DefaultSession, NextAuthConfig } from 'next-auth';
 import type { DefaultJWT } from 'next-auth/jwt';
