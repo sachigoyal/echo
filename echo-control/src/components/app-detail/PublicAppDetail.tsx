@@ -9,11 +9,9 @@ import {
   GlobalActivityChart,
   formatNumber,
 } from './AppDetailShared';
-import { GlobalTopModelsCard } from './GlobalTopModelsCard';
 import { UserCountCard } from './UserCountCard';
 import { GlobalModelsCard } from './GlobalModelsCard';
 import { AppHomepageCard } from './AppHomepageCard';
-import { PublicRecentActivityCard } from './RecentActivityDetail';
 import JoinAppModal from '../JoinAppModal';
 
 import { useUser } from '@/hooks/use-user';
@@ -85,10 +83,10 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
 
       <div>
         <p className="text-sm font-medium text-muted-foreground mb-1">
-          Total Requests
+          Total Spending
         </p>
         <p className="text-lg font-bold text-foreground">
-          {formatNumber(app.stats?.globalTotalTransactions || 0)}
+          {formatCurrency(app.stats?.globalTotalRevenue || 0)}
         </p>
       </div>
 
@@ -103,20 +101,25 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
 
       <div>
         <p className="text-sm font-medium text-muted-foreground mb-1">
-          Total Spending
-        </p>
-        <p className="text-lg font-bold text-foreground">
-          {formatCurrency(app.stats?.globalTotalRevenue || 0)}
-        </p>
-      </div>
-
-      <div>
-        <p className="text-sm font-medium text-muted-foreground mb-1">
           Join App
         </p>
         <div className="text-sm text-foreground font-bold mt-2">
           {joinActions}
         </div>
+      </div>
+      <div>
+        <p className="text-sm font-medium text-muted-foreground mb-1">
+          Free Tier Available
+        </p>
+        <p className="text-lg font-bold text-foreground">
+          {formatCurrency(app.stats?.globalFreeTierSpendPoolBalance || 0)}
+        </p>
+
+        <p className="text-sm text-muted-foreground">
+          {app.stats?.globalFreetierSpendPoolPerUserLimit
+            ? `Per user spend limit: ${formatCurrency(app.stats?.globalFreetierSpendPoolPerUserLimit)}`
+            : 'No per user spend limit'}
+        </p>
       </div>
     </div>
   );
@@ -145,15 +148,6 @@ export function PublicAppDetail({ app }: PublicAppDetailProps) {
           <AppHomepageCard app={app} />
           <UserCountCard app={app} />
           <GlobalModelsCard app={app} />
-        </div>
-
-        {/* Second Row - Activity and Model Usage */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Recent Activity Card */}
-          <PublicRecentActivityCard app={app} title="Global Recent Activity" />
-
-          {/* Models Usage Card */}
-          <GlobalTopModelsCard app={app} title="Global Model Usage" />
         </div>
       </div>
 
