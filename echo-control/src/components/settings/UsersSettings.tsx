@@ -113,9 +113,9 @@ export default function UsersSettings({ appId }: UsersSettingsProps) {
                 <div className="flex items-center space-x-4 min-w-0 flex-1">
                   {/* User Avatar */}
                   <div className="shrink-0">
-                    {user.profilePictureUrl ? (
+                    {user.image ? (
                       <Image
-                        src={user.profilePictureUrl}
+                        src={user.image}
                         alt={user.name || user.email}
                         width={40}
                         height={40}

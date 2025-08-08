@@ -27,6 +27,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'sbaaxpd5ro061s4a.public.blob.vercel-storage.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+        pathname: '**',
+      },
     ],
   },
   webpack: (config, { isServer }) => {
