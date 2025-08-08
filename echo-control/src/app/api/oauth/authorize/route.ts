@@ -169,7 +169,7 @@ export async function GET(req: NextRequest) {
 
       // Normal flow: preserve the original authorize URL so user can return after sign-in
       const currentUrl = req.url;
-      const signInUrl = new URL('/sign-in', req.nextUrl.origin);
+      const signInUrl = new URL('/login', req.nextUrl.origin);
       signInUrl.searchParams.set('redirect_url', currentUrl);
 
       return NextResponse.redirect(signInUrl.toString(), 302);

@@ -38,7 +38,7 @@ export default function EchoSplashPage() {
             </p>
             <div className="mt-10 flex justify-center gap-4">
               <Link
-                href="/sign-in"
+                href="/login"
                 className="px-8 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-lg transition-all duration-200 flex items-center gap-2 hover:gap-3"
               >
                 Get Started <ArrowRightIcon className="h-5 w-5" />
@@ -246,7 +246,7 @@ function Root() {
                   </div>
                   <div className="mt-6">
                     <Link
-                      href="/sign-in"
+                      href="/login"
                       className="inline-block w-full text-center px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200"
                     >
                       Start Building with Echo
@@ -367,7 +367,7 @@ function Root() {
                     </div>
                     <div className="mt-6">
                       <Link
-                        href="/sign-in"
+                        href="/login"
                         className="inline-block w-full text-center px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-medium transition-all duration-200"
                       >
                         Access Your Echo Apps
@@ -402,7 +402,7 @@ function Root() {
               </p>
             </div>
             <div className="flex space-x-8">
-              <Link href="/sign-in" className="text-gray-300 hover:text-white">
+              <Link href="/login" className="text-gray-300 hover:text-white">
                 Sign In
               </Link>
               <a

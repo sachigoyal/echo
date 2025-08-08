@@ -6,7 +6,8 @@ import { NextResponse } from 'next/server';
 const isPublicRoute = createPathMatcher([
   // public pages
   '/',
-  '/sign-in(.*)',
+  '/login',
+  '/verify-email',
   // public routes
   '/api/auth/(.*)',
   '/auth/signin(.*)',
@@ -34,7 +35,7 @@ export default middleware(req => {
       // Let the request continue so the API or 404 handler can respond
       return NextResponse.next();
     }
-    const newUrl = new URL('/sign-in', req.nextUrl.origin);
+    const newUrl = new URL('/login', req.nextUrl.origin);
     const redirectUrl = `${req.nextUrl.pathname}${req.nextUrl.search}`;
     newUrl.searchParams.set('redirect_url', redirectUrl);
     return Response.redirect(newUrl);

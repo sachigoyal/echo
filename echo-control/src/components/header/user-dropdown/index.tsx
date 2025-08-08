@@ -115,7 +115,8 @@ const UserAvatar = ({ user, className }: UserAvatarProps) => {
     <Avatar className={className}>
       {user?.image ? <AvatarImage src={user.image} /> : <AvatarImage />}
       <AvatarFallback className="bg-transparent">
-        {user?.name?.charAt(0) || user?.email?.charAt(0)}
+        {user?.name?.charAt(0).toUpperCase() ||
+          user?.email?.charAt(0).toUpperCase() || <User className="size-4" />}
       </AvatarFallback>
     </Avatar>
   );

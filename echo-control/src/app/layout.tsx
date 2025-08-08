@@ -38,7 +38,7 @@ export default function RootLayout({
               enableSystem={true}
             >
               <Header />
-              <main className="w-screen overflow-x-hidden pt-16 h-full">
+              <main className="w-screen overflow-x-hidden pt-12 md:pt-16 h-full">
                 {children}
               </main>
             </ThemeProvider>
