@@ -7,7 +7,7 @@ import Header from '@/components/header';
 
 import type { Metadata } from 'next';
 
-import './globals.css';
+import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Echo',
