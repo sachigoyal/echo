@@ -1,4 +1,4 @@
-import { providers, testProviders } from './providers';
+import { emailProviders, oauthProviders, testProviders } from './providers';
 
 import type { DefaultSession, NextAuthConfig } from 'next-auth';
 import type { DefaultJWT } from 'next-auth/jwt';
@@ -27,9 +27,14 @@ declare module 'next-auth/jwt' {
 const IS_TEST_MODE = process.env.INTEGRATION_TEST_MODE === 'true';
 
 export const authConfig = {
-  providers: IS_TEST_MODE ? testProviders : providers,
+  providers: IS_TEST_MODE ? testProviders : oauthProviders,
   // Only allow skipCSRFCheck in test mode
   skipCSRFCheck: IS_TEST_MODE ? skipCSRFCheck : undefined,
+  pages: {
+    signIn: '/login',
+    signOut: '/logout',
+    verifyRequest: '/verify-email',
+  },
   callbacks: {
     jwt: ({ token, user }) => {
       if (user) {

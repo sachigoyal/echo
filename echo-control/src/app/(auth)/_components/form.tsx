@@ -1,5 +1,5 @@
 import { signIn } from '@/auth';
-import { providers } from '@/auth/providers';
+import { oauthProviders } from '@/auth/providers';
 import { ProviderButton } from '../_components/provider-button';
 import { Logo } from '@/components/ui/logo';
 import Link from 'next/link';
@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { redirect } from 'next/navigation';
 
 interface Props {
   redirectUrl?: string;
@@ -57,7 +58,7 @@ export const SignInForm: React.FC<Props> = ({ redirectUrl, isSignUp }) => {
           }}
           className="flex flex-col sm:flex-row gap-2 w-full items-center"
         >
-          {providers.map(provider => {
+          {oauthProviders.map(provider => {
             return <ProviderButton key={provider.id} provider={provider} />;
           })}
         </form>
@@ -66,7 +67,24 @@ export const SignInForm: React.FC<Props> = ({ redirectUrl, isSignUp }) => {
           <span className="text-muted-foreground text-sm">or</span>
           <Separator className="flex-1" />
         </div>
-        <form className="flex flex-col gap-4 w-full group">
+        <form
+          className="flex flex-col gap-4 w-full group"
+          action={async formData => {
+            'use server';
+            const email = formData.get('email');
+            if (!email || typeof email !== 'string') {
+              throw new Error('Email is required');
+            }
+
+            await signIn('resend', {
+              email,
+              redirectTo: redirectUrl || '/',
+              redirect: false,
+            });
+
+            return redirect('/verify-email');
+          }}
+        >
           <div className="flex flex-col gap-1">
             <label
               htmlFor="email"

@@ -8,6 +8,7 @@ const isPublicRoute = createPathMatcher([
   '/',
   '/login',
   '/signup',
+  '/verify-email',
   // public routes
   '/api/auth/(.*)',
   '/auth/signin(.*)',
