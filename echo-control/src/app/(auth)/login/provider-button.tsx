@@ -4,19 +4,18 @@ import { OAuthProvider } from '@/auth/types';
 import { SiGoogle, SiGithub } from '@icons-pack/react-simple-icons';
 
 export const ProviderButton = ({ provider }: { provider: OAuthProvider }) => {
+  console.log(provider);
   return (
-    <div className="w-full md:w-auto md:flex-1 bg-background rounded-xl">
-      <Button
-        type="submit"
-        name="provider"
-        value={provider.id}
-        className="border-2 border-border/40 bg-input/60 hover:bg-input/80 rounded-xl size-fit px-5 py-3 font-bold flex-1 w-full"
-        variant="unstyled"
-      >
-        <ProviderIcon provider={provider} />
-        Login with {provider.name}
-      </Button>
-    </div>
+    <Button
+      type="submit"
+      name="provider"
+      value={provider.id}
+      className="border-2 border-border rounded-xl size-fit px-5 py-3 font-bold flex-1 w-full"
+      variant="secondary"
+    >
+      <ProviderIcon provider={provider} />
+      Login with {provider.name}
+    </Button>
   );
 };
 
