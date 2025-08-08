@@ -144,7 +144,7 @@ ${rootComponentCode}`;
                   0. Create a new React app
                 </CardTitle>
                 <Button
-                  variant="secondaryOutline"
+                  variant="primaryOutline"
                   size="sm"
                   onClick={() =>
                     handleCopyCode(createReactAppCommand, 'create-react-app')
@@ -185,7 +185,7 @@ ${rootComponentCode}`;
                   1. Install Dependencies
                 </CardTitle>
                 <Button
-                  variant="secondaryOutline"
+                  variant="primaryOutline"
                   size="sm"
                   onClick={() => handleCopyCode(installCommand, 'install-deps')}
                   className={`transition-all duration-300 ${isCopied('install-deps') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
@@ -223,7 +223,7 @@ ${rootComponentCode}`;
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                 <CardTitle className="text-lg">2. Import Libraries</CardTitle>
                 <Button
-                  variant="secondaryOutline"
+                  variant="primaryOutline"
                   size="sm"
                   onClick={() => handleCopyCode(importsCode, 'imports')}
                   className={`transition-all duration-300 ${isCopied('imports') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
@@ -261,7 +261,7 @@ ${rootComponentCode}`;
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                 <CardTitle className="text-lg">3. Configure Echo</CardTitle>
                 <Button
-                  variant="secondaryOutline"
+                  variant="primaryOutline"
                   size="sm"
                   onClick={() => handleCopyCode(configCode, 'config')}
                   className={`transition-all duration-300 ${isCopied('config') ? 'bg-green-50 border-green-200 text-green-700 scale-105' : 'hover:scale-105'}`}
@@ -300,7 +300,7 @@ ${rootComponentCode}`;
                   4. Create Chat Interface
                 </CardTitle>
                 <Button
-                  variant="secondaryOutline"
+                  variant="primaryOutline"
                   size="sm"
                   onClick={() =>
                     handleCopyCode(chatInterfaceCode, 'chat-interface')
@@ -342,7 +342,7 @@ ${rootComponentCode}`;
                   5. Set Up Root Component
                 </CardTitle>
                 <Button
-                  variant="secondaryOutline"
+                  variant="primaryOutline"
                   size="sm"
                   onClick={() =>
                     handleCopyCode(rootComponentCode, 'root-component')

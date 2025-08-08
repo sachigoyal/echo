@@ -233,3 +233,5 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = React.memo(
     );
   }
 );
+
+FlickeringGrid.displayName = 'FlickeringGrid';
