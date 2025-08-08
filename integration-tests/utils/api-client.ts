@@ -1,5 +1,9 @@
 import { TEST_CONFIG } from '../config/index.js';
-import { Balance, EchoClient } from '@zdql/echo-typescript-sdk';
+import {
+  Balance,
+  EchoClient,
+  GetFreeBalanceResponse,
+} from '@zdql/echo-typescript-sdk';
 
 export interface EchoControlApiClient {
   baseUrl: string;
@@ -236,7 +240,10 @@ export class EchoControlApiClient {
     payment_url: string;
     payment_id: string;
   }> {
-    const echoClient = new EchoClient({ apiKey: authToken });
+    const echoClient = new EchoClient({
+      apiKey: authToken,
+      baseUrl: this.baseUrl,
+    });
     const response = await echoClient.createPaymentLink({
       amount: params.amount,
       description: params.description ?? '',
@@ -246,6 +253,17 @@ export class EchoControlApiClient {
       payment_url: response.paymentLink.url,
       payment_id: response.paymentLink.id,
     };
+  }
+
+  async getFreeTierBalance(
+    authToken: string,
+    echoAppId: string
+  ): Promise<GetFreeBalanceResponse> {
+    const echoClient = new EchoClient({
+      apiKey: authToken,
+      baseUrl: this.baseUrl,
+    });
+    return await echoClient.getFreeBalance(echoAppId);
   }
 }
 
