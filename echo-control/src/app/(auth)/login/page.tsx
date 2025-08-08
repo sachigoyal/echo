@@ -35,7 +35,7 @@ export default async function SignInPage({
   return (
     <div className="relative size-full flex flex-col items-center justify-center pb-12 md:pb-16 gap-4">
       <FlickeringGrid
-        className="absolute inset-0 opacity-25 pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         frameRate={8}
       />
       <div className="w-full max-w-md gap-6 flex flex-col items-center z-10 p-4">

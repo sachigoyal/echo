@@ -15,13 +15,15 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export const authorizeParamsSchema = z.object({
-  client_id: z.string().min(1, 'client_id is required'),
+  client_id: z.string('missing client_id').min(1, 'client_id is required'),
   redirect_uri: z.url('redirect_uri must be a valid URL'),
-  code_challenge: z.string().min(1, 'code_challenge is required'),
+  code_challenge: z
+    .string('missing code_challenge')
+    .min(1, 'code_challenge is required'),
   code_challenge_method: z.literal('S256', {
     error: 'Only S256 code challenge method is supported',
   }),
-  scope: z.string().min(1, 'scope is required'),
+  scope: z.string('missing scope').min(1, 'scope is required'),
   response_type: z.literal('code', {
     error: 'Only authorization code flow (response_type=code) is supported',
   }),

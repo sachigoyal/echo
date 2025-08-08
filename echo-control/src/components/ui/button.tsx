@@ -22,6 +22,9 @@ const buttonVariants = cva(
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         success: 'bg-green-600 text-white shadow-sm hover:bg-green-700',
+        turbo:
+          'relative bg-transparent text-primary font-bold shadow-xs border-2 border-primary animate-shimmer bg-[linear-gradient(90deg,rgba(0,0,0,0)_0%,var(--primary)_50%,rgba(0,0,0,0)_100%)] bg-[length:200%_100%] hover:bg-accent hover:text-accent-foreground before:content-[""] before:absolute -before:inset-2 before:rounded-md before:pointer-events-none before:border-2 before:bg-red-500 before:animate-shimmer shadow-lg',
+
         unstyled: '',
       },
       size: {

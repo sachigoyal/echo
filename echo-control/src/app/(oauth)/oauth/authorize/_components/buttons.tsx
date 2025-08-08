@@ -8,6 +8,7 @@ import { AuthorizeParams } from '@/app/(oauth)/_lib/authorize';
 
 import { authorize } from '../_actions/authorize';
 import { Button } from '@/components/ui/button';
+import { TurboButton } from '@/components/ui/turbo-button';
 
 interface Props {
   params: AuthorizeParams;
@@ -27,17 +28,17 @@ export const AuthorizeButtons: React.FC<Props> = ({ params }) => {
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex gap-3 w-full">
+    <div className="flex flex-col gap-1 w-full">
+      <div className="flex gap-2 w-full">
         <Link href={denyUrl.toString()} className="flex-1">
-          <Button variant="secondary" className="w-full" disabled={pending}>
+          <Button variant="outline" className="w-full" disabled={pending}>
             Cancel
           </Button>
         </Link>
         <form action={action} className="flex-1">
-          <Button type="submit" disabled={pending} className="w-full">
+          <TurboButton type="submit" disabled={pending} className="w-full">
             {pending ? 'Authorizing...' : 'Authorize'}
-          </Button>
+          </TurboButton>
         </form>
       </div>
       {state?.error && (

@@ -1,0 +1,41 @@
+import { BrainCircuit, Icon, User } from 'lucide-react';
+
+interface Props {
+  scopes: string[];
+}
+
+export const Scopes: React.FC<Props> = ({ scopes }) => {
+  return (
+    <ul className="space-y-1">
+      {scopes.map(scope => (
+        <Scope key={scope} scope={scope} />
+      ))}
+    </ul>
+  );
+};
+
+const Scope = ({ scope }: { scope: string }) => {
+  const data = scopeData[scope as keyof typeof scopeData];
+
+  if (!data) {
+    return null;
+  }
+
+  return (
+    <li className="flex items-center gap-2">
+      <data.icon className="size-4" />
+      {data.name}
+    </li>
+  );
+};
+
+const scopeData = {
+  'llm:invoke': {
+    name: 'Make LLM API requests on your behalf',
+    icon: BrainCircuit,
+  },
+  offline_access: {
+    name: "Read your account when you're not online",
+    icon: User,
+  },
+};
