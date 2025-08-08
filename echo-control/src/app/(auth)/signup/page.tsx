@@ -1,6 +1,6 @@
 import { SignInForm } from '../_components/form';
 
-export default async function SignInPage({
+export default async function SignUpPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -10,5 +10,5 @@ export default async function SignInPage({
   const redirectTo =
     redirect_url && typeof redirect_url === 'string' ? redirect_url : undefined;
 
-  return <SignInForm redirectUrl={redirectTo} isSignUp={false} />;
+  return <SignInForm redirectUrl={redirectTo} isSignUp={true} />;
 }
