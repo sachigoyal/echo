@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTRPCPublicApps } from '@/hooks';
 import AppCard from './AppCard';
 import { Marquee } from './ui/marquee';
-import { Skeleton } from './skeleton';
+import { Skeleton } from './ui/skeleton';
 
 export const PopularApps: React.FC = () => {
   // Use TRPC hook to fetch public apps with a large limit for marquee
