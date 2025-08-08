@@ -4,9 +4,9 @@ import { Prisma, Transaction } from '@/generated/prisma';
 import {
   getGlobalStatistics,
   getGlobalStatisticsBatch,
-} from './globalStatistics';
-import { getAppActivity, getAppActivityBatch } from './appActivity';
-import { getModelUsage, getModelUsageBatch } from './modelUsage';
+} from './global-statistics';
+import { getAppActivity, getAppActivityBatch } from './app-activity';
+import { getModelUsage, getModelUsageBatch } from './model-usage';
 import { serializeTransactions } from '@/lib/utils/serialization';
 
 const RECENT_TRANSACTIONS_LIMIT = 10;

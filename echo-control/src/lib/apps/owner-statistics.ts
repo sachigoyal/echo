@@ -4,7 +4,7 @@ import { Prisma, Transaction } from '@/generated/prisma';
 import {
   getCustomerStatistics,
   getCustomerStatisticsBatch,
-} from './customerStatistics';
+} from './customer-statistics';
 import { serializeTransactions } from '@/lib/utils/serialization';
 
 const RECENT_TRANSACTIONS_LIMIT = 10;

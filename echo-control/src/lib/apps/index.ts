@@ -8,7 +8,7 @@ export {
   isOwnerApp,
   isCustomerApp,
   isPublicApp,
-} from './getApp';
+} from './get-app';
 
 // Export public functions
 export { getPublicEchoApp, getAllPublicEchoApps } from './public';
@@ -22,17 +22,20 @@ export {
 export {
   getGlobalStatistics,
   getGlobalStatisticsBatch,
-} from './globalStatistics';
+} from './global-statistics';
 export {
   getCustomerStatistics,
   getCustomerStatisticsBatch,
-} from './customerStatistics';
-export { getOwnerStatistics, getOwnerStatisticsBatch } from './ownerStatistics';
+} from './customer-statistics';
+export {
+  getOwnerStatistics,
+  getOwnerStatisticsBatch,
+} from './owner-statistics';
 
 // Export batch functions for activity and model usage
 export {
   getAppActivity,
   getAppActivityBatch,
   transformActivityToChartData,
-} from './appActivity';
-export { getModelUsage, getModelUsageBatch } from './modelUsage';
+} from './app-activity';
+export { getModelUsage, getModelUsageBatch } from './model-usage';

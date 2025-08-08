@@ -1,8 +1,12 @@
 import { db } from '@/lib/db';
 import { GlobalStatistics } from './types';
 import { Prisma } from '@/generated/prisma';
-import { getAppActivity, getAppActivityBatch } from './appActivity';
-import { getModelUsage, getModelUsageBatch } from './modelUsage';
+import { getAppActivity, getAppActivityBatch } from './app-activity';
+import { getModelUsage, getModelUsageBatch } from './model-usage';
+import {
+  getGlobalUserSpendInfoForApp,
+  getGlobalUserSpendInfoForAppBatch,
+} from '../spend-pools/fetch-user-spend';
 
 /**
  * Get global statistics for an echo app
@@ -39,10 +43,12 @@ export async function getGlobalStatistics(
   `;
 
   // Get activity data and model usage
-  const [globalActivityData, globalModelUsage] = await Promise.all([
-    getAppActivity(echoAppId, 7, undefined, client),
-    getModelUsage(echoAppId, undefined, client),
-  ]);
+  const [globalActivityData, globalModelUsage, userSpendStatistics] =
+    await Promise.all([
+      getAppActivity(echoAppId, 7, undefined, client),
+      getModelUsage(echoAppId, undefined, client),
+      getGlobalUserSpendInfoForApp(echoAppId, client),
+    ]);
 
   return {
     globalTotalTransactions: Number(aggregatedResult?.totalTransactions || 0),
@@ -52,6 +58,8 @@ export async function getGlobalStatistics(
     globalTotalOutputTokens: Number(aggregatedResult?.totalOutputTokens || 0),
     globalActivityData,
     globalModelUsage,
+    globalUserSpendStatistics: userSpendStatistics.userSpendInfo,
+    globalFreeTierSpendPoolBalance: userSpendStatistics.spendPoolBalance,
   };
 }
 
@@ -100,11 +108,14 @@ export async function getGlobalStatisticsBatch(
   `;
 
   // Batch fetch activity data and model usage for all apps
-  const [activityDataMap, modelUsageMap] = await Promise.all([
-    getAppActivityBatch(echoAppIds, 7, undefined, client),
-    getModelUsageBatch(echoAppIds, undefined, client),
-  ]);
+  const [activityDataMap, modelUsageMap, userSpendStatisticsMap] =
+    await Promise.all([
+      getAppActivityBatch(echoAppIds, 7, undefined, client),
+      getModelUsageBatch(echoAppIds, undefined, client),
+      getGlobalUserSpendInfoForAppBatch(echoAppIds, client),
+    ]);
 
+  // Batch fetch user spend statistics for all apps
   // Create result map with aggregated data
   const resultMap = new Map<string, GlobalStatistics>();
 
@@ -127,6 +138,10 @@ export async function getGlobalStatisticsBatch(
       globalTotalOutputTokens: Number(aggregated?.totalOutputTokens || 0),
       globalActivityData,
       globalModelUsage,
+      globalUserSpendStatistics:
+        userSpendStatisticsMap.get(appId)?.userSpendInfo || [],
+      globalFreeTierSpendPoolBalance:
+        userSpendStatisticsMap.get(appId)?.spendPoolBalance || 0,
     });
   }
 

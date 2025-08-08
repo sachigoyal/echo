@@ -1,7 +1,17 @@
 import { db } from '../db';
 import type { SpendPool, Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
-import { SpendPoolData, UpdateSpendPoolRequest } from './types';
+import { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo } from './types';
+
+// Export types
+export type { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo };
+
+// Export functions from fetch-user-spend.ts
+export {
+  getUserSpendInfo,
+  getGlobalUserSpendInfoForApp,
+  getGlobalUserSpendInfoForAppBatch,
+} from './fetch-user-spend';
 
 /**
  * Internal function to fund a spend pool within an existing transaction
