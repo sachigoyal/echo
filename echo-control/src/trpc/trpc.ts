@@ -1,6 +1,5 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
-import { headers } from 'next/headers';
 import { ZodError } from 'zod';
 import { auth } from '@/auth';
 import { Session } from 'next-auth';
@@ -16,13 +15,12 @@ export interface Context {
 /**
  * Create context for each request
  */
-export async function createContext(): Promise<Context> {
+export async function createTRPCContext(headers: Headers): Promise<Context> {
   const session = await auth();
-  const requestHeaders = await headers();
 
   return {
     session,
-    headers: requestHeaders,
+    headers,
   };
 }
 
@@ -43,12 +41,22 @@ const t = initTRPC.context<Context>().create({
   },
 });
 
-/**
- * Export reusable router and procedure helpers
- */
-export const createTRPCRouter = t.router;
-export const publicProcedure = t.procedure;
+// ----------------------------
+// Export reusable router and procedure helpers
+// ----------------------------
+
 export const createCallerFactory = t.createCallerFactory;
+export const createTRPCRouter = t.router;
+export const middleware = t.middleware;
+
+// ----------------------------
+// Procedures
+// ----------------------------
+
+/**
+ * Public procedure that does not require authentication
+ */
+export const publicProcedure = t.procedure;
 
 /**
  * Protected procedure that requires authentication
@@ -64,8 +72,3 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     },
   });
 });
-
-/**
- * Middleware for rate limiting, logging, etc.
- */
-export const middleware = t.middleware;
