@@ -62,8 +62,8 @@ export type GlobalStatistics = {
   globalTotalOutputTokens: number;
   globalActivityData: AppActivity[];
   globalModelUsage: ModelUsage[];
-  globalUserSpendStatistics: UserSpendStatistics[];
   globalFreeTierSpendPoolBalance: number;
+  globalFreetierSpendPoolPerUserLimit: number | null;
 };
 
 export type AppGithubLink = Omit<
@@ -93,6 +93,7 @@ export type OwnerStatistics = CustomerStatistics &
   GlobalStatistics & {
     globalApiKeys: CustomerApiKey[];
     recentGlobalTransactions: SerializedTransaction[];
+    globalUserSpendStatistics: UserSpendStatistics[];
   };
 
 /** Echo App Type Hierarchy:

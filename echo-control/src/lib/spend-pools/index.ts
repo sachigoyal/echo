@@ -8,9 +8,10 @@ export type { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo };
 
 // Export functions from fetch-user-spend.ts
 export {
-  getUserSpendInfo,
   getGlobalUserSpendInfoForApp,
   getGlobalUserSpendInfoForAppBatch,
+  getCustomerSpendInfoForApp,
+  getCustomerSpendInfoForAppBatch,
 } from './fetch-user-spend';
 
 /**

@@ -8,6 +8,10 @@ import {
 import { getAppActivity, getAppActivityBatch } from './app-activity';
 import { getModelUsage, getModelUsageBatch } from './model-usage';
 import { serializeTransactions } from '@/lib/utils/serialization';
+import {
+  getCustomerSpendInfoForAppBatch,
+  getCustomerSpendInfoForApp,
+} from '../spend-pools/fetch-user-spend';
 
 const RECENT_TRANSACTIONS_LIMIT = 10;
 
@@ -113,6 +117,12 @@ export async function getCustomerStatistics(
   // Get personal model usage
   const personalModelUsage = await getModelUsage(echoAppId, userId, client);
 
+  const personalUserSpendStatistics = await getCustomerSpendInfoForApp(
+    echoAppId,
+    userId,
+    client
+  );
+
   return {
     // Spread global statistics
     ...globalStats,
@@ -126,6 +136,7 @@ export async function getCustomerStatistics(
     personalActivityData,
     personalApiKeys: apiKeys,
     personalTotalTransactions,
+    personalUserSpendStatistics: personalUserSpendStatistics.userSpendInfo,
   };
 }
 
@@ -245,6 +256,12 @@ export async function getCustomerStatisticsBatch(
     client
   );
 
+  const personalUserSpendStatisticsMap = await getCustomerSpendInfoForAppBatch(
+    userId,
+    echoAppIds,
+    client
+  );
+
   // Create lookup map for personal aggregated results
   const personalAggregatedMap = new Map(
     personalAggregatedResults.map(result => [result.echoAppId, result])
@@ -260,6 +277,16 @@ export async function getCustomerStatisticsBatch(
     const personalActivityData = personalActivityMap.get(appId) || [];
     const personalModelUsage = personalModelUsageMap.get(appId) || [];
     const recentTransactions = recentTransactionsMap.get(appId) || [];
+    const personalUserSpendStatistics = personalUserSpendStatisticsMap.get(
+      appId
+    )?.userSpendInfo || {
+      userId,
+      echoAppId: appId,
+      spendPoolId: null,
+      amountSpent: 0,
+      spendLimit: null,
+      amountLeft: null,
+    };
 
     if (!globalStats) {
       console.error(`Missing global stats for app ${appId}`);
@@ -285,6 +312,7 @@ export async function getCustomerStatisticsBatch(
       personalTotalTransactions: Number(
         personalAggregated?.totalTransactions || 0
       ),
+      personalUserSpendStatistics,
     });
   }
 

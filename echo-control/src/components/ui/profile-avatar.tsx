@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarImage } from './avatar';
 
 interface ProfileAvatarProps {
   name: string;
@@ -11,7 +11,6 @@ interface ProfileAvatarProps {
   className?: string;
   alt?: string;
   rounded?: 'full' | 'lg' | 'xl' | '2xl';
-  onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
 const sizeMap = {
@@ -37,38 +36,30 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   className,
   alt,
   rounded = 'full',
-  onError,
 }) => {
-  const [imageError, setImageError] = React.useState(false);
   const sizeClasses = sizeMap[size];
   const roundedClass = roundedMap[rounded];
 
   // Get the first character of the name, fallback to '?'
   const initial = (name || '').charAt(0).toUpperCase() || '?';
 
-  const handleImageError = (
-    e: React.SyntheticEvent<HTMLImageElement, Event>
-  ) => {
-    setImageError(true);
-    onError?.(e);
-  };
-
   // If we have a valid src and no error, show the image
-  if (src && !imageError) {
+  if (src) {
     return (
-      <Image
-        src={src}
-        alt={alt || `${name} profile`}
-        width={112}
-        height={112}
-        className={cn(
-          sizeClasses.container,
-          roundedClass,
-          'object-cover shrink-0',
-          className
-        )}
-        onError={handleImageError}
-      />
+      <Avatar>
+        <AvatarImage
+          src={src}
+          width={112}
+          height={112}
+          alt={alt || `${name} profile`}
+          className={cn(
+            sizeClasses.container,
+            roundedClass,
+            'object-cover shrink-0',
+            className
+          )}
+        />
+      </Avatar>
     );
   }
 

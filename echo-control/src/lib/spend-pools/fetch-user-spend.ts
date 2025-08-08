@@ -2,18 +2,98 @@ import { Prisma } from '@/generated/prisma';
 import { db } from '../db';
 import { UserSpendInfo } from './types';
 
-/**
- * Get complete user spend information for an app
- * @param userId - The user ID
- * @param appId - The echo app ID
- * @returns User spend information or null if not found
- */
-export async function getUserSpendInfo(
+export async function getGlobalFreeTierSpendPoolInfo(
+  echoAppId: string,
+  tx?: Prisma.TransactionClient
+): Promise<{
+  spendPoolBalance: number;
+  perUserSpendLimit: number | null;
+}> {
+  const client = tx ?? db;
+  const spendPool = await client.spendPool.findFirst({
+    where: {
+      echoAppId,
+      isArchived: false,
+    },
+  });
+
+  if (!spendPool) {
+    return {
+      spendPoolBalance: 0,
+      perUserSpendLimit: 0,
+    };
+  }
+
+  const spendLimit = spendPool.perUserSpendLimit
+    ? Number(spendPool.perUserSpendLimit)
+    : null;
+
+  return {
+    spendPoolBalance:
+      Number(spendPool.totalPaid) - Number(spendPool.totalSpent),
+    perUserSpendLimit: spendLimit,
+  };
+}
+
+export async function getGlobalFreeTierSpendPoolInfoBatch(
+  echoAppIds: string[],
+  tx?: Prisma.TransactionClient
+): Promise<
+  Map<
+    string,
+    {
+      spendPoolBalance: number;
+      perUserSpendLimit: number | null;
+    }
+  >
+> {
+  const client = tx ?? db;
+  const spendPools = await client.spendPool.findMany({
+    where: {
+      echoAppId: {
+        in: echoAppIds,
+      },
+      isArchived: false,
+    },
+  });
+
+  const result = new Map<
+    string,
+    {
+      spendPoolBalance: number;
+      perUserSpendLimit: number | null;
+    }
+  >();
+
+  for (const echoAppId of echoAppIds) {
+    const spendPool = spendPools.find(
+      spendPool => spendPool.echoAppId === echoAppId
+    );
+    if (spendPool) {
+      result.set(echoAppId, {
+        spendPoolBalance:
+          Number(spendPool.totalPaid) - Number(spendPool.totalSpent),
+        perUserSpendLimit: spendPool.perUserSpendLimit
+          ? Number(spendPool.perUserSpendLimit)
+          : null,
+      });
+    }
+  }
+
+  return result;
+}
+
+export const getCustomerSpendInfoForApp = async (
   userId: string,
-  appId: string
-): Promise<UserSpendInfo | null> {
-  // Find the spend pool for the app with user's usage
-  const spendPool = await db.spendPool.findFirst({
+  appId: string,
+  tx?: Prisma.TransactionClient
+): Promise<{
+  spendPoolBalance: number;
+  userSpendInfo: UserSpendInfo; // A user will only have one spend pool Info for an app
+}> => {
+  const client = tx ?? db;
+
+  const spendPool = await client.spendPool.findFirst({
     where: {
       echoAppId: appId,
       isArchived: false,
@@ -28,33 +108,173 @@ export async function getUserSpendInfo(
     },
   });
 
-  if (!spendPool || spendPool.userUsage.length === 0) {
+  if (!spendPool) {
     return {
-      userId,
-      echoAppId: appId,
-      spendPoolId: null,
-      amountSpent: 0,
-      spendLimit: null,
-      amountLeft: null,
-    } as UserSpendInfo;
+      spendPoolBalance: 0,
+      userSpendInfo: {
+        userId,
+        echoAppId: appId,
+        spendPoolId: null,
+        amountSpent: 0,
+        spendLimit: null,
+        amountLeft: null,
+      },
+    };
   }
 
-  const userSpendPoolUsage = spendPool.userUsage[0];
-  const amountSpent = Number(userSpendPoolUsage.totalSpent);
   const spendLimit = spendPool.perUserSpendLimit
     ? Number(spendPool.perUserSpendLimit)
     : null;
-  const amountLeft = spendLimit ? spendLimit - amountSpent : null;
 
-  return {
+  const spendPoolBalance =
+    Number(spendPool.totalPaid) - Number(spendPool.totalSpent);
+
+  const userSpendInfoRow = spendPool.userUsage.find(
+    userUsage => userUsage.userId === userId
+  );
+
+  if (!userSpendInfoRow) {
+    return {
+      spendPoolBalance: 0,
+      userSpendInfo: {
+        userId,
+        echoAppId: appId,
+        spendPoolId: null,
+        amountSpent: 0,
+        spendLimit: null,
+        amountLeft: null,
+      },
+    };
+  }
+
+  const userSpendInfo = {
     userId,
     echoAppId: appId,
     spendPoolId: spendPool.id,
-    amountSpent,
+    amountSpent: Number(userSpendInfoRow.totalSpent) || 0,
     spendLimit,
-    amountLeft,
-  } as UserSpendInfo;
-}
+    amountLeft: spendLimit
+      ? spendLimit - Number(userSpendInfoRow.totalSpent)
+      : null,
+  };
+
+  return {
+    spendPoolBalance,
+    userSpendInfo,
+  };
+};
+
+export const getCustomerSpendInfoForAppBatch = async (
+  userId: string,
+  appIds: string[],
+  tx?: Prisma.TransactionClient
+): Promise<
+  Map<
+    string,
+    {
+      spendPoolBalance: number;
+      userSpendInfo: UserSpendInfo;
+    }
+  >
+> => {
+  const client = tx ?? db;
+
+  // If no app IDs provided, return empty map
+  if (appIds.length === 0) {
+    return new Map();
+  }
+
+  // Find spend pools for all specified apps with user usage records for this specific user
+  const spendPools = await client.spendPool.findMany({
+    where: {
+      echoAppId: {
+        in: appIds,
+      },
+      isArchived: false,
+    },
+    include: {
+      userUsage: {
+        where: {
+          userId,
+          isArchived: false,
+        },
+      },
+    },
+  });
+
+  // Create result map with key format: appId
+  const result = new Map<
+    string,
+    {
+      spendPoolBalance: number;
+      userSpendInfo: UserSpendInfo;
+    }
+  >();
+
+  // Initialize empty entries for all apps
+  for (const appId of appIds) {
+    result.set(appId, {
+      spendPoolBalance: 0,
+      userSpendInfo: {
+        userId,
+        echoAppId: appId,
+        spendPoolId: null,
+        amountSpent: 0,
+        spendLimit: null,
+        amountLeft: null,
+      },
+    });
+  }
+
+  // Process each spend pool and update the corresponding entries
+  for (const spendPool of spendPools) {
+    const spendLimit = spendPool.perUserSpendLimit
+      ? Number(spendPool.perUserSpendLimit)
+      : null;
+
+    const spendPoolBalance =
+      Number(spendPool.totalPaid) - Number(spendPool.totalSpent);
+
+    // Find the user's usage in this spend pool (should be at most one)
+    const userUsage = spendPool.userUsage.find(
+      usage => usage.userId === userId
+    );
+
+    if (userUsage) {
+      const amountSpent = Number(userUsage.totalSpent) || 0;
+      const amountLeft = spendLimit ? spendLimit - amountSpent : null;
+
+      const userSpendInfo: UserSpendInfo = {
+        userId,
+        echoAppId: spendPool.echoAppId,
+        spendPoolId: spendPool.id,
+        amountSpent,
+        spendLimit,
+        amountLeft,
+      };
+
+      result.set(spendPool.echoAppId, {
+        spendPoolBalance,
+        userSpendInfo,
+      });
+    } else {
+      // User has no usage in this spend pool, but the pool exists
+      result.set(spendPool.echoAppId, {
+        spendPoolBalance,
+        userSpendInfo: {
+          userId,
+          echoAppId: spendPool.echoAppId,
+          spendPoolId: spendPool.id,
+          amountSpent: 0,
+          spendLimit,
+          amountLeft: spendLimit,
+        },
+      });
+    }
+  }
+
+  return result;
+};
 
 export async function getGlobalUserSpendInfoForApp(
   echoAppId: string,

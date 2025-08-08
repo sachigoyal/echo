@@ -4,8 +4,8 @@ import { Prisma } from '@/generated/prisma';
 import { getAppActivity, getAppActivityBatch } from './app-activity';
 import { getModelUsage, getModelUsageBatch } from './model-usage';
 import {
-  getGlobalUserSpendInfoForApp,
-  getGlobalUserSpendInfoForAppBatch,
+  getGlobalFreeTierSpendPoolInfo,
+  getGlobalFreeTierSpendPoolInfoBatch,
 } from '../spend-pools/fetch-user-spend';
 
 /**
@@ -43,11 +43,11 @@ export async function getGlobalStatistics(
   `;
 
   // Get activity data and model usage
-  const [globalActivityData, globalModelUsage, userSpendStatistics] =
+  const [globalActivityData, globalModelUsage, freeTierSpendPoolInfo] =
     await Promise.all([
       getAppActivity(echoAppId, 7, undefined, client),
       getModelUsage(echoAppId, undefined, client),
-      getGlobalUserSpendInfoForApp(echoAppId, client),
+      getGlobalFreeTierSpendPoolInfo(echoAppId, client),
     ]);
 
   return {
@@ -58,8 +58,9 @@ export async function getGlobalStatistics(
     globalTotalOutputTokens: Number(aggregatedResult?.totalOutputTokens || 0),
     globalActivityData,
     globalModelUsage,
-    globalUserSpendStatistics: userSpendStatistics.userSpendInfo,
-    globalFreeTierSpendPoolBalance: userSpendStatistics.spendPoolBalance,
+    globalFreetierSpendPoolPerUserLimit:
+      freeTierSpendPoolInfo.perUserSpendLimit,
+    globalFreeTierSpendPoolBalance: freeTierSpendPoolInfo.spendPoolBalance,
   };
 }
 
@@ -112,7 +113,7 @@ export async function getGlobalStatisticsBatch(
     await Promise.all([
       getAppActivityBatch(echoAppIds, 7, undefined, client),
       getModelUsageBatch(echoAppIds, undefined, client),
-      getGlobalUserSpendInfoForAppBatch(echoAppIds, client),
+      getGlobalFreeTierSpendPoolInfoBatch(echoAppIds, client),
     ]);
 
   // Batch fetch user spend statistics for all apps
@@ -138,8 +139,8 @@ export async function getGlobalStatisticsBatch(
       globalTotalOutputTokens: Number(aggregated?.totalOutputTokens || 0),
       globalActivityData,
       globalModelUsage,
-      globalUserSpendStatistics:
-        userSpendStatisticsMap.get(appId)?.userSpendInfo || [],
+      globalFreetierSpendPoolPerUserLimit:
+        userSpendStatisticsMap.get(appId)?.perUserSpendLimit || null,
       globalFreeTierSpendPoolBalance:
         userSpendStatisticsMap.get(appId)?.spendPoolBalance || 0,
     });
