@@ -18,6 +18,7 @@ import { ColorModeToggle } from './color-mode-toggle';
 
 import type { User as NextAuthUser } from 'next-auth';
 import { signOut } from '@/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Props {
   user: NextAuthUser;
@@ -27,22 +28,15 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={user?.image || ''}
-          alt={user?.name || ''}
-          className="h-10 w-10 rounded-lg border"
+        <UserAvatar
+          user={user}
+          className="size-10 rounded-lg border cursor-pointer"
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={user?.image || ''}
-              alt={user?.name || ''}
-              className="size-9 rounded-lg"
-            />
+            <UserAvatar user={user} className="size-9 rounded-lg" />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{user?.name}</span>
               <span className="truncate text-xs">{user?.email}</span>
@@ -108,5 +102,21 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
         </form>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+};
+
+interface UserAvatarProps {
+  user: NextAuthUser;
+  className?: string;
+}
+
+const UserAvatar = ({ user, className }: UserAvatarProps) => {
+  return (
+    <Avatar className={className}>
+      {user?.image ? <AvatarImage src={user.image} /> : <AvatarImage />}
+      <AvatarFallback className="bg-transparent">
+        {user?.name?.charAt(0) || user?.email?.charAt(0)}
+      </AvatarFallback>
+    </Avatar>
   );
 };
