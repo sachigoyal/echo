@@ -1,7 +1,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 
-import { TRPCReactProvider } from '@/trpc/react';
+import { TRPCReactProvider } from '@/trpc/client';
 
 import Header from '@/components/header';
 

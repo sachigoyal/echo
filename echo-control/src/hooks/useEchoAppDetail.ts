@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 
-import { api } from '@/trpc/react';
+import { api } from '@/trpc/client';
 
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { PermissionService } from '@/lib/permissions/service';
