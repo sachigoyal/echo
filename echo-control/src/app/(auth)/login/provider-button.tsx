@@ -4,7 +4,6 @@ import { OAuthProvider } from '@/auth/types';
 import { SiGoogle, SiGithub } from '@icons-pack/react-simple-icons';
 
 export const ProviderButton = ({ provider }: { provider: OAuthProvider }) => {
-  console.log(provider);
   return (
     <Button
       type="submit"

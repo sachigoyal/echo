@@ -107,7 +107,7 @@ export default async function SignInPage({
                 name="email"
                 type="email"
                 placeholder="richard@piedpiper.com"
-                className="border-border/30 bg-input/40 rounded-xl placeholder:text-muted-foreground/40 py-3 px-4 h-fit peer border-2 focus-visible:ring-border/60 font-medium"
+                className="rounded-xl placeholder:text-muted-foreground/40 py-3 px-4 h-fit peer border-2 font-medium"
                 required
               />
             </div>
@@ -119,10 +119,13 @@ export default async function SignInPage({
             <Button
               type="submit"
               className={cn(
-                'w-full bg-input/40 hover:bg-input/60 rounded-xl py-3 h-fit border-2 border-border/30 font-bold transition-all',
-                'group-invalid:pointer-events-none group-invalid:opacity-40 group-invalid:cursor-not-allowed'
+                'border-2 border-border rounded-xl size-fit px-5 py-3 font-bold flex-1 w-full',
+                'group-invalid:pointer-events-none group-invalid:opacity-40 group-invalid:cursor-not-allowed group-[invalid]:pointer-events-none group-[invalid]:opacity-40 group-[invalid]:cursor-not-allowed'
               )}
-              variant="unstyled"
+              variant="secondary"
+              style={{
+                transition: 'opacity 0.2s ease-in-out',
+              }}
             >
               Log In
             </Button>
