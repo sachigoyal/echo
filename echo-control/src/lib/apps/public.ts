@@ -4,7 +4,7 @@ import { getOwnerDetails, getOwnerDetailsBatch } from './owner';
 import {
   getGlobalStatistics,
   getGlobalStatisticsBatch,
-} from './globalStatistics';
+} from './global-statistics';
 
 export async function getPublicEchoApp(id: string): Promise<PublicEchoApp> {
   // Use a transaction to ensure consistency

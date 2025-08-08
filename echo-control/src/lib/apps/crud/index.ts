@@ -3,7 +3,7 @@ import { db } from '../../db';
 import { AppRole, MembershipStatus } from '../../permissions/types';
 import { PermissionService } from '../../permissions/service';
 import { Permission } from '../../permissions/types';
-import { softDeleteEchoApp } from '../softDelete';
+import { softDeleteEchoApp } from '../soft-delete';
 import { isValidUrl } from '../../stripe/payment-link';
 import { AppCreateInput } from '../types';
 export * from './update';

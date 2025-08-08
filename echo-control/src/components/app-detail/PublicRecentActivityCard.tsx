@@ -15,6 +15,8 @@ export function PublicRecentActivityCard({
   // Public apps only show aggregated activity data, not individual transactions
   const activityData = app.stats?.globalActivityData || [];
 
+  console.log(activityData);
+
   // Get the most recent activity periods
   const recentActivity = activityData
     .sort(

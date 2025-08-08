@@ -4,8 +4,12 @@ import { Prisma, Transaction } from '@/generated/prisma';
 import {
   getCustomerStatistics,
   getCustomerStatisticsBatch,
-} from './customerStatistics';
+} from './customer-statistics';
 import { serializeTransactions } from '@/lib/utils/serialization';
+import {
+  getGlobalUserSpendInfoForApp,
+  getGlobalUserSpendInfoForAppBatch,
+} from '../spend-pools/fetch-user-spend';
 
 const RECENT_TRANSACTIONS_LIMIT = 10;
 
@@ -63,11 +67,17 @@ export async function getOwnerStatistics(
       take: RECENT_TRANSACTIONS_LIMIT,
     });
 
+  const personalUserSpendStatistics = await getGlobalUserSpendInfoForApp(
+    echoAppId,
+    client
+  );
+
   // Combine all statistics
   return {
     ...customerStats,
     globalApiKeys,
     recentGlobalTransactions: serializeTransactions(recentGlobalTransactions),
+    globalUserSpendStatistics: personalUserSpendStatistics.userSpendInfo,
   };
 }
 
@@ -149,6 +159,9 @@ export async function getOwnerStatisticsBatch(
     recentGlobalTransactionsByApp.set(appId, appTransactions);
   }
 
+  const personalUserSpendStatisticsMap =
+    await getGlobalUserSpendInfoForAppBatch(echoAppIds, client);
+
   // Step 4: Combine all statistics
   const resultMap = new Map<string, OwnerStatistics>();
 
@@ -167,6 +180,8 @@ export async function getOwnerStatisticsBatch(
       ...customerStats,
       globalApiKeys,
       recentGlobalTransactions: serializeTransactions(recentGlobalTransactions),
+      globalUserSpendStatistics:
+        personalUserSpendStatisticsMap.get(appId)?.userSpendInfo || [],
     });
   }
 
