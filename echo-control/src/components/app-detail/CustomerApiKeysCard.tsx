@@ -22,7 +22,7 @@ export function CustomerApiKeysCard({
   deletingKeyId,
 }: CustomerApiKeysCardProps) {
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
+    <Card className="p-6 hover:border-primary relative shadow-primary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-500 to-blue-600 flex items-center justify-center text-white">

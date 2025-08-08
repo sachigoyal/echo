@@ -108,7 +108,7 @@ export const Carousel: React.FC<CarouselProps> = ({
                 <div key={app.id} className="w-full shrink-0 px-4 pb-8 h-full">
                   {/* App Card - Styled like MeritRepoCard */}
                   <Card
-                    className="p-4 hover:border-secondary relative shadow-lg dark:shadow-secondary dark:shadow-[0_0_8px] w-full cursor-pointer flex flex-col gap-4 transition-all duration-300 h-[calc(100%-2rem)]"
+                    className="p-4 hover:border-primary relative shadow-lg dark:shadow-primary dark:shadow-[0_0_8px] w-full cursor-pointer flex flex-col gap-4 transition-all duration-300 h-[calc(100%-2rem)]"
                     onClick={() => handleAppClick(app.id)}
                   >
                     {/* Header Section */}
@@ -126,7 +126,7 @@ export const Carousel: React.FC<CarouselProps> = ({
                           </h3>
                           <div className="flex items-center gap-2">
                             <span className="text-4xl font-extralight">by</span>
-                            <span className="text-4xl font-medium text-secondary">
+                            <span className="text-4xl font-medium text-primary">
                               {ownerName}
                             </span>
                           </div>

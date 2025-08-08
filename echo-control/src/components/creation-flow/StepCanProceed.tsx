@@ -30,7 +30,7 @@ export default function StepCanProceed({
     >
       {isSubmitting ? (
         <>
-          <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary-foreground border-t-transparent"></div>
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent"></div>
           <span>Creating...</span>
         </>
       ) : isLastStep ? (

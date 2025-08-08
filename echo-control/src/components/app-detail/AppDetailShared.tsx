@@ -145,7 +145,7 @@ export function AppBanner({ app, backUrl = '/' }: AppBannerProps) {
           </>
         ) : (
           <>
-            <div className="h-full bg-linear-to-r from-secondary via-muted to-secondary/80 z-0"></div>
+            <div className="h-full bg-linear-to-r from-primary via-muted to-primary/80 z-0"></div>
             <div className="absolute inset-0 bg-black/20 z-0"></div>
           </>
         )}
@@ -206,7 +206,7 @@ function GitHubUserInfo({ githubId, githubType }: GitHubUserInfoProps) {
   if (loading) {
     return (
       <div className="flex items-center space-x-2 text-muted-foreground">
-        <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
         <span className="text-sm">Loading GitHub info...</span>
       </div>
     );
@@ -237,9 +237,9 @@ function GitHubUserInfo({ githubId, githubType }: GitHubUserInfoProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-2">
           {isUser ? (
-            <UserIcon className="h-3 w-3 text-secondary shrink-0" />
+            <UserIcon className="h-3 w-3 text-primary shrink-0" />
           ) : (
-            <GitBranch className="h-3 w-3 text-secondary shrink-0" />
+            <GitBranch className="h-3 w-3 text-primary shrink-0" />
           )}
           <span className="text-foreground text-sm font-medium truncate">
             {displayName}
@@ -253,7 +253,7 @@ function GitHubUserInfo({ githubId, githubType }: GitHubUserInfoProps) {
         href={githubData.html_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-secondary hover:text-secondary/80 transition-colors"
+        className="text-primary hover:text-primary/80 transition-colors"
         title={`View on GitHub`}
       >
         <ExternalLink className="h-4 w-4" />
@@ -387,7 +387,7 @@ export function GlobalActivityChart({
   return (
     <div className="flex flex-col">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      <Card className="flex-1 p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50">
+      <Card className="flex-1 p-6 hover:border-primary relative shadow-primary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50">
         <div className="h-64">
           <CommitChart
             data={{
@@ -422,7 +422,7 @@ export function OverviewStats({
   showAdvanced = true,
 }: OverviewStatsProps) {
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
+    <Card className="p-6 hover:border-primary relative shadow-primary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white">
           <Activity className="h-5 w-5" />

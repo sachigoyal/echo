@@ -52,7 +52,7 @@ export default function TestIntegrationStep({
       className={`transition-all duration-300 ${isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'}`}
     >
       <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-        <ChevronRight className="h-5 w-5 text-secondary" />
+        <ChevronRight className="h-5 w-5 text-primary" />
         <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
           {stepConfig.prompt}
         </h2>
@@ -64,7 +64,7 @@ export default function TestIntegrationStep({
           {!integrationVerified ? (
             <>
               {/* JWT Testing Instructions */}
-              <Card className="bg-secondary/10 border-secondary/20 backdrop-blur-xs">
+              <Card className="bg-primary/10 border-primary/20 backdrop-blur-xs">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
                     <CardTitle className="text-xl">Connect with Echo</CardTitle>
@@ -85,7 +85,7 @@ export default function TestIntegrationStep({
                   <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     {isPolling ? (
                       <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent mx-auto sm:mx-0"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent mx-auto sm:mx-0"></div>
                         <span className="text-muted-foreground text-center sm:text-left">
                           Waiting for your login...
                         </span>

@@ -293,7 +293,7 @@ export default function PersonalizationSettings({
                   type="text"
                   value={newAppName}
                   onChange={e => setNewAppName(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-input bg-input/50 text-input-foreground rounded-lg text-sm focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all duration-200"
+                  className="w-full px-3 py-2.5 border border-input bg-input/50 text-input-foreground rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                   placeholder="Enter app name"
                   disabled={updatingAppName}
                 />
@@ -356,7 +356,7 @@ export default function PersonalizationSettings({
                   type="url"
                   value={newHomepageUrl}
                   onChange={e => setNewHomepageUrl(e.target.value)}
-                  className="w-full px-3 py-2.5 border border-input bg-input/50 text-input-foreground rounded-lg text-sm focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all duration-200"
+                  className="w-full px-3 py-2.5 border border-input bg-input/50 text-input-foreground rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
                   placeholder="https://example.com"
                   disabled={updatingHomepageUrl}
                 />

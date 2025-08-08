@@ -176,7 +176,7 @@ function CreateApplicationForm() {
         steps={steps}
       >
         <div className="flex items-center space-x-3">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
           <span className="text-foreground">Loading app data...</span>
         </div>
       </Step>
@@ -269,7 +269,7 @@ export default function CreateApplicationPage() {
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="bg-card/60 backdrop-blur-xs rounded-xl border border-border shadow-lg p-8">
             <div className="flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-secondary border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
               <span className="text-foreground">Loading...</span>
             </div>
           </div>

@@ -93,7 +93,7 @@ export default function DeleteAppModal({
               value={confirmText}
               onChange={e => setConfirmText(e.target.value)}
               placeholder={app.name}
-              className="w-full px-4 py-3 bg-input border border-border rounded-lg text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-hidden focus:border-secondary focus:ring-1 focus:ring-secondary transition-all duration-300"
+              className="w-full px-4 py-3 bg-input border border-border rounded-lg text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 dark:placeholder-zinc-400 focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300"
               disabled={isDeleting}
             />
           </div>

@@ -92,7 +92,7 @@ const GitHubStep = ({
       className={`transition-all duration-300 ${isTransitioning ? 'opacity-0 transform translate-y-4' : 'opacity-100 transform translate-y-0'}`}
     >
       <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-        <ChevronRight className="h-5 w-5 text-secondary" />
+        <ChevronRight className="h-5 w-5 text-primary" />
         <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
           {stepConfig.prompt}
         </h2>
@@ -108,7 +108,7 @@ const GitHubStep = ({
           />
           {isUpdating && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
             </div>
           )}
         </div>

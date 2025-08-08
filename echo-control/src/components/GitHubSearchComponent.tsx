@@ -201,7 +201,7 @@ export function GitHubSearchComponent({
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder={placeholder || 'Search for users or repositories...'}
-            className="flex-1 bg-input border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-secondary outline-hidden transition-colors"
+            className="flex-1 bg-input border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-hidden transition-colors"
             onFocus={() => {
               if (searchResults.length > 0) {
                 setShowResults(true);
@@ -213,7 +213,7 @@ export function GitHubSearchComponent({
             }}
           />
           {isSearching && (
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
           )}
         </div>
 
@@ -242,9 +242,9 @@ export function GitHubSearchComponent({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
                       {result.type === 'user' ? (
-                        <User className="h-3 w-3 text-secondary shrink-0" />
+                        <User className="h-3 w-3 text-primary shrink-0" />
                       ) : (
-                        <GitBranch className="h-3 w-3 text-secondary shrink-0" />
+                        <GitBranch className="h-3 w-3 text-primary shrink-0" />
                       )}
                       <span className="text-foreground text-sm font-medium truncate">
                         {getDisplayName(data)}
@@ -267,9 +267,9 @@ export function GitHubSearchComponent({
         <div className="mt-4">
           <div className="flex items-start space-x-3 p-4 bg-card border border-border rounded-lg">
             {isVerifying ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent mt-0.5 shrink-0"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mt-0.5 shrink-0"></div>
             ) : verificationResult?.isValid ? (
-              <Check className="h-4 w-4 text-secondary mt-0.5 shrink-0" />
+              <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             ) : (
               <X className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
             )}
@@ -303,12 +303,12 @@ export function GitHubSearchComponent({
                       href={verificationResult.data.html_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-secondary hover:text-secondary/80 transition-colors"
+                      className="text-primary hover:text-primary/80 transition-colors"
                     >
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
-                  <p className="text-secondary text-xs">
+                  <p className="text-primary text-xs">
                     ✓ Verified{' '}
                     {'login' in verificationResult.data ? 'user' : 'repository'}{' '}
                     (ID: {verificationResult.data.id})

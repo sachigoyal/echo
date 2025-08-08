@@ -21,7 +21,7 @@ export function CustomerActivityChart({
   return (
     <div className="flex flex-col">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      <Card className="flex-1 p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50">
+      <Card className="flex-1 p-6 hover:border-primary relative shadow-primary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50">
         <div className="h-64">
           <CommitChart
             data={{
