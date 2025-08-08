@@ -67,7 +67,7 @@ export default function SignOutPage() {
           <p className="text-muted-foreground text-sm">
             Need to switch accounts?{' '}
             <Link
-              href="/sign-in"
+              href="/login"
               className="text-primary hover:text-primary/80 font-medium transition-colors"
             >
               Sign in here

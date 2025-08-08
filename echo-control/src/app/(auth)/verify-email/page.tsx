@@ -1,0 +1,21 @@
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
+
+export default async function VerifyEmailPage() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-4 pb-12 md:pb-16">
+      <Logo className="size-20" />
+      <div className="flex flex-col items-center justify-center gap-2 text-center">
+        <h1 className="text-3xl font-bold">Verify your Email</h1>
+        <p className="text-md text-muted-foreground/80 max-w-sm">
+          We sent you an email with a link to verify your email address.
+        </p>
+      </div>
+      <Link href="/login">
+        <Button variant="outline">Back to Login</Button>
+      </Link>
+    </div>
+  );
+}

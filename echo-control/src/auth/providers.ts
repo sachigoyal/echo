@@ -1,12 +1,13 @@
 import GoogleProvider from 'next-auth/providers/google';
 import GithubProvider from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
+import Resend from 'next-auth/providers/resend';
 
 import type { OAuthProvider } from './types';
-import { Provider } from 'next-auth/providers';
+import { EmailConfig, Provider } from 'next-auth/providers';
 import { db } from '@/lib/db';
 
-export const providers: OAuthProvider[] = [
+export const oauthProviders: OAuthProvider[] = [
   GoogleProvider({
     clientId: process.env.AUTH_GOOGLE_ID,
     clientSecret: process.env.AUTH_GOOGLE_SECRET,
@@ -22,6 +23,13 @@ export const providers: OAuthProvider[] = [
     clientId: process.env.AUTH_GITHUB_ID,
     clientSecret: process.env.AUTH_GITHUB_SECRET,
     allowDangerousEmailAccountLinking: true,
+  }),
+];
+
+export const emailProviders: EmailConfig[] = [
+  Resend({
+    apiKey: process.env.AUTH_RESEND_KEY,
+    from: 'no-reply@merit.systems',
   }),
 ];
 
