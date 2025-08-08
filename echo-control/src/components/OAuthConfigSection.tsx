@@ -167,7 +167,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
             value={newUrl}
             onChange={e => setNewUrl(e.target.value)}
             placeholder="https://yourapp.com/callback"
-            className="flex-1 px-3 py-2 border border-input/50 bg-input/30 rounded-lg text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-secondary/50 focus:border-secondary/50"
+            className="flex-1 px-3 py-2 border border-input/50 bg-input/30 rounded-lg text-xs text-foreground placeholder-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-secondary/50 focus:border-secondary/50"
           />
           <GlassButton
             onClick={handleAddCallbackUrl}

@@ -178,7 +178,7 @@ export default function EchoAppsDashboard() {
               <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
                 <GlassButton
                   onClick={() => signOut({ redirectTo: '/' })}
-                  className="w-full flex items-center !h-10"
+                  className="w-full flex items-center h-10!"
                   variant="secondary"
                 >
                   <LogOutIcon className="h-4 w-4 mr-2" />
@@ -257,7 +257,7 @@ export default function EchoAppsDashboard() {
                           } as React.MouseEvent;
                           handleArchiveApp(app.id, syntheticEvent);
                         }}
-                        className={`!h-8 !w-8 rounded-full group-hover:opacity-100 ${
+                        className={`h-8! w-8! rounded-full group-hover:opacity-100 ${
                           deletingAppId === app.id ? 'opacity-50' : 'opacity-0'
                         }`}
                         disabled={deletingAppId === app.id}

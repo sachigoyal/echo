@@ -64,7 +64,7 @@ export default function TestIntegrationStep({
           {!integrationVerified ? (
             <>
               {/* JWT Testing Instructions */}
-              <Card className="bg-secondary/10 border-secondary/20 backdrop-blur-sm">
+              <Card className="bg-secondary/10 border-secondary/20 backdrop-blur-xs">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
                     <CardTitle className="text-xl">Connect with Echo</CardTitle>
@@ -80,7 +80,7 @@ export default function TestIntegrationStep({
               </Card>
 
               {/* Polling Status */}
-              <Card className="backdrop-blur-sm">
+              <Card className="backdrop-blur-xs">
                 <CardContent className="p-6">
                   <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     {isPolling ? (

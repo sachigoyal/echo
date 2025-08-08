@@ -64,7 +64,7 @@ const CreateApplicationStep = forwardRef<
               onChange={e => setAppName(e.target.value)}
               placeholder="My Echo App"
               disabled={isCreating}
-              className="w-full bg-input border border-border rounded-lg px-4 py-3 text-lg text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-input border border-border rounded-lg px-4 py-3 text-lg text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-secondary outline-hidden transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {isCreating && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

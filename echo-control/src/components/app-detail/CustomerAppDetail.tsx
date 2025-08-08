@@ -110,7 +110,7 @@ export function CustomerAppDetail({
           Add Credits
         </Button>
       </Link>
-      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm rounded-lg border border-border px-2 py-1">
+      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-xs rounded-lg border border-border px-2 py-1">
         <span className="text-xs font-medium text-muted-foreground">
           Personal
         </span>

@@ -18,7 +18,7 @@ export function OwnerRecentActivityCard({
     app.stats?.recentGlobalTransactions || [];
 
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
+    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
       <div className="flex items-center gap-3 mb-4">
         <h1 className="text-2xl font-bold">{title}</h1>
       </div>

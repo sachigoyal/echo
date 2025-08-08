@@ -48,13 +48,13 @@ export default function ApiKeyModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/75 backdrop-blur-sm overflow-y-auto h-full w-full z-50 fade-in">
+    <div className="fixed inset-0 bg-background/75 backdrop-blur-xs overflow-y-auto h-full w-full z-50 fade-in">
       <div className="relative top-20 mx-auto p-5 border border-border w-full max-w-md shadow-lg rounded-md bg-card">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-card-foreground">
             API Key Created
           </h3>
-          <button onClick={onClose} className="!h-8 !w-8">
+          <button onClick={onClose} className="h-8! w-8!">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -75,14 +75,14 @@ export default function ApiKeyModal({
                   value={keyName}
                   onChange={e => setKeyName(e.target.value)}
                   disabled={loading}
-                  className="flex-1 px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground"
+                  className="flex-1 px-3 py-2 border border-input bg-input rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground"
                   placeholder="Enter API key name"
                 />
                 <GlassButton
                   onClick={handleRename}
                   disabled={loading || !keyName.trim()}
                   variant="primary"
-                  className="!h-10"
+                  className="h-10!"
                 >
                   Save
                 </GlassButton>
@@ -93,7 +93,7 @@ export default function ApiKeyModal({
                 <GlassButton
                   onClick={() => setIsEditing(true)}
                   variant="secondary"
-                  className="!h-8"
+                  className="h-8!"
                 >
                   Edit
                 </GlassButton>
@@ -111,7 +111,7 @@ export default function ApiKeyModal({
               </div>
               <button
                 onClick={handleCopy}
-                className="!h-8 !w-8 absolute right-2 top-1/2 transform -translate-y-1/2"
+                className="h-8! w-8! absolute right-2 top-1/2 transform -translate-y-1/2"
               >
                 {copied ? (
                   <Check className="h-5 w-5 text-green-500" />

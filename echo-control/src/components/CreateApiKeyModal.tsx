@@ -58,13 +58,13 @@ export default function CreateApiKeyModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/75 backdrop-blur-sm overflow-y-auto h-full w-full z-50 fade-in">
+    <div className="fixed inset-0 bg-background/75 backdrop-blur-xs overflow-y-auto h-full w-full z-50 fade-in">
       <div className="relative top-20 mx-auto p-5 border border-border w-96 shadow-lg rounded-md bg-card">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-card-foreground">
             Create New API Key
           </h3>
-          <button onClick={onClose} className="!h-8 !w-8">
+          <button onClick={onClose} className="h-8! w-8!">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -89,7 +89,7 @@ export default function CreateApiKeyModal({
               value={name}
               onChange={e => setName(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-input bg-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground placeholder-muted-foreground transition-colors"
+              className="mt-1 block w-full px-3 py-2 border border-input bg-input rounded-md shadow-xs focus:outline-hidden focus:ring-2 focus:ring-ring focus:border-transparent text-input-foreground placeholder-muted-foreground transition-colors"
               placeholder="Production API Key"
             />
           </div>

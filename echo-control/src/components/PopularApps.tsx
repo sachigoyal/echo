@@ -24,10 +24,7 @@ export const PopularApps: React.FC = () => {
         </div>
         <div className="flex gap-4">
           {[...Array(3)].map((_, index) => (
-            <Skeleton
-              key={index}
-              className="h-[220px] w-[300px] flex-shrink-0"
-            />
+            <Skeleton key={index} className="h-[220px] w-[300px] shrink-0" />
           ))}
         </div>
       </div>

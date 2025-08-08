@@ -419,7 +419,7 @@ export default function PersonalizationSettings({
             </label>
             <div className="flex items-start gap-6">
               {/* Current Image Preview */}
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 {profilePictureUrl ? (
                   <div className="w-20 h-20 rounded-xl overflow-hidden shadow-md">
                     <Image
@@ -431,7 +431,7 @@ export default function PersonalizationSettings({
                     />
                   </div>
                 ) : (
-                  <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-md">
+                  <div className="w-20 h-20 rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-md">
                     {currentAppName.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -514,7 +514,7 @@ export default function PersonalizationSettings({
                   />
                 </div>
               ) : (
-                <div className="w-full h-32 rounded-lg bg-gradient-to-r from-blue-500 via-purple-600 to-blue-700 flex items-center justify-center text-white shadow-md">
+                <div className="w-full h-32 rounded-lg bg-linear-to-r from-blue-500 via-purple-600 to-blue-700 flex items-center justify-center text-white shadow-md">
                   <div className="text-center">
                     <ImageIcon className="h-8 w-8 mx-auto mb-2 opacity-70" />
                     <p className="text-sm opacity-70">No banner image</p>

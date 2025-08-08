@@ -15,7 +15,7 @@ export default function EchoSplashPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+    <div className="min-h-screen bg-linear-to-br from-gray-900 via-blue-900 to-gray-900">
       {/* Hidden component to set the cookie */}
 
       {/* Hero Section */}
@@ -29,7 +29,7 @@ export default function EchoSplashPage() {
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="text-center">
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent pb-3">
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-linear-to-r from-white via-blue-200 to-white bg-clip-text text-transparent pb-3">
               Welcome to Echo
             </h1>
             <p className="mt-6 text-xl md:text-2xl max-w-3xl mx-auto text-blue-100">
@@ -55,10 +55,10 @@ export default function EchoSplashPage() {
       </div>
 
       {/* Features Section */}
-      <div id="features" className="py-20 bg-gray-900/50 backdrop-blur-sm">
+      <div id="features" className="py-20 bg-gray-900/50 backdrop-blur-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               Everything You Need for AI Applications
             </h2>
             <p className="mt-4 text-lg text-gray-300 max-w-3xl mx-auto">
@@ -69,7 +69,7 @@ export default function EchoSplashPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
+            <div className="bg-gray-800/50 backdrop-blur-xs border border-gray-700/50 rounded-xl p-6 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
               <div className="h-12 w-12 rounded-lg bg-blue-600/20 flex items-center justify-center mb-5">
                 <ShieldIcon className="h-6 w-6 text-blue-400" />
               </div>
@@ -83,7 +83,7 @@ export default function EchoSplashPage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
+            <div className="bg-gray-800/50 backdrop-blur-xs border border-gray-700/50 rounded-xl p-6 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
               <div className="h-12 w-12 rounded-lg bg-purple-600/20 flex items-center justify-center mb-5">
                 <CreditCardIcon className="h-6 w-6 text-purple-400" />
               </div>
@@ -97,7 +97,7 @@ export default function EchoSplashPage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
+            <div className="bg-gray-800/50 backdrop-blur-xs border border-gray-700/50 rounded-xl p-6 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
               <div className="h-12 w-12 rounded-lg bg-emerald-600/20 flex items-center justify-center mb-5">
                 <ZapIcon className="h-6 w-6 text-emerald-400" />
               </div>
@@ -117,7 +117,7 @@ export default function EchoSplashPage() {
       <div className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl font-bold bg-linear-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               How Echo Works
             </h2>
             <p className="mt-4 text-lg text-gray-300 max-w-3xl mx-auto">
@@ -151,7 +151,7 @@ export default function EchoSplashPage() {
 
           {/* Developer Content */}
           <div className={`${activeTab === 'developers' ? 'block' : 'hidden'}`}>
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
+            <div className="bg-gray-800/30 backdrop-blur-xs border border-gray-700/50 rounded-xl p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div>
                   <h3 className="text-2xl font-bold text-white mb-6">
@@ -159,7 +159,7 @@ export default function EchoSplashPage() {
                   </h3>
                   <div className="space-y-6">
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
                         <span className="text-blue-400 font-bold">1</span>
                       </div>
                       <div>
@@ -173,7 +173,7 @@ export default function EchoSplashPage() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
                         <span className="text-blue-400 font-bold">2</span>
                       </div>
                       <div>
@@ -187,7 +187,7 @@ export default function EchoSplashPage() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
                         <span className="text-blue-400 font-bold">3</span>
                       </div>
                       <div>
@@ -201,7 +201,7 @@ export default function EchoSplashPage() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
                         <span className="text-blue-400 font-bold">4</span>
                       </div>
                       <div>
@@ -259,7 +259,7 @@ function Root() {
 
           {/* Customer Content */}
           <div className={`${activeTab === 'customers' ? 'block' : 'hidden'}`}>
-            <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
+            <div className="bg-gray-800/30 backdrop-blur-xs border border-gray-700/50 rounded-xl p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 <div>
                   <h3 className="text-2xl font-bold text-white mb-6">
@@ -267,7 +267,7 @@ function Root() {
                   </h3>
                   <div className="space-y-6">
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
                         <span className="text-purple-400 font-bold">1</span>
                       </div>
                       <div>
@@ -281,7 +281,7 @@ function Root() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
                         <span className="text-purple-400 font-bold">2</span>
                       </div>
                       <div>
@@ -295,7 +295,7 @@ function Root() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
                         <span className="text-purple-400 font-bold">3</span>
                       </div>
                       <div>
@@ -309,7 +309,7 @@ function Root() {
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
+                      <div className="shrink-0 h-10 w-10 rounded-full bg-purple-600/20 flex items-center justify-center mr-4">
                         <span className="text-purple-400 font-bold">4</span>
                       </div>
                       <div>
@@ -332,7 +332,7 @@ function Root() {
                       </h4>
                       <ul className="space-y-3">
                         <li className="flex items-start">
-                          <div className="flex-shrink-0 h-5 w-5 text-emerald-400 mr-2">
+                          <div className="shrink-0 h-5 w-5 text-emerald-400 mr-2">
                             ✓
                           </div>
                           <p className="text-gray-300">
@@ -340,7 +340,7 @@ function Root() {
                           </p>
                         </li>
                         <li className="flex items-start">
-                          <div className="flex-shrink-0 h-5 w-5 text-emerald-400 mr-2">
+                          <div className="shrink-0 h-5 w-5 text-emerald-400 mr-2">
                             ✓
                           </div>
                           <p className="text-gray-300">
@@ -348,7 +348,7 @@ function Root() {
                           </p>
                         </li>
                         <li className="flex items-start">
-                          <div className="flex-shrink-0 h-5 w-5 text-emerald-400 mr-2">
+                          <div className="shrink-0 h-5 w-5 text-emerald-400 mr-2">
                             ✓
                           </div>
                           <p className="text-gray-300">
@@ -356,7 +356,7 @@ function Root() {
                           </p>
                         </li>
                         <li className="flex items-start">
-                          <div className="flex-shrink-0 h-5 w-5 text-emerald-400 mr-2">
+                          <div className="shrink-0 h-5 w-5 text-emerald-400 mr-2">
                             ✓
                           </div>
                           <p className="text-gray-300">
@@ -392,7 +392,7 @@ function Root() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-900/80 backdrop-blur-sm py-12">
+      <footer className="bg-gray-900/80 backdrop-blur-xs py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-6 md:mb-0">

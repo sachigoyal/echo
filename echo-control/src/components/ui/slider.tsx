@@ -89,7 +89,7 @@ const Slider = React.forwardRef<
         {!props.disabled && (
           <SliderPrimitive.Thumb
             className={cn(
-              'block h-4 w-4 rounded-full border-2 border-background bg-primary ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-primary focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50',
+              'block h-4 w-4 rounded-full border-2 border-background bg-primary ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-0 focus-visible:ring-primary focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50',
               variant === 'secondary' &&
                 'bg-secondary focus-visible:ring-secondary',
               isVerticalReverse && 'scale-y-[-1]'

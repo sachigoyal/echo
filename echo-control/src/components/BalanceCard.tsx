@@ -105,7 +105,7 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
     return (
       <button
         onClick={handleNavigateToCredits}
-        className="flex items-center space-x-2 px-3 py-2.5 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm group h-10"
+        className="flex items-center space-x-2 px-3 py-2.5 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-xs transition-all duration-200 shadow-xs group h-10"
         title="View and manage credits"
       >
         <Logo className="h-4 w-4 text-muted-foreground group-hover:text-secondary transition-colors" />
@@ -190,7 +190,7 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
                 onClick={handleBalanceAdjustment}
                 disabled={!adjustmentAmount}
                 variant="secondary"
-                className="!h-8 !w-10"
+                className="h-8! w-10!"
               >
                 {adjustmentType === 'increment' ? (
                   <PlusIcon className="h-4 w-4" />

@@ -16,7 +16,7 @@ export function GlobalTopModelsCard({
 }: GlobalTopModelsCardProps) {
   return (
     <div className="flex flex-col">
-      <Card className="flex-1 p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
+      <Card className="flex-1 p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
         <h2 className="text-2xl font-bold mb-4">{title}</h2>
         <Separator className="my-4" />
         <CardContent className="p-0 h-full flex-1 overflow-auto">

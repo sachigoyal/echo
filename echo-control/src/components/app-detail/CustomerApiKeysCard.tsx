@@ -22,16 +22,16 @@ export function CustomerApiKeysCard({
   deletingKeyId,
 }: CustomerApiKeysCardProps) {
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
+    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-white">
+          <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-500 to-blue-600 flex items-center justify-center text-white">
             <Key className="h-5 w-5" />
           </div>
           <h3 className="text-xl font-bold">API Keys</h3>
         </div>
         {hasCreatePermission && onCreateApiKey && (
-          <Button onClick={onCreateApiKey} className="!h-8 !w-8 !p-0">
+          <Button onClick={onCreateApiKey} className="h-8! w-8! p-0!">
             <Plus className="h-4 w-4" />
           </Button>
         )}
@@ -61,7 +61,7 @@ export function CustomerApiKeysCard({
                     size="sm"
                     onClick={() => onArchiveApiKey(key.id)}
                     disabled={deletingKeyId === key.id}
-                    className="!h-8 !w-8 !p-0 hover:bg-destructive/10"
+                    className="h-8! w-8! p-0! hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>

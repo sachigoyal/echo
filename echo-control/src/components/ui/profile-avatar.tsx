@@ -78,7 +78,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       className={cn(
         sizeClasses.container,
         roundedClass,
-        'bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0',
+        'bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0',
         sizeClasses.text,
         className
       )}

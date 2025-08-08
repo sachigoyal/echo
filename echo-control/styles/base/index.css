@@ -1,11 +1,49 @@
-@import './fonts.css'; /* Use relative path instead of @/ alias */
+@import './fonts.css' layer(base); /* Use relative path instead of @/ alias */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-html {
-  @apply font-sans;
+@config '../../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility slide-in-left {
+  animation: slideInLeft 0.7s ease-out forwards;
+}
+
+@utility slide-in-right {
+  animation: slideInRight 0.7s ease-out forwards;
+}
+
+@utility zoom-in {
+  animation: zoomIn 0.7s ease-out forwards;
+}
+
+@utility gradient-border-wrapper {
+  /* Add new styles for gradient border */
+  background-clip: padding-box;
+  border-radius: var(--radius);
+}
+
+@layer utilities {
+  html {
+    @apply font-sans;
+  }
 }
 
 @layer base {
@@ -265,14 +303,6 @@ html {
       opacity: 1;
     }
   }
-
-  .slide-in-left {
-    animation: slideInLeft 0.7s ease-out forwards;
-  }
-
-  .slide-in-right {
-    animation: slideInRight 0.7s ease-out forwards;
-  }
   @keyframes zoomIn {
     from {
       transform: scale(0);
@@ -282,10 +312,6 @@ html {
       transform: scale(1);
       opacity: 1;
     }
-  }
-
-  .zoom-in {
-    animation: zoomIn 0.7s ease-out forwards;
   }
 }
 
@@ -297,12 +323,6 @@ html {
     --gradient-color-1: #cd0202;
     --gradient-color-2: #232323;
     /* --gradient-color-3: #0199ae; */
-  }
-
-  /* Add new styles for gradient border */
-  .gradient-border-wrapper {
-    background-clip: padding-box;
-    border-radius: var(--radius);
   }
 }
 

@@ -180,7 +180,7 @@ export default function AnalyticsSettings({ appId }: AnalyticsSettingsProps) {
                     className="flex items-center justify-between p-3 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors duration-200"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-secondary to-secondary/80 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                      <div className="w-8 h-8 bg-linear-to-br from-secondary to-secondary/80 rounded-full flex items-center justify-center text-xs font-bold text-white">
                         {index + 1}
                       </div>
                       <div className="min-w-0 flex-1">

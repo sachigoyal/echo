@@ -151,7 +151,7 @@ export const AppCard: React.FC<AppCardProps> = ({
 
         <div className="flex items-center gap-2">
           <Badge
-            className={`shrink-0 text-black dark:text-white border-[1px] bg-transparent shadow-none w-fit ${isSmall ? 'text-xs' : 'text-sm'}`}
+            className={`shrink-0 text-black dark:text-white border bg-transparent shadow-none w-fit ${isSmall ? 'text-xs' : 'text-sm'}`}
           >
             ${stats.revenue}
           </Badge>

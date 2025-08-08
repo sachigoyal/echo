@@ -47,8 +47,8 @@ export default function StepHistory({
               key={step.key}
               className="flex items-start sm:items-center space-x-3 text-sm"
             >
-              <ChevronRight className="h-4 w-4 text-secondary mt-0.5 sm:mt-0 flex-shrink-0" />
-              <span className="text-muted-foreground flex-shrink-0">
+              <ChevronRight className="h-4 w-4 text-secondary mt-0.5 sm:mt-0 shrink-0" />
+              <span className="text-muted-foreground shrink-0">
                 {step.prompt}
               </span>
               <span className="text-secondary break-all">{displayValue}</span>
