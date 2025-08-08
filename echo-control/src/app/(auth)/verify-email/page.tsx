@@ -5,7 +5,7 @@ import { Logo } from '@/components/ui/logo';
 
 export default async function VerifyEmailPage() {
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4 pb-16">
+    <div className="flex flex-col items-center justify-center h-full gap-4 pb-12 md:pb-16">
       <Logo className="size-20" />
       <div className="flex flex-col items-center justify-center gap-2 text-center">
         <h1 className="text-3xl font-bold">Verify your Email</h1>
