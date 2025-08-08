@@ -34,13 +34,13 @@ export default function JoinAppModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/75 backdrop-blur-sm overflow-y-auto h-full w-full z-50 fade-in">
+    <div className="fixed inset-0 bg-background/75 backdrop-blur-xs overflow-y-auto h-full w-full z-50 fade-in">
       <div className="relative top-20 mx-auto p-6 border border-border w-[500px] shadow-lg rounded-md bg-card">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-card-foreground">
             Join {app.name}
           </h3>
-          <button onClick={onClose} className="!h-8 !w-8">
+          <button onClick={onClose} className="h-8! w-8!">
             <X className="h-6 w-6" />
           </button>
         </div>

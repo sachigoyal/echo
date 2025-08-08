@@ -31,7 +31,7 @@ export function AppHomepageCard({
 
   if (!homepageUrl) {
     return (
-      <Card className="bg-card/50 backdrop-blur-sm border border-border/50">
+      <Card className="bg-card/50 backdrop-blur-xs border border-border/50">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-muted-foreground">
@@ -52,7 +52,7 @@ export function AppHomepageCard({
   }
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border border-border/50 hover:border-border transition-colors h-80 flex flex-col">
+    <Card className="bg-card/50 backdrop-blur-xs border border-border/50 hover:border-border transition-colors h-80 flex flex-col">
       <CardContent className="p-6 flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>

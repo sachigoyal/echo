@@ -70,7 +70,7 @@ export const AppCard: React.FC<AppCardProps> = ({
 
   return (
     <Card
-      className={`p-3 hover:border-secondary cursor-pointer flex flex-col gap-3 justify-between transition-all duration-300 h-full ${getCardHeight()}`}
+      className={`p-3 hover:border-primary cursor-pointer flex flex-col gap-3 justify-between transition-all duration-300 h-full ${getCardHeight()}`}
       onClick={handleClick}
     >
       {/* Header Section */}
@@ -94,7 +94,7 @@ export const AppCard: React.FC<AppCardProps> = ({
                 size="xs"
               />
               <span
-                className={`${isSmall ? 'text-sm' : 'text-base'} font-medium text-secondary`}
+                className={`${isSmall ? 'text-sm' : 'text-base'} font-medium text-primary`}
               >
                 {creator.name}
               </span>
@@ -151,7 +151,7 @@ export const AppCard: React.FC<AppCardProps> = ({
 
         <div className="flex items-center gap-2">
           <Badge
-            className={`shrink-0 text-black dark:text-white border-[1px] bg-transparent shadow-none w-fit ${isSmall ? 'text-xs' : 'text-sm'}`}
+            className={`shrink-0 text-black dark:text-white border bg-transparent shadow-none w-fit ${isSmall ? 'text-xs' : 'text-sm'}`}
           >
             ${stats.revenue}
           </Badge>

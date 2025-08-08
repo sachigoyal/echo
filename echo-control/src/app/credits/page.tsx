@@ -214,7 +214,7 @@ export default function CreditsPage() {
                           {formatDate(payment.createdAt)}
                         </p>
                       </div>
-                      <div className="text-right space-y-1 flex-shrink-0 ml-2">
+                      <div className="text-right space-y-1 shrink-0 ml-2">
                         <p className="font-semibold text-sm">
                           {formatCurrency(payment.amount)}
                         </p>

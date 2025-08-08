@@ -95,12 +95,12 @@ export const CommitChart: React.FC<Props> = ({
                 >
                   <stop
                     offset="5%"
-                    stopColor="rgb(var(--secondary))"
+                    stopColor="var(--secondary)"
                     stopOpacity={0.9}
                   />
                   <stop
                     offset="100%"
-                    stopColor="rgb(var(--secondary))"
+                    stopColor="var(--secondary)"
                     stopOpacity={0}
                   />
                 </linearGradient>
@@ -108,7 +108,7 @@ export const CommitChart: React.FC<Props> = ({
               <Area
                 type="monotone"
                 dataKey="count"
-                stroke="rgb(var(--secondary))"
+                stroke="var(--secondary)"
                 fill="url(#contributionGradient)"
                 strokeWidth={2}
                 dot={false}
@@ -177,7 +177,7 @@ export const CommitChart: React.FC<Props> = ({
               {interactivity && interactivity.hoveredIndex !== null && (
                 <ReferenceLine
                   x={chartData[interactivity.hoveredIndex].index}
-                  stroke="rgb(var(--secondary))"
+                  stroke="var(--secondary)"
                   strokeDasharray="2 2"
                   strokeWidth={2}
                 />

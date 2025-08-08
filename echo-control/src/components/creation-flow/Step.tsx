@@ -88,12 +88,12 @@ export default function Step({
       <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-4xl">
           {/* Main Content Container */}
-          <div className="bg-card/60 backdrop-blur-sm rounded-xl border border-border shadow-lg min-h-[500px] flex flex-col p-6 sm:p-8 lg:p-12">
+          <div className="bg-card/60 backdrop-blur-xs rounded-xl border border-border shadow-lg min-h-[500px] flex flex-col p-6 sm:p-8 lg:p-12">
             {/* Progress Bar */}
             <div className="mb-6 sm:mb-8 lg:mb-12">
               <div className="w-full bg-muted/30 rounded-full h-1 overflow-hidden">
                 <div
-                  className="h-full bg-secondary transition-all duration-500 ease-out"
+                  className="h-full bg-primary transition-all duration-500 ease-out"
                   style={{
                     width: `${((currentStep + 1) / totalSteps) * 100}%`,
                   }}

@@ -34,7 +34,10 @@ export default async function SignInPage({
 
   return (
     <div className="relative size-full flex flex-col items-center justify-center pb-12 md:pb-16 gap-4">
-      <FlickeringGrid className="absolute inset-0 -z-1 opacity-25" />
+      <FlickeringGrid
+        className="absolute inset-0 opacity-25 pointer-events-none"
+        frameRate={8}
+      />
       <div className="w-full max-w-md gap-6 flex flex-col items-center z-10 p-4">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="size-16 p-3 border border-border/40 rounded-xl flex items-center justify-center bg-background">
@@ -104,7 +107,7 @@ export default async function SignInPage({
                 name="email"
                 type="email"
                 placeholder="richard@piedpiper.com"
-                className="border-border/30 bg-input/40 rounded-xl placeholder:text-muted-foreground/40 py-3 px-4 h-fit peer border-2 focus-visible:ring-border/60 font-medium"
+                className="rounded-xl placeholder:text-muted-foreground/40 py-3 px-4 h-fit peer border-2 font-medium"
                 required
               />
             </div>
@@ -116,10 +119,13 @@ export default async function SignInPage({
             <Button
               type="submit"
               className={cn(
-                'w-full bg-input/40 hover:bg-input/60 rounded-xl py-3 h-fit border-2 border-border/30 font-bold transition-all',
-                'group-invalid:pointer-events-none group-invalid:opacity-40 group-invalid:cursor-not-allowed'
+                'border-2 border-border rounded-xl size-fit px-5 py-3 font-bold flex-1 w-full',
+                'group-invalid:pointer-events-none group-invalid:opacity-40 group-invalid:cursor-not-allowed group-[invalid]:pointer-events-none group-[invalid]:opacity-40 group-[invalid]:cursor-not-allowed'
               )}
-              variant="unstyled"
+              variant="secondary"
+              style={{
+                transition: 'opacity 0.2s ease-in-out',
+              }}
             >
               Log In
             </Button>

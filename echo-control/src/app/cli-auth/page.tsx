@@ -293,7 +293,7 @@ function CLIAuthContent() {
                 value={selectedAppId}
                 onChange={e => setSelectedAppId(e.target.value)}
                 disabled={searchParams.get('appId') ? true : false}
-                className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-hidden focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">Choose an app</option>
                 {apps.map(app => (
@@ -331,7 +331,7 @@ function CLIAuthContent() {
                 value={apiKeyName}
                 onChange={e => setApiKeyName(e.target.value)}
                 placeholder="Enter a name for this API key"
-                className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-accent placeholder-muted-foreground"
+                className="w-full px-3 py-2 border border-input bg-input text-input-foreground rounded-md focus:outline-hidden focus:ring-2 focus:ring-accent placeholder-muted-foreground"
               />
             </div>
 
