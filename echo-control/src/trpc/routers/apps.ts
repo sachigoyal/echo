@@ -95,7 +95,7 @@ export const appsRouter = createTRPCRouter({
   getPublicApp: publicProcedure
     .input(
       z.object({
-        appId: z.string(),
+        appId: z.uuid(),
       })
     )
     .query(async ({ input }) => {

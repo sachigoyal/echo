@@ -1,110 +1,76 @@
-'use client';
+import { z } from 'zod';
 
-import { useEffect, useState } from 'react';
-
-import { useRouter } from 'next/navigation';
-
+import { auth } from '@/auth';
 import { GlassButton } from '@/components/glass-button';
-
 import { useUser } from '@/hooks/use-user';
+import { api } from '@/trpc/server';
+import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 
-interface AuthorizeParams {
-  client_id: string;
-  redirect_uri: string;
-  code_challenge: string;
-  code_challenge_method: string;
-  scope: string;
-  state?: string;
-  response_type: string;
-}
+const authorizeParamsSchema = z.object({
+  client_id: z.string().min(1, 'client_id is required'),
+  redirect_uri: z.url('redirect_uri must be a valid URL'),
+  code_challenge: z.string().min(1, 'code_challenge is required'),
+  code_challenge_method: z.literal('S256', {
+    error: 'Only S256 code challenge method is supported',
+  }),
+  scope: z.string().min(1, 'scope is required'),
+  response_type: z.literal('code', {
+    error: 'Only authorization code flow (response_type=code) is supported',
+  }),
+  state: z.string().optional(),
+});
 
-interface AppOwnerDetails {
-  id: string;
-  name: string;
-  description?: string;
-  owner: {
-    name: string | null;
-    email: string;
-  } | null;
-}
+type AuthorizeParams = z.infer<typeof authorizeParamsSchema>;
 
-export default function OAuthAuthorizePage() {
-  const { user, isLoaded } = useUser();
-  const router = useRouter();
-  const [isAuthorizing, setIsAuthorizing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [authParams, setAuthParams] = useState<AuthorizeParams | null>(null);
-  const [appDetails, setAppDetails] = useState<AppOwnerDetails | null>(null);
-  const [loadingAppDetails, setLoadingAppDetails] = useState(false);
+export default async function OAuthAuthorizePage({
+  searchParams,
+}: {
+  searchParams: Promise<AuthorizeParams>;
+}) {
+  const resolvedParams = await searchParams;
 
-  // Parse OAuth parameters from URL on client side only
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      setAuthParams({
-        client_id: urlParams.get('client_id') || '',
-        redirect_uri: urlParams.get('redirect_uri') || '',
-        code_challenge: urlParams.get('code_challenge') || '',
-        code_challenge_method: urlParams.get('code_challenge_method') || 'S256',
-        scope: urlParams.get('scope') || 'llm:invoke offline_access',
-        state: urlParams.get('state') || undefined,
-        response_type: urlParams.get('response_type') || 'code',
-      });
-    }
-  }, []);
+  const parseResult = authorizeParamsSchema.safeParse(resolvedParams);
 
-  // Fetch app owner details when we have authParams
-  useEffect(() => {
-    if (authParams?.client_id && !appDetails && !loadingAppDetails) {
-      setLoadingAppDetails(true);
-      fetch(`/api/apps/${authParams.client_id}/owner-details`)
-        .then(response => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error('Failed to fetch app details');
-        })
-        .then(data => {
-          setAppDetails(data);
-        })
-        .catch(error => {
-          console.error('Error fetching app owner details:', error);
-          // Continue with basic fallback info - this is not a critical error
-        })
-        .finally(() => {
-          setLoadingAppDetails(false);
-        });
-    }
-  }, [authParams, appDetails, loadingAppDetails]);
+  if (!parseResult.success) {
+    return (
+      <div className="p-6 text-red-600">
+        {parseResult.error.issues.map(err => (
+          <div key={err.path.join('.')}>{err.message}</div>
+        ))}
+      </div>
+    );
+  }
 
-  // Validate required parameters
-  useEffect(() => {
-    if (
-      authParams &&
-      (!authParams.client_id ||
-        !authParams.redirect_uri ||
-        !authParams.code_challenge)
-    ) {
-      setError('Missing required OAuth parameters');
-    }
-    if (authParams && authParams.response_type !== 'code') {
-      setError('Only authorization code flow is supported');
-    }
-    if (authParams && authParams.code_challenge_method !== 'S256') {
-      setError('Only S256 code challenge method is supported');
-    }
-  }, [authParams]);
+  const authParams = parseResult.data;
 
-  // Redirect to sign-in if not authenticated
-  useEffect(() => {
-    if (isLoaded && !user && !error) {
-      const currentUrl = window.location.href;
-      router.push(`/login?redirect_url=${encodeURIComponent(currentUrl)}`);
-    }
-  }, [isLoaded, user, error, router]);
+  const session = await auth();
+  const redirectUrl = new URL('/oauth/authorize');
+  for (const [key, value] of Object.entries(authParams)) {
+    redirectUrl.searchParams.set(key, value);
+  }
+
+  if (!session?.user) {
+    return redirect(redirectUrl.toString());
+  }
+
+  const appDetails = await api.apps
+    .getPublicApp({
+      appId: authParams.client_id,
+    })
+    .catch(() => null);
+
+  if (!appDetails) {
+    return notFound();
+  }
+
+  const {
+    name,
+    description,
+    owner: { name: ownerName },
+  } = appDetails;
 
   const handleAuthorize = async () => {
-    setIsAuthorizing(true);
     try {
       // Call the authorization API endpoint
       const response = await fetch('/api/oauth/authorize', {
@@ -123,8 +89,6 @@ export default function OAuthAuthorizePage() {
       }
     } catch {
       setError('Failed to authorize application');
-    } finally {
-      setIsAuthorizing(false);
     }
   };
 
@@ -144,60 +108,7 @@ export default function OAuthAuthorizePage() {
     window.location.href = redirectUrl.toString();
   };
 
-  if (!isLoaded || !authParams) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground mt-4">Loading...</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (!user) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground mt-4">
-            Redirecting to sign in...
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card rounded-lg border border-border p-6 shadow-lg">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-destructive">
-                Authorization Error
-              </h2>
-            </div>
-            <div>
-              <p className="text-destructive text-sm">{error}</p>
-              <GlassButton
-                onClick={() => window.history.back()}
-                className="mt-4 w-full"
-                variant="secondary"
-              >
-                Go Back
-              </GlassButton>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   const scopes = authParams.scope.split(' ');
-  const appName =
-    appDetails?.name || `Echo App (${authParams.client_id.slice(0, 8)}...)`;
-  const ownerName = appDetails?.owner?.name || appDetails?.owner?.email;
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -233,7 +144,7 @@ export default function OAuthAuthorizePage() {
           <div className="text-center mb-6">
             <div className="mb-4">
               <h2 className="text-xl font-semibold text-foreground mb-1">
-                {appName}
+                {name}
               </h2>
               {ownerName && (
                 <p className="text-sm text-muted-foreground">by {ownerName}</p>
@@ -295,14 +206,16 @@ export default function OAuthAuthorizePage() {
             </div>
 
             <div className="flex gap-3">
-              <GlassButton
-                onClick={handleDeny}
-                disabled={isAuthorizing}
-                variant="secondary"
-                className="flex-1"
-              >
-                Deny
-              </GlassButton>
+              <Link href={redirectUrl.toString()}>
+                <GlassButton
+                  onClick={handleDeny}
+                  disabled={isAuthorizing}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  Deny
+                </GlassButton>
+              </Link>
               <GlassButton
                 onClick={handleAuthorize}
                 disabled={isAuthorizing}
