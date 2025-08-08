@@ -5,6 +5,8 @@ import {
   CreatePaymentLinkRequest,
   CreatePaymentLinkResponse,
   EchoApp,
+  GetFreeBalanceRequest,
+  GetFreeBalanceResponse,
   ListEchoAppsResponse,
   SupportedModel,
   SupportedModelsResponse,
@@ -54,6 +56,20 @@ export class EchoClient {
       return response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch balance');
+    }
+  }
+
+  /**
+   * Get free tier balance for a specific app
+   * @param echoAppId The Echo app ID to get free tier balance for
+   */
+  async getFreeBalance(echoAppId: string): Promise<GetFreeBalanceResponse> {
+    try {
+      const request: GetFreeBalanceRequest = { echoAppId };
+      const response = await this.http.post('/api/v1/balance/free', request);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error, 'Failed to fetch free tier balance');
     }
   }
 

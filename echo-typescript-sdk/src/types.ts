@@ -193,3 +193,30 @@ export interface SupportedModelsResponse {
   models: SupportedModel[];
   models_by_provider: Record<string, SupportedModel[]>;
 }
+
+/**
+ * User spend information for a specific app
+ */
+export interface UserSpendInfo {
+  userId: string;
+  echoAppId: string;
+  spendPoolId: string | null;
+  amountSpent: number;
+  spendLimit: number | null;
+  amountLeft: number | null;
+}
+
+/**
+ * Request for getting free tier balance
+ */
+export interface GetFreeBalanceRequest {
+  echoAppId: string;
+}
+
+/**
+ * Response from the free balance endpoint
+ */
+export interface GetFreeBalanceResponse {
+  spendPoolBalance: number;
+  userSpendInfo: UserSpendInfo;
+}

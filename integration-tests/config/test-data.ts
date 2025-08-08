@@ -21,6 +21,13 @@ export const TEST_DATA = {
       totalPaid: 0,
       totalSpent: 0,
     },
+    tertiary: {
+      id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      email: 'test3@example.com',
+      name: 'Third Test User',
+      totalPaid: 0,
+      totalSpent: 0,
+    },
   },
 
   // Echo app (OAuth client) configurations
@@ -34,6 +41,11 @@ export const TEST_DATA = {
       id: '44444444-4444-4444-4444-444444444444',
       name: 'Second Integration Test Client',
       description: 'Second OAuth client for cross-client testing',
+    },
+    tertiary: {
+      id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+      name: 'Third Integration Test Client',
+      description: 'Third OAuth client for multi-app testing',
     },
   },
 
@@ -93,6 +105,29 @@ export const TEST_DATA = {
       id: '66666666-6666-6666-6666-666666666666',
       cost: 0.15,
       status: 'completed',
+    },
+  },
+
+  // Spend pool configurations
+  spendPools: {
+    primary: {
+      id: '77777777-7777-7777-7777-777777777777',
+      name: 'Primary Test Spend Pool',
+      description: 'Primary spend pool for integration testing',
+      totalPaid: 1.0,
+      perUserSpendLimit: 0.01,
+      totalSpent: 0.0099,
+      echoAppId: 'cccccccc-cccc-cccc-cccc-cccccccccccc', // Reference to tertiary app
+    },
+  },
+
+  // User spend pool usage configurations
+  userSpendPoolUsage: {
+    tertiaryUserPrimaryPool: {
+      id: '99999999-9999-9999-9999-999999999999',
+      userId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', // Tertiary test user
+      spendPoolId: '77777777-7777-7777-7777-777777777777', // Primary spend pool
+      totalSpent: 0.0099,
     },
   },
 
@@ -182,15 +217,21 @@ export const TEST_DATA = {
 export const TEST_CLIENT_IDS = {
   primary: TEST_DATA.echoApps.primary.id,
   secondary: TEST_DATA.echoApps.secondary.id,
+  tertiary: TEST_DATA.echoApps.tertiary.id,
 };
 
 export const TEST_USER_IDS = {
   primary: TEST_DATA.users.primary.id,
   secondary: TEST_DATA.users.secondary.id,
+  tertiary: TEST_DATA.users.tertiary.id,
 };
 
 export const TEST_USER_API_KEYS = {
   primary: primaryApiKey,
+};
+
+export const TEST_SPEND_POOL_IDS = {
+  primary: TEST_DATA.spendPools.primary.id,
 };
 
 // Type definitions for test data
@@ -198,3 +239,6 @@ export type TestData = typeof TEST_DATA;
 export type TestUser = typeof TEST_DATA.users.primary;
 export type TestEchoApp = typeof TEST_DATA.echoApps.primary;
 export type TestApiKey = typeof TEST_DATA.apiKeys.primary;
+export type TestSpendPool = typeof TEST_DATA.spendPools.primary;
+export type TestUserSpendPoolUsage =
+  typeof TEST_DATA.userSpendPoolUsage.tertiaryUserPrimaryPool;
