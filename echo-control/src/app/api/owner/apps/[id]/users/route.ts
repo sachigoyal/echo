@@ -42,7 +42,7 @@ export async function GET(
             id: true,
             email: true,
             name: true,
-            profilePictureUrl: true,
+            image: true,
             createdAt: true,
           },
         },
@@ -73,7 +73,7 @@ export async function GET(
               isArchived: false,
             },
           }),
-          db.llmTransaction.aggregate({
+          db.transaction.aggregate({
             where: {
               userId: membership.userId,
               echoAppId: appId,
@@ -90,7 +90,7 @@ export async function GET(
           userId: membership.user.id,
           email: membership.user.email,
           name: membership.user.name,
-          profilePictureUrl: membership.user.profilePictureUrl,
+          image: membership.user.image,
           role: membership.role,
           status: membership.status,
           totalSpent: Number(membership.totalSpent),

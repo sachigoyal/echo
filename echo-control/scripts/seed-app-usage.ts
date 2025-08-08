@@ -148,14 +148,12 @@ async function createTestUser(
   suffix: string = ''
 ): Promise<string> {
   const email = generateEmail(name, suffix);
-  const clerkId = `test_clerk_${crypto.randomUUID()}`;
 
   const user = await prisma.user.create({
     data: {
       id: crypto.randomUUID(),
       email,
       name,
-      clerkId,
       totalPaid: randomBetween(0, 10000) / 100, // $0-$100 in random paid amount
       totalSpent: 0, // Will be updated as transactions are created
     },
@@ -207,7 +205,6 @@ async function createApiKey(
       userId,
       echoAppId: appId,
       scope,
-      isActive: Math.random() > 0.1, // 90% chance of being active
     },
   });
 
@@ -405,7 +402,6 @@ async function seedAppUsage(
             apiKeys: {
               where: {
                 echoAppId: appId,
-                isActive: true,
               },
             },
           },
@@ -465,7 +461,7 @@ async function seedAppUsage(
 
   for (let i = 0; i < transactions.length; i += batchSize) {
     const batch = transactions.slice(i, i + batchSize);
-    await prisma.llmTransaction.createMany({
+    await prisma.transaction.createMany({
       data: batch,
     });
     totalInserted += batch.length;
@@ -578,7 +574,6 @@ async function seedAllApps(options: SeedOptions): Promise<void> {
 
   const apps = await prisma.echoApp.findMany({
     where: {
-      isActive: true,
       isArchived: false,
     },
     select: {

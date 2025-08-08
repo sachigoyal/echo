@@ -2,10 +2,10 @@ import { Zap, BarChart3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatNumber } from './AppDetailShared';
-import { DetailedEchoApp } from '@/hooks/useEchoAppDetail';
+import { EchoApp } from '@/lib/types/apps';
 
 interface GlobalModelsCardProps {
-  app: DetailedEchoApp;
+  app: EchoApp;
   title?: string;
 }
 
@@ -14,12 +14,12 @@ export function GlobalModelsCard({
   title = 'AI Models Used',
 }: GlobalModelsCardProps) {
   // Get the top 3 models by token usage for public display
-  const topModels = (app.stats?.modelUsage || [])
-    .sort((a, b) => (b._sum.totalTokens || 0) - (a._sum.totalTokens || 0))
+  const topModels = (app.stats?.globalModelUsage || [])
+    .sort((a, b) => (b.totalTokens || 0) - (a.totalTokens || 0))
     .slice(0, 3);
 
-  const totalModelsCount = app.stats?.modelUsage?.length || 0;
-  const totalTokens = app.stats?.totalTokens || 0;
+  const totalModelsCount = app.stats?.globalModelUsage?.length || 0;
+  const totalTokens = app.stats?.globalTotalTokens || 0;
 
   const getModelDisplayName = (model: string): string => {
     // Extract readable model names

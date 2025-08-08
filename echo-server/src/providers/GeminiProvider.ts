@@ -1,6 +1,7 @@
 import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
+import { LlmTransactionMetadata, Transaction } from '../types';
 
 export interface GeminiUsage {
   promptTokenCount: number;
@@ -118,7 +119,7 @@ export class GeminiProvider extends BaseProvider {
     };
   }
 
-  async handleBody(data: string): Promise<void> {
+  async handleBody(data: string): Promise<Transaction> {
     try {
       let promptTokens = 0;
       let candidatesTokens = 0;
@@ -161,16 +162,22 @@ export class GeminiProvider extends BaseProvider {
         totalTokens
       );
 
-      // Create transaction with proper model info and token details
-      await this.getEchoControlService().createTransaction({
+      const metadata: LlmTransactionMetadata = {
         model: this.getModel(),
+        providerId: providerId,
+        provider: this.getType(),
         inputTokens: promptTokens,
         outputTokens: candidatesTokens,
         totalTokens: totalTokens,
+      };
+
+      const transaction: Transaction = {
+        metadata: metadata,
         cost: getCostPerToken(this.getModel(), promptTokens, candidatesTokens),
         status: 'success',
-        providerId: providerId,
-      });
+      };
+
+      return transaction;
     } catch (error) {
       console.error('Error processing Gemini response data:', error);
       throw error;

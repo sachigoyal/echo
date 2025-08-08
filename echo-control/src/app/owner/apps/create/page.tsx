@@ -87,8 +87,8 @@ function CreateApplicationForm() {
   );
   const githubHook = useGitHubComponent(
     app?.id || '',
-    app?.githubId || '',
-    (app?.githubType as 'user' | 'repo') || 'user'
+    app?.githubLink?.githubId || '',
+    (app?.githubLink?.githubType as 'user' | 'repo') || 'user'
   );
   const testIntegrationHook = useTestIntegrationComponent(app?.id || '');
 
@@ -146,7 +146,7 @@ function CreateApplicationForm() {
   const formData = {
     name: app?.name || createAppHook.stepRef.current?.getValue() || '',
     callbackUrl: app?.authorizedCallbackUrls?.[0] || '',
-    githubId: app?.githubId || '',
+    githubId: app?.githubLink?.githubId || '',
     // Add other form fields as needed
   };
 

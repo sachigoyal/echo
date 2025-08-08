@@ -5,6 +5,7 @@ import { useCurrentApp } from '@/hooks/useCurrentApp';
 import { useUpdateApp } from '@/hooks/useUpdateApp';
 import MarkupSettingsCard from '../MarkupSettingsCard';
 import GithubSelection from './GithubSelection';
+import { AppGithubLink } from '@/lib/apps/types';
 
 interface GeneralSettingsProps {
   appId: string;
@@ -60,11 +61,19 @@ export default function GeneralSettings({ appId }: GeneralSettingsProps) {
         githubType: newGithubType,
       });
 
-      // Update local state after successful API call
-      updateLocalApp({
-        githubId: newGithubId,
-        githubType: newGithubType,
-      });
+      // Update local state after successful API call only if values are defined
+      if (newGithubId !== undefined && newGithubType !== undefined) {
+        const githubLink: AppGithubLink = {
+          githubId: newGithubId,
+          githubType: newGithubType,
+          isArchived: false,
+          description: '',
+        };
+
+        updateLocalApp({
+          githubLink,
+        });
+      }
     } catch (error) {
       console.error('Error updating GitHub info:', error);
       // Error is already handled by the useUpdateApp hook
@@ -120,8 +129,10 @@ export default function GeneralSettings({ appId }: GeneralSettingsProps) {
       {/* GitHub User Settings */}
       <div>
         <GithubSelection
-          initialGithubId={app.githubId || ''}
-          initialGithubType={app.githubType as 'user' | 'repo' | null}
+          initialGithubId={app.githubLink?.githubId || ''}
+          initialGithubType={
+            app.githubLink?.githubType as 'user' | 'repo' | null
+          }
           onSave={updateGitHubInfo}
           isLoading={isUpdatingGithub}
           error={updateError}

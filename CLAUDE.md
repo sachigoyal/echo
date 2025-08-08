@@ -17,7 +17,7 @@ Echo is a TypeScript monorepo providing an LLM application platform with 5 main 
 - **echo-server** depends on **echo-control** for Prisma client (copied at build time)
 - **echo-server** uses **echo-typescript-sdk** as dependency for client functionality
 - API keys are app-scoped (major architectural constraint - all keys tied to specific Echo apps)
-- Dual authentication: Clerk sessions (web UI) + API keys (programmatic access)
+- Dual authentication: NextAuth sessions (web UI) + API keys (programmatic access)
 
 ## Development Commands
 

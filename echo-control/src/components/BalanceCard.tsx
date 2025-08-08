@@ -1,18 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+
 import {
   CreditCardIcon,
   PlusIcon,
   MinusIcon,
   ArrowUpRight,
 } from 'lucide-react';
+
 import { useRouter } from 'next/navigation';
+
+import { Logo } from '@/components/ui/logo';
+
 import { GlassButton } from './glass-button';
+
+import { useUser } from '@/hooks/use-user';
+
+import { Balance } from '@/lib/balance/types';
 import { formatCurrency } from '@/lib/balance';
-import { Logo } from './ui/logo';
-import { Balance } from '@/lib/types/apps';
 
 interface BalanceCardProps {
   compact?: boolean;

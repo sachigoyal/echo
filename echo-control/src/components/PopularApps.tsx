@@ -1,45 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { PublicEchoApp } from '@/lib/types/apps';
+import { useTRPCPublicApps } from '@/hooks';
 import AppCard from './AppCard';
 import { Marquee } from './ui/marquee';
 import { Skeleton } from './skeleton';
 
 export const PopularApps: React.FC = () => {
-  const [apps, setApps] = useState<PublicEchoApp[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use TRPC hook to fetch public apps with a large limit for marquee
+  const { apps, isLoading, error } = useTRPCPublicApps({
+    initialLimit: 100,
+  });
 
-  useEffect(() => {
-    const fetchPopularApps = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Fetch all popular apps (large limit for marquee display)
-        const response = await fetch('/api/apps/public?limit=100');
-        if (!response.ok) {
-          throw new Error('Network response was not ok.');
-        }
-        const data = await response.json();
-        const popularApps = (data.apps as PublicEchoApp[]).filter(
-          app => app.isActive
-        );
-        setApps(popularApps);
-      } catch (error) {
-        console.error('Error fetching popular apps:', error);
-        setError('Failed to fetch popular apps.');
-        setApps([]); // Clear apps on error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPopularApps();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="w-full">
         <div className="mb-6 text-center">
@@ -74,7 +48,9 @@ export const PopularApps: React.FC = () => {
           </p>
         </div>
         <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <div className="text-sm text-red-700 dark:text-red-300">{error}</div>
+          <div className="text-sm text-red-700 dark:text-red-300">
+            {(error as Error).message}
+          </div>
         </div>
       </div>
     );
@@ -121,7 +97,9 @@ export const PopularApps: React.FC = () => {
             <AppCard
               app={app}
               href={`/apps/${app.id}`}
-              activityData={app.activityData || []}
+              activityData={
+                app.stats?.globalActivityData?.map(d => d.totalTokens) || []
+              }
               size="medium"
               showChart={true}
             />

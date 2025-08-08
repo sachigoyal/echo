@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { updateEchoAppById, getDetailedAppInfo } from '@/lib/echo-apps';
+import { updateEchoAppById } from '@/lib/apps/crud';
 import { isValidUUID } from '@/lib/oauth-config/index';
 import { PermissionService } from '@/lib/permissions/service';
 import { Permission } from '@/lib/permissions/types';
 import { put, del } from '@vercel/blob';
+import { getOwnerEchoApp } from '@/lib/apps';
 
 // POST /api/apps/[id]/images - Upload profile picture or banner image
 export async function POST(
@@ -70,7 +71,7 @@ export async function POST(
     }
 
     // Get current app details to check for existing images
-    const appDetails = await getDetailedAppInfo(appId, user.id);
+    const appDetails = await getOwnerEchoApp(appId, user.id);
 
     if (!appDetails) {
       return NextResponse.json(
@@ -198,7 +199,7 @@ export async function DELETE(
     }
 
     // Get current app details to get the existing image URL
-    const appDetails = await getDetailedAppInfo(appId, user.id);
+    const appDetails = await getOwnerEchoApp(appId, user.id);
 
     if (!appDetails) {
       return NextResponse.json(

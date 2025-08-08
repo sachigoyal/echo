@@ -1,6 +1,5 @@
-'use client';
+import Link from 'next/link';
 
-import Image from 'next/image';
 import PopularApps from '@/components/PopularApps';
 import {
   CardHeader,
@@ -8,12 +7,10 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import { useTheme } from '@/components/theme-provider';
-import Link from 'next/link';
 import { GlassButton } from '@/components/glass-button';
+import { Logo } from '@/components/ui/logo';
 
 export default function HomePage() {
-  const { resolvedTheme } = useTheme();
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -21,18 +18,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <CardHeader className="text-center pb-8">
             <CardTitle className="text-4xl md:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-              <Image
-                src={
-                  resolvedTheme === 'dark'
-                    ? '/logo/dark.svg'
-                    : '/logo/light.svg'
-                }
-                alt="Echo Logo"
-                width={240}
-                height={100}
-                className="h-12 w-auto"
-                priority
-              />
+              <Logo className="h-12 w-auto" />
               Echo
             </CardTitle>
             <CardDescription className="text-lg md:text-2xl">

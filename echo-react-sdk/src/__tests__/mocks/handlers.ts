@@ -131,7 +131,7 @@ export const handlers = [
       }
 
       // Default: Mock behavior simulates user is NOT authenticated
-      // In real implementation, this would check actual session state (Clerk auth)
+      // In real implementation, this would check actual session state
       return HttpResponse.json(
         {
           error: 'login_required',

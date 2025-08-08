@@ -11,7 +11,6 @@ export const TEST_DATA = {
       id: '11111111-1111-1111-1111-111111111111',
       email: 'test@example.com',
       name: 'Integration Test User',
-      clerkId: 'user_2mP4JRQPpWlDVDPuyrxBxwZU6cM', // links to the INTEGRATION_TEST_JWT user in Clerk
       totalPaid: 0,
       totalSpent: 0,
     },
@@ -19,7 +18,6 @@ export const TEST_DATA = {
       id: '33333333-3333-3333-3333-333333333333',
       email: 'test2@example.com',
       name: 'Second Test User',
-      clerkId: 'user_2yazGcnqOARrPN3GwgZ8j8QWDEL', // links to the INTEGRATION_TEST_JWT_USER_2 user in Clerk
       totalPaid: 0,
       totalSpent: 0,
     },
@@ -93,13 +91,7 @@ export const TEST_DATA = {
   llmTransactions: {
     testTransaction: {
       id: '66666666-6666-6666-6666-666666666666',
-      model: 'claude-3-5-sonnet-20241022',
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
       cost: 0.15,
-      prompt: 'Test prompt for integration testing',
-      response: 'Test response from integration testing',
       status: 'completed',
     },
   },

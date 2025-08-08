@@ -8,7 +8,6 @@ export interface CreateUserOptions {
   id?: string;
   email?: string;
   name?: string;
-  clerkId?: string;
 }
 
 export interface CreateEchoAppOptions {
@@ -74,10 +73,6 @@ export class TestDataFactory {
     return `test-${crypto.randomBytes(8).toString('hex')}@example.com`;
   }
 
-  generateUniqueClerkId(): string {
-    return `user_test_${crypto.randomBytes(8).toString('hex')}`;
-  }
-
   generateApiKey(): string {
     return `ek_test_${crypto.randomBytes(16).toString('hex')}`;
   }
@@ -93,7 +88,6 @@ export class TestDataFactory {
         id: options.id || this.generateUniqueId(),
         email: options.email || this.generateUniqueEmail(),
         name: options.name || 'Test User',
-        clerkId: options.clerkId || this.generateUniqueClerkId(),
       },
     });
   }

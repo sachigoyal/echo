@@ -31,7 +31,7 @@ export async function GET(
     const skip = (page - 1) * limit;
 
     // Get all LLM transactions for the app with pagination
-    const transactions = await db.llmTransaction.findMany({
+    const transactions = await db.transaction.findMany({
       where: {
         echoAppId: appId,
         isArchived: false,
@@ -42,7 +42,7 @@ export async function GET(
             id: true,
             email: true,
             name: true,
-            profilePictureUrl: true,
+            image: true,
           },
         },
         apiKey: {
@@ -51,6 +51,7 @@ export async function GET(
             name: true,
           },
         },
+        transactionMetadata: true,
       },
       orderBy: { createdAt: 'desc' },
       skip,
@@ -58,7 +59,7 @@ export async function GET(
     });
 
     // Get total count for pagination
-    const totalCount = await db.llmTransaction.count({
+    const totalCount = await db.transaction.count({
       where: {
         echoAppId: appId,
         isArchived: false,
@@ -68,30 +69,32 @@ export async function GET(
     const totalPages = Math.ceil(totalCount / limit);
 
     // Format transactions for the response
-    const formattedTransactions = transactions.map(transaction => ({
-      id: transaction.id,
-      model: transaction.model,
-      providerId: transaction.providerId,
-      inputTokens: transaction.inputTokens,
-      outputTokens: transaction.outputTokens,
-      totalTokens: transaction.totalTokens,
-      cost: Number(transaction.cost),
-      status: transaction.status,
-      errorMessage: transaction.errorMessage,
-      createdAt: transaction.createdAt.toISOString(),
-      user: {
-        id: transaction.user.id,
-        email: transaction.user.email,
-        name: transaction.user.name,
-        profilePictureUrl: transaction.user.profilePictureUrl,
-      },
-      apiKey: transaction.apiKey
-        ? {
-            id: transaction.apiKey.id,
-            name: transaction.apiKey.name,
-          }
-        : null,
-    }));
+    const formattedTransactions = transactions.map(transaction => {
+      const metadata = transaction.transactionMetadata;
+      return {
+        id: transaction.id,
+        model: metadata?.model,
+        providerId: metadata?.providerId,
+        inputTokens: metadata?.inputTokens,
+        outputTokens: metadata?.outputTokens,
+        totalTokens: metadata?.totalTokens,
+        cost: Number(transaction.cost),
+        status: transaction.status,
+        createdAt: transaction.createdAt.toISOString(),
+        user: {
+          id: transaction.user.id,
+          email: transaction.user.email,
+          name: transaction.user.name,
+          image: transaction.user.image,
+        },
+        apiKey: transaction.apiKey
+          ? {
+              id: transaction.apiKey.id,
+              name: transaction.apiKey.name,
+            }
+          : null,
+      };
+    });
 
     // Calculate totals for summary
     const totalCost = transactions.reduce(
@@ -99,7 +102,7 @@ export async function GET(
       0
     );
     const totalTokens = transactions.reduce(
-      (sum, tx) => sum + tx.totalTokens,
+      (sum, tx) => sum + (tx.transactionMetadata?.totalTokens || 0),
       0
     );
 

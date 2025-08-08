@@ -19,7 +19,7 @@ export async function seedIntegrationDatabase() {
   try {
     // Clean existing data in reverse dependency order
     await prisma.refreshToken.deleteMany();
-    await prisma.llmTransaction.deleteMany();
+    await prisma.transaction.deleteMany();
     await prisma.payment.deleteMany();
     await prisma.apiKey.deleteMany();
     await prisma.echoApp.deleteMany();
@@ -39,7 +39,6 @@ export async function seedIntegrationDatabase() {
       data: {
         ...TEST_DATA.echoApps.primary,
         authorizedCallbackUrls: TEST_DATA.oauth.defaultCallbackUrls,
-        isActive: true,
       },
     });
 
@@ -62,7 +61,6 @@ export async function seedIntegrationDatabase() {
         ...TEST_DATA.apiKeys.primary,
         userId: testUser.id,
         echoAppId: testApp.id,
-        isActive: true,
       },
     });
 
@@ -80,7 +78,6 @@ export async function seedIntegrationDatabase() {
       data: {
         ...TEST_DATA.echoApps.secondary,
         authorizedCallbackUrls: TEST_DATA.oauth.secondaryCallbackUrls,
-        isActive: true,
       },
     });
 
@@ -115,10 +112,9 @@ export async function seedIntegrationDatabase() {
     console.log('💳 Created test payment');
 
     // Create some test LLM transactions
-    await prisma.llmTransaction.create({
+    await prisma.transaction.create({
       data: {
         ...TEST_DATA.llmTransactions.testTransaction,
-        providerId: 'openai',
         userId: testUser.id,
         echoAppId: testApp.id,
         apiKeyId: testApiKey.id,

@@ -1,5 +1,5 @@
-@import "./fonts.css"; /* Use relative path instead of @/ alias */
-@import "../components/animations.css"; /* Custom animations */
+@import './fonts.css'; /* Use relative path instead of @/ alias */
+@import '../components/animations.css'; /* Custom animations */
 
 @tailwind base;
 @tailwind components;
@@ -292,7 +292,7 @@ html {
 
 @layer components {
   #gradient-canvas,
-  [id^="gradient-canvas-button-"] {
+  [id^='gradient-canvas-button-'] {
     width: 100%;
     height: 100%;
     --gradient-color-1: #cd0202;

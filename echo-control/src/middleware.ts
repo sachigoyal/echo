@@ -1,56 +1,49 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { createPathMatcher } from 'next-path-matcher';
 
-// CORS configuration for OAuth endpoints
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+import { middleware } from '@/auth/middleware';
+import { NextResponse } from 'next/server';
 
-const isOAuthRoute = createRouteMatcher([
+const isPublicRoute = createPathMatcher([
+  // public pages
+  '/',
+  '/sign-in(.*)',
+  // public routes
+  '/api/auth/(.*)',
+  '/auth/signin(.*)',
   '/api/v1/(.*)',
   '/api/oauth(.*)',
   '/api/validate-jwt-token(.*)',
-]);
-
-const isPublicRoute = createRouteMatcher([
-  '/sign-in(.*)',
-  '/sign-up(.*)',
+  '/api/apps/public',
   '/api/stripe/webhook(.*)',
   '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
-  '/api/oauth/authorize(.*)', // OAuth authorize endpoint - handles its own auth
-  '/api/oauth/token(.*)', // OAuth token endpoint - handles its own auth
   '/api/health(.*)', // Health check endpoint - no auth needed
 ]);
 
-export default clerkMiddleware(async (auth, req: NextRequest) => {
-  // Handle CORS for OAuth endpoints
-  // For OAuth routes, add CORS headers to the response and pass through.
-  // We do the authentication in the OAuth routes themselves (because they may require database access).
-  if (isOAuthRoute(req)) {
-    if (req.method === 'OPTIONS') {
-      return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
-    }
-    const response = NextResponse.next();
-    Object.entries(CORS_HEADERS).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
-    return response;
-  }
-
+export default middleware(req => {
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }
 
-  await auth.protect();
+  if (!req.auth) {
+    // If the route does not exist (404), do not redirect to sign-in
+    if (
+      req.nextUrl.pathname.startsWith('/api/') ||
+      req.nextUrl.pathname === '/404' ||
+      req.nextUrl.pathname === '/_error'
+    ) {
+      // Let the request continue so the API or 404 handler can respond
+      return NextResponse.next();
+    }
+    const newUrl = new URL('/sign-in', req.nextUrl.origin);
+    const redirectUrl = `${req.nextUrl.pathname}${req.nextUrl.search}`;
+    newUrl.searchParams.set('redirect_url', redirectUrl);
+    return Response.redirect(newUrl);
+  }
 });
 
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
   ],
 };

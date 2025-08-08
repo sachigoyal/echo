@@ -1,6 +1,6 @@
 import { getAuthenticatedUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { listAppsWithDetails } from '@/lib/echo-apps';
+import { getAllOwnerEchoApps } from '@/lib/apps';
 import { User } from '@/generated/prisma';
 
 // GET /api/v1/apps - List all Echo apps for the authenticated user
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       console.error('Error fetching apps:', error);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const apps = await listAppsWithDetails(user.id);
+    const apps = await getAllOwnerEchoApps(user.id);
 
     return NextResponse.json({ apps });
   } catch (error) {
