@@ -1,7 +1,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 
-import { TRPCProvider } from '@/components/providers/TRPCProvider';
+import { TRPCReactProvider } from '@/trpc/client';
 
 import Header from '@/components/header';
 
@@ -30,7 +30,7 @@ export default function RootLayout({
     <SessionProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased bg-background text-foreground h-dvh overflow-y-auto">
-          <TRPCProvider>
+          <TRPCReactProvider>
             <ThemeProvider
               attribute="class"
               defaultTheme="dark"
@@ -42,7 +42,7 @@ export default function RootLayout({
                 {children}
               </main>
             </ThemeProvider>
-          </TRPCProvider>
+          </TRPCReactProvider>
         </body>
       </html>
     </SessionProvider>

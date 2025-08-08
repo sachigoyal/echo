@@ -1,6 +1,6 @@
 'use client';
 
-import { trpc } from '@/components/providers/TRPCProvider';
+import { api } from '@/trpc/client';
 import type {
   PublicEchoApp,
   CustomerEchoApp,
@@ -48,7 +48,7 @@ export function useTRPCPublicApps(
   const [limit, setLimit] = useState(options?.initialLimit ?? 10);
   const [search, setSearch] = useState(options?.search ?? '');
 
-  const query = trpc.apps.getAllPublicApps.useQuery(
+  const query = api.apps.getAllPublicApps.useQuery(
     { page, limit, search: search || undefined },
     {
       staleTime: 0,
@@ -138,7 +138,7 @@ export function useTRPCCustomerApps(
   const [limit, setLimit] = useState(options?.initialLimit ?? 10);
   const [search, setSearch] = useState(options?.search ?? '');
 
-  const query = trpc.apps.getAllCustomerApps.useQuery(
+  const query = api.apps.getAllCustomerApps.useQuery(
     { page, limit, search: search || undefined },
     {
       staleTime: 0,
@@ -228,7 +228,7 @@ export function useTRPCOwnerApps(
   const [limit, setLimit] = useState(options?.initialLimit ?? 10);
   const [search, setSearch] = useState(options?.search ?? '');
 
-  const query = trpc.apps.getAllOwnerApps.useQuery(
+  const query = api.apps.getAllOwnerApps.useQuery(
     { page, limit, search: search || undefined },
     {
       staleTime: 0,

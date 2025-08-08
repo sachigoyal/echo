@@ -1,26 +1,19 @@
-import { serverTRPC } from '@/server/trpc-server';
+import { api, HydrateClient } from '@/trpc/server';
 import MemberAppsPage from '../MemberAppsPage';
-import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
-import { QueryClient } from '@tanstack/react-query';
 
 /**
  * Server component wrapper for MemberAppsPage
  * Prefetches data on the server for SSR
  */
 export async function MemberAppsPageServer() {
-  const queryClient = new QueryClient();
-  const caller = await serverTRPC();
-
-  // Prefetch the customer apps data
-  await queryClient.prefetchQuery({
-    queryKey: ['apps', 'getAllCustomerApps', { page: 1, limit: 100 }],
-    queryFn: () => caller.apps.getAllCustomerApps({ page: 1, limit: 100 }),
-    staleTime: 0,
+  api.apps.getAllCustomerApps.prefetch({
+    page: 1,
+    limit: 100,
   });
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
+    <HydrateClient>
       <MemberAppsPage />
-    </HydrationBoundary>
+    </HydrateClient>
   );
 }

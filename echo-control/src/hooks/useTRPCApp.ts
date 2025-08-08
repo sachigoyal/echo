@@ -1,6 +1,7 @@
 'use client';
 
-import { trpc } from '@/components/providers/TRPCProvider';
+import { api } from '@/trpc/client';
+
 import type {
   PublicEchoApp,
   CustomerEchoApp,
@@ -21,7 +22,7 @@ interface UseTRPCAppReturn {
  * Returns different data based on user's role
  */
 export function useTRPCApp(appId: string): UseTRPCAppReturn {
-  const query = trpc.apps.getApp.useQuery(
+  const query = api.apps.getApp.useQuery(
     { appId },
     {
       enabled: !!appId,
@@ -50,7 +51,7 @@ interface UseTRPCOwnerAppReturn {
  * Hook to fetch an app as owner (requires owner permissions)
  */
 export function useTRPCOwnerApp(appId: string): UseTRPCOwnerAppReturn {
-  const query = trpc.apps.getOwnerApp.useQuery(
+  const query = api.apps.getOwnerApp.useQuery(
     { appId },
     {
       enabled: !!appId,
@@ -79,7 +80,7 @@ interface UseTRPCCustomerAppReturn {
  * Hook to fetch an app as customer (requires customer permissions)
  */
 export function useTRPCCustomerApp(appId: string): UseTRPCCustomerAppReturn {
-  const query = trpc.apps.getCustomerApp.useQuery(
+  const query = api.apps.getCustomerApp.useQuery(
     { appId },
     {
       enabled: !!appId,
@@ -108,7 +109,7 @@ interface UseTRPCPublicAppReturn {
  * Hook to fetch a public app
  */
 export function useTRPCPublicApp(appId: string): UseTRPCPublicAppReturn {
-  const query = trpc.apps.getPublicApp.useQuery(
+  const query = api.apps.getPublicApp.useQuery(
     { appId },
     {
       enabled: !!appId,
