@@ -11,6 +11,12 @@ export const providers: OAuthProvider[] = [
     clientId: process.env.AUTH_GOOGLE_ID,
     clientSecret: process.env.AUTH_GOOGLE_SECRET,
     allowDangerousEmailAccountLinking: true,
+    profile: profile => ({
+      id: profile.sub,
+      name: profile.name,
+      email: profile.email,
+      image: profile.picture,
+    }),
   }),
   GithubProvider({
     clientId: process.env.AUTH_GITHUB_ID,
