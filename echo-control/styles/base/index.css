@@ -1,5 +1,4 @@
 @import './fonts.css'; /* Use relative path instead of @/ alias */
-@import '../components/animations.css'; /* Custom animations */
 
 @tailwind base;
 @tailwind components;
