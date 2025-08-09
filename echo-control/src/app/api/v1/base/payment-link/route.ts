@@ -3,7 +3,7 @@ import { getAuthenticatedUser, getCurrentUser } from '@/lib/auth';
 import { User } from '@/generated/prisma';
 import {
   handlePaymentSuccessFromx402,
-  formatAmountFromHeader,
+  formatAmountFromQueryParams,
 } from '@/lib/base';
 
 // GET /api/v1/base/payment-link - Create base payment link
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const amount = formatAmountFromHeader(request);
+    const amount = formatAmountFromQueryParams(request);
 
     if (!amount) {
       return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });

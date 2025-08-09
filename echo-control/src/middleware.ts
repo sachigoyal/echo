@@ -5,14 +5,17 @@ import { paymentMiddleware, Network, Resource } from 'x402-next';
 
 import { middleware } from '@/auth/middleware';
 import { NextRequest, NextResponse } from 'next/server';
-import { formatAmountFromHeader, formatPriceForMiddleware } from './lib/base';
+import {
+  formatAmountFromQueryParams,
+  formatPriceForMiddleware,
+} from './lib/base';
 
 const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
 const network = process.env.NETWORK as Network;
 
 export const x402MiddlewareGenerator = (req: NextRequest) => {
-  const amount = formatAmountFromHeader(req);
+  const amount = formatAmountFromQueryParams(req);
 
   if (!amount) {
     return async (_: NextRequest) =>

@@ -2,7 +2,9 @@ import { NextRequest } from 'next/server';
 import { db } from '../db';
 import { processPaymentUpdate } from '../payment-processing';
 
-export const formatAmountFromHeader = (req: NextRequest): number | null => {
+export const formatAmountFromQueryParams = (
+  req: NextRequest
+): number | null => {
   const formattedAmount = req.nextUrl.searchParams.get('amount') || '1';
 
   const amount = parseFloat(formattedAmount);
