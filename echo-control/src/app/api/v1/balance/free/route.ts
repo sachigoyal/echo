@@ -2,6 +2,7 @@ import { getCustomerSpendInfoForApp } from '@/lib/spend-pools/fetch-user-spend';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { User } from '@/generated/prisma';
+import { formatAmountFromHeader } from '@/lib/base';
 
 // POST /api/v1/balance/free - Get authenticated user's free tier spend info for a specific app
 export async function POST(request: NextRequest) {
@@ -15,17 +16,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { echoAppId } = await request.json();
+    const amount = formatAmountFromHeader(request);
 
-    if (!echoAppId) {
-      return NextResponse.json(
-        { error: 'echoAppId is required' },
-        { status: 400 }
-      );
+    if (!amount) {
+      return NextResponse.json({ error: `Invalid amount` }, { status: 400 });
     }
-
-    const { spendPoolBalance, userSpendInfo } =
-      await getCustomerSpendInfoForApp(user.id, echoAppId);
 
     return NextResponse.json({
       spendPoolBalance,
@@ -39,3 +34,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const GET = POST;
