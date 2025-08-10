@@ -10,6 +10,8 @@ import {
   formatAmountFromQueryParams,
   formatPriceForMiddleware,
 } from './lib/base';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
