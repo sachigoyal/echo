@@ -12,6 +12,7 @@ import { join } from 'path';
 import { PrismaClient, SpendPool } from '../generated/prisma';
 import FreeTierService from './FreeTierService';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
+import { fundRepo, FundRepoResult } from './fund-repo/fundRepoService';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
@@ -23,6 +24,8 @@ export class EchoControlService {
   private markUpId: string | null = null;
   private githubLinkId: string | null = null;
   private freeTierSpendPool: SpendPool | null = null;
+  private githubId: string | null = null;
+  private githubType: string | null = null;
 
   constructor(apiKey: string) {
     // Check if the generated Prisma client exists
@@ -63,6 +66,8 @@ export class EchoControlService {
 
     const githubLinkData = await this.getAppGithubLink();
     this.githubLinkId = githubLinkData.id;
+    this.githubId = githubLinkData.githubId;
+    this.githubType = githubLinkData.githubType;
 
     return this.authResult;
   }
@@ -305,6 +310,7 @@ export class EchoControlService {
     }
 
     const cost = transaction.cost * this.appMarkup;
+    const markUp = cost - transaction.cost;
     transaction.cost = cost;
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
@@ -319,5 +325,18 @@ export class EchoControlService {
     };
 
     await this.dbService.createPaidTransaction(transactionData);
+
+    if (this.githubId && this.githubType === 'repo' && markUp > 0) {
+      fireAndForgetFundRepo(markUp, parseInt(this.githubId));
+    }
   }
+}
+
+async function fireAndForgetFundRepo(
+  amount: number,
+  repoId: number
+): Promise<void> {
+  fundRepo(amount, repoId).catch(error => {
+    console.error('Error funding repo:', error);
+  });
 }
