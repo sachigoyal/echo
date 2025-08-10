@@ -10,8 +10,6 @@ import {
   formatAmountFromQueryParams,
   formatPriceForMiddleware,
 } from './lib/base';
-import dotenv from 'dotenv';
-dotenv.config();
 
 // const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
@@ -98,4 +96,5 @@ export const config = {
     // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
   ],
+  runtime: 'nodejs',
 };
