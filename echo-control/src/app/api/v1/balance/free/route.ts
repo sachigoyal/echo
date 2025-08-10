@@ -15,10 +15,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const spendPoolBalance = await getCustomerSpendInfoForApp(user.id, 'echo');
+    const { echoAppId } = await request.json();
+
+    if (!echoAppId) {
+      return NextResponse.json(
+        { error: 'echoAppId is required' },
+        { status: 400 }
+      );
+    }
+
+    const { spendPoolBalance, userSpendInfo } =
+      await getCustomerSpendInfoForApp(user.id, echoAppId);
 
     return NextResponse.json({
       spendPoolBalance,
+      userSpendInfo,
     });
   } catch (error) {
     console.error('Error fetching customer spend info:', error);
@@ -28,5 +39,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
-export const GET = POST;
