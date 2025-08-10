@@ -14,11 +14,13 @@ export async function GET(request: NextRequest) {
     try {
       const { user: userResult } = await getAuthenticatedUser(request);
       user = userResult;
-    } catch (_) {
+    } catch (error) {
+      console.error('Error authenticating user:', error);
       try {
         const userResult = await getCurrentUser();
         user = userResult;
-      } catch (_) {
+      } catch (error) {
+        console.log('Error getting current user:', error);
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }

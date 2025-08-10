@@ -1,7 +1,8 @@
 import { createPathMatcher } from 'next-path-matcher';
 
 import { Address } from 'viem';
-import { paymentMiddleware, Network, Resource } from 'x402-next';
+import { paymentMiddleware, Network } from 'x402-next';
+import { facilitator } from '@coinbase/x402';
 
 import { middleware } from '@/auth/middleware';
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,7 +11,7 @@ import {
   formatPriceForMiddleware,
 } from './lib/base';
 
-const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
+// const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
 const network = process.env.NETWORK as Network;
 
@@ -18,8 +19,10 @@ export const x402MiddlewareGenerator = (req: NextRequest) => {
   const amount = formatAmountFromQueryParams(req);
 
   if (!amount) {
-    return async (_: NextRequest) =>
-      NextResponse.json({ error: `Invalid amount` }, { status: 400 });
+    return async (req: NextRequest) => {
+      console.log('Invalid amount', req.nextUrl.searchParams.get('amount'));
+      return NextResponse.json({ error: `Invalid amount` }, { status: 400 });
+    };
   }
 
   const paymentAmount = formatPriceForMiddleware(amount);
@@ -35,9 +38,7 @@ export const x402MiddlewareGenerator = (req: NextRequest) => {
         },
       },
     },
-    {
-      url: facilitatorUrl,
-    },
+    facilitator,
     {
       appName: 'Echo Credits',
     }

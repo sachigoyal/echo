@@ -4,7 +4,6 @@ import {
   MERIT_ABI,
   MERIT_CONTRACT_ADDRESS,
   USDC_ADDRESS,
-  GITHUB_REPO_ID,
   ERC20_CONTRACT_ABI,
 } from './constants';
 
@@ -17,19 +16,23 @@ export interface FundRepoResult {
   tokenAddress: string;
 }
 
-export async function fundRepo(amount: number): Promise<FundRepoResult> {
+export async function fundRepo(
+  amount: number,
+  repoId: number
+): Promise<FundRepoResult> {
   try {
     if (!amount || typeof amount !== 'number') {
       throw new Error('Invalid amount provided');
     }
 
-    if (!GITHUB_REPO_ID || !USDC_ADDRESS || !MERIT_CONTRACT_ADDRESS) {
+    if (!USDC_ADDRESS || !MERIT_CONTRACT_ADDRESS) {
       throw new Error('Missing required environment variables');
     }
 
-    const repoId = GITHUB_REPO_ID;
     const tokenAddress = USDC_ADDRESS;
     const repoInstanceId = 0;
+    // Convert to BigInt safely by avoiding floating point precision issues
+    // USDC has 6 decimals, so multiply by 10^6
     // Use Math.ceil for defensive rounding to avoid undercharging
     const amountBigInt = BigInt(Math.ceil(amount * 10 ** 6));
 
@@ -51,7 +54,7 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
       calls: [
         {
           to: tokenAddress as `0x${string}`,
-          value: BigInt(0),
+          value: 0n,
           data: encodeFunctionData({
             abi: ERC20_CONTRACT_ABI as Abi,
             functionName: 'approve',
@@ -60,7 +63,7 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
         },
         {
           to: MERIT_CONTRACT_ADDRESS as `0x${string}`,
-          value: BigInt(0),
+          value: 0n,
           data: encodeFunctionData({
             abi: MERIT_ABI as Abi,
             functionName: 'fundRepo',
@@ -88,7 +91,7 @@ export async function fundRepo(amount: number): Promise<FundRepoResult> {
       userOpHash: result.userOpHash,
       smartAccountAddress: smartAccount.address,
       amount: amount,
-      repoId: repoId,
+      repoId: repoId.toString(),
       tokenAddress: tokenAddress,
     };
   } catch (error) {
