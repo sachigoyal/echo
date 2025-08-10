@@ -67,6 +67,7 @@ export const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
 export default middleware(req => {
   if (isX402Route(req)) {
     const paymentMiddleware = x402MiddlewareGenerator(req);
+    // @ts-ignore - NextAuthRequest is compatible with NextRequest for middleware purposes
     return paymentMiddleware(req);
   }
 
