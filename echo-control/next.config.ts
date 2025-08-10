@@ -12,7 +12,6 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   experimental: {
     authInterrupts: true,
-    nodeMiddleware: true, // TEMPORARY: Only needed until Edge runtime support is added
   },
   images: {
     remotePatterns: [
