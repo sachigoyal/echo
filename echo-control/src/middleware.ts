@@ -1,7 +1,49 @@
 import { createPathMatcher } from 'next-path-matcher';
 
+import { Address } from 'viem';
+import { paymentMiddleware, Network } from 'x402-next';
+import { facilitator } from '@coinbase/x402';
+
 import { middleware } from '@/auth/middleware';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  formatAmountFromQueryParams,
+  formatPriceForMiddleware,
+} from './lib/base';
+
+// const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
+const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
+const network = process.env.NETWORK as Network;
+
+export const x402MiddlewareGenerator = (req: NextRequest) => {
+  const amount = formatAmountFromQueryParams(req);
+
+  if (!amount) {
+    return async (req: NextRequest) => {
+      console.log('Invalid amount', req.nextUrl.searchParams.get('amount'));
+      return NextResponse.json({ error: `Invalid amount` }, { status: 400 });
+    };
+  }
+
+  const paymentAmount = formatPriceForMiddleware(amount);
+
+  return paymentMiddleware(
+    payTo,
+    {
+      '/api/v1/base/payment-link': {
+        price: paymentAmount,
+        network,
+        config: {
+          description: 'Access to protected content',
+        },
+      },
+    },
+    facilitator,
+    {
+      appName: 'Echo Credits',
+    }
+  );
+};
 
 const isPublicRoute = createPathMatcher([
   // public pages
@@ -20,7 +62,19 @@ const isPublicRoute = createPathMatcher([
   '/api/health(.*)', // Health check endpoint - no auth needed
 ]);
 
+export const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
+
 export default middleware(req => {
+  if (isX402Route(req)) {
+    // For OPTIONS requests on x402 routes, pass to the next auth handler
+    if (req.method === 'OPTIONS') {
+      return NextResponse.next();
+    }
+
+    const paymentMiddleware = x402MiddlewareGenerator(req);
+    return paymentMiddleware(req);
+  }
+
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }
@@ -47,4 +101,5 @@ export const config = {
     // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
   ],
+  runtime: 'nodejs',
 };

@@ -166,9 +166,9 @@ export default function EarningsSettings({ appId }: EarningsSettingsProps) {
                 <div className="flex items-center space-x-4 min-w-0 flex-1">
                   {/* User Avatar */}
                   <div className="shrink-0">
-                    {transaction.user.profilePictureUrl ? (
+                    {transaction.user.image ? (
                       <Image
-                        src={transaction.user.profilePictureUrl}
+                        src={transaction.user.image}
                         alt={transaction.user.name || transaction.user.email}
                         width={40}
                         height={40}

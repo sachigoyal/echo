@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/balance';
-import Image from 'next/image';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useUserSettings } from '@/hooks/useUserSettings';
 
 interface UsersSettingsProps {
@@ -113,14 +113,16 @@ export default function UsersSettings({ appId }: UsersSettingsProps) {
                 <div className="flex items-center space-x-4 min-w-0 flex-1">
                   {/* User Avatar */}
                   <div className="shrink-0">
-                    {user.profilePictureUrl ? (
-                      <Image
-                        src={user.profilePictureUrl}
-                        alt={user.name || user.email}
-                        width={40}
-                        height={40}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
+                    {user.image ? (
+                      <Avatar>
+                        <AvatarImage
+                          alt={user.name || user.email}
+                          src={user.image}
+                          className="w-10 h-10 rounded-full object-cover"
+                          width={40}
+                          height={40}
+                        />
+                      </Avatar>
                     ) : (
                       <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                         {(user.name || user.email).charAt(0).toUpperCase()}

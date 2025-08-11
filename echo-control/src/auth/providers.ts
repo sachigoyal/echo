@@ -108,4 +108,41 @@ export const testProviders: Provider[] = [
       };
     },
   }),
+  Credentials({
+    id: 'test-user-3',
+    name: 'Third Test User',
+    credentials: {},
+    authorize: async () => {
+      const existingUser = await db.user.findUnique({
+        where: {
+          email: 'test3@example.com',
+        },
+      });
+
+      if (existingUser) {
+        return {
+          id: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          image: existingUser.image,
+        };
+      }
+
+      const user = await db.user.create({
+        data: {
+          id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          name: 'Third Test User',
+          email: 'test3@example.com',
+          image: 'http://echo.merit.systems/logo/light.svg',
+        },
+      });
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+      };
+    },
+  }),
 ];
