@@ -285,7 +285,7 @@ export async function getCustomerStatisticsBatch(
       spendPoolId: null,
       amountSpent: 0,
       spendLimit: null,
-      amountLeft: null,
+      amountLeft: 0,
     };
 
     if (!globalStats) {
