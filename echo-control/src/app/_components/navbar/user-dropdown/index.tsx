@@ -14,11 +14,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { UserAvatar } from '@/components/utils/user-avatar';
+
 import { ColorModeToggle } from './color-mode-toggle';
 
 import type { User as NextAuthUser } from 'next-auth';
 import { signOut } from '@/auth';
-import { UserAvatar } from '@/components/utils/user-avatar';
 
 interface Props {
   user: NextAuthUser;
@@ -34,7 +35,7 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
             user.name?.charAt(0).toUpperCase() ||
             user.email?.charAt(0).toUpperCase()
           }
-          className="size-10 rounded-lg border cursor-pointer"
+          className="size-9 rounded-md cursor-pointer border"
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
