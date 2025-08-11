@@ -19,6 +19,7 @@ import { api } from '@/trpc/server';
 
 import { authorizeParamsSchema } from '../../_lib/authorize';
 import { ErrorPage } from './_components/error-page';
+import Link from 'next/link';
 
 export default async function OAuthAuthorizePage({
   searchParams,
@@ -99,22 +100,28 @@ export default async function OAuthAuthorizePage({
           appImage={profilePictureUrl ?? ownerImageUrl}
           userImage={session.user.image}
         />
-
-        <Card className="bg-card rounded-lg border border-border shadow-lg w-full">
-          {/* App Information */}
-          <CardHeader className="p-4 border-b">
-            <h2 className="text-lg text-foreground font-light">
-              <span className="font-bold">{name}</span> by{' '}
-              <span className="font-bold">{ownerName}</span> wants to:
-            </h2>
-          </CardHeader>
-          <CardContent className="p-4 border-b">
-            <Scopes scopes={scopes} />
-          </CardContent>
-          <CardFooter className="w-full flex justify-center p-4">
-            <AuthorizeButtons params={authParams} />
-          </CardFooter>
-        </Card>
+        <div className="flex flex-col items-center gap-4 w-full">
+          <Card className="bg-card rounded-lg border border-border shadow-lg w-full">
+            {/* App Information */}
+            <CardHeader className="p-4 border-b">
+              <h2 className="text-lg text-foreground font-light">
+                <span className="font-bold">{name}</span> by{' '}
+                <span className="font-bold">{ownerName}</span> wants to:
+              </h2>
+            </CardHeader>
+            <CardContent className="p-4 border-b">
+              <Scopes scopes={scopes} />
+            </CardContent>
+            <CardFooter className="w-full flex justify-center p-4">
+              <AuthorizeButtons params={authParams} />
+            </CardFooter>
+          </Card>
+          <p className="text-xs text-muted-foreground/60 text-center">
+            Connecting your account will redirect you to:
+            <br />
+            <span className="font-semibold">{authParams.redirect_uri}</span>
+          </p>
+        </div>
       </div>
     </div>
   );
