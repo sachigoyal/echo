@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   formatAmountFromQueryParams,
   formatPriceForMiddleware,
-} from './lib/base';
+} from './src/lib/base';
 
 // const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
