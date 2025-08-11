@@ -218,7 +218,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = React.memo(
     return (
       <div
         ref={containerRef}
-        className={cn(`h-full w-full ${className}`)}
+        className={cn(`h-full w-full opacity-5 dark:opacity-30 ${className}`)}
         {...props}
       >
         <canvas

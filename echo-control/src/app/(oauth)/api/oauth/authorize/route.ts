@@ -1,3 +1,7 @@
+import {
+  authorizeParamsSchema,
+  getAuthorizationRedirect,
+} from '@/app/(oauth)/_lib/authorize';
 import { auth } from '@/auth';
 import { EchoApp } from '@/generated/prisma';
 import { getOrCreateUser } from '@/lib/auth';
@@ -152,7 +156,6 @@ export async function GET(req: NextRequest) {
 
     /* 2️⃣ Check if user is authenticated */
     const session = await auth();
-    console.log('🔧 session:', session);
     const userId = session?.user?.id;
     if (!session?.user) {
       // Handle prompt=none for unauthenticated users - SECURITY FIX
@@ -240,51 +243,30 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    /* Handle authorization approval from consent page */
-    const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
+    const body = await req.json();
+
+    const parsedBody = authorizeParamsSchema.safeParse(body);
+
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: parsedBody.error.message,
+        },
+        { status: 400 }
+      );
+    }
+
+    const redirect_url = await getAuthorizationRedirect(parsedBody.data);
+
+    if (!redirect_url) {
       return NextResponse.json(
         { error: 'unauthorized', error_description: 'User not authenticated' },
         { status: 401 }
       );
     }
 
-    const body = await req.json();
-    const {
-      client_id,
-      redirect_uri,
-      code_challenge,
-      code_challenge_method,
-      scope,
-      state,
-    } = body;
-
-    /* Generate authorization code */
-    const authCode = nanoid(32);
-    const exp = Math.floor(Date.now() / 1000) + AUTH_CODE_TTL;
-
-    const authCodeJwt = await new SignJWT({
-      clientId: client_id,
-      redirectUri: redirect_uri,
-      codeChallenge: code_challenge,
-      codeChallengeMethod: code_challenge_method,
-      scope,
-      userId,
-      exp,
-      code: authCode,
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime(exp)
-      .sign(JWT_SECRET);
-
-    /* Return redirect URL for client to use */
-    const redirectUrl = new URL(redirect_uri);
-    redirectUrl.searchParams.set('code', authCodeJwt);
-    if (state) redirectUrl.searchParams.set('state', state);
-
-    return NextResponse.json({ redirect_url: redirectUrl.toString() });
+    return NextResponse.json({ redirect_url });
   } catch (error) {
     console.error('OAuth authorization POST error:', error);
     return NextResponse.json(

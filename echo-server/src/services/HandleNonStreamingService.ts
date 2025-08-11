@@ -14,7 +14,7 @@ export class HandleNonStreamingService {
     response: Response,
     provider: BaseProvider,
     res: ExpressResponse
-  ): Promise<Transaction> {
+  ): Promise<{ transaction: Transaction; data: unknown }> {
     // Parse the JSON response
     const data = await response.json();
 
@@ -24,9 +24,7 @@ export class HandleNonStreamingService {
     // Set the appropriate content type
     res.setHeader('content-type', 'application/json');
 
-    res.json(data);
-
-    return transaction;
+    return { transaction, data };
   }
 }
 

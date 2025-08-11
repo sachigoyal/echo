@@ -41,6 +41,10 @@
   border-radius: var(--radius);
 }
 
+@utility animate-shimmer {
+  animation: shimmer 5s infinite;
+}
+
 @layer utilities {
   html {
     @apply font-sans;
@@ -80,8 +84,8 @@
   --sidebar-accent-foreground: oklch(0 0 0);
   --sidebar-border: oklch(0.94 0 0);
   --sidebar-ring: oklch(0 0 0);
-  --font-sans: Geist, sans-serif;
-  --font-serif: Georgia, serif;
+  --font-sans: 'HelveticaNowDisplay', sans-serif;
+  --font-serif: 'HelveticaNowDisplay', serif;
   --font-mono: Geist Mono, monospace;
   --radius: 0.5rem;
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
@@ -244,6 +248,18 @@
     }
     to {
       transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes shimmer {
+    0%,
+    100% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    50% {
+      transform: translateX(100%);
       opacity: 1;
     }
   }

@@ -12,6 +12,7 @@
     "prisma:generate": "pnpx prisma generate",
     "prisma:push": "pnpx prisma db push",
     "prisma:studio": "pnpx prisma studio",
+    "prisma:reset": "pnpx prisma migrate reset",
     "copy:model-prices": "cp ../echo-server/model_prices.json ./model_prices.json",
     "seed-app": "tsx scripts/seed-app-usage.ts",
     "check-types": "tsc --noEmit",

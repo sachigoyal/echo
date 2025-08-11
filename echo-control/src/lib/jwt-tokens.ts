@@ -518,3 +518,5 @@ export async function handleInitialTokenIssuance(
     },
   };
 }
+
+export const getRedirectWithAuthCode = {};

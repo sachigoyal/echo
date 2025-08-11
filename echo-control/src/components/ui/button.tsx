@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed gap-2',
+  'inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed gap-2',
   {
     variants: {
       variant: {
@@ -22,6 +22,15 @@ const buttonVariants = cva(
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         success: 'bg-green-600 text-white shadow-sm hover:bg-green-700',
+        turbo: cn(
+          'bg-gradient-to-br from-primary via-primary/80 to-primary text-white hover:opacity-90',
+          'shadow-[0_2px_8px_color-mix(in_oklab,var(--primary)_70%,transparent)]',
+          'hover:shadow-[0_2px_6px_color-mix(in_oklab,var(--primary)_70%,transparent)]',
+          'inset-ring-1 inset-ring-inset inset-ring-border/50',
+          'relative overflow-hidden',
+          'before:content-[""] before:absolute before:w-full before:h-full before:rounded-md before:pointer-events-none',
+          'before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:animate-shimmer'
+        ),
         unstyled: '',
       },
       size: {
