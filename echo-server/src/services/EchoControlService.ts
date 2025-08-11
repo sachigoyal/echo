@@ -336,6 +336,13 @@ async function fireAndForgetFundRepo(
   amount: number,
   repoId: number
 ): Promise<void> {
+  const fundRepoEnabled =
+    (process.env.ENABLE_FIRE_AND_FORGET || 'false') === 'true';
+
+  if (!fundRepoEnabled) {
+    return;
+  }
+
   fundRepo(amount, repoId).catch(error => {
     console.error('Error funding repo:', error);
   });
