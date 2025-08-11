@@ -36,11 +36,11 @@ export const ConnectionBeam: React.FC<Props> = ({ appImage, userImage }) => {
           </div>
           <div
             ref={div2Ref}
-            className="z-10 size-16 overflow-hidden rounded-md"
+            className="z-10 size-16 overflow-hidden rounded-md bg-card border"
           >
             <UserAvatar
               src={userImage}
-              fallback={<User className="size-4" />}
+              fallback={<User className="size-8" />}
             />
           </div>
         </div>

@@ -40,7 +40,7 @@ export default async function SignInPage({
       />
       <div className="w-full max-w-md gap-6 flex flex-col items-center z-10 p-4">
         <div className="flex flex-col items-center gap-2 text-center">
-          <div className="size-16 p-3 border border-border/40 rounded-xl flex items-center justify-center bg-background">
+          <div className="size-16 p-3 border rounded-xl flex items-center justify-center bg-background">
             <Logo className="size-full" />
           </div>
           <div className="flex flex-col items-center gap-1 text-center">

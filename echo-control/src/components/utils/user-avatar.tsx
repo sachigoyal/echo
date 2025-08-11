@@ -15,7 +15,7 @@ export const UserAvatar: React.FC<Props> = ({ src, fallback, className }) => {
   return (
     <Avatar className={cn('rounded-md overflow-hidden', className)}>
       {src ? <AvatarImage src={src} className="size-full" /> : <AvatarImage />}
-      <AvatarFallback className="bg-transparent">
+      <AvatarFallback className="bg-transparent size-full flex items-center justify-center">
         {fallback || <User className="size-4" />}
       </AvatarFallback>
     </Avatar>
