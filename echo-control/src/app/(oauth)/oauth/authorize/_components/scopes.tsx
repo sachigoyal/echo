@@ -1,4 +1,4 @@
-import { BrainCircuit, Icon, User } from 'lucide-react';
+import { BrainCircuit, User } from 'lucide-react';
 
 interface Props {
   scopes: string[];

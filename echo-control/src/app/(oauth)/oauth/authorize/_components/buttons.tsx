@@ -8,7 +8,6 @@ import { AuthorizeParams } from '@/app/(oauth)/_lib/authorize';
 
 import { authorize } from '../_actions/authorize';
 import { Button } from '@/components/ui/button';
-import { TurboButton } from '@/components/ui/turbo-button';
 
 interface Props {
   params: AuthorizeParams;

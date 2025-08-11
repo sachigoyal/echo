@@ -13,13 +13,13 @@ import { ConnectionBeam } from './_components/connection-beam';
 import { Scopes } from './_components/scopes';
 import { AuthorizeButtons } from './_components/buttons';
 
+import { ErrorPage } from './_components/error-page';
+
 import { auth } from '@/auth';
 
 import { api } from '@/trpc/server';
 
 import { authorizeParamsSchema } from '../../_lib/authorize';
-import { ErrorPage } from './_components/error-page';
-import Link from 'next/link';
 
 export default async function OAuthAuthorizePage({
   searchParams,
