@@ -75,7 +75,7 @@ function TestComponent() {
       </div>
       <div data-testid="user">{user ? `User: ${user.name}` : 'No user'}</div>
       <div data-testid="balance">
-        {balance ? `Credits: ${balance.credits}` : 'No balance'}
+        {balance ? `Credits: ${balance.balance}` : 'No balance'}
       </div>
       <div data-testid="error">{error || 'No error'}</div>
       <div data-testid="token">{token || 'No token'}</div>

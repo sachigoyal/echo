@@ -6,7 +6,7 @@ import {
   CreatePaymentLinkResponse,
   EchoApp,
   GetFreeBalanceRequest,
-  GetFreeBalanceResponse,
+  FreeBalance,
   ListEchoAppsResponse,
   SupportedModel,
   SupportedModelsResponse,
@@ -63,7 +63,7 @@ export class EchoClient {
    * Get free tier balance for a specific app
    * @param echoAppId The Echo app ID to get free tier balance for
    */
-  async getFreeBalance(echoAppId: string): Promise<GetFreeBalanceResponse> {
+  async getFreeBalance(echoAppId: string): Promise<FreeBalance> {
     try {
       const request: GetFreeBalanceRequest = { echoAppId };
       const response = await this.http.post('/api/v1/balance/free', request);

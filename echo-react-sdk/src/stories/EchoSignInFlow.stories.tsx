@@ -52,7 +52,9 @@ function AuthStatusDemo() {
         </div>
         <div>
           <strong>Balance:</strong>{' '}
-          {balance ? `${balance.credits} ${balance.currency}` : 'None'}
+          {balance
+            ? `${balance.totalPaid} ${balance.totalSpent} ${balance.balance}`
+            : 'None'}
         </div>
       </div>
       {error && (

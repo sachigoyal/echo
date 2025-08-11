@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { EchoContext, EchoContextValue } from '../components/EchoProvider';
 import { EchoUser, EchoBalance } from '../types';
+import { FreeBalance } from '@zdql/echo-typescript-sdk';
 
 // Mock data for Storybook
 const mockUser: EchoUser = {
@@ -10,8 +11,21 @@ const mockUser: EchoUser = {
 };
 
 const mockBalance: EchoBalance = {
-  credits: 150,
-  currency: 'credits',
+  totalPaid: 150,
+  totalSpent: 0,
+  balance: 150,
+};
+
+const mockFreeTierBalance: FreeBalance = {
+  spendPoolBalance: 100,
+  userSpendInfo: {
+    userId: 'mock-user-123',
+    echoAppId: 'mock-app-123',
+    spendPoolId: 'mock-spend-pool-123',
+    amountSpent: 0,
+    spendLimit: 100,
+    amountLeft: 100,
+  },
 };
 
 // Mock context that simulates different states
@@ -20,6 +34,7 @@ const createMockContext = (
 ): EchoContextValue => ({
   user: mockUser,
   balance: mockBalance,
+  freeTierBalance: mockFreeTierBalance,
   isAuthenticated: true,
   isLoading: false,
   token: 'mock-token',
@@ -97,7 +112,7 @@ export const mockStates = {
   lowBalance: createMockContext({
     isAuthenticated: true,
     user: mockUser,
-    balance: { credits: 5, currency: 'credits' },
+    balance: { totalPaid: 5, totalSpent: 0, balance: 5 },
     isLoading: false,
   }),
 };

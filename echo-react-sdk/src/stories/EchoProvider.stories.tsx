@@ -41,7 +41,9 @@ function ProviderDemo() {
         </p>
         <p>
           <strong>Balance:</strong>{' '}
-          {balance ? `${balance.credits} ${balance.currency}` : 'None'}
+          {balance
+            ? `${balance.totalPaid} ${balance.totalSpent} ${balance.balance}`
+            : 'None'}
         </p>
         <p>
           <strong>Error:</strong> {error || 'None'}

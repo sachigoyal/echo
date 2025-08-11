@@ -30,5 +30,5 @@ export interface UserSpendInfo {
   spendPoolId: string | null;
   amountSpent: number;
   spendLimit: number | null;
-  amountLeft: number | null;
+  amountLeft: number;
 }
