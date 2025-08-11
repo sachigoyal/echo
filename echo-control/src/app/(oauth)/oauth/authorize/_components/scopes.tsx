@@ -22,7 +22,7 @@ const Scope = ({ scope }: { scope: string }) => {
   }
 
   return (
-    <li className="flex items-center gap-2">
+    <li className="flex items-center gap-2 text-sm">
       <data.icon className="size-4" />
       {data.name}
     </li>

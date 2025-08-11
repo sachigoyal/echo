@@ -36,9 +36,14 @@ export const AuthorizeButtons: React.FC<Props> = ({ params }) => {
           </Button>
         </Link>
         <form action={action} className="flex-1">
-          <TurboButton type="submit" disabled={pending} className="w-full">
+          <Button
+            type="submit"
+            variant="turbo"
+            disabled={pending}
+            className="w-full"
+          >
             {pending ? 'Authorizing...' : 'Authorize'}
-          </TurboButton>
+          </Button>
         </form>
       </div>
       {state?.error && (

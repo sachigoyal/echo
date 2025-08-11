@@ -41,6 +41,10 @@
   border-radius: var(--radius);
 }
 
+@utility animate-shimmer {
+  animation: shimmer 5s infinite;
+}
+
 @layer utilities {
   html {
     @apply font-sans;
@@ -244,6 +248,18 @@
     }
     to {
       transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes shimmer {
+    0%,
+    100% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    50% {
+      transform: translateX(100%);
       opacity: 1;
     }
   }

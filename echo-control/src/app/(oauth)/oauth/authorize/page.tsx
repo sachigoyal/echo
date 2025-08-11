@@ -100,22 +100,16 @@ export default async function OAuthAuthorizePage({
           userImage={session.user.image}
         />
 
-        <Card className="bg-card rounded-lg border border-border shadow-lg">
+        <Card className="bg-card rounded-lg border border-border shadow-lg w-full">
           {/* App Information */}
           <CardHeader className="p-4 border-b">
             <h2 className="text-lg text-foreground font-light">
               <span className="font-bold">{name}</span> by{' '}
-              <span className="font-bold">{ownerName}</span> wants to connect to
-              your Echo account
+              <span className="font-bold">{ownerName}</span> wants to:
             </h2>
           </CardHeader>
           <CardContent className="p-4 border-b">
-            <div className="space-y-2">
-              <h4 className="text-muted-foreground text-sm">
-                This application will be able to:
-              </h4>
-              <Scopes scopes={scopes} />
-            </div>
+            <Scopes scopes={scopes} />
           </CardContent>
           <CardFooter className="w-full flex justify-center p-4">
             <AuthorizeButtons params={authParams} />

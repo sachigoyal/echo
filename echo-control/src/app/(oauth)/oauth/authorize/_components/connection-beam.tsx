@@ -7,6 +7,7 @@ import { AppWindow, User } from 'lucide-react';
 import { AnimatedBeam } from '@/components/magicui/animated-beam';
 
 import { UserAvatar } from '@/components/utils/user-avatar';
+import { Card } from '@/components/ui/card';
 
 interface Props {
   appImage: string | null | undefined;
@@ -25,24 +26,16 @@ export const ConnectionBeam: React.FC<Props> = ({ appImage, userImage }) => {
     >
       <div className="flex size-full flex-col items-stretch justify-between gap-10">
         <div className="flex flex-row justify-between">
-          <div
+          <Item
             ref={div1Ref}
-            className="z-10 size-16 overflow-hidden rounded-md"
-          >
-            <UserAvatar
-              src={appImage}
-              fallback={<AppWindow className="size-4" />}
-            />
-          </div>
-          <div
+            src={appImage}
+            fallback={<AppWindow className="size-8" />}
+          />
+          <Item
             ref={div2Ref}
-            className="z-10 size-16 overflow-hidden rounded-md bg-card border"
-          >
-            <UserAvatar
-              src={userImage}
-              fallback={<User className="size-8" />}
-            />
-          </div>
+            src={userImage}
+            fallback={<User className="size-8" />}
+          />
         </div>
       </div>
 
@@ -66,3 +59,15 @@ export const ConnectionBeam: React.FC<Props> = ({ appImage, userImage }) => {
     </div>
   );
 };
+
+const Item = React.forwardRef<
+  HTMLDivElement,
+  { src: string | null | undefined; fallback: React.ReactNode }
+>(({ src, fallback }, ref) => {
+  return (
+    <Card ref={ref} className="z-10 size-16 overflow-hidden rounded-md">
+      <UserAvatar src={src} fallback={fallback} />
+    </Card>
+  );
+});
+Item.displayName = 'Item';
