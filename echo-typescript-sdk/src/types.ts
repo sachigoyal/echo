@@ -55,19 +55,6 @@ export interface LlmTransaction {
   apiKeyId: string;
 }
 
-export interface Payment {
-  id: string;
-  stripePaymentId?: string;
-  amount: number;
-  currency: string;
-  status: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  echoAppId?: string;
-}
-
 export interface Balance {
   totalPaid: number;
   totalSpent: number;

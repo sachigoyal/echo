@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     // Format the response
     const formattedPayments = payments.map(payment => ({
       id: payment.id,
-      stripePaymentId: payment.stripePaymentId,
+      paymentId: payment.paymentId,
       amount: Number(payment.amount),
       currency: payment.currency,
       status: payment.status,

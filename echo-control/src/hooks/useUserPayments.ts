@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 
 interface Payment {
   id: string;
-  stripePaymentId: string;
+  paymentId: string;
   amount: number;
   currency: string;
   status: string;

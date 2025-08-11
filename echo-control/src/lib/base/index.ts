@@ -49,10 +49,10 @@ export async function handlePaymentSuccessFromx402({
     await db.$transaction(async tx => {
       // Update payment in database
       const paymentRecord = await tx.payment.upsert({
-        where: { stripePaymentId: cryptoMetadata['transaction-id'] },
+        where: { paymentId: cryptoMetadata['transaction-id'] },
         update: { status: 'completed' },
         create: {
-          stripePaymentId: cryptoMetadata['transaction-id'],
+          paymentId: cryptoMetadata['transaction-id'],
           amount,
           currency,
           status: 'completed',

@@ -163,7 +163,7 @@ model EchoApp {
 ```prisma
 model Payment {
   id              String   @id @default(cuid())
-  stripePaymentId String?  @unique
+  paymentId       String?  @unique
   amount          Int      // Amount in cents
   currency        String   @default("usd")
   status          String   // pending, completed, failed, refunded

@@ -128,7 +128,7 @@ export async function createPaymentLink(
   // Create pending payment record
   const payment = await db.payment.create({
     data: {
-      stripePaymentId: paymentLink.id,
+      paymentId: paymentLink.id,
       amount: amount,
       currency: 'usd',
       status: 'pending',
@@ -254,7 +254,7 @@ export async function createFreeTierPaymentLink(
   // Create pending payment record
   const payment = await db.payment.create({
     data: {
-      stripePaymentId: paymentLink.id,
+      paymentId: paymentLink.id,
       amount: amount,
       currency: 'usd',
       status: 'pending',
