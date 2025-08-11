@@ -281,8 +281,51 @@ export const handlers = [
 
     // Mock successful balance response
     return HttpResponse.json({
+      totalPaid: 1200,
+      totalSpent: 200,
       balance: 1000,
-      currency: 'USD',
+    });
+  }),
+
+  // Free Tier Balance API Endpoint (v1)
+  http.post(`${API_BASE}/v1/balance/free`, async ({ request }) => {
+    const authHeader = request.headers.get('authorization');
+    const validation = validateJWTToken(authHeader);
+
+    if (!validation.valid) {
+      return HttpResponse.json(
+        {
+          error: validation.error,
+          error_description: 'Token validation failed',
+        },
+        { status: 401 }
+      );
+    }
+
+    const requestBody = (await request.json()) as { echoAppId?: string };
+    const { echoAppId } = requestBody;
+
+    if (!echoAppId) {
+      return HttpResponse.json(
+        {
+          error: 'invalid_request',
+          error_description: 'Missing echoAppId parameter',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Mock successful free tier balance response
+    return HttpResponse.json({
+      spendPoolBalance: 25.5,
+      userSpendInfo: {
+        userId: 'test-user-123',
+        echoAppId: echoAppId,
+        spendPoolId: 'free-tier-pool-123',
+        amountSpent: 4.5,
+        spendLimit: 30.0,
+        amountLeft: 25.5,
+      },
     });
   }),
 

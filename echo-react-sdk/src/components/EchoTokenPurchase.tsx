@@ -135,8 +135,13 @@ export function EchoTokenPurchase({
   className = '',
   children,
 }: EchoTokenPurchaseProps) {
-  const { createPaymentLink, isAuthenticated, balance, refreshBalance } =
-    useEcho();
+  const {
+    createPaymentLink,
+    isAuthenticated,
+    balance,
+    freeTierBalance,
+    refreshBalance,
+  } = useEcho();
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -147,6 +152,11 @@ export function EchoTokenPurchase({
       style: 'currency',
       currency: 'USD',
     }).format(value);
+  };
+
+  // Calculate available spend: min(spendLimit, amount in pool) - amountSpent with floor of 0
+  const calculateAvailableSpend = () => {
+    return freeTierBalance?.userSpendInfo?.amountLeft || 0;
   };
 
   const handlePurchase = async (purchaseAmount: number) => {
@@ -258,7 +268,11 @@ export function EchoTokenPurchase({
         {/* Logo */}
         <Logo width={16} height={16} variant="light" />
         <span>
-          {balance ? formatCurrency(balance.credits) : 'Purchase Tokens'}
+          {freeTierBalance && calculateAvailableSpend() > 0
+            ? formatCurrency(calculateAvailableSpend()) + ' Free'
+            : balance
+              ? formatCurrency(balance.balance)
+              : 'Purchase Tokens'}
         </span>
         {/* Arrow Up Right Icon - matching lucide-react ArrowUpRight */}
         <svg
@@ -347,6 +361,76 @@ export function EchoTokenPurchase({
             flexDirection: 'column',
           }}
         >
+          {/* Free Tier Balance */}
+          {freeTierBalance && (
+            <div style={{ marginBottom: '20px' }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  margin: '0 0 4px 0',
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                Free Tier Available
+              </p>
+              <p
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: '#111827',
+                  margin: '0 0 8px 0',
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                {formatCurrency(calculateAvailableSpend())}
+              </p>
+
+              {/* Usage Info */}
+              {freeTierBalance.userSpendInfo &&
+                freeTierBalance.userSpendInfo.spendLimit && (
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      color: '#6b7280',
+                      fontFamily: 'HelveticaNowDisplay, sans-serif',
+                    }}
+                  >
+                    <div style={{ marginBottom: '6px' }}>
+                      {formatCurrency(
+                        freeTierBalance.userSpendInfo.amountSpent
+                      )}{' '}
+                      of{' '}
+                      {formatCurrency(
+                        freeTierBalance.userSpendInfo.amountLeft +
+                          freeTierBalance.userSpendInfo.amountSpent
+                      )}{' '}
+                      used
+                    </div>
+                    {/* Progress Bar */}
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: '#f3f4f6',
+                        borderRadius: '2px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${Math.min(100, (freeTierBalance.userSpendInfo.amountSpent / freeTierBalance.userSpendInfo.spendLimit) * 100)}%`,
+                          height: '100%',
+                          backgroundColor: '#dc2626',
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
+
+          {/* Paid Credits Balance */}
           <div
             style={{
               display: 'flex',
@@ -363,7 +447,7 @@ export function EchoTokenPurchase({
                   fontFamily: 'HelveticaNowDisplay, sans-serif',
                 }}
               >
-                Current Balance
+                Paid Credits Balance
               </p>
               <p
                 style={{
@@ -374,7 +458,7 @@ export function EchoTokenPurchase({
                   fontFamily: 'HelveticaNowDisplay, sans-serif',
                 }}
               >
-                {balance ? formatCurrency(balance.credits) : '$0.00'}
+                {balance ? formatCurrency(balance.balance) : '$0.00'}
               </p>
             </div>
             <div

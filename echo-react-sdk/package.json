@@ -54,7 +54,7 @@
     }
   },
   "dependencies": {
-    "@zdql/echo-typescript-sdk": "^1.0.18",
+    "@zdql/echo-typescript-sdk": "^1.0.21",
     "dompurify": "^3.2.6",
     "oidc-client-ts": "^3.2.1"
   },

@@ -117,7 +117,7 @@ export const getCustomerSpendInfoForApp = async (
         spendPoolId: null,
         amountSpent: 0,
         spendLimit: null,
-        amountLeft: null,
+        amountLeft: 0,
       },
     };
   }
@@ -133,16 +133,20 @@ export const getCustomerSpendInfoForApp = async (
     userUsage => userUsage.userId === userId
   );
 
+  // if there is a per user spend limit, and balance > limit, set balance to limit
+  const userSpendPoolBalance =
+    spendLimit && spendPoolBalance > spendLimit ? spendLimit : spendPoolBalance;
+
   if (!userSpendInfoRow) {
     return {
-      spendPoolBalance: 0,
+      spendPoolBalance: spendPoolBalance,
       userSpendInfo: {
         userId,
         echoAppId: appId,
-        spendPoolId: null,
+        spendPoolId: spendPool.id,
         amountSpent: 0,
-        spendLimit: null,
-        amountLeft: null,
+        spendLimit: spendLimit,
+        amountLeft: userSpendPoolBalance,
       },
     };
   }
@@ -155,7 +159,7 @@ export const getCustomerSpendInfoForApp = async (
     spendLimit,
     amountLeft: spendLimit
       ? spendLimit - Number(userSpendInfoRow.totalSpent)
-      : null,
+      : spendPoolBalance,
   };
 
   return {
@@ -221,7 +225,7 @@ export const getCustomerSpendInfoForAppBatch = async (
         spendPoolId: null,
         amountSpent: 0,
         spendLimit: null,
-        amountLeft: null,
+        amountLeft: 0,
       },
     });
   }
@@ -242,7 +246,9 @@ export const getCustomerSpendInfoForAppBatch = async (
 
     if (userUsage) {
       const amountSpent = Number(userUsage.totalSpent) || 0;
-      const amountLeft = spendLimit ? spendLimit - amountSpent : null;
+      const amountLeft = spendLimit
+        ? spendLimit - amountSpent
+        : spendPoolBalance - amountSpent;
 
       const userSpendInfo: UserSpendInfo = {
         userId,
@@ -267,7 +273,7 @@ export const getCustomerSpendInfoForAppBatch = async (
           spendPoolId: spendPool.id,
           amountSpent: 0,
           spendLimit,
-          amountLeft: spendLimit,
+          amountLeft: spendLimit ? spendLimit : spendPoolBalance,
         },
       });
     }
@@ -312,10 +318,15 @@ export async function getGlobalUserSpendInfoForApp(
     ? Number(spendPool.perUserSpendLimit)
     : null;
 
+  const spendPoolBalance =
+    Number(spendPool.totalPaid) - Number(spendPool.totalSpent);
+
   // Convert user usage records to UserSpendInfo format
   const userSpendInfo = spendPool.userUsage.map(userUsage => {
     const amountSpent = Number(userUsage.totalSpent);
-    const amountLeft = spendLimit ? spendLimit - amountSpent : null;
+    const amountLeft = spendLimit
+      ? spendLimit - amountSpent
+      : spendPoolBalance - amountSpent;
 
     return {
       userId: userUsage.userId,
@@ -396,7 +407,9 @@ export async function getGlobalUserSpendInfoForAppBatch(
     // Convert user usage records to UserSpendInfo format
     const userSpendInfos = spendPool.userUsage.map(userUsage => {
       const amountSpent = Number(userUsage.totalSpent);
-      const amountLeft = spendLimit ? spendLimit - amountSpent : null;
+      const amountLeft = spendLimit
+        ? spendLimit - amountSpent
+        : spendPoolBalance - amountSpent;
 
       return {
         userId: userUsage.userId,

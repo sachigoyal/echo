@@ -111,13 +111,65 @@ export const WithCallbacks: Story = {
     onPurchaseComplete: balance => {
       console.log('✅ Purchase successful!', balance);
       alert(
-        `Purchase complete! New balance: ${balance.credits} ${balance.currency}`
+        `Purchase complete! New balance: ${balance.totalPaid} ${balance.totalSpent} ${balance.balance}`
       );
     },
     onError: error => {
       console.error('❌ Purchase failed:', error);
       alert(`Purchase failed: ${error.message}`);
     },
+  },
+};
+
+export const ZeroFreeTierWithRealBalance: Story = {
+  decorators: [
+    Story => (
+      <MockEchoProvider
+        mockState={{
+          isAuthenticated: true,
+          user: mockStates.authenticated.user,
+          balance: { totalPaid: 2.5, totalSpent: 0.5, balance: 2.0 },
+          freeTierBalance: {
+            spendPoolBalance: 0,
+            userSpendInfo: {
+              userId: 'mock-user-123',
+              echoAppId: 'mock-app-123',
+              spendPoolId: 'mock-spend-pool-123',
+              amountSpent: 1,
+              spendLimit: 1,
+              amountLeft: 0,
+            },
+          },
+          isLoading: false,
+        }}
+      >
+        <div style={{ padding: '20px', minHeight: '100px', height: '100px' }}>
+          <div
+            style={{
+              marginBottom: '16px',
+              padding: '12px',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '8px',
+            }}
+          >
+            <p
+              style={{ margin: '0 0 8px 0', fontWeight: 'bold', color: '#333' }}
+            >
+              User State: Free tier exhausted, but has paid balance
+            </p>
+            <p style={{ margin: '0', color: '#666', fontSize: '14px' }}>
+              Free tier balance: $0.00 | Paid balance: $2.00
+            </p>
+          </div>
+          <Story />
+        </div>
+      </MockEchoProvider>
+    ),
+  ],
+  args: {
+    amount: 100,
+    onPurchaseComplete: balance => console.log('Purchase complete:', balance),
+    onError: error => console.error('Purchase error:', error),
   },
 };
 

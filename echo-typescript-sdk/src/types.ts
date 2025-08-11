@@ -203,7 +203,7 @@ export interface UserSpendInfo {
   spendPoolId: string | null;
   amountSpent: number;
   spendLimit: number | null;
-  amountLeft: number | null;
+  amountLeft: number;
 }
 
 /**
@@ -216,7 +216,7 @@ export interface GetFreeBalanceRequest {
 /**
  * Response from the free balance endpoint
  */
-export interface GetFreeBalanceResponse {
+export interface FreeBalance {
   spendPoolBalance: number;
   userSpendInfo: UserSpendInfo;
 }
