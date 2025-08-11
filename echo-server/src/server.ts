@@ -48,7 +48,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
     await checkBalance(echoControlService);
 
-    const { transaction, isStream } =
+    const { transaction, isStream, data } =
       await modelRequestService.executeModelRequest(
         req,
         res,
@@ -59,7 +59,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
     await echoControlService.createTransaction(transaction);
 
-    modelRequestService.handleResolveStreamingRequest(res, isStream);
+    modelRequestService.handleResolveResponse(res, isStream, data);
   } catch (error) {
     return next(error);
   }
