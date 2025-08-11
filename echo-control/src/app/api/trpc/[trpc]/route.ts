@@ -1,12 +1,11 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { type NextRequest } from 'next/server';
-import { appRouter } from '@/server/routers';
-import { createContext } from '@/server/trpc';
+import { appRouter } from '@/trpc/routers';
+import { createTRPCContext } from '@/trpc/trpc';
 
-/**
- * Edge runtime configuration
- */
-export const runtime = 'nodejs';
+const createContext = async (req: NextRequest) => {
+  return createTRPCContext(req.headers);
+};
 
 /**
  * TRPC request handler for all HTTP methods
@@ -16,7 +15,7 @@ const handler = (req: NextRequest) =>
     endpoint: '/api/trpc',
     req,
     router: appRouter,
-    createContext: () => createContext(),
+    createContext: () => createContext(req),
     onError:
       process.env.NODE_ENV === 'development'
         ? ({ path, error }) => {

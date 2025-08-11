@@ -1,3 +1,5 @@
+import { Balance } from '@zdql/echo-typescript-sdk';
+
 export interface EchoConfig {
   appId: string;
   apiUrl?: string;
@@ -12,10 +14,7 @@ export interface EchoUser {
   picture?: string;
 }
 
-export interface EchoBalance {
-  credits: number;
-  currency: string;
-}
+export type EchoBalance = Balance;
 
 export interface EchoSignInProps {
   onSuccess?: (user: EchoUser) => void;

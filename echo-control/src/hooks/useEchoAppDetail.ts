@@ -1,9 +1,12 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
+
+import { api } from '@/trpc/client';
+
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { PermissionService } from '@/lib/permissions/service';
-import { trpc } from '@/components/providers/TRPCProvider';
+
 import type { EchoApp } from '@/lib/types/apps';
 
 export interface UserPermissions {
@@ -29,7 +32,7 @@ export function useEchoAppDetail(appId: string): UseEchoAppDetailReturn {
     isLoading,
     error: queryError,
     refetch: trpcRefetch,
-  } = trpc.apps.getApp.useQuery(
+  } = api.apps.getApp.useQuery(
     { appId },
     {
       enabled: !!appId,

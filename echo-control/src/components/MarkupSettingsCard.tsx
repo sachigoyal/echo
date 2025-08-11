@@ -113,7 +113,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
     return (
       <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-secondary border-t-transparent"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
         </div>
       </div>
     );
@@ -124,7 +124,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <DollarSignIcon className="h-5 w-5 text-secondary" />
+          <DollarSignIcon className="h-5 w-5 text-primary" />
           <div>
             <h3 className="font-semibold text-foreground">Markup Settings</h3>
             <p className="text-sm text-muted-foreground">
@@ -151,7 +151,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
               step="1"
               value={inputValue}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-input bg-background text-foreground rounded-lg text-lg font-medium focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
+              className="w-full px-4 py-3 border border-input bg-background text-foreground rounded-lg text-lg font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
               placeholder="0"
             />
             <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
@@ -189,7 +189,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
               onClick={() => setInputValue(preset.toString())}
               className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
                 currentPercentage === preset
-                  ? 'bg-secondary text-secondary-foreground'
+                  ? 'bg-primary text-primary-foreground'
                   : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
               }`}
             >

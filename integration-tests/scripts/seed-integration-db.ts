@@ -20,8 +20,11 @@ export async function seedIntegrationDatabase() {
     // Clean existing data in reverse dependency order
     await prisma.refreshToken.deleteMany();
     await prisma.transaction.deleteMany();
+    await prisma.userSpendPoolUsage.deleteMany();
     await prisma.payment.deleteMany();
+    await prisma.spendPool.deleteMany();
     await prisma.apiKey.deleteMany();
+    await prisma.appMembership.deleteMany();
     await prisma.echoApp.deleteMany();
     await prisma.user.deleteMany();
 
@@ -94,6 +97,51 @@ export async function seedIntegrationDatabase() {
 
     console.log('📱 Created second test Echo app:', secondApp.name);
 
+    // Create a third user for free tier testing (tertiary user)
+    const thirdUser = await prisma.user.create({
+      data: TEST_DATA.users.tertiary,
+    });
+
+    console.log('👤 Created third test user:', thirdUser.email);
+
+    // Create a third test app for the third user (tertiary app)
+    const thirdApp = await prisma.echoApp.create({
+      data: {
+        ...TEST_DATA.echoApps.tertiary,
+        authorizedCallbackUrls: TEST_DATA.oauth.defaultCallbackUrls,
+      },
+    });
+
+    // Create app membership for the third user as owner
+    await prisma.appMembership.create({
+      data: {
+        userId: thirdUser.id,
+        echoAppId: thirdApp.id,
+        role: 'owner',
+        status: 'active',
+        totalSpent: 0,
+      },
+    });
+
+    console.log(
+      '📱 Created third test Echo app (for free tier):',
+      thirdApp.name
+    );
+
+    // Create spend pool for free tier testing
+    const spendPool = await prisma.spendPool.create({
+      data: TEST_DATA.spendPools.primary,
+    });
+
+    console.log('💰 Created spend pool:', spendPool.name);
+
+    // Create user spend pool usage for the third user
+    const userSpendPoolUsage = await prisma.userSpendPoolUsage.create({
+      data: TEST_DATA.userSpendPoolUsage.tertiaryUserPrimaryPool,
+    });
+
+    console.log('📊 Created user spend pool usage for third user');
+
     // Create some test payments
     await prisma.payment.create({
       data: {
@@ -125,9 +173,12 @@ export async function seedIntegrationDatabase() {
 
     console.log('✅ Integration test database seeded successfully');
     console.log('\n📊 Summary:');
-    console.log(`  - Users: 2`);
-    console.log(`  - Echo Apps: 2`);
+    console.log(`  - Users: 3`);
+    console.log(`  - Echo Apps: 3`);
+    console.log(`  - App Memberships: 3`);
     console.log(`  - API Keys: 1`);
+    console.log(`  - Spend Pools: 1`);
+    console.log(`  - User Spend Pool Usage: 1`);
     console.log(`  - Payments: 1`);
     console.log(`  - LLM Transactions: 1`);
   } catch (error) {

@@ -105,14 +105,14 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
     return (
       <button
         onClick={handleNavigateToCredits}
-        className="flex items-center space-x-2 px-3 py-2.5 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-sm transition-all duration-200 shadow-sm group h-10"
+        className="flex items-center space-x-2 px-3 py-2.5 rounded-lg bg-background border border-border hover:bg-muted/50 backdrop-blur-xs transition-all duration-200 shadow-xs group h-10"
         title="View and manage credits"
       >
-        <Logo className="h-4 w-4 text-muted-foreground group-hover:text-secondary transition-colors" />
+        <Logo className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
         <span className="text-sm font-extrabold text-foreground">
           {formatCurrency(Number(balance?.balance) || 0)}
         </span>
-        <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover:text-secondary transition-colors" />
+        <ArrowUpRight className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
       </button>
     );
   }
@@ -130,7 +130,7 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
       {balance && (
         <div className="space-y-4">
           <div>
-            <div className="text-3xl font-bold text-secondary">
+            <div className="text-3xl font-bold text-primary">
               ${balance.balance}
             </div>
             <div className="text-sm text-muted-foreground">
@@ -141,7 +141,7 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
             <div>
               <div className="text-sm text-muted-foreground">Total Credits</div>
-              <div className="font-semibold text-secondary">
+              <div className="font-semibold text-primary">
                 +${balance.totalPaid}
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function BalanceCard({ compact = false }: BalanceCardProps) {
                 onClick={handleBalanceAdjustment}
                 disabled={!adjustmentAmount}
                 variant="secondary"
-                className="!h-8 !w-10"
+                className="h-8! w-10!"
               >
                 {adjustmentType === 'increment' ? (
                   <PlusIcon className="h-4 w-4" />

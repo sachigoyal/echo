@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { Owner, OwnerEchoApp } from './types';
 import { Prisma } from '@/generated/prisma';
-import { getOwnerStatistics, getOwnerStatisticsBatch } from './ownerStatistics';
+import {
+  getOwnerStatistics,
+  getOwnerStatisticsBatch,
+} from './owner-statistics';
 
 /**
  * Get owner details for an echo app

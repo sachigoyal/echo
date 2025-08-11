@@ -5,7 +5,7 @@ import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
 const CORS_HEADERS = [
   { key: 'Access-Control-Allow-Origin', value: '*' },
   { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS' },
-  { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+  { key: 'Access-Control-Allow-Headers', value: '*' },
 ];
 
 const nextConfig: NextConfig = {
@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'sbaaxpd5ro061s4a.public.blob.vercel-storage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+        pathname: '**',
       },
     ],
   },

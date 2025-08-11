@@ -53,14 +53,14 @@ export default function SpendLimitModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/75 backdrop-blur-sm overflow-y-auto h-full w-full z-50 fade-in">
+    <div className="fixed inset-0 bg-background/75 backdrop-blur-xs overflow-y-auto h-full w-full z-50 fade-in">
       <div className="relative top-20 mx-auto p-5 border border-border w-full max-w-md shadow-lg rounded-md bg-card">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-card-foreground flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-primary" />
             Edit Spend Limit
           </h3>
-          <button onClick={onClose} className="!h-8 !w-8" disabled={loading}>
+          <button onClick={onClose} className="h-8! w-8!" disabled={loading}>
             <X className="h-6 w-6" />
           </button>
         </div>

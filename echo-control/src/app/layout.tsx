@@ -1,13 +1,13 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
 
-import { TRPCProvider } from '@/components/providers/TRPCProvider';
+import { TRPCReactProvider } from '@/trpc/client';
 
 import Header from '@/components/header';
 
 import type { Metadata } from 'next';
 
-import './globals.css';
+import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Echo',
@@ -30,7 +30,7 @@ export default function RootLayout({
     <SessionProvider>
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased bg-background text-foreground h-dvh overflow-y-auto">
-          <TRPCProvider>
+          <TRPCReactProvider>
             <ThemeProvider
               attribute="class"
               defaultTheme="dark"
@@ -38,11 +38,11 @@ export default function RootLayout({
               enableSystem={true}
             >
               <Header />
-              <main className="w-screen overflow-x-hidden pt-16 h-full">
+              <main className="w-screen overflow-x-hidden pt-12 md:pt-16 h-full">
                 {children}
               </main>
             </ThemeProvider>
-          </TRPCProvider>
+          </TRPCReactProvider>
         </body>
       </html>
     </SessionProvider>

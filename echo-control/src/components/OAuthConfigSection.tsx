@@ -110,7 +110,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-20">
-        <div className="animate-spin rounded-full h-5 w-5 border-2 border-secondary border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
@@ -167,7 +167,7 @@ export default function OAuthConfigSection({ appId }: OAuthConfigSectionProps) {
             value={newUrl}
             onChange={e => setNewUrl(e.target.value)}
             placeholder="https://yourapp.com/callback"
-            className="flex-1 px-3 py-2 border border-input/50 bg-input/30 rounded-lg text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-secondary/50 focus:border-secondary/50"
+            className="flex-1 px-3 py-2 border border-input/50 bg-input/30 rounded-lg text-xs text-foreground placeholder-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary/50 focus:border-primary/50"
           />
           <GlassButton
             onClick={handleAddCallbackUrl}

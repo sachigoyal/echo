@@ -278,7 +278,7 @@ export default function FreeTierCreditsSettings({
                         variant="outline"
                         size="sm"
                         onClick={() => setEditingPool(pool)}
-                        className="!h-8"
+                        className="h-8!"
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit Limit

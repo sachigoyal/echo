@@ -122,7 +122,7 @@ const SettingsPage: React.FC = () => {
     if (loading) {
       return (
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       );
     }
@@ -181,9 +181,9 @@ const SettingsPage: React.FC = () => {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between p-3 text-left transition-colors hover:bg-secondary/80 rounded-none ${
+                    className={`w-full flex items-center justify-between p-3 text-left transition-colors hover:bg-primary/80 rounded-none ${
                       activeTab === item.id
-                        ? 'bg-secondary text-secondary-foreground border-r-2 border-secondary'
+                        ? 'bg-primary text-primary-foreground border-r-2 border-primary'
                         : 'text-muted-foreground'
                     }`}
                   >

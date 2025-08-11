@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTRPCPublicApps } from '@/hooks';
 import AppCard from './AppCard';
 import { Marquee } from './ui/marquee';
-import { Skeleton } from './skeleton';
+import { Skeleton } from './ui/skeleton';
 
 export const PopularApps: React.FC = () => {
   // Use TRPC hook to fetch public apps with a large limit for marquee
@@ -24,10 +24,7 @@ export const PopularApps: React.FC = () => {
         </div>
         <div className="flex gap-4">
           {[...Array(3)].map((_, index) => (
-            <Skeleton
-              key={index}
-              className="h-[220px] w-[300px] flex-shrink-0"
-            />
+            <Skeleton key={index} className="h-[220px] w-[300px] shrink-0" />
           ))}
         </div>
       </div>

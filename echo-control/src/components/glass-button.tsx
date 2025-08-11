@@ -70,7 +70,7 @@ export const GlassButton = forwardRef<HTMLDivElement, GlassButtonProps>(
         onMouseEnter={() => !disabled && setIsHovered(true)}
         onMouseLeave={() => !disabled && setIsHovered(false)}
         className={cn(
-          'glass-border-button bg-white/10 rounded-xl relative h-12 shadow-sm shadow-black/5 tracking-wide',
+          'glass-border-button bg-white/10 rounded-xl relative h-12 shadow-xs shadow-black/5 tracking-wide',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
           className
         )}
@@ -100,7 +100,7 @@ export const GlassButton = forwardRef<HTMLDivElement, GlassButtonProps>(
           }}
         >
           <div
-            className="animate-spin [animation-duration:5s] blur absolute left-[-42px] top-[-90px] aspect-square h-auto w-[150%]"
+            className="animate-spin [animation-duration:5s] blur-sm absolute left-[-42px] top-[-90px] aspect-square h-auto w-[150%]"
             style={{
               background: `conic-gradient(from 90deg at 50% 50%, ${glowColor}1f 0, ${glowColor}1f 10%, ${glowColor} 20%, ${glowColor}1f 30%, ${glowColor}1f 60%, ${glowColor} 70%, ${glowColor}1f 80%, ${glowColor}1f 100%)`,
             }}

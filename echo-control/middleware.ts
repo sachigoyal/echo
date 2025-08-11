@@ -1,0 +1,105 @@
+import { createPathMatcher } from 'next-path-matcher';
+
+import { Address } from 'viem';
+import { paymentMiddleware, Network } from 'x402-next';
+import { facilitator } from '@coinbase/x402';
+
+import { middleware } from '@/auth/middleware';
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  formatAmountFromQueryParams,
+  formatPriceForMiddleware,
+} from './src/lib/base';
+
+// const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
+const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
+const network = process.env.NETWORK as Network;
+
+export const x402MiddlewareGenerator = (req: NextRequest) => {
+  const amount = formatAmountFromQueryParams(req);
+
+  if (!amount) {
+    return async (req: NextRequest) => {
+      console.log('Invalid amount', req.nextUrl.searchParams.get('amount'));
+      return NextResponse.json({ error: `Invalid amount` }, { status: 400 });
+    };
+  }
+
+  const paymentAmount = formatPriceForMiddleware(amount);
+
+  return paymentMiddleware(
+    payTo,
+    {
+      '/api/v1/base/payment-link': {
+        price: paymentAmount,
+        network,
+        config: {
+          description: 'Access to protected content',
+        },
+      },
+    },
+    facilitator,
+    {
+      appName: 'Echo Credits',
+    }
+  );
+};
+
+const isPublicRoute = createPathMatcher([
+  // public pages
+  '/',
+  '/login',
+  '/verify-email',
+  // public routes
+  '/api/auth/(.*)',
+  '/auth/signin(.*)',
+  '/api/v1/(.*)',
+  '/api/oauth(.*)',
+  '/api/validate-jwt-token(.*)',
+  '/api/apps/public',
+  '/api/stripe/webhook(.*)',
+  '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
+  '/api/health(.*)', // Health check endpoint - no auth needed
+]);
+
+export const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
+
+export default middleware(req => {
+  if (isX402Route(req)) {
+    // For OPTIONS requests on x402 routes, pass to the next auth handler
+    if (req.method === 'OPTIONS') {
+      return NextResponse.next();
+    }
+
+    const paymentMiddleware = x402MiddlewareGenerator(req);
+    return paymentMiddleware(req);
+  }
+
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+
+  if (!req.auth) {
+    // If the route does not exist (404), do not redirect to sign-in
+    if (
+      req.nextUrl.pathname.startsWith('/api/') ||
+      req.nextUrl.pathname === '/404' ||
+      req.nextUrl.pathname === '/_error'
+    ) {
+      // Let the request continue so the API or 404 handler can respond
+      return NextResponse.next();
+    }
+    const newUrl = new URL('/login', req.nextUrl.origin);
+    const redirectUrl = `${req.nextUrl.pathname}${req.nextUrl.search}`;
+    newUrl.searchParams.set('redirect_url', redirectUrl);
+    return Response.redirect(newUrl);
+  }
+});
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+  ],
+  runtime: 'nodejs',
+};

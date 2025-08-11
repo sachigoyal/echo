@@ -55,7 +55,7 @@ export default function SignOutPage() {
 
               <Link
                 href="/"
-                className="block w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-3 px-4 rounded-lg transition-colors text-center focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 focus:ring-offset-background"
+                className="block w-full bg-primary hover:bg-primary/80 text-primary-foreground font-medium py-3 px-4 rounded-lg transition-colors text-center focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
               >
                 Cancel
               </Link>
@@ -67,7 +67,7 @@ export default function SignOutPage() {
           <p className="text-muted-foreground text-sm">
             Need to switch accounts?{' '}
             <Link
-              href="/sign-in"
+              href="/login"
               className="text-primary hover:text-primary/80 font-medium transition-colors"
             >
               Sign in here

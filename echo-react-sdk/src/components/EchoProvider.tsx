@@ -14,7 +14,7 @@ import {
 import { EchoConfig, EchoUser, EchoBalance } from '../types';
 import { sanitizeUserProfile } from '../utils/security';
 import { EchoClient } from '@zdql/echo-typescript-sdk';
-import type { Balance } from '@zdql/echo-typescript-sdk';
+import type { Balance, FreeBalance } from '@zdql/echo-typescript-sdk';
 
 interface EchoOAuthProfile {
   sub?: string;
@@ -30,6 +30,7 @@ interface EchoOAuthProfile {
 export interface EchoContextValue {
   user: EchoUser | null;
   balance: EchoBalance | null;
+  freeTierBalance: FreeBalance | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -58,6 +59,9 @@ interface EchoProviderProps {
 export function EchoProvider({ config, children }: EchoProviderProps) {
   const [user, setUser] = useState<EchoUser | null>(null);
   const [balance, setBalance] = useState<EchoBalance | null>(null);
+  const [freeTierBalance, setFreeTierBalance] = useState<FreeBalance | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -191,10 +195,15 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const loadBalanceWithClient = useCallback(async (client: EchoClient) => {
     try {
       const balanceData: Balance = await client.getBalance();
+      const freeTierBalanceData: FreeBalance = await client.getFreeBalance(
+        config.appId
+      );
       setBalance({
-        credits: balanceData.balance,
-        currency: 'USD', // Default currency as it's not in the Balance interface
+        totalPaid: balanceData.totalPaid,
+        totalSpent: balanceData.totalSpent,
+        balance: balanceData.balance,
       });
+      setFreeTierBalance(freeTierBalanceData);
     } catch (err) {
       console.error('Error loading balance:', err);
     }
@@ -410,6 +419,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const contextValue: EchoContextValue = {
     user,
     balance,
+    freeTierBalance,
     isAuthenticated,
     isLoading,
     error,

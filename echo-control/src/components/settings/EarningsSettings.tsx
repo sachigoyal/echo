@@ -72,7 +72,7 @@ export default function EarningsSettings({ appId }: EarningsSettingsProps) {
   if (loading && !transactions.length) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -165,17 +165,17 @@ export default function EarningsSettings({ appId }: EarningsSettingsProps) {
               >
                 <div className="flex items-center space-x-4 min-w-0 flex-1">
                   {/* User Avatar */}
-                  <div className="flex-shrink-0">
-                    {transaction.user.profilePictureUrl ? (
+                  <div className="shrink-0">
+                    {transaction.user.image ? (
                       <Image
-                        src={transaction.user.profilePictureUrl}
+                        src={transaction.user.image}
                         alt={transaction.user.name || transaction.user.email}
                         width={40}
                         height={40}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                         {(transaction.user.name || transaction.user.email)
                           .charAt(0)
                           .toUpperCase()}
@@ -226,7 +226,7 @@ export default function EarningsSettings({ appId }: EarningsSettingsProps) {
                 </div>
 
                 {/* Cost */}
-                <div className="text-right ml-4 flex-shrink-0">
+                <div className="text-right ml-4 shrink-0">
                   <div className="flex items-center space-x-1 mb-1">
                     <DollarSign className="h-3 w-3 text-muted-foreground" />
                     <p className="text-sm font-bold text-foreground">

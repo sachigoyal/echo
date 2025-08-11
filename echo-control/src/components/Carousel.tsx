@@ -92,7 +92,7 @@ export const Carousel: React.FC<CarouselProps> = ({
   return (
     <div className={cn('relative w-full max-w-6xl mx-auto', className)}>
       {/* Carousel Container */}
-      <div className="relative h-[32rem]">
+      <div className="relative h-128">
         <div className="absolute inset-0 overflow-hidden">
           <div
             ref={carouselRef}
@@ -105,13 +105,10 @@ export const Carousel: React.FC<CarouselProps> = ({
               const ownerName = app.owner.name || app.owner.email;
 
               return (
-                <div
-                  key={app.id}
-                  className="w-full flex-shrink-0 px-4 pb-8 h-full"
-                >
+                <div key={app.id} className="w-full shrink-0 px-4 pb-8 h-full">
                   {/* App Card - Styled like MeritRepoCard */}
                   <Card
-                    className="p-4 hover:border-secondary relative shadow-lg dark:shadow-secondary dark:shadow-[0_0_8px] w-full cursor-pointer flex flex-col gap-4 transition-all duration-300 h-[calc(100%-2rem)]"
+                    className="p-4 hover:border-primary relative shadow-lg dark:shadow-primary dark:shadow-[0_0_8px] w-full cursor-pointer flex flex-col gap-4 transition-all duration-300 h-[calc(100%-2rem)]"
                     onClick={() => handleAppClick(app.id)}
                   >
                     {/* Header Section */}
@@ -129,7 +126,7 @@ export const Carousel: React.FC<CarouselProps> = ({
                           </h3>
                           <div className="flex items-center gap-2">
                             <span className="text-4xl font-extralight">by</span>
-                            <span className="text-4xl font-medium text-secondary">
+                            <span className="text-4xl font-medium text-primary">
                               {ownerName}
                             </span>
                           </div>
@@ -185,7 +182,7 @@ export const Carousel: React.FC<CarouselProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Badge className="shrink-0 text-black dark:text-white border-[1px] bg-transparent shadow-none w-fit text-base">
+                        <Badge className="shrink-0 text-black dark:text-white border bg-transparent shadow-none w-fit text-base">
                           ${(app.stats?.globalTotalRevenue / 100).toFixed(1)}k
                         </Badge>
                       </div>
@@ -208,7 +205,7 @@ export const Carousel: React.FC<CarouselProps> = ({
             className="absolute -left-8 top-1/2 -translate-y-1/2 z-10 disabled:opacity-30 disabled:cursor-not-allowed group"
             aria-label="Previous slide"
           >
-            <div className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center transition-all duration-200 group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:scale-110">
+            <div className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xs rounded-full shadow-lg flex items-center justify-center transition-all duration-200 group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:scale-110">
               <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </div>
           </button>
@@ -220,7 +217,7 @@ export const Carousel: React.FC<CarouselProps> = ({
             className="absolute -right-8 top-1/2 -translate-y-1/2 z-10 disabled:opacity-30 disabled:cursor-not-allowed group"
             aria-label="Next slide"
           >
-            <div className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center transition-all duration-200 group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:scale-110">
+            <div className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xs rounded-full shadow-lg flex items-center justify-center transition-all duration-200 group-hover:bg-white dark:group-hover:bg-gray-700 group-hover:scale-110">
               <ChevronRight className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </div>
           </button>

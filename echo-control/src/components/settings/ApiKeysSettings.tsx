@@ -47,7 +47,7 @@ export default function ApiKeysSettings({
   if (loading && !apiKeys.length) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -143,7 +143,7 @@ export default function ApiKeysSettings({
                 className="flex items-center justify-between p-4 bg-muted/20 rounded-lg hover:bg-muted/30 transition-colors duration-200"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-linear-to-br from-blue-500/20 to-blue-500/10 rounded-full flex items-center justify-center">
                     <Key className="h-5 w-5 text-blue-500" />
                   </div>
                   <div>

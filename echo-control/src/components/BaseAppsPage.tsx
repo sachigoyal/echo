@@ -2,7 +2,7 @@
 
 import React, { ReactNode } from 'react';
 import AppCard from './AppCard';
-import { Skeleton } from './skeleton';
+import { Skeleton } from './ui/skeleton';
 import { EchoApp } from '@/lib/types/apps';
 
 interface BaseAppsPageProps {

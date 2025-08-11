@@ -95,7 +95,7 @@ export function AppDetailLayout({
           </div>
           <GlassButton
             onClick={onDismissPaymentSuccess}
-            className="!h-8 !w-8"
+            className="h-8! w-8!"
             variant="secondary"
           >
             <X className="h-4 w-4" />
@@ -123,7 +123,7 @@ export function AppBanner({ app, backUrl = '/' }: AppBannerProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-sm border border-white/20"
+            className="text-white/90 hover:text-white hover:bg-white/10 backdrop-blur-xs border border-white/20"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
@@ -145,7 +145,7 @@ export function AppBanner({ app, backUrl = '/' }: AppBannerProps) {
           </>
         ) : (
           <>
-            <div className="h-full bg-gradient-to-r from-secondary via-muted to-secondary/80 z-0"></div>
+            <div className="h-full bg-linear-to-r from-primary via-muted to-primary/80 z-0"></div>
             <div className="absolute inset-0 bg-black/20 z-0"></div>
           </>
         )}
@@ -206,7 +206,7 @@ function GitHubUserInfo({ githubId, githubType }: GitHubUserInfoProps) {
   if (loading) {
     return (
       <div className="flex items-center space-x-2 text-muted-foreground">
-        <div className="animate-spin rounded-full h-4 w-4 border-2 border-secondary border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
         <span className="text-sm">Loading GitHub info...</span>
       </div>
     );
@@ -232,14 +232,14 @@ function GitHubUserInfo({ githubId, githubType }: GitHubUserInfoProps) {
         alt={displayName}
         width={32}
         height={32}
-        className="w-8 h-8 rounded-full flex-shrink-0"
+        className="w-8 h-8 rounded-full shrink-0"
       />
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-2">
           {isUser ? (
-            <UserIcon className="h-3 w-3 text-secondary flex-shrink-0" />
+            <UserIcon className="h-3 w-3 text-primary shrink-0" />
           ) : (
-            <GitBranch className="h-3 w-3 text-secondary flex-shrink-0" />
+            <GitBranch className="h-3 w-3 text-primary shrink-0" />
           )}
           <span className="text-foreground text-sm font-medium truncate">
             {displayName}
@@ -253,7 +253,7 @@ function GitHubUserInfo({ githubId, githubType }: GitHubUserInfoProps) {
         href={githubData.html_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-secondary hover:text-secondary/80 transition-colors"
+        className="text-primary hover:text-primary/80 transition-colors"
         title={`View on GitHub`}
       >
         <ExternalLink className="h-4 w-4" />
@@ -295,7 +295,7 @@ export function AppProfile({
     <div className="relative -mt-20 px-8 pb-8 z-10">
       <Card className="p-8 bg-card shadow-2xl border border-border">
         <div className="flex items-start gap-8">
-          <div className="relative flex-shrink-0">
+          <div className="relative shrink-0">
             <ProfileAvatar
               name={app.name}
               src={app.profilePictureUrl}
@@ -304,7 +304,7 @@ export function AppProfile({
               className="shadow-lg"
             />
             <div
-              className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full border-2 border-background ${getRoleColor()} shadow-sm flex items-center justify-center`}
+              className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full border-2 border-background ${getRoleColor()} shadow-xs flex items-center justify-center`}
             >
               {getRoleIcon()}
             </div>
@@ -330,10 +330,10 @@ export function AppProfile({
 
               {/* GitHub Card Section - Right Aligned with title */}
               {app.githubLink?.githubId && app.githubLink?.githubType && (
-                <div className="w-80 flex-shrink-0">
+                <div className="w-80 shrink-0">
                   <div className="p-4 bg-muted/20 rounded-lg border border-border/50">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white">
+                      <div className="w-8 h-8 rounded-full bg-linear-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white">
                         {app.githubLink?.githubType === 'user' ? (
                           <UserIcon className="h-4 w-4" />
                         ) : (
@@ -387,7 +387,7 @@ export function GlobalActivityChart({
   return (
     <div className="flex flex-col">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      <Card className="flex-1 p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50">
+      <Card className="flex-1 p-6 hover:border-primary relative shadow-primary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50">
         <div className="h-64">
           <CommitChart
             data={{
@@ -422,9 +422,9 @@ export function OverviewStats({
   showAdvanced = true,
 }: OverviewStatsProps) {
   return (
-    <Card className="p-6 hover:border-secondary relative shadow-secondary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-sm border-border/50 h-80 flex flex-col">
+    <Card className="p-6 hover:border-primary relative shadow-primary shadow-[0_0_8px] transition-all duration-300 bg-background/80 backdrop-blur-xs border-border/50 h-80 flex flex-col">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white">
           <Activity className="h-5 w-5" />
         </div>
         <h3 className="text-xl font-bold">Overview</h3>
@@ -447,7 +447,7 @@ export function OverviewStats({
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Spent</span>
-          <Badge className="text-black dark:text-white border-[1px] bg-transparent shadow-none">
+          <Badge className="text-black dark:text-white border bg-transparent shadow-none">
             {formatCurrency(app.stats?.globalTotalRevenue || 0)}
           </Badge>
         </div>

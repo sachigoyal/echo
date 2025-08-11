@@ -126,7 +126,7 @@ export default function EchoAppsDashboard() {
   if (!isLoaded || loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-secondary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -178,7 +178,7 @@ export default function EchoAppsDashboard() {
               <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-md shadow-lg z-10">
                 <GlassButton
                   onClick={() => signOut({ redirectTo: '/' })}
-                  className="w-full flex items-center !h-10"
+                  className="w-full flex items-center h-10!"
                   variant="secondary"
                 >
                   <LogOutIcon className="h-4 w-4 mr-2" />
@@ -232,18 +232,18 @@ export default function EchoAppsDashboard() {
               <Link
                 key={app.id}
                 href={`/apps/${app.id}`}
-                className="block bg-card rounded-lg border border-border hover:border-secondary group"
+                className="block bg-card rounded-lg border border-border hover:border-primary group"
               >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-card-foreground truncate group-hover:text-secondary">
+                    <h3 className="text-lg font-semibold text-card-foreground truncate group-hover:text-primary">
                       {app.name}
                     </h3>
                     <div className="flex items-center space-x-2">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           app.isActive
-                            ? 'bg-secondary/20 text-secondary'
+                            ? 'bg-primary/20 text-primary'
                             : 'bg-muted text-muted-foreground'
                         }`}
                       >
@@ -257,7 +257,7 @@ export default function EchoAppsDashboard() {
                           } as React.MouseEvent;
                           handleArchiveApp(app.id, syntheticEvent);
                         }}
-                        className={`!h-8 !w-8 rounded-full group-hover:opacity-100 ${
+                        className={`h-8! w-8! rounded-full group-hover:opacity-100 ${
                           deletingAppId === app.id ? 'opacity-50' : 'opacity-0'
                         }`}
                         disabled={deletingAppId === app.id}

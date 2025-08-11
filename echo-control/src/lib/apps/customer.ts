@@ -4,7 +4,7 @@ import { getOwnerDetails, getOwnerDetailsBatch } from './owner';
 import {
   getCustomerStatistics,
   getCustomerStatisticsBatch,
-} from './customerStatistics';
+} from './customer-statistics';
 import { AppRole } from '../permissions';
 
 /**

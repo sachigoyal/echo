@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { softDeleteApiKey } from '@/lib/apps/softDelete';
+import { softDeleteApiKey } from '@/lib/apps/soft-delete';
 import { findApiKey, updateApiKey } from '@/lib/api-keys';
 
 // PATCH /api/api-keys/[id] - Update an API key (rename)

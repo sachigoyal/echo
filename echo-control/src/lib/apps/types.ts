@@ -1,5 +1,6 @@
 import { EchoApp, ApiKey, GithubLink } from '@/generated/prisma';
 import { SerializedTransaction } from '@/lib/utils/serialization';
+import { UserSpendInfo } from '@/lib/spend-pools';
 
 export type { SerializedTransaction };
 
@@ -48,6 +49,11 @@ export type ModelUsage = {
   totalModelCost: number; // Total cost incurred by the model for this app.
 };
 
+export type UserSpendStatistics = Omit<
+  UserSpendInfo,
+  'echoAppId' | 'spendPoolId'
+>;
+
 export type GlobalStatistics = {
   globalTotalTransactions: number;
   globalTotalRevenue: number;
@@ -56,6 +62,8 @@ export type GlobalStatistics = {
   globalTotalOutputTokens: number;
   globalActivityData: AppActivity[];
   globalModelUsage: ModelUsage[];
+  globalFreeTierSpendPoolBalance: number;
+  globalFreetierSpendPoolPerUserLimit: number | null;
 };
 
 export type AppGithubLink = Omit<
@@ -78,12 +86,14 @@ export type CustomerStatistics = GlobalStatistics & {
   personalModelUsage: ModelUsage[];
   personalActivityData: AppActivity[];
   personalApiKeys: CustomerApiKey[];
+  personalUserSpendStatistics: UserSpendStatistics;
 };
 
 export type OwnerStatistics = CustomerStatistics &
   GlobalStatistics & {
     globalApiKeys: CustomerApiKey[];
     recentGlobalTransactions: SerializedTransaction[];
+    globalUserSpendStatistics: UserSpendStatistics[];
   };
 
 /** Echo App Type Hierarchy:

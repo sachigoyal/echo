@@ -59,17 +59,6 @@ export function CustomerAppDetail({
 
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-1">
-            {isGlobalView ? 'Total Requests' : 'Your Requests'}
-          </p>
-          <p className="text-lg font-bold text-foreground">
-            {isGlobalView
-              ? formatNumber(app.stats?.globalTotalTransactions || 0)
-              : formatNumber(app.stats?.personalTotalTransactions || 0)}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-sm font-medium text-muted-foreground mb-1">
             {isGlobalView ? 'Total Tokens' : 'Your Tokens'}
           </p>
           <p className="text-lg font-bold text-foreground">
@@ -98,6 +87,20 @@ export function CustomerAppDetail({
             {app.stats?.personalApiKeys?.length || 0}
           </p>
         </div>
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            Free Tier Available
+          </p>
+          <p className="text-lg font-bold text-foreground">
+            {formatCurrency(
+              app.stats?.personalUserSpendStatistics.amountSpent || 0
+            )}{' '}
+            /{' '}
+            {formatCurrency(
+              app.stats?.globalFreetierSpendPoolPerUserLimit || 0
+            )}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -110,7 +113,7 @@ export function CustomerAppDetail({
           Add Credits
         </Button>
       </Link>
-      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm rounded-lg border border-border px-2 py-1">
+      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-xs rounded-lg border border-border px-2 py-1">
         <span className="text-xs font-medium text-muted-foreground">
           Personal
         </span>

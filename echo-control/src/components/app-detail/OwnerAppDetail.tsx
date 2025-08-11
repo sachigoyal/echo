@@ -17,6 +17,7 @@ import { OwnerApiKeysCard } from './ApiKeyDetail';
 import { OwnerRecentActivityCard } from './RecentActivityDetail';
 import { AppHomepageCard } from './AppHomepageCard';
 import { CustomerTopModelsCard } from './CustomerTopModelsCard';
+import { OwnerFreeTierTopUsersCard } from './OwnerFreeTierTopUsersCard';
 
 interface OwnerAppDetailProps {
   app: OwnerEchoApp;
@@ -115,7 +116,7 @@ export function OwnerAppDetail({
           Settings
         </Button>
       </Link>
-      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm rounded-lg border border-border px-2 py-1">
+      <div className="flex items-center gap-3 bg-card/50 backdrop-blur-xs rounded-lg border border-border px-2 py-1">
         <span className="text-xs font-medium text-muted-foreground">
           Personal
         </span>
@@ -192,6 +193,8 @@ export function OwnerAppDetail({
             }
             isGlobalView={isGlobalView}
           />
+
+          <OwnerFreeTierTopUsersCard app={app} />
 
           {/* Models Usage Card */}
           <CustomerTopModelsCard

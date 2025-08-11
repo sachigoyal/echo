@@ -15,7 +15,7 @@ interface EarningsTransaction {
     id: string;
     email: string;
     name?: string;
-    profilePictureUrl?: string;
+    image?: string;
   };
   apiKey?: {
     id: string;

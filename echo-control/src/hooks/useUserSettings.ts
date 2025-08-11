@@ -5,7 +5,7 @@ interface AppUser {
   userId: string;
   email: string;
   name?: string;
-  profilePictureUrl?: string;
+  image?: string;
   role: string;
   status: string;
   totalSpent: number;
