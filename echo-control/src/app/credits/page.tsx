@@ -30,7 +30,6 @@ export default async function CreditsPage() {
 
   await api.user.payments.list.prefetchInfinite({
     cursor: 0,
-    limit: 10,
   });
 
   return (

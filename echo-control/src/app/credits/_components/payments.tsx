@@ -1,33 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 import { api } from '@/trpc/client';
-
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationEllipsis,
-} from '@/components/ui/pagination';
 
 import { formatCurrency } from '@/lib/balance';
 
 export const Payments = () => {
-  const [page, setPage] = useState(0);
-  const [{ pages }] = api.user.payments.list.useSuspenseInfiniteQuery(
-    {
-      limit: 10,
-    },
-    {
-      getNextPageParam(lastPage) {
-        return lastPage.has_next ? lastPage.page + 1 : undefined;
-      },
-    }
-  );
+  const [{ pages }, { fetchNextPage, isFetchingNextPage }] =
+    api.user.payments.list.useSuspenseInfiniteQuery(
+      {},
+      {
+        getNextPageParam(lastPage) {
+          return lastPage.has_next ? lastPage.page + 1 : undefined;
+        },
+      }
+    );
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -60,6 +50,8 @@ export const Payments = () => {
     );
   }
 
+  const flatPages = pages.flatMap(page => page.items);
+
   return (
     <div className="flex flex-col gap-4">
       {pages[0].total_count === 0 ? (
@@ -67,7 +59,7 @@ export const Payments = () => {
           <p className="text-muted-foreground">No credits purchased</p>
         </div>
       ) : (
-        pages[page].items.map(payment => (
+        flatPages.map(payment => (
           <div
             key={payment.id}
             className="flex items-center justify-between gap-4"
@@ -94,42 +86,24 @@ export const Payments = () => {
         ))
       )}
 
-      {pages[0].has_next && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => {
-                  setPage(prev => Math.max(prev - 1, 0));
-                }}
-              />
-            </PaginationItem>
-            {page > 1 && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
+      {pages[pages.length - 1].has_next && (
+        <div className="flex justify-center">
+          <Button
+            onClick={() => {
+              fetchNextPage();
+            }}
+            className="w-full"
+            variant="ghost"
+            disabled={isFetchingNextPage}
+            size="sm"
+          >
+            {isFetchingNextPage ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              'Load more'
             )}
-            {Array.from({ length: 3 }, (_, i) => (
-              <PaginationItem key={i}>
-                <PaginationLink href="#" isActive>
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            {page + 2 < pages[0].total_count && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-            )}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => {
-                  setPage(prev => prev + 1);
-                }}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+          </Button>
+        </div>
       )}
     </div>
   );
