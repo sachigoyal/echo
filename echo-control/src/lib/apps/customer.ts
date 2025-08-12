@@ -32,6 +32,7 @@ export async function getCustomerEchoApp(
         isPublic: true,
         createdAt: true,
         updatedAt: true,
+        currentReferralRewardId: true,
       },
     });
 
@@ -101,6 +102,7 @@ export async function getAllCustomerEchoApps(
         name: true,
         description: true,
         profilePictureUrl: true,
+        currentReferralRewardId: true,
         bannerImageUrl: true,
         homepageUrl: true,
         isPublic: true,

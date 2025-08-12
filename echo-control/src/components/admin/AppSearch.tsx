@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/trpc/client';
 import { EchoApp } from '@/generated/prisma';
 import { Search, Globe, Calendar, ExternalLink } from 'lucide-react';
+import Image from 'next/image';
 
 interface AppSearchProps {
   userId: string;
@@ -92,7 +93,7 @@ export function AppSearch({
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>This user doesn't own any apps yet.</p>
+        <p>This user doesn&apos;t own any apps yet.</p>
       </div>
     );
   }
@@ -118,10 +119,12 @@ export function AppSearch({
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded bg-primary/10 flex items-center justify-center overflow-hidden">
                   {selectedApp.profilePictureUrl ? (
-                    <img
+                    <Image
                       src={selectedApp.profilePictureUrl}
                       alt={selectedApp.name}
                       className="h-full w-full object-cover"
+                      width={48}
+                      height={48}
                     />
                   ) : (
                     <Globe className="h-6 w-6 text-primary" />
@@ -184,10 +187,12 @@ export function AppSearch({
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded bg-muted flex items-center justify-center overflow-hidden">
                   {app.profilePictureUrl ? (
-                    <img
+                    <Image
                       src={app.profilePictureUrl}
                       alt={app.name}
                       className="h-full w-full object-cover"
+                      width={48}
+                      height={48}
                     />
                   ) : (
                     <Globe className="h-6 w-6" />

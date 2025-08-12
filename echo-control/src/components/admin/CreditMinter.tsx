@@ -45,7 +45,7 @@ export function CreditMinter({ user, selectedApp }: CreditMinterProps) {
     if (metadata.trim()) {
       try {
         JSON.parse(metadata);
-      } catch (e) {
+      } catch {
         newErrors.metadata = 'Invalid JSON format';
       }
     }

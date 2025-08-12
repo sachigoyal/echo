@@ -324,6 +324,7 @@ export const findEchoApp = async (
       archivedAt: true,
       createdAt: true,
       updatedAt: true,
+      currentReferralRewardId: true,
     },
   });
 

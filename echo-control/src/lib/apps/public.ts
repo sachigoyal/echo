@@ -22,6 +22,7 @@ export async function getPublicEchoApp(id: string): Promise<PublicEchoApp> {
         isPublic: true,
         createdAt: true,
         updatedAt: true,
+        currentReferralRewardId: true,
       },
     });
 
@@ -72,6 +73,7 @@ export async function getAllPublicEchoApps(): Promise<PublicEchoApp[]> {
         isPublic: true,
         createdAt: true,
         updatedAt: true,
+        currentReferralRewardId: true,
       },
     });
 
