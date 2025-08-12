@@ -2,7 +2,9 @@ import { Prisma } from '@/generated/prisma';
 import {
   processPaymentUpdate,
   PaymentProcessingData,
-} from '../payment-processing';
+} from '@/lib/payment-processing';
+import { isGlobalAdmin } from '../index';
+import { db } from '@/lib/db';
 
 export interface MintCreditsOptions {
   /** Description for the payment record */
@@ -28,11 +30,19 @@ export interface MintCreditsOptions {
  * @param options - Configuration options for the credit mint
  */
 export async function mintCreditsToUser(
-  tx: Prisma.TransactionClient,
   userId: string,
   amountInDollars: number,
-  options: MintCreditsOptions = {}
+  options: MintCreditsOptions = {},
+  tx?: Prisma.TransactionClient
 ): Promise<void> {
+  tx = tx || db;
+
+  const isAdmin = await isGlobalAdmin();
+
+  if (!isAdmin) {
+    throw new Error('Admin access required');
+  }
+
   const {
     description = options.isFreeTier
       ? 'ADMIN FREE TIER ISSUED PAYMENT'

@@ -1,9 +1,11 @@
 import { createCallerFactory, createTRPCRouter } from '../trpc';
 
 import { appsRouter } from './apps';
+import { adminRouter } from './admin';
 
 export const appRouter = createTRPCRouter({
   apps: appsRouter,
+  admin: adminRouter,
 });
 
 export type AppRouter = typeof appRouter;
