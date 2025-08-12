@@ -2,14 +2,14 @@ import Link from 'next/link';
 
 import { Logo } from '@/components/ui/logo';
 
-import BalanceCard from '../BalanceCard';
+import { BalanceButton } from './balance';
 
 import { UserDropdown } from './user-dropdown';
 import { SignInButton } from './sign-in-button';
 
 import { auth } from '@/auth';
 
-export default async function Header() {
+export const Navbar = async () => {
   const session = await auth();
 
   return (
@@ -32,7 +32,7 @@ export default async function Header() {
             >
               Create App
             </Link>
-            <BalanceCard compact />
+            <BalanceButton />
             <UserDropdown user={session.user} />
           </>
         ) : (
@@ -41,4 +41,4 @@ export default async function Header() {
       </div>
     </header>
   );
-}
+};
