@@ -37,12 +37,6 @@ export async function mintCreditsToUser(
 ): Promise<void> {
   tx = tx || db;
 
-  const isAdmin = await isGlobalAdmin();
-
-  if (!isAdmin) {
-    throw new Error('Admin access required');
-  }
-
   const {
     description = options.isFreeTier
       ? 'ADMIN FREE TIER ISSUED PAYMENT'
@@ -109,4 +103,27 @@ export async function mintCreditsToUser(
         : ' (personal balance)'
     }`
   );
+}
+
+/**
+ * Mint credits to a user by creating a payment record and updating their balance
+ * Similar to handlePaymentSuccess but for issuing credits directly
+ * @param tx - The database transaction client
+ * @param userId - The user ID to mint credits to
+ * @param amountInDollars - The amount in dollars to mint
+ * @param options - Configuration options for the credit mint
+ */
+export async function mintCreditsToUserAdmin(
+  userId: string,
+  amountInDollars: number,
+  options: MintCreditsOptions = {},
+  tx?: Prisma.TransactionClient
+): Promise<void> {
+  const isAdmin = await isGlobalAdmin();
+
+  if (!isAdmin) {
+    throw new Error('Admin access required');
+  }
+
+  await mintCreditsToUser(userId, amountInDollars, options, tx);
 }

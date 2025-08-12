@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { isGlobalAdmin } from '@/lib/admin';
-import { mintCreditsToUser } from '@/lib/admin/mint-credits';
+import { mintCreditsToUserAdmin } from '@/lib/admin/mint-credits';
 import { getUsers } from '@/lib/admin';
 import { getAppsForUser } from '@/lib/admin';
+import { mintCreditReferralCode } from '@/lib/referral-codes/credit-grants';
 
 export const adminRouter = createTRPCRouter({
   isAdmin: protectedProcedure.query(async () => {
@@ -35,7 +36,7 @@ export const adminRouter = createTRPCRouter({
         defaultSpendLimit,
       } = input;
 
-      await mintCreditsToUser(userId, amountInDollars, {
+      await mintCreditsToUserAdmin(userId, amountInDollars, {
         description,
         isFreeTier,
         echoAppId,
@@ -58,5 +59,19 @@ export const adminRouter = createTRPCRouter({
     .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
       return await getAppsForUser(input.userId);
+    }),
+
+  mintCreditReferralCode: protectedProcedure
+    .input(
+      z.object({
+        amountInDollars: z.number().positive('Amount must be positive'),
+        expiresAt: z.date().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      return await mintCreditReferralCode(
+        input.amountInDollars,
+        input.expiresAt
+      );
     }),
 });
