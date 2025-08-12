@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await createPaymentLink(user, body);
+    const result = await createPaymentLink(user.id, body);
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

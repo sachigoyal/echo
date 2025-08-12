@@ -23,7 +23,7 @@ export const BalanceButton = () => {
 };
 
 export const Balance = async () => {
-  const balance = await api.user.getBalance();
+  const balance = await api.user.balance.get();
 
   return (
     <span className="text-sm font-extrabold text-foreground">
