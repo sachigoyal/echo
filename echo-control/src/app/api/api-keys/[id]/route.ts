@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { softDeleteApiKey } from '@/lib/apps/soft-delete';
 import { findApiKey, updateApiKey } from '@/lib/api-keys';
+import { auth } from '@/auth';
 
 // PATCH /api/api-keys/[id] - Update an API key (rename)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  const { name } = await request.json();
+
   try {
     const user = await getCurrentUser();
     const resolvedParams = await params;
