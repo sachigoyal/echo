@@ -8,7 +8,6 @@ import { UserDropdown } from './user-dropdown';
 import { SignInButton } from './sign-in-button';
 
 import { auth } from '@/auth';
-
 export const Navbar = async () => {
   const session = await auth();
 
