@@ -1,11 +1,11 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import open from 'open';
-import { EchoClient } from '@zdql/echo-typescript-sdk';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 import type {
   CreatePaymentLinkResponse,
   Balance,
-} from '@zdql/echo-typescript-sdk';
+} from '@merit-systems/echo-typescript-sdk';
 import { OpenAI } from 'openai';
 import { ECHO_APP_CONFIG } from './config.js';
 import * as fs from 'fs';

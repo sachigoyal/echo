@@ -227,7 +227,7 @@ export default function EchoSplashPage() {
                       <div className="ml-4 text-xs text-gray-400">App.tsx</div>
                     </div>
                     <pre className="text-sm text-blue-300 overflow-x-auto">
-                      <code>{`import { EchoProvider } from '@zdql/echo-react-sdk';
+                      <code>{`import { EchoProvider } from '@merit-systems/echo-react-sdk';
 
 const echoConfig = {
   appId: 'your-app-id',

@@ -1,6 +1,6 @@
 # Echo React SDK Documentation
 
-The Echo React SDK (`@zdql/echo-react-sdk`) provides React integration for OAuth2 authentication, token management, and AI chat capabilities.
+The Echo React SDK (`@merit-systems/echo-react-sdk`) provides React integration for OAuth2 authentication, token management, and AI chat capabilities.
 
 Echo allows you to seamlessly connect payment rails and authentication to your LLM application. You can put this entire documentation into Claude code, provide it your app ID, and watch as it creates a prototype of your LLM-based application.
 
@@ -11,7 +11,7 @@ You will first need to login to https://echo.merit.systems, navigate to the owne
 ## Installation
 
 ```bash
-npm install @zdql/echo-react-sdk
+npm install @merit-systems/echo-react-sdk
 ```
 
 ## Basic Setup
@@ -21,7 +21,7 @@ npm install @zdql/echo-react-sdk
 The EchoProvider handles OAuth callbacks automatically - no separate callback route needed!
 
 ```tsx
-import { EchoProvider } from '@zdql/echo-react-sdk';
+import { EchoProvider } from '@merit-systems/echo-react-sdk';
 import App from './App';
 
 const echoConfig = {
@@ -55,7 +55,7 @@ function Root() {
 ### useEcho Hook
 
 ```tsx
-import { useEcho } from '@zdql/echo-react-sdk';
+import { useEcho } from '@merit-systems/echo-react-sdk';
 
 function MyComponent() {
   const { isAuthenticated, isLoading, user, token, signOut } = useEcho();
@@ -75,7 +75,7 @@ function MyComponent() {
 ### EchoSignIn Component
 
 ```tsx
-import { EchoSignIn } from '@zdql/echo-react-sdk';
+import { EchoSignIn } from '@merit-systems/echo-react-sdk';
 
 function AuthPanel() {
   return (
@@ -94,7 +94,7 @@ function AuthPanel() {
 ### Displaying User Balance
 
 ```tsx
-import { useEcho } from '@zdql/echo-react-sdk';
+import { useEcho } from '@merit-systems/echo-react-sdk';
 
 function BalanceDisplay() {
   const { balance, refreshBalance } = useEcho();
@@ -115,7 +115,7 @@ function BalanceDisplay() {
 ### EchoTokenPurchase Component
 
 ```tsx
-import { EchoTokenPurchase, useEcho } from '@zdql/echo-react-sdk';
+import { EchoTokenPurchase, useEcho } from '@merit-systems/echo-react-sdk';
 
 function TokenPurchase() {
   const { refreshBalance, createPaymentLink } = useEcho();
@@ -153,7 +153,7 @@ function TokenPurchase() {
 ### Simple App Setup (No Routing Required)
 
 ```tsx
-import { useEcho } from '@zdql/echo-react-sdk';
+import { useEcho } from '@merit-systems/echo-react-sdk';
 
 function AppContent() {
   const { isAuthenticated, isLoading } = useEcho();
@@ -227,7 +227,7 @@ Your Echo token will work with any OpenAI or Anthropic Model.
 ### AI SDK Configuration
 
 ```tsx
-import { useEcho } from '@zdql/echo-react-sdk';
+import { useEcho } from '@merit-systems/echo-react-sdk';
 import { createOpenAI } from '@ai-sdk/openai';
 import { streamText } from 'ai';
 
@@ -247,7 +247,7 @@ const result = await streamText({
 ### LangChain Configuration
 
 ```tsx
-import { useEcho } from '@zdql/echo-react-sdk';
+import { useEcho } from '@merit-systems/echo-react-sdk';
 import { ChatOpenAI } from '@langchain/openai';
 
 const { token } = useEcho();

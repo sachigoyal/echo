@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { EchoContext, EchoContextValue } from '../components/EchoProvider';
 import { EchoUser, EchoBalance } from '../types';
-import { FreeBalance } from '@zdql/echo-typescript-sdk';
+import { FreeBalance } from '@merit-systems/echo-typescript-sdk';
 
 // Mock data for Storybook
 const mockUser: EchoUser = {

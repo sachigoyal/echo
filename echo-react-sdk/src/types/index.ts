@@ -1,4 +1,4 @@
-import { Balance } from '@zdql/echo-typescript-sdk';
+import { Balance } from '@merit-systems/echo-typescript-sdk';
 
 export interface EchoConfig {
   appId: string;

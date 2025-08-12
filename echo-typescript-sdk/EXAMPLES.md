@@ -1,17 +1,17 @@
 # Echo TypeScript SDK - Examples
 
-Simple examples showing how to use the `@zdql/echo-typescript-sdk` in your projects.
+Simple examples showing how to use the `@merit-systems/echo-typescript-sdk` in your projects.
 
 ## Installation
 
 ```bash
-npm install @zdql/echo-typescript-sdk
+npm install @merit-systems/echo-typescript-sdk
 ```
 
 ## Setup
 
 ```typescript
-import { EchoClient } from '@zdql/echo-typescript-sdk';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 
 const echo = new EchoClient({
   apiKey: 'your-api-key-here',
@@ -139,7 +139,12 @@ const echo = new EchoClient(); // Uses environment variables
 Import types for better development experience:
 
 ```typescript
-import { EchoClient, EchoApp, Balance, User } from '@zdql/echo-typescript-sdk';
+import {
+  EchoClient,
+  EchoApp,
+  Balance,
+  User,
+} from '@merit-systems/echo-typescript-sdk';
 
 const echo = new EchoClient({ apiKey: 'your-key' });
 

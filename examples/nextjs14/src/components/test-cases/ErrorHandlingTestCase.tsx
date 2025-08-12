@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { EchoProvider } from '@zdql/echo-react-sdk';
+import { EchoProvider } from '@merit-systems/echo-react-sdk';
 
 interface TestResult {
   status: 'pending' | 'running' | 'success' | 'error';
