@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { AddCredits } from './_components/add-credits';
 import { RedeemCredits } from './_components/redeem-credits';
+import { Balance } from './_components/balance';
 
 export default async function CreditsPage() {
   const session = await auth();
@@ -32,6 +33,8 @@ export default async function CreditsPage() {
   await api.user.payments.list.prefetchInfinite({
     cursor: 0,
   });
+
+  await api.user.balance.get.prefetch();
 
   return (
     <HydrateClient>
@@ -99,8 +102,3 @@ export default async function CreditsPage() {
     </HydrateClient>
   );
 }
-
-const Balance = async () => {
-  const balance = await api.user.balance.get().catch(() => ({ balance: 0 }));
-  return <span>{Number(balance.balance).toFixed(2)}</span>;
-};

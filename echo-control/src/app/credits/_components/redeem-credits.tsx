@@ -19,6 +19,8 @@ export const RedeemCredits = () => {
   const [freeTier, setFreeTier] = useState<boolean>(false);
   const [echoAppId, setEchoAppId] = useState<string>('');
 
+  const utils = api.useUtils();
+
   const {
     mutate: redeemReferralCode,
     isPending,
@@ -30,6 +32,7 @@ export const RedeemCredits = () => {
       setCode('');
       setFreeTier(false);
       setEchoAppId('');
+      utils.user.balance.get.invalidate();
     },
   });
 
