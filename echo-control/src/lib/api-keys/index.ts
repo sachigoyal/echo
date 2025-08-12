@@ -6,13 +6,11 @@ import { AppRole, Permission } from '../permissions/types';
 import { PermissionService } from '../permissions';
 import { generateApiKey, hashApiKey } from '../crypto';
 
-export const getApiKeySchema = z.object({
-  id: z.string(),
-});
+export const getApiKeySchema = z.string();
 
 export const getApiKey = async (
   userId: string,
-  { id }: z.infer<typeof getApiKeySchema>
+  id: z.infer<typeof getApiKeySchema>
 ): Promise<ApiKey | null> => {
   return db.apiKey.findFirst({
     where: {
@@ -147,13 +145,11 @@ export async function updateApiKey(
   });
 }
 
-export const deleteApiKeySchema = z.object({
-  id: z.string(),
-});
+export const deleteApiKeySchema = z.string();
 
 export async function deleteApiKey(
   userId: string,
-  { id }: z.infer<typeof deleteApiKeySchema>
+  id: z.infer<typeof deleteApiKeySchema>
 ) {
   const now = new Date();
   return await db.apiKey.update({

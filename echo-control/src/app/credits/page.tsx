@@ -28,7 +28,7 @@ export default async function CreditsPage() {
     redirect('/login?redirect_url=/credits');
   }
 
-  api.user.payments.list.prefetch({
+  await api.user.payments.list.prefetchInfinite({
     cursor: 0,
     limit: 10,
   });
@@ -64,10 +64,12 @@ export default async function CreditsPage() {
           </Dialog>
         </Card>
         <Card className="bg-muted/50">
-          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+          <CardHeader className="border-b p-4">
+            <CardTitle className="text-lg font-semibold">
+              Recent Transactions
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4">
             <ErrorBoundary fallback={<div>Error loading payments</div>}>
               <Suspense fallback={<div>Loading...</div>}>
                 <Payments />

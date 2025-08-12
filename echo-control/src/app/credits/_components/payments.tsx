@@ -19,7 +19,9 @@ import { formatCurrency } from '@/lib/balance';
 export const Payments = () => {
   const [page, setPage] = useState(0);
   const [{ pages }] = api.user.payments.list.useSuspenseInfiniteQuery(
-    {},
+    {
+      limit: 10,
+    },
     {
       getNextPageParam(lastPage) {
         return lastPage.has_next ? lastPage.page + 1 : undefined;
@@ -68,7 +70,7 @@ export const Payments = () => {
         pages[page].items.map(payment => (
           <div
             key={payment.id}
-            className="flex items-center justify-between p-3 border border-border rounded-lg"
+            className="flex items-center justify-between gap-4"
           >
             <div className="space-y-1 flex-1 min-w-0">
               <p className="font-medium text-sm truncate">
@@ -78,7 +80,7 @@ export const Payments = () => {
                 {formatDate(payment.createdAt)}
               </p>
             </div>
-            <div className="text-right space-y-1 shrink-0 ml-2">
+            <div className="text-right space-y-1 shrink-0">
               <p className="font-semibold text-sm">
                 {formatCurrency(Number(payment.amount))}
               </p>

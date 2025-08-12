@@ -1,41 +1,58 @@
+import { NextResponse } from 'next/server';
 import { MiddlewareFunction } from '../../_utils/types';
+import { authenticateEchoAccessJwtToken } from '@/lib/jwt-tokens';
+import { hashApiKey } from '@/lib/crypto';
+import { db } from '@/lib/db';
+
+type MiddlewareContext = {
+  userId: string;
+};
 
 // Create a middleware that checks permissions
-const permissionCheckMiddleware: MiddlewareFunction = async ({
-  next,
-  metadata,
-  request,
-}) => {
-  // Get user permissions from auth header, token, or session
-  const userPermissions = getUserPermissions(request);
-
-  // If no required permissions in metadata, allow access
-  if (
-    !metadata?.requiredPermissions ||
-    metadata.requiredPermissions.length === 0
-  ) {
-    return next({ context: { authorized: true } });
+export const permissionCheckMiddleware: MiddlewareFunction<
+  MiddlewareContext
+> = async ({ next, request }) => {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Check if user has all required permissions
-  const hasAllPermissions = metadata.requiredPermissions.every(permission =>
-    userPermissions.includes(permission)
-  );
+  const token = authHeader.substring(7);
 
-  if (!hasAllPermissions) {
-    // Short-circuit with 403 Forbidden response
-    return new Response(
-      JSON.stringify({
-        error: 'Forbidden',
-        message: 'You do not have the required permissions',
-      }),
-      {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
+  const isJWT = token.split('.').length === 3;
+
+  if (isJWT) {
+    try {
+      const { userId } = await authenticateEchoAccessJwtToken(token);
+      return next({ ctx: { userId } });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  } else {
+    try {
+      const keyHash = hashApiKey(token);
+      const apiKey = await db.apiKey.findUnique({
+        where: {
+          keyHash,
+        },
+        include: {
+          user: true,
+          echoApp: true,
+        },
+      });
+      if (
+        !apiKey ||
+        apiKey.isArchived ||
+        apiKey.user.isArchived ||
+        apiKey.echoApp.isArchived
+      ) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-    );
+      return next({ ctx: { userId: apiKey.user.id } });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
   }
-
-  // Continue with authorized context
-  return next({ context: { authorized: true } });
 };

@@ -8,6 +8,7 @@ import {
   NextFunction,
   OriginalRouteHandler,
 } from './types';
+import { NextResponse } from 'next/server';
 
 /**
  * Type of the middleware function passed to a safe action client.
@@ -20,10 +21,17 @@ export type MiddlewareFn<TContext, TReturnType, TMetadata = unknown> = {
   }): Promise<TReturnType>;
 };
 
+type InternalErrorBody = {
+  message: string;
+  errors?: z.core.$ZodIssue[];
+};
+
 export class InternalRouteHandlerError extends Error {
-  constructor(message: string) {
-    super(message);
+  readonly body: InternalErrorBody;
+  constructor(body: InternalErrorBody) {
+    super(body.message);
     this.name = 'InternalRouteHandlerError';
+    this.body = body;
   }
 }
 
@@ -31,7 +39,7 @@ export class RouteHandlerBuilder<
   TParams extends z.Schema = z.Schema,
   TQuery extends z.Schema = z.Schema,
   TBody extends z.Schema = z.Schema,
-  TContext = {},
+  TContext = object,
   TMetadata extends z.Schema = z.Schema,
 > {
   readonly config: {
@@ -190,7 +198,7 @@ export class RouteHandlerBuilder<
       z.infer<TMetadata>
     >
   ): OriginalRouteHandler {
-    return async (request, context): Promise<Response> => {
+    return async (request, context): Promise<NextResponse> => {
       try {
         let params = context?.params
           ? await context.params
@@ -221,10 +229,12 @@ export class RouteHandlerBuilder<
             }
           } catch (error) {
             if (this.config.bodySchema) {
-              throw new InternalRouteHandlerError(
-                JSON.stringify({ message: 'Invalid body', errors: error })
-              );
+              throw new InternalRouteHandlerError({
+                message: 'Invalid body',
+                errors: [],
+              });
             }
+            throw error;
           }
         }
 
@@ -232,12 +242,10 @@ export class RouteHandlerBuilder<
         if (this.config.paramsSchema) {
           const paramsResult = this.config.paramsSchema.safeParse(params);
           if (!paramsResult.success) {
-            throw new InternalRouteHandlerError(
-              JSON.stringify({
-                message: 'Invalid params',
-                errors: paramsResult.error.issues,
-              })
-            );
+            throw new InternalRouteHandlerError({
+              message: 'Invalid params',
+              errors: paramsResult.error.issues,
+            });
           }
           params = paramsResult.data;
         }
@@ -246,12 +254,10 @@ export class RouteHandlerBuilder<
         if (this.config.querySchema) {
           const queryResult = this.config.querySchema.safeParse(query);
           if (!queryResult.success) {
-            throw new InternalRouteHandlerError(
-              JSON.stringify({
-                message: 'Invalid query',
-                errors: queryResult.error.issues,
-              })
-            );
+            throw new InternalRouteHandlerError({
+              message: 'Invalid query',
+              errors: queryResult.error.issues,
+            });
           }
           query = queryResult.data;
         }
@@ -260,12 +266,10 @@ export class RouteHandlerBuilder<
         if (this.config.bodySchema) {
           const bodyResult = this.config.bodySchema.safeParse(body);
           if (!bodyResult.success) {
-            throw new InternalRouteHandlerError(
-              JSON.stringify({
-                message: 'Invalid body',
-                errors: bodyResult.error.issues,
-              })
-            );
+            throw new InternalRouteHandlerError({
+              message: 'Invalid body',
+              errors: bodyResult.error.issues,
+            });
           }
           body = bodyResult.data;
         }
@@ -274,12 +278,10 @@ export class RouteHandlerBuilder<
         if (this.config.metadataSchema && metadata !== undefined) {
           const metadataResult = this.config.metadataSchema.safeParse(metadata);
           if (!metadataResult.success) {
-            throw new InternalRouteHandlerError(
-              JSON.stringify({
-                message: 'Invalid metadata',
-                errors: metadataResult.error.issues,
-              })
-            );
+            throw new InternalRouteHandlerError({
+              message: 'Invalid metadata',
+              errors: metadataResult.error.issues,
+            });
           }
           metadata = metadataResult.data;
         }
@@ -289,10 +291,10 @@ export class RouteHandlerBuilder<
 
         const executeMiddlewareChain = async (
           index: number
-        ): Promise<Response> => {
+        ): Promise<NextResponse> => {
           if (index >= this.middlewares.length) {
             try {
-              const result = await handler(request, {
+              const result = handler(request, {
                 params: params as z.infer<TParams>,
                 query: query as z.infer<TQuery>,
                 body: body as z.infer<TBody>,
@@ -300,9 +302,9 @@ export class RouteHandlerBuilder<
                 metadata: metadata as z.infer<TMetadata>,
               });
 
-              if (result instanceof Response) return result;
+              if (result instanceof NextResponse) return result;
 
-              return new Response(JSON.stringify(result), {
+              return NextResponse.json(result, {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
               });
@@ -331,10 +333,13 @@ export class RouteHandlerBuilder<
               next,
             });
 
-            if (result instanceof Response) return result;
+            if (result instanceof NextResponse) return result;
 
             middlewareContext = { ...middlewareContext };
-            return result;
+            return NextResponse.json(result, {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            });
           } catch (error) {
             return handleError(error as Error, this.handleServerError);
           }
@@ -351,16 +356,17 @@ export class RouteHandlerBuilder<
 const handleError = (
   error: Error,
   handleServerError?: HandlerServerErrorFn
-): Response => {
+): NextResponse => {
   if (error instanceof InternalRouteHandlerError) {
-    return new Response(error.message, { status: 400 });
+    return NextResponse.json(error.body, { status: 400 });
   }
 
   if (handleServerError) {
     return handleServerError(error as Error);
   }
 
-  return new Response(JSON.stringify({ message: 'Internal server error' }), {
-    status: 500,
-  });
+  return NextResponse.json(
+    { message: 'Internal server error' },
+    { status: 500 }
+  );
 };

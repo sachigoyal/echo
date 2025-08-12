@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { softDeleteApiKey } from '@/lib/apps/soft-delete';
-import { findApiKey, updateApiKey } from '@/lib/api-keys';
+import { deleteApiKey } from '@/lib/api-keys';
+import { getApiKey, updateApiKey } from '@/lib/api-keys';
 import { auth } from '@/auth';
 
 // PATCH /api/api-keys/[id] - Update an API key (rename)
@@ -15,10 +15,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const { id } = await params;
-
-  const { name } = await request.json();
-
   try {
     const user = await getCurrentUser();
     const resolvedParams = await params;
@@ -29,7 +25,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const apiKey = await findApiKey(id, user.id);
+    const apiKey = await getApiKey(id, user.id);
 
     if (!apiKey) {
       return NextResponse.json(
@@ -39,7 +35,10 @@ export async function PATCH(
     }
 
     // Update the API key
-    const updatedApiKey = await updateApiKey(id, user.id, { name });
+    const updatedApiKey = await updateApiKey(user.id, {
+      id,
+      data: { name },
+    });
 
     return NextResponse.json({ apiKey: updatedApiKey });
   } catch (error) {
@@ -70,7 +69,7 @@ export async function DELETE(
     const id = resolvedParams.id;
 
     // Find the API key and check if it belongs to the user
-    const apiKey = await findApiKey(id, user.id);
+    const apiKey = await getApiKey(id, user.id);
 
     if (!apiKey) {
       return NextResponse.json(
@@ -80,7 +79,7 @@ export async function DELETE(
     }
 
     // Archive the API key (soft delete)
-    await softDeleteApiKey(id);
+    await deleteApiKey(user.id, id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

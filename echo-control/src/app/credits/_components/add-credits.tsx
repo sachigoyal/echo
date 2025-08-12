@@ -6,25 +6,27 @@ import { Button } from '@/components/ui/button';
 import { MoneyInput } from '@/components/ui/money-input';
 
 import { createPaymentLink } from '../_actions/create-payment-link';
-import { Loader2 } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
 
 export const AddCredits = () => {
   const [amount, setAmount] = useState<number>();
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAddCredits = async () => {
-    setIsLoading(true);
-    try {
-      await createPaymentLink({ amount: Number(amount) });
-    } catch (error) {
-      console.error('Error creating payment link:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    mutate: onAddCredits,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationFn: () => {
+      if (!amount) {
+        throw new Error('Amount is required');
+      }
+      return createPaymentLink({ amount });
+    },
+  });
 
   return (
-    <div className="flex flex-col w-full space-y-2">
+    <div className="flex flex-col w-full gap-4">
       <MoneyInput
         setAmount={setAmount}
         placeholder="0.00"
@@ -33,13 +35,15 @@ export const AddCredits = () => {
         step="0.01"
       />
       <Button
-        onClick={handleAddCredits}
-        disabled={isLoading || !amount || amount <= 0}
+        onClick={() => onAddCredits()}
+        disabled={isPending || !amount || amount <= 0 || isSuccess}
         size="lg"
         variant="turbo"
       >
-        {isLoading ? (
+        {isPending ? (
           <Loader2 className="size-4 animate-spin" />
+        ) : isSuccess ? (
+          <Check className="size-4" />
         ) : (
           'Add Credits'
         )}

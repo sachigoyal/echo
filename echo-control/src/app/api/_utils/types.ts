@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { ZodType } from 'zod';
 
 /**
@@ -14,7 +14,7 @@ export type HandlerFunction<
   TContext,
   TMetadata = unknown,
 > = (
-  request: Request,
+  request: NextRequest,
   context: {
     params: TParams;
     query: TQuery;
@@ -22,7 +22,7 @@ export type HandlerFunction<
     ctx: TContext;
     metadata?: TMetadata;
   }
-) => any;
+) => NextResponse;
 
 /**
  * Represents the merged context type between the existing context and new context added by middleware
@@ -35,7 +35,7 @@ export type MiddlewareContext<TContext, TNewContext> = TContext & TNewContext;
  * @returns Promise resolving to the response from the next middleware or handler
  */
 export type NextFunction<TContext> = {
-  <NC extends object = {}>(opts?: {
+  <NC extends object = object>(opts?: {
     ctx?: NC;
   }): Promise<MiddlewareResult<NC & TContext>>;
 };
@@ -61,7 +61,7 @@ export type MiddlewareFunction<
   TNextContext = Record<string, unknown>,
   TMetadata = unknown,
 > = (opts: {
-  request: Request;
+  request: NextRequest;
   ctx: TContext;
   metadata?: TMetadata;
   next: NextFunction<TContext>;
@@ -70,7 +70,7 @@ export type MiddlewareFunction<
 // Middleware should return a Response
 // But in order to infer the context, we extends the response with the context
 // This context is not really used and not really needed
-export type MiddlewareResult<TContext> = Response & { ctx?: TContext };
+export type MiddlewareResult<TContext> = NextResponse & { ctx?: TContext };
 
 /**
  * Configuration object for the RouteHandlerBuilder
@@ -91,11 +91,11 @@ export interface RouteHandlerBuilderConfig {
 export type OriginalRouteHandler = (
   request: NextRequest,
   context: { params: Promise<Record<string, unknown>> }
-) => any;
+) => Promise<NextResponse>;
 
 /**
  * Function that handles server errors in route handlers
  * @param error - The error that was thrown
  * @returns Response object with appropriate error details and status code
  */
-export type HandlerServerErrorFn = (error: Error) => Response;
+export type HandlerServerErrorFn = (error: Error) => NextResponse;
