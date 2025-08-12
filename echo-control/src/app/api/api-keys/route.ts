@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { createApiKey, listApiKeys } from '@/lib/api-keys';
+import { createApiKey, listApiKeys } from '@/services/api-keys';
 
 // GET /api/api-keys - List API keys user has access to
 export async function GET() {

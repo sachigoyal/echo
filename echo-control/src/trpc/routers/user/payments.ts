@@ -1,7 +1,7 @@
 import { infiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
-import { listPayments } from '@/lib/payments';
+import { listPayments } from '@/services/payments';
 
 export const userPaymentsRouter = createTRPCRouter({
   list: protectedProcedure

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { deleteApiKey } from '@/lib/api-keys';
-import { getApiKey, updateApiKey } from '@/lib/api-keys';
+import { deleteApiKey } from '@/services/api-keys';
+import { getApiKey, updateApiKey } from '@/services/api-keys';
 import { auth } from '@/auth';
 
 // PATCH /api/api-keys/[id] - Update an API key (rename)

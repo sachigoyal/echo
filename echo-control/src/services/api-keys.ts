@@ -1,10 +1,16 @@
 import { z } from 'zod';
 
-import { ApiKey } from '@/generated/prisma';
-import { db } from '../db';
-import { AppRole, Permission } from '../permissions/types';
-import { PermissionService } from '../permissions';
-import { generateApiKey, hashApiKey } from '../crypto';
+import { ApiKey, Prisma } from '@/generated/prisma';
+import { db } from '../lib/db';
+import {
+  AppRole,
+  MembershipStatus,
+  Permission,
+} from '../lib/permissions/types';
+import { PermissionService } from '../lib/permissions';
+import { generateApiKey, hashApiKey } from '../lib/crypto';
+import { paginationParamsSchema } from '@/lib/pagination';
+import { PaginatedResponse } from '@/types/paginated-response';
 
 export const getApiKeySchema = z.string();
 
@@ -21,50 +27,48 @@ export const getApiKey = async (
   });
 };
 
-export const listApiKeys = async (userId: string): Promise<ApiKey[]> => {
-  // Get all API keys user has access to
-  const accessibleApps = await PermissionService.getAccessibleApps(userId);
-  const appIds = accessibleApps.map(({ app }) => app.id);
-
-  const apiKeys = await db.apiKey.findMany({
-    where: {
-      echoAppId: { in: appIds },
+const listUserApiKeysWhere = (userId: string): Prisma.ApiKeyWhereInput => {
+  return {
+    userId,
+    isArchived: false,
+    echoApp: {
       isArchived: false,
-      echoApp: {
-        isArchived: false,
+      appMemberships: {
+        some: {
+          userId,
+          status: MembershipStatus.ACTIVE,
+        },
       },
     },
-    include: {
-      echoApp: true,
-      user: {
-        select: { id: true, email: true, name: true },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+  };
+};
 
-  // Filter keys based on permissions
-  const filteredKeys = apiKeys.filter(key => {
-    const appAccess = accessibleApps.find(
-      ({ app }) => app.id === key.echoAppId
-    );
-    if (!appAccess) return false;
+export const listApiKeys = async (
+  userId: string,
+  { page = 0, page_size = 10 }: z.infer<typeof paginationParamsSchema>
+): Promise<PaginatedResponse<ApiKey>> => {
+  const skip = page * page_size;
 
-    // Owners can see all keys for their apps
-    if (appAccess.userRole === AppRole.OWNER) return true;
+  const [totalCount, apiKeys] = await Promise.all([
+    db.apiKey.count({
+      where: listUserApiKeysWhere(userId),
+    }),
+    db.apiKey.findMany({
+      where: listUserApiKeysWhere(userId),
+      skip,
+      take: page_size,
+    }),
+  ]);
 
-    // Customers can only see their own keys
-    if (appAccess.userRole === AppRole.CUSTOMER) {
-      return key.userId === userId;
-    }
+  const totalPages = Math.ceil(totalCount / page_size);
 
-    // Admins can see all keys
-    if (appAccess.userRole === AppRole.ADMIN) return true;
-
-    return false;
-  });
-
-  return filteredKeys;
+  return {
+    items: apiKeys,
+    page,
+    page_size,
+    total_count: totalCount,
+    has_next: page < totalPages - 1,
+  };
 };
 
 export const createApiKeySchema = z.object({
@@ -75,7 +79,7 @@ export const createApiKeySchema = z.object({
 export async function createApiKey(
   userId: string,
   { echoAppId, name }: z.infer<typeof createApiKeySchema>
-): Promise<ApiKey> {
+) {
   // Check permissions using the new permission system
   const hasCreatePermission = await PermissionService.hasPermission(
     userId,

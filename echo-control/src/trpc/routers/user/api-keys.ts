@@ -8,7 +8,7 @@ import {
   listApiKeys,
   updateApiKey,
   updateApiKeySchema,
-} from '@/lib/api-keys';
+} from '@/services/api-keys';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const userApiKeysRouter = createTRPCRouter({
