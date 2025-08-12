@@ -32,6 +32,13 @@ export async function getCustomerEchoApp(
         isPublic: true,
         createdAt: true,
         updatedAt: true,
+        currentReferralReward: {
+          select: {
+            id: true,
+            amount: true,
+            description: true,
+          },
+        },
         currentReferralRewardId: true,
       },
     });

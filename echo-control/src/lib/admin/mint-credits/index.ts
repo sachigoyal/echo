@@ -34,7 +34,12 @@ export async function mintCreditsToUser(
   amountInDollars: number,
   options: MintCreditsOptions = {},
   tx?: Prisma.TransactionClient
-): Promise<void> {
+): Promise<{
+  userId: string;
+  amountInDollars: number;
+  echoAppId: string | undefined;
+  isFreeTier: boolean;
+}> {
   tx = tx || db;
 
   const {
@@ -103,6 +108,13 @@ export async function mintCreditsToUser(
         : ' (personal balance)'
     }`
   );
+
+  return {
+    userId,
+    amountInDollars,
+    echoAppId,
+    isFreeTier,
+  };
 }
 
 /**

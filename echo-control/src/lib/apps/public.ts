@@ -23,6 +23,13 @@ export async function getPublicEchoApp(id: string): Promise<PublicEchoApp> {
         createdAt: true,
         updatedAt: true,
         currentReferralRewardId: true,
+        currentReferralReward: {
+          select: {
+            id: true,
+            amount: true,
+            description: true,
+          },
+        },
       },
     });
 

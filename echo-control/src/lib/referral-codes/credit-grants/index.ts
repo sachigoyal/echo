@@ -2,7 +2,6 @@ import { Prisma } from '@/generated/prisma';
 import { db } from '@/lib/db';
 import { CreditGrantReferralCode, ReferralCodeType } from './types';
 import { isGlobalAdmin } from '@/lib/admin';
-import { getCurrentUser } from '@/lib/auth';
 import { mintCreditsToUser } from '@/lib/admin/mint-credits';
 
 export async function mintCreditReferralCode(
@@ -43,13 +42,27 @@ export async function mintCreditReferralCode(
 }
 
 export async function redeemCreditReferralCode(
+  userId: string,
   code: string,
   freeTier: boolean = false,
   echoAppId?: string
-): Promise<void> {
-  const user = await getCurrentUser();
+): Promise<{
+  userId: string;
+  amountInDollars: number;
+  echoAppId: string | undefined;
+  isFreeTier: boolean;
+}> {
+  const user = await db.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
 
-  await db.$transaction(async tx => {
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return await db.$transaction(async tx => {
     const referralCode = await tx.referralCode.findUnique({
       where: {
         code,
@@ -62,7 +75,7 @@ export async function redeemCreditReferralCode(
     });
 
     if (!referralCode) {
-      throw new Error('Referral code not found');
+      throw new Error('Referral code not found or expired');
     }
 
     if (!referralCode.grantAmount) {
@@ -74,11 +87,23 @@ export async function redeemCreditReferralCode(
       data: { isUsed: true },
     });
 
-    await mintCreditsToUser(
-      user.id,
+    const {
+      userId: userIdFromMintCredits,
+      amountInDollars,
+      echoAppId: echoAppIdFromReferralCode,
+      isFreeTier,
+    } = await mintCreditsToUser(
+      userId,
       Number(referralCode.grantAmount),
       { isFreeTier: freeTier, echoAppId },
       tx
     );
+
+    return {
+      userId: userIdFromMintCredits,
+      amountInDollars,
+      echoAppId: echoAppIdFromReferralCode,
+      isFreeTier,
+    };
   });
 }

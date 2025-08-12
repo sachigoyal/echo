@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { AddCredits } from './_components/add-credits';
+import { RedeemCredits } from './_components/redeem-credits';
 
 export default async function CreditsPage() {
   const session = await auth();
@@ -62,6 +63,24 @@ export default async function CreditsPage() {
             </DialogContent>
           </Dialog>
         </Card>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="turbo">
+              <Plus className="size-4" />
+              Redeem Credit Code
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Redeem Credit Code</DialogTitle>
+              <DialogDescription>
+                You can use Echo credits to use LLMs on any Echo app.
+              </DialogDescription>
+            </DialogHeader>
+            <RedeemCredits />
+          </DialogContent>
+        </Dialog>
         <Card className="bg-muted/50">
           <CardHeader className="border-b p-4">
             <CardTitle className="text-lg font-semibold">
