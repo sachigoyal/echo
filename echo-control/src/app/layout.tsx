@@ -3,7 +3,7 @@ import { ThemeProvider } from 'next-themes';
 
 import { TRPCReactProvider } from '@/trpc/client';
 
-import Header from '@/components/header';
+import { Navbar } from './_components/navbar';
 
 import type { Metadata } from 'next';
 
@@ -37,7 +37,7 @@ export default function RootLayout({
               storageKey="echo-theme"
               enableSystem={true}
             >
-              <Header />
+              <Navbar />
               <main className="w-screen overflow-x-hidden pt-12 md:pt-16 h-full">
                 {children}
               </main>

@@ -74,16 +74,6 @@ export async function softDeleteEchoApp(appId: string) {
 /**
  * Soft delete an API key
  */
-export async function softDeleteApiKey(keyId: string) {
-  const now = new Date();
-  return await db.apiKey.update({
-    where: { id: keyId },
-    data: {
-      isArchived: true,
-      archivedAt: now,
-    },
-  });
-}
 
 /**
  * Soft delete a user and all their related records

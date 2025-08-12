@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { createApiKey, getApiKeys } from '@/lib/api-keys';
+import { createApiKey, listApiKeys } from '@/lib/api-keys';
 
 // GET /api/api-keys - List API keys user has access to
 export async function GET() {
   try {
     const user = await getCurrentUser();
 
-    const apiKeys = await getApiKeys(user);
+    const apiKeys = await listApiKeys(user.id);
 
     return NextResponse.json({ apiKeys });
   } catch (error) {
@@ -42,7 +42,10 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const apiKey = await createApiKey(user, echoAppId, name);
+      const apiKey = await createApiKey(user.id, {
+        echoAppId,
+        name,
+      });
       return NextResponse.json({ apiKey }, { status: 201 });
     } catch (error) {
       if (error instanceof Error && error.message === 'Permission denied') {
