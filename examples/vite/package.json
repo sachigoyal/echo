@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@zdql/echo-react-sdk": "file:../../echo-react-sdk",
+    "@merit-systems/echo-react-sdk": "file:../../echo-react-sdk",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

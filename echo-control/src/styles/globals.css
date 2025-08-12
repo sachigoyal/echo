@@ -45,6 +45,18 @@
   animation: shimmer 5s infinite;
 }
 
+@utility animate-marquee {
+  animation: marquee var(--duration) linear infinite;
+}
+
+@utility animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
+
+@utility direction-reverse {
+  animation-direction: reverse;
+}
+
 @layer utilities {
   html {
     @apply font-sans;
@@ -261,6 +273,24 @@
     50% {
       transform: translateX(100%);
       opacity: 1;
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes marquee-vertical {
+    0% {
+      transform: translateY(0%);
+    }
+    100% {
+      transform: translateY(-100%);
     }
   }
 }

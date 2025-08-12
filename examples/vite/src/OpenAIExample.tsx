@@ -1,6 +1,6 @@
 import { useState } from 'react';
 // Import the new standalone hook from the package to ensure proper context sharing
-import { useEchoOpenAI } from '@zdql/echo-react-sdk';
+import { useEchoOpenAI } from '@merit-systems/echo-react-sdk';
 
 export function OpenAIExample() {
   const [messages, setMessages] = useState<string[]>([]);

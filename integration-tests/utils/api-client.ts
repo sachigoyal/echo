@@ -1,5 +1,9 @@
 import { TEST_CONFIG } from '../config/index.js';
-import { Balance, EchoClient, FreeBalance } from '@zdql/echo-typescript-sdk';
+import {
+  Balance,
+  EchoClient,
+  FreeBalance,
+} from '@merit-systems/echo-typescript-sdk';
 
 export interface EchoControlApiClient {
   baseUrl: string;

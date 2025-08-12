@@ -6,7 +6,7 @@ import {
   EchoTokenPurchase,
   useEcho,
   useEchoOpenAI,
-} from '@zdql/echo-react-sdk';
+} from '@merit-systems/echo-react-sdk';
 import { useState } from 'react';
 
 function ChatInterface() {
