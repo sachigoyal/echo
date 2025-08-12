@@ -5,13 +5,13 @@ React SDK for Echo OAuth2 + PKCE authentication and token management.
 ## Install
 
 ```bash
-pnpm install @zdql/echo-react-sdk
+pnpm install @merit-systems/echo-react-sdk
 ```
 
 ## Setup
 
 ```tsx
-import { EchoProvider, EchoSignIn, useEcho } from '@zdql/echo-react-sdk';
+import { EchoProvider, EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
 
 // 1. Wrap your app
 <EchoProvider config={{ appId: 'your-app-id' }}>

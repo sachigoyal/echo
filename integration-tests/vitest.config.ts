@@ -20,7 +20,7 @@ export default defineConfig({
         __dirname,
         '../echo-control/src/generated/prisma'
       ),
-      '@zdql/echo-typescript-sdk': resolve(
+      '@merit-systems/echo-typescript-sdk': resolve(
         __dirname,
         '../echo-typescript-sdk/src/index.ts'
       ),

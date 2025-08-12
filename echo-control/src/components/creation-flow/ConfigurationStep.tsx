@@ -56,7 +56,7 @@ const ConfigurationStep = ({
   const createReactAppCommand =
     'npx create-react-app . --template typescript --yes';
 
-  const installCommand = 'npm install @zdql/echo-react-sdk openai';
+  const installCommand = 'npm install @merit-systems/echo-react-sdk openai';
 
   const importsCode = `import {
   EchoProvider,
@@ -64,7 +64,7 @@ const ConfigurationStep = ({
   useEchoOpenAI,
   EchoSignIn,
   EchoTokenPurchase,
-} from '@zdql/echo-react-sdk';
+} from '@merit-systems/echo-react-sdk';
 import { useState } from 'react';`;
 
   const configCode = `const echoConfig = {

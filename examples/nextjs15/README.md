@@ -1,6 +1,6 @@
 # Echo NextJS Example
 
-This example demonstrates how to use the `@zdql/echo-react-sdk` EchoProvider in a NextJS environment with comprehensive test cases to ensure SSR and CSR compatibility.
+This example demonstrates how to use the `@merit-systems/echo-react-sdk` EchoProvider in a NextJS environment with comprehensive test cases to ensure SSR and CSR compatibility.
 
 ## Features
 
@@ -168,7 +168,7 @@ const [userManager] = useState(() => {
 
 The example includes:
 
-- `transpilePackages: ['@zdql/echo-react-sdk']` in `next.config.js` to ensure proper building
+- `transpilePackages: ['merit-systems/echo-react-sdk']` in `next.config.js` to ensure proper building
 - Custom Jest configuration for testing React components
 - TypeScript configuration optimized for NextJS
 
@@ -191,7 +191,7 @@ The example supports both server-side (`ECHO_*`) and client-side (`NEXT_PUBLIC_E
 ### 3. Build Errors with Echo SDK
 
 **Problem**: NextJS can't properly transpile the Echo SDK.
-**Solution**: Add `@zdql/echo-react-sdk` to `transpilePackages` in `next.config.js`.
+**Solution**: Add `merit-systems/echo-react-sdk` to `transpilePackages` in `next.config.js`.
 
 ### 4. Authentication Redirects Not Working
 
