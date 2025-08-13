@@ -8,13 +8,16 @@ import {
   listApiKeys,
   updateApiKey,
   updateApiKeySchema,
-} from '@/lib/api-keys';
+} from '@/services/api-keys';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { infiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
 
 export const userApiKeysRouter = createTRPCRouter({
-  list: protectedProcedure.query(async ({ ctx }) => {
-    return listApiKeys(ctx.session.user.id);
-  }),
+  list: protectedProcedure
+    .input(infiniteQueryPaginationParamsSchema)
+    .query(async ({ ctx, input }) => {
+      return listApiKeys(ctx.session.user.id, input);
+    }),
 
   get: protectedProcedure
     .input(getApiKeySchema)

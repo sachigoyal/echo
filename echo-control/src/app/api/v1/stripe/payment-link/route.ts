@@ -1,8 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { createPaymentLink, isValidUrl } from '@/lib/stripe/payment-link';
 import Stripe from 'stripe';
-import { User } from '@/generated/prisma';
+
+import { NextRequest, NextResponse } from 'next/server';
+
+import { createPaymentLink } from '@/services/stripe';
+
+import { getAuthenticatedUser } from '@/lib/auth';
+
+import { isValidUrl } from '@/lib/utils';
+
+import type { User } from '@/generated/prisma';
 
 // POST /api/v1/stripe/payment-link - Generate real Stripe payment link for authenticated user
 export async function POST(request: NextRequest) {
