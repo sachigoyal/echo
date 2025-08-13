@@ -173,7 +173,11 @@ export class GeminiProvider extends BaseProvider {
 
       const transaction: Transaction = {
         metadata: metadata,
-        cost: getCostPerToken(this.getModel(), promptTokens, candidatesTokens),
+        rawTransactionCost: getCostPerToken(
+          this.getModel(),
+          promptTokens,
+          candidatesTokens
+        ),
         status: 'success',
       };
 

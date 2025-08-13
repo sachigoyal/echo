@@ -45,7 +45,7 @@ export interface CreateLlmTransactionOptions {
   inputTokens?: number;
   outputTokens?: number;
   totalTokens?: number;
-  cost?: number;
+  totalCost?: number;
   prompt?: string;
   response?: string;
   status?: string;
@@ -149,7 +149,7 @@ export class TestDataFactory {
         inputTokens,
         outputTokens,
         totalTokens: options.totalTokens || inputTokens + outputTokens,
-        cost: options.cost || (inputTokens + outputTokens) * 0.001,
+        totalCost: options.totalCost || (inputTokens + outputTokens) * 0.001,
         prompt: options.prompt || 'Test prompt for integration testing',
         response: options.response || 'Test response from integration testing',
         status: options.status || 'completed',

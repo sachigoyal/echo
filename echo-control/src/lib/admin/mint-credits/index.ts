@@ -44,8 +44,8 @@ export async function mintCreditsToUser(
 
   const {
     description = options.isFreeTier
-      ? 'ADMIN FREE TIER ISSUED PAYMENT'
-      : 'ADMIN ISSUED PAYMENT',
+      ? 'Free-Tier Credit Redemption Payment'
+      : 'Personal Balance Credit Redemption Payment',
     isFreeTier = false,
     echoAppId,
     metadata = {},

@@ -103,7 +103,7 @@ export const TEST_DATA = {
   llmTransactions: {
     testTransaction: {
       id: '66666666-6666-6666-6666-666666666666',
-      cost: 0.15,
+      totalCost: 0.15,
       status: 'completed',
     },
   },

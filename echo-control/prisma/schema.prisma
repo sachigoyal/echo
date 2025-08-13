@@ -72,18 +72,19 @@ model VerificationToken {
 }
 
 model EchoApp {
-  id                      String           @id @default(uuid()) @db.Uuid
-  name                    String
-  description             String?
-  profilePictureUrl       String?
-  bannerImageUrl          String?
-  homepageUrl             String?
-  isPublic                Boolean          @default(false)
-  isArchived              Boolean          @default(false)
-  archivedAt              DateTime?        @db.Timestamptz
-  createdAt               DateTime         @default(now()) @db.Timestamptz
-  updatedAt               DateTime         @updatedAt @db.Timestamptz
-  authorizedCallbackUrls  String[]         @default([]) // Array of allowed redirect URIs
+  id                     String    @id @default(uuid()) @db.Uuid
+  name                   String
+  description            String?
+  profilePictureUrl      String?
+  bannerImageUrl         String?
+  homepageUrl            String?
+  isPublic               Boolean   @default(false)
+  isArchived             Boolean   @default(false)
+  archivedAt             DateTime? @db.Timestamptz
+  createdAt              DateTime  @default(now()) @db.Timestamptz
+  updatedAt              DateTime  @updatedAt @db.Timestamptz
+  authorizedCallbackUrls String[]  @default([]) // Array of allowed redirect URIs
+
   apiKeys                 ApiKey[] // API keys for the app 
   Transactions            Transaction[] // LLM transactions for that App
   refreshTokens           RefreshToken[] // Refresh tokens
@@ -212,7 +213,11 @@ model GithubLink {
 model Transaction {
   id                    String               @id @default(uuid()) @db.Uuid
   transactionMetadataId String?              @db.Uuid
-  cost                  Decimal              @db.Decimal(65, 14)
+  totalCost             Decimal              @db.Decimal(65, 14)
+  appProfit             Decimal              @default(0.0) @db.Decimal(65, 14)
+  markUpProfit          Decimal              @default(0.0) @db.Decimal(65, 14)
+  referralProfit        Decimal              @default(0.0) @db.Decimal(65, 14)
+  rawTransactionCost    Decimal              @default(0.0) @db.Decimal(65, 14)
   status                String?
   isArchived            Boolean              @default(false)
   archivedAt            DateTime?            @db.Timestamptz(6)
@@ -296,20 +301,21 @@ model TransactionMetadata {
 }
 
 model ReferralCode {
-  id          String    @id @default(uuid()) @db.Uuid
-  code        String    @unique
-  userId      String?   @db.Uuid
-  echoAppId   String?   @db.Uuid
-  grantType   String // 'credits' or 'referral'
-  grantAmount Decimal?  @default(0.0) @db.Decimal(65, 14) // Amount of credits to grant if grantType is 'credits'
-  reusable    Boolean   @default(false)
-  expiresAt   DateTime  @db.Timestamptz
-  isUsed      Boolean   @default(false)
-  isArchived  Boolean   @default(false)
-  archivedAt  DateTime? @db.Timestamptz
-  usedAt      DateTime? @db.Timestamptz
-  createdAt   DateTime  @default(now()) @db.Timestamptz
-  updatedAt   DateTime  @updatedAt @db.Timestamptz
+  id            String    @id @default(uuid()) @db.Uuid
+  code          String    @unique
+  userId        String?   @db.Uuid
+  echoAppId     String?   @db.Uuid
+  grantType     String // 'credits' or 'referral'
+  grantAmount   Decimal?  @default(0.0) @db.Decimal(65, 14) // Amount of credits to grant if grantType is 'credits'
+  reusable      Boolean   @default(false)
+  expiresAt     DateTime  @db.Timestamptz
+  isUsed        Boolean   @default(false)
+  isArchived    Boolean   @default(false)
+  archivedAt    DateTime? @db.Timestamptz
+  usedAt        DateTime? @db.Timestamptz
+  createdAt     DateTime  @default(now()) @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @db.Timestamptz
+  totalEarnings Decimal   @default(0.0) @db.Decimal(65, 14)
 
   appMemberships AppMembership[]
 

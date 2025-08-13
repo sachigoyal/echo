@@ -138,7 +138,11 @@ export class OpenAIResponsesProvider extends BaseProvider {
 
       const transaction: Transaction = {
         metadata: metadata,
-        cost: getCostPerToken(this.getModel(), input_tokens, output_tokens),
+        rawTransactionCost: getCostPerToken(
+          this.getModel(),
+          input_tokens,
+          output_tokens
+        ),
         status: 'success',
       };
 

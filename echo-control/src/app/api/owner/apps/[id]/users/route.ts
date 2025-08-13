@@ -80,7 +80,7 @@ export async function GET(
               isArchived: false,
             },
             _sum: {
-              cost: true,
+              totalCost: true,
             },
           }),
         ]);
@@ -95,7 +95,7 @@ export async function GET(
           status: membership.status,
           totalSpent: Number(membership.totalSpent),
           apiKeyCount,
-          transactionSpent: Number(totalSpentResult._sum.cost || 0),
+          transactionSpent: Number(totalSpentResult._sum.totalCost || 0),
           joinedAt: membership.createdAt.toISOString(),
           userCreatedAt: membership.user.createdAt.toISOString(),
         };

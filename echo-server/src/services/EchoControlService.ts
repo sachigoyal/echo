@@ -10,18 +10,22 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 
 import { PrismaClient, SpendPool } from '../generated/prisma';
+import { Decimal } from '@prisma/client/runtime/library';
 import FreeTierService from './FreeTierService';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
-import { fundRepo, FundRepoResult } from './fund-repo/fundRepoService';
+import { EarningsService } from './EarningsService';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
   private readonly dbService: EchoDbService;
   private readonly freeTierService: FreeTierService;
+  private earningsService: EarningsService;
   private readonly apiKey: string;
   private authResult: ApiKeyValidationResult | null = null;
-  private appMarkup: number | null = null;
+  private markUpAmount: Decimal | null = null;
   private markUpId: string | null = null;
+  private referralAmount: Decimal | null = null;
+  private referralId: string | null = null;
   private githubLinkId: string | null = null;
   private freeTierSpendPool: SpendPool | null = null;
   private githubId: string | null = null;
@@ -47,6 +51,7 @@ export class EchoControlService {
     });
     this.dbService = new EchoDbService(this.db);
     this.freeTierService = new FreeTierService(this.db);
+    this.earningsService = new EarningsService(this.db);
   }
 
   /**
@@ -60,9 +65,14 @@ export class EchoControlService {
       console.error('Error verifying API key:', error);
       return null;
     }
-    const markupData = await this.getAppMarkup();
-    this.appMarkup = markupData.amount;
-    this.markUpId = markupData.id;
+    const markupData = await this.earningsService.getEarningsData(
+      this.authResult,
+      this.getEchoAppId() ?? ''
+    );
+    this.markUpAmount = markupData.markUpAmount;
+    this.markUpId = markupData.markUpId;
+    this.referralId = markupData.referralId;
+    this.referralAmount = markupData.referralAmount;
 
     const githubLinkData = await this.getAppGithubLink();
     this.githubLinkId = githubLinkData.id;
@@ -135,55 +145,6 @@ export class EchoControlService {
     }
   }
 
-  async getAppMarkup(): Promise<{ amount: number; id: string | null }> {
-    if (!this.authResult) {
-      console.error('No authentication result available');
-      return { amount: 1.0, id: null };
-    }
-
-    const appWithMarkup = await this.db.echoApp.findUnique({
-      where: {
-        id: this.getEchoAppId() ?? '',
-      },
-      select: {
-        markUp: {
-          select: {
-            id: true,
-            amount: true,
-            isArchived: true,
-          },
-        },
-      },
-    });
-
-    if (!appWithMarkup) {
-      throw new Error('EchoApp not found');
-    }
-
-    // If no markup record exists, return default
-    if (!appWithMarkup.markUp) {
-      return { amount: 1.0, id: null };
-    }
-
-    if (appWithMarkup.markUp.isArchived) {
-      return { amount: 1.0, id: null };
-    }
-
-    if (!appWithMarkup.markUp.amount) {
-      return { amount: 1.0, id: null };
-    }
-
-    const markupAmount = appWithMarkup.markUp.amount.toNumber();
-    if (markupAmount < 1.0) {
-      throw new Error('App markup must be greater than or equal to 1.0');
-    }
-
-    return {
-      amount: markupAmount,
-      id: appWithMarkup.markUp.id,
-    };
-  }
-
   async getAppGithubLink(): Promise<{
     githubId: string | null;
     githubType: string | null;
@@ -229,7 +190,7 @@ export class EchoControlService {
         return;
       }
 
-      if (!this.appMarkup) {
+      if (!this.markUpAmount) {
         console.error('User has not authenticated');
         return;
       }
@@ -255,6 +216,56 @@ export class EchoControlService {
     return this.freeTierSpendPool;
   }
 
+  async computeTransactionCosts(transaction: Transaction): Promise<{
+    rawTransactionCost: Decimal;
+    totalTransactionCost: Decimal;
+    totalAppProfit: Decimal;
+    referralProfit: Decimal;
+    markUpProfit: Decimal;
+  }> {
+    if (!this.markUpAmount) {
+      console.error('User has not authenticated');
+      throw new UnauthorizedError('User has not authenticated');
+    }
+
+    if (!this.referralAmount) {
+      console.error('Referral amount not found');
+      throw new UnauthorizedError('Referral amount not found');
+    }
+
+    const markUpDecimal = this.markUpAmount.minus(1);
+    const referralDecimal = this.referralAmount.minus(1);
+
+    if (markUpDecimal.lessThan(0.0)) {
+      console.error('App markup must be greater than 1.0');
+      throw new UnauthorizedError('App markup must be greater than 1.0');
+    }
+
+    if (referralDecimal.lessThan(0.0)) {
+      console.error('Referral amount must be greater than 1.0');
+      throw new UnauthorizedError('Referral amount must be greater than 1.0');
+    }
+
+    // Perform all calculations using Decimal arithmetic
+    const totalAppProfitDecimal =
+      transaction.rawTransactionCost.mul(markUpDecimal);
+    const referralProfitDecimal = totalAppProfitDecimal.mul(referralDecimal);
+    const markUpProfitDecimal = totalAppProfitDecimal.minus(
+      referralProfitDecimal
+    );
+    const totalTransactionCostDecimal = transaction.rawTransactionCost.plus(
+      totalAppProfitDecimal
+    );
+
+    // Return Decimal values directly
+    return {
+      rawTransactionCost: transaction.rawTransactionCost,
+      totalTransactionCost: totalTransactionCostDecimal,
+      totalAppProfit: totalAppProfitDecimal,
+      referralProfit: referralProfitDecimal,
+      markUpProfit: markUpProfitDecimal,
+    };
+  }
   async createFreeTierTransaction(transaction: Transaction): Promise<void> {
     if (!this.authResult) {
       console.error('No authentication result available');
@@ -272,16 +283,25 @@ export class EchoControlService {
       throw new UnauthorizedError('Missing required user or app information');
     }
 
-    if (!this.appMarkup) {
-      console.error('User has not authenticated');
-      throw new UnauthorizedError('User has not authenticated');
-    }
+    const {
+      rawTransactionCost,
+      totalTransactionCost,
+      totalAppProfit,
+      referralProfit,
+      markUpProfit,
+    } = await this.computeTransactionCosts(transaction);
 
     // Markup is checked, but not applied here because it is a free tier transaction
     const githubLinkId = this.githubLinkId ?? undefined;
 
     const transactionData: TransactionRequest = {
-      ...transaction,
+      totalCost: totalTransactionCost,
+      appProfit: totalAppProfit,
+      markUpProfit: markUpProfit,
+      referralProfit: referralProfit,
+      rawTransactionCost: rawTransactionCost,
+      metadata: transaction.metadata,
+      status: transaction.status,
       userId: userId,
       echoAppId: echoAppId,
       ...(apiKeyId && { apiKeyId }),
@@ -304,19 +324,24 @@ export class EchoControlService {
       throw new UnauthorizedError('No authentication result available');
     }
 
-    if (!this.appMarkup) {
-      console.error('User has not authenticated');
-      throw new UnauthorizedError('User has not authenticated');
-    }
-
-    const cost = transaction.cost * this.appMarkup;
-    const markUp = cost - transaction.cost;
-    transaction.cost = cost;
+    const {
+      rawTransactionCost,
+      totalTransactionCost,
+      totalAppProfit,
+      referralProfit,
+      markUpProfit,
+    } = await this.computeTransactionCosts(transaction);
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
 
     const transactionData: TransactionRequest = {
-      ...transaction,
+      totalCost: totalTransactionCost,
+      appProfit: totalAppProfit,
+      markUpProfit: markUpProfit,
+      referralProfit: referralProfit,
+      rawTransactionCost: rawTransactionCost,
+      metadata: transaction.metadata,
+      status: transaction.status,
       userId: userId,
       echoAppId: echoAppId,
       ...(apiKeyId && { apiKeyId }),
@@ -325,25 +350,5 @@ export class EchoControlService {
     };
 
     await this.dbService.createPaidTransaction(transactionData);
-
-    if (this.githubId && this.githubType === 'repo' && markUp > 0) {
-      fireAndForgetFundRepo(markUp, parseInt(this.githubId));
-    }
   }
-}
-
-async function fireAndForgetFundRepo(
-  amount: number,
-  repoId: number
-): Promise<void> {
-  const fundRepoEnabled =
-    (process.env.ENABLE_FIRE_AND_FORGET || 'false') === 'true';
-
-  if (!fundRepoEnabled) {
-    return;
-  }
-
-  fundRepo(amount, repoId).catch(error => {
-    console.error('Error funding repo:', error);
-  });
 }

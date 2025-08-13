@@ -138,7 +138,11 @@ export class AnthropicNativeProvider extends BaseProvider {
         };
         const transaction: Transaction = {
           metadata: metadata,
-          cost: getCostPerToken(model, usage.input_tokens, usage.output_tokens),
+          rawTransactionCost: getCostPerToken(
+            model,
+            usage.input_tokens,
+            usage.output_tokens
+          ),
           status: 'success',
         };
 
@@ -169,7 +173,11 @@ export class AnthropicNativeProvider extends BaseProvider {
 
         const transaction: Transaction = {
           metadata: metadata,
-          cost: getCostPerToken(this.getModel(), inputTokens, outputTokens),
+          rawTransactionCost: getCostPerToken(
+            this.getModel(),
+            inputTokens,
+            outputTokens
+          ),
           status: 'success',
         };
 
