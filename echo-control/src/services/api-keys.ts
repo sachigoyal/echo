@@ -80,28 +80,24 @@ export async function createApiKey(
   userId: string,
   { echoAppId, name }: z.infer<typeof createApiKeySchema>
 ) {
-  // Check permissions using the new permission system
-  const hasCreatePermission = await PermissionService.hasPermission(
-    userId,
-    echoAppId,
-    Permission.CREATE_API_KEYS
-  );
+  const userRole = await PermissionService.getUserAppRole(userId, echoAppId);
 
-  const hasManageOwnPermission = await PermissionService.hasPermission(
-    userId,
-    echoAppId,
-    Permission.MANAGE_OWN_API_KEYS
-  );
-
-  if (!hasCreatePermission && !hasManageOwnPermission) {
+  if (
+    !PermissionService.roleHasPermission(
+      userRole,
+      Permission.CREATE_API_KEYS
+    ) &&
+    !PermissionService.roleHasPermission(
+      userRole,
+      Permission.MANAGE_ALL_API_KEYS
+    )
+  ) {
     throw new Error('Permission denied');
   }
 
-  const userRole = await PermissionService.getUserAppRole(userId, echoAppId);
-  const scope =
-    userRole === AppRole.OWNER || userRole === AppRole.ADMIN
-      ? 'owner'
-      : 'customer';
+  const scope = [AppRole.OWNER, AppRole.ADMIN].includes(userRole)
+    ? 'owner'
+    : 'customer';
 
   // Generate a new API key
   const generatedKey = generateApiKey();
@@ -123,13 +119,10 @@ export async function createApiKey(
     },
   });
 
-  // Return the API key with the original plaintext key for the user to save
-  const response = {
+  return {
     ...apiKey,
     key: generatedKey, // Include the plaintext key in the response for the user to copy
   };
-
-  return response;
 }
 
 export const updateApiKeySchema = z.object({
