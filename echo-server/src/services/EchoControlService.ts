@@ -191,7 +191,7 @@ export class EchoControlService {
       }
 
       if (!this.markUpAmount) {
-        console.error('User has not authenticated');
+        console.error('Error Fetching Markup Amount');
         return;
       }
 
