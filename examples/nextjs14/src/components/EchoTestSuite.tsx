@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { EchoProvider } from '@zdql/echo-react-sdk';
+import { EchoProvider } from '@merit-systems/echo-react-sdk';
 import { SSRTestCase } from './test-cases/SSRTestCase';
 import { CSRTestCase } from './test-cases/CSRTestCase';
 import { AuthFlowTestCase } from './test-cases/AuthFlowTestCase';

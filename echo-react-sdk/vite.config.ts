@@ -58,7 +58,7 @@ export default defineConfig({
         // Node.js built-in modules
         /^node:/,
         // CLI helper functions from echo-typescript-sdk
-        /@zdql\/echo-typescript-sdk.*cli/,
+        /@merit-systems\/echo-typescript-sdk.*cli/,
       ],
       output: {
         globals: {

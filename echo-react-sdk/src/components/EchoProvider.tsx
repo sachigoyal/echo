@@ -13,8 +13,8 @@ import {
 } from 'oidc-client-ts';
 import { EchoConfig, EchoUser, EchoBalance } from '../types';
 import { sanitizeUserProfile } from '../utils/security';
-import { EchoClient } from '@zdql/echo-typescript-sdk';
-import type { Balance, FreeBalance } from '@zdql/echo-typescript-sdk';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import type { Balance, FreeBalance } from '@merit-systems/echo-typescript-sdk';
 
 interface EchoOAuthProfile {
   sub?: string;

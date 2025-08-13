@@ -3,7 +3,7 @@ import {
   EchoSignIn,
   EchoTokenPurchase,
   useEcho,
-} from '@zdql/echo-react-sdk';
+} from '@merit-systems/echo-react-sdk';
 import { OpenAIExample } from './OpenAIExample';
 import React, { useState, useEffect, useCallback } from 'react';
 

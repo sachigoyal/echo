@@ -1,6 +1,7 @@
 import { db } from '../db';
 import { User, Payment } from '@/generated/prisma';
 import Stripe from 'stripe';
+import { z } from 'zod';
 
 /**
  * PICO-CENT PRECISION SUPPORT
@@ -65,6 +66,14 @@ export interface CreatePaymentLinkResult {
   payment: Payment; // Payment record from database
 }
 
+export const createPaymentLinkSchema = z.object({
+  amount: z.number().min(1),
+  description: z.string().optional(),
+  successUrl: z.string().optional(),
+});
+
+export type CreatePaymentLinkBody = z.infer<typeof createPaymentLinkSchema>;
+
 /**
  * Create a Stripe payment link for purchasing credits
  * @param user - The authenticated user
@@ -72,10 +81,10 @@ export interface CreatePaymentLinkResult {
  * @returns Payment link and database record
  */
 export async function createPaymentLink(
-  user: User,
-  request: CreatePaymentLinkRequest
+  userId: string,
+  body: CreatePaymentLinkBody
 ): Promise<CreatePaymentLinkResult> {
-  const { amount, description = 'Echo Credits', successUrl } = request;
+  const { amount, description = 'Echo Credits', successUrl } = body;
 
   if (!amount || amount <= 0) {
     throw new Error('Valid amount is required');
@@ -116,7 +125,7 @@ export async function createPaymentLink(
       },
     ],
     metadata: {
-      userId: user.id,
+      userId,
       description,
     },
     after_completion: afterCompletion,
@@ -133,7 +142,7 @@ export async function createPaymentLink(
       currency: 'usd',
       status: 'pending',
       description: description,
-      userId: user.id,
+      userId,
     },
   });
 
@@ -146,7 +155,7 @@ export async function createPaymentLink(
       status: 'pending',
       created: Math.floor(Date.now() / 1000),
       metadata: {
-        userId: user.id,
+        userId,
         description,
       },
     },

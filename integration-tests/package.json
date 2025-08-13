@@ -24,8 +24,8 @@
     "lint:fix": "eslint **/*.ts --fix"
   },
   "dependencies": {
-    "@zdql/echo-react-sdk": "workspace:*",
-    "@zdql/echo-typescript-sdk": "workspace:*",
+    "@merit-systems/echo-react-sdk": "workspace:*",
+    "@merit-systems/echo-typescript-sdk": "workspace:*",
     "jose": "^6.0.11",
     "nanoid": "^5.1.5",
     "openai": "^4.81.0"

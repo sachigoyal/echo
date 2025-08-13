@@ -4,7 +4,7 @@ const nextConfig = {
     // Enable experimental features if needed
   },
   // Ensure proper handling of external packages
-  transpilePackages: ['@zdql/echo-react-sdk'],
+  transpilePackages: ['@merit-systems/echo-react-sdk'],
 
   // Configure environment variables
   env: {

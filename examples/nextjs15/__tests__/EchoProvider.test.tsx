@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { EchoProvider, useEcho } from '@zdql/echo-react-sdk';
+import { EchoProvider, useEcho } from '@merit-systems/echo-react-sdk';
 
 // Test configuration
 const testConfig = {
