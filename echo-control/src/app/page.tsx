@@ -37,7 +37,7 @@ export default function HomePage() {
         </div>
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Link href="/owner/apps/create">
+          <Link href="/apps/create">
             <GlassButton className="scale-150">Create an app</GlassButton>
           </Link>
         </div>

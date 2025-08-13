@@ -8,6 +8,7 @@ import { UserDropdown } from './user-dropdown';
 import { SignInButton } from './sign-in-button';
 
 import { auth } from '@/auth';
+import { Button } from '@/components/ui/button';
 
 export const Navbar = async () => {
   const session = await auth();
@@ -26,11 +27,8 @@ export const Navbar = async () => {
       <div className="flex items-center space-x-3">
         {session?.user ? (
           <>
-            <Link
-              href="/owner/apps/create"
-              className="hidden md:flex items-center px-4 py-2.5 text-sm font-medium text-foreground bg-background border border-border hover:bg-muted/50 backdrop-blur-xs transition-all duration-200 shadow-xs rounded-lg h-10"
-            >
-              Create App
+            <Link href="/owner/apps/create">
+              <Button variant="outline">Create App</Button>
             </Link>
             <BalanceButton />
             <UserDropdown user={session.user} />
