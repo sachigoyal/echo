@@ -56,76 +56,62 @@ function AppEarningsCard({ app }: { app: App }) {
     );
   }
 
+  const totalEarnings = breakdown?.grossEarnings || 0;
+  const hasEarnings = totalEarnings > 0;
+  const referralEarningsCount = breakdown?.referralEarnings
+    ? Object.keys(breakdown.referralEarnings).length
+    : 0;
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{app.name}</CardTitle>
-          <Badge
-            variant={
-              breakdown?.totalEarnings && breakdown.totalEarnings > 0
-                ? 'default'
-                : 'secondary'
-            }
-          >
-            {breakdown?.totalEarnings && breakdown.totalEarnings > 0
-              ? 'Earning'
-              : 'No Revenue'}
+          <CardTitle className="text-lg">
+            {breakdown?.appName || app.name}
+          </CardTitle>
+          <Badge variant={hasEarnings ? 'default' : 'secondary'}>
+            {hasEarnings ? 'Earning' : 'No Revenue'}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Total Earnings</span>
+          <span className="text-sm text-muted-foreground">Gross Earnings</span>
           <span className="text-xl font-bold text-green-600">
-            {formatCurrency(breakdown?.totalEarnings || 0)}
+            {formatCurrency(breakdown?.grossEarnings || 0)}
           </span>
         </div>
 
-        {breakdown && breakdown.totalEarnings > 0 && (
+        {breakdown && hasEarnings && (
           <>
+            <Separator />
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Markup Earnings</span>
                 <span className="font-medium">
-                  {formatCurrency(breakdown.markupEarnings.total)}
+                  {formatCurrency(breakdown.markupEarnings)}
                 </span>
               </div>
-              {breakdown.referralEarnings.total > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Referral Earnings
-                  </span>
-                  <span className="font-medium">
-                    {formatCurrency(breakdown.referralEarnings.total)}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  Total Transactions
-                </span>
-                <span className="font-medium">
-                  {breakdown.markupEarnings.transactionCount +
-                    breakdown.referralEarnings.transactionCount}
-                </span>
-              </div>
-            </div>
 
-            {breakdown.breakdown.byProvider.length > 0 && (
-              <div className="pt-2 border-t">
-                <div className="text-sm font-medium mb-2">Top Provider</div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {breakdown.breakdown.byProvider[0].provider} -{' '}
-                    {breakdown.breakdown.byProvider[0].model}
-                  </span>
-                  <span className="font-medium">
-                    {formatCurrency(breakdown.breakdown.byProvider[0].earnings)}
-                  </span>
-                </div>
-              </div>
-            )}
+              {breakdown.totalReferralEarnings > 0 && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Total Referral Earnings
+                    </span>
+                    <span className="font-medium">
+                      {formatCurrency(breakdown.totalReferralEarnings)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground text-xs">
+                      From {referralEarningsCount} referrer
+                      {referralEarningsCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
           </>
         )}
       </CardContent>
@@ -137,7 +123,28 @@ function TotalEarningsDisplay() {
   const { data: earnings, isLoading, error } = api.user.earnings.get.useQuery();
 
   if (isLoading) {
-    return <Skeleton className="w-32 h-12" />;
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-8 w-24" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-8 w-24" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-8 w-24" />
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (error) {
@@ -149,20 +156,55 @@ function TotalEarningsDisplay() {
   }
 
   return (
-    <div className="text-4xl font-bold text-green-600">
-      {formatCurrency(earnings || 0)}
+    <div className="grid gap-4 md:grid-cols-3">
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-2">
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Total Gross</span>
+          </div>
+          <div className="text-2xl font-bold text-green-600">
+            {formatCurrency(earnings?.totalGrossEarnings || 0)}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-2">
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Markup Earnings
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-blue-600">
+            {formatCurrency(earnings?.totalMarkupEarnings || 0)}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Referral Earnings
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-purple-600">
+            {formatCurrency(earnings?.totalReferralEarnings || 0)}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
 function AppsEarningsList() {
-  const { data: apps, isLoading: appsLoading } =
-    api.apps.getAllOwnerApps.useQuery({
-      page: 1,
-      limit: 100, // Get all apps for now
-    });
+  const { data: earnings, isLoading: earningsLoading } =
+    api.user.earnings.get.useQuery();
 
-  if (appsLoading) {
+  if (earningsLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3].map(i => (
@@ -172,7 +214,7 @@ function AppsEarningsList() {
     );
   }
 
-  if (!apps || apps.apps.length === 0) {
+  if (!earnings || earnings.appsBreakdown.length === 0) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
@@ -190,8 +232,11 @@ function AppsEarningsList() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {apps.apps.map(app => (
-        <AppEarningsCard key={app.id} app={app} />
+      {earnings.appsBreakdown.map(app => (
+        <AppEarningsCard
+          key={app.appId}
+          app={{ id: app.appId, name: app.appName }}
+        />
       ))}
     </div>
   );
@@ -234,30 +279,29 @@ export default function EarningsPage() {
         <Separator />
       </div>
 
-      {/* Main Earnings Display Card */}
-      <Card className="border rounded-lg overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-b">
-          <CardTitle className="text-2xl font-semibold flex items-center gap-2">
+      {/* Main Earnings Display Cards */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-semibold flex items-center gap-2">
             <TrendingUp className="h-6 w-6 text-green-600" />
             Total Earnings Across All Apps
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <Suspense fallback={<Skeleton className="w-32 h-12" />}>
-                <TotalEarningsDisplay />
-              </Suspense>
-              <p className="text-sm text-muted-foreground">
-                Lifetime earnings from all your Echo apps and referrals
-              </p>
+          </h2>
+          <p className="text-muted-foreground">
+            Lifetime earnings from all your Echo apps and referrals
+          </p>
+        </div>
+        <Suspense
+          fallback={
+            <div className="grid gap-4 md:grid-cols-3">
+              <Skeleton className="h-24" />
+              <Skeleton className="h-24" />
+              <Skeleton className="h-24" />
             </div>
-            <div className="hidden md:block">
-              <DollarSign className="h-16 w-16 text-green-600/20" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          }
+        >
+          <TotalEarningsDisplay />
+        </Suspense>
+      </div>
 
       {/* Earnings by App */}
       <div className="space-y-4">
