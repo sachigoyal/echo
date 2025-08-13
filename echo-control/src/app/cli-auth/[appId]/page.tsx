@@ -54,13 +54,9 @@ export default async function CliAuthAppPage({
               <CardTitle className="text-lg font-semibold leading-none">
                 {app.name}
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                <ErrorBoundary fallback={'Owner not found'}>
-                  <Suspense fallback={<Skeleton className="h-4 w-24" />}>
-                    <Owner appId={appId} />
-                  </Suspense>
-                </ErrorBoundary>
-              </CardDescription>
+              <Suspense fallback={<Skeleton className="h-4 w-24" />}>
+                <Owner appId={appId} />
+              </Suspense>
             </div>
           </div>
           {app.description && <p>{app.description}</p>}
@@ -74,6 +70,14 @@ export default async function CliAuthAppPage({
 }
 
 const Owner = async ({ appId }: { appId: string }) => {
-  const owner = await api.apps.public.owner(appId);
-  return owner.name;
+  const owner = await api.apps.public
+    .owner(appId)
+    .then(owner => owner.name)
+    .catch(() => 'Owner not found');
+
+  return (
+    <CardDescription className="text-xs text-muted-foreground">
+      {owner}
+    </CardDescription>
+  );
 };
