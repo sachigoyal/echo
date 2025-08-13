@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Check, Copy, Info } from 'lucide-react';
 
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 
 interface Props {
-  generateApiKey: (name?: string) => void;
+  generateApiKey: (name?: string) => Promise<string>;
   isPending: boolean;
   apiKey?: string;
 }
@@ -35,12 +35,6 @@ export const GenerateApiKey: React.FC<Props> = ({
   const { isCopied, copyToClipboard } = useCopyToClipboard(() => {
     toast.success('Copied to clipboard');
   });
-
-  useEffect(() => {
-    if (apiKey) {
-      copyToClipboard(apiKey);
-    }
-  }, [apiKey, copyToClipboard]);
 
   if (apiKey) {
     return (
@@ -124,7 +118,14 @@ export const GenerateApiKey: React.FC<Props> = ({
       </div>
 
       <Button
-        onClick={() => generateApiKey(name)}
+        onClick={() =>
+          generateApiKey(name)
+            .then(key => copyToClipboard(key))
+            .catch(error => {
+              toast.error('Failed to generate API key');
+              console.error(error);
+            })
+        }
         disabled={isPending}
         variant="turbo"
       >

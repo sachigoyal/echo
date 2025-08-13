@@ -1,31 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { createApiKey, listApiKeys } from '@/services/api-keys';
-
-// GET /api/api-keys - List API keys user has access to
-export async function GET() {
-  try {
-    const user = await getCurrentUser();
-
-    const apiKeys = await listApiKeys(user.id);
-
-    return NextResponse.json({ apiKeys });
-  } catch (error) {
-    console.error('Error fetching API keys:', error);
-
-    if (error instanceof Error && error.message === 'Not authenticated') {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
+import { createApiKey } from '@/services/api-keys';
 
 // POST /api/api-keys - Create a new API key for authenticated user
 export async function POST(request: NextRequest) {

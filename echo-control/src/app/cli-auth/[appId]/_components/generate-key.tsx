@@ -19,7 +19,7 @@ export const GenerateKey: React.FC<Props> = ({ isMember, appId }) => {
 
 const MemberGenerateKey = ({ appId }: { appId: string }) => {
   const {
-    mutate: generateApiKey,
+    mutateAsync: generateApiKey,
     data: apiKey,
     isPending,
   } = api.user.apiKeys.create.useMutation();
@@ -28,38 +28,33 @@ const MemberGenerateKey = ({ appId }: { appId: string }) => {
     <GenerateApiKeyComponent
       apiKey={apiKey?.key}
       isPending={isPending}
-      generateApiKey={name => generateApiKey({ echoAppId: appId, name })}
+      generateApiKey={async name =>
+        (await generateApiKey({ echoAppId: appId, name })).key
+      }
     />
   );
 };
 
 const NonMemberGenerateKey = ({ appId }: { appId: string }) => {
   const {
-    mutate: generateApiKey,
+    mutateAsync: generateApiKey,
     data: apiKey,
     isPending: isGenerating,
-  } = api.user.apiKeys.create.useMutation({});
+  } = api.user.apiKeys.create.useMutation();
 
-  const { mutate: joinApp, isPending: isJoining } =
-    api.apps.member.join.useMutation({
-      onSuccess: () => {
-        generateApiKey({ echoAppId: appId, name: 'CLI' });
-      },
-    });
+  const { mutateAsync: joinApp, isPending: isJoining } =
+    api.apps.member.join.useMutation();
 
-  const handleGenerateApiKey = (name?: string) => {
-    joinApp(appId, {
-      onSuccess: () => {
-        generateApiKey({ echoAppId: appId, name });
-      },
-    });
+  const handleGenerateApiKey = async (name?: string) => {
+    await joinApp(appId);
+    return (await generateApiKey({ echoAppId: appId, name })).key;
   };
 
   return (
     <GenerateApiKeyComponent
       apiKey={apiKey?.key}
-      isPending={isGenerating}
-      generateApiKey={name => handleGenerateApiKey(name)}
+      isPending={isGenerating || isJoining}
+      generateApiKey={handleGenerateApiKey}
     />
   );
 };

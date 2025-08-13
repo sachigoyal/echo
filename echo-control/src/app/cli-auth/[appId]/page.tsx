@@ -1,5 +1,11 @@
 import { Suspense } from 'react';
 
+import { Code } from 'lucide-react';
+
+import { notFound } from 'next/navigation';
+
+import { ErrorBoundary } from 'react-error-boundary';
+
 import {
   Card,
   CardContent,
@@ -7,13 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { UserAvatar } from '@/components/utils/user-avatar';
-import { api } from '@/trpc/server';
-import { Code } from 'lucide-react';
-import { notFound } from 'next/navigation';
-import { ErrorBoundary } from 'react-error-boundary';
-import { GenerateKey } from './_components/generate-key';
 import { Skeleton } from '@/components/ui/skeleton';
+
+import { UserAvatar } from '@/components/utils/user-avatar';
+
+import { GenerateKey } from './_components/generate-key';
+
+import { api } from '@/trpc/server';
 
 export default async function CliAuthAppPage({
   params,
@@ -51,7 +57,7 @@ export default async function CliAuthAppPage({
               <CardDescription className="text-xs text-muted-foreground">
                 <ErrorBoundary fallback={'Owner not found'}>
                   <Suspense fallback={<Skeleton className="h-4 w-24" />}>
-                    {(await api.apps.public.owner(appId)).name}
+                    <Owner appId={appId} />
                   </Suspense>
                 </ErrorBoundary>
               </CardDescription>
@@ -66,3 +72,8 @@ export default async function CliAuthAppPage({
     </div>
   );
 }
+
+const Owner = async ({ appId }: { appId: string }) => {
+  const owner = await api.apps.public.owner(appId);
+  return owner.name;
+};

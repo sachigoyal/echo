@@ -25,7 +25,7 @@ export const GenerateKeyWithSelect = () => {
   const [isCompleted, setIsCompleted] = useState(false);
 
   const {
-    mutate: generateApiKey,
+    mutateAsync: generateApiKey,
     isPending: isGenerating,
     data: apiKey,
   } = api.user.apiKeys.create.useMutation({
@@ -60,8 +60,8 @@ export const GenerateKeyWithSelect = () => {
         </p>
       </div>
       <GenerateApiKey
-        generateApiKey={name =>
-          generateApiKey({ echoAppId: selectedAppId, name })
+        generateApiKey={async name =>
+          (await generateApiKey({ echoAppId: selectedAppId, name })).key
         }
         isPending={isGenerating}
         apiKey={apiKey?.key}
