@@ -39,7 +39,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = React.memo(
     height,
     className,
     maxOpacity = 0.3,
-    frameRate = 10, // Default to 10 FPS instead of 60 FPS
+    frameRate = 5, // Default to 10 FPS instead of 60 FPS
     ...props
   }) => {
     const { resolvedTheme } = useTheme();

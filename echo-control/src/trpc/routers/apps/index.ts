@@ -1,6 +1,12 @@
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure, protectedProcedure } from '../trpc';
+
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from '@/trpc/trpc';
 import { TRPCError } from '@trpc/server';
+
 import {
   getApp,
   getAllPublicEchoApps,
@@ -13,7 +19,14 @@ import {
 import { AppRole } from '@/lib/permissions/types';
 import { PermissionService } from '@/lib/permissions';
 
+import { publicAppsRouter } from './public';
+import { memberAppsRouter } from './member';
+import { ownerAppsRouter } from './owner';
+
 export const appsRouter = createTRPCRouter({
+  public: publicAppsRouter,
+  member: memberAppsRouter,
+  owner: ownerAppsRouter,
   /**
    * Get a single app with appropriate permissions
    * Returns different data based on user's role:
@@ -29,8 +42,7 @@ export const appsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       try {
-        const app = await getApp(input.appId, ctx.session?.user?.id);
-        return app;
+        return await getApp(input.appId, ctx.session?.user?.id);
       } catch (error) {
         throw new TRPCError({
           code: 'NOT_FOUND',

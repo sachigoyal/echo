@@ -6,7 +6,6 @@ export * from './useCurrentApp';
 export * from './useEarningsSettings';
 export * from './useEchoAppDetail';
 export * from './useUpdateApp';
-export * from './useUserPayments';
 export * from './useUserSettings';
 
 // Export new TRPC hooks

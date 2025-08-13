@@ -4,8 +4,10 @@ import { AppRole, MembershipStatus } from '../../permissions/types';
 import { PermissionService } from '../../permissions/service';
 import { Permission } from '../../permissions/types';
 import { softDeleteEchoApp } from '../soft-delete';
-import { isValidUrl } from '../../stripe/payment-link';
 import { AppCreateInput } from '../types';
+
+import { isValidUrl } from '@/lib/utils';
+
 export * from './update';
 
 // Legacy type for backward compatibility with existing list views

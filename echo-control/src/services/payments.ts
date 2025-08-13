@@ -2,15 +2,14 @@ import { z } from 'zod';
 
 import { db } from '@/lib/db';
 
-import { paginationParamsSchema } from '../pagination';
+import { paginationParamsSchema } from '../lib/pagination';
 
-import type { PaginatedResponse } from '@/types/paginated-response';
-import type { Payment } from '@/generated/prisma';
+import { toPaginatedReponse } from './lib/pagination';
 
 export async function listPayments(
   userId: string,
   { page = 0, page_size = 10 }: z.infer<typeof paginationParamsSchema>
-): Promise<PaginatedResponse<Payment>> {
+) {
   const skip = page * page_size;
 
   const [payments, totalCount] = await Promise.all([
@@ -33,13 +32,10 @@ export async function listPayments(
     }),
   ]);
 
-  const totalPages = Math.ceil(totalCount / page_size);
-
-  return {
+  return toPaginatedReponse({
     items: payments,
     page,
     page_size,
     total_count: totalCount,
-    has_next: page < totalPages - 1,
-  };
+  });
 }

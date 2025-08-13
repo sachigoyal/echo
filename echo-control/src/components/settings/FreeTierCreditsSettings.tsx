@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { SpendPoolData } from '@/lib/spend-pools/types';
-import { CreateFreeTierPaymentLinkRequest } from '@/lib/stripe/payment-link';
 import SpendLimitModal from './SpendLimitModal';
+import { api } from '@/trpc/client';
 
 interface FreeTierCreditsSettingsProps {
   appId: string;
@@ -21,10 +21,24 @@ export default function FreeTierCreditsSettings({
   appId,
 }: FreeTierCreditsSettingsProps) {
   const [loading, setLoading] = useState(true);
-  const [depositing, setDepositing] = useState(false);
   const [spendPools, setSpendPools] = useState<SpendPoolData[]>([]);
   const [poolData, setPoolData] = useState<PoolData>({
     totalBalance: 0,
+  });
+
+  const {
+    mutate: createFreeTierPaymentLink,
+    isPending: isCreatingFreeTierPaymentLink,
+  } = api.apps.owner.createFreeTierPaymentLink.useMutation({
+    onSuccess: async data => {
+      window.open(data.paymentLink.url, '_blank');
+      setDepositAmount('');
+      setPoolName('');
+      setDefaultSpendLimit('');
+
+      // Refresh spend pools data
+      await fetchSpendPools();
+    },
   });
 
   // Deposit form state
@@ -81,50 +95,15 @@ export default function FreeTierCreditsSettings({
   const handleDeposit = async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) return;
 
-    setDepositing(true);
-    try {
-      const requestBody: CreateFreeTierPaymentLinkRequest = {
-        amount: parseFloat(depositAmount),
-        description: `Free Tier Credits${poolName ? ` - ${poolName}` : ''}`,
-        poolName: poolName || undefined,
-        defaultSpendLimit: defaultSpendLimit
-          ? parseFloat(defaultSpendLimit)
-          : undefined,
-      };
-
-      const response = await fetch(
-        `/api/owner/apps/${appId}/free-tier-credits/payment-link`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to create payment link');
-      }
-
-      const result = await response.json();
-
-      // Redirect to Stripe payment link
-      window.open(result.paymentLink.url, '_blank');
-
-      // Reset form
-      setDepositAmount('');
-      setPoolName('');
-      setDefaultSpendLimit('');
-
-      // Refresh spend pools data
-      await fetchSpendPools();
-    } catch (error) {
-      console.error('Deposit failed:', error);
-      alert('Failed to create payment link. Please try again.');
-    } finally {
-      setDepositing(false);
-    }
+    createFreeTierPaymentLink({
+      appId,
+      amount: parseFloat(depositAmount),
+      description: `Free Tier Credits${poolName ? ` - ${poolName}` : ''}`,
+      poolName: poolName || undefined,
+      defaultSpendLimit: defaultSpendLimit
+        ? parseFloat(defaultSpendLimit)
+        : undefined,
+    });
   };
 
   const handleUpdateSpendLimit = async (poolId: string, newLimit: number) => {
@@ -228,11 +207,13 @@ export default function FreeTierCreditsSettings({
             <Button
               onClick={handleDeposit}
               disabled={
-                depositing || !depositAmount || parseFloat(depositAmount) <= 0
+                isCreatingFreeTierPaymentLink ||
+                !depositAmount ||
+                parseFloat(depositAmount) <= 0
               }
               className="w-full"
             >
-              {depositing ? (
+              {isCreatingFreeTierPaymentLink ? (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
                   Processing...
