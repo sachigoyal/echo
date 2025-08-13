@@ -1,6 +1,6 @@
 import { Prisma } from '@/generated/prisma';
 
-export const appSelect: Prisma.EchoAppSelect = {
+export const appSelect = {
   id: true,
   name: true,
   description: true,
@@ -10,4 +10,4 @@ export const appSelect: Prisma.EchoAppSelect = {
   isPublic: true,
   createdAt: true,
   updatedAt: true,
-};
+} satisfies Prisma.EchoAppSelect;

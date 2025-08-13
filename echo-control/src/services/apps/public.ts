@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { paginationParamsSchema } from '@/lib/pagination';
 
 import { appSelect } from './lib/select';
+import { AppRole } from '@/lib/permissions';
 
 export const getPublicAppSchema = z.uuid();
 
@@ -38,4 +39,24 @@ export const listPublicApps = async ({
       createdAt: 'desc',
     },
   });
+};
+
+export const getAppOwner = async (appId: string) => {
+  const owner = await db.appMembership.findFirst({
+    where: {
+      echoAppId: appId,
+      role: AppRole.OWNER,
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
+    },
+  });
+
+  return owner?.user;
 };

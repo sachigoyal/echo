@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../../trpc';
 import { TRPCError } from '@trpc/server';
 import {
+  getAppOwner,
   getPublicApp,
   getPublicAppSchema,
   listPublicApps,
@@ -21,9 +22,6 @@ export const publicAppsRouter = createTRPCRouter({
     return app;
   }),
 
-  /**
-   * Get all public apps with pagination
-   */
   list: publicProcedure
     .input(
       extendedInfiniteQueryPaginationParamsSchema({
@@ -33,4 +31,15 @@ export const publicAppsRouter = createTRPCRouter({
     .query(async ({ input }) => {
       return await listPublicApps(input);
     }),
+
+  owner: publicProcedure.input(getPublicAppSchema).query(async ({ input }) => {
+    const owner = await getAppOwner(input);
+    if (!owner) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Owner not found',
+      });
+    }
+    return owner;
+  }),
 });

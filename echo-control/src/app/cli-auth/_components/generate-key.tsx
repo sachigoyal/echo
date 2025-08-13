@@ -32,12 +32,13 @@ export const GenerateApiKey: React.FC<Props> = ({
 }) => {
   const [name, setName] = useState<string>();
 
-  const { isCopied, copyToClipboard } = useCopyToClipboard();
+  const { isCopied, copyToClipboard } = useCopyToClipboard(() => {
+    toast.success('Copied to clipboard');
+  });
 
   useEffect(() => {
     if (apiKey) {
       copyToClipboard(apiKey);
-      toast.success('Copied to clipboard');
     }
   }, [apiKey]);
 
@@ -89,7 +90,7 @@ export const GenerateApiKey: React.FC<Props> = ({
               <DialogTitle>Security Information</DialogTitle>
             </DialogHeader>
             <DialogDescription className="hidden" />
-            <ul className="text-sm text-yellow-700 space-y-1">
+            <ul className="text-sm space-y-1">
               <li>• Keep this API key secure and never share it publicly</li>
               <li>• This key provides access to your Echo account</li>
               <li>• This key is scoped only to the selected Echo app</li>
@@ -123,7 +124,7 @@ export const GenerateApiKey: React.FC<Props> = ({
       </div>
 
       <Button
-        onClick={() => generateApiKey()}
+        onClick={() => generateApiKey(name)}
         disabled={isPending}
         variant="turbo"
       >

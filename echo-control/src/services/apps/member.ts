@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { paginationParamsSchema } from '@/lib/pagination';
 import { z } from 'zod';
 import { appSelect } from './lib/select';
-import { MembershipStatus } from '@/lib/permissions';
+import { AppRole, MembershipStatus } from '@/lib/permissions';
 import { Prisma } from '@/generated/prisma';
 import { toPaginatedReponse } from '../lib/pagination';
 
@@ -68,5 +68,18 @@ export const listMemberApps = async (
     page,
     page_size,
     total_count: totalCount,
+  });
+};
+
+// this will throw if the user is already a member because user_echoAppId is unique
+export const joinApp = async (userId: string, echoAppId: string) => {
+  return db.appMembership.create({
+    data: {
+      userId,
+      echoAppId,
+      role: AppRole.CUSTOMER,
+      status: MembershipStatus.ACTIVE,
+      totalSpent: 0,
+    },
   });
 };

@@ -19,7 +19,9 @@ export default function CLIAuthLayout({
             CLI Authentication
           </h1>
         </div>
-        {children}
+        <div className="flex flex-col gap-4 w-full max-w-full overflow-hidden">
+          {children}
+        </div>
       </div>
     </div>
   );
