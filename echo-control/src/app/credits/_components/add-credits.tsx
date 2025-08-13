@@ -5,25 +5,31 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { MoneyInput } from '@/components/ui/money-input';
 
-import { createPaymentLink } from '../_actions/create-payment-link';
 import { Check, Loader2 } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
+import { api } from '@/trpc/client';
+import { useRouter } from 'next/navigation';
 
 export const AddCredits = () => {
   const [amount, setAmount] = useState<number>();
 
+  const router = useRouter();
+
   const {
-    mutate: onAddCredits,
+    mutate: createPaymentLink,
     isPending,
     isSuccess,
-  } = useMutation({
-    mutationFn: () => {
-      if (!amount) {
-        throw new Error('Amount is required');
-      }
-      return createPaymentLink({ amount });
+  } = api.user.payments.createLink.useMutation({
+    onSuccess: data => {
+      router.push(data.paymentLink.url);
     },
   });
+
+  const onAddCredits = () => {
+    if (!amount) {
+      throw new Error('Amount is required');
+    }
+    createPaymentLink({ amount });
+  };
 
   return (
     <div className="flex flex-col w-full gap-4">
@@ -35,7 +41,7 @@ export const AddCredits = () => {
         step="0.01"
       />
       <Button
-        onClick={() => onAddCredits()}
+        onClick={onAddCredits}
         disabled={isPending || !amount || amount <= 0 || isSuccess}
         size="lg"
         variant="turbo"

@@ -1,10 +1,12 @@
 import { z } from 'zod';
+
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
-} from '../../trpc';
+} from '@/trpc/trpc';
 import { TRPCError } from '@trpc/server';
+
 import {
   getApp,
   getAllPublicEchoApps,
@@ -16,12 +18,15 @@ import {
 } from '@/lib/apps';
 import { AppRole } from '@/lib/permissions/types';
 import { PermissionService } from '@/lib/permissions';
+
 import { publicAppsRouter } from './public';
 import { memberAppsRouter } from './member';
+import { ownerAppsRouter } from './owner';
 
 export const appsRouter = createTRPCRouter({
   public: publicAppsRouter,
   member: memberAppsRouter,
+  owner: ownerAppsRouter,
   /**
    * Get a single app with appropriate permissions
    * Returns different data based on user's role:
