@@ -1,6 +1,9 @@
-import { useState } from 'react';
-import { GenerateApiKey } from '../../_components/generate-key';
-import { api } from '@/trpc/client';
+'use client';
+
+import { Suspense, useState } from 'react';
+
+import { Code, Loader2 } from 'lucide-react';
+
 import {
   Select,
   SelectContent,
@@ -8,12 +11,55 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Link from 'next/link';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+
+import { UserAvatar } from '@/components/utils/user-avatar';
+
+import { GenerateApiKey } from '../../_components/generate-key';
+
+import { api } from '@/trpc/client';
 
 export const GenerateKeyWithSelect = () => {
   const [selectedAppId, setSelectedAppId] = useState<string>('');
-  const [apps, { fetchNextPage, hasNextPage }] =
-    api.apps.public.list.useSuspenseInfiniteQuery(
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Label
+          htmlFor="app-select"
+          className="block text-sm font-medium text-card-foreground"
+        >
+          Select Echo App <span className="text-red-500">*</span>
+        </Label>
+        <Select
+          value={selectedAppId}
+          onValueChange={setSelectedAppId}
+          disabled={isCompleted}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Choose an app" />
+          </SelectTrigger>
+          <Suspense fallback={<Skeleton className="h-10 w-full" />}>
+            <AppSelect />
+          </Suspense>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Your API key will only be valid for this app.
+        </p>
+      </div>
+      <GenerateApiKey
+        echoAppId={selectedAppId}
+        onSuccess={() => setIsCompleted(true)}
+      />
+    </div>
+  );
+};
+
+const AppSelect = () => {
+  const [apps, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
+    api.apps.member.list.useSuspenseInfiniteQuery(
       {},
       {
         getNextPageParam: (lastPage, pages) => (lastPage as any).page + 1,
@@ -21,43 +67,32 @@ export const GenerateKeyWithSelect = () => {
     );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <label
-          htmlFor="app-select"
-          className="block text-sm font-medium text-card-foreground mb-2"
-        >
-          Select Echo App <span className="text-red-500">*</span>
-        </label>
-        <Select value={selectedAppId} onValueChange={setSelectedAppId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Choose an app" />
-          </SelectTrigger>
-          <SelectContent>
-            {apps.pages.flat().map(app => (
-              <SelectItem key={app.id} value={app.id}>
-                {app.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {apps.pages.flat().length === 0 && (
-          <p className="text-sm text-muted-foreground mt-2">
-            No apps found. Create an app first in your{' '}
-            <Link href="/" className="text-accent hover:underline">
-              dashboard
-            </Link>
-            .
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground mt-2">
-          {selectedAppId
-            ? 'This app was pre-selected from your invitation link.'
-            : 'API keys are scoped to specific apps and can only access resources for the selected app.'}
-        </p>
-      </div>
-
-      <GenerateApiKey echoAppId={selectedAppId} />
-    </div>
+    <SelectContent
+      onScroll={e => {
+        const target = e.currentTarget;
+        if (
+          target.scrollTop + target.clientHeight >= target.scrollHeight - 10 &&
+          hasNextPage
+        ) {
+          fetchNextPage();
+        }
+      }}
+    >
+      {apps.pages
+        .flatMap(page => page.items)
+        .map(app => (
+          <SelectItem key={app.echoApp.id} value={app.echoApp.id}>
+            <div className="flex items-center gap-2">
+              <UserAvatar
+                src={app.echoApp.profilePictureUrl}
+                fallback={<Code className="size-4" />}
+                className="bg-transparent border-none"
+              />
+              {app.echoApp.name}
+            </div>
+          </SelectItem>
+        ))}
+      {isFetchingNextPage && <Loader2 className="w-4 h-4 animate-spin" />}
+    </SelectContent>
   );
 };

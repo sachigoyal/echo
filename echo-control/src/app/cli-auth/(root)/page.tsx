@@ -1,30 +1,22 @@
-import React from 'react';
+import { Card } from '@/components/ui/card';
 
-import { Terminal, Key } from 'lucide-react';
+import { api, HydrateClient } from '@/trpc/server';
 
-import { api } from '@/trpc/server';
 import { GenerateKeyWithSelect } from './_components/generate-key';
 
 export default async function CLIAuthPage() {
-  const apps = api.apps.public.list.prefetchInfinite({
-    cursor: 0,
-    limit: 100,
-  });
+  await api.apps.member.list.prefetchInfinite({});
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-card-foreground flex items-center gap-3">
-          <Terminal className="w-8 h-8" />
-          CLI Authentication
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Generate an API key to authenticate with the Echo CLI. Each API key is
-          scoped to a specific Echo app.
+    <HydrateClient>
+      <div className="flex flex-col gap-8 pt-2 w-full">
+        <p className="text-muted-foreground text-center">
+          Generate an API key to authenticate with the Echo in your CLI App
         </p>
+        <Card className="p-4">
+          <GenerateKeyWithSelect />
+        </Card>
       </div>
-
-      <GenerateKeyWithSelect />
-    </div>
+    </HydrateClient>
   );
 }

@@ -29,7 +29,7 @@ export const getAppMembership = async (
   });
 };
 
-export const listApps = async (
+export const listMemberApps = async (
   userId: string,
   { page = 0, page_size = 10 }: z.infer<typeof paginationParamsSchema>
 ) => {
