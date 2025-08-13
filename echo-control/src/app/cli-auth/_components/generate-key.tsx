@@ -1,10 +1,8 @@
-'use client';
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Check, Copy, Info } from 'lucide-react';
 
-import Link from 'next/link';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +10,6 @@ import { Label } from '@/components/ui/label';
 
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 
-import { api } from '@/trpc/client';
 import {
   Dialog,
   DialogContent,
@@ -23,25 +20,26 @@ import {
 } from '@/components/ui/dialog';
 
 interface Props {
-  echoAppId: string;
-  onSuccess?: () => void;
+  generateApiKey: (name?: string) => void;
+  isPending: boolean;
+  apiKey?: string;
 }
 
-export const GenerateApiKey: React.FC<Props> = ({ echoAppId, onSuccess }) => {
-  const [name, setName] = useState('');
-
-  const {
-    mutate: generateApiKey,
-    isPending: isGenerating,
-    data: apiKey,
-    error,
-  } = api.user.apiKeys.create.useMutation({
-    onSuccess: () => {
-      onSuccess?.();
-    },
-  });
+export const GenerateApiKey: React.FC<Props> = ({
+  generateApiKey,
+  isPending,
+  apiKey,
+}) => {
+  const [name, setName] = useState<string>();
 
   const { isCopied, copyToClipboard } = useCopyToClipboard();
+
+  useEffect(() => {
+    if (apiKey) {
+      copyToClipboard(apiKey);
+      toast.success('Copied to clipboard');
+    }
+  }, [apiKey]);
 
   if (apiKey) {
     return (
@@ -52,10 +50,10 @@ export const GenerateApiKey: React.FC<Props> = ({ echoAppId, onSuccess }) => {
           </label>
           <div className="flex items-center w-full border border-primary shadow-md shadow-primary rounded-md overflow-hidden pl-2 pr-1 py-1 bg-muted">
             <p className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm no-scrollbar pr-2">
-              {apiKey.key}
+              {apiKey}
             </p>
             <Button
-              onClick={() => copyToClipboard(apiKey.key)}
+              onClick={() => copyToClipboard(apiKey)}
               variant="outline"
               className="shrink-0 size-fit p-2"
               size="icon"
@@ -119,18 +117,17 @@ export const GenerateApiKey: React.FC<Props> = ({ echoAppId, onSuccess }) => {
         <Input
           id="api-key-name"
           type="text"
-          value={name}
           onChange={e => setName(e.target.value)}
           placeholder="Enter a name for this API key"
         />
       </div>
 
       <Button
-        onClick={() => generateApiKey({ echoAppId, name })}
-        disabled={!echoAppId || isGenerating}
+        onClick={() => generateApiKey()}
+        disabled={isPending}
         variant="turbo"
       >
-        {isGenerating ? 'Generating...' : 'Generate API Key'}
+        {isPending ? 'Generating...' : 'Generate API Key'}
       </Button>
     </div>
   );

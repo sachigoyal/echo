@@ -73,7 +73,7 @@ export const listApiKeys = async (
 
 export const createApiKeySchema = z.object({
   echoAppId: z.string(),
-  name: z.string(),
+  name: z.string().optional(),
 });
 
 export async function createApiKey(

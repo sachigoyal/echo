@@ -24,6 +24,16 @@ export const GenerateKeyWithSelect = () => {
   const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [isCompleted, setIsCompleted] = useState(false);
 
+  const {
+    mutate: generateApiKey,
+    isPending: isGenerating,
+    data: apiKey,
+  } = api.user.apiKeys.create.useMutation({
+    onSuccess: () => {
+      setIsCompleted(true);
+    },
+  });
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -50,8 +60,11 @@ export const GenerateKeyWithSelect = () => {
         </p>
       </div>
       <GenerateApiKey
-        echoAppId={selectedAppId}
-        onSuccess={() => setIsCompleted(true)}
+        generateApiKey={name =>
+          generateApiKey({ echoAppId: selectedAppId, name })
+        }
+        isPending={isGenerating}
+        apiKey={apiKey?.key}
       />
     </div>
   );
@@ -62,7 +75,7 @@ const AppSelect = () => {
     api.apps.member.list.useSuspenseInfiniteQuery(
       {},
       {
-        getNextPageParam: (lastPage, pages) => (lastPage as any).page + 1,
+        getNextPageParam: lastPage => lastPage.page + 1,
       }
     );
 
