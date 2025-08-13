@@ -13,7 +13,7 @@ export const BalanceButton = () => {
   return (
     <Link href="/credits">
       <Button variant="outline">
-        <Logo className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+        <Logo className="size-4" />
         <Suspense fallback={<Skeleton className="h-5 w-10" />}>
           <Balance />
         </Suspense>
