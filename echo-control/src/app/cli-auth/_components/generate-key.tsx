@@ -40,7 +40,7 @@ export const GenerateApiKey: React.FC<Props> = ({
     if (apiKey) {
       copyToClipboard(apiKey);
     }
-  }, [apiKey]);
+  }, [apiKey, copyToClipboard]);
 
   if (apiKey) {
     return (

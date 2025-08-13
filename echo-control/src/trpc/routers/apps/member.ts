@@ -35,13 +35,11 @@ export const memberAppsRouter = createTRPCRouter({
         });
       }
 
-      try {
-        return await joinApp(ctx.session.user.id, app.id);
-      } catch (error) {
+      return await joinApp(ctx.session.user.id, app.id).catch(() => {
         throw new TRPCError({
           code: 'CONFLICT',
           message: 'User already a member of this app',
         });
-      }
+      });
     }),
 });
