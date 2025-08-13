@@ -37,7 +37,7 @@ export default async function CliAuthAppPage({
   const member = await api.apps.member.get(appId);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 pt-2">
       <p>
         You are generating an API key for CLI access to the Echo app{' '}
         <span className="font-bold">{app.name}</span>.
