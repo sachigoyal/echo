@@ -4,8 +4,6 @@ import { Code } from 'lucide-react';
 
 import { notFound } from 'next/navigation';
 
-import { ErrorBoundary } from 'react-error-boundary';
-
 import {
   Card,
   CardContent,
