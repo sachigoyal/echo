@@ -5,6 +5,8 @@ import { paginationParamsSchema } from '@/lib/pagination';
 
 import { appSelect } from './lib/select';
 import { AppRole } from '@/lib/permissions';
+import { Prisma } from '@/generated/prisma';
+import { toPaginatedReponse } from '../lib/pagination';
 
 export const getPublicAppSchema = z.uuid();
 
@@ -26,18 +28,32 @@ export const listPublicApps = async ({
   page_size,
   search,
 }: z.infer<typeof listPublicAppsSchema>) => {
-  return await db.echoApp.findMany({
-    where: {
-      isPublic: true,
-      isArchived: false,
-      name: { contains: search, mode: 'insensitive' },
-    },
-    skip: page * page_size,
-    take: page_size,
-    select: appSelect,
-    orderBy: {
-      createdAt: 'desc',
-    },
+  const where: Prisma.EchoAppWhereInput = {
+    isPublic: true,
+    isArchived: false,
+  };
+
+  if (search) {
+    where.name = { contains: search, mode: 'insensitive' };
+  }
+
+  const [apps, totalCount] = await Promise.all([
+    db.echoApp.findMany({
+      where,
+      skip: page * page_size,
+      take: page_size,
+      select: appSelect,
+    }),
+    db.echoApp.count({
+      where,
+    }),
+  ]);
+
+  return toPaginatedReponse({
+    items: apps,
+    page,
+    page_size,
+    total_count: totalCount,
   });
 };
 
