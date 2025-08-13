@@ -116,11 +116,6 @@ API_KEY_PREFIX="echo_"
 - `GET /api/echo-apps/{id}` - Get app details
 - `PUT /api/echo-apps/{id}` - Update app
 
-### API Keys
-
-- `GET /api/api-keys?userId={id}` - List user's API keys
-- `POST /api/api-keys` - Create API Key
-
 ### Balance Management
 
 - `GET /api/balance?userId={id}` - Get user balance
