@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const dashedBorder = 'border-dashed border-border/80';
+const dashedBorder = 'border-dashed border-border';
 
 export const Hero = () => {
   return (
@@ -44,8 +44,6 @@ export const Hero = () => {
         </div>
         <div className={cn('w-8 border-y shrink-0', dashedBorder)} />
       </div>
-
-      <div className={cn('h-16 border-x mx-8', dashedBorder)} />
     </div>
   );
 };
