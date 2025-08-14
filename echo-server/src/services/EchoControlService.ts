@@ -81,10 +81,15 @@ export class EchoControlService {
     this.githubId = githubLinkData.githubId;
     this.githubType = githubLinkData.githubType;
 
-    this.referralCodeId = await this.dbService.getReferralCodeForUser(
-      this.authResult?.userId ?? '',
-      this.getEchoAppId() ?? ''
-    );
+    const echoAppId = this.authResult?.echoAppId;
+    const userId = this.authResult?.userId;
+
+    if (echoAppId && userId) {
+      this.referralCodeId = await this.dbService.getReferralCodeForUser(
+        userId,
+        echoAppId
+      );
+    }
 
     return this.authResult;
   }
