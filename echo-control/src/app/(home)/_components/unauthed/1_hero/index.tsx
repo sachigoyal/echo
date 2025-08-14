@@ -1,4 +1,5 @@
 import { HeroGraphic } from '@/app/(home)/_components/unauthed/1_hero/graphic';
+import { AuroraText } from '@/components/magicui/aurora-text';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -17,8 +18,8 @@ export const Hero = () => {
           )}
         >
           <div className="flex flex-col gap-2 items-center justify-center">
-            <h1 className="text-6xl font-extrabold bg-gradient-to-b from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              Echo
+            <h1 className="text-6xl font-extrabold">
+              <AuroraText>Echo</AuroraText>
             </h1>
             <h1
               className={cn(
