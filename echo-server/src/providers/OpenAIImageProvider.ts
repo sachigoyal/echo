@@ -144,20 +144,12 @@ const IMAGE_TOKEN_PRICES = {
 export const getImageCost = (image: ImagesResponse): number => {
   // Only gpt-image-1 currently supported
   if (!image.usage) {
-    console.log('[Image Cost] No usage data available, cost = $0.00');
     return 0;
   }
-
-  console.log(
-    '[Image Cost] Full usage data:',
-    JSON.stringify(image.usage, null, 2)
-  );
 
   // If usage tokens are present, use token-based pricing
   const { input_tokens, output_tokens, input_tokens_details } = image.usage;
   let cost = 0;
-  const costBreakdown: string[] = [];
-
   if (input_tokens_details) {
     // Separate image and text tokens if available
     const imageTokens = input_tokens_details.image_tokens || 0;
@@ -168,31 +160,16 @@ export const getImageCost = (image: ImagesResponse): number => {
 
     cost += imageCost;
     cost += textCost;
-
-    costBreakdown.push(
-      `Image tokens: ${imageTokens} × $${IMAGE_TOKEN_PRICES['gpt-image-1'].input.toFixed(8)} = $${imageCost.toFixed(6)}`
-    );
-    costBreakdown.push(
-      `Text tokens: ${textTokens} × $${IMAGE_TOKEN_PRICES['gpt-image-1'].text_input.toFixed(8)} = $${textCost.toFixed(6)}`
-    );
   } else {
     // Fallback: treat all as image tokens
     const inputCost =
       (input_tokens || 0) * IMAGE_TOKEN_PRICES['gpt-image-1'].input;
     cost += inputCost;
-
-    costBreakdown.push(
-      `All input tokens as image: ${input_tokens || 0} × $${IMAGE_TOKEN_PRICES['gpt-image-1'].input.toFixed(8)} = $${inputCost.toFixed(6)}`
-    );
   }
 
   const outputCost =
     (output_tokens || 0) * IMAGE_TOKEN_PRICES['gpt-image-1'].output;
   cost += outputCost;
-
-  costBreakdown.push(
-    `Output tokens: ${output_tokens || 0} × $${IMAGE_TOKEN_PRICES['gpt-image-1'].output.toFixed(8)} = $${outputCost.toFixed(6)}`
-  );
 
   return cost;
 };

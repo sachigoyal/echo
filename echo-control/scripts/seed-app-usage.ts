@@ -125,9 +125,8 @@ function calculateTransactionCost(
     return (inputTokens + outputTokens) * 0.00001; // Fallback rate
   }
 
-  // Some of the models (image), dnt have input/output cost_per_token
-  const inputCost = inputTokens * modelData.input_cost_per_token || 0;
-  const outputCost = outputTokens * modelData.output_cost_per_token || 0;
+  const inputCost = inputTokens * (modelData.input_cost_per_token || 0);
+  const outputCost = outputTokens * (modelData.output_cost_per_token || 0);
   return inputCost + outputCost;
 }
 
