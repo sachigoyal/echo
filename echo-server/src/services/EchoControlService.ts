@@ -26,6 +26,7 @@ export class EchoControlService {
   private markUpId: string | null = null;
   private referralAmount: Decimal | null = null;
   private referralId: string | null = null;
+  private referralCodeId: string | null = null;
   private githubLinkId: string | null = null;
   private freeTierSpendPool: SpendPool | null = null;
   private githubId: string | null = null;
@@ -65,6 +66,7 @@ export class EchoControlService {
       console.error('Error verifying API key:', error);
       return null;
     }
+
     const markupData = await this.earningsService.getEarningsData(
       this.authResult,
       this.getEchoAppId() ?? ''
@@ -78,6 +80,11 @@ export class EchoControlService {
     this.githubLinkId = githubLinkData.id;
     this.githubId = githubLinkData.githubId;
     this.githubType = githubLinkData.githubType;
+
+    this.referralCodeId = await this.dbService.getReferralCodeForUser(
+      this.authResult?.userId ?? '',
+      this.getEchoAppId() ?? ''
+    );
 
     return this.authResult;
   }
@@ -216,7 +223,10 @@ export class EchoControlService {
     return this.freeTierSpendPool;
   }
 
-  async computeTransactionCosts(transaction: Transaction): Promise<{
+  async computeTransactionCosts(
+    transaction: Transaction,
+    referralCodeId: string | null
+  ): Promise<{
     rawTransactionCost: Decimal;
     totalTransactionCost: Decimal;
     totalAppProfit: Decimal;
@@ -246,10 +256,15 @@ export class EchoControlService {
       throw new UnauthorizedError('Referral amount must be greater than 1.0');
     }
 
-    // Perform all calculations using Decimal arithmetic
     const totalAppProfitDecimal =
       transaction.rawTransactionCost.mul(markUpDecimal);
-    const referralProfitDecimal = totalAppProfitDecimal.mul(referralDecimal);
+
+    // If there is a referral code, calculate the referral profit
+    // Otherwise, set the referral profit to 0
+    const referralProfitDecimal = referralCodeId
+      ? totalAppProfitDecimal.mul(referralDecimal)
+      : new Decimal(0);
+
     const markUpProfitDecimal = totalAppProfitDecimal.minus(
       referralProfitDecimal
     );
@@ -289,7 +304,7 @@ export class EchoControlService {
       totalAppProfit,
       referralProfit,
       markUpProfit,
-    } = await this.computeTransactionCosts(transaction);
+    } = await this.computeTransactionCosts(transaction, this.referralCodeId);
 
     // Markup is checked, but not applied here because it is a free tier transaction
     const githubLinkId = this.githubLinkId ?? undefined;
@@ -310,6 +325,7 @@ export class EchoControlService {
       ...(this.freeTierSpendPool.id && {
         spendPoolId: this.freeTierSpendPool.id,
       }),
+      ...(this.referralCodeId && { referralCodeId: this.referralCodeId }),
     };
 
     await this.freeTierService.createFreeTierTransaction(
@@ -330,7 +346,7 @@ export class EchoControlService {
       totalAppProfit,
       referralProfit,
       markUpProfit,
-    } = await this.computeTransactionCosts(transaction);
+    } = await this.computeTransactionCosts(transaction, this.referralCodeId);
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
 
@@ -347,6 +363,7 @@ export class EchoControlService {
       ...(apiKeyId && { apiKeyId }),
       ...(this.githubLinkId && { githubLinkId: this.githubLinkId }),
       ...(this.markUpId && { markUpId: this.markUpId }),
+      ...(this.referralCodeId && { referralCodeId: this.referralCodeId }),
     };
 
     await this.dbService.createPaidTransaction(transactionData);

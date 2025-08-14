@@ -11,6 +11,7 @@ import {
   Prisma,
   Transaction,
   UserSpendPoolUsage,
+  ReferralCode,
 } from '../generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
 /**
@@ -175,6 +176,29 @@ export class EchoDbService {
     }
   }
 
+  async getReferralCodeForUser(
+    userId: string,
+    echoAppId: string
+  ): Promise<string | null> {
+    const appMembership = await this.db.appMembership.findUnique({
+      where: {
+        userId_echoAppId: {
+          userId,
+          echoAppId,
+        },
+      },
+      select: {
+        referrerId: true,
+      },
+    });
+
+    if (!appMembership) {
+      return null;
+    }
+
+    return appMembership.referrerId;
+  }
+
   /**
    * Calculate total balance for a user across all apps
    * Uses User.totalPaid and User.totalSpent for consistent balance calculation
@@ -296,6 +320,7 @@ export class EchoDbService {
         githubLinkId: transaction.githubLinkId || null,
         spendPoolId: transaction.spendPoolId || null,
         transactionMetadataId: transactionMetadata.id,
+        referralCodeId: transaction.referralCodeId || null,
       },
     });
   }

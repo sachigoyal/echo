@@ -1,6 +1,6 @@
 import { Prisma } from '@/generated/prisma';
 import { db } from '@/lib/db';
-import { CreditGrantReferralCode, ReferralCodeType } from './types';
+import { CreditGrantReferralCode, ReferralCodeType } from '../types';
 import { isGlobalAdmin } from '@/lib/admin';
 import { mintCreditsToUser } from '@/lib/admin/mint-credits';
 
@@ -27,7 +27,7 @@ export async function mintCreditReferralCode(
     data: {
       code,
       echoAppId: null,
-      grantType: 'credits',
+      grantType: ReferralCodeType.CREDITS,
       grantAmount: amountInDollars,
       reusable: false,
       expiresAt: defaultExpiresAt,
@@ -84,7 +84,7 @@ export async function redeemCreditReferralCode(
 
     await tx.referralCode.update({
       where: { id: referralCode.id },
-      data: { isUsed: true },
+      data: { isUsed: true, usedAt: new Date() },
     });
 
     const {

@@ -73,6 +73,7 @@ export interface TransactionRequest extends Transaction {
   markUpId?: string;
   githubLinkId?: string;
   spendPoolId?: string;
+  referralCodeId?: string;
 }
 
 export interface ApiKeyValidationResult {

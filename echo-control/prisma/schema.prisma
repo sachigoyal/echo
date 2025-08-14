@@ -301,21 +301,20 @@ model TransactionMetadata {
 }
 
 model ReferralCode {
-  id            String    @id @default(uuid()) @db.Uuid
-  code          String    @unique
-  userId        String?   @db.Uuid
-  echoAppId     String?   @db.Uuid
-  grantType     String // 'credits' or 'referral'
-  grantAmount   Decimal?  @default(0.0) @db.Decimal(65, 14) // Amount of credits to grant if grantType is 'credits'
-  reusable      Boolean   @default(false)
-  expiresAt     DateTime  @db.Timestamptz
-  isUsed        Boolean   @default(false)
-  isArchived    Boolean   @default(false)
-  archivedAt    DateTime? @db.Timestamptz
-  usedAt        DateTime? @db.Timestamptz
-  createdAt     DateTime  @default(now()) @db.Timestamptz
-  updatedAt     DateTime  @updatedAt @db.Timestamptz
-  totalEarnings Decimal   @default(0.0) @db.Decimal(65, 14)
+  id          String    @id @default(uuid()) @db.Uuid
+  code        String    @unique
+  userId      String?   @db.Uuid
+  echoAppId   String?   @db.Uuid
+  grantType   String // 'credits' or 'referral'
+  grantAmount Decimal?  @default(0.0) @db.Decimal(65, 14) // Amount of credits to grant if grantType is 'credits'
+  reusable    Boolean   @default(false)
+  expiresAt   DateTime  @db.Timestamptz
+  isUsed      Boolean   @default(false)
+  isArchived  Boolean   @default(false)
+  archivedAt  DateTime? @db.Timestamptz
+  usedAt      DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
 
   appMemberships AppMembership[]
 

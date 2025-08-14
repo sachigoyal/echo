@@ -40,7 +40,6 @@ CREATE TABLE "referral_codes" (
     "usedAt" TIMESTAMPTZ,
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ NOT NULL,
-    "totalEarnings" DECIMAL(65,14) NOT NULL DEFAULT 0.0,
 
     CONSTRAINT "referral_codes_pkey" PRIMARY KEY ("id")
 );
