@@ -1522,6 +1522,8 @@
     "mode": "image_generation",
     "input_cost_per_pixel": 4.0054321e-8,
     "output_cost_per_pixel": 0.0,
+    "input_cost_per_token": 0.0,
+    "output_cost_per_token": 0.0,
     "litellm_provider": "openai",
     "supported_endpoints": ["/v1/images/generations"]
   }
