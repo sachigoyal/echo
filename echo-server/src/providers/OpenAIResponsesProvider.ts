@@ -56,7 +56,6 @@ export const parseSSEResponsesFormat = (
 };
 
 const calculateToolCost = (tool: Tool) => {
-  console.log('tool', tool);
   switch (tool.type) {
     case 'image_generation': {
       const quality = tool.quality;
