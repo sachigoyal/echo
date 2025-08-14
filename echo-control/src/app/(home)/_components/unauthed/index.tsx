@@ -3,7 +3,7 @@ import { Features } from './2_features';
 
 export const Unauthed = () => {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <Hero />
       <Features />
     </div>

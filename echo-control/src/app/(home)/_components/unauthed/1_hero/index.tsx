@@ -6,13 +6,13 @@ const dashedBorder = 'border-dashed border-border';
 
 export const Hero = () => {
   return (
-    <div>
+    <div className="w-full max-w-full overflow-hidden">
       <div className={cn('h-16 border-x mx-8', dashedBorder)} />
-      <div className="flex">
-        <div className={cn('w-8 border-y shrink-0', dashedBorder)} />
+      <div className="flex w-full max-w-full overflow-hidden">
+        <div className={cn('w-4 md:w-8 border-y shrink-0', dashedBorder)} />
         <div
           className={cn(
-            'flex flex-col items-center justify-center border p-4 md:p-8 gap-4 w-full',
+            'flex flex-col items-center justify-center border p-2 md:p-8 gap-4 flex-1',
             dashedBorder
           )}
         >
@@ -20,11 +20,16 @@ export const Hero = () => {
             <h1 className="text-6xl font-extrabold bg-gradient-to-b from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
               Echo
             </h1>
-            <h1 className={cn('text-3xl font-bold text-center', dashedBorder)}>
+            <h1
+              className={cn(
+                'text-2xl md:text-3xl font-bold text-center',
+                dashedBorder
+              )}
+            >
               Monetize AI Apps in Minutes
             </h1>
           </div>
-          <p className={cn('text-center w-full max-w-sm', dashedBorder)}>
+          <p className={cn('text-center max-w-sm', dashedBorder)}>
             Charge usage-based billing for your product to{' '}
             <strong>start generating revenue risk-free</strong>. You set the
             markup, we handle the rest.
@@ -37,11 +42,11 @@ export const Hero = () => {
               Learn More
             </Button>
           </div>
-          <div className="mt-8">
+          <div className="mt-8 flex justify-center w-full">
             <HeroGraphic />
           </div>
         </div>
-        <div className={cn('w-8 border-y shrink-0', dashedBorder)} />
+        <div className={cn('w-4 md:w-8 border-y shrink-0', dashedBorder)} />
       </div>
     </div>
   );

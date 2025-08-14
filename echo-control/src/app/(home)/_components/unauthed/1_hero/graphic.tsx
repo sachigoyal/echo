@@ -93,37 +93,39 @@ export const HeroGraphic = () => {
   return (
     <div
       ref={containerRef}
-      className="relative size-full flex items-center justify-center gap-24"
+      className="relative size-full flex items-center justify-between max-w-lg w-full"
     >
       <div className="flex flex-col gap-2">
         <Card className={cardClassName} ref={user1Ref}>
-          <User className="size-8" />
+          <User className="size-6 md:size-8" />
         </Card>
         <Card className={cardClassName} ref={user2Ref}>
-          <User className="size-8" />
+          <User className="size-6 md:size-8" />
         </Card>
         <Card className={cardClassName} ref={user3Ref}>
-          <User className="size-8" />
+          <User className="size-6 md:size-8" />
         </Card>
       </div>
       <Card
         className={cn(
           cardClassName,
-          'items-start gap-2 w-48 relative border-primary border-2 shadow-[0_0_10px] shadow-primary'
+          'items-start gap-2 w-40 md:w-48 relative border-primary border-2 shadow-[0_0_10px] shadow-primary'
         )}
       >
         <div className={cn(echoEndClassName, 'left-0')} ref={echoLeftRef} />
         <div className="flex items-center justify-center gap-2">
-          <Logo className="size-8" />
+          <Logo className="size-6 md:size-8" />
           <div className="flex flex-col items-start gap-1">
-            <h1 className="text-lg font-bold leading-none">Your App</h1>
+            <h1 className="text-base md:text-lg font-bold leading-none">
+              Your App
+            </h1>
             <p className="text-xs text-muted-foreground leading-none">
               Powered by Echo
             </p>
           </div>
         </div>
         <div className="flex flex-col items-start">
-          <div className="flex items-center justify-center gap-1 text-primary font-bold text-sm">
+          <div className="flex items-center justify-center gap-1 text-primary font-bold text-xs md:text-sm">
             <TrendingUp className="size-3" />
             <NumberFlow
               value={dollars}
@@ -134,13 +136,11 @@ export const HeroGraphic = () => {
                 maximumFractionDigits: 2,
               }}
             />
-            <span> profit</span>
+            <span>profit</span>
           </div>
-          <div className="flex items-center justify-center gap-1 text-muted-foreground text-sm">
+          <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs md:text-sm">
             <Users className="size-3" />
-            <p className="text-sm ">
-              <NumberFlow value={users} />
-            </p>
+            <NumberFlow value={users} />
             <span> users</span>
           </div>
         </div>
@@ -148,13 +148,13 @@ export const HeroGraphic = () => {
       </Card>
       <div className="flex flex-col gap-2">
         <Card className={cardClassName} ref={model1Ref}>
-          <SiOpenai className="size-8" />
+          <SiOpenai className="size-6 md:size-8" />
         </Card>
         <Card className={cardClassName} ref={model2Ref}>
-          <SiAnthropic className="size-8" />
+          <SiAnthropic className="size-6 md:size-8" />
         </Card>
         <Card className={cardClassName} ref={model3Ref}>
-          <SiGooglegemini className="size-8" />
+          <SiGooglegemini className="size-6 md:size-8" />
         </Card>
       </div>
       <AnimatedBeam
