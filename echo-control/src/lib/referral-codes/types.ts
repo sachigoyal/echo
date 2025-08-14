@@ -8,7 +8,9 @@ export type CreditGrantReferralCode = Pick<
 export type UserReferralCode = Pick<
   ReferralCode,
   'code' | 'expiresAt' | 'userId' | 'echoAppId'
->;
+> & {
+  referralLinkUrl: string;
+};
 
 export enum ReferralCodeType {
   CREDITS = 'credits',

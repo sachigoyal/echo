@@ -94,14 +94,68 @@ export async function mintUserReferralCode(
       reusable: true,
       expiresAt: defaultExpiresAt,
     },
+    include: {
+      echoApp: true,
+    },
   });
+
+  const referralLinkUrl = getReferralLinkUrlForUser(
+    referralCode.echoApp?.homepageUrl,
+    echoAppId,
+    code
+  );
 
   return {
     code: referralCode.code,
     expiresAt: referralCode.expiresAt,
     userId: referralCode.userId,
     echoAppId: referralCode.echoAppId,
+    referralLinkUrl,
   };
+}
+
+export async function getReferralCodesForUser(
+  userId: string,
+  echoAppId: string,
+  tx?: Prisma.TransactionClient
+): Promise<UserReferralCode[]> {
+  const client = tx ?? db;
+
+  const referralCodes = await client.referralCode.findMany({
+    where: {
+      userId,
+      echoAppId,
+      grantType: ReferralCodeType.REFERRAL,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    include: {
+      echoApp: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  // Convert to UserReferralCode format with referral link URLs
+  const userReferralCodes = referralCodes.map(referralCode => {
+    const referralLinkUrl = getReferralLinkUrlForUser(
+      referralCode.echoApp?.homepageUrl,
+      echoAppId,
+      referralCode.code
+    );
+
+    return {
+      code: referralCode.code,
+      expiresAt: referralCode.expiresAt,
+      userId: referralCode.userId,
+      echoAppId: referralCode.echoAppId,
+      referralLinkUrl,
+    };
+  });
+
+  return userReferralCodes;
 }
 
 export async function setUserReferrerForAppIfExists(
@@ -111,6 +165,23 @@ export async function setUserReferrerForAppIfExists(
   tx?: Prisma.TransactionClient
 ): Promise<boolean> {
   const client = tx ?? db;
+
+  const appMembership = await client.appMembership.findUnique({
+    where: {
+      userId_echoAppId: {
+        userId,
+        echoAppId,
+      },
+    },
+    select: {
+      referrerId: true,
+    },
+  });
+
+  if (appMembership?.referrerId) {
+    // If the user already has a referrer, return false
+    return false;
+  }
 
   const referralCode = await client.referralCode.findUnique({
     where: {
@@ -144,4 +215,12 @@ export async function setUserReferrerForAppIfExists(
   });
 
   return true;
+}
+
+export function getReferralLinkUrlForUser(
+  homePage: string | null | undefined,
+  echoAppId: string,
+  code: string
+): string {
+  return `${homePage || `${process.env.ECHO_CONTROL_APP_BASE_URL}/apps/${echoAppId}`}?referralCode=${code}`;
 }

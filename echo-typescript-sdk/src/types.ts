@@ -207,3 +207,19 @@ export interface FreeBalance {
   spendPoolBalance: number;
   userSpendInfo: UserSpendInfo;
 }
+
+/**
+ * Request for registering a referral code
+ */
+export interface RegisterReferralCodeRequest {
+  echoAppId: string;
+  code: string;
+}
+
+/**
+ * Response from the referral code registration endpoint
+ */
+export interface RegisterReferralCodeResponse {
+  success: boolean;
+  message: string;
+}

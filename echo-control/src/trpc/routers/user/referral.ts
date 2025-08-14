@@ -4,11 +4,17 @@ import {
   mintUserReferralCode,
   setAppReferralReward,
   getCurrentReferralReward,
+  getReferralCodesForUser,
+  setUserReferrerForAppIfExists,
 } from '@/lib/referral-codes/user-referral';
 
 const mintUserReferralCodeSchema = z.object({
   echoAppId: z.string().uuid(),
   expiresAt: z.date().optional(),
+});
+
+const getReferralCodesSchema = z.object({
+  echoAppId: z.string().uuid(),
 });
 
 const setAppReferralRewardSchema = z.object({
@@ -20,6 +26,11 @@ const getCurrentReferralRewardSchema = z.object({
   echoAppId: z.string().uuid(),
 });
 
+const setUserReferrerForAppIfExistsSchema = z.object({
+  echoAppId: z.string().uuid(),
+  code: z.string(),
+});
+
 export const userReferralRouter = createTRPCRouter({
   mint: protectedProcedure
     .input(mintUserReferralCodeSchema)
@@ -29,6 +40,11 @@ export const userReferralRouter = createTRPCRouter({
         input.echoAppId,
         input.expiresAt
       );
+    }),
+  getReferralCodes: protectedProcedure
+    .input(getReferralCodesSchema)
+    .query(async ({ ctx, input }) => {
+      return getReferralCodesForUser(ctx.session.user.id, input.echoAppId);
     }),
   setAppReferralReward: protectedProcedure
     .input(setAppReferralRewardSchema)
@@ -43,5 +59,15 @@ export const userReferralRouter = createTRPCRouter({
     .input(getCurrentReferralRewardSchema)
     .query(async ({ ctx, input }) => {
       return getCurrentReferralReward(ctx.session.user.id, input.echoAppId);
+    }),
+
+  setUserReferrerForAppIfExists: protectedProcedure
+    .input(setUserReferrerForAppIfExistsSchema)
+    .mutation(async ({ ctx, input }) => {
+      return setUserReferrerForAppIfExists(
+        ctx.session.user.id,
+        input.echoAppId,
+        input.code
+      );
     }),
 });

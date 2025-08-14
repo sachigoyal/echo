@@ -321,6 +321,7 @@ export class EchoDbService {
         spendPoolId: transaction.spendPoolId || null,
         transactionMetadataId: transactionMetadata.id,
         referralCodeId: transaction.referralCodeId || null,
+        referrerRewardId: transaction.referrerRewardId || null,
       },
     });
   }

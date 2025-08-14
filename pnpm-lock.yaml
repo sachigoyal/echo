@@ -339,8 +339,8 @@ importers:
   echo-react-sdk:
     dependencies:
       '@merit-systems/echo-typescript-sdk':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.1
+        version: 1.0.1
       dompurify:
         specifier: ^3.2.6
         version: 3.2.6
@@ -1700,8 +1700,8 @@ packages:
       openai:
         optional: true
 
-  '@merit-systems/echo-typescript-sdk@1.0.0':
-    resolution: {integrity: sha512-WUO8YapjPw3SKsqXcp+S3x1BYin3inR2ym23jY1zoNHjFWLH3RXCrpp44odqw36lRQ1PZNUml4AU3yaL5/zLqw==}
+  '@merit-systems/echo-typescript-sdk@1.0.1':
+    resolution: {integrity: sha512-NU2aFI1D5i2Sz8Za6FC40uwTxehLT5WsR6cnfm+G3lZlMQJh0NahRAiesb7xrK9OJWZnp/98CafMgxSzHCcKFQ==}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     resolution: {integrity: sha512-whiUMPlAOrVGmX8aKYVPvlKyG4CpQXiNNyt74vE1xb5sPvmx5oA7B/kOi/JdBvhGQq97U1/AVdXEdk2zkP8qyA==}
@@ -10052,7 +10052,7 @@ snapshots:
 
   '@merit-systems/echo-react-sdk@1.0.1(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@merit-systems/echo-typescript-sdk': 1.0.0
+      '@merit-systems/echo-typescript-sdk': 1.0.1
       dompurify: 3.2.6
       oidc-client-ts: 3.3.0
       react: 19.1.0
@@ -10064,7 +10064,7 @@ snapshots:
 
   '@merit-systems/echo-react-sdk@file:echo-react-sdk(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@merit-systems/echo-typescript-sdk': 1.0.0
+      '@merit-systems/echo-typescript-sdk': 1.0.1
       dompurify: 3.2.6
       oidc-client-ts: 3.3.0
       react: 19.1.0
@@ -10074,7 +10074,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@merit-systems/echo-typescript-sdk@1.0.0':
+  '@merit-systems/echo-typescript-sdk@1.0.1':
     dependencies:
       axios: 1.10.0
     transitivePeerDependencies:

@@ -1,199 +1,218 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Gift, Percent, AlertCircle, Check, CheckIcon } from 'lucide-react';
-import { Separator } from './ui/separator';
-import { api } from '@/trpc/client';
+import { useState, useEffect } from 'react';
+import { CheckIcon, Gift } from 'lucide-react';
 import { GlassButton } from './glass-button';
+import { api } from '@/trpc/client';
 
 interface ReferralRewardCardProps {
   appId: string;
   appName: string;
 }
 
-export default function ReferralRewardCard({
-  appId,
-  appName,
-}: ReferralRewardCardProps) {
-  const [rewardAmount, setRewardAmount] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+export default function ReferralRewardCard({ appId }: ReferralRewardCardProps) {
+  const [inputValue, setInputValue] = useState<string>('');
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+
+  // Convert multiplier to percentage
+  const multiplierToPercentage = (multiplier: number): number => {
+    return Math.max(0, (multiplier - 1) * 100);
+  };
+
+  // Convert percentage to multiplier
+  const percentageToMultiplier = (percentage: number): number => {
+    return percentage / 100 + 1;
+  };
 
   // Query to get current referral reward
   const {
     data: currentReferralReward,
-    isLoading: isLoadingReward,
-    refetch,
+    isLoading: loading,
+    error: queryError,
+    refetch: refetchReferralReward,
   } = api.user.referral.getCurrentReferralReward.useQuery({
     echoAppId: appId,
   });
 
   const setReferralRewardMutation =
-    api.user.referral.setAppReferralReward.useMutation({
-      onSuccess: () => {
-        setSuccess(true);
-        setError(null);
-        refetch(); // Refetch the current reward
-        setTimeout(() => setSuccess(false), 3000);
-      },
-      onError: error => {
-        setError(error.message || 'Failed to set referral reward');
-        setSuccess(false);
-      },
-    });
+    api.user.referral.setAppReferralReward.useMutation();
 
   const handleSave = async () => {
-    const percentage = parseFloat(rewardAmount);
+    const newPercentage = parseFloat(inputValue);
 
-    if (isNaN(percentage) || percentage < 1) {
-      setError('Reward percentage must be 1% or higher');
+    if (isNaN(newPercentage) || newPercentage < 0 || newPercentage > 1000) {
       return;
     }
 
-    if (percentage > 1000) {
-      setError('Reward percentage cannot exceed 1000%');
-      return;
-    }
+    const newMultiplier = percentageToMultiplier(newPercentage);
 
-    setError(null);
-    setReferralRewardMutation.mutate({
-      echoAppId: appId,
-      reward: percentage,
-    });
+    setReferralRewardMutation.mutate(
+      {
+        echoAppId: appId,
+        reward: newMultiplier,
+      },
+      {
+        onSuccess: () => {
+          // Don't reset user interaction state after save
+          // The component will sync with new data but preserve user's current input
+          refetchReferralReward();
+        },
+      }
+    );
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setRewardAmount(value);
-    setError(null);
-    setSuccess(false);
+    setInputValue(value);
+    setHasUserInteracted(true);
   };
 
-  const currentPercentage = parseFloat(rewardAmount) || 0;
-  const currentRewardPercentage = currentReferralReward?.amount || 0;
-  const isChanged = currentPercentage !== currentRewardPercentage;
-  const isLoading = setReferralRewardMutation.isPending || isLoadingReward;
+  const handlePresetClick = (preset: number) => {
+    setInputValue(preset.toString());
+    setHasUserInteracted(true);
+  };
 
-  // Set initial value when currentReferralReward is loaded
+  // Set initial value when currentReferralReward is loaded and convert from multiplier to percentage
+  // Only update input value if user hasn't interacted with the component yet
   useEffect(() => {
-    if (currentReferralReward && rewardAmount === '') {
-      setRewardAmount(currentReferralReward.amount.toString());
+    if (currentReferralReward && !isInitialized) {
+      const percentage = multiplierToPercentage(
+        Number(currentReferralReward.amount)
+      );
+      setInputValue(percentage.toString());
+      setIsInitialized(true);
     }
-  }, [currentReferralReward, rewardAmount]);
+  }, [currentReferralReward, isInitialized]);
 
-  // Show loading state while fetching current reward
-  if (isLoadingReward) {
+  // Reset user interaction state when app changes
+  useEffect(() => {
+    setHasUserInteracted(false);
+    setIsInitialized(false);
+  }, [appId]);
+
+  const currentPercentage = parseFloat(inputValue) || 0;
+  const storedPercentage = currentReferralReward
+    ? multiplierToPercentage(Number(currentReferralReward.amount))
+    : 0;
+  const isChanged = currentPercentage !== storedPercentage;
+  const saving = setReferralRewardMutation.isPending;
+  const success = setReferralRewardMutation.isSuccess;
+  const error = setReferralRewardMutation.error?.message || queryError?.message;
+
+  // Reset success state after a delay and sync with saved data
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setReferralRewardMutation.reset();
+        // After successful save, reset user interaction to allow sync with server data
+        setHasUserInteracted(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, setReferralRewardMutation]);
+
+  // Sync input with server data when data changes and user hasn't interacted recently
+  useEffect(() => {
+    if (
+      currentReferralReward &&
+      isInitialized &&
+      !hasUserInteracted &&
+      !saving
+    ) {
+      const percentage = multiplierToPercentage(
+        Number(currentReferralReward.amount)
+      );
+      const currentInputPercentage = parseFloat(inputValue) || 0;
+
+      // Only sync if there's a meaningful difference (to avoid floating point precision issues)
+      if (Math.abs(currentInputPercentage - percentage) > 0.01) {
+        setInputValue(percentage.toString());
+      }
+    }
+  }, [
+    currentReferralReward,
+    isInitialized,
+    hasUserInteracted,
+    saving,
+    inputValue,
+  ]);
+
+  // Validation
+  const hasValidationError =
+    currentPercentage < 0 ||
+    currentPercentage > 1000 ||
+    isNaN(currentPercentage);
+  const validationError = hasValidationError
+    ? currentPercentage < 0
+      ? 'Referral reward must be 0% or higher'
+      : currentPercentage > 1000
+        ? 'Referral reward cannot exceed 1000%'
+        : 'Please enter a valid number'
+    : null;
+
+  if (loading) {
     return (
-      <Card className="p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <div className="flex items-center justify-center h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white">
-            <Gift className="h-5 w-5" />
-          </div>
+    <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Gift className="h-5 w-5 text-primary" />
           <div>
-            <h4 className="text-lg font-semibold text-foreground">
-              Referral Reward
-            </h4>
+            <h3 className="font-semibold text-foreground">Referral Reward</h3>
             <p className="text-sm text-muted-foreground">
-              Set the reward percentage for successful referrals to {appName}
+              This is the bonus multiplier that users will receive when their
+              referral signs up.
             </p>
           </div>
         </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold text-foreground">
+            {storedPercentage.toFixed(2)}%
+          </div>
+          <div className="text-xs text-muted-foreground">Current</div>
+        </div>
+      </div>
 
-        <Separator />
-
-        <div className="space-y-3">
-          <Label htmlFor="reward-percentage" className="text-sm font-medium">
-            Reward Percentage (%)
-          </Label>
-          <div className="relative">
-            <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="reward-percentage"
+      {/* Input Section */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-3">
+          <div className="relative flex-1">
+            <input
               type="number"
-              step="1"
-              min="1"
+              min="0"
               max="1000"
-              value={rewardAmount}
+              step="1"
+              value={inputValue}
               onChange={handleInputChange}
-              placeholder="5"
-              className="pl-10 pr-8"
-              disabled={isLoading}
+              className="w-full px-4 py-3 border border-input bg-background text-foreground rounded-lg text-lg font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:m-0"
+              placeholder="Enter percentage (0-1000)"
             />
-            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">
+            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
               %
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Percentage bonus that users will receive when their referral signs
-            up
-          </p>
-
-          {/* Quick Presets */}
-          <div className="flex space-x-2">
-            {[5, 10, 25, 50].map(preset => (
-              <button
-                key={preset}
-                onClick={() => {
-                  setRewardAmount(preset.toString());
-                  setError(null);
-                  setSuccess(false);
-                }}
-                disabled={isLoading}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  currentPercentage === preset
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground disabled:opacity-50'
-                }`}
-              >
-                {preset}%
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-          </div>
-        )}
-
-        {success && (
-          <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-lg">
-            <Check className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-            <p className="text-sm text-green-700 dark:text-green-300">
-              Referral reward updated successfully!
-            </p>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-2">
-          <div className="text-sm text-muted-foreground">
-            {currentReferralReward && (
-              <>Current reward: {currentRewardPercentage}%</>
-            )}
-          </div>
           <GlassButton
             onClick={handleSave}
-            disabled={isLoading || !isChanged}
+            disabled={saving || !isChanged || hasValidationError}
             variant={
-              success ? 'secondary' : isChanged ? 'primary' : 'secondary'
+              success
+                ? 'secondary'
+                : isChanged && !hasValidationError
+                  ? 'primary'
+                  : 'secondary'
             }
           >
-            {isLoading ? (
+            {saving ? (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent mr-2"></div>
                 Saving
@@ -208,7 +227,31 @@ export default function ReferralRewardCard({
             )}
           </GlassButton>
         </div>
+
+        {/* Quick Presets */}
+        <div className="flex space-x-2">
+          {[0, 25, 50, 100].map(preset => (
+            <button
+              key={preset}
+              onClick={() => handlePresetClick(preset)}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
+                currentPercentage === preset
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {preset}%
+            </button>
+          ))}
+        </div>
       </div>
-    </Card>
+
+      {/* Status Messages */}
+      {(validationError || error) && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+          <p className="text-sm text-destructive">{validationError || error}</p>
+        </div>
+      )}
+    </div>
   );
 }

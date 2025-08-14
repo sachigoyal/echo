@@ -74,6 +74,7 @@ export interface TransactionRequest extends Transaction {
   githubLinkId?: string;
   spendPoolId?: string;
   referralCodeId?: string;
+  referrerRewardId?: string;
 }
 
 export interface ApiKeyValidationResult {

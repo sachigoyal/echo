@@ -25,7 +25,7 @@ export class EchoControlService {
   private markUpAmount: Decimal | null = null;
   private markUpId: string | null = null;
   private referralAmount: Decimal | null = null;
-  private referralId: string | null = null;
+  private referrerRewardId: string | null = null;
   private referralCodeId: string | null = null;
   private githubLinkId: string | null = null;
   private freeTierSpendPool: SpendPool | null = null;
@@ -73,7 +73,7 @@ export class EchoControlService {
     );
     this.markUpAmount = markupData.markUpAmount;
     this.markUpId = markupData.markUpId;
-    this.referralId = markupData.referralId;
+    this.referrerRewardId = markupData.referralId;
     this.referralAmount = markupData.referralAmount;
 
     const githubLinkData = await this.getAppGithubLink();
@@ -331,6 +331,7 @@ export class EchoControlService {
         spendPoolId: this.freeTierSpendPool.id,
       }),
       ...(this.referralCodeId && { referralCodeId: this.referralCodeId }),
+      ...(this.referrerRewardId && { referrerRewardId: this.referrerRewardId }),
     };
 
     await this.freeTierService.createFreeTierTransaction(
@@ -369,6 +370,7 @@ export class EchoControlService {
       ...(this.githubLinkId && { githubLinkId: this.githubLinkId }),
       ...(this.markUpId && { markUpId: this.markUpId }),
       ...(this.referralCodeId && { referralCodeId: this.referralCodeId }),
+      ...(this.referrerRewardId && { referrerRewardId: this.referrerRewardId }),
     };
 
     await this.dbService.createPaidTransaction(transactionData);
