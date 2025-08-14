@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '../src/generated/prisma/index.js';
-import modelPrices from '../model_prices.json';
 import * as crypto from 'crypto';
+import modelPrices from '../model_prices.json';
+import { PrismaClient } from '../src/generated/prisma/index.js';
 
 // Database client
 const prisma = new PrismaClient();
@@ -125,8 +125,15 @@ function calculateTransactionCost(
     return (inputTokens + outputTokens) * 0.00001; // Fallback rate
   }
 
-  const inputCost = inputTokens * (modelData.input_cost_per_token || 0);
-  const outputCost = outputTokens * (modelData.output_cost_per_token || 0);
+  // Some of the models (image), dnt have input/output cost_per_token
+  const inputCost =
+    inputTokens *
+    ('input_cost_per_token' in modelData ? modelData.input_cost_per_token : 0);
+  const outputCost =
+    outputTokens *
+    ('output_cost_per_token' in modelData
+      ? modelData.output_cost_per_token
+      : 0);
   return inputCost + outputCost;
 }
 
@@ -733,4 +740,4 @@ if (typeof require !== 'undefined' && require.main === module) {
     });
 }
 
-export { seedAppUsage, seedAllApps };
+export { seedAllApps, seedAppUsage };
