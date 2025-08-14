@@ -1,8 +1,10 @@
 import Image from 'next/image';
 
+import { Users } from 'lucide-react';
+
 import { CardStack } from '@/components/ui/card-stack';
+
 import { formatCurrency } from '@/lib/balance';
-import { User, Users } from 'lucide-react';
 
 export const UniversalBalance = () => {
   return (

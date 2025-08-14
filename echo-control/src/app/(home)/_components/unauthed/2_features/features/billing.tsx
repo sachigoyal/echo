@@ -7,7 +7,6 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  CartesianGrid,
 } from 'recharts';
 
 // Simulate trending up revenue data
