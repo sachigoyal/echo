@@ -127,6 +127,9 @@ importers:
       '@icons-pack/react-simple-icons':
         specifier: ^13.7.0
         version: 13.7.0(react@19.1.0)
+      '@number-flow/react':
+        specifier: ^0.5.10
+        version: 0.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -1938,6 +1941,12 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@number-flow/react@0.5.10':
+    resolution: {integrity: sha512-a8Wh5eNITn7Km4xbddAH7QH8eNmnduR6k34ER1hkHSGO4H2yU1DDnuAWLQM99vciGInFODemSc0tdxrXkJEpbA==}
+    peerDependencies:
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
 
   '@open-draft/deferred-promise@2.2.0':
     resolution: {integrity: sha512-CecwLWx3rhxVQF6V4bAgPS5t+So2sTbPgAzafKkVizyi7tlwpcFpdFqq+wqF2OwNBmqFuu6tOyouTuxgpMfzmA==}
@@ -5414,6 +5423,9 @@ packages:
       jiti:
         optional: true
 
+  esm-env@1.2.2:
+    resolution: {integrity: sha512-Epxrv+Nr/CaL4ZcFGPJIYLWFom+YeV1DqMLHJoEd9SYRxNbaFruBwfEX/kkHUJf55j2+TUbmDcmuilbP1TmXHA==}
+
   espree@10.4.0:
     resolution: {integrity: sha512-j6PAQ2uUr79PZhBjP5C5fhl8e39FmRnOjsD5lGnWrFU8i2G776tBK7+nP8KuQUTTyAZUwfQqXAgrVH5MbH9CYQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -7026,6 +7038,9 @@ packages:
   npm-run-path@5.3.0:
     resolution: {integrity: sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  number-flow@0.5.8:
+    resolution: {integrity: sha512-FPr1DumWyGi5Nucoug14bC6xEz70A1TnhgSHhKyfqjgji2SOTz+iLJxKtv37N5JyJbteGYCm6NQ9p1O4KZ7iiA==}
 
   nwsapi@2.2.20:
     resolution: {integrity: sha512-/ieB+mDe4MrrKMT8z+mQL8klXydZWGR5Dowt4RAGKbJ3kIGEx3X4ljUo+6V73IXtUPWgfOlU5B9MlGxFO5T+cA==}
@@ -10361,6 +10376,13 @@ snapshots:
       fastq: 1.19.1
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@number-flow/react@0.5.10(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      esm-env: 1.2.2
+      number-flow: 0.5.8
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@open-draft/deferred-promise@2.2.0': {}
 
@@ -15060,6 +15082,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  esm-env@1.2.2: {}
+
   espree@10.4.0:
     dependencies:
       acorn: 8.15.0
@@ -17027,6 +17051,10 @@ snapshots:
   npm-run-path@5.3.0:
     dependencies:
       path-key: 4.0.0
+
+  number-flow@0.5.8:
+    dependencies:
+      esm-env: 1.2.2
 
   nwsapi@2.2.20: {}
 

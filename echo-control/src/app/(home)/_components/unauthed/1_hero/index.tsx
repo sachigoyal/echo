@@ -1,3 +1,4 @@
+import { HeroGraphic } from '@/app/(home)/_components/unauthed/1_hero/graphic';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -11,35 +12,33 @@ export const Hero = () => {
         <div className={cn('w-8 border-y shrink-0', dashedBorder)} />
         <div
           className={cn(
-            'flex flex-col items-center justify-center border',
+            'flex flex-col items-center justify-center border p-4 md:p-8 gap-4 w-full',
             dashedBorder
           )}
         >
-          <h1
-            className={cn(
-              'text-5xl font-extrabold bg-gradient-to-b from-foreground via-foreground/85 to-foreground/50 bg-clip-text text-transparent w-full text-center p-8 border-b',
-              dashedBorder
-            )}
-          >
-            Monetize AI Apps in Minutes
-          </h1>
-          <p
-            className={cn(
-              'text-lg text-center w-full p-6 border-b',
-              dashedBorder
-            )}
-          >
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <h1 className="text-6xl font-extrabold bg-gradient-to-b from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+              Echo
+            </h1>
+            <h1 className={cn('text-3xl font-bold text-center', dashedBorder)}>
+              Monetize AI Apps in Minutes
+            </h1>
+          </div>
+          <p className={cn('text-center w-full max-w-sm', dashedBorder)}>
             Charge usage-based billing for your product to{' '}
             <strong>start generating revenue risk-free</strong>. You set the
             markup, we handle the rest.
           </p>
-          <div className={cn('flex justify-center p-6 gap-2')}>
+          <div className={cn('flex justify-center gap-2')}>
             <Button size="lg" variant="turbo">
               Create an App
             </Button>
             <Button size="lg" variant="outline">
               Learn More
             </Button>
+          </div>
+          <div className="mt-8">
+            <HeroGraphic />
           </div>
         </div>
         <div className={cn('w-8 border-y shrink-0', dashedBorder)} />

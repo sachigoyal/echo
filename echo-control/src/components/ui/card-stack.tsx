@@ -5,11 +5,13 @@ import { cn } from '@/lib/utils';
 
 let interval: NodeJS.Timeout;
 
+interface Card {
+  key: string;
+  content: React.ReactNode;
+}
+
 interface CardStackProps {
-  items: {
-    key: string;
-    content: React.ReactNode;
-  }[];
+  items: Card[];
   offset?: number;
   scaleFactor?: number;
   className?: string;
@@ -20,7 +22,7 @@ export const CardStack: React.FC<CardStackProps> = ({
   offset,
   scaleFactor,
   className,
-}: CardStackProps) => {
+}) => {
   const CARD_OFFSET = offset || 10;
   const SCALE_FACTOR = scaleFactor || 0.06;
   const [cards, setCards] = useState<
