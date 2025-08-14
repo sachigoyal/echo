@@ -126,14 +126,8 @@ function calculateTransactionCost(
   }
 
   // Some of the models (image), dnt have input/output cost_per_token
-  const inputCost =
-    inputTokens *
-    ('input_cost_per_token' in modelData ? modelData.input_cost_per_token : 0);
-  const outputCost =
-    outputTokens *
-    ('output_cost_per_token' in modelData
-      ? modelData.output_cost_per_token
-      : 0);
+  const inputCost = inputTokens * modelData.input_cost_per_token || 0;
+  const outputCost = outputTokens * modelData.output_cost_per_token || 0;
   return inputCost + outputCost;
 }
 
