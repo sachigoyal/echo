@@ -3,6 +3,7 @@ import {
   ResponseStreamEvent,
   Tool,
 } from 'openai/resources/responses/responses';
+import toolPrices from '../../tool_prices.json';
 import { getCostPerToken } from '../services/AccountingService';
 import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
@@ -54,34 +55,16 @@ export const parseSSEResponsesFormat = (
   return chunks;
 };
 
-// TODO move this somewhere else?
 const calculateToolCost = (tool: Tool) => {
   console.log('tool', tool);
   switch (tool.type) {
-    case 'image_generation':
+    case 'image_generation': {
       const quality = tool.quality;
       const size = tool.size;
 
-      // GPT Image 1 pricing
-      const gptImage1Prices = {
-        low: {
-          '1024x1024': 0.011,
-          '1024x1536': 0.016,
-          '1536x1024': 0.016,
-        },
-        medium: {
-          '1024x1024': 0.042,
-          '1024x1536': 0.063,
-          '1536x1024': 0.063,
-        },
-        high: {
-          '1024x1024': 0.167,
-          '1024x1536': 0.25,
-          '1536x1024': 0.25,
-        },
-      };
+      // Get pricing from JSON - assume gpt-image-1 if no model specified
+      const gptImage1Prices = toolPrices.image_generation.gpt_image_1;
 
-      // Determine model and pricing - assume gpt-image-1 if no model specified
       if (quality && size) {
         // GPT Image 1 supports low, medium, high (auto defaults to medium)
         const gptQuality = quality === 'auto' ? 'medium' : quality;
@@ -94,21 +77,17 @@ const calculateToolCost = (tool: Tool) => {
         }
       }
       return 0;
+    }
 
     case 'code_interpreter':
-      // Code Interpreter: $0.03 per container/session
-      return 0.03;
+      return toolPrices.code_interpreter.cost_per_session;
 
     case 'file_search':
-      // File search storage: $0.10 / GB per day (1GB free)
-      // File search tool call: Responses API only $2.50 / 2k calls = $0.00125 per call
-      return 0.00125;
+      return toolPrices.file_search.cost_per_call;
 
     case 'web_search_preview':
       // Default to gpt-4o pricing, could be enhanced to check model
-      // Web search (gpt-4o and gpt-4.1): $25.00 / 1k calls = $0.025 per call
-      // Web search (gpt-5, o-series): $10.00 / 1k calls = $0.01 per call
-      return 0.025;
+      return toolPrices.web_search_preview.gpt_4o.cost_per_call;
 
     default:
       return 0;
@@ -199,7 +178,7 @@ export class OpenAIResponsesProvider extends BaseProvider {
   // Override ensureStreamUsage since Responses API doesn't use stream_options
   override ensureStreamUsage(
     reqBody: Record<string, unknown>,
-    reqPath: string
+    _reqPath: string
   ): Record<string, unknown> {
     // Responses API handles usage tracking differently - no need to modify the request
     return reqBody;

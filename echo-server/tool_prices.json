@@ -1,0 +1,40 @@
+{
+  "image_generation": {
+    "gpt_image_1": {
+      "low": {
+        "1024x1024": 0.011,
+        "1024x1536": 0.016,
+        "1536x1024": 0.016
+      },
+      "medium": {
+        "1024x1024": 0.042,
+        "1024x1536": 0.063,
+        "1536x1024": 0.063
+      },
+      "high": {
+        "1024x1024": 0.167,
+        "1024x1536": 0.25,
+        "1536x1024": 0.25
+      }
+    }
+  },
+  "code_interpreter": {
+    "cost_per_session": 0.03
+  },
+  "file_search": {
+    "cost_per_call": 0.00125,
+    "storage_cost_per_gb_per_day": 0.1,
+    "free_storage_gb": 1
+  },
+  "web_search_preview": {
+    "gpt_4o": {
+      "cost_per_call": 0.025
+    },
+    "gpt_5": {
+      "cost_per_call": 0.01
+    },
+    "o_series": {
+      "cost_per_call": 0.01
+    }
+  }
+}
