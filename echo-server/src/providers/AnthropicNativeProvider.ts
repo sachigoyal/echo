@@ -2,6 +2,7 @@ import { LlmTransactionMetadata, Transaction } from '../types';
 import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
+import logger from '../logger';
 
 export interface AnthropicUsage {
   input_tokens: number;
@@ -68,7 +69,7 @@ export const parseSSEAnthropicFormat = (
           };
         }
       } catch (error) {
-        console.error('Error parsing Anthropic SSE chunk:', error);
+        logger.error('Error parsing Anthropic SSE chunk:', { error });
       }
     }
   }
@@ -123,7 +124,7 @@ export class AnthropicNativeProvider extends BaseProvider {
         const usage = parseSSEAnthropicFormat(data);
 
         if (!usage) {
-          console.error('No usage data found');
+          logger.error('No usage data found');
           throw new Error('No usage data found');
         }
 
@@ -154,13 +155,13 @@ export class AnthropicNativeProvider extends BaseProvider {
         const outputTokens = parsed.usage.output_tokens || 0;
         const totalTokens = inputTokens + outputTokens;
 
-        console.log(
+        logger.info(
           'Usage tokens (input/output/total): ',
           inputTokens,
           outputTokens,
           totalTokens
         );
-        console.log('Message ID: ', parsed.id);
+        logger.info('Message ID: ', parsed.id);
 
         const metadata: LlmTransactionMetadata = {
           model: this.getModel(),
@@ -184,7 +185,7 @@ export class AnthropicNativeProvider extends BaseProvider {
         return transaction;
       }
     } catch (error) {
-      console.error('Error processing data:', error);
+      logger.error('Error processing data:', { error });
       throw error;
     }
   }

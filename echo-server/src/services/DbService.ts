@@ -14,6 +14,7 @@ import {
   ReferralCode,
 } from '../generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from '../logger';
 /**
  * Secret key for deterministic API key hashing (should match echo-control)
  */
@@ -62,7 +63,7 @@ export class EchoDbService {
 
         // Validate required fields exist
         if (!payload.user_id || !payload.app_id) {
-          console.error('JWT missing required fields:', {
+          logger.error('JWT missing required fields:', {
             user_id: payload.user_id,
             app_id: payload.app_id,
           });
@@ -171,7 +172,7 @@ export class EchoDbService {
         apiKeyId: apiKeyRecord.id,
       };
     } catch (error) {
-      console.error('Error validating API key:', error);
+      logger.error('Error validating API key:', { error });
       return null;
     }
   }
@@ -219,7 +220,7 @@ export class EchoDbService {
       });
 
       if (!user) {
-        console.error('User not found:', userId);
+        logger.error('User not found:', { userId });
         return {
           balance: 0,
           totalPaid: 0,
@@ -237,7 +238,7 @@ export class EchoDbService {
         totalSpent,
       };
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      logger.error('Error fetching balance:', { error });
       return {
         balance: 0,
         totalPaid: 0,
@@ -411,13 +412,15 @@ export class EchoDbService {
         return dbTransaction;
       });
 
-      console.log(
+      logger.info(
         `Created transaction for model ${transaction.metadata.model}: $${transaction.totalCost}, updated user totalSpent`,
         result.id
       );
       return result;
     } catch (error) {
-      console.error('Error creating transaction and updating balance:', error);
+      logger.error('Error creating transaction and updating balance:', {
+        error,
+      });
       return null;
     }
   }
@@ -473,7 +476,7 @@ export class EchoDbService {
           transactionData.totalCost
         );
 
-        console.log(
+        logger.info(
           `Created free tier transaction for model ${transactionData.metadata.model}: $${transactionData.totalCost}`,
           transaction.id
         );
@@ -484,7 +487,7 @@ export class EchoDbService {
         };
       });
     } catch (error) {
-      console.error('Error creating free tier transaction:', error);
+      logger.error('Error creating free tier transaction:', { error });
       throw error;
     }
   }

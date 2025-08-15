@@ -14,6 +14,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import FreeTierService from './FreeTierService';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
 import { EarningsService } from './EarningsService';
+import logger from '../logger';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
@@ -63,7 +64,7 @@ export class EchoControlService {
     try {
       this.authResult = await this.dbService.validateApiKey(this.apiKey);
     } catch (error) {
-      console.error('Error verifying API key:', error);
+      logger.error('Error verifying API key:', { error });
       return null;
     }
 
@@ -143,7 +144,7 @@ export class EchoControlService {
   async getBalance(): Promise<number> {
     try {
       if (!this.authResult) {
-        console.error('No authentication result available');
+        logger.error('No authentication result available');
         return 0;
       }
 
@@ -152,7 +153,7 @@ export class EchoControlService {
 
       return balance.balance;
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      logger.error('Error fetching balance:', { error });
       return 0;
     }
   }
@@ -163,7 +164,7 @@ export class EchoControlService {
     id: string | null;
   }> {
     if (!this.authResult) {
-      console.error('No authentication result available');
+      logger.error('No authentication result available');
       return { githubId: null, githubType: null, id: null };
     }
 
@@ -198,12 +199,12 @@ export class EchoControlService {
   async createTransaction(transaction: Transaction): Promise<void> {
     try {
       if (!this.authResult) {
-        console.error('No authentication result available');
+        logger.error('No authentication result available');
         return;
       }
 
       if (!this.markUpAmount) {
-        console.error('Error Fetching Markup Amount');
+        logger.error('Error Fetching Markup Amount');
         return;
       }
 
@@ -215,7 +216,7 @@ export class EchoControlService {
         return;
       }
     } catch (error) {
-      console.error('Error creating transaction:', error);
+      logger.error('Error creating transaction:', { error });
     }
   }
 
@@ -239,12 +240,12 @@ export class EchoControlService {
     markUpProfit: Decimal;
   }> {
     if (!this.markUpAmount) {
-      console.error('User has not authenticated');
+      logger.error('User has not authenticated');
       throw new UnauthorizedError('User has not authenticated');
     }
 
     if (!this.referralAmount) {
-      console.error('Referral amount not found');
+      logger.error('Referral amount not found');
       throw new UnauthorizedError('Referral amount not found');
     }
 
@@ -252,12 +253,12 @@ export class EchoControlService {
     const referralDecimal = this.referralAmount.minus(1);
 
     if (markUpDecimal.lessThan(0.0)) {
-      console.error('App markup must be greater than 1.0');
+      logger.error('App markup must be greater than 1.0');
       throw new UnauthorizedError('App markup must be greater than 1.0');
     }
 
     if (referralDecimal.lessThan(0.0)) {
-      console.error('Referral amount must be greater than 1.0');
+      logger.error('Referral amount must be greater than 1.0');
       throw new UnauthorizedError('Referral amount must be greater than 1.0');
     }
 
@@ -288,18 +289,18 @@ export class EchoControlService {
   }
   async createFreeTierTransaction(transaction: Transaction): Promise<void> {
     if (!this.authResult) {
-      console.error('No authentication result available');
+      logger.error('No authentication result available');
       throw new UnauthorizedError('No authentication result available');
     }
 
     if (!this.freeTierSpendPool) {
-      console.error('No free tier spend pool available');
+      logger.error('No free tier spend pool available');
       throw new PaymentRequiredError('No free tier spend pool available');
     }
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
     if (!userId || !echoAppId) {
-      console.error('Missing required user or app information');
+      logger.error('Missing required user or app information');
       throw new UnauthorizedError('Missing required user or app information');
     }
 
@@ -342,7 +343,7 @@ export class EchoControlService {
 
   async createPaidTransaction(transaction: Transaction): Promise<void> {
     if (!this.authResult) {
-      console.error('No authentication result available');
+      logger.error('No authentication result available');
       throw new UnauthorizedError('No authentication result available');
     }
 

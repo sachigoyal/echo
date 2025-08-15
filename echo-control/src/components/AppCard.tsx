@@ -8,6 +8,7 @@ import { ProfileAvatar } from './ui/profile-avatar';
 import { CommitChart } from './activity-chart/chart';
 import { useRouter } from 'next/navigation';
 import { EchoApp } from '@/lib/types/apps';
+import { formatCurrency } from '@/lib/utils/decimal';
 
 const transformActivityData = (data: number[]) => {
   return data.map((count, index) => ({
@@ -48,9 +49,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   const stats = {
     users: 0, // Not available in current data structure
     requests: app.stats?.globalTotalTransactions || 0,
-    revenue: app.stats?.globalTotalRevenue
-      ? `${(app.stats.globalTotalRevenue / 100).toFixed(2)}`
-      : '0.00',
+    revenue: formatCurrency(app.stats?.globalTotalRevenue || 0),
   };
 
   // Set consistent minimum heights based on size
