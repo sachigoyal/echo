@@ -3,6 +3,7 @@ import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from '../logger';
 
 // Use OpenAI SDK's ResponseUsage for non-streaming responses
 
@@ -38,7 +39,7 @@ export const parseSSEImageGenerationFormat = (
       parsed.eventType = eventType;
       chunks.push(parsed);
     } catch (error) {
-      console.error(
+      logger.error(
         'Error parsing SSE image generation chunk:',
         error,
         'Event type:',
@@ -108,10 +109,7 @@ export class OpenAIImageProvider extends BaseProvider {
 
       return transaction;
     } catch (error) {
-      console.error(
-        'Error processing OpenAI Image Generation API data:',
-        error
-      );
+      logger.error('Error processing OpenAI Image Generation API data:', error);
       throw error;
     }
   }
