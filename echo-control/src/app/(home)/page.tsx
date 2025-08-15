@@ -45,7 +45,7 @@ export default async function HomePage() {
         </div>
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Link href="/apps/create">
+          <Link href="/owner/apps/create">
             <GlassButton className="scale-150">Create an app</GlassButton>
           </Link>
         </div>
