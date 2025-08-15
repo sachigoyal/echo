@@ -9,8 +9,16 @@ import {
 } from '@/components/ui/card';
 import { GlassButton } from '@/components/glass-button';
 import { Logo } from '@/components/ui/logo';
+import { auth } from '@/auth';
+import { Unauthed } from './_components/unauthed';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+
+  if (!session) {
+    return <Unauthed />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -37,7 +45,7 @@ export default function HomePage() {
         </div>
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Link href="/owner/apps/create">
+          <Link href="/apps/create">
             <GlassButton className="scale-150">Create an app</GlassButton>
           </Link>
         </div>
