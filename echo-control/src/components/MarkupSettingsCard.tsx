@@ -3,6 +3,14 @@
 import { useState, useEffect } from 'react';
 import { CheckIcon, DollarSignIcon } from 'lucide-react';
 import { GlassButton } from './glass-button';
+import {
+  formatPercentage,
+  multiplierToPercentage,
+  percentageToMultiplier,
+  safeParseFloat,
+  arePercentagesEqual,
+  validatePercentage,
+} from '@/lib/utils/decimal';
 
 interface MarkupSettingsCardProps {
   appId: string;
@@ -16,16 +24,6 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Convert multiplier to percentage
-  const multiplierToPercentage = (multiplier: number): number => {
-    return Math.max(0, (multiplier - 1) * 100);
-  };
-
-  // Convert percentage to multiplier
-  const percentageToMultiplier = (percentage: number): number => {
-    return percentage / 100 + 1;
-  };
 
   // Fetch current markup value
   useEffect(() => {
@@ -58,19 +56,14 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
       setSaving(true);
       setError(null);
 
-      const newPercentage = parseFloat(inputValue);
+      const validation = validatePercentage(inputValue);
 
-      if (isNaN(newPercentage) || newPercentage < 0) {
-        setError('Markup must be 0% or higher');
+      if (!validation.isValid || validation.value === undefined) {
+        setError(validation.error || 'Invalid input');
         return;
       }
 
-      if (newPercentage > 1000) {
-        setError('Markup cannot exceed 1000%');
-        return;
-      }
-
-      const newMultiplier = percentageToMultiplier(newPercentage);
+      const newMultiplier = percentageToMultiplier(validation.value);
 
       const response = await fetch(`/api/apps/${appId}/owner-details`, {
         method: 'POST',
@@ -86,7 +79,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
         throw new Error(data.error || 'Failed to update markup');
       }
 
-      setMarkupPercentage(newPercentage);
+      setMarkupPercentage(validation.value);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
     } catch (error) {
@@ -106,8 +99,8 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
     setSuccess(false);
   };
 
-  const currentPercentage = parseFloat(inputValue) || 0;
-  const isChanged = currentPercentage !== markupPercentage;
+  const currentPercentage = safeParseFloat(inputValue);
+  const isChanged = !arePercentagesEqual(currentPercentage, markupPercentage);
 
   if (loading) {
     return (
@@ -134,7 +127,7 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold text-foreground">
-            {markupPercentage}%
+            {formatPercentage(markupPercentage)}
           </div>
           <div className="text-xs text-muted-foreground">Current</div>
         </div>
@@ -160,9 +153,15 @@ export default function MarkupSettingsCard({ appId }: MarkupSettingsCardProps) {
           </div>
           <GlassButton
             onClick={handleSave}
-            disabled={saving || !isChanged}
+            disabled={
+              saving || !isChanged || !validatePercentage(inputValue).isValid
+            }
             variant={
-              success ? 'secondary' : isChanged ? 'primary' : 'secondary'
+              success
+                ? 'secondary'
+                : isChanged && validatePercentage(inputValue).isValid
+                  ? 'primary'
+                  : 'secondary'
             }
           >
             {saving ? (

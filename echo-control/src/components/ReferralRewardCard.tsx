@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react';
 import { CheckIcon, Gift } from 'lucide-react';
 import { GlassButton } from './glass-button';
 import { api } from '@/trpc/client';
+import {
+  formatPercentage,
+  multiplierToPercentage,
+  percentageToMultiplier,
+  safeParseFloat,
+  arePercentagesEqual,
+  validatePercentage,
+} from '@/lib/utils/decimal';
 
 interface ReferralRewardCardProps {
   appId: string;
@@ -14,16 +22,6 @@ export default function ReferralRewardCard({ appId }: ReferralRewardCardProps) {
   const [inputValue, setInputValue] = useState<string>('');
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
-
-  // Convert multiplier to percentage
-  const multiplierToPercentage = (multiplier: number): number => {
-    return Math.max(0, (multiplier - 1) * 100);
-  };
-
-  // Convert percentage to multiplier
-  const percentageToMultiplier = (percentage: number): number => {
-    return percentage / 100 + 1;
-  };
 
   // Query to get current referral reward
   const {
@@ -39,13 +37,13 @@ export default function ReferralRewardCard({ appId }: ReferralRewardCardProps) {
     api.user.referral.setAppReferralReward.useMutation();
 
   const handleSave = async () => {
-    const newPercentage = parseFloat(inputValue);
+    const validation = validatePercentage(inputValue);
 
-    if (isNaN(newPercentage) || newPercentage < 0 || newPercentage > 1000) {
+    if (!validation.isValid || validation.value === undefined) {
       return;
     }
 
-    const newMultiplier = percentageToMultiplier(newPercentage);
+    const newMultiplier = percentageToMultiplier(validation.value);
 
     setReferralRewardMutation.mutate(
       {
@@ -91,11 +89,11 @@ export default function ReferralRewardCard({ appId }: ReferralRewardCardProps) {
     setIsInitialized(false);
   }, [appId]);
 
-  const currentPercentage = parseFloat(inputValue) || 0;
+  const currentPercentage = safeParseFloat(inputValue);
   const storedPercentage = currentReferralReward
     ? multiplierToPercentage(Number(currentReferralReward.amount))
     : 0;
-  const isChanged = currentPercentage !== storedPercentage;
+  const isChanged = !arePercentagesEqual(currentPercentage, storedPercentage);
   const saving = setReferralRewardMutation.isPending;
   const success = setReferralRewardMutation.isSuccess;
   const error = setReferralRewardMutation.error?.message || queryError?.message;
@@ -123,10 +121,10 @@ export default function ReferralRewardCard({ appId }: ReferralRewardCardProps) {
       const percentage = multiplierToPercentage(
         Number(currentReferralReward.amount)
       );
-      const currentInputPercentage = parseFloat(inputValue) || 0;
+      const currentInputPercentage = safeParseFloat(inputValue);
 
       // Only sync if there's a meaningful difference (to avoid floating point precision issues)
-      if (Math.abs(currentInputPercentage - percentage) > 0.01) {
+      if (!arePercentagesEqual(currentInputPercentage, percentage)) {
         setInputValue(percentage.toString());
       }
     }
@@ -139,17 +137,9 @@ export default function ReferralRewardCard({ appId }: ReferralRewardCardProps) {
   ]);
 
   // Validation
-  const hasValidationError =
-    currentPercentage < 0 ||
-    currentPercentage > 1000 ||
-    isNaN(currentPercentage);
-  const validationError = hasValidationError
-    ? currentPercentage < 0
-      ? 'Referral reward must be 0% or higher'
-      : currentPercentage > 1000
-        ? 'Referral reward cannot exceed 1000%'
-        : 'Please enter a valid number'
-    : null;
+  const validation = validatePercentage(inputValue);
+  const hasValidationError = !validation.isValid;
+  const validationError = validation.error || null;
 
   if (loading) {
     return (
@@ -177,7 +167,7 @@ export default function ReferralRewardCard({ appId }: ReferralRewardCardProps) {
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold text-foreground">
-            {storedPercentage.toFixed(2)}%
+            {formatPercentage(storedPercentage)}
           </div>
           <div className="text-xs text-muted-foreground">Current</div>
         </div>
