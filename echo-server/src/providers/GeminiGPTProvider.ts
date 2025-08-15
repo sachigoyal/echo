@@ -3,6 +3,7 @@ import { getCostPerToken } from '../services/AccountingService';
 import type { CompletionStateBody, StreamingChunkBody } from './GPTProvider';
 import { GPTProvider } from './GPTProvider';
 import { ProviderType } from './ProviderType';
+import logger from '../logger';
 
 export const parseSSEGeminiGPTFormat = (data: string): StreamingChunkBody[] => {
   // Split by double newlines to separate events
@@ -36,7 +37,7 @@ export const parseSSEGeminiGPTFormat = (data: string): StreamingChunkBody[] => {
       }
     } catch (error) {
       // Log error but continue processing other events
-      console.warn('Error parsing SSE chunk:', error);
+      logger.warn('Error parsing SSE chunk:', { error });
       continue;
     }
   }
@@ -105,7 +106,7 @@ export class GeminiGPTProvider extends GPTProvider {
 
       return transaction;
     } catch (error) {
-      console.error('Error processing data:', error);
+      logger.error('Error processing data:', { error });
       throw error;
     }
   }

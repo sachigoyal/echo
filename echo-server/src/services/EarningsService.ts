@@ -1,6 +1,7 @@
 import { ApiKeyValidationResult } from 'types';
 import { MarkUp, ReferralReward, PrismaClient } from '../generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from '../logger';
 
 type MarkUpData = MarkUp | null;
 
@@ -23,7 +24,7 @@ export class EarningsService {
     referralAmount: Decimal;
   }> {
     if (!authResult) {
-      console.error('No authentication result available');
+      logger.error('No authentication result available');
       return {
         markUpId: null,
         markUpAmount: new Decimal(1.0),

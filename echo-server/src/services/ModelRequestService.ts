@@ -7,6 +7,7 @@ import { handleStreamService } from './HandleStreamService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { Transaction } from '../types';
 import { HttpError, UnknownModelError } from '../errors/http';
+import logger from '../logger';
 
 export class ModelRequestService {
   /**
@@ -29,7 +30,7 @@ export class ModelRequestService {
     const model = extractModelName(req);
 
     if (!model || !isValidModel(model)) {
-      console.error('Invalid model: ', model);
+      logger.error('Invalid model:', { model });
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
       });
@@ -58,7 +59,7 @@ export class ModelRequestService {
     // Format authentication headers
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
-    console.log(
+    logger.info(
       'new outbound request',
       `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
       req.method
@@ -80,7 +81,7 @@ export class ModelRequestService {
     // Handle non-200 responses
     if (response.status !== 200) {
       const error = await response.json();
-      console.error('Error response: ', error);
+      logger.error('Error response:', { error });
       res.status(response.status).json({
         error: error,
       });

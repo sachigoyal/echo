@@ -1,5 +1,6 @@
 import { UnauthorizedError } from '../errors/http';
 import { EchoControlService } from '../services/EchoControlService';
+import logger from '../logger';
 
 export const verifyUserHeaderCheck = async (
   headers: Record<string, string>
@@ -33,7 +34,7 @@ export const verifyUserHeaderCheck = async (
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
   if (!(authorization || xApiKey || xGoogleApiKey)) {
-    console.error('Missing authentication headers: ', headers);
+    logger.error('Missing authentication headers:', { headers });
     throw new UnauthorizedError('Please include auth headers.');
   }
 

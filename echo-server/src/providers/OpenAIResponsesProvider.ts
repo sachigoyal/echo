@@ -9,6 +9,7 @@ import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from '../logger';
 
 export const parseSSEResponsesFormat = (
   data: string
@@ -42,7 +43,7 @@ export const parseSSEResponsesFormat = (
       parsed.eventType = eventType;
       chunks.push(parsed);
     } catch (error) {
-      console.error(
+      logger.error(
         'Error parsing SSE chunk:',
         error,
         'Event type:',
@@ -172,7 +173,7 @@ export class OpenAIResponsesProvider extends BaseProvider {
 
       return transaction;
     } catch (error) {
-      console.error('Error processing OpenAI Responses API data:', error);
+      logger.error('Error processing OpenAI Responses API data:', error);
       throw error;
     }
   }
