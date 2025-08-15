@@ -43,7 +43,7 @@ export async function getAppActivity(
       ...(userId && { userId }),
     },
     select: {
-      cost: true,
+      totalCost: true,
       transactionMetadata: true,
       createdAt: true,
     },
@@ -66,7 +66,7 @@ export async function getAppActivity(
 
     for (const transaction of dayTransactions) {
       // Add to total cost
-      const cost = new Prisma.Decimal(transaction.cost.toString());
+      const cost = new Prisma.Decimal(transaction.totalCost.toString());
       totalCost = totalCost.add(cost);
 
       // Extract token information from metadata
@@ -148,7 +148,7 @@ export async function getAppActivityBatch(
     },
     select: {
       echoAppId: true,
-      cost: true,
+      totalCost: true,
       transactionMetadata: true,
       createdAt: true,
     },
@@ -181,7 +181,7 @@ export async function getAppActivityBatch(
 
       for (const transaction of dayTransactions) {
         // Add to total cost
-        const cost = new Prisma.Decimal(transaction.cost.toString());
+        const cost = new Prisma.Decimal(transaction.totalCost.toString());
         totalCost = totalCost.add(cost);
 
         // Extract token information from metadata

@@ -1,3 +1,5 @@
+import { Decimal } from '@prisma/client/runtime/library';
+
 export interface EchoApp {
   id: string;
   name: string;
@@ -52,22 +54,28 @@ export interface LlmTransactionMetadata {
   totalTokens: number;
   prompt?: string;
   response?: string;
-  toolCost?: number;
+  toolCost?: Decimal;
 }
 
 export interface Transaction {
   metadata: LlmTransactionMetadata;
-  cost: number;
+  rawTransactionCost: Decimal;
   status: string;
 }
 
 export interface TransactionRequest extends Transaction {
+  totalCost: Decimal;
+  appProfit: Decimal;
+  markUpProfit: Decimal;
+  referralProfit: Decimal;
   userId: string;
   echoAppId: string;
   apiKeyId?: string;
   markUpId?: string;
   githubLinkId?: string;
   spendPoolId?: string;
+  referralCodeId?: string;
+  referrerRewardId?: string;
 }
 
 export interface ApiKeyValidationResult {

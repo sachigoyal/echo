@@ -113,6 +113,13 @@ export async function getOwnerEchoApp(
       include: {
         markUp: true,
         githubLink: true,
+        currentReferralReward: {
+          select: {
+            id: true,
+            amount: true,
+            description: true,
+          },
+        },
       },
     });
 

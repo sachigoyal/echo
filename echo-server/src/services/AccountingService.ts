@@ -4,6 +4,7 @@ import {
 } from '../providers/ProviderFactory';
 import modelPrices from '../../model_prices.json';
 import openRouterModelPrices from '../../open_router_model_prices.json';
+import { Decimal } from '@prisma/client/runtime/library';
 
 const getModelPrice = (model: string) => {
   // First check if the model is in the main model_prices.json
@@ -58,8 +59,7 @@ export const getCostPerToken = (
     throw new Error(`Pricing information not found for model: ${model}`);
   }
 
-  return (
-    modelPrice.input_cost_per_token * inputTokens +
-    modelPrice.output_cost_per_token * outputTokens
-  );
+  return new Decimal(modelPrice.input_cost_per_token)
+    .mul(inputTokens)
+    .plus(new Decimal(modelPrice.output_cost_per_token).mul(outputTokens));
 };

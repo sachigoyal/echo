@@ -2,6 +2,7 @@ import { ImagesResponse } from 'openai/resources/images';
 import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
+import { Decimal } from '@prisma/client/runtime/library';
 
 // Use OpenAI SDK's ResponseUsage for non-streaming responses
 
@@ -70,7 +71,7 @@ export class OpenAIImageProvider extends BaseProvider {
       let output_tokens = 0;
       let total_tokens = 0;
       let providerId = 'null';
-      let cost = 0;
+      let cost = new Decimal(0);
 
       const parsed = JSON.parse(data) as ImagesResponse;
 
@@ -101,7 +102,7 @@ export class OpenAIImageProvider extends BaseProvider {
 
       const transaction: Transaction = {
         metadata: metadata,
-        cost: cost,
+        rawTransactionCost: new Decimal(cost),
         status: 'success',
       };
 
@@ -141,35 +142,40 @@ const IMAGE_TOKEN_PRICES = {
  * @param image - The image response from OpenAI
  * @returns The calculated cost in dollars
  */
-export const getImageCost = (image: ImagesResponse): number => {
+export const getImageCost = (image: ImagesResponse): Decimal => {
   // Only gpt-image-1 currently supported
   if (!image.usage) {
-    return 0;
+    return new Decimal(0);
   }
 
   // If usage tokens are present, use token-based pricing
   const { input_tokens, output_tokens, input_tokens_details } = image.usage;
-  let cost = 0;
+  let cost = new Decimal(0);
   if (input_tokens_details) {
     // Separate image and text tokens if available
     const imageTokens = input_tokens_details.image_tokens || 0;
     const textTokens = input_tokens_details.text_tokens || 0;
 
-    const imageCost = imageTokens * IMAGE_TOKEN_PRICES['gpt-image-1'].input;
-    const textCost = textTokens * IMAGE_TOKEN_PRICES['gpt-image-1'].text_input;
+    const imageCost = new Decimal(
+      imageTokens * IMAGE_TOKEN_PRICES['gpt-image-1'].input
+    );
+    const textCost = new Decimal(
+      textTokens * IMAGE_TOKEN_PRICES['gpt-image-1'].text_input
+    );
 
-    cost += imageCost;
-    cost += textCost;
+    cost = cost.plus(imageCost);
+    cost = cost.plus(textCost);
   } else {
     // Fallback: treat all as image tokens
-    const inputCost =
-      (input_tokens || 0) * IMAGE_TOKEN_PRICES['gpt-image-1'].input;
-    cost += inputCost;
+    const inputCost = new Decimal(
+      (input_tokens || 0) * IMAGE_TOKEN_PRICES['gpt-image-1'].input
+    );
+    cost = cost.plus(inputCost);
   }
 
   const outputCost =
     (output_tokens || 0) * IMAGE_TOKEN_PRICES['gpt-image-1'].output;
-  cost += outputCost;
+  cost = cost.plus(outputCost);
 
   return cost;
 };

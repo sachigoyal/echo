@@ -95,7 +95,7 @@ export class GeminiGPTProvider extends GPTProvider {
 
       const transaction: Transaction = {
         metadata: metadata,
-        cost: getCostPerToken(
+        rawTransactionCost: getCostPerToken(
           this.getModel(),
           prompt_tokens,
           completion_tokens

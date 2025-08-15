@@ -25,7 +25,7 @@ export async function getModelUsage(
       ...(userId && { userId }),
     },
     select: {
-      cost: true,
+      totalCost: true,
       transactionMetadata: true,
     },
   });
@@ -53,8 +53,8 @@ export async function getModelUsage(
       // Add model cost
       // Model cost is typically stored in metadata, but fallback to transaction cost if not available
       let modelCost = 0;
-      if (transaction.cost) {
-        modelCost = Number(transaction.cost);
+      if (transaction.totalCost) {
+        modelCost = Number(transaction.totalCost);
       }
 
       existing.totalModelCost += modelCost;
@@ -101,7 +101,7 @@ export async function getModelUsageBatch(
     },
     select: {
       echoAppId: true,
-      cost: true,
+      totalCost: true,
       transactionMetadata: true,
     },
   });
@@ -138,8 +138,8 @@ export async function getModelUsageBatch(
 
         // Add model cost
         let modelCost = 0;
-        if (transaction.cost) {
-          modelCost = Number(transaction.cost);
+        if (transaction.totalCost) {
+          modelCost = Number(transaction.totalCost);
         }
 
         existing.totalModelCost += modelCost;

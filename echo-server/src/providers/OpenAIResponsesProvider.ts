@@ -8,6 +8,7 @@ import { getCostPerToken } from '../services/AccountingService';
 import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export const parseSSEResponsesFormat = (
   data: string
@@ -55,7 +56,7 @@ export const parseSSEResponsesFormat = (
   return chunks;
 };
 
-const calculateToolCost = (tool: Tool) => {
+const calculateToolCost = (tool: Tool): Decimal => {
   switch (tool.type) {
     case 'image_generation': {
       const quality = tool.quality;
@@ -68,28 +69,28 @@ const calculateToolCost = (tool: Tool) => {
         // GPT Image 1 supports low, medium, high (auto defaults to medium)
         const gptQuality = quality === 'auto' ? 'medium' : quality;
         if (gptQuality in gptImage1Prices && size !== 'auto') {
-          return (
+          return new Decimal(
             gptImage1Prices[gptQuality as keyof typeof gptImage1Prices]?.[
               size
             ] || 0
           );
         }
       }
-      return 0;
+      return new Decimal(0);
     }
 
     case 'code_interpreter':
-      return toolPrices.code_interpreter.cost_per_session;
+      return new Decimal(toolPrices.code_interpreter.cost_per_session);
 
     case 'file_search':
-      return toolPrices.file_search.cost_per_call;
+      return new Decimal(toolPrices.file_search.cost_per_call);
 
     case 'web_search_preview':
       // Default to gpt-4o pricing, could be enhanced to check model
-      return toolPrices.web_search_preview.gpt_4o.cost_per_call;
+      return new Decimal(toolPrices.web_search_preview.gpt_4o.cost_per_call);
 
     default:
-      return 0;
+      return new Decimal(0);
   }
 };
 
@@ -112,7 +113,7 @@ export class OpenAIResponsesProvider extends BaseProvider {
       let output_tokens = 0;
       let total_tokens = 0;
       let providerId = 'null';
-      let tool_cost = 0;
+      let tool_cost = new Decimal(0);
 
       if (this.getIsStream()) {
         const chunks = parseSSEResponsesFormat(data);
@@ -126,8 +127,8 @@ export class OpenAIResponsesProvider extends BaseProvider {
             providerId = chunk.response.id || 'null';
 
             tool_cost = chunk.response.tools.reduce((acc, tool) => {
-              return acc + calculateToolCost(tool);
-            }, 0);
+              return acc.plus(calculateToolCost(tool));
+            }, new Decimal(0));
           }
           // Fallback to any chunk with usage data if no completed event found
           else if (chunk && 'response' in chunk && chunk.response?.usage) {
@@ -161,9 +162,11 @@ export class OpenAIResponsesProvider extends BaseProvider {
 
       const transaction: Transaction = {
         metadata: metadata,
-        cost:
-          getCostPerToken(this.getModel(), input_tokens, output_tokens) +
-          tool_cost,
+        rawTransactionCost: getCostPerToken(
+          this.getModel(),
+          input_tokens,
+          output_tokens
+        ).plus(tool_cost),
         status: 'success',
       };
 

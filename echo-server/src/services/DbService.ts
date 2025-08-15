@@ -11,7 +11,9 @@ import {
   Prisma,
   Transaction,
   UserSpendPoolUsage,
+  ReferralCode,
 } from '../generated/prisma';
+import { Decimal } from '@prisma/client/runtime/library';
 /**
  * Secret key for deterministic API key hashing (should match echo-control)
  */
@@ -174,6 +176,29 @@ export class EchoDbService {
     }
   }
 
+  async getReferralCodeForUser(
+    userId: string,
+    echoAppId: string
+  ): Promise<string | null> {
+    const appMembership = await this.db.appMembership.findUnique({
+      where: {
+        userId_echoAppId: {
+          userId,
+          echoAppId,
+        },
+      },
+      select: {
+        referrerId: true,
+      },
+    });
+
+    if (!appMembership) {
+      return null;
+    }
+
+    return appMembership.referrerId;
+  }
+
   /**
    * Calculate total balance for a user across all apps
    * Uses User.totalPaid and User.totalSpent for consistent balance calculation
@@ -245,7 +270,7 @@ export class EchoDbService {
   private async updateUserTotalSpent(
     tx: Prisma.TransactionClient,
     userId: string,
-    amount: number
+    amount: Decimal
   ): Promise<void> {
     await tx.user.update({
       where: { id: userId },
@@ -282,7 +307,11 @@ export class EchoDbService {
     // Then create the transaction record with the linked metadata ID
     return await tx.transaction.create({
       data: {
-        cost: transaction.cost,
+        totalCost: transaction.totalCost,
+        appProfit: transaction.appProfit,
+        markUpProfit: transaction.markUpProfit,
+        referralProfit: transaction.referralProfit,
+        rawTransactionCost: transaction.rawTransactionCost,
         status: transaction.status,
         userId: transaction.userId,
         echoAppId: transaction.echoAppId,
@@ -291,6 +320,8 @@ export class EchoDbService {
         githubLinkId: transaction.githubLinkId || null,
         spendPoolId: transaction.spendPoolId || null,
         transactionMetadataId: transactionMetadata.id,
+        referralCodeId: transaction.referralCodeId || null,
+        referrerRewardId: transaction.referrerRewardId || null,
       },
     });
   }
@@ -304,7 +335,7 @@ export class EchoDbService {
   private async updateSpendPoolTotalSpent(
     tx: Prisma.TransactionClient,
     spendPoolId: string,
-    amount: number
+    amount: Decimal
   ): Promise<void> {
     await tx.spendPool.update({
       where: { id: spendPoolId },
@@ -327,7 +358,7 @@ export class EchoDbService {
     tx: Prisma.TransactionClient,
     userId: string,
     spendPoolId: string,
-    amount: number
+    amount: Decimal
   ): Promise<UserSpendPoolUsage> {
     return await tx.userSpendPoolUsage.upsert({
       where: {
@@ -369,7 +400,7 @@ export class EchoDbService {
         await this.updateUserTotalSpent(
           tx,
           transaction.userId,
-          transaction.cost
+          transaction.totalCost
         );
 
         // Update API key's last used timestamp if provided
@@ -381,7 +412,7 @@ export class EchoDbService {
       });
 
       console.log(
-        `Created transaction for model ${transaction.metadata.model}: $${transaction.cost}, updated user totalSpent`,
+        `Created transaction for model ${transaction.metadata.model}: $${transaction.totalCost}, updated user totalSpent`,
         result.id
       );
       return result;
@@ -421,7 +452,7 @@ export class EchoDbService {
           tx,
           transactionData.userId,
           spendPoolId,
-          transactionData.cost
+          transactionData.totalCost
         );
 
         // 3. Create the transaction record
@@ -439,11 +470,11 @@ export class EchoDbService {
         await this.updateSpendPoolTotalSpent(
           tx,
           spendPoolId,
-          transactionData.cost
+          transactionData.totalCost
         );
 
         console.log(
-          `Created free tier transaction for model ${transactionData.metadata.model}: $${transactionData.cost}`,
+          `Created free tier transaction for model ${transactionData.metadata.model}: $${transactionData.totalCost}`,
           transaction.id
         );
 

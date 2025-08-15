@@ -55,19 +55,6 @@ export interface LlmTransaction {
   apiKeyId: string;
 }
 
-export interface Payment {
-  id: string;
-  stripePaymentId?: string;
-  amount: number;
-  currency: string;
-  status: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  echoAppId?: string;
-}
-
 export interface Balance {
   totalPaid: number;
   totalSpent: number;
@@ -219,4 +206,20 @@ export interface GetFreeBalanceRequest {
 export interface FreeBalance {
   spendPoolBalance: number;
   userSpendInfo: UserSpendInfo;
+}
+
+/**
+ * Request for registering a referral code
+ */
+export interface RegisterReferralCodeRequest {
+  echoAppId: string;
+  code: string;
+}
+
+/**
+ * Response from the referral code registration endpoint
+ */
+export interface RegisterReferralCodeResponse {
+  success: boolean;
+  message: string;
 }

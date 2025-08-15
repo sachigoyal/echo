@@ -4,8 +4,8 @@ import { Transaction as PrismaTransaction } from '@/generated/prisma';
 /**
  * Serialized version of Transaction with Decimal values converted to numbers
  */
-export type SerializedTransaction = Omit<PrismaTransaction, 'cost'> & {
-  cost: number;
+export type SerializedTransaction = Omit<PrismaTransaction, 'totalCost'> & {
+  totalCost: number;
 };
 
 /**
@@ -17,7 +17,7 @@ export function serializeTransaction(
 ): SerializedTransaction {
   return {
     ...transaction,
-    cost: Number(transaction.cost),
+    totalCost: Number(transaction.totalCost),
   };
 }
 

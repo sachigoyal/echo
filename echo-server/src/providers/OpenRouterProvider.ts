@@ -111,7 +111,7 @@ export class OpenRouterProvider extends BaseProvider {
 
       return {
         metadata: metadata,
-        cost: cost,
+        rawTransactionCost: cost,
         status: 'success',
       };
     } catch (error) {

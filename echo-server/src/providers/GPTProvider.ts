@@ -110,7 +110,7 @@ export class GPTProvider extends BaseProvider {
       };
 
       const transaction: Transaction = {
-        cost: cost,
+        rawTransactionCost: cost,
         metadata: metadata,
         status: 'success',
       };

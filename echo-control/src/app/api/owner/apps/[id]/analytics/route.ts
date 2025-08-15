@@ -86,7 +86,7 @@ export async function GET(
         });
       }
       allUsersMap.get(transaction.user.id).totalSpent += Number(
-        transaction.cost
+        transaction.totalCost
       );
     });
 
@@ -98,7 +98,7 @@ export async function GET(
         isArchived: false,
       },
       _sum: {
-        cost: true,
+        totalCost: true,
       },
     });
 
@@ -106,7 +106,7 @@ export async function GET(
     userSpending.forEach(spending => {
       if (allUsersMap.has(spending.userId)) {
         allUsersMap.get(spending.userId).totalSpent = Number(
-          spending._sum.cost || 0
+          spending._sum.totalCost || 0
         );
       }
     });
@@ -126,7 +126,7 @@ export async function GET(
         isArchived: false,
       },
       _sum: {
-        cost: true,
+        totalCost: true,
       },
     });
 
@@ -137,7 +137,7 @@ export async function GET(
     const analytics = {
       totalUsers: allUsersMap.size,
       totalApiKeys,
-      totalSpent: Number(totalSpending._sum.cost || 0),
+      totalSpent: Number(totalSpending._sum.totalCost || 0),
       topUsers,
     };
 

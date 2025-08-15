@@ -102,7 +102,7 @@ export class AnthropicGPTProvider extends GPTProvider {
       };
 
       const transaction: Transaction = {
-        cost: cost,
+        rawTransactionCost: cost,
         metadata: metadata,
         status: 'success',
       };

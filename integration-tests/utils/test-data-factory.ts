@@ -30,7 +30,7 @@ export interface CreateApiKeyOptions {
 
 export interface CreatePaymentOptions {
   id?: string;
-  stripePaymentId?: string;
+  paymentId?: string;
   amount: number;
   currency?: string;
   status?: string;
@@ -45,7 +45,7 @@ export interface CreateLlmTransactionOptions {
   inputTokens?: number;
   outputTokens?: number;
   totalTokens?: number;
-  cost?: number;
+  totalCost?: number;
   prompt?: string;
   response?: string;
   status?: string;
@@ -77,7 +77,7 @@ export class TestDataFactory {
     return `ek_test_${crypto.randomBytes(16).toString('hex')}`;
   }
 
-  generateStripePaymentId(): string {
+  generatePaymentId(): string {
     return `pi_test_${crypto.randomBytes(12).toString('hex')}`;
   }
 
@@ -125,8 +125,7 @@ export class TestDataFactory {
     return prisma.payment.create({
       data: {
         id: options.id || this.generateUniqueId(),
-        stripePaymentId:
-          options.stripePaymentId || this.generateStripePaymentId(),
+        paymentId: options.paymentId || this.generatePaymentId(),
         amount: options.amount,
         currency: options.currency || 'usd',
         status: options.status || 'succeeded',
@@ -150,7 +149,7 @@ export class TestDataFactory {
         inputTokens,
         outputTokens,
         totalTokens: options.totalTokens || inputTokens + outputTokens,
-        cost: options.cost || (inputTokens + outputTokens) * 0.001,
+        totalCost: options.totalCost || (inputTokens + outputTokens) * 0.001,
         prompt: options.prompt || 'Test prompt for integration testing',
         response: options.response || 'Test response from integration testing',
         status: options.status || 'completed',

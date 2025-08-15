@@ -91,7 +91,7 @@ export const TEST_DATA = {
   payments: {
     testPayment: {
       id: '55555555-5555-5555-5555-555555555555',
-      stripePaymentId: 'pi_test_1234567890',
+      paymentId: 'pi_test_1234567890',
       amount: 1000, // $10.00 in cents
       currency: 'usd',
       status: 'succeeded',
@@ -103,7 +103,7 @@ export const TEST_DATA = {
   llmTransactions: {
     testTransaction: {
       id: '66666666-6666-6666-6666-666666666666',
-      cost: 0.15,
+      totalCost: 0.15,
       status: 'completed',
     },
   },

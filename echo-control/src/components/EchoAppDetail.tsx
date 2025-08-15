@@ -5,6 +5,7 @@ import ApiKeyModal from './ApiKeyModal';
 import CreateApiKeyModal from './CreateApiKeyModal';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { useEchoAppDetail } from '@/hooks/useEchoAppDetail';
+import { useRegisterReferralCode } from '@/hooks/use-register-referral-code';
 import { PublicAppDetail } from './app-detail/PublicAppDetail';
 import { CustomerAppDetail } from './app-detail/CustomerAppDetail';
 import { OwnerAppDetail } from './app-detail/OwnerAppDetail';
@@ -18,6 +19,9 @@ interface EchoAppDetailProps {
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   const { app, loading, error, userPermissions, refetch, hasPermission } =
     useEchoAppDetail(appId);
+
+  // Handle referral code registration from URL
+  useRegisterReferralCode({ appId });
 
   const [showCreateApiKeyModal, setShowCreateApiKeyModal] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
@@ -35,6 +39,7 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     if (urlParams.get('payment') === 'success') {
       setShowPaymentSuccess(true);
       // Clean up URL
+      urlParams.delete('payment');
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
