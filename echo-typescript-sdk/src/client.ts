@@ -8,6 +8,8 @@ import {
   GetFreeBalanceRequest,
   FreeBalance,
   ListEchoAppsResponse,
+  RegisterReferralCodeRequest,
+  RegisterReferralCodeResponse,
   SupportedModel,
   SupportedModelsResponse,
   User,
@@ -191,6 +193,26 @@ export class EchoClient {
   > {
     const response = await this.getSupportedModels();
     return response.models_by_provider;
+  }
+
+  /**
+   * Register a referral code for the authenticated user
+   * @param echoAppId The Echo app ID to register the referral code for
+   * @param code The referral code to register
+   */
+  async registerReferralCode(
+    echoAppId: string,
+    code: string
+  ): Promise<RegisterReferralCodeResponse> {
+    const request: RegisterReferralCodeRequest = { echoAppId, code };
+
+    const response = await this.http
+      .post('/api/v1/user/referral', request)
+      .catch(error => {
+        throw this.handleError(error, 'Failed to register referral code');
+      });
+
+    return response.data;
   }
 
   private handleError(error: any, message: string): Error {

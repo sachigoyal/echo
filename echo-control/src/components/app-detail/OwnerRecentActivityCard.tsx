@@ -40,7 +40,7 @@ export function OwnerRecentActivityCard({
                 </div>
                 <div className="text-right">
                   <p className="font-medium">
-                    {formatCurrency(transaction.cost)}
+                    {formatCurrency(transaction.totalCost)}
                   </p>
                 </div>
               </div>

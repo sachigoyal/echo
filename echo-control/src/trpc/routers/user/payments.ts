@@ -1,7 +1,9 @@
-import { infiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { createTRPCRouter, protectedProcedure } from '@/trpc/trpc';
 
-import { listPayments } from '@/lib/payments';
+import { infiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
+
+import { listPayments } from '@/services/payments';
+import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
 
 export const userPaymentsRouter = createTRPCRouter({
   list: protectedProcedure
@@ -18,5 +20,11 @@ export const userPaymentsRouter = createTRPCRouter({
           archivedAt: item.archivedAt?.toISOString(),
         })),
       };
+    }),
+
+  createLink: protectedProcedure
+    .input(createPaymentLinkSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await createPaymentLink(ctx.session.user.id, input);
     }),
 });

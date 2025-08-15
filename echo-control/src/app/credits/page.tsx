@@ -20,6 +20,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { AddCredits } from './_components/add-credits';
+import { RedeemCredits } from './_components/redeem-credits';
+import { Balance } from './_components/balance';
 
 export default async function CreditsPage() {
   const session = await auth();
@@ -31,6 +33,8 @@ export default async function CreditsPage() {
   await api.user.payments.list.prefetchInfinite({
     cursor: 0,
   });
+
+  await api.user.balance.get.prefetch();
 
   return (
     <HydrateClient>
@@ -62,6 +66,24 @@ export default async function CreditsPage() {
             </DialogContent>
           </Dialog>
         </Card>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="turbo">
+              <Plus className="size-4" />
+              Redeem Credit Code
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Redeem Credit Code</DialogTitle>
+              <DialogDescription>
+                You can use Echo credits to use LLMs on any Echo app.
+              </DialogDescription>
+            </DialogHeader>
+            <RedeemCredits />
+          </DialogContent>
+        </Dialog>
         <Card className="bg-muted/50">
           <CardHeader className="border-b p-4">
             <CardTitle className="text-lg font-semibold">
@@ -80,8 +102,3 @@ export default async function CreditsPage() {
     </HydrateClient>
   );
 }
-
-const Balance = async () => {
-  const balance = await api.user.balance.get().catch(() => ({ balance: 0 }));
-  return <span>{Number(balance.balance).toFixed(2)}</span>;
-};

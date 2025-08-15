@@ -15,6 +15,7 @@ import { EchoConfig, EchoUser, EchoBalance } from '../types';
 import { sanitizeUserProfile } from '../utils/security';
 import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 import type { Balance, FreeBalance } from '@merit-systems/echo-typescript-sdk';
+import { useRegisterReferralCode } from '../hooks/useRegisterReferralCode';
 
 interface EchoOAuthProfile {
   sub?: string;
@@ -370,6 +371,11 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     initializeAuth();
   }, [isClient, userManager, loadUserData]);
 
+  useRegisterReferralCode({
+    appId: config.appId,
+    client: createClientWithToken(token || ''),
+  });
+
   // Set up event listeners for token events
   useEffect(() => {
     if (!userManager) {
@@ -379,40 +385,9 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     const handleUserLoaded = (oidcUser: User) => {
       loadUserData(oidcUser);
     };
-
-    const handleUserUnloaded = () => {
-      console.log('User unloaded, clearing state');
-      setUser(null);
-      setBalance(null);
-      setToken(null);
-    };
-
-    const handleAccessTokenExpiring = () => {
-      console.log('Access token expiring, refreshing');
-      userManager.signinSilent();
-    };
-
-    const handleAccessTokenExpired = async () => {
-      console.log('Access token expired, reauthenticating');
-      await userManager.signinSilent();
-    };
-
-    const handleSilentRenewError = async (err: Error) => {
-      console.error('Silent renew failed:', err);
-      await clearAuth();
-      setError('Session renewal failed. Please sign in again.');
-    };
     userManager.events.addUserLoaded(handleUserLoaded);
-    userManager.events.addUserUnloaded(handleUserUnloaded);
-    userManager.events.addAccessTokenExpiring(handleAccessTokenExpiring);
-    userManager.events.addAccessTokenExpired(handleAccessTokenExpired);
-    userManager.events.addSilentRenewError(handleSilentRenewError);
     return () => {
       userManager.events.removeUserLoaded(handleUserLoaded);
-      userManager.events.removeUserUnloaded(handleUserUnloaded);
-      userManager.events.removeAccessTokenExpiring(handleAccessTokenExpiring);
-      userManager.events.removeAccessTokenExpired(handleAccessTokenExpired);
-      userManager.events.removeSilentRenewError(handleSilentRenewError);
     };
   }, [userManager, loadUserData, clearAuth]);
 

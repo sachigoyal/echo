@@ -1,5 +1,6 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
+import { Toaster } from 'sonner';
 
 import { TRPCReactProvider } from '@/trpc/client';
 
@@ -41,6 +42,7 @@ export default function RootLayout({
               <main className="w-screen overflow-x-hidden pt-12 md:pt-16 h-full">
                 {children}
               </main>
+              <Toaster />
             </ThemeProvider>
           </TRPCReactProvider>
         </body>

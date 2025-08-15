@@ -6,8 +6,8 @@ export * from './useCurrentApp';
 export * from './useEarningsSettings';
 export * from './useEchoAppDetail';
 export * from './useUpdateApp';
-export * from './useUserPayments';
 export * from './useUserSettings';
+export * from './use-register-referral-code';
 
 // Export new TRPC hooks
 export * from './useTRPCApp';

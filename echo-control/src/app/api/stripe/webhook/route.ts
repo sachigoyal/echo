@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { processPaymentUpdate } from '@/lib/payment-processing';
+import {
+  handlePaymentSuccess,
+  processPaymentUpdate,
+} from '@/lib/payment-processing';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -96,7 +99,7 @@ async function handleCheckoutSessionCompleted(
       // Update payment in database
       const updatedPayment = await tx.payment.updateMany({
         where: {
-          stripePaymentId: paymentId,
+          paymentId: paymentId,
           status: 'pending',
         },
         data: {
@@ -111,7 +114,7 @@ async function handleCheckoutSessionCompleted(
         // Create a new payment record if one doesn't exist
         paymentRecord = await tx.payment.create({
           data: {
-            stripePaymentId: paymentId,
+            paymentId: paymentId,
             amount: amount_total,
             currency: currency || 'usd',
             status: 'completed',
@@ -124,7 +127,7 @@ async function handleCheckoutSessionCompleted(
         // Get the existing payment record
         paymentRecord = await tx.payment.findFirst({
           where: {
-            stripePaymentId: paymentId,
+            paymentId: paymentId,
           },
         });
       }
@@ -151,57 +154,12 @@ async function handleCheckoutSessionCompleted(
   }
 }
 
-async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
-  try {
-    const { id, amount, currency, metadata } = paymentIntent;
-    const userId = metadata?.userId;
-
-    if (!userId) {
-      console.error('No userId in payment metadata');
-      return;
-    }
-
-    // Use a database transaction to atomically update payment status and user balance
-    await db.$transaction(async tx => {
-      // Update payment in database
-      const paymentRecord = await tx.payment.upsert({
-        where: { stripePaymentId: id },
-        update: { status: 'completed' },
-        create: {
-          stripePaymentId: id,
-          amount,
-          currency,
-          status: 'completed',
-          description: 'Echo credits purchase',
-          userId,
-        },
-      });
-
-      // Process the payment update using the cleaned up payment processing logic
-      await processPaymentUpdate(tx, {
-        userId,
-        amountInCents: amount,
-        paymentRecord,
-        metadata: metadata || {},
-        echoAppId: metadata?.echoAppId,
-      });
-    });
-
-    const isFreeTier = metadata?.type === 'free-tier-credits';
-    console.log(
-      `Payment succeeded: ${id}${isFreeTier ? ' (free tier pool)' : ', totalPaid updated'}`
-    );
-  } catch (error) {
-    console.error('Error handling payment success:', error);
-  }
-}
-
 async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
   try {
     const { id } = paymentIntent;
 
     await db.payment.updateMany({
-      where: { stripePaymentId: id },
+      where: { paymentId: id },
       data: { status: 'failed' },
     });
 

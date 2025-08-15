@@ -5,10 +5,12 @@ import ApiKeyModal from './ApiKeyModal';
 import CreateApiKeyModal from './CreateApiKeyModal';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { useEchoAppDetail } from '@/hooks/useEchoAppDetail';
+import { useRegisterReferralCode } from '@/hooks/use-register-referral-code';
 import { PublicAppDetail } from './app-detail/PublicAppDetail';
 import { CustomerAppDetail } from './app-detail/CustomerAppDetail';
 import { OwnerAppDetail } from './app-detail/OwnerAppDetail';
 import { OwnerEchoApp, PublicEchoApp, CustomerEchoApp } from '@/lib/apps/types';
+import { api } from '@/trpc/client';
 
 interface EchoAppDetailProps {
   appId: string;
@@ -17,6 +19,9 @@ interface EchoAppDetailProps {
 export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
   const { app, loading, error, userPermissions, refetch, hasPermission } =
     useEchoAppDetail(appId);
+
+  // Handle referral code registration from URL
+  useRegisterReferralCode({ appId });
 
   const [showCreateApiKeyModal, setShowCreateApiKeyModal] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
@@ -34,32 +39,25 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     if (urlParams.get('payment') === 'success') {
       setShowPaymentSuccess(true);
       // Clean up URL
+      urlParams.delete('payment');
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
+
+  const { mutateAsync: createApiKey } = api.user.apiKeys.create.useMutation();
 
   const handleCreateApiKey = async (data: {
     name: string;
     echoAppId: string;
   }) => {
     try {
-      const response = await fetch(`/api/api-keys`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create API key');
-      }
+      const result = await createApiKey(data);
 
       // Store the new API key for display in the modal
       setNewApiKey({
-        id: result.apiKey.id,
-        key: result.apiKey.key,
-        name: result.apiKey.name,
+        id: result.id,
+        key: result.key,
+        name: result.name || 'New API Key',
       });
 
       // Close the create modal and show the key display modal
@@ -74,18 +72,11 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   };
 
+  const { mutateAsync: updateApiKey } = api.user.apiKeys.update.useMutation();
+
   const handleRenameApiKey = async (id: string, newName: string) => {
     try {
-      const response = await fetch(`/api/api-keys/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to rename API key');
-      }
+      await updateApiKey({ id, data: { name: newName } });
 
       await refetch(); // Refresh data
     } catch (error) {
@@ -94,17 +85,12 @@ export default function EchoAppDetail({ appId }: EchoAppDetailProps) {
     }
   };
 
+  const { mutateAsync: deleteApiKey } = api.user.apiKeys.delete.useMutation();
+
   const handleArchiveApiKey = async (id: string) => {
     setDeletingKeyId(id);
     try {
-      const response = await fetch(`/api/api-keys/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to archive API key');
-      }
+      await deleteApiKey(id);
 
       await refetch(); // Refresh data
     } catch (error) {

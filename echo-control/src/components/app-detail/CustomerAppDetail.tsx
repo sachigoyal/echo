@@ -18,6 +18,7 @@ import { CustomerApiKeysCard } from './ApiKeyDetail';
 import { CustomerRecentActivityCard } from './RecentActivityDetail';
 import { AppHomepageCard } from './AppHomepageCard';
 import { CustomerTopModelsCard } from './CustomerTopModelsCard';
+import { CreateReferralCodeCard } from './CreateReferralCodeCard';
 
 interface CustomerAppDetailProps {
   app: CustomerEchoApp;
@@ -194,6 +195,8 @@ export function CustomerAppDetail({
             title={isGlobalView ? 'Global Model Usage' : 'Your Model Usage'}
             isGlobalView={isGlobalView}
           />
+
+          <CreateReferralCodeCard app={app} />
         </div>
       </div>
     </AppDetailLayout>
