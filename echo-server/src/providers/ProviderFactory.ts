@@ -12,6 +12,7 @@ import { ProviderType } from './ProviderType';
 import { GeminiGPTProvider } from './GeminiGPTProvider';
 import { OpenAIResponsesProvider } from './OpenAIResponsesProvider';
 import { OpenRouterProvider } from './OpenRouterProvider';
+import { OpenAIImageProvider } from './OpenAIImageProvider';
 
 /**
  * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
@@ -92,6 +93,11 @@ export const getProvider = (
   if (completionPath.includes('responses')) {
     type = ProviderType.OPENAI_RESPONSES;
   }
+
+  if (completionPath.includes('images/generations')) {
+    type = ProviderType.OPENAI_IMAGES;
+  }
+
   // We select for Anthropic Native if the completionPath includes "messages"
   // The OpenAI Format does not hit /v1/messages, it hits /v1/chat/completions
   // but the anthropic native format hits /v1/messages
@@ -121,6 +127,8 @@ export const getProvider = (
       return new OpenAIResponsesProvider(echoControlService, stream, model);
     case ProviderType.OPENROUTER:
       return new OpenRouterProvider(echoControlService, stream, model);
+    case ProviderType.OPENAI_IMAGES:
+      return new OpenAIImageProvider(echoControlService, stream, model);
     default:
       throw new Error(`Unknown provider type: ${type}`);
   }

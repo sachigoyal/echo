@@ -288,6 +288,7 @@ model TransactionMetadata {
   inputTokens  Int
   outputTokens Int
   totalTokens  Int
+  toolCost     Decimal   @default(0.0) @db.Decimal(65, 14) 
   prompt       String?
   isArchived   Boolean   @default(false)
   archivedAt   DateTime? @db.Timestamptz

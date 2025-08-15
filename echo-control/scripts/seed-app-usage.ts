@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '../src/generated/prisma/index.js';
-import modelPrices from '../model_prices.json';
 import * as crypto from 'crypto';
+import modelPrices from '../model_prices.json';
+import { PrismaClient } from '../src/generated/prisma/index.js';
 
 // Database client
 const prisma = new PrismaClient();
@@ -733,4 +733,4 @@ if (typeof require !== 'undefined' && require.main === module) {
     });
 }
 
-export { seedAppUsage, seedAllApps };
+export { seedAllApps, seedAppUsage };
