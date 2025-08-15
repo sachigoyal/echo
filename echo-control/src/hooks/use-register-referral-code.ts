@@ -41,9 +41,12 @@ export function useRegisterReferralCode({
             '',
             `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ''}`
           );
-
-          toast.success('Referral code applied successfully!');
-          onSuccess?.();
+          if (result) {
+            toast.success('Referral code applied successfully!');
+            onSuccess?.();
+          } else {
+            onError?.('Referral code is invalid');
+          }
         } catch (error) {
           const errorMessage =
             error instanceof Error
