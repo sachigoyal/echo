@@ -1,13 +1,18 @@
-import React, { ReactNode } from 'react';
-import { EchoContext, EchoContextValue } from '../components/EchoProvider';
-import { EchoUser, EchoBalance } from '../types';
 import { FreeBalance } from '@merit-systems/echo-typescript-sdk';
+import { ReactNode } from 'react';
+import { EchoContext, EchoContextValue } from '../components/EchoProvider';
+import { EchoBalance } from '../types';
+import { User } from 'oidc-client-ts';
+// import { User } from 'oidc-client-ts';
 
 // Mock data for Storybook
-const mockUser: EchoUser = {
-  id: 'mock-user-123',
-  email: 'demo@echo-systems.com',
-  name: 'Demo User',
+const mockUser = {
+  profile: {
+    sub: 'mock-user-123',
+    email: 'demo@echo-systems.com',
+    name: 'Demo User',
+    iss: 'mock-issuer',
+  },
 };
 
 const mockBalance: EchoBalance = {
@@ -32,7 +37,7 @@ const mockFreeTierBalance: FreeBalance = {
 const createMockContext = (
   overrides: Partial<EchoContextValue> = {}
 ): EchoContextValue => ({
-  user: mockUser,
+  user: mockUser as User,
   balance: mockBalance,
   freeTierBalance: mockFreeTierBalance,
   isAuthenticated: true,
@@ -82,7 +87,7 @@ export function MockEchoProvider({
 export const mockStates = {
   authenticated: createMockContext({
     isAuthenticated: true,
-    user: mockUser,
+    user: mockUser as User,
     balance: mockBalance,
     isLoading: false,
   }),
@@ -111,7 +116,7 @@ export const mockStates = {
 
   lowBalance: createMockContext({
     isAuthenticated: true,
-    user: mockUser,
+    user: mockUser as User,
     balance: { totalPaid: 5, totalSpent: 0, balance: 5 },
     isLoading: false,
   }),

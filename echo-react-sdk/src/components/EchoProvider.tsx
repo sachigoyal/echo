@@ -1,34 +1,27 @@
-import React, {
+import type { FreeBalance } from '@merit-systems/echo-typescript-sdk';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
+import {
   createContext,
-  useState,
-  useEffect,
-  useCallback,
   ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from 'react';
 import {
-  UserManager,
-  User,
-  UserManagerSettings,
-  WebStorageStateStore,
-} from 'oidc-client-ts';
-import { EchoConfig, EchoUser, EchoBalance } from '../types';
-import { sanitizeUserProfile } from '../utils/security';
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
-import type { Balance, FreeBalance } from '@merit-systems/echo-typescript-sdk';
-
-interface EchoOAuthProfile {
-  sub?: string;
-  user_id?: string;
-  id?: string;
-  email?: string;
-  preferred_username?: string;
-  name?: string;
-  given_name?: string;
-  picture?: string;
-}
+  AuthProvider,
+  AuthProviderUserManagerProps,
+  useAuth,
+} from 'react-oidc-context';
+import { useEchoBalance } from '../hooks/useEchoBalance';
+import { useEchoPayments } from '../hooks/useEchoPayments';
+import { EchoBalance, EchoConfig, EchoUser } from '../types';
 
 export interface EchoContextValue {
-  user: EchoUser | null;
+  // Auth & User
+  rawUser: User | null | undefined; // directly piped from oidc
+  user: EchoUser | null; // directly piped from oidc
   balance: EchoBalance | null;
   freeTierBalance: FreeBalance | null;
   isAuthenticated: boolean;
@@ -47,63 +40,115 @@ export interface EchoContextValue {
   clearAuth: () => Promise<void>;
 }
 
-export const EchoContext = createContext<EchoContextValue | undefined>(
-  undefined
-);
+export const EchoContext = createContext<EchoContextValue | null>(null);
 
 interface EchoProviderProps {
   config: EchoConfig;
   children: ReactNode;
 }
 
-export function EchoProvider({ config, children }: EchoProviderProps) {
-  const [user, setUser] = useState<EchoUser | null>(null);
-  const [balance, setBalance] = useState<EchoBalance | null>(null);
-  const [freeTierBalance, setFreeTierBalance] = useState<FreeBalance | null>(
-    null
+// Internal provider that handles everything
+function EchoProviderInternal({ config, children }: EchoProviderProps) {
+  const auth = useAuth();
+
+  const user = auth.user;
+  const echoUser: EchoUser | null = user ? parseEchoUser(user) : null;
+  const apiUrl = config.apiUrl || 'https://echo.merit.systems';
+  const token = auth.user?.access_token || null;
+
+  // Create EchoClient for business logic
+  const echoClient = useMemo(() => {
+    if (!token) return null;
+    return new EchoClient({
+      baseUrl: apiUrl,
+      apiKey: token,
+    });
+  }, [apiUrl, token]);
+
+  // Business logic hooks - one line each!
+  const {
+    balance,
+    freeTierBalance,
+    refreshBalance,
+    error: balanceError,
+    isLoading: balanceLoading,
+  } = useEchoBalance(echoClient, config.appId);
+  const {
+    createPaymentLink,
+    error: paymentError,
+    isLoading: paymentLoading,
+  } = useEchoPayments(echoClient);
+
+  const clearAuth = useCallback(async () => {
+    try {
+      await auth.removeUser();
+    } catch (err) {
+      console.error('Error during auth cleanup:', err);
+    }
+  }, [auth.removeUser]);
+
+  const getToken = useCallback(async (): Promise<string | null> => {
+    return auth.user?.access_token || null;
+  }, [auth.user?.access_token]);
+
+  // Combine errors from different sources
+  const combinedError =
+    auth.error?.message || balanceError || paymentError || null;
+  const combinedLoading = auth.isLoading || balanceLoading || paymentLoading;
+
+  const contextValue: EchoContextValue = {
+    user: echoUser || null,
+    rawUser: user,
+    balance,
+    freeTierBalance,
+    isAuthenticated: auth.isAuthenticated,
+    isLoading: combinedLoading,
+    error: combinedError,
+    token,
+    signIn: auth.signinRedirect,
+    signOut: clearAuth,
+    refreshBalance,
+    createPaymentLink,
+    getToken,
+    clearAuth,
+  };
+
+  console.log('echo', contextValue);
+
+  return (
+    <EchoContext.Provider value={contextValue}>{children}</EchoContext.Provider>
   );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [userManager, setUserManager] = useState<UserManager | null>(null);
+}
+
+// Main provider that wraps react-oidc-context
+export function EchoProvider({ config, children }: EchoProviderProps) {
   const [isClient, setIsClient] = useState(false);
 
-  // Handle client-side mounting
+  // Handle client-side mounting for SSR compatibility
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Initialize UserManager only on client-side
-  useEffect(() => {
-    if (!isClient) {
-      return;
-    }
+  // Don't render on server-side
+  if (!isClient) {
+    return null;
+  }
 
-    // Check for existing mock UserManager in tests
-    const existingManager = (
-      window as typeof window & { __echoUserManager?: UserManager }
-    ).__echoUserManager;
-    if (existingManager) {
-      setUserManager(existingManager);
-      return;
-    }
+  const apiUrl = config.apiUrl || 'https://echo.merit.systems';
 
-    const apiUrl = config.apiUrl || 'https://echo.merit.systems';
-    const settings: UserManagerSettings = {
+  const oidcConfig: AuthProviderUserManagerProps = {
+    userManager: new UserManager({
       authority: apiUrl,
       client_id: config.appId,
       redirect_uri: config.redirectUri || window.location.origin,
       scope: config.scope || 'llm:invoke offline_access',
-
-      // Automatic token renewal configuration
-      automaticSilentRenew: true,
-      accessTokenExpiringNotificationTimeInSeconds: 60,
       silentRequestTimeoutInSeconds: 10,
 
       // Silent renewal configuration
       silent_redirect_uri: config.redirectUri || window.location.origin,
-      includeIdTokenInSilentRenew: false, // Default is false
-      validateSubOnSilentRenew: true, // Default is true
+      includeIdTokenInSilentRenew: false,
+
+      validateSubOnSilentRenew: true,
 
       // UserInfo endpoint configuration
       loadUserInfo: true,
@@ -114,331 +159,37 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         token_endpoint: `${apiUrl}/api/oauth/token`,
         userinfo_endpoint: `${apiUrl}/api/oauth/userinfo`,
         issuer: apiUrl,
+        jwks_uri: `${apiUrl}/.well-known/jwks.json`,
+        end_session_endpoint: `${apiUrl}/api/oauth/logout`,
       },
-
       userStore: new WebStorageStateStore({ store: window.localStorage }),
-    };
-    const manager = new UserManager(settings);
+    }),
 
-    // Make UserManager available globally for JWT testing
-    (window as Window & { __echoUserManager?: UserManager }).__echoUserManager =
-      manager;
-
-    setUserManager(manager);
-  }, [isClient, config.appId, config.apiUrl, config.redirectUri, config.scope]);
-
-  const isAuthenticated = user !== null;
-
-  // Create EchoClient with OAuth access token as API key
-  const createClientWithToken = useCallback(
-    (accessToken: string) => {
-      const client = new EchoClient({
-        baseUrl: config.apiUrl || 'https://echo.merit.systems',
-        apiKey: accessToken,
-      });
-      return client;
-    },
-    [config.apiUrl]
-  );
-
-  // Convert OIDC user to Echo user format with security sanitization
-  const convertUser = async (oidcUser: User): Promise<EchoUser> => {
-    // With loadUserInfo: true, the OIDC library automatically calls the UserInfo endpoint
-    // and merges the data into oidcUser.profile, so we just use that directly
-    const profile = oidcUser.profile as EchoOAuthProfile;
-
-    // Sanitize user profile data to prevent XSS attacks
-    const rawProfile = {
-      name:
-        profile?.name ||
-        profile?.given_name ||
-        profile?.preferred_username ||
-        profile?.email ||
-        'User',
-      email: profile?.email || profile?.preferred_username || '',
-      picture: profile?.picture || '',
-    };
-
-    const sanitizedProfile = sanitizeUserProfile(rawProfile);
-
-    return {
-      id: profile?.sub || profile?.user_id || profile?.id || 'unknown',
-      email: sanitizedProfile.email,
-      name: sanitizedProfile.name || 'User',
-      picture: sanitizedProfile.picture,
-    };
-  };
-
-  // Load user data (profile + balance)
-  const loadUserData = useCallback(
-    async (oidcUser: User) => {
-      try {
-        setError(null);
-        const echoUser = await convertUser(oidcUser);
-        setUser(echoUser);
-        setToken(oidcUser.access_token);
-
-        // Create client with access token and fetch balance
-        const client = createClientWithToken(oidcUser.access_token);
-        await loadBalanceWithClient(client);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to load user data';
-        setError(errorMessage);
-        console.error('Error loading user data:', err);
-      }
-    },
-    [createClientWithToken]
-  );
-
-  // Load balance using EchoClient
-  const loadBalanceWithClient = useCallback(async (client: EchoClient) => {
-    try {
-      const balanceData: Balance = await client.getBalance();
-      const freeTierBalanceData: FreeBalance = await client.getFreeBalance(
-        config.appId
-      );
-      setBalance({
-        totalPaid: balanceData.totalPaid,
-        totalSpent: balanceData.totalSpent,
-        balance: balanceData.balance,
-      });
-      setFreeTierBalance(freeTierBalanceData);
-    } catch (err) {
-      console.error('Error loading balance:', err);
-    }
-  }, []);
-
-  // Sign in
-  const signIn = async () => {
-    if (!userManager) {
-      throw new Error('UserManager not initialized');
-    }
-    await userManager.signinRedirect();
-  };
-
-  // Sign out
-  const signOut = async () => {
-    try {
-      if (!userManager) {
-        throw new Error('UserManager not initialized');
-      }
-
-      // Clear local state immediately
-      setUser(null);
-      setBalance(null);
-      setToken(null);
-      setError(null);
-
-      // Remove user from storage
-      await userManager.removeUser();
-
-      // Attempt redirect (may fail in test environment)
-      await userManager.signoutRedirect();
-    } catch (error) {
-      console.warn('Sign out redirect failed:', error);
-      // State already cleared above
-    }
-  };
-
-  // Clear authentication state (for error recovery)
-  const clearAuth = useCallback(async () => {
-    try {
-      setUser(null);
-      setBalance(null);
-      setToken(null);
-      setError(null);
-
-      if (userManager) {
-        await userManager.removeUser();
-      }
-    } catch (error) {
-      console.warn('Error clearing auth state:', error);
-    }
-  }, [userManager]);
-
-  // Enhanced method to attempt token refresh and retry an operation
-
-  // Refresh balance using EchoClient with retry logic
-  const refreshBalance = async () => {
-    if (!userManager) {
-      return;
-    }
-    const currentUser = await userManager.getUser();
-    if (currentUser?.access_token) {
-      const client = createClientWithToken(currentUser.access_token);
-      await loadBalanceWithClient(client);
-    }
-  };
-
-  // Create payment link using EchoClient
-  const createPaymentLink = useCallback(
-    async (
-      amount: number,
-      description?: string,
-      successUrl?: string
-    ): Promise<string> => {
-      if (!userManager) {
-        throw new Error('UserManager not initialized');
-      }
-      const currentUser = await userManager.getUser();
-      if (!currentUser?.access_token) {
-        throw new Error('Not authenticated');
-      }
-
-      try {
-        setError(null);
-        const client = createClientWithToken(currentUser.access_token);
-        const url = await client.getPaymentUrl(
-          amount,
-          description || 'Echo Credits',
-          successUrl
+    // Remove URL parameters after successful authentication
+    onSigninCallback: () => {
+      // Clean up URL after auth
+      if (window.location.search.includes('code=')) {
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
         );
-        return url;
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to create payment link';
-        setError(errorMessage);
-        throw new Error(errorMessage);
       }
     },
-    [userManager, createClientWithToken]
-  );
-
-  // Initialize and handle OAuth callback
-  useEffect(() => {
-    const initializeAuth = async () => {
-      // If not on client-side, just set loading to false
-      if (!isClient) {
-        setIsLoading(false);
-        return;
-      }
-
-      if (!userManager) {
-        return; // Keep loading until userManager is initialized
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Check for existing session first
-        const existingUser = await userManager.getUser();
-
-        // Handle OAuth callback - check for authorization code in query params
-        // Only process callback if no valid existing session
-        if (
-          window.location.search.includes('code=') &&
-          (!existingUser || existingUser.expired)
-        ) {
-          console.log('Authenticating with code');
-          const oidcUser = await userManager.signinRedirectCallback();
-          await loadUserData(oidcUser);
-          // Clean up URL
-          window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-          );
-        } else if (existingUser && !existingUser.expired) {
-          // Use existing valid session
-          await loadUserData(existingUser);
-        }
-        // remove the code if it includes a code= and there is an existing user which is not expired
-        if (
-          window.location.search.includes('code=') &&
-          existingUser &&
-          !existingUser.expired
-        ) {
-          window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-          );
-        }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : 'Authentication initialization failed';
-        setError(errorMessage);
-        console.error('Auth initialization error:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    initializeAuth();
-  }, [isClient, userManager, loadUserData]);
-
-  // Set up event listeners for token events
-  useEffect(() => {
-    if (!userManager) {
-      return;
-    }
-
-    const handleUserLoaded = (oidcUser: User) => {
-      loadUserData(oidcUser);
-    };
-
-    const handleUserUnloaded = () => {
-      console.log('User unloaded, clearing state');
-      setUser(null);
-      setBalance(null);
-      setToken(null);
-    };
-
-    const handleAccessTokenExpiring = () => {
-      console.log('Access token expiring, refreshing');
-      userManager.signinSilent();
-    };
-
-    const handleAccessTokenExpired = async () => {
-      console.log('Access token expired, reauthenticating');
-      await userManager.signinSilent();
-    };
-
-    const handleSilentRenewError = async (err: Error) => {
-      console.error('Silent renew failed:', err);
-      await clearAuth();
-      setError('Session renewal failed. Please sign in again.');
-    };
-    userManager.events.addUserLoaded(handleUserLoaded);
-    userManager.events.addUserUnloaded(handleUserUnloaded);
-    userManager.events.addAccessTokenExpiring(handleAccessTokenExpiring);
-    userManager.events.addAccessTokenExpired(handleAccessTokenExpired);
-    userManager.events.addSilentRenewError(handleSilentRenewError);
-    return () => {
-      userManager.events.removeUserLoaded(handleUserLoaded);
-      userManager.events.removeUserUnloaded(handleUserUnloaded);
-      userManager.events.removeAccessTokenExpiring(handleAccessTokenExpiring);
-      userManager.events.removeAccessTokenExpired(handleAccessTokenExpired);
-      userManager.events.removeSilentRenewError(handleSilentRenewError);
-    };
-  }, [userManager, loadUserData, clearAuth]);
-
-  const contextValue: EchoContextValue = {
-    user,
-    balance,
-    freeTierBalance,
-    isAuthenticated,
-    isLoading,
-    error,
-    token,
-    signIn,
-    signOut,
-    refreshBalance,
-    createPaymentLink,
-    getToken: async () => {
-      if (!userManager) {
-        throw new Error('UserManager not initialized');
-      }
-      const currentUser = await userManager.getUser();
-      return currentUser?.access_token || null;
-    },
-    clearAuth,
   };
 
   return (
-    <EchoContext.Provider value={contextValue}>{children}</EchoContext.Provider>
+    <AuthProvider {...oidcConfig}>
+      <EchoProviderInternal config={config}>{children}</EchoProviderInternal>
+    </AuthProvider>
   );
+}
+
+function parseEchoUser(user: User): EchoUser {
+  return {
+    id: user.profile.sub || '',
+    email: user.profile.email || '',
+    name: user.profile.name || user.profile.preferred_username || '',
+    picture: user.profile.picture || '',
+  };
 }
