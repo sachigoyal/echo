@@ -40,7 +40,6 @@ CREATE TABLE "referral_codes" (
     "usedAt" TIMESTAMPTZ,
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ NOT NULL,
-
     CONSTRAINT "referral_codes_pkey" PRIMARY KEY ("id")
 );
 
@@ -54,7 +53,6 @@ CREATE TABLE "referral_rewards" (
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ NOT NULL,
     "echoAppId" UUID NOT NULL,
-
     CONSTRAINT "referral_rewards_pkey" PRIMARY KEY ("id")
 );
 
