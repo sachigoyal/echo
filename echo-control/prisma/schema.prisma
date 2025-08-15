@@ -213,7 +213,7 @@ model GithubLink {
 model Transaction {
   id                    String               @id @default(uuid()) @db.Uuid
   transactionMetadataId String?              @db.Uuid
-  totalCost             Decimal              @db.Decimal(65, 14)
+  totalCost             Decimal              @default(0.0) @db.Decimal(65, 14)
   appProfit             Decimal              @default(0.0) @db.Decimal(65, 14)
   markUpProfit          Decimal              @default(0.0) @db.Decimal(65, 14)
   referralProfit        Decimal              @default(0.0) @db.Decimal(65, 14)
