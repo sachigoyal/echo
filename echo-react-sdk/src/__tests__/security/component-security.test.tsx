@@ -298,10 +298,10 @@ describe('Component Security Integration', () => {
         const { user } = context;
         return (
           <div>
-            <div data-testid="user-name">{user?.profile.name}</div>
-            <div data-testid="user-email">{user?.profile.email}</div>
-            <div data-testid="user-picture">{user?.profile.picture}</div>
-            <div data-testid="user-id">{user?.profile.sub}</div>
+            <div data-testid="user-name">{user?.name}</div>
+            <div data-testid="user-email">{user?.email}</div>
+            <div data-testid="user-picture">{user?.picture}</div>
+            <div data-testid="user-id">{user?.id}</div>
           </div>
         );
       };
@@ -383,7 +383,7 @@ describe('Component Security Integration', () => {
         return (
           <div>
             <div data-testid="user-display">
-              Hello, {user?.profile.name} ({user?.profile.email})
+              Hello, {user?.name} ({user?.email})
             </div>
             <div data-testid="user-all-data">{JSON.stringify(user)}</div>
           </div>

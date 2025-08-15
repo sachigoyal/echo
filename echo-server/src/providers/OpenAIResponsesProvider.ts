@@ -1,7 +1,7 @@
 import { getCostPerToken } from '../services/AccountingService';
+import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-import { LlmTransactionMetadata, Transaction } from '../types';
 
 export interface ResponseCompletionBody {
   id: string;
@@ -151,8 +151,7 @@ export class OpenAIResponsesProvider extends BaseProvider {
 
   // Override ensureStreamUsage since Responses API doesn't use stream_options
   override ensureStreamUsage(
-    reqBody: Record<string, unknown>,
-    reqPath: string
+    reqBody: Record<string, unknown>
   ): Record<string, unknown> {
     // Responses API handles usage tracking differently - no need to modify the request
     return reqBody;
