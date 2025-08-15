@@ -1,9 +1,13 @@
 'use client';
 
+import { forwardRef, useEffect, useId, useState } from 'react';
+
 import { motion } from 'motion/react';
-import { RefObject, useEffect, useId, useState } from 'react';
 
 import { cn } from '@/lib/utils';
+
+import type { RefObject } from 'react';
+import { Card } from '../ui/card';
 
 export interface AnimatedBeamProps {
   className?: string;
@@ -23,6 +27,10 @@ export interface AnimatedBeamProps {
   startYOffset?: number;
   endXOffset?: number;
   endYOffset?: number;
+  pathType?: 'curved' | 'angular'; // New prop for path style
+  isVertical?: boolean;
+  repeatDelay?: number;
+  beamWidth?: number;
 }
 
 export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
@@ -32,36 +40,31 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   toRef,
   curvature = 0,
   reverse = false, // Include the reverse prop
-  duration = 3,
+  duration = 10,
   delay = 0,
-  pathColor = 'gray',
+  pathColor = 'var(--color-primary)',
   pathWidth = 2,
   pathOpacity = 0.2,
-  gradientStartColor = 'var(--primary)',
-  gradientStopColor = 'var(--primary)',
+  gradientStartColor = 'var(--color-primary)',
+  gradientStopColor = 'var(--color-primary)',
   startXOffset = 0,
   startYOffset = 0,
   endXOffset = 0,
   endYOffset = 0,
+  pathType = 'curved', // Default to curved
+  isVertical = false,
+  repeatDelay = 0,
+  beamWidth = 10,
 }) => {
   const id = useId();
   const [pathD, setPathD] = useState('');
   const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
-
-  // Calculate the gradient coordinates based on the reverse prop
-  const gradientCoordinates = reverse
-    ? {
-        x1: ['90%', '-10%'],
-        x2: ['100%', '0%'],
-        y1: ['0%', '0%'],
-        y2: ['0%', '0%'],
-      }
-    : {
-        x1: ['10%', '110%'],
-        x2: ['0%', '100%'],
-        y1: ['0%', '0%'],
-        y2: ['0%', '0%'],
-      };
+  const [gradientCoordinates, setGradientCoordinates] = useState({
+    x1: ['10%', '110%'],
+    x2: ['0%', '100%'],
+    y1: ['0%', '0%'],
+    y2: ['0%', '0%'],
+  });
 
   useEffect(() => {
     const updatePath = () => {
@@ -83,10 +86,62 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
         const endY =
           rectB.top - containerRect.top + rectB.height / 2 + endYOffset;
 
-        const controlY = startY - curvature;
-        const d = `M ${startX},${startY} Q ${
-          (startX + endX) / 2
-        },${controlY} ${endX},${endY}`;
+        // Update gradient coordinates based on direction
+        setGradientCoordinates(
+          isVertical
+            ? reverse
+              ? {
+                  x1: ['0%', '0%'],
+                  x2: ['0%', '0%'],
+                  y1: [`100%`, `-${beamWidth}%`],
+                  y2: [`${100 + beamWidth}%`, `0%`],
+                }
+              : {
+                  x1: ['0%', '0%'],
+                  x2: ['0%', '0%'],
+                  y1: [`0%`, `${100 + beamWidth}%`],
+                  y2: [`-${beamWidth}%`, `100%`],
+                }
+            : reverse
+              ? {
+                  x1: [`100%`, `-${beamWidth}%`],
+                  x2: [`${100 + beamWidth}%`, `0%`],
+                  y1: ['0%', '0%'],
+                  y2: ['0%', '0%'],
+                }
+              : {
+                  x1: [`0%`, `${100 + beamWidth}%`],
+                  x2: [`-${beamWidth}%`, `100%`],
+                  y1: ['0%', '0%'],
+                  y2: ['0%', '0%'],
+                }
+        );
+
+        let d = '';
+        if (pathType === 'angular') {
+          // Create angular path with rounded corners
+          const controlPointY = (startY + endY) / 2;
+          const cornerRadius = 8;
+
+          if (Math.abs(startX - endX) < 5) {
+            // Nearly straight vertical line - use curved path to avoid stem overlap
+            d = `M ${startX},${startY} L ${endX},${endY}`;
+          } else {
+            // L-shaped path with rounded corner
+            const verticalEnd = controlPointY - cornerRadius;
+            const horizontalStart =
+              startX + (endX > startX ? cornerRadius : -cornerRadius);
+            const horizontalEnd =
+              endX - (endX > startX ? cornerRadius : -cornerRadius);
+            const verticalStart = controlPointY + cornerRadius;
+
+            d = `M ${startX},${startY} L ${startX},${verticalEnd} Q ${startX},${controlPointY} ${horizontalStart},${controlPointY} L ${horizontalEnd},${controlPointY} Q ${endX},${controlPointY} ${endX},${verticalStart} L ${endX},${endY}`;
+          }
+        } else {
+          // Original curved path
+          const controlY = startY - curvature;
+          d = `M ${startX},${startY} Q ${(startX + endX) / 2},${controlY} ${endX},${endY}`;
+        }
         setPathD(d);
       }
     };
@@ -120,6 +175,10 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
     startYOffset,
     endXOffset,
     endYOffset,
+    reverse,
+    pathType,
+    isVertical,
+    beamWidth,
   ]);
 
   return (
@@ -129,17 +188,23 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
       height={svgDimensions.height}
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
-        'pointer-events-none absolute left-0 top-0 transform-gpu stroke-2',
+        'pointer-events-none absolute top-0 left-0 transform-gpu stroke-2',
         className
       )}
       viewBox={`0 0 ${svgDimensions.width} ${svgDimensions.height}`}
     >
-      <path
+      <motion.path
         d={pathD}
         stroke={pathColor}
         strokeWidth={pathWidth}
         strokeOpacity={pathOpacity}
         strokeLinecap="round"
+        transition={{
+          repeat: Infinity,
+          repeatType: 'loop',
+          duration: 2,
+          ease: 'linear',
+        }}
       />
       <path
         d={pathD}
@@ -168,9 +233,9 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
           transition={{
             delay,
             duration,
-            ease: [0.16, 1, 0.3, 1], // https://easings.net/#easeOutExpo
+            ease: [0.16, 1, 0.3, 1],
             repeat: Infinity,
-            repeatDelay: 0,
+            repeatDelay,
           }}
         >
           <stop stopColor={gradientStartColor} stopOpacity="0"></stop>
@@ -186,3 +251,22 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
     </svg>
   );
 };
+
+export const Circle = forwardRef<
+  HTMLDivElement,
+  { className?: string; children?: React.ReactNode }
+>(({ className, children }, ref) => {
+  return (
+    <Card
+      ref={ref}
+      className={cn(
+        'bg-card z-10 flex items-center justify-center rounded-full border p-2 shadow-sm',
+        className
+      )}
+    >
+      {children}
+    </Card>
+  );
+});
+
+Circle.displayName = 'Circle';

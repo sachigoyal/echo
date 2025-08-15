@@ -54,6 +54,7 @@ export interface LlmTransactionMetadata {
   totalTokens: number;
   prompt?: string;
   response?: string;
+  toolCost?: Decimal;
 }
 
 export interface Transaction {
