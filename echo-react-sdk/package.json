@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-react-sdk",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "React SDK for Echo OAuth2 + PKCE authentication and token management",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -28,7 +28,9 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:coverage": "vitest run --coverage",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "publish:test": "npm publish --access public --dry-run",
+    "publish:real": "npm publish --access public"
   },
   "keywords": [
     "react",

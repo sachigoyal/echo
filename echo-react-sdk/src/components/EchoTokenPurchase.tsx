@@ -155,7 +155,10 @@ export function EchoTokenPurchase({
 
   // Calculate available spend: min(spendLimit, amount in pool) - amountSpent with floor of 0
   const calculateAvailableSpend = () => {
-    return freeTierBalance?.userSpendInfo?.amountLeft || 0;
+    return (
+      (freeTierBalance?.userSpendInfo?.amountLeft || 0) +
+      (balance?.balance || 0)
+    );
   };
 
   const handlePurchase = async (purchaseAmount: number) => {
@@ -266,13 +269,7 @@ export function EchoTokenPurchase({
       >
         {/* Logo */}
         <Logo width={16} height={16} variant="light" />
-        <span>
-          {freeTierBalance && calculateAvailableSpend() > 0
-            ? formatCurrency(calculateAvailableSpend()) + ' Free'
-            : balance
-              ? formatCurrency(balance.balance)
-              : 'Purchase Tokens'}
-        </span>
+        <span>{formatCurrency(calculateAvailableSpend())}</span>
         {/* Arrow Up Right Icon - matching lucide-react ArrowUpRight */}
         <svg
           width="12"
