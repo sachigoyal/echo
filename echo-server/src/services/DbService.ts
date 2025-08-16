@@ -11,7 +11,10 @@ import {
   Prisma,
   Transaction,
   UserSpendPoolUsage,
+  ReferralCode,
 } from '../generated/prisma';
+import { Decimal } from '@prisma/client/runtime/library';
+import logger from '../logger';
 /**
  * Secret key for deterministic API key hashing (should match echo-control)
  */
@@ -60,7 +63,7 @@ export class EchoDbService {
 
         // Validate required fields exist
         if (!payload.user_id || !payload.app_id) {
-          console.error('JWT missing required fields:', {
+          logger.error('JWT missing required fields:', {
             user_id: payload.user_id,
             app_id: payload.app_id,
           });
@@ -169,9 +172,32 @@ export class EchoDbService {
         apiKeyId: apiKeyRecord.id,
       };
     } catch (error) {
-      console.error('Error validating API key:', error);
+      logger.error('Error validating API key:', { error });
       return null;
     }
+  }
+
+  async getReferralCodeForUser(
+    userId: string,
+    echoAppId: string
+  ): Promise<string | null> {
+    const appMembership = await this.db.appMembership.findUnique({
+      where: {
+        userId_echoAppId: {
+          userId,
+          echoAppId,
+        },
+      },
+      select: {
+        referrerId: true,
+      },
+    });
+
+    if (!appMembership) {
+      return null;
+    }
+
+    return appMembership.referrerId;
   }
 
   /**
@@ -194,7 +220,7 @@ export class EchoDbService {
       });
 
       if (!user) {
-        console.error('User not found:', userId);
+        logger.error('User not found:', { userId });
         return {
           balance: 0,
           totalPaid: 0,
@@ -212,7 +238,7 @@ export class EchoDbService {
         totalSpent,
       };
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      logger.error('Error fetching balance:', { error });
       return {
         balance: 0,
         totalPaid: 0,
@@ -245,7 +271,7 @@ export class EchoDbService {
   private async updateUserTotalSpent(
     tx: Prisma.TransactionClient,
     userId: string,
-    amount: number
+    amount: Decimal
   ): Promise<void> {
     await tx.user.update({
       where: { id: userId },
@@ -282,7 +308,11 @@ export class EchoDbService {
     // Then create the transaction record with the linked metadata ID
     return await tx.transaction.create({
       data: {
-        cost: transaction.cost,
+        totalCost: transaction.totalCost,
+        appProfit: transaction.appProfit,
+        markUpProfit: transaction.markUpProfit,
+        referralProfit: transaction.referralProfit,
+        rawTransactionCost: transaction.rawTransactionCost,
         status: transaction.status,
         userId: transaction.userId,
         echoAppId: transaction.echoAppId,
@@ -291,6 +321,8 @@ export class EchoDbService {
         githubLinkId: transaction.githubLinkId || null,
         spendPoolId: transaction.spendPoolId || null,
         transactionMetadataId: transactionMetadata.id,
+        referralCodeId: transaction.referralCodeId || null,
+        referrerRewardId: transaction.referrerRewardId || null,
       },
     });
   }
@@ -304,7 +336,7 @@ export class EchoDbService {
   private async updateSpendPoolTotalSpent(
     tx: Prisma.TransactionClient,
     spendPoolId: string,
-    amount: number
+    amount: Decimal
   ): Promise<void> {
     await tx.spendPool.update({
       where: { id: spendPoolId },
@@ -327,7 +359,7 @@ export class EchoDbService {
     tx: Prisma.TransactionClient,
     userId: string,
     spendPoolId: string,
-    amount: number
+    amount: Decimal
   ): Promise<UserSpendPoolUsage> {
     return await tx.userSpendPoolUsage.upsert({
       where: {
@@ -369,7 +401,7 @@ export class EchoDbService {
         await this.updateUserTotalSpent(
           tx,
           transaction.userId,
-          transaction.cost
+          transaction.totalCost
         );
 
         // Update API key's last used timestamp if provided
@@ -380,13 +412,15 @@ export class EchoDbService {
         return dbTransaction;
       });
 
-      console.log(
-        `Created transaction for model ${transaction.metadata.model}: $${transaction.cost}, updated user totalSpent`,
+      logger.info(
+        `Created transaction for model ${transaction.metadata.model}: $${transaction.totalCost}, updated user totalSpent`,
         result.id
       );
       return result;
     } catch (error) {
-      console.error('Error creating transaction and updating balance:', error);
+      logger.error('Error creating transaction and updating balance:', {
+        error,
+      });
       return null;
     }
   }
@@ -421,7 +455,7 @@ export class EchoDbService {
           tx,
           transactionData.userId,
           spendPoolId,
-          transactionData.cost
+          transactionData.totalCost
         );
 
         // 3. Create the transaction record
@@ -439,11 +473,11 @@ export class EchoDbService {
         await this.updateSpendPoolTotalSpent(
           tx,
           spendPoolId,
-          transactionData.cost
+          transactionData.totalCost
         );
 
-        console.log(
-          `Created free tier transaction for model ${transactionData.metadata.model}: $${transactionData.cost}`,
+        logger.info(
+          `Created free tier transaction for model ${transactionData.metadata.model}: $${transactionData.totalCost}`,
           transaction.id
         );
 
@@ -453,7 +487,7 @@ export class EchoDbService {
         };
       });
     } catch (error) {
-      console.error('Error creating free tier transaction:', error);
+      logger.error('Error creating free tier transaction:', { error });
       throw error;
     }
   }

@@ -1,37 +1,22 @@
+import {
+  Response,
+  ResponseStreamEvent,
+  Tool,
+} from 'openai/resources/responses/responses';
+import toolPrices from '../../tool_prices.json';
 import { getCostPerToken } from '../services/AccountingService';
 import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-
-export interface ResponseCompletionBody {
-  id: string;
-  usage: {
-    input_tokens: number;
-    output_tokens: number;
-    total_tokens: number;
-  };
-}
-
-export interface ResponseStreamingChunkBody {
-  id: string;
-  type: string;
-  eventType?: string; // Added to track the SSE event type (e.g., 'response.completed')
-  response?: {
-    id: string;
-    usage?: {
-      input_tokens: number;
-      output_tokens: number;
-      total_tokens: number;
-    };
-  };
-}
+import { Decimal } from '@prisma/client/runtime/library';
+import logger from '../logger';
 
 export const parseSSEResponsesFormat = (
   data: string
-): ResponseStreamingChunkBody[] => {
+): ResponseStreamEvent[] => {
   // Split by double newlines to separate complete events
   const eventBlocks = data.split('\n\n');
-  const chunks: ResponseStreamingChunkBody[] = [];
+  const chunks: ResponseStreamEvent[] = [];
 
   for (const eventBlock of eventBlocks) {
     if (!eventBlock.trim()) continue;
@@ -58,7 +43,7 @@ export const parseSSEResponsesFormat = (
       parsed.eventType = eventType;
       chunks.push(parsed);
     } catch (error) {
-      console.error(
+      logger.error(
         'Error parsing SSE chunk:',
         error,
         'Event type:',
@@ -70,6 +55,44 @@ export const parseSSEResponsesFormat = (
   }
 
   return chunks;
+};
+
+const calculateToolCost = (tool: Tool): Decimal => {
+  switch (tool.type) {
+    case 'image_generation': {
+      const quality = tool.quality;
+      const size = tool.size;
+
+      // Get pricing from JSON - assume gpt-image-1 if no model specified
+      const gptImage1Prices = toolPrices.image_generation.gpt_image_1;
+
+      if (quality && size) {
+        // GPT Image 1 supports low, medium, high (auto defaults to medium)
+        const gptQuality = quality === 'auto' ? 'medium' : quality;
+        if (gptQuality in gptImage1Prices && size !== 'auto') {
+          return new Decimal(
+            gptImage1Prices[gptQuality as keyof typeof gptImage1Prices]?.[
+              size
+            ] || 0
+          );
+        }
+      }
+      return new Decimal(0);
+    }
+
+    case 'code_interpreter':
+      return new Decimal(toolPrices.code_interpreter.cost_per_session);
+
+    case 'file_search':
+      return new Decimal(toolPrices.file_search.cost_per_call);
+
+    case 'web_search_preview':
+      // Default to gpt-4o pricing, could be enhanced to check model
+      return new Decimal(toolPrices.web_search_preview.gpt_4o.cost_per_call);
+
+    default:
+      return new Decimal(0);
+  }
 };
 
 export class OpenAIResponsesProvider extends BaseProvider {
@@ -91,39 +114,40 @@ export class OpenAIResponsesProvider extends BaseProvider {
       let output_tokens = 0;
       let total_tokens = 0;
       let providerId = 'null';
+      let tool_cost = new Decimal(0);
 
       if (this.getIsStream()) {
         const chunks = parseSSEResponsesFormat(data);
 
         for (const chunk of chunks) {
           // Look for the response.completed event which contains the final usage data
-          if (
-            chunk.eventType === 'response.completed' &&
-            chunk.response?.usage
-          ) {
+          if (chunk.type === 'response.completed' && chunk.response?.usage) {
             input_tokens = chunk.response.usage.input_tokens || 0;
             output_tokens = chunk.response.usage.output_tokens || 0;
             total_tokens = chunk.response.usage.total_tokens || 0;
             providerId = chunk.response.id || 'null';
-            break; // We only need the final completed event
+
+            tool_cost = chunk.response.tools.reduce((acc, tool) => {
+              return acc.plus(calculateToolCost(tool));
+            }, new Decimal(0));
           }
           // Fallback to any chunk with usage data if no completed event found
-          else if (chunk.response?.usage) {
+          else if (chunk && 'response' in chunk && chunk.response?.usage) {
             input_tokens += chunk.response.usage.input_tokens || 0;
             output_tokens += chunk.response.usage.output_tokens || 0;
             total_tokens += chunk.response.usage.total_tokens || 0;
-            providerId = chunk.response?.id || chunk.id || 'null';
+            providerId = chunk.response?.id || 'null';
           }
           // Keep track of providerId from any chunk
-          else if (chunk.response?.id || chunk.id) {
-            providerId = chunk.response?.id || chunk.id || 'null';
+          else if (chunk && 'response' in chunk && chunk.response?.id) {
+            providerId = chunk.response?.id || 'null';
           }
         }
       } else {
-        const parsed = JSON.parse(data) as ResponseCompletionBody;
-        input_tokens += parsed.usage.input_tokens || 0;
-        output_tokens += parsed.usage.output_tokens || 0;
-        total_tokens += parsed.usage.total_tokens || 0;
+        const parsed = JSON.parse(data) as Response;
+        input_tokens += parsed.usage?.input_tokens || 0;
+        output_tokens += parsed.usage?.output_tokens || 0;
+        total_tokens += parsed.usage?.total_tokens || 0;
         providerId = parsed.id || 'null';
       }
 
@@ -134,24 +158,30 @@ export class OpenAIResponsesProvider extends BaseProvider {
         inputTokens: input_tokens,
         outputTokens: output_tokens,
         totalTokens: total_tokens,
+        toolCost: tool_cost,
       };
 
       const transaction: Transaction = {
         metadata: metadata,
-        cost: getCostPerToken(this.getModel(), input_tokens, output_tokens),
+        rawTransactionCost: getCostPerToken(
+          this.getModel(),
+          input_tokens,
+          output_tokens
+        ).plus(tool_cost),
         status: 'success',
       };
 
       return transaction;
     } catch (error) {
-      console.error('Error processing OpenAI Responses API data:', error);
+      logger.error('Error processing OpenAI Responses API data:', error);
       throw error;
     }
   }
 
   // Override ensureStreamUsage since Responses API doesn't use stream_options
   override ensureStreamUsage(
-    reqBody: Record<string, unknown>
+    reqBody: Record<string, unknown>,
+    _reqPath: string
   ): Record<string, unknown> {
     // Responses API handles usage tracking differently - no need to modify the request
     return reqBody;

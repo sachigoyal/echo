@@ -83,7 +83,7 @@ export async function getCustomerStatistics(
     }>
   >`
     SELECT 
-      COALESCE(SUM(t.cost), 0)::text as "totalRevenue",
+      COALESCE(SUM(t."totalCost"), 0)::text as "totalRevenue",
       COALESCE(SUM(tm."totalTokens"), 0)::bigint as "totalTokens",
       COALESCE(SUM(tm."inputTokens"), 0)::bigint as "totalInputTokens", 
       COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens",
@@ -203,7 +203,7 @@ export async function getCustomerStatisticsBatch(
   >`
     SELECT 
       t."echoAppId",
-      COALESCE(SUM(t.cost), 0)::text as "totalRevenue",
+      COALESCE(SUM(t."totalCost"), 0)::text as "totalRevenue",
       COALESCE(SUM(tm."totalTokens"), 0)::bigint as "totalTokens",
       COALESCE(SUM(tm."inputTokens"), 0)::bigint as "totalInputTokens", 
       COALESCE(SUM(tm."outputTokens"), 0)::bigint as "totalOutputTokens",

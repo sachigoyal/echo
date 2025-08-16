@@ -6,6 +6,8 @@ import { HttpError } from './errors/http';
 import { authenticateRequest } from './auth';
 import { modelRequestService } from './services/ModelRequestService';
 import { checkBalance } from './services/BalanceCheckService';
+import standardRouter from './routers/common';
+import logger from './logger';
 
 dotenv.config();
 
@@ -27,17 +29,10 @@ app.use(
 app.use(express.json({ limit: '100mb' }));
 app.use(compression());
 
-// Health check route
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    version: process.version,
-  });
-});
+// Use common router for utility routes
+app.use(standardRouter);
 
-// Main route handler
+// Main route handler - only for API paths that need authentication
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { processedHeaders, echoControlService, forwardingPath } =
@@ -67,7 +62,10 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response) => {
-  console.error('Error handling request:', error);
+  logger.error('Error handling request:', {
+    error: error.message,
+    stack: error.stack,
+  });
 
   if (error instanceof HttpError) {
     res.status(error.statusCode).json({
@@ -88,7 +86,7 @@ app.use((error: Error, req: Request, res: Response) => {
 // Only start the server if this file is being run directly
 if (require.main === module) {
   app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    logger.info(`Server is running on port ${port}`);
   });
 }
 

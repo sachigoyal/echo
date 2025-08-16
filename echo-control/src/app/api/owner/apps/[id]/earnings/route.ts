@@ -78,7 +78,7 @@ export async function GET(
         inputTokens: metadata?.inputTokens,
         outputTokens: metadata?.outputTokens,
         totalTokens: metadata?.totalTokens,
-        cost: Number(transaction.cost),
+        cost: Number(transaction.totalCost),
         status: transaction.status,
         createdAt: transaction.createdAt.toISOString(),
         user: {
@@ -98,7 +98,7 @@ export async function GET(
 
     // Calculate totals for summary
     const totalCost = transactions.reduce(
-      (sum, tx) => sum + Number(tx.cost),
+      (sum, tx) => sum + Number(tx.totalCost),
       0
     );
     const totalTokens = transactions.reduce(

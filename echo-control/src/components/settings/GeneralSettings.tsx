@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useCurrentApp } from '@/hooks/useCurrentApp';
 import { useUpdateApp } from '@/hooks/useUpdateApp';
 import MarkupSettingsCard from '../MarkupSettingsCard';
+import ReferralRewardCard from '../ReferralRewardCard';
 import GithubSelection from './GithubSelection';
 import { AppGithubLink } from '@/lib/apps/types';
 
@@ -124,6 +125,11 @@ export default function GeneralSettings({ appId }: GeneralSettingsProps) {
       {/* Markup Settings */}
       <div>
         <MarkupSettingsCard appId={appId} appName={app.name} />
+      </div>
+
+      {/* Referral Reward Settings */}
+      <div>
+        <ReferralRewardCard appId={appId} appName={app.name} />
       </div>
 
       {/* GitHub User Settings */}

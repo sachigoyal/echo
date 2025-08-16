@@ -32,6 +32,14 @@ export async function getCustomerEchoApp(
         isPublic: true,
         createdAt: true,
         updatedAt: true,
+        currentReferralReward: {
+          select: {
+            id: true,
+            amount: true,
+            description: true,
+          },
+        },
+        currentReferralRewardId: true,
       },
     });
 
@@ -101,6 +109,7 @@ export async function getAllCustomerEchoApps(
         name: true,
         description: true,
         profilePictureUrl: true,
+        currentReferralRewardId: true,
         bannerImageUrl: true,
         homepageUrl: true,
         isPublic: true,

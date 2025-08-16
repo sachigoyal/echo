@@ -6,6 +6,7 @@ import {
   USDC_ADDRESS,
   ERC20_CONTRACT_ABI,
 } from './constants';
+import logger from '../../logger';
 
 export interface FundRepoResult {
   success: boolean;
@@ -45,7 +46,7 @@ export async function fundRepo(
       name: 'echo-fund-smart-account',
       owner,
     });
-    console.log('Smart account address:', smartAccount.address);
+    logger.info('Smart account address:', { address: smartAccount.address });
 
     // Send user operation to fund the repo
     const result = await cdp.evm.sendUserOperation({
@@ -84,7 +85,7 @@ export async function fundRepo(
       smartAccountAddress: smartAccount.address,
       userOpHash: result.userOpHash,
     });
-    console.log('User operation processed successfully');
+    logger.info('User operation processed successfully');
 
     return {
       success: true,
@@ -95,7 +96,7 @@ export async function fundRepo(
       tokenAddress: tokenAddress,
     };
   } catch (error) {
-    console.error('Error in funding repo:', {
+    logger.error('Error in funding repo:', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
       amount,

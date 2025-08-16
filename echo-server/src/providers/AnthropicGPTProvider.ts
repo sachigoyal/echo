@@ -3,6 +3,7 @@ import type { CompletionStateBody, StreamingChunkBody } from './GPTProvider';
 import type { LlmTransactionMetadata, Transaction } from '../types';
 import { GPTProvider } from './GPTProvider';
 import { ProviderType } from './ProviderType';
+import logger from '../logger';
 
 export const parseSSEAnthropicGPTFormat = (
   data: string
@@ -38,7 +39,7 @@ export const parseSSEAnthropicGPTFormat = (
       }
     } catch (error) {
       // Log error but continue processing other events
-      console.warn('Error parsing SSE chunk:', error);
+      logger.warn('Error parsing SSE chunk:', { error });
       continue;
     }
   }
@@ -102,14 +103,14 @@ export class AnthropicGPTProvider extends GPTProvider {
       };
 
       const transaction: Transaction = {
-        cost: cost,
+        rawTransactionCost: cost,
         metadata: metadata,
         status: 'success',
       };
 
       return transaction;
     } catch (error) {
-      console.error('Error processing data:', error);
+      logger.error('Error processing data:', { error });
       throw error;
     }
   }

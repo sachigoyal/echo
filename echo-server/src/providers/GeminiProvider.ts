@@ -2,6 +2,7 @@ import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { LlmTransactionMetadata, Transaction } from '../types';
+import logger from '../logger';
 
 export interface GeminiUsage {
   promptTokenCount: number;
@@ -77,7 +78,7 @@ export const parseSSEGeminiFormat = (data: string): GeminiUsage | null => {
             };
           }
         } catch (error) {
-          console.error('Error parsing Gemini SSE chunk:', error);
+          logger.error('Error parsing Gemini SSE chunk:', { error });
         }
       }
     }
@@ -155,7 +156,7 @@ export class GeminiProvider extends BaseProvider {
         }
       }
 
-      console.log(
+      logger.info(
         'Gemini usage tokens (prompt/candidates/total): ',
         promptTokens,
         candidatesTokens,
@@ -173,13 +174,17 @@ export class GeminiProvider extends BaseProvider {
 
       const transaction: Transaction = {
         metadata: metadata,
-        cost: getCostPerToken(this.getModel(), promptTokens, candidatesTokens),
+        rawTransactionCost: getCostPerToken(
+          this.getModel(),
+          promptTokens,
+          candidatesTokens
+        ),
         status: 'success',
       };
 
       return transaction;
     } catch (error) {
-      console.error('Error processing Gemini response data:', error);
+      logger.error('Error processing Gemini response data:', { error });
       throw error;
     }
   }

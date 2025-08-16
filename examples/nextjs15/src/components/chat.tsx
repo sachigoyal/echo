@@ -11,7 +11,7 @@ import { useState } from 'react';
 
 function ChatInterface() {
   const { isAuthenticated } = useEcho();
-  const { openai } = useEchoOpenAI();
+  const { openai } = useEchoOpenAI({ baseURL: 'http://localhost:3070' });
   const [response, setResponse] = useState('');
   const [input, setInput] = useState('');
 
@@ -51,9 +51,10 @@ export default function ChatProvider() {
   return (
     <EchoProvider
       config={{
-        appId: '9aabddcd-94be-428b-a914-51d3416fd443',
-        apiUrl: 'https://echo.merit.systems',
-        redirectUri: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/chat`,
+        appId: '4c8a838d-a404-440c-8602-2812b052d9a6',
+        // apiUrl: 'https://echo.merit.systems',
+        apiUrl: 'http://localhost:3000',
+        redirectUri: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/chat`,
       }}
     >
       <ChatInterface />

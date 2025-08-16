@@ -2,6 +2,7 @@ import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { getCostPerToken } from '../services/AccountingService';
+import logger from '../logger';
 
 export interface CompletionStateBody {
   id: string;
@@ -47,7 +48,7 @@ export const parseSSEGPTFormat = (data: string): StreamingChunkBody[] => {
         const parsed = JSON.parse(jsonStr);
         chunks.push(parsed);
       } catch (error) {
-        console.error('Error parsing SSE chunk:', error);
+        logger.error('Error parsing SSE chunk:', { error });
       }
     }
   }
@@ -111,11 +112,11 @@ export class OpenRouterProvider extends BaseProvider {
 
       return {
         metadata: metadata,
-        cost: cost,
+        rawTransactionCost: cost,
         status: 'success',
       };
     } catch (error) {
-      console.error('Error processing data:', error);
+      logger.error('Error processing data:', { error });
       throw error;
     }
   }

@@ -2,6 +2,8 @@ import { updateSpendPoolFromPayment } from './spend-pools';
 import { updateUserBalanceFromPayment } from './balance';
 import type { Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
+import { db } from './db';
+import type Stripe from 'stripe';
 
 export interface PaymentProcessingData {
   userId: string;
@@ -42,5 +44,52 @@ export async function processPaymentUpdate(
     console.log(
       `Personal balance updated for user ${userId}: +$${amountInCents / 100}`
     );
+  }
+}
+
+export async function handlePaymentSuccess(
+  paymentIntent: Stripe.PaymentIntent
+) {
+  try {
+    const { id, amount, currency, metadata } = paymentIntent;
+    const userId = metadata?.userId;
+
+    if (!userId) {
+      console.error('No userId in payment metadata');
+      return;
+    }
+
+    // Use a database transaction to atomically update payment status and user balance
+    await db.$transaction(async tx => {
+      // Update payment in database
+      const paymentRecord = await tx.payment.upsert({
+        where: { paymentId: id },
+        update: { status: 'completed' },
+        create: {
+          paymentId: id,
+          amount,
+          currency,
+          status: 'completed',
+          description: 'Echo credits purchase',
+          userId,
+        },
+      });
+
+      // Process the payment update using the cleaned up payment processing logic
+      await processPaymentUpdate(tx, {
+        userId,
+        amountInCents: amount,
+        paymentRecord,
+        metadata: metadata || {},
+        echoAppId: metadata?.echoAppId,
+      });
+    });
+
+    const isFreeTier = metadata?.type === 'free-tier-credits';
+    console.log(
+      `Payment succeeded: ${id}${isFreeTier ? ' (free tier pool)' : ', totalPaid updated'}`
+    );
+  } catch (error) {
+    console.error('Error handling payment success:', error);
   }
 }
