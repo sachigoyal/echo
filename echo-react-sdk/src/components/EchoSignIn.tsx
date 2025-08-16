@@ -45,7 +45,7 @@ export function EchoSignIn({
             gap: '8px',
             padding: '12px 16px',
             backgroundColor: '#f8fafc',
-            border: '1px solid red',
+            border: '1px solid #e2e8f0',
             borderRadius: '8px',
             color: '#334155',
             fontSize: '14px',
@@ -83,7 +83,7 @@ export function EchoSignIn({
                 ? '#f1f5f9'
                 : '#ffffff',
             color: isLoading ? '#9ca3af' : '#09090b',
-            border: '1px solid red',
+            border: '1px solid #e2e8f0',
             borderRadius: '8px',
             cursor: isLoading ? 'not-allowed' : 'pointer',
             fontSize: '14px',
