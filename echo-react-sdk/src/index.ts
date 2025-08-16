@@ -8,11 +8,11 @@ export { useEcho } from './hooks/useEcho';
 export { useEchoOpenAI } from './hooks/useEchoOpenAI';
 
 export type {
-  EchoBalance,
   EchoConfig,
+  EchoUser,
+  EchoBalance,
   EchoSignInProps,
   EchoTokenPurchaseProps,
-  EchoUser,
 } from './types';
 
 export type { EchoContextValue } from './components/EchoProvider';

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { useEcho } from '../hooks/useEcho';
+import React, { useState, useRef, useEffect } from 'react';
 import { EchoTokenPurchaseProps } from '../types';
+import { useEcho } from '../hooks/useEcho';
 import { openPaymentFlow } from '../utils/security';
 import { Logo } from './Logo';
 
@@ -129,6 +129,7 @@ const CustomAmountInput = ({
 };
 
 export function EchoTokenPurchase({
+  amount = 100,
   onPurchaseComplete,
   onError,
   className = '',
@@ -296,320 +297,291 @@ export function EchoTokenPurchase({
   };
 
   // Modal with credit purchase card design
-  const Modal = () => {
-    return (
+  const Modal = () => (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '16px',
+      }}
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          closeModal();
+        }
+      }}
+    >
       <div
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb',
+          padding: '0',
+          width: '100%',
+          maxWidth: '450px',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          boxShadow:
+            '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          fontFamily: 'HelveticaNowDisplay, sans-serif',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '16px',
-        }}
-        onClick={e => {
-          if (e.target === e.currentTarget) {
-            closeModal();
-          }
+          flexDirection: 'column',
+          minHeight: '320px',
         }}
       >
+        {/* Header */}
+        <div style={{ padding: '24px 24px 0 24px', marginBottom: '24px' }}>
+          <h2
+            style={{
+              fontSize: '18px',
+              fontWeight: '500',
+              color: '#111827',
+              margin: 0,
+              fontFamily: 'HelveticaNowDisplay, sans-serif',
+            }}
+          >
+            Credits
+          </h2>
+        </div>
+
+        {/* Current Balance and Purchase Section */}
         <div
           style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            border: '1px solid #e5e7eb',
-            padding: '0',
-            width: '100%',
-            maxWidth: '450px',
-            maxHeight: '90vh',
-            overflow: 'hidden',
-            boxShadow:
-              '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            fontFamily: 'HelveticaNowDisplay, sans-serif',
+            marginBottom: '24px',
+            padding: '0 24px',
+            flex: '1 1 0%',
             display: 'flex',
             flexDirection: 'column',
-            minHeight: '320px',
           }}
         >
-          {/* Header */}
-          <div style={{ padding: '16px 16px 0 16px', marginBottom: '12px' }}>
-            <h2
-              style={{
-                fontSize: '18px',
-                fontWeight: '500',
-                color: '#111827',
-                margin: 0,
-                fontFamily: 'HelveticaNowDisplay, sans-serif',
-              }}
-            >
-              Credits
-            </h2>
-          </div>
+          {/* Free Tier Balance */}
+          {freeTierBalance && (
+            <div style={{ marginBottom: '20px' }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  margin: '0 0 4px 0',
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                Free Tier Available
+              </p>
+              <p
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '600',
+                  color: '#111827',
+                  margin: '0 0 8px 0',
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                {formatCurrency(calculateAvailableSpend())}
+              </p>
 
-          {/* Current Balance Section */}
-          <div style={{ padding: '0 16px', marginBottom: '16px' }}>
-            <p
-              style={{
-                fontSize: '14px',
-                color: '#6b7280',
-                margin: '0 0 4px 0',
-                fontFamily: 'HelveticaNowDisplay, sans-serif',
-              }}
-            >
-              Total Available
-            </p>
-            <p
-              style={{
-                fontSize: '28px',
-                fontWeight: '700',
-                color: '#111827',
-                margin: '0 0 12px 0',
-                fontFamily: 'HelveticaNowDisplay, sans-serif',
-              }}
-            >
-              {formatCurrency(
-                (balance?.balance || 0) + calculateAvailableSpend()
-              )}
-            </p>
-
-            {/* Breakdown */}
-            <div style={{ marginBottom: '8px' }}>
-              {/* Free Tier Breakdown */}
-              {freeTierBalance && calculateAvailableSpend() > 0 && (
-                <div style={{ marginBottom: '8px' }}>
+              {/* Usage Info */}
+              {freeTierBalance.userSpendInfo &&
+                freeTierBalance.userSpendInfo.spendLimit && (
                   <div
                     style={{
                       fontSize: '12px',
                       color: '#6b7280',
                       fontFamily: 'HelveticaNowDisplay, sans-serif',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      marginBottom: '4px',
                     }}
                   >
+                    <div style={{ marginBottom: '6px' }}>
+                      {formatCurrency(
+                        freeTierBalance.userSpendInfo.amountSpent
+                      )}{' '}
+                      of{' '}
+                      {formatCurrency(
+                        freeTierBalance.userSpendInfo.amountLeft +
+                          freeTierBalance.userSpendInfo.amountSpent
+                      )}{' '}
+                      used
+                    </div>
+                    {/* Progress Bar */}
                     <div
                       style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        backgroundColor: '#ef4444',
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: '#f3f4f6',
+                        borderRadius: '2px',
+                        overflow: 'hidden',
                       }}
-                    ></div>
-                    <span>
-                      {formatCurrency(calculateAvailableSpend())} Free Tier
-                      {freeTierBalance.userSpendInfo &&
-                        freeTierBalance.userSpendInfo.spendLimit && (
-                          <span style={{ color: '#9ca3af', marginLeft: '8px' }}>
-                            {formatCurrency(
-                              freeTierBalance.userSpendInfo.amountSpent
-                            )}{' '}
-                            of{' '}
-                            {formatCurrency(
-                              freeTierBalance.userSpendInfo.amountLeft +
-                                freeTierBalance.userSpendInfo.amountSpent
-                            )}{' '}
-                            used
-                          </span>
-                        )}
-                    </span>
-                  </div>
-
-                  {/* Usage Progress Bar */}
-                  {freeTierBalance.userSpendInfo &&
-                    freeTierBalance.userSpendInfo.spendLimit && (
+                    >
                       <div
                         style={{
-                          width: '100%',
-                          height: '4px',
-                          backgroundColor: '#e5e7eb',
-                          borderRadius: '2px',
-                          overflow: 'hidden',
-                          marginBottom: '4px',
-                          border: '1px solid #d1d5db',
+                          width: `${Math.min(100, (freeTierBalance.userSpendInfo.amountSpent / freeTierBalance.userSpendInfo.spendLimit) * 100)}%`,
+                          height: '100%',
+                          backgroundColor: '#dc2626',
                         }}
-                      >
-                        <div
-                          style={{
-                            width: `${Math.min(100, (freeTierBalance.userSpendInfo.amountSpent / (freeTierBalance.userSpendInfo.spendLimit || 1)) * 100)}%`,
-                            height: '100%',
-                            backgroundColor: '#dc2626',
-                          }}
-                        />
-                      </div>
-                    )}
-                </div>
-              )}
-
-              {/* Paid Credits Breakdown */}
-              {balance && balance.balance > 0 && (
-                <div
-                  style={{
-                    fontSize: '12px',
-                    color: '#6b7280',
-                    fontFamily: 'HelveticaNowDisplay, sans-serif',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: '#3b82f6',
-                    }}
-                  ></div>
-                  {formatCurrency(balance.balance)} Paid Credits
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Add Credits Section */}
-          <div
-            style={{
-              padding: '0 16px 16px 16px',
-              borderTop: '1px solid #f3f4f6',
-              paddingTop: '16px',
-            }}
-          >
-            <p
-              style={{
-                fontSize: '14px',
-                color: '#6b7280',
-                margin: '0 0 12px 0',
-                fontFamily: 'HelveticaNowDisplay, sans-serif',
-              }}
-            >
-              Add Credits
-            </p>
-
-            {!showCustomAmount ? (
-              <div
-                style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
-              >
-                <button
-                  onClick={() => handlePurchase(10)}
-                  disabled={isProcessing}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    backgroundColor: isProcessing ? '#9ca3af' : '#dc2626',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: isProcessing ? 'not-allowed' : 'pointer',
-                    transition: 'background-color 0.2s ease',
-                    fontFamily: 'HelveticaNowDisplay, sans-serif',
-                  }}
-                  onMouseEnter={e => {
-                    if (!isProcessing) {
-                      e.currentTarget.style.backgroundColor = '#b91c1c';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!isProcessing) {
-                      e.currentTarget.style.backgroundColor = '#dc2626';
-                    }
-                  }}
-                >
-                  {isProcessing ? 'Processing...' : 'Add $10 Credits'}
-                </button>
-                <button
-                  onClick={() => setShowCustomAmount(true)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 16px',
-                    fontSize: '14px',
-                    color: '#6b7280',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontFamily: 'HelveticaNowDisplay, sans-serif',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.color = '#111827';
-                    e.currentTarget.style.borderColor = '#d1d5db';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.color = '#6b7280';
-                    e.currentTarget.style.borderColor = '#e5e7eb';
-                  }}
-                >
-                  Choose different amount
-                </button>
-              </div>
-            ) : (
-              <CustomAmountInput
-                onAddCredits={handlePurchase}
-                onCancel={() => setShowCustomAmount(false)}
-                isProcessing={isProcessing}
-              />
-            )}
-          </div>
-
-          {/* Error Message */}
-          {purchaseError && (
-            <div
-              style={{
-                margin: '0 16px 12px 16px',
-                padding: '8px 12px',
-                backgroundColor: '#fee2e2',
-                color: '#dc2626',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontFamily: 'HelveticaNowDisplay, sans-serif',
-              }}
-            >
-              {purchaseError}
+                      />
+                    </div>
+                  </div>
+                )}
             </div>
           )}
 
-          {/* Close Button */}
+          {/* Paid Credits Balance */}
           <div
             style={{
-              padding: '12px 16px',
               display: 'flex',
-              justifyContent: 'flex-end',
-              borderTop: '1px solid #f3f4f6',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
           >
-            <button
-              onClick={closeModal}
+            <div style={{ flex: '1 1 0%', minWidth: '0' }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  margin: '0 0 4px 0',
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                Paid Credits Balance
+              </p>
+              <p
+                style={{
+                  fontSize: '30px',
+                  fontWeight: '700',
+                  color: '#111827',
+                  margin: 0,
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                {balance ? formatCurrency(balance.balance) : '$0.00'}
+              </p>
+            </div>
+            <div
               style={{
-                padding: '8px 16px',
-                backgroundColor: '#f3f4f6',
-                color: '#374151',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '14px',
-                cursor: 'pointer',
-                fontFamily: 'HelveticaNowDisplay, sans-serif',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#e5e7eb';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '12px',
               }}
             >
-              Close
-            </button>
+              {!showCustomAmount ? (
+                <>
+                  <button
+                    onClick={() => handlePurchase(10)}
+                    disabled={isProcessing}
+                    style={{
+                      padding: '10px 24px',
+                      backgroundColor: isProcessing ? '#9ca3af' : '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: isProcessing ? 'not-allowed' : 'pointer',
+                      transition: 'background-color 0.2s ease',
+                      fontFamily: 'HelveticaNowDisplay, sans-serif',
+                    }}
+                    onMouseEnter={e => {
+                      if (!isProcessing) {
+                        e.currentTarget.style.backgroundColor = '#b91c1c';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isProcessing) {
+                        e.currentTarget.style.backgroundColor = '#dc2626';
+                      }
+                    }}
+                  >
+                    {isProcessing ? 'Processing...' : 'Add $10 Credits'}
+                  </button>
+                  <button
+                    onClick={() => setShowCustomAmount(true)}
+                    style={{
+                      fontSize: '14px',
+                      color: '#6b7280',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      fontFamily: 'HelveticaNowDisplay, sans-serif',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.color = '#111827';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.color = '#6b7280';
+                    }}
+                  >
+                    Choose different amount
+                  </button>
+                </>
+              ) : (
+                <CustomAmountInput
+                  onAddCredits={handlePurchase}
+                  onCancel={() => setShowCustomAmount(false)}
+                  isProcessing={isProcessing}
+                />
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Error Message */}
+        {purchaseError && (
+          <div
+            style={{
+              margin: '0 24px 16px 24px',
+              padding: '8px 12px',
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontFamily: 'HelveticaNowDisplay, sans-serif',
+            }}
+          >
+            {purchaseError}
+          </div>
+        )}
+
+        {/* Close Button */}
+        <div
+          style={{
+            padding: '16px 24px 24px 24px',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: 'auto',
+          }}
+        >
+          <button
+            onClick={closeModal}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#f3f4f6',
+              color: '#374151',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              fontFamily: 'HelveticaNowDisplay, sans-serif',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#e5e7eb';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = '#f3f4f6';
+            }}
+          >
+            Close
+          </button>
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <>
