@@ -49,6 +49,11 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build TypeScript SDK first (dependency)
+        if: matrix.package.name == 'echo-react-sdk'
+        working-directory: ./echo-typescript-sdk
+        run: pnpm run build
+
       - name: Check package configuration
         working-directory: ${{ matrix.package.path }}
         run: |
