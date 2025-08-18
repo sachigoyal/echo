@@ -18,17 +18,12 @@ on:
       - '.github/workflows/test-publish.yml'
 
 jobs:
-  test-publish:
-    name: Test SDK publishing workflow
+  test-typescript-sdk:
+    name: Test TypeScript SDK publishing
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        package:
-          - name: echo-typescript-sdk
-            path: ./echo-typescript-sdk
-          - name: echo-react-sdk
-            path: ./echo-react-sdk
+    outputs:
+      typescript-ready: ${{ steps.final-check.outputs.ready }}
+      typescript-version: ${{ steps.get-version.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -49,21 +44,21 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build TypeScript SDK first (dependency)
-        if: matrix.package.name == 'echo-react-sdk'
+      - name: Get package info
+        id: get-version
         working-directory: ./echo-typescript-sdk
-        run: pnpm run build
-
-      - name: Check package configuration
-        working-directory: ${{ matrix.package.path }}
         run: |
-          echo "📦 Package: ${{ matrix.package.name }}"
+          echo "📦 Package: echo-typescript-sdk"
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           echo "Name: $PACKAGE_NAME"
           echo "Version: $PACKAGE_VERSION"
+          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
           echo "Private: $(node -p "require('./package.json').private || false")"
 
+      - name: Check package configuration
+        working-directory: ./echo-typescript-sdk
+        run: |
           # Check if package.json has required fields for publishing
           if [ "$(node -p "require('./package.json').private || false")" = "true" ]; then
             echo "❌ Package is marked as private - cannot publish"
@@ -83,29 +78,29 @@ jobs:
 
           echo "✅ Package configuration looks good"
 
-      - name: Build package
-        working-directory: ${{ matrix.package.path }}
+      - name: Build TypeScript SDK
+        working-directory: ./echo-typescript-sdk
         run: |
-          echo "🔨 Building ${{ matrix.package.name }}..."
+          echo "🔨 Building TypeScript SDK..."
           pnpm run build
           echo "✅ Build completed"
 
       - name: Run tests
-        working-directory: ${{ matrix.package.path }}
+        working-directory: ./echo-typescript-sdk
         run: |
-          echo "🧪 Running tests for ${{ matrix.package.name }}..."
+          echo "🧪 Running tests for TypeScript SDK..."
           pnpm run test
           echo "✅ Tests passed"
 
       - name: Type check
-        working-directory: ${{ matrix.package.path }}
+        working-directory: ./echo-typescript-sdk
         run: |
-          echo "🔍 Type checking ${{ matrix.package.name }}..."
+          echo "🔍 Type checking TypeScript SDK..."
           pnpm run type-check
           echo "✅ Type check passed"
 
       - name: Verify build output
-        working-directory: ${{ matrix.package.path }}
+        working-directory: ./echo-typescript-sdk
         run: |
           echo "📁 Checking build output..."
           if [ ! -d "dist" ]; then
@@ -133,21 +128,21 @@ jobs:
           echo "✅ Build output verification passed"
 
       - name: Test npm pack
-        working-directory: ${{ matrix.package.path }}
+        working-directory: ./echo-typescript-sdk
         run: |
           echo "📦 Testing npm pack..."
           npm pack --dry-run
           echo "✅ npm pack dry run successful"
 
       - name: Test npm publish (dry run)
-        working-directory: ${{ matrix.package.path }}
+        working-directory: ./echo-typescript-sdk
         run: |
           echo "🚀 Testing npm publish (dry run)..."
           npm publish --dry-run --access public
           echo "✅ npm publish dry run successful"
 
       - name: Check package size
-        working-directory: ${{ matrix.package.path }}
+        working-directory: ./echo-typescript-sdk
         run: |
           echo "📏 Checking package size..."
           TARBALL=$(npm pack --silent)
@@ -160,7 +155,7 @@ jobs:
           echo "✅ Package size check completed"
 
       - name: Simulate version check
-        working-directory: ${{ matrix.package.path }}
+        working-directory: ./echo-typescript-sdk
         run: |
           echo "🔍 Simulating version check against npm registry..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -173,21 +168,195 @@ jobs:
             echo "✅ Version $PACKAGE_VERSION of $PACKAGE_NAME does not exist - would be published"
           fi
 
+      - name: Final readiness check
+        id: final-check
+        run: |
+          echo "ready=true" >> $GITHUB_OUTPUT
+          echo "✅ TypeScript SDK is ready for publishing"
+
+  test-react-sdk:
+    name: Test React SDK publishing
+    runs-on: ubuntu-latest
+    needs: test-typescript-sdk
+    if: always()
+    outputs:
+      react-ready: ${{ steps.final-check.outputs.ready }}
+      react-version: ${{ steps.get-version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          registry-url: https://registry.npmjs.org
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build TypeScript SDK (dependency)
+        working-directory: ./echo-typescript-sdk
+        run: |
+          echo "🔨 Building TypeScript SDK for React SDK dependency..."
+          pnpm run build
+          echo "✅ TypeScript SDK built"
+
+      - name: Get package info
+        id: get-version
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "📦 Package: echo-react-sdk"
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "Name: $PACKAGE_NAME"
+          echo "Version: $PACKAGE_VERSION"
+          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          echo "Private: $(node -p "require('./package.json').private || false")"
+
+      - name: Check package configuration
+        working-directory: ./echo-react-sdk
+        run: |
+          # Check if package.json has required fields for publishing
+          if [ "$(node -p "require('./package.json').private || false")" = "true" ]; then
+            echo "❌ Package is marked as private - cannot publish"
+            exit 1
+          fi
+
+          # Check required fields
+          if [ -z "$(node -p "require('./package.json').name")" ]; then
+            echo "❌ Package name is missing"
+            exit 1
+          fi
+
+          if [ -z "$(node -p "require('./package.json').version")" ]; then
+            echo "❌ Package version is missing"
+            exit 1
+          fi
+
+          echo "✅ Package configuration looks good"
+
+      - name: Build React SDK
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "🔨 Building React SDK..."
+          pnpm run build
+          echo "✅ Build completed"
+
+      - name: Run tests
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "🧪 Running tests for React SDK..."
+          pnpm run test
+          echo "✅ Tests passed"
+
+      - name: Type check
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "🔍 Type checking React SDK..."
+          pnpm run type-check
+          echo "✅ Type check passed"
+
+      - name: Verify build output
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "📁 Checking build output..."
+          if [ ! -d "dist" ]; then
+            echo "❌ dist directory not found"
+            exit 1
+          fi
+
+          echo "📋 Contents of dist directory:"
+          ls -la dist/
+
+          # Check for main files
+          MAIN_FILE=$(node -p "require('./package.json').main")
+          TYPES_FILE=$(node -p "require('./package.json').types")
+
+          if [ ! -z "$MAIN_FILE" ] && [ ! -f "$MAIN_FILE" ]; then
+            echo "❌ Main file not found: $MAIN_FILE"
+            exit 1
+          fi
+
+          if [ ! -z "$TYPES_FILE" ] && [ ! -f "$TYPES_FILE" ]; then
+            echo "❌ Types file not found: $TYPES_FILE"
+            exit 1
+          fi
+
+          echo "✅ Build output verification passed"
+
+      - name: Test npm pack
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "📦 Testing npm pack..."
+          npm pack --dry-run
+          echo "✅ npm pack dry run successful"
+
+      - name: Test npm publish (dry run)
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "🚀 Testing npm publish (dry run)..."
+          npm publish --dry-run --access public
+          echo "✅ npm publish dry run successful"
+
+      - name: Check package size
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "📏 Checking package size..."
+          TARBALL=$(npm pack --silent)
+          SIZE=$(ls -lh "$TARBALL" | awk '{print $5}')
+          echo "Package size: $SIZE"
+
+          # Clean up tarball
+          rm "$TARBALL"
+
+          echo "✅ Package size check completed"
+
+      - name: Simulate version check
+        working-directory: ./echo-react-sdk
+        run: |
+          echo "🔍 Simulating version check against npm registry..."
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version 2>/dev/null; then
+            echo "⚠️  Version $PACKAGE_VERSION of $PACKAGE_NAME already exists on npm"
+            echo "This would be skipped in the real publish workflow"
+          else
+            echo "✅ Version $PACKAGE_VERSION of $PACKAGE_NAME does not exist - would be published"
+          fi
+
+      - name: Final readiness check
+        id: final-check
+        run: |
+          echo "ready=true" >> $GITHUB_OUTPUT
+          echo "✅ React SDK is ready for publishing"
+
   summary:
     name: Publishing test summary
     runs-on: ubuntu-latest
-    needs: test-publish
+    needs: [test-typescript-sdk, test-react-sdk]
     if: always()
 
     steps:
       - name: Test results summary
         run: |
-          if [ "${{ needs.test-publish.result }}" = "success" ]; then
+          TYPESCRIPT_RESULT="${{ needs.test-typescript-sdk.result }}"
+          REACT_RESULT="${{ needs.test-react-sdk.result }}"
+
+          if [ "$TYPESCRIPT_RESULT" = "success" ] && [ "$REACT_RESULT" = "success" ]; then
             echo "🎉 All publishing tests passed!"
             echo ""
             echo "✅ Both SDK packages are ready for publishing:"
-            echo "  - @merit-systems/echo-typescript-sdk"
-            echo "  - @merit-systems/echo-react-sdk"
+            echo "  - @merit-systems/echo-typescript-sdk (v${{ needs.test-typescript-sdk.outputs.typescript-version }})"
+            echo "  - @merit-systems/echo-react-sdk (v${{ needs.test-react-sdk.outputs.react-version }})"
             echo ""
             echo "The packages can be safely published using:"
             echo "  1. Push to production branch (recommended)"
@@ -199,6 +368,13 @@ jobs:
             echo "  • GitHub Action will auto-publish + create tags"
           else
             echo "❌ Publishing tests failed!"
+            echo ""
+            if [ "$TYPESCRIPT_RESULT" != "success" ]; then
+              echo "❌ TypeScript SDK tests failed"
+            fi
+            if [ "$REACT_RESULT" != "success" ]; then
+              echo "❌ React SDK tests failed"
+            fi
             echo ""
             echo "Please check the workflow logs and fix any issues before attempting to publish."
             exit 1
