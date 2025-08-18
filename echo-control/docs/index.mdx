@@ -1,8 +1,59 @@
 ---
-title: Welcome to Echo Documentation
-description: Getting started with Echo
+title: Introduction
 ---
 
-# Welcome to Echo Documentation
+# What is Echo?
 
-This is the documentation for Echo - the LLM application platform.
+Echo is a service and set of client libraries that provides authentication and 
+usage-based billing for expensive AI resources. Install in your app and ship your 
+monetized AI application without the risk massive OpenAI bills.
+
+Select your app's architecture to get started or view the example application 
+or repository with the buttons below.
+
+<ExampleCards 
+  cards={[
+    {
+      title: 'React',
+      icon: (
+        <img 
+          src="/icons/react.svg" 
+          alt="React" 
+          width={48}
+          height={48}
+          className="w-12 h-12"
+        />
+      ),
+      docsLink: '/docs/getting-started/react',
+      liveExampleLink: 'https://example.com/react-demo',
+      githubLink: 'https://github.com/Merit-Systems/echo-react-example',
+    },
+    {
+      title: 'Next.js',
+      icon: (
+        <img 
+          src="/icons/nextjs.svg" 
+          alt="Next.js" 
+          width={48}
+          height={48}
+          className="w-12 h-12"
+        />
+      ),
+      docsLink: '/docs/getting-started/next-js',
+      liveExampleLink: 'https://example.com/nextjs-demo',
+      githubLink: 'https://github.com/Merit-Systems/echo-nextjs-example',
+    },
+    {
+      title: 'CLI',
+      icon: (
+        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-xl">{'>'}</span>
+        </div>
+      ),
+      docsLink: '/docs/getting-started/cli',
+      githubLink: 'https://github.com/Merit-Systems/echo-typescript-sdk',
+    },
+  ]}
+/>
+
+If you're an app.
