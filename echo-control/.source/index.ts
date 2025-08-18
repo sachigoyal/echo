@@ -1,5 +1,5 @@
 // @ts-nocheck -- skip type checking
-import * as docs_0 from '../docs/index.mdx?collection=docs&hash=1755538162905';
+import * as docs_0 from '../docs/index.mdx?collection=docs&hash=1755538253964';
 import { _runtime } from 'fumadocs-mdx';
 import * as _source from '../source.config';
 export const docs = _runtime.docs<typeof _source.docs>(
