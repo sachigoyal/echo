@@ -12,13 +12,14 @@ on:
         type: boolean
 
 jobs:
-  publish-typescript-sdk:
-    name: Publish TypeScript SDK
+  publish:
+    name: Build and publish SDK packages
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/production' || github.event_name == 'workflow_dispatch'
     outputs:
-      typescript-published: ${{ steps.check-version.outputs.should_publish }}
-      typescript-version: ${{ steps.get-version.outputs.version }}
+      typescript-published: ${{ steps.publish-typescript.outputs.published }}
+      react-published: ${{ steps.publish-react.outputs.published }}
+      version: ${{ steps.get-version.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -39,29 +40,35 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Get package version
+      - name: Get version from TypeScript SDK
         id: get-version
         working-directory: ./echo-typescript-sdk
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
-          echo "Package version: $PACKAGE_VERSION"
+          echo "📦 Release version: $PACKAGE_VERSION"
 
+      # TypeScript SDK
       - name: Build TypeScript SDK
         working-directory: ./echo-typescript-sdk
-        run: pnpm run build
+        run: |
+          echo "🔨 Building TypeScript SDK..."
+          pnpm run build
+          echo "✅ TypeScript SDK built"
 
-      - name: Run tests
+      - name: Test TypeScript SDK
         working-directory: ./echo-typescript-sdk
-        run: pnpm run test
+        run: |
+          echo "🧪 Testing TypeScript SDK..."
+          pnpm run test
+          pnpm run type-check
+          echo "✅ TypeScript SDK tests passed"
 
-      - name: Type check
+      - name: Check and publish TypeScript SDK
+        id: publish-typescript
         working-directory: ./echo-typescript-sdk
-        run: pnpm run type-check
-
-      - name: Check if package already exists on npm
-        working-directory: ./echo-typescript-sdk
-        id: check-version
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
@@ -70,82 +77,42 @@ jobs:
           if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version 2>/dev/null; then
             if [ "$FORCE_PUBLISH" = "true" ]; then
               echo "⚠️  Version $PACKAGE_VERSION of $PACKAGE_NAME already exists on npm, but force_publish is enabled"
-              echo "should_publish=true" >> $GITHUB_OUTPUT
+              echo "🚀 Publishing $PACKAGE_NAME to npm..."
+              npm publish --access public
+              echo "published=true" >> $GITHUB_OUTPUT
+              echo "✅ Successfully published $PACKAGE_NAME"
             else
-              echo "❌ Version $PACKAGE_VERSION of $PACKAGE_NAME already exists on npm"
-              echo "should_publish=false" >> $GITHUB_OUTPUT
+              echo "❌ Version $PACKAGE_VERSION of $PACKAGE_NAME already exists on npm - skipping"
+              echo "published=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "✅ Version $PACKAGE_VERSION of $PACKAGE_NAME does not exist, proceeding with publish"
-            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "🚀 Publishing $PACKAGE_NAME to npm..."
+            npm publish --access public
+            echo "published=true" >> $GITHUB_OUTPUT
+            echo "✅ Successfully published $PACKAGE_NAME"
           fi
 
-      - name: Publish TypeScript SDK to npm
-        if: steps.check-version.outputs.should_publish == 'true'
-        working-directory: ./echo-typescript-sdk
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          echo "🚀 Publishing $PACKAGE_NAME to npm..."
-          npm publish --access public
-          echo "✅ Successfully published $PACKAGE_NAME"
-
-  publish-react-sdk:
-    name: Publish React SDK
-    runs-on: ubuntu-latest
-    needs: publish-typescript-sdk
-    if: always() && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/production' || github.event_name == 'workflow_dispatch')
-    outputs:
-      react-published: ${{ steps.check-version.outputs.should_publish }}
-      react-version: ${{ steps.get-version.outputs.version }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-          registry-url: https://registry.npmjs.org
-
-      - name: Install workspace dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build TypeScript SDK (dependency)
-        working-directory: ./echo-typescript-sdk
-        run: pnpm run build
-
-      - name: Get package version
-        id: get-version
-        working-directory: ./echo-react-sdk
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
-          echo "Package version: $PACKAGE_VERSION"
-
+      # React SDK
       - name: Build React SDK
         working-directory: ./echo-react-sdk
-        run: pnpm run build
+        run: |
+          echo "🔨 Building React SDK..."
+          pnpm run build
+          echo "✅ React SDK built"
 
-      - name: Run tests
+      - name: Test React SDK
         working-directory: ./echo-react-sdk
-        run: pnpm run test
+        run: |
+          echo "🧪 Testing React SDK..."
+          pnpm run test
+          pnpm run type-check
+          echo "✅ React SDK tests passed"
 
-      - name: Type check
+      - name: Check and publish React SDK
+        id: publish-react
         working-directory: ./echo-react-sdk
-        run: pnpm run type-check
-
-      - name: Check if package already exists on npm
-        working-directory: ./echo-react-sdk
-        id: check-version
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
@@ -154,32 +121,26 @@ jobs:
           if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version 2>/dev/null; then
             if [ "$FORCE_PUBLISH" = "true" ]; then
               echo "⚠️  Version $PACKAGE_VERSION of $PACKAGE_NAME already exists on npm, but force_publish is enabled"
-              echo "should_publish=true" >> $GITHUB_OUTPUT
+              echo "🚀 Publishing $PACKAGE_NAME to npm..."
+              npm publish --access public
+              echo "published=true" >> $GITHUB_OUTPUT
+              echo "✅ Successfully published $PACKAGE_NAME"
             else
-              echo "❌ Version $PACKAGE_VERSION of $PACKAGE_NAME already exists on npm"
-              echo "should_publish=false" >> $GITHUB_OUTPUT
+              echo "❌ Version $PACKAGE_VERSION of $PACKAGE_NAME already exists on npm - skipping"
+              echo "published=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "✅ Version $PACKAGE_VERSION of $PACKAGE_NAME does not exist, proceeding with publish"
-            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "🚀 Publishing $PACKAGE_NAME to npm..."
+            npm publish --access public
+            echo "published=true" >> $GITHUB_OUTPUT
+            echo "✅ Successfully published $PACKAGE_NAME"
           fi
-
-      - name: Publish React SDK to npm
-        if: steps.check-version.outputs.should_publish == 'true'
-        working-directory: ./echo-react-sdk
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          echo "🚀 Publishing $PACKAGE_NAME to npm..."
-          npm publish --access public
-          echo "✅ Successfully published $PACKAGE_NAME"
 
   create-tag:
     name: Create version tag
     runs-on: ubuntu-latest
-    needs: [publish-typescript-sdk, publish-react-sdk]
-    if: (needs.publish-typescript-sdk.outputs.typescript-published == 'true' || needs.publish-react-sdk.outputs.react-published == 'true') && github.ref == 'refs/heads/production' && !startsWith(github.ref, 'refs/tags/')
+    needs: publish
+    if: (needs.publish.outputs.typescript-published == 'true' || needs.publish.outputs.react-published == 'true') && github.ref == 'refs/heads/production' && !startsWith(github.ref, 'refs/tags/')
 
     steps:
       - name: Checkout code
@@ -188,10 +149,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get version from TypeScript SDK
+      - name: Get version for tag
         id: get-version
         run: |
-          VERSION=$(node -p "require('./echo-typescript-sdk/package.json').version")
+          VERSION="${{ needs.publish.outputs.version }}"
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
           echo "Version to tag: v$VERSION"
 
