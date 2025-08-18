@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { useEffect } from 'react';
 
 interface UseRegisterReferralCodeOptions {
   appId: string;
@@ -27,7 +27,10 @@ export function useRegisterReferralCode({
 
       if (!referralCode) return;
 
-      const result = await client.registerReferralCode(appId, referralCode);
+      const result = await client.users.registerReferralCode(
+        appId,
+        referralCode
+      );
 
       if (!result) return;
 

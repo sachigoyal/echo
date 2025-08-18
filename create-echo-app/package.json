@@ -10,6 +10,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "pnpm run type-check && echo 'All tests passed!'",
+    "test:unit": "pnpm run type-check && echo 'All tests passed!'",
     "lint": "pnpx eslint src/**/*.ts",
     "lint:fix": "pnpx eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",

@@ -1,5 +1,9 @@
 import type { FreeBalance } from '@merit-systems/echo-typescript-sdk';
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import {
+  EchoClient,
+  getUserFriendlyMessage,
+  parseEchoError,
+} from '@merit-systems/echo-typescript-sdk';
 import { useCallback, useEffect, useState } from 'react';
 import { EchoBalance } from '../types';
 
@@ -19,18 +23,18 @@ export function useEchoBalance(echoClient: EchoClient | null, appId: string) {
     setIsLoading(true);
     try {
       const [balanceResponse, freeTierResponse] = await Promise.all([
-        echoClient.getBalance(),
-        echoClient.getFreeBalance(appId),
+        echoClient.balance.getBalance(),
+        echoClient.balance.getFreeBalance(appId),
       ]);
 
       setBalance(balanceResponse);
       setFreeTierBalance(freeTierResponse);
       setError(null);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to refresh balance';
-      setError(errorMessage);
-      throw new Error(errorMessage);
+      const echoError = parseEchoError(err, 'refreshing balance');
+      const userFriendlyMessage = getUserFriendlyMessage(echoError);
+      setError(userFriendlyMessage);
+      throw echoError;
     } finally {
       setIsLoading(false);
     }

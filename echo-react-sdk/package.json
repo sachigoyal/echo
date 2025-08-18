@@ -23,6 +23,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write src",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "test:ui": "vitest --ui",
     "test:security": "vitest run --config vitest.security.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
@@ -56,7 +57,7 @@
     }
   },
   "dependencies": {
-    "@merit-systems/echo-typescript-sdk": "^1.0.1",
+    "@merit-systems/echo-typescript-sdk": "workspace:*",
     "dompurify": "^3.2.6",
     "oidc-client-ts": "^3.2.1",
     "react-oidc-context": "^3.3.0"

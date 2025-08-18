@@ -1,8 +1,8 @@
 import { FreeBalance } from '@merit-systems/echo-typescript-sdk';
+import { User } from 'oidc-client-ts';
 import { ReactNode } from 'react';
 import { EchoContext, EchoContextValue } from '../components/EchoProvider';
 import { EchoBalance, EchoUser } from '../types';
-import { User } from 'oidc-client-ts';
 // import { User } from 'oidc-client-ts';
 
 // Mock data for Storybook
@@ -52,6 +52,7 @@ const createMockContext = (
   isLoading: false,
   token: 'mock-token',
   error: null,
+  echoClient: null,
   signIn: async () => {
     console.log('Mock sign in called');
   },

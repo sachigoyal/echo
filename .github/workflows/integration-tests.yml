@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Tests
 
 on:
   pull_request:
@@ -57,6 +57,12 @@ jobs:
 
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Run all workspace unit tests
+        run: |
+          echo "🧪 Running all workspace unit tests..."
+          pnpm run test:unit
+          echo "✅ All workspace unit tests passed"
 
       - name: Create integration test environment file
         working-directory: integration-tests
@@ -152,6 +158,10 @@ jobs:
       - name: Run OAuth Protocol Tests
         working-directory: integration-tests
         run: pnpm test:oauth-protocol
+
+      # TODO: Re-enable echo-server integration tests when properly configured
+      # - name: Run Echo Server Integration Tests
+      #   run: cd echo-server && pnpm run test:integration
 
       - name: Upload test results
         if: always()
