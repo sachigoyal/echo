@@ -3,6 +3,7 @@ import { AuroraText } from '@/components/magicui/aurora-text';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Section } from '../lib/section';
+import Link from 'next/link';
 
 const dashedBorder = 'border-dashed border-border';
 
@@ -33,9 +34,11 @@ export const Hero = () => {
           markup, we handle the rest.
         </p>
         <div className={cn('flex justify-center gap-2')}>
-          <Button size="lg" variant="turbo">
-            Create an App
-          </Button>
+          <Link href="/apps/create">
+            <Button size="lg" variant="turbo">
+              Create an App
+            </Button>
+          </Link>
           <Button size="lg" variant="outline">
             Learn More
           </Button>
