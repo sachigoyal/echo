@@ -65,7 +65,30 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     });
   }, [apiUrl, token]);
 
-  // Business logic hooks - one line each!
+  // Silent renew on focus
+  useEffect(() => {
+    const run = async () => {
+      const exp = auth.user?.expires_at ?? 0;
+      const now = Math.floor(Date.now() / 1000);
+      if (exp - now < 180) {
+        try {
+          await auth.signinSilent();
+        } catch {
+          console.error('Error during silent renew');
+        }
+      }
+    };
+    const onFocus = () => {
+      if (!document.hidden) void run();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
+  }, [auth.user?.expires_at, auth]);
+
   const {
     balance,
     freeTierBalance,
@@ -73,6 +96,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     error: balanceError,
     isLoading: balanceLoading,
   } = useEchoBalance(echoClient, config.appId);
+
   const {
     createPaymentLink,
     error: paymentError,
@@ -113,8 +137,6 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     clearAuth,
   };
 
-  console.log('echo', contextValue);
-
   return (
     <EchoContext.Provider value={contextValue}>{children}</EchoContext.Provider>
   );
@@ -141,7 +163,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       authority: apiUrl,
       client_id: config.appId,
       redirect_uri: config.redirectUri || window.location.origin,
-      scope: config.scope || 'llm:invoke offline_access',
+      scope: config.scope || 'openid llm:invoke offline_access',
       silentRequestTimeoutInSeconds: 10,
 
       // Silent renewal configuration
