@@ -366,8 +366,8 @@ importers:
   echo-react-sdk:
     dependencies:
       '@merit-systems/echo-typescript-sdk':
-        specifier: workspace:*
-        version: link:../echo-typescript-sdk
+        specifier: ^1.0.2
+        version: 1.0.2
       dompurify:
         specifier: ^3.2.6
         version: 3.2.6
@@ -1758,8 +1758,8 @@ packages:
       openai:
         optional: true
 
-  '@merit-systems/echo-typescript-sdk@1.0.1':
-    resolution: {integrity: sha512-NU2aFI1D5i2Sz8Za6FC40uwTxehLT5WsR6cnfm+G3lZlMQJh0NahRAiesb7xrK9OJWZnp/98CafMgxSzHCcKFQ==}
+  '@merit-systems/echo-typescript-sdk@1.0.2':
+    resolution: {integrity: sha512-ECQ2/KfGe3V5krcEzo/ycmXPOwrccT1vuGb0wmA/Is39CMiC4zaaTZ3lGvAO1NG2fX7GPkcnl+fr2VxbMeYYpA==}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     resolution: {integrity: sha512-whiUMPlAOrVGmX8aKYVPvlKyG4CpQXiNNyt74vE1xb5sPvmx5oA7B/kOi/JdBvhGQq97U1/AVdXEdk2zkP8qyA==}
@@ -10529,7 +10529,7 @@ snapshots:
 
   '@merit-systems/echo-react-sdk@1.0.1(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@merit-systems/echo-typescript-sdk': 1.0.1
+      '@merit-systems/echo-typescript-sdk': 1.0.2
       dompurify: 3.2.6
       oidc-client-ts: 3.3.0
       react: 19.1.0
@@ -10541,7 +10541,7 @@ snapshots:
 
   '@merit-systems/echo-react-sdk@file:echo-react-sdk(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@merit-systems/echo-typescript-sdk': link:echo-typescript-sdk
+      '@merit-systems/echo-typescript-sdk': 1.0.2
       dompurify: 3.2.6
       oidc-client-ts: 3.3.0
       react: 19.1.0
@@ -10549,10 +10549,13 @@ snapshots:
       react-oidc-context: 3.3.0(oidc-client-ts@3.3.0)(react@19.1.0)
     optionalDependencies:
       openai: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
+    transitivePeerDependencies:
+      - debug
 
-  '@merit-systems/echo-typescript-sdk@1.0.1':
+  '@merit-systems/echo-typescript-sdk@1.0.2':
     dependencies:
       axios: 1.10.0
+      axios-auth-refresh: 3.3.6(axios@1.10.0)
     transitivePeerDependencies:
       - debug
 
