@@ -155,12 +155,12 @@ jobs:
         working-directory: integration-tests
         run: pnpm test:echo-data-server
 
-      - name: Run Echo Server Integration Tests
-        run: pnpm run test:integration:echo-server
-
       - name: Run OAuth Protocol Tests
         working-directory: integration-tests
         run: pnpm test:oauth-protocol
+
+      - name: Run Echo Server Integration Tests
+        run: pnpm run test:integration
 
       - name: Upload test results
         if: always()

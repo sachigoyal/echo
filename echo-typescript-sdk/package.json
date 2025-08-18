@@ -19,6 +19,7 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write src",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "test:watch": "vitest --watch",
     "prepublishOnly": "pnpm run build"
   },
