@@ -11,7 +11,6 @@ on:
       - 'pnpm-lock.yaml'
       - 'package.json'
   pull_request:
-    branches: [master]
     paths:
       - 'echo-typescript-sdk/**'
       - 'echo-react-sdk/**'
