@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-react-sdk",
-  "version": "1.0.2",
+  "version": "1.0.6",
   "description": "React SDK for Echo OAuth2 + PKCE authentication and token management",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,12 +23,15 @@
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write src",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "test:ui": "vitest --ui",
     "test:security": "vitest run --config vitest.security.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:coverage": "vitest run --coverage",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "publish:test": "npm publish --access public --dry-run",
+    "publish:real": "npm publish --access public"
   },
   "keywords": [
     "react",
@@ -44,9 +47,9 @@
   "author": "Merit Systems",
   "license": "MIT",
   "peerDependencies": {
+    "openai": "^4.0.0 || ^5.0.0",
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "openai": "^4.0.0 || ^5.0.0"
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "peerDependenciesMeta": {
     "openai": {
@@ -54,9 +57,10 @@
     }
   },
   "dependencies": {
-    "@merit-systems/echo-typescript-sdk": "^1.0.1",
+    "@merit-systems/echo-typescript-sdk": "workspace:*",
     "dompurify": "^3.2.6",
-    "oidc-client-ts": "^3.2.1"
+    "oidc-client-ts": "^3.2.1",
+    "react-oidc-context": "^3.3.0"
   },
   "devDependencies": {
     "@storybook/addon-docs": "^9.0.10",
@@ -79,6 +83,7 @@
     "jsdom": "^26.0.0",
     "jsonwebtoken": "^9.0.2",
     "msw": "^2.6.4",
+    "openai": "^4.0.0 || ^5.0.0",
     "prettier": "^3.3.3",
     "storybook": "^9.0.10",
     "terser": "^5.41.0",
@@ -86,7 +91,6 @@
     "undici": "^6.19.8",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^4.3.0",
-    "vitest": "^3.2.3",
-    "openai": "^4.0.0 || ^5.0.0"
+    "vitest": "^3.2.3"
   }
 }

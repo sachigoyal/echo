@@ -4,15 +4,16 @@ export { EchoTokenPurchase } from './components/EchoTokenPurchase';
 export { Logo } from './components/Logo';
 
 export { useEcho } from './hooks/useEcho';
+export { useEchoClient } from './hooks/useEchoClient';
 // OpenAI integration hook
 export { useEchoOpenAI } from './hooks/useEchoOpenAI';
 
 export type {
-  EchoConfig,
-  EchoUser,
   EchoBalance,
+  EchoConfig,
   EchoSignInProps,
   EchoTokenPurchaseProps,
+  EchoUser,
 } from './types';
 
 export type { EchoContextValue } from './components/EchoProvider';

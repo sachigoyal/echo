@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { EchoSignInProps } from '../types';
 import { useEcho } from '../hooks/useEcho';
+import { EchoSignInProps } from '../types';
 import { sanitizeText } from '../utils/security';
 import { Logo } from './Logo';
 
@@ -83,7 +83,7 @@ export function EchoSignIn({
                 ? '#f1f5f9'
                 : '#ffffff',
             color: isLoading ? '#9ca3af' : '#09090b',
-            border: '1px solid #e5e7eb',
+            border: '1px solid #e2e8f0',
             borderRadius: '8px',
             cursor: isLoading ? 'not-allowed' : 'pointer',
             fontSize: '14px',

@@ -17,7 +17,8 @@
     "lint": "pnpx eslint src/**/*.ts",
     "lint:fix": "pnpx eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "echo 'No tests for this package'",
+    "test:unit": "echo 'No tests for this package'",
     "test:watch": "vitest --watch",
     "prepublishOnly": "pnpm run build"
   },
