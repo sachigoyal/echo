@@ -1,6 +1,6 @@
 import {
   EchoClient,
-  OidcTokenProvider,
+  OAuthTokenProvider,
 } from '@merit-systems/echo-typescript-sdk';
 import { useEffect, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
@@ -23,16 +23,16 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
       return;
     }
 
-    const tokenProvider = new OidcTokenProvider(
-      () => Promise.resolve(auth.user?.access_token || null),
-      async () => {
+    const tokenProvider = new OAuthTokenProvider({
+      getTokenFn: () => Promise.resolve(auth.user?.access_token || null),
+      refreshTokenFn: async () => {
         await auth.signinSilent();
       },
-      error => {
+      onRefreshErrorFn: (error: Error) => {
         console.error('Token refresh failed:', error);
         auth.signoutSilent();
-      }
-    );
+      },
+    });
 
     const newClient = new EchoClient({
       baseUrl: apiUrl,
@@ -41,9 +41,7 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
 
     setClient(newClient);
 
-    // Cleanup function
     return () => {
-      // If EchoClient has cleanup methods, call them here in the future
       setClient(null);
     };
   }, [apiUrl, auth.user?.access_token, auth.signinSilent, auth.signoutSilent]);

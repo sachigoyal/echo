@@ -38,14 +38,24 @@ export class ApiKeyTokenProvider implements TokenProvider {
 }
 
 /**
- * Token provider for OIDC-based authentication (like from React SDK)
+ * Token provider for OAuth-based authentication (like from React SDK)
  */
-export class OidcTokenProvider implements TokenProvider {
-  constructor(
-    private getTokenFn: () => Promise<string | null>,
-    private refreshTokenFn: () => Promise<void>,
-    private onRefreshErrorFn?: (error: Error) => void
-  ) {}
+interface OAuthTokenProviderConfig {
+  getTokenFn: () => Promise<string | null>;
+  refreshTokenFn: () => Promise<void>;
+  onRefreshErrorFn?: (error: Error) => void;
+}
+
+export class OAuthTokenProvider implements TokenProvider {
+  private getTokenFn: () => Promise<string | null>;
+  private refreshTokenFn: () => Promise<void>;
+  private onRefreshErrorFn: ((error: Error) => void) | undefined;
+
+  constructor(config: OAuthTokenProviderConfig) {
+    this.getTokenFn = config.getTokenFn;
+    this.refreshTokenFn = config.refreshTokenFn;
+    this.onRefreshErrorFn = config.onRefreshErrorFn;
+  }
 
   async getAccessToken(): Promise<string | null> {
     return this.getTokenFn();

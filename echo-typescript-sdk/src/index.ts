@@ -1,4 +1,4 @@
-export { ApiKeyTokenProvider, OidcTokenProvider } from './auth/token-provider';
+export { ApiKeyTokenProvider, OAuthTokenProvider } from './auth/token-provider';
 export type { TokenProvider } from './auth/token-provider';
 export { EchoClient } from './client';
 export type { EchoClientOptions } from './client';
