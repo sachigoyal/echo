@@ -1,7 +1,6 @@
-import type { FreeBalance } from '@merit-systems/echo-typescript-sdk';
-import {
+import type {
   EchoClient,
-  OidcTokenProvider,
+  FreeBalance,
 } from '@merit-systems/echo-typescript-sdk';
 import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import {
@@ -9,7 +8,6 @@ import {
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useState,
 } from 'react';
 import {
@@ -18,6 +16,7 @@ import {
   useAuth,
 } from 'react-oidc-context';
 import { useEchoBalance } from '../hooks/useEchoBalance';
+import { useEchoClient } from '../hooks/useEchoClient';
 import { useEchoPayments } from '../hooks/useEchoPayments';
 import { EchoBalance, EchoConfig, EchoUser } from '../types';
 
@@ -31,6 +30,7 @@ export interface EchoContextValue {
   isLoading: boolean;
   error: string | null;
   token: string | null;
+  echoClient: EchoClient | null;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshBalance: () => Promise<void>;
@@ -59,29 +59,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   const apiUrl = config.apiUrl || 'https://echo.merit.systems';
   const token = auth.user?.access_token || null;
 
-  // Create EchoClient for business logic
-  const echoClient = useMemo(() => {
-    if (!auth.user) return null;
-
-    const tokenProvider = new OidcTokenProvider(
-      async () => auth.user?.access_token || null,
-      async () => {
-        await auth.signinSilent();
-      },
-      error => {
-        console.error('Token refresh failed:', error);
-        auth.signoutSilent();
-      }
-    );
-
-    return new EchoClient({
-      baseUrl: apiUrl,
-      tokenProvider,
-    });
-  }, [apiUrl, auth.user, auth.signinSilent]);
-
-  // Note: Token refresh is now handled automatically by axios-auth-refresh
-  // in the EchoClient via the OidcTokenProvider
+  const echoClient = useEchoClient({ apiUrl });
 
   const {
     balance,
@@ -123,6 +101,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     isLoading: combinedLoading,
     error: combinedError,
     token,
+    echoClient,
     signIn: auth.signinRedirect,
     signOut: clearAuth,
     refreshBalance,

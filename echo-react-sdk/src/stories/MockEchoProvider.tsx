@@ -52,6 +52,7 @@ const createMockContext = (
   isLoading: false,
   token: 'mock-token',
   error: null,
+  echoClient: null,
   signIn: async () => {
     console.log('Mock sign in called');
   },
