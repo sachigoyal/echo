@@ -1,4 +1,8 @@
 import type { NextConfig } from 'next';
+import { createMDX } from 'fumadocs-mdx/next';
+
+const withMDX = createMDX();
+
 // @ts-ignore - No type declarations available for this package
 import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
 
@@ -58,4 +62,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);
