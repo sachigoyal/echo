@@ -29,14 +29,14 @@ const purify = (() => {
   } else {
     // Node.js environment (testing) - import JSDOM dynamically to avoid issues
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { JSDOM } = require('jsdom');
       const { window } = new JSDOM('');
       return DOMPurify(window);
     } catch {
       // Fallback if JSDOM is not available
       return {
-        sanitize: (dirty: string) => dirty.replace(/<[^>]*>/g, ''),
+        sanitize: (dirty: string) =>
+          String(dirty || '').replace(/<[^>]*>/g, ''),
       } as typeof DOMPurify;
     }
   }
@@ -69,9 +69,12 @@ const purify = (() => {
 export function sanitizeText(input: string | null | undefined): string {
   if (!input) return '';
 
+  // Ensure we have a string to work with
+  const stringInput = String(input);
+
   try {
     // Use properly initialized DOMPurify
-    let sanitized = purify.sanitize(input, {
+    let sanitized = purify.sanitize(stringInput, {
       ALLOWED_TAGS: [], // No HTML tags allowed
       ALLOWED_ATTR: [], // No attributes allowed
       KEEP_CONTENT: true, // Keep text content
@@ -81,12 +84,12 @@ export function sanitizeText(input: string | null | undefined): string {
     });
 
     // DOMPurify can be overly aggressive with certain tags - use fallback if result is empty but input has text
-    if (!sanitized.trim()) {
+    if (!sanitized.trim() && stringInput) {
       // Extract potential text content by removing HTML tags
-      const textContent = input.replace(/<[^>]*>/g, '').trim();
+      const textContent = stringInput.replace(/<[^>]*>/g, '').trim();
       if (textContent) {
         // Fallback for problematic cases where DOMPurify strips everything
-        sanitized = input
+        sanitized = stringInput
           .replace(/<[^>]*>/g, '') // Remove all HTML tags
           .replace(/javascript:/gi, '') // Remove javascript: URLs
           .replace(/on\w+\s*=/gi, '') // Remove event handlers
@@ -97,7 +100,7 @@ export function sanitizeText(input: string | null | undefined): string {
     return sanitized.trim().slice(0, 1000); // Limit length to prevent DoS
   } catch {
     // Fallback: Simple regex-based sanitization
-    const fallbackSanitized = input
+    const fallbackSanitized = stringInput
       .replace(/<[^>]*>/g, '') // Remove all HTML tags
       .replace(/javascript:/gi, '') // Remove javascript: URLs
       .replace(/on\w+\s*=/gi, '') // Remove event handlers

@@ -21,6 +21,7 @@
     "openai-client": "npx tsx src/clients/gpt-client.ts",
     "openrouter-client": "npx tsx src/clients/openrouter-client.ts",
     "test": "vitest run",
+    "test:integration": "vitest run",
     "test:watch": "vitest",
     "build": "tsc && pnpm run copy-prisma-to-dist",
     "lint": "pnpx eslint src/**/*.ts --no-warn-ignored",
