@@ -5,7 +5,7 @@ import { EchoClient } from '../client';
 
 // Mock axios
 vi.mock('axios');
-const mockedAxios = axios as any;
+const mockedAxios = vi.mocked(axios);
 
 const TEST_SERVER_URL = 'http://localhost:3001';
 const TEST_API_KEY = 'echo_test_api_key_12345';

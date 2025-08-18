@@ -19,8 +19,8 @@ export function useEchoBalance(echoClient: EchoClient | null, appId: string) {
     setIsLoading(true);
     try {
       const [balanceResponse, freeTierResponse] = await Promise.all([
-        echoClient.getBalance(),
-        echoClient.getFreeBalance(appId),
+        echoClient.balance.getBalance(),
+        echoClient.balance.getFreeBalance(appId),
       ]);
 
       setBalance(balanceResponse);

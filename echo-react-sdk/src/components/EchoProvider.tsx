@@ -1,5 +1,8 @@
 import type { FreeBalance } from '@merit-systems/echo-typescript-sdk';
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import {
+  EchoClient,
+  OidcTokenProvider,
+} from '@merit-systems/echo-typescript-sdk';
 import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import {
   createContext,
@@ -58,36 +61,32 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
 
   // Create EchoClient for business logic
   const echoClient = useMemo(() => {
-    if (!token) return null;
-    return new EchoClient({
-      baseUrl: apiUrl,
-      apiKey: token,
-    });
-  }, [apiUrl, token]);
+    if (!auth.user) return null;
 
-  // Silent renew on focus
-  useEffect(() => {
-    const run = async () => {
-      const exp = auth.user?.expires_at ?? 0;
-      const now = Math.floor(Date.now() / 1000);
-      if (exp - now < 180) {
+    const tokenProvider = new OidcTokenProvider(
+      async () => auth.user?.access_token || null,
+      async () => {
         try {
           await auth.signinSilent();
-        } catch {
-          console.error('Error during silent renew');
+        } catch (error) {
+          console.error('Error during token refresh:', error);
+          throw error;
         }
+      },
+      error => {
+        console.error('Token refresh failed:', error);
+        // Optionally trigger sign out or other error handling
       }
-    };
-    const onFocus = () => {
-      if (!document.hidden) void run();
-    };
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onFocus);
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onFocus);
-    };
-  }, [auth.user?.expires_at, auth]);
+    );
+
+    return new EchoClient({
+      baseUrl: apiUrl,
+      tokenProvider,
+    });
+  }, [apiUrl, auth.user, auth.signinSilent]);
+
+  // Note: Token refresh is now handled automatically by axios-auth-refresh
+  // in the EchoClient via the OidcTokenProvider
 
   const {
     balance,
@@ -163,7 +162,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       authority: apiUrl,
       client_id: config.appId,
       redirect_uri: config.redirectUri || window.location.origin,
-      scope: config.scope || 'openid llm:invoke offline_access',
+      scope: config.scope || 'llm:invoke offline_access',
       silentRequestTimeoutInSeconds: 10,
 
       // Silent renewal configuration

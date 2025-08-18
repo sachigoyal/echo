@@ -17,7 +17,7 @@ export function useEchoPayments(echoClient: EchoClient | null) {
 
       setIsLoading(true);
       try {
-        const response = await echoClient.createPaymentLink({
+        const response = await echoClient.payments.createPaymentLink({
           amount,
           description: description || 'Echo Credits',
           successUrl: successUrl || window.location.origin,

@@ -1,227 +1,88 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance } from 'axios';
+import createAuthRefreshInterceptor from 'axios-auth-refresh';
+import { ApiKeyTokenProvider, TokenProvider } from './auth/token-provider';
 import { EchoConfig, getConfig } from './config';
 import {
-  Balance,
-  CreatePaymentLinkRequest,
-  CreatePaymentLinkResponse,
-  EchoApp,
-  GetFreeBalanceRequest,
-  FreeBalance,
-  ListEchoAppsResponse,
-  RegisterReferralCodeRequest,
-  RegisterReferralCodeResponse,
-  SupportedModel,
-  SupportedModelsResponse,
-  User,
-} from './types';
+  AppsResource,
+  BalanceResource,
+  ModelsResource,
+  PaymentsResource,
+  UsersResource,
+} from './resources';
+
+export interface EchoClientOptions extends Partial<EchoConfig> {
+  tokenProvider?: TokenProvider;
+}
 
 export class EchoClient {
   private http: AxiosInstance;
   private config: EchoConfig;
+  private tokenProvider: TokenProvider;
 
-  constructor(config?: Partial<EchoConfig>) {
-    this.config = getConfig(config);
+  // Resource instances
+  public readonly balance: BalanceResource;
+  public readonly payments: PaymentsResource;
+  public readonly apps: AppsResource;
+  public readonly users: UsersResource;
+  public readonly models: ModelsResource;
+
+  constructor(options?: EchoClientOptions) {
+    this.config = getConfig(options);
+
+    // Set up token provider
+    if (options?.tokenProvider) {
+      this.tokenProvider = options.tokenProvider;
+    } else {
+      // Fallback to API key provider
+      const apiKey = this.config.apiKey || process.env.ECHO_API_KEY;
+      if (!apiKey) {
+        throw new Error('No API key or token provider provided');
+      }
+      this.tokenProvider = new ApiKeyTokenProvider(apiKey);
+    }
+
+    // Create axios instance
     this.http = axios.create({
       baseURL: this.config.baseUrl,
-      timeout: 30000,
+      timeout: 30_000,
     });
 
-    // Add request interceptor to include API key
+    // Set up request interceptor to include token
     this.http.interceptors.request.use(async config => {
-      const apiKey = this.config.apiKey || process.env.ECHO_API_KEY;
-      if (apiKey) {
-        config.headers['Authorization'] = `Bearer ${apiKey}`;
+      const token = await this.tokenProvider.getAccessToken();
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
       }
       return config;
     });
 
-    // Add response interceptor for error handling
-    this.http.interceptors.response.use(
-      response => response,
-      (error: AxiosError) => {
-        if (error.response?.status === 401) {
-          throw new Error(
-            'Unauthorized. Invalid or expired API key. Please run "echo-cli login" to authenticate.'
-          );
+    const refreshAuthLogic = async (failedRequest: any) => {
+      try {
+        await this.tokenProvider.refreshToken();
+        const newToken = await this.tokenProvider.getAccessToken();
+        if (newToken) {
+          failedRequest.response.config.headers['Authorization'] =
+            `Bearer ${newToken}`;
         }
-        throw error;
+        return Promise.resolve();
+      } catch (error) {
+        if (this.tokenProvider.onRefreshError) {
+          this.tokenProvider.onRefreshError(error as Error);
+        }
+        return Promise.reject(error);
       }
-    );
-  }
-
-  /**
-   * Get current balance for the authenticated user across all apps
-   */
-  async getBalance(): Promise<Balance> {
-    try {
-      const response = await this.http.get('/api/v1/balance');
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to fetch balance');
-    }
-  }
-
-  /**
-   * Get free tier balance for a specific app
-   * @param echoAppId The Echo app ID to get free tier balance for
-   */
-  async getFreeBalance(echoAppId: string): Promise<FreeBalance> {
-    try {
-      const request: GetFreeBalanceRequest = { echoAppId };
-      const response = await this.http.post('/api/v1/balance/free', request);
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to fetch free tier balance');
-    }
-  }
-
-  /**
-   * Create a payment link for purchasing credits
-   * @param request Payment link details
-   */
-  async createPaymentLink(
-    request: CreatePaymentLinkRequest
-  ): Promise<CreatePaymentLinkResponse> {
-    try {
-      const response = await this.http.post(
-        '/api/v1/stripe/payment-link',
-        request
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to create payment link');
-    }
-  }
-
-  /**
-   * Get payment URL for purchasing credits
-   * @param amount Amount to purchase in USD
-   * @param description Optional description for the payment
-   * @param successUrl Optional URL to redirect to after successful payment
-   */
-  async getPaymentUrl(
-    amount: number,
-    description?: string,
-    successUrl?: string
-  ): Promise<string> {
-    const request: CreatePaymentLinkRequest = {
-      amount,
-      description: description || 'Echo Credits',
     };
 
-    if (successUrl) {
-      request.successUrl = successUrl;
-    }
+    createAuthRefreshInterceptor(this.http, refreshAuthLogic, {
+      statusCodes: [401],
+      pauseInstanceWhileRefreshing: true,
+    });
 
-    const response = await this.createPaymentLink(request);
-    return response.paymentLink.url;
-  }
-
-  /**
-   * Get app URL for a specific Echo app
-   * @param appId The Echo app ID
-   */
-  getAppUrl(appId: string): string {
-    return `${this.config.baseUrl}/apps/${appId}`;
-  }
-
-  /**
-   * List all Echo apps for the authenticated user
-   */
-  async listEchoApps(): Promise<EchoApp[]> {
-    try {
-      const response =
-        await this.http.get<ListEchoAppsResponse>('/api/v1/apps');
-      return response.data.apps;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to fetch Echo apps');
-    }
-  }
-
-  /**
-   * Get a specific Echo app by ID
-   * @param appId The Echo app ID
-   */
-  async getEchoApp(appId: string): Promise<EchoApp> {
-    try {
-      const response = await this.http.get(`/api/v1/apps/${appId}`);
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to fetch Echo app');
-    }
-  }
-
-  /**
-   * Get current user information
-   */
-  async getUserInfo(): Promise<User> {
-    try {
-      const response = await this.http.get('/api/v1/user');
-      return response.data as User;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to fetch user info');
-    }
-  }
-
-  /**
-   * Get supported models with pricing, limits, and capabilities
-   */
-  async getSupportedModels(): Promise<SupportedModelsResponse> {
-    try {
-      const response = await this.http.get<SupportedModelsResponse>(
-        '/api/v1/supported-models'
-      );
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error, 'Failed to fetch supported models');
-    }
-  }
-
-  /**
-   * Get supported models as a flat array
-   */
-  async listSupportedModels(): Promise<SupportedModel[]> {
-    const response = await this.getSupportedModels();
-    return response.models;
-  }
-
-  /**
-   * Get supported models grouped by provider
-   */
-  async getSupportedModelsByProvider(): Promise<
-    Record<string, SupportedModel[]>
-  > {
-    const response = await this.getSupportedModels();
-    return response.models_by_provider;
-  }
-
-  /**
-   * Register a referral code for the authenticated user
-   * @param echoAppId The Echo app ID to register the referral code for
-   * @param code The referral code to register
-   */
-  async registerReferralCode(
-    echoAppId: string,
-    code: string
-  ): Promise<RegisterReferralCodeResponse> {
-    const request: RegisterReferralCodeRequest = { echoAppId, code };
-
-    const response = await this.http
-      .post('/api/v1/user/referral', request)
-      .catch(error => {
-        throw this.handleError(error, 'Failed to register referral code');
-      });
-
-    return response.data;
-  }
-
-  private handleError(error: any, message: string): Error {
-    if (error.response?.data?.error) {
-      return new Error(`${message}: ${error.response.data.error}`);
-    }
-    if (error.message) {
-      return new Error(`${message}: ${error.message}`);
-    }
-    return new Error(message);
+    // Initialize resource instances
+    this.balance = new BalanceResource(this.http);
+    this.payments = new PaymentsResource(this.http);
+    this.apps = new AppsResource(this.http, this.config.baseUrl);
+    this.users = new UsersResource(this.http);
+    this.models = new ModelsResource(this.http);
   }
 }

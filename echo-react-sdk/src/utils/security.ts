@@ -33,7 +33,7 @@ const purify = (() => {
       const { JSDOM } = require('jsdom');
       const { window } = new JSDOM('');
       return DOMPurify(window);
-    } catch (error) {
+    } catch {
       // Fallback if JSDOM is not available
       return {
         sanitize: (dirty: string) => dirty.replace(/<[^>]*>/g, ''),

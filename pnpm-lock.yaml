@@ -366,8 +366,8 @@ importers:
   echo-react-sdk:
     dependencies:
       '@merit-systems/echo-typescript-sdk':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../echo-typescript-sdk
       dompurify:
         specifier: ^3.2.6
         version: 3.2.6
@@ -595,6 +595,9 @@ importers:
       axios:
         specifier: ^1.6.0
         version: 1.10.0
+      axios-auth-refresh:
+        specifier: ^3.3.6
+        version: 3.3.6(axios@1.10.0)
     devDependencies:
       '@types/node':
         specifier: ^24.0.3
@@ -4637,6 +4640,11 @@ packages:
   axe-core@4.10.3:
     resolution: {integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==}
     engines: {node: '>=4'}
+
+  axios-auth-refresh@3.3.6:
+    resolution: {integrity: sha512-2CeBUce/SxIfFxow5/n8vApJ97yYF6qoV4gh1UrswT7aEOnlOdBLxxyhOI4IaxGs6BY0l8YujU2jlc4aCmK17Q==}
+    peerDependencies:
+      axios: '>= 0.18 < 0.19.0 || >= 0.19.1'
 
   axios-retry@4.5.0:
     resolution: {integrity: sha512-aR99oXhpEDGo0UuAlYcn2iGRds30k366Zfa05XWScR9QaQD4JYiP3/1Qt1u7YlefUOK+cn0CcwoL1oefavQUlQ==}
@@ -10533,7 +10541,7 @@ snapshots:
 
   '@merit-systems/echo-react-sdk@file:echo-react-sdk(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
-      '@merit-systems/echo-typescript-sdk': 1.0.1
+      '@merit-systems/echo-typescript-sdk': link:echo-typescript-sdk
       dompurify: 3.2.6
       oidc-client-ts: 3.3.0
       react: 19.1.0
@@ -10541,8 +10549,6 @@ snapshots:
       react-oidc-context: 3.3.0(oidc-client-ts@3.3.0)(react@19.1.0)
     optionalDependencies:
       openai: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
-    transitivePeerDependencies:
-      - debug
 
   '@merit-systems/echo-typescript-sdk@1.0.1':
     dependencies:
@@ -14590,6 +14596,10 @@ snapshots:
       possible-typed-array-names: 1.1.0
 
   axe-core@4.10.3: {}
+
+  axios-auth-refresh@3.3.6(axios@1.10.0):
+    dependencies:
+      axios: 1.10.0
 
   axios-retry@4.5.0(axios@1.10.0):
     dependencies:
