@@ -5,3 +5,4 @@ export type { EchoClientOptions } from './client';
 export * from './config';
 export * from './resources';
 export * from './types';
+export * from './utils/error-handling';

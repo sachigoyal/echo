@@ -1,8 +1,11 @@
 import { AxiosInstance } from 'axios';
 import { CreatePaymentLinkRequest, CreatePaymentLinkResponse } from '../types';
+import { BaseResource } from '../utils/error-handling';
 
-export class PaymentsResource {
-  constructor(private http: AxiosInstance) {}
+export class PaymentsResource extends BaseResource {
+  constructor(http: AxiosInstance) {
+    super(http);
+  }
 
   /**
    * Create a payment link for purchasing credits
@@ -11,11 +14,15 @@ export class PaymentsResource {
   async createPaymentLink(
     request: CreatePaymentLinkRequest
   ): Promise<CreatePaymentLinkResponse> {
-    const response = await this.http.post<CreatePaymentLinkResponse>(
-      '/api/v1/stripe/payment-link',
-      request
+    return this.handleRequest(
+      () =>
+        this.http.post<CreatePaymentLinkResponse>(
+          '/api/v1/stripe/payment-link',
+          request
+        ),
+      'creating payment link',
+      '/api/v1/stripe/payment-link'
     );
-    return response.data;
   }
 
   /**
@@ -38,7 +45,11 @@ export class PaymentsResource {
       request.successUrl = successUrl;
     }
 
-    const response = await this.createPaymentLink(request);
-    return response.paymentLink.url;
+    try {
+      const response = await this.createPaymentLink(request);
+      return response.paymentLink.url;
+    } catch (error) {
+      throw this.handleError(error, 'getting payment URL');
+    }
   }
 }

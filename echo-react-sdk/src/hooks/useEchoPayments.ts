@@ -1,4 +1,8 @@
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import {
+  EchoClient,
+  getUserFriendlyMessage,
+  parseEchoError,
+} from '@merit-systems/echo-typescript-sdk';
 import { useCallback, useState } from 'react';
 
 export function useEchoPayments(echoClient: EchoClient | null) {
@@ -26,10 +30,10 @@ export function useEchoPayments(echoClient: EchoClient | null) {
         setError(null);
         return response.paymentLink.url;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to create payment link';
-        setError(errorMessage);
-        throw new Error(errorMessage);
+        const echoError = parseEchoError(err, 'creating payment link');
+        const userFriendlyMessage = getUserFriendlyMessage(echoError);
+        setError(userFriendlyMessage);
+        throw echoError;
       } finally {
         setIsLoading(false);
       }

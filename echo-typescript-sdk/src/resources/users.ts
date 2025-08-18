@@ -4,16 +4,22 @@ import {
   RegisterReferralCodeResponse,
   User,
 } from '../types';
+import { BaseResource } from '../utils/error-handling';
 
-export class UsersResource {
-  constructor(private http: AxiosInstance) {}
+export class UsersResource extends BaseResource {
+  constructor(http: AxiosInstance) {
+    super(http);
+  }
 
   /**
    * Get current user information
    */
   async getUserInfo(): Promise<User> {
-    const response = await this.http.get<User>('/api/v1/user');
-    return response.data;
+    return this.handleRequest(
+      () => this.http.get<User>('/api/v1/user'),
+      'fetching user info',
+      '/api/v1/user'
+    );
   }
 
   /**
@@ -26,10 +32,14 @@ export class UsersResource {
     code: string
   ): Promise<RegisterReferralCodeResponse> {
     const request: RegisterReferralCodeRequest = { echoAppId, code };
-    const response = await this.http.post<RegisterReferralCodeResponse>(
-      '/api/v1/user/referral',
-      request
+    return this.handleRequest(
+      () =>
+        this.http.post<RegisterReferralCodeResponse>(
+          '/api/v1/user/referral',
+          request
+        ),
+      'registering referral code',
+      '/api/v1/user/referral'
     );
-    return response.data;
   }
 }

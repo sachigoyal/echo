@@ -1,15 +1,21 @@
 import { AxiosInstance } from 'axios';
 import { Balance, FreeBalance, GetFreeBalanceRequest } from '../types';
+import { BaseResource } from '../utils/error-handling';
 
-export class BalanceResource {
-  constructor(private http: AxiosInstance) {}
+export class BalanceResource extends BaseResource {
+  constructor(http: AxiosInstance) {
+    super(http);
+  }
 
   /**
    * Get current balance for the authenticated user across all apps
    */
   async getBalance(): Promise<Balance> {
-    const response = await this.http.get<Balance>('/api/v1/balance');
-    return response.data;
+    return this.handleRequest(
+      () => this.http.get<Balance>('/api/v1/balance'),
+      'fetching balance',
+      '/api/v1/balance'
+    );
   }
 
   /**
@@ -18,10 +24,10 @@ export class BalanceResource {
    */
   async getFreeBalance(echoAppId: string): Promise<FreeBalance> {
     const request: GetFreeBalanceRequest = { echoAppId };
-    const response = await this.http.post<FreeBalance>(
-      '/api/v1/balance/free',
-      request
+    return this.handleRequest(
+      () => this.http.post<FreeBalance>('/api/v1/balance/free', request),
+      'fetching free tier balance',
+      '/api/v1/balance/free'
     );
-    return response.data;
   }
 }
