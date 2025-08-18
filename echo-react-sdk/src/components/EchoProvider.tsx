@@ -66,16 +66,11 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     const tokenProvider = new OidcTokenProvider(
       async () => auth.user?.access_token || null,
       async () => {
-        try {
-          await auth.signinSilent();
-        } catch (error) {
-          console.error('Error during token refresh:', error);
-          throw error;
-        }
+        await auth.signinSilent();
       },
       error => {
         console.error('Token refresh failed:', error);
-        // Optionally trigger sign out or other error handling
+        auth.signoutSilent();
       }
     );
 
