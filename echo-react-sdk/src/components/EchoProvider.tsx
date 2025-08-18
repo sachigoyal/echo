@@ -132,33 +132,35 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const apiUrl = config.apiUrl || 'https://echo.merit.systems';
 
   const oidcConfig: AuthProviderUserManagerProps = {
-    userManager: new UserManager({
-      authority: apiUrl,
-      client_id: config.appId,
-      redirect_uri: config.redirectUri || window.location.origin,
-      scope: config.scope || 'llm:invoke offline_access',
-      silentRequestTimeoutInSeconds: 10,
+    userManager:
+      (typeof window !== 'undefined' && (window as any).__echoUserManager) ||
+      new UserManager({
+        authority: apiUrl,
+        client_id: config.appId,
+        redirect_uri: config.redirectUri || window.location.origin,
+        scope: config.scope || 'llm:invoke offline_access',
+        silentRequestTimeoutInSeconds: 10,
 
-      // Silent renewal configuration
-      silent_redirect_uri: config.redirectUri || window.location.origin,
-      includeIdTokenInSilentRenew: false,
+        // Silent renewal configuration
+        silent_redirect_uri: config.redirectUri || window.location.origin,
+        includeIdTokenInSilentRenew: false,
 
-      validateSubOnSilentRenew: true,
+        validateSubOnSilentRenew: true,
 
-      // UserInfo endpoint configuration
-      loadUserInfo: true,
+        // UserInfo endpoint configuration
+        loadUserInfo: true,
 
-      // Custom OAuth endpoints (non-standard OIDC)
-      metadata: {
-        authorization_endpoint: `${apiUrl}/api/oauth/authorize`,
-        token_endpoint: `${apiUrl}/api/oauth/token`,
-        userinfo_endpoint: `${apiUrl}/api/oauth/userinfo`,
-        issuer: apiUrl,
-        jwks_uri: `${apiUrl}/.well-known/jwks.json`,
-        end_session_endpoint: `${apiUrl}/api/oauth/logout`,
-      },
-      userStore: new WebStorageStateStore({ store: window.localStorage }),
-    }),
+        // Custom OAuth endpoints (non-standard OIDC)
+        metadata: {
+          authorization_endpoint: `${apiUrl}/api/oauth/authorize`,
+          token_endpoint: `${apiUrl}/api/oauth/token`,
+          userinfo_endpoint: `${apiUrl}/api/oauth/userinfo`,
+          issuer: apiUrl,
+          jwks_uri: `${apiUrl}/.well-known/jwks.json`,
+          end_session_endpoint: `${apiUrl}/api/oauth/logout`,
+        },
+        userStore: new WebStorageStateStore({ store: window.localStorage }),
+      }),
 
     // Remove URL parameters after successful authentication
     onSigninCallback: () => {
