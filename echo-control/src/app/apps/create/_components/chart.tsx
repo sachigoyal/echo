@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 
 import { XAxis, YAxis, ResponsiveContainer, BarChart, Bar } from 'recharts';
 

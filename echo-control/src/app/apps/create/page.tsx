@@ -1,6 +1,5 @@
-import { Card } from '@/components/ui/card';
-
 import { Logo } from '@/components/ui/logo';
+
 import { CreateAppForm } from './_components/form';
 
 export default function CreateAppPage() {

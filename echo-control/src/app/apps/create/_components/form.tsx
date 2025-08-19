@@ -1,36 +1,29 @@
 'use client';
 
-import { Check, Loader2, Percent, X } from 'lucide-react';
+import { useState } from 'react';
+
+import { Check, Loader2, Percent } from 'lucide-react';
 
 import { z } from 'zod';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { useForm } from 'react-hook-form';
-
 import { useRouter } from 'next/navigation';
 
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { toast } from 'sonner';
+
+import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { FormFieldWithCard } from '@/components/ui/card-form';
+import { Separator } from '@/components/ui/separator';
+
+import { ProfitChart } from './chart';
 
 import { createAppSchema } from '@/services/apps/owner';
 
 import { api } from '@/trpc/client';
-import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
-import { ProfitChart } from './chart';
-import { useState } from 'react';
-import { FormFieldWithCard } from '@/components/ui/card-form';
 
 export const CreateAppForm = () => {
   const form = useForm<z.infer<typeof createAppSchema>>({
