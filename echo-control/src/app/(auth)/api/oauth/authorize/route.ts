@@ -1,7 +1,7 @@
 import {
   authorizeParamsSchema,
   getAuthorizationRedirect,
-} from '@/app/(oauth)/_lib/authorize';
+} from '@/app/(auth)/_lib/authorize';
 import { auth } from '@/auth';
 import { EchoApp } from '@/generated/prisma';
 import { getOrCreateUser } from '@/lib/auth';

@@ -3,7 +3,7 @@
 import {
   AuthorizeParams,
   getAuthorizationRedirect,
-} from '@/app/(oauth)/_lib/authorize';
+} from '@/app/(auth)/_lib/authorize';
 import { redirect } from 'next/navigation';
 
 export const authorize = async (params: AuthorizeParams) => {
