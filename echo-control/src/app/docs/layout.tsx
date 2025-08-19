@@ -1,30 +1,13 @@
 import { source } from '@/lib/source';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import { CollapsibleControl, DocsLayout } from 'fumadocs-ui/layouts/docs';
 import type { ReactNode } from 'react';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import Image from 'next/image';
+import { Navbar } from '@/app/_components/navbar';
+import { MobileSidebarTrigger } from './mobile-sidebar-trigger';
 
 const baseOptions: BaseLayoutProps = {
   nav: {
-    title: (
-      <>
-        <Image
-          src="/logo/light.svg"
-          alt="Echo"
-          width={80}
-          height={24}
-          className="dark:hidden"
-        />
-        <Image
-          src="/logo/dark.svg"
-          alt="Echo"
-          width={80}
-          height={24}
-          className="hidden dark:block"
-        />
-        <span className="sr-only">Echo</span>
-      </>
-    ),
+    component: <Navbar />,
   },
   links: [
     {
@@ -37,7 +20,24 @@ const baseOptions: BaseLayoutProps = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <DocsLayout tree={source.pageTree} {...baseOptions}>
+    <DocsLayout
+      tree={source.pageTree}
+      {...baseOptions}
+      sidebar={{
+        collapsible: true,
+      }}
+    >
+      {/* Hack: move collapsible control below the default layout navbar. */}
+      <div
+        style={
+          {
+            '--fd-banner-height': '4rem',
+          } as React.CSSProperties
+        }
+      >
+        <CollapsibleControl />
+        <MobileSidebarTrigger />
+      </div>
       {children}
     </DocsLayout>
   );

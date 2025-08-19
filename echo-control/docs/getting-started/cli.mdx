@@ -1,8 +1,108 @@
 ---
-title: CLI
-description: Use Echo's command line interface
+title: Typescript CLI
+description: Use Echo to make monetized AI CLI apps.
 ---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
 
 # Getting Started with Echo CLI
 
-TODO: Add CLI usage guide
+<Steps>
+
+    <Step>
+        ### Install the Echo TypeScript SDK
+
+        <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+            <Tab value="npm">
+                ```sh
+                npm i @merit-systems/echo-typescript-sdk
+                ```
+            </Tab>
+            <Tab value="yarn">
+                ```sh
+                yarn add @merit-systems/echo-typescript-sdk
+                ```
+            </Tab>
+            <Tab value="pnpm">
+                ```sh
+                pnpm add @merit-systems/echo-typescript-sdk
+                ```
+            </Tab>
+            <Tab value="bun">
+                ```sh
+                bun add @merit-systems/echo-typescript-sdk
+                ```
+            </Tab>
+        </Tabs>
+    </Step>
+
+    <Step>
+        ### Create an Echo App
+        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get an `app_id`.
+    </Step>
+
+    <Step>
+        ### Redirect user to create API key
+        ```typescript
+        const APP_ID = "your-app-id";
+
+        console.log("Redirecting to Echo for API Key.");
+        open(`https://echo.merit.systems/cli-auth/${APP_ID}`);
+        const apiKey = prompt("Enter your API key: ");
+        ```
+    </Step>
+
+    <Step>
+        ### Save API Key
+        ```typescript
+        // TODO: Save to .env (or util for this and prior step?)
+        ```
+    </Step>
+
+    <Step>
+        ### Make your first LLM call
+        ```typescript
+        import { OpenAI } from 'openai';
+
+        const openai = new OpenAI({
+            apiKey: api_key,
+            baseURL: `https://echo.router.merit.systems/{APP_ID}`,
+        });
+        const response = await openai.chat.completions.create({
+            model: model,
+            messages: [{ role: 'user', content: message }],
+        });
+
+        console.log(response.choices[0]?.message?.content);
+        ```
+    </Step>
+
+    <Step>
+        ### Check Balance
+        ```typescript
+        import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+        import type {
+            CreatePaymentLinkResponse,
+            Balance,
+        } from '@merit-systems/echo-typescript-sdk';
+
+        const client = new EchoClient({
+            apiKey: process.env.ECHO_API_KEY ?? '',
+        });
+
+        const balance = await client.getBalance();
+
+        if (balance < 0.1) {
+            const { paymentLink } = await client.createPaymentLink({
+                amount: 10.0,
+                description: "Echo credits for my app" // TODO(sragss): Prolly rm
+            });
+            open(paymentLink.url);
+        }
+        ```
+    </Step>
+
+    <Step>
+        ### Prosper.
+    </Step>
+</Steps>
