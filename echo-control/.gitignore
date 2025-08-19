@@ -43,6 +43,6 @@ yarn-error.log*
 next-env.d.ts
 
 # fumadocs
-.source
+/.source/
 
 /src/generated/prisma
