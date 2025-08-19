@@ -27,6 +27,7 @@ import { ColorModeToggle } from './color-mode-toggle';
 
 import type { User as NextAuthUser } from 'next-auth';
 import { signOut } from '@/auth';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   user: NextAuthUser;
@@ -36,14 +37,16 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <UserAvatar
-          src={user.image}
-          fallback={
-            user.name?.charAt(0).toUpperCase() ||
-            user.email?.charAt(0).toUpperCase()
-          }
-          className="size-9 rounded-md cursor-pointer border"
-        />
+        <Button variant="outline" size="icon" className="p-0 overflow-hidden">
+          <UserAvatar
+            src={user.image}
+            fallback={
+              user.name?.charAt(0).toUpperCase() ||
+              user.email?.charAt(0).toUpperCase()
+            }
+            className="size-9 rounded-md cursor-pointer border-none"
+          />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="p-0 font-normal">
