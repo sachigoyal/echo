@@ -77,7 +77,7 @@ export const CreateAppForm = () => {
             <Input
               {...field}
               placeholder="Enter a Name"
-              className="bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none p-0 h-fit font-bold"
+              className="bg-transparent dark:bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none p-0 h-fit font-bold"
             />
           )}
           description="This name will be shown to users when they connect their Echo account"

@@ -66,9 +66,8 @@ const isPublicRoute = createPathMatcher([
 const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
 
 export default middleware(req => {
-  console.log('middleware', req.nextUrl.pathname);
   if (isX402Route(req)) {
-    return NextResponse.redirect(new URL('/login', req.nextUrl.origin));
+    return NextResponse.redirect(new URL('/', req.nextUrl.origin));
     // For OPTIONS requests on x402 routes, pass to the next auth handler
     // if (req.method === 'OPTIONS') {
     //   return NextResponse.next();

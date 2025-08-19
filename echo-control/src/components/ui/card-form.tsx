@@ -91,7 +91,7 @@ const FormCard = ({ children, withCard, cardClassName }: FormCardProps) => {
     <Card
       className={cn(
         'w-full h-fit p-2 focus-within:border-primary dark:focus-within:border-primary transition-colors duration-200 space-y-2',
-        'focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]',
+        'focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px] dark:focus-within:ring-ring/50 dark:focus-within:ring-[3px]',
         error && 'border-red-600',
         cardClassName
       )}
