@@ -1,15 +1,16 @@
 import { createPathMatcher } from 'next-path-matcher';
 
+import { NextRequest, NextResponse } from 'next/server';
+
 import { Address } from 'viem';
 import { paymentMiddleware, Network } from 'x402-next';
 import { facilitator } from '@coinbase/x402';
 
 import { middleware } from '@/auth/middleware';
-import { NextRequest, NextResponse } from 'next/server';
 import {
   formatAmountFromQueryParams,
   formatPriceForMiddleware,
-} from './src/lib/base';
+} from '@/lib/base';
 
 // const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
@@ -50,9 +51,9 @@ const isPublicRoute = createPathMatcher([
   '/',
   '/login',
   '/verify-email',
+  '/auth/signin(.*)',
   // public routes
   '/api/auth/(.*)',
-  '/auth/signin(.*)',
   '/api/v1/(.*)',
   '/api/oauth(.*)',
   '/api/validate-jwt-token(.*)',
@@ -62,17 +63,18 @@ const isPublicRoute = createPathMatcher([
   '/api/health(.*)', // Health check endpoint - no auth needed
 ]);
 
-export const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
+const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
 
 export default middleware(req => {
   if (isX402Route(req)) {
+    return NextResponse.error();
     // For OPTIONS requests on x402 routes, pass to the next auth handler
-    if (req.method === 'OPTIONS') {
-      return NextResponse.next();
-    }
+    // if (req.method === 'OPTIONS') {
+    //   return NextResponse.next();
+    // }
 
-    const paymentMiddleware = x402MiddlewareGenerator(req);
-    return paymentMiddleware(req);
+    // const paymentMiddleware = x402MiddlewareGenerator(req);
+    // return paymentMiddleware(req);
   }
 
   if (isPublicRoute(req)) {
@@ -101,5 +103,5 @@ export const config = {
     // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
   ],
-  runtime: 'nodejs',
+  // runtime: 'nodejs',
 };

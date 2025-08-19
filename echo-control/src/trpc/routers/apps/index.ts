@@ -27,6 +27,7 @@ export const appsRouter = createTRPCRouter({
   public: publicAppsRouter,
   member: memberAppsRouter,
   owner: ownerAppsRouter,
+
   /**
    * Get a single app with appropriate permissions
    * Returns different data based on user's role:
