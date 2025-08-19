@@ -369,9 +369,7 @@ export function EchoTokenPurchase({
                 fontFamily: 'HelveticaNowDisplay, sans-serif',
               }}
             >
-              {formatCurrency(
-                (balance?.balance || 0) + calculateAvailableSpend()
-              )}
+              {formatCurrency(calculateAvailableSpend())}
             </p>
 
             {/* Breakdown */}
@@ -399,7 +397,8 @@ export function EchoTokenPurchase({
                       }}
                     ></div>
                     <span>
-                      {formatCurrency(calculateAvailableSpend())} Free Tier
+                      {formatCurrency(freeTierBalance.userSpendInfo.amountLeft)}{' '}
+                      Free Tier
                       {freeTierBalance.userSpendInfo &&
                         freeTierBalance.userSpendInfo.spendLimit && (
                           <span style={{ color: '#9ca3af', marginLeft: '8px' }}>
@@ -408,8 +407,7 @@ export function EchoTokenPurchase({
                             )}{' '}
                             of{' '}
                             {formatCurrency(
-                              freeTierBalance.userSpendInfo.amountLeft +
-                                freeTierBalance.userSpendInfo.amountSpent
+                              freeTierBalance.userSpendInfo.spendLimit
                             )}{' '}
                             used
                           </span>
