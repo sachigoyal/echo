@@ -28,6 +28,7 @@ export interface EchoContextValue {
   freeTierBalance: FreeBalance | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isRefreshing?: boolean; // Optional: separate state for token refresh
   error: string | null;
   token: string | null;
   echoClient: EchoClient | null;
@@ -90,7 +91,13 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   // Combine errors from different sources
   const combinedError =
     auth.error?.message || balanceError || paymentError || null;
-  const combinedLoading = auth.isLoading || balanceLoading || paymentLoading;
+
+  // Only include auth.isLoading for initial authentication, not token refresh
+  // Token refresh should be transparent to downstream components
+  const isInitialAuthLoading = auth.isLoading && !auth.isAuthenticated;
+  const isTokenRefreshing = auth.isLoading && auth.isAuthenticated;
+  const combinedLoading =
+    isInitialAuthLoading || balanceLoading || paymentLoading;
 
   const contextValue: EchoContextValue = {
     user: echoUser || null,
@@ -99,6 +106,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     freeTierBalance,
     isAuthenticated: auth.isAuthenticated,
     isLoading: combinedLoading,
+    isRefreshing: isTokenRefreshing,
     error: combinedError,
     token,
     echoClient,
