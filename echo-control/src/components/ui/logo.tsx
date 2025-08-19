@@ -6,9 +6,10 @@ import { cn } from '@/lib/utils';
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   onClick?: () => void;
+  priority?: boolean;
 }
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
-  ({ className, onClick, ...props }, ref) => {
+  ({ className, onClick, priority, ...props }, ref) => {
     return (
       <div ref={ref} onClick={onClick} {...props}>
         <Image
@@ -17,6 +18,7 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
           width={200}
           height={200}
           className={cn('dark:hidden size-6', className)}
+          priority={priority}
         />
         <Image
           src="/logo/dark.svg"
@@ -24,6 +26,7 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
           width={200}
           height={200}
           className={cn('hidden dark:block size-6', className)}
+          priority={priority}
         />
       </div>
     );

@@ -38,6 +38,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  transpilePackages: ['x402-next'],
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.plugins = [...config.plugins, new PrismaPlugin()];

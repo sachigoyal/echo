@@ -18,11 +18,13 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
   const [client, setClient] = useState<EchoClient | null>(null);
 
   useEffect(() => {
-    if (!auth.user?.access_token) {
+    // Only recreate client when authentication state changes, not token refresh
+    if (!auth.isAuthenticated || !auth.user) {
       setClient(null);
       return;
     }
 
+    // Create client once when authenticated - token provider handles refresh internally
     const tokenProvider = new OAuthTokenProvider({
       getTokenFn: () => Promise.resolve(auth.user?.access_token || null),
       refreshTokenFn: async () => {
@@ -44,7 +46,13 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
     return () => {
       setClient(null);
     };
-  }, [apiUrl, auth.user?.access_token, auth.signinSilent, auth.signoutSilent]);
+  }, [
+    apiUrl,
+    auth.isAuthenticated,
+    auth.user?.profile?.sub, // Only recreate if user ID changes
+    auth.signinSilent,
+    auth.signoutSilent,
+  ]);
 
   return client;
 }
