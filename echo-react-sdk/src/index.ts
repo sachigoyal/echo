@@ -17,5 +17,4 @@ export type {
   EchoUser,
 } from './types';
 
-// Context types are internal implementation details
-// Consumers should use the hooks (useEcho, useEchoRefresh) instead
+export type { EchoContextValue } from './components/EchoProvider';
