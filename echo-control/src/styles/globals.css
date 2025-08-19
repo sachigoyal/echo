@@ -3,6 +3,9 @@
 
 @import './fonts.css' layer(base);
 
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
 @custom-variant dark (&:is(.dark *));
 
 /*

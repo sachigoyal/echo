@@ -155,10 +155,12 @@ export function EchoTokenPurchase({
 
   // Calculate available spend: min(spendLimit, amount in pool) - amountSpent with floor of 0
   const calculateAvailableSpend = () => {
-    return (
-      (freeTierBalance?.userSpendInfo?.amountLeft || 0) +
-      (balance?.balance || 0)
-    );
+    const freeTierAmountLeft =
+      (freeTierBalance?.userSpendInfo?.amountLeft || 0) < 0
+        ? 0
+        : freeTierBalance?.userSpendInfo?.amountLeft || 0;
+    const balanceAmount = balance?.balance || 0;
+    return freeTierAmountLeft + balanceAmount;
   };
 
   const handlePurchase = async (purchaseAmount: number) => {
@@ -393,23 +395,31 @@ export function EchoTokenPurchase({
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        backgroundColor: '#ef4444',
+                        backgroundColor: '#3b82f6',
                       }}
                     ></div>
                     <span>
-                      {formatCurrency(freeTierBalance.userSpendInfo.amountLeft)}{' '}
+                      {formatCurrency(
+                        freeTierBalance.userSpendInfo.amountLeft < 0
+                          ? 0
+                          : freeTierBalance.userSpendInfo.amountLeft
+                      )}{' '}
                       Free Tier
                       {freeTierBalance.userSpendInfo &&
                         freeTierBalance.userSpendInfo.spendLimit && (
                           <span style={{ color: '#9ca3af', marginLeft: '8px' }}>
+                            (
                             {formatCurrency(
-                              freeTierBalance.userSpendInfo.amountSpent
+                              freeTierBalance.userSpendInfo.amountSpent >
+                                freeTierBalance.userSpendInfo.spendLimit
+                                ? freeTierBalance.userSpendInfo.spendLimit
+                                : freeTierBalance.userSpendInfo.amountSpent
                             )}{' '}
                             of{' '}
                             {formatCurrency(
                               freeTierBalance.userSpendInfo.spendLimit
                             )}{' '}
-                            used
+                            spent)
                           </span>
                         )}
                     </span>
@@ -431,9 +441,9 @@ export function EchoTokenPurchase({
                       >
                         <div
                           style={{
-                            width: `${Math.min(100, (freeTierBalance.userSpendInfo.amountSpent / (freeTierBalance.userSpendInfo.spendLimit || 1)) * 100)}%`,
+                            width: `${Math.max(0, Math.min(100, (Math.max(0, freeTierBalance.userSpendInfo.amountLeft) / (freeTierBalance.userSpendInfo.spendLimit || 1)) * 100))}%`,
                             height: '100%',
-                            backgroundColor: '#dc2626',
+                            backgroundColor: '#3b82f6',
                           }}
                         />
                       </div>
@@ -448,20 +458,56 @@ export function EchoTokenPurchase({
                     fontSize: '12px',
                     color: '#6b7280',
                     fontFamily: 'HelveticaNowDisplay, sans-serif',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
                   }}
                 >
                   <div
                     style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: '#3b82f6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      marginBottom: '4px',
                     }}
-                  ></div>
-                  {formatCurrency(balance.balance)} Paid Credits
+                  >
+                    <div
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: '#dc2626',
+                      }}
+                    ></div>
+                    <span>
+                      {formatCurrency(balance.balance)} Paid Credits
+                      {balance.totalSpent && (
+                        <span style={{ color: '#9ca3af', marginLeft: '8px' }}>
+                          ({formatCurrency(balance.totalSpent)} /{' '}
+                          {formatCurrency(balance.totalPaid)} spent)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Paid Credits Progress Bar */}
+                  {balance.totalPaid > 0 && (
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: '#e5e7eb',
+                        borderRadius: '2px',
+                        overflow: 'hidden',
+                        border: '1px solid #d1d5db',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${Math.max(0, Math.min(100, (balance.balance / balance.totalPaid) * 100))}%`,
+                          height: '100%',
+                          backgroundColor: '#dc2626',
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
