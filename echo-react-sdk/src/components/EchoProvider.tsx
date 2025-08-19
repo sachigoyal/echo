@@ -8,6 +8,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import {
@@ -43,7 +44,15 @@ export interface EchoContextValue {
   clearAuth: () => Promise<void>;
 }
 
+// Separate context for refresh state to prevent unnecessary re-renders
+export interface EchoRefreshContextValue {
+  isRefreshing: boolean;
+}
+
 export const EchoContext = createContext<EchoContextValue | null>(null);
+export const EchoRefreshContext = createContext<EchoRefreshContextValue | null>(
+  null
+);
 
 interface EchoProviderProps {
   config: EchoConfig;
@@ -90,28 +99,65 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   // Combine errors from different sources
   const combinedError =
     auth.error?.message || balanceError || paymentError || null;
-  const combinedLoading = auth.isLoading || balanceLoading || paymentLoading;
 
-  const contextValue: EchoContextValue = {
-    user: echoUser || null,
-    rawUser: user,
-    balance,
-    freeTierBalance,
-    isAuthenticated: auth.isAuthenticated,
-    isLoading: combinedLoading,
-    error: combinedError,
-    token,
-    echoClient,
-    signIn: auth.signinRedirect,
-    signOut: clearAuth,
-    refreshBalance,
-    createPaymentLink,
-    getToken,
-    clearAuth,
-  };
+  // Only include auth.isLoading for initial authentication, not token refresh
+  // Token refresh should be transparent to downstream components
+  const isInitialAuthLoading = auth.isLoading && !auth.isAuthenticated;
+  const isTokenRefreshing = auth.isLoading && auth.isAuthenticated;
+  const combinedLoading =
+    isInitialAuthLoading || balanceLoading || paymentLoading;
+
+  // Main context - stable during token refresh
+  const contextValue: EchoContextValue = useMemo(
+    () => ({
+      user: echoUser || null,
+      rawUser: user,
+      balance,
+      freeTierBalance,
+      isAuthenticated: auth.isAuthenticated,
+      isLoading: combinedLoading,
+      error: combinedError,
+      token,
+      echoClient,
+      signIn: auth.signinRedirect,
+      signOut: clearAuth,
+      refreshBalance,
+      createPaymentLink,
+      getToken,
+      clearAuth,
+    }),
+    [
+      echoUser,
+      user,
+      balance,
+      freeTierBalance,
+      auth.isAuthenticated,
+      combinedLoading,
+      combinedError,
+      token,
+      echoClient,
+      auth.signinRedirect,
+      clearAuth,
+      refreshBalance,
+      createPaymentLink,
+      getToken,
+    ]
+  );
+
+  // Separate refresh context - only components that need refresh state will re-render
+  const refreshContextValue: EchoRefreshContextValue = useMemo(
+    () => ({
+      isRefreshing: isTokenRefreshing,
+    }),
+    [isTokenRefreshing]
+  );
 
   return (
-    <EchoContext.Provider value={contextValue}>{children}</EchoContext.Provider>
+    <EchoContext.Provider value={contextValue}>
+      <EchoRefreshContext.Provider value={refreshContextValue}>
+        {children}
+      </EchoRefreshContext.Provider>
+    </EchoContext.Provider>
   );
 }
 
