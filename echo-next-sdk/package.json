@@ -32,7 +32,8 @@
   "author": "Echo Team",
   "license": "MIT",
   "dependencies": {
-    "@merit-systems/echo-typescript-sdk": "^1.0.2"
+    "@merit-systems/echo-typescript-sdk": "^1.0.2",
+    "jwt-decode": "^4.0.0"
   },
   "peerDependencies": {
     "next": "^15.1.4"
