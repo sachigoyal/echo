@@ -226,7 +226,7 @@ export class EchoControlApiClient {
       apiKey: authToken,
       baseUrl: this.baseUrl,
     });
-    return await echoClient.getBalance();
+    return await echoClient.balance.getBalance();
   }
 
   // Payment endpoint
@@ -244,7 +244,7 @@ export class EchoControlApiClient {
       apiKey: authToken,
       baseUrl: this.baseUrl,
     });
-    const response = await echoClient.createPaymentLink({
+    const response = await echoClient.payments.createPaymentLink({
       amount: params.amount,
       description: params.description ?? '',
     });
@@ -263,7 +263,7 @@ export class EchoControlApiClient {
       apiKey: authToken,
       baseUrl: this.baseUrl,
     });
-    return await echoClient.getFreeBalance(echoAppId);
+    return await echoClient.balance.getFreeBalance(echoAppId);
   }
 }
 

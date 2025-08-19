@@ -1,12 +1,13 @@
-import type { FreeBalance } from '@merit-systems/echo-typescript-sdk';
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import type {
+  EchoClient,
+  FreeBalance,
+} from '@merit-systems/echo-typescript-sdk';
 import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import {
   createContext,
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useState,
 } from 'react';
 import {
@@ -15,6 +16,7 @@ import {
   useAuth,
 } from 'react-oidc-context';
 import { useEchoBalance } from '../hooks/useEchoBalance';
+import { useEchoClient } from '../hooks/useEchoClient';
 import { useEchoPayments } from '../hooks/useEchoPayments';
 import { EchoBalance, EchoConfig, EchoUser } from '../types';
 
@@ -28,6 +30,7 @@ export interface EchoContextValue {
   isLoading: boolean;
   error: string | null;
   token: string | null;
+  echoClient: EchoClient | null;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshBalance: () => Promise<void>;
@@ -56,16 +59,8 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   const apiUrl = config.apiUrl || 'https://echo.merit.systems';
   const token = auth.user?.access_token || null;
 
-  // Create EchoClient for business logic
-  const echoClient = useMemo(() => {
-    if (!token) return null;
-    return new EchoClient({
-      baseUrl: apiUrl,
-      apiKey: token,
-    });
-  }, [apiUrl, token]);
+  const echoClient = useEchoClient({ apiUrl });
 
-  // Business logic hooks - one line each!
   const {
     balance,
     freeTierBalance,
@@ -73,6 +68,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     error: balanceError,
     isLoading: balanceLoading,
   } = useEchoBalance(echoClient, config.appId);
+
   const {
     createPaymentLink,
     error: paymentError,
@@ -105,6 +101,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     isLoading: combinedLoading,
     error: combinedError,
     token,
+    echoClient,
     signIn: auth.signinRedirect,
     signOut: clearAuth,
     refreshBalance,
@@ -112,8 +109,6 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     getToken,
     clearAuth,
   };
-
-  console.log('echo', contextValue);
 
   return (
     <EchoContext.Provider value={contextValue}>{children}</EchoContext.Provider>
@@ -137,33 +132,35 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
   const apiUrl = config.apiUrl || 'https://echo.merit.systems';
 
   const oidcConfig: AuthProviderUserManagerProps = {
-    userManager: new UserManager({
-      authority: apiUrl,
-      client_id: config.appId,
-      redirect_uri: config.redirectUri || window.location.origin,
-      scope: config.scope || 'llm:invoke offline_access',
-      silentRequestTimeoutInSeconds: 10,
+    userManager:
+      (typeof window !== 'undefined' && (window as any).__echoUserManager) ||
+      new UserManager({
+        authority: apiUrl,
+        client_id: config.appId,
+        redirect_uri: config.redirectUri || window.location.origin,
+        scope: config.scope || 'llm:invoke offline_access',
+        silentRequestTimeoutInSeconds: 10,
 
-      // Silent renewal configuration
-      silent_redirect_uri: config.redirectUri || window.location.origin,
-      includeIdTokenInSilentRenew: false,
+        // Silent renewal configuration
+        silent_redirect_uri: config.redirectUri || window.location.origin,
+        includeIdTokenInSilentRenew: false,
 
-      validateSubOnSilentRenew: true,
+        validateSubOnSilentRenew: true,
 
-      // UserInfo endpoint configuration
-      loadUserInfo: true,
+        // UserInfo endpoint configuration
+        loadUserInfo: true,
 
-      // Custom OAuth endpoints (non-standard OIDC)
-      metadata: {
-        authorization_endpoint: `${apiUrl}/api/oauth/authorize`,
-        token_endpoint: `${apiUrl}/api/oauth/token`,
-        userinfo_endpoint: `${apiUrl}/api/oauth/userinfo`,
-        issuer: apiUrl,
-        jwks_uri: `${apiUrl}/.well-known/jwks.json`,
-        end_session_endpoint: `${apiUrl}/api/oauth/logout`,
-      },
-      userStore: new WebStorageStateStore({ store: window.localStorage }),
-    }),
+        // Custom OAuth endpoints (non-standard OIDC)
+        metadata: {
+          authorization_endpoint: `${apiUrl}/api/oauth/authorize`,
+          token_endpoint: `${apiUrl}/api/oauth/token`,
+          userinfo_endpoint: `${apiUrl}/api/oauth/userinfo`,
+          issuer: apiUrl,
+          jwks_uri: `${apiUrl}/.well-known/jwks.json`,
+          end_session_endpoint: `${apiUrl}/api/oauth/logout`,
+        },
+        userStore: new WebStorageStateStore({ store: window.localStorage }),
+      }),
 
     // Remove URL parameters after successful authentication
     onSigninCallback: () => {

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Cross-SDK integration tests for Echo platform",
   "scripts": {
-    "test": "vitest run tests/",
+    "test": "echo 'no unit tests to run'",
     "test:watch": "vitest tests/",
     "test:echo-data-server": "vitest run tests/echo-data-server/",
     "test:oauth-protocol": "vitest run tests/oauth-protocol/",

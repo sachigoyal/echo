@@ -1,5 +1,5 @@
-import React from 'react';
 import { render } from '@testing-library/react';
+import React from 'react';
 import { EchoProvider } from '../../components/EchoProvider';
 import { EchoConfig } from '../../types';
 
@@ -60,6 +60,7 @@ export function createMockUserManager(
 ) {
   return {
     signinRedirect: vi.fn().mockResolvedValue(undefined),
+    signinCallback: vi.fn().mockResolvedValue(undefined),
     signinRedirectCallback: vi.fn().mockResolvedValue({
       access_token: 'mock-access-token',
       token_type: 'Bearer',
@@ -80,20 +81,30 @@ export function createMockUserManager(
         name: 'Test User',
       },
     }),
+    signinSilentCallback: vi.fn().mockResolvedValue(undefined),
     getUser: vi.fn().mockResolvedValue(null),
     removeUser: vi.fn().mockResolvedValue(undefined),
     signoutRedirect: vi.fn().mockResolvedValue(undefined),
+    signoutCallback: vi.fn().mockResolvedValue(undefined),
     events: {
       addUserLoaded: vi.fn(),
       addUserUnloaded: vi.fn(),
       addAccessTokenExpiring: vi.fn(),
       addAccessTokenExpired: vi.fn(),
       addSilentRenewError: vi.fn(),
+      addUserSignedIn: vi.fn(),
+      addUserSignedOut: vi.fn(),
+      addUserSessionChanged: vi.fn(),
       removeUserLoaded: vi.fn(),
       removeUserUnloaded: vi.fn(),
       removeAccessTokenExpiring: vi.fn(),
       removeAccessTokenExpired: vi.fn(),
       removeSilentRenewError: vi.fn(),
+      removeUserSignedIn: vi.fn(),
+      removeUserSignedOut: vi.fn(),
+      removeUserSessionChanged: vi.fn(),
+      load: vi.fn(),
+      unload: vi.fn(),
     },
     ...overrides,
   };

@@ -100,29 +100,6 @@ export function EchoSignIn({
           <span>{isLoading ? 'Signing in...' : 'Sign in'}</span>
         </button>
       )}
-
-      {error && (
-        <div
-          className="echo-signin-error"
-          style={{
-            marginTop: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '12px 16px',
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: '8px',
-            color: '#dc2626',
-            fontSize: '14px',
-            fontFamily: 'HelveticaNowDisplay, sans-serif',
-            fontWeight: '800',
-            width: 'fit-content',
-          }}
-        >
-          <span>{error}</span>
-        </div>
-      )}
     </div>
   );
 }
