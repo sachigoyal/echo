@@ -1,0 +1,100 @@
+'use client';
+
+import Link from 'next/link';
+
+import { MotionTab } from './motion-tab';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useScroll, useTransform } from 'motion/react';
+
+interface Tab {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  tabs: Tab[];
+}
+
+export const Actions: React.FC<Props> = ({ tabs }) => {
+  const [buttonRefs, setButtonRefs] = useState<Array<HTMLAnchorElement | null>>(
+    []
+  );
+
+  const { scrollY } = useScroll();
+
+  const paddingLeft = useTransform(scrollY, [0, 56], [0, 36]);
+
+  useEffect(() => {
+    setButtonRefs(prev => prev.slice(0, tabs.length));
+  }, [tabs.length]);
+
+  const navRef = useRef<HTMLDivElement>(null);
+  const navRect = navRef.current?.getBoundingClientRect();
+
+  const [hoveredTabIndex, setHoveredTabIndex] = useState<number | null>(null);
+  const hoveredRect =
+    buttonRefs[hoveredTabIndex ?? -1]?.getBoundingClientRect();
+
+  return (
+    <nav
+      className="bg-card w-full relative h-full"
+      ref={navRef}
+      onPointerLeave={() => setHoveredTabIndex(null)}
+    >
+      <motion.ul
+        className="list-none p-0 m-0 font-medium text-sm flex w-full h-full"
+        style={{ paddingLeft: paddingLeft }}
+      >
+        {tabs.map((tab, index) => (
+          <div className="relative z-11 pb-1" key={tab.label}>
+            <Link
+              href={tab.href}
+              className="z-11"
+              onMouseEnter={() => setHoveredTabIndex(index)}
+              onMouseLeave={() => setHoveredTabIndex(null)}
+              ref={el => {
+                if (el) {
+                  buttonRefs[index] = el as HTMLAnchorElement;
+                }
+              }}
+            >
+              <MotionTab href={tab.href}>{tab.label}</MotionTab>
+            </Link>
+          </div>
+        ))}
+      </motion.ul>
+      <AnimatePresence>
+        {hoveredRect && navRect && (
+          <motion.div
+            key="hover"
+            className={`absolute z-10 top-0 left-0 rounded-md bg-accent`}
+            initial={{
+              ...getHoverAnimationProps(hoveredRect, navRect),
+              opacity: 0,
+            }}
+            animate={{
+              ...getHoverAnimationProps(hoveredRect, navRect),
+              opacity: 1,
+            }}
+            exit={{
+              ...getHoverAnimationProps(hoveredRect, navRect),
+              opacity: 0,
+            }}
+            transition={{
+              type: 'tween',
+              ease: 'easeOut',
+              duration: 0.15,
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </nav>
+  );
+};
+
+const getHoverAnimationProps = (hoveredRect: DOMRect, navRect: DOMRect) => ({
+  x: hoveredRect.left - navRect.left,
+  y: hoveredRect.top - navRect.top,
+  width: hoveredRect.width,
+  height: hoveredRect.height,
+});

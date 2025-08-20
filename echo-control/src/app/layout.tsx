@@ -5,12 +5,9 @@ import { RootProvider } from 'fumadocs-ui/provider';
 
 import { TRPCReactProvider } from '@/trpc/client';
 
-import { Navbar } from './_components/navbar';
-
 import type { Metadata } from 'next';
 
 import '@/styles/globals.css';
-import { Layout } from './_components/layout';
 
 export const metadata: Metadata = {
   title: 'Echo',
@@ -32,7 +29,7 @@ export default function RootLayout({
   return (
     <SessionProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className="antialiased">
+        <body className="antialiased bg-card">
           <RootProvider>
             <TRPCReactProvider>
               <ThemeProvider

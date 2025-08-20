@@ -1,4 +1,4 @@
-import { HeroGraphic } from '@/app/(home)/_components/unauthed/1_hero/graphic';
+import { HeroGraphic } from '@/app/(landing-page)/_components/1_hero/graphic';
 import { AuroraText } from '@/components/magicui/aurora-text';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

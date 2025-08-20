@@ -4,6 +4,7 @@ import {
   createFreeTierPaymentLink,
   createFreeTierPaymentLinkSchema,
 } from '@/services/stripe';
+import { getAllOwnerEchoApps } from '@/lib/apps';
 
 export const ownerAppsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -17,4 +18,8 @@ export const ownerAppsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return await createFreeTierPaymentLink(ctx.session.user.id, input);
     }),
+
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return await getAllOwnerEchoApps(ctx.session.user.id);
+  }),
 });
