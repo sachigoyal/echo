@@ -5,17 +5,18 @@ import Link from 'next/link';
 import { MotionTab } from './motion-tab';
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useScroll, useTransform } from 'motion/react';
+import { Route } from 'next';
 
-interface Tab {
+interface Tab<T extends string> {
   label: string;
-  href: string;
+  href: Route<T>;
 }
 
-interface Props {
-  tabs: Tab[];
+interface Props<T extends string = string> {
+  tabs: Tab<T>[];
 }
 
-export const Nav: React.FC<Props> = ({ tabs }) => {
+export const Nav = <T extends string>({ tabs }: Props<T>) => {
   const [buttonRefs, setButtonRefs] = useState<Array<HTMLAnchorElement | null>>(
     []
   );

@@ -15,7 +15,7 @@
     "prisma:studio": "pnpx prisma studio",
     "prisma:reset": "pnpx prisma migrate reset",
     "copy:model-prices": "cp ../echo-server/model_prices.json ./model_prices.json",
-    "check-types": "tsc --noEmit",
+    "check-types": "next typegen && tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "postinstall": "fumadocs-mdx"
   },

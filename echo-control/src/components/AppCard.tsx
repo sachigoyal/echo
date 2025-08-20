@@ -9,6 +9,7 @@ import { CommitChart } from './activity-chart/chart';
 import { useRouter } from 'next/navigation';
 import { EchoApp } from '@/lib/types/apps';
 import { formatCurrency } from '@/lib/utils/decimal';
+import { Route } from 'next';
 
 const transformActivityData = (data: number[]) => {
   return data.map((count, index) => ({
@@ -20,21 +21,21 @@ const transformActivityData = (data: number[]) => {
   }));
 };
 
-interface AppCardProps {
+interface AppCardProps<T extends string> {
   app: EchoApp;
   activityData: number[];
   size?: 'small' | 'medium' | 'large';
   showChart?: boolean;
-  href?: string;
+  href?: Route<T>;
 }
 
-export const AppCard: React.FC<AppCardProps> = ({
+export const AppCard = <T extends string>({
   app,
   activityData = [],
   size = 'medium',
   showChart = true,
   href,
-}) => {
+}: AppCardProps<T>) => {
   const router = useRouter();
   const isSmall = size === 'small';
   const isMedium = size === 'medium';

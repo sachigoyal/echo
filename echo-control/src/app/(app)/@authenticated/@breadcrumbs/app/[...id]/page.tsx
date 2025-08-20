@@ -38,7 +38,7 @@ const UserBreadcrumb = async ({ id }: { id: string }) => {
   const owner = await api.apps.public.owner(id);
   return (
     <Breadcrumb
-      href={`/${id}`}
+      href={`/user/${id}`}
       image={owner.image ?? null}
       name={owner.name ?? 'Unknown'}
       Fallback={User}

@@ -27,6 +27,7 @@ import { AppRole } from '@/lib/permissions/types';
 // Add GitHub API imports
 import { githubApi, GitHubUser, GitHubRepo } from '@/lib/github-api';
 import { useState, useEffect } from 'react';
+import { Route } from 'next';
 
 // Helper functions
 export const formatNumber = (value: number | null | undefined): string => {
@@ -109,12 +110,15 @@ export function AppDetailLayout({
 }
 
 // Shared Banner Component
-interface AppBannerProps {
+interface AppBannerProps<T extends string> {
   app: EchoApp;
-  backUrl?: string;
+  backUrl?: Route<T>;
 }
 
-export function AppBanner({ app, backUrl = '/' }: AppBannerProps) {
+export function AppBanner<T extends string>({
+  app,
+  backUrl = '/',
+}: AppBannerProps<T>) {
   return (
     <>
       {/* Header with back button */}

@@ -29,11 +29,11 @@ export const AuthorizeButtons: React.FC<Props> = ({ params }) => {
   return (
     <div className="flex flex-col gap-1 w-full">
       <div className="flex gap-2 w-full">
-        <Link href={denyUrl.toString()} className="flex-1">
+        <a href={denyUrl.toString()} className="flex-1">
           <Button variant="outline" className="w-full" disabled={pending}>
             Cancel
           </Button>
-        </Link>
+        </a>
         <form action={action} className="flex-1">
           <Button
             type="submit"

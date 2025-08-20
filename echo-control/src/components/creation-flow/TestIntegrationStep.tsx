@@ -43,7 +43,7 @@ export default function TestIntegrationStep({
     if (createdAppId) {
       router.push(`/apps/${createdAppId}`);
     } else {
-      router.push('/owner');
+      router.push('/');
     }
   };
 

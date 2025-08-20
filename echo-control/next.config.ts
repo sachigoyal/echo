@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
   },
+  typedRoutes: true,
   images: {
     remotePatterns: [
       {
