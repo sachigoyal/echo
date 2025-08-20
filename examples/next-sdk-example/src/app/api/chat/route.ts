@@ -8,7 +8,6 @@ import { convertToModelMessages, generateText, streamText } from 'ai';
 export async function POST(req: Request) {
   const { messages } = await req.json();
   const echoToken = await getEchoToken();
-  console.log('echoToken', echoToken);
 
   const openai = createOpenAI({
     baseURL: baseUrl,
@@ -18,9 +17,6 @@ export async function POST(req: Request) {
   const result = streamText({
     model: openai('gpt-4o'),
     messages: convertToModelMessages(messages),
-    // headers: {
-    //   Authorization: `Bearer ${echoToken}`,
-    // },
   });
 
   return result.toUIMessageStreamResponse();

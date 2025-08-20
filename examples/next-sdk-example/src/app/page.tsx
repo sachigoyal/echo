@@ -4,7 +4,6 @@ import Chat from './components/chat';
 
 export default async function Home() {
   const signedIn = await isSignedIn();
-  // const echoToken = await getEchoToken();
 
   if (!signedIn) {
     return (
