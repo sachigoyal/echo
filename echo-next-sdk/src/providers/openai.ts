@@ -44,19 +44,61 @@ export function createEchoOpenAI(config: EchoConfig): EchoOpenAIProvider {
     return provider(modelId);
   };
 
-  return new Proxy(openaiFunction, {
-    get(target, prop) {
-      if (prop in target) return target[prop as keyof typeof target];
+  // Add methods to the function object
+  openaiFunction.languageModel = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.languageModel(modelId);
+  };
 
-      return async (modelId: string) => {
-        const provider = await getProvider();
-        const method = provider[prop as keyof OpenAIProvider];
+  openaiFunction.chat = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.chat(modelId);
+  };
 
-        if (typeof method === 'function') {
-          return (method as Function)(modelId);
-        }
-        return method;
-      };
-    },
-  }) as EchoOpenAIProvider;
+  openaiFunction.responses = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.responses(modelId);
+  };
+
+  openaiFunction.completion = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.completion(modelId);
+  };
+
+  openaiFunction.embedding = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.embedding(modelId);
+  };
+
+  openaiFunction.textEmbedding = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.textEmbedding(modelId);
+  };
+
+  openaiFunction.textEmbeddingModel = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.textEmbeddingModel(modelId);
+  };
+
+  openaiFunction.image = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.image(modelId);
+  };
+
+  openaiFunction.imageModel = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.imageModel(modelId);
+  };
+
+  openaiFunction.transcription = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.transcription(modelId);
+  };
+
+  openaiFunction.speech = async (modelId: string) => {
+    const provider = await getProvider();
+    return provider.speech(modelId);
+  };
+
+  return openaiFunction as EchoOpenAIProvider;
 }
