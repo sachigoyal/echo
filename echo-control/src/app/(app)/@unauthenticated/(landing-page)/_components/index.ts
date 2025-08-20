@@ -1,4 +1,3 @@
-export { Navbar } from './navbar';
 export { Hero } from './1_hero';
 export { Features } from './2_features';
 export { IntegrationSection } from './3_integration';

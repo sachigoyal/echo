@@ -13,7 +13,7 @@ interface Props {
   user: User;
 }
 
-export const Navbar: React.FC<Props> = ({ user }) => {
+export const Header: React.FC<Props> = ({ user }) => {
   return (
     <header className="flex items-center justify-between p-2 md:p-4">
       <Link href="/" className="flex items-center gap-2">

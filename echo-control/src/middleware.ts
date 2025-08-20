@@ -49,6 +49,7 @@ export const x402MiddlewareGenerator = (req: NextRequest) => {
 const isPublicRoute = createPathMatcher([
   // public pages
   '/',
+  '/popular',
   '/login',
   '/verify-email',
   '/auth/signin(.*)',
