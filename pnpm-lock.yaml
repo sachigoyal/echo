@@ -383,9 +383,15 @@ importers:
 
   echo-next-sdk:
     dependencies:
+      '@ai-sdk/openai':
+        specifier: ^2.0.16
+        version: 2.0.16(zod@4.0.17)
       '@merit-systems/echo-typescript-sdk':
         specifier: ^1.0.2
         version: 1.0.2
+      ai:
+        specifier: ^5.0.17
+        version: 5.0.17(zod@4.0.17)
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0

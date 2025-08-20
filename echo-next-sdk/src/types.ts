@@ -1,4 +1,6 @@
+import { LanguageModel } from 'ai';
 import { NextRequest } from 'next/server';
+import { EchoOpenAIModelId } from 'providers/openai';
 
 export interface EchoConfig {
   appId: string;
@@ -14,5 +16,5 @@ export type EchoResult = {
   handlers: AppRouteHandlers;
   isSignedIn: () => Promise<boolean>;
   getEchoToken: () => Promise<string | null>;
-  baseUrl: string;
+  openai: (model: EchoOpenAIModelId) => Promise<LanguageModel>;
 };
