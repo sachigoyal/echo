@@ -4,6 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { Code } from 'lucide-react';
 import Link from 'next/link';
@@ -37,5 +38,18 @@ export const AppCard = ({
         </CardHeader>
       </Card>
     </Link>
+  );
+};
+
+export const AppCardSkeleton = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Skeleton className="size-4" />
+          <Skeleton className="w-24 h-4" />
+        </div>
+      </CardHeader>
+    </Card>
   );
 };
