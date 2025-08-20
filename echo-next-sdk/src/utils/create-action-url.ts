@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { EchoConfig } from '../types';
 
 /**
@@ -8,7 +8,6 @@ export async function createActionURL(
   action: string,
   config: EchoConfig
 ): Promise<URL> {
-  const { headers } = await import('next/headers');
   const headersList = await headers();
 
   const detectedHost =

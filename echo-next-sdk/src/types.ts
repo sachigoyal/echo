@@ -1,7 +1,7 @@
 import { User } from '@merit-systems/echo-typescript-sdk';
 import { NextRequest } from 'next/server';
-import { EchoAnthropicProvider } from 'providers';
-import { EchoOpenAIProvider } from 'providers/openai';
+import { EchoAnthropicProvider } from '@merit-systems/echo-typescript-sdk';
+import { EchoOpenAIProvider } from '@merit-systems/echo-typescript-sdk';
 
 export interface EchoConfig {
   appId: string;
