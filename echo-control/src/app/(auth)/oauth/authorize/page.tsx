@@ -7,8 +7,6 @@ import {
   CardHeader,
 } from '@/components/ui/card';
 
-import { FlickeringGrid } from '@/components/magicui/flickering-grid';
-
 import { ConnectionBeam } from './_components/connection-beam';
 import { Scopes } from './_components/scopes';
 import { AuthorizeButtons } from './_components/buttons';

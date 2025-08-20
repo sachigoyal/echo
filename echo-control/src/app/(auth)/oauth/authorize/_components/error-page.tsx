@@ -2,7 +2,6 @@ import Link from 'next/link';
 
 import { AlertCircle } from 'lucide-react';
 
-import { FlickeringGrid } from '@/components/magicui/flickering-grid';
 import { Button } from '@/components/ui/button';
 import {
   Card,

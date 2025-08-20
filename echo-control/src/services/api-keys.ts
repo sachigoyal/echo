@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ApiKey, Prisma } from '@/generated/prisma';
+
 import { db } from '../lib/db';
 import {
   AppRole,
@@ -10,7 +11,6 @@ import {
 import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
 import { paginationParamsSchema } from '@/lib/pagination';
-import { PaginatedResponse } from '@/types/paginated-response';
 import { toPaginatedReponse } from './lib/pagination';
 
 export const getApiKeySchema = z.string();

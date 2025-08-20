@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { Separator } from '@/components/ui/separator';
-import { FlickeringGrid } from '@/components/magicui/flickering-grid';
 
 import { ProviderButton } from './provider-button';
 

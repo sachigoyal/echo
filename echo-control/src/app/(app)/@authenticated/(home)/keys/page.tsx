@@ -4,18 +4,8 @@ import { redirect } from 'next/navigation';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import Link from 'next/link';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-import { Heading, Body } from '../../_components/layout/page-utils';
-
-import { auth } from '@/auth';
-
-import { api, HydrateClient } from '@/trpc/server';
-
-import { Keys } from './_components/keys';
 import {
   Dialog,
   DialogHeader,
@@ -24,6 +14,15 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+
+import { Heading, Body } from '../../_components/layout/page-utils';
+
+import { auth } from '@/auth';
+
+import { api, HydrateClient } from '@/trpc/server';
+
+import { Keys } from './_components/keys';
+
 import { GenerateKeyWithSelect } from './_components/generate-key';
 
 export default async function KeysPage() {
