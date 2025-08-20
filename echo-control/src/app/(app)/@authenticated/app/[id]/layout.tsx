@@ -7,7 +7,7 @@ export default async function AuthenticatedAppLayout({
   const { id } = await params;
 
   return (
-    <>
+    <div>
       <Nav
         tabs={[
           {
@@ -25,6 +25,6 @@ export default async function AuthenticatedAppLayout({
         ]}
       />
       <div className="flex flex-col py-4 md:py-6">{children}</div>
-    </>
+    </div>
   );
 }
