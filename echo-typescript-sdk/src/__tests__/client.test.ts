@@ -1,49 +1,50 @@
-import axios from 'axios';
 import { vi, type MockedFunction } from 'vitest';
 
 import { EchoClient } from '../client';
-import {
-  EchoApiError,
-  EchoNetworkError,
-  EchoTimeoutError,
-  ERROR_CODES,
-} from '../utils/error-handling';
+import { EchoError } from '../utils/error-handling';
 
-// Mock axios
-vi.mock('axios');
-const mockedAxios = vi.mocked(axios);
+// Mock global fetch
+const mockFetch = vi.fn() as MockedFunction<typeof fetch>;
+global.fetch = mockFetch;
 
 const TEST_SERVER_URL = 'http://localhost:3001';
 const TEST_API_KEY = 'echo_test_api_key_12345';
 
+// Helper to create mock Response
+function createMockResponse(
+  data: unknown,
+  status = 200,
+  statusText = 'OK'
+): Response {
+  const isOk = status >= 200 && status < 300;
+  const textData = typeof data === 'string' ? data : JSON.stringify(data);
+
+  return {
+    ok: isOk,
+    status,
+    statusText,
+    json: vi.fn().mockResolvedValue(data),
+    text: vi.fn().mockResolvedValue(textData),
+    headers: new Headers(),
+    redirected: false,
+    type: 'basic',
+    url: '',
+    clone: vi.fn(),
+    body: null,
+    bodyUsed: false,
+    arrayBuffer: vi.fn(),
+    blob: vi.fn(),
+    formData: vi.fn(),
+    bytes: vi.fn(),
+  } as unknown as Response;
+}
+
 describe('EchoClient', () => {
   let client: EchoClient;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockAxiosInstance: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Setup mock axios instance
-    mockAxiosInstance = {
-      get: vi.fn(),
-      post: vi.fn(),
-      interceptors: {
-        request: {
-          use: vi.fn(),
-        },
-        response: {
-          use: vi.fn(),
-        },
-      },
-      defaults: {
-        timeout: 30000,
-      },
-    };
-
-    (mockedAxios.create as MockedFunction<typeof axios.create>).mockReturnValue(
-      mockAxiosInstance
-    );
+    mockFetch.mockClear();
 
     client = new EchoClient({
       baseUrl: TEST_SERVER_URL,
@@ -53,32 +54,35 @@ describe('EchoClient', () => {
 
   describe('Authentication', () => {
     it('should include Authorization header in requests', async () => {
-      mockAxiosInstance.get.mockResolvedValue({
-        data: { totalPaid: 100, totalSpent: 0, balance: 100 },
-      });
+      const mockData = { totalPaid: 100, totalSpent: 0, balance: 100 };
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockData));
 
       await client.balance.getBalance();
 
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/balance');
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/balance`,
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${TEST_API_KEY}`,
+            'Content-Type': 'application/json',
+          }),
+        })
+      );
     });
 
     it('should handle authentication errors', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 401,
-          data: { error: 'Authentication required. Please sign in again.' },
-        },
-        message: 'Request failed with status code 401',
-        name: 'AxiosError',
-      };
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
-
-      await expect(client.balance.getBalance()).rejects.toThrow(EchoApiError);
-      await expect(client.balance.getBalance()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.UNAUTHORIZED
+      const errorResponse = createMockResponse(
+        { error: 'Authentication required. Please sign in again.' },
+        401,
+        'Unauthorized'
       );
+      mockFetch.mockResolvedValue(errorResponse);
+
+      const promise = client.balance.getBalance();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'HTTP_401');
     });
   });
 
@@ -90,30 +94,27 @@ describe('EchoClient', () => {
         totalSpent: 24.5,
       };
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockBalance });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockBalance));
 
       const balance = await client.balance.getBalance();
 
       expect(balance).toEqual(mockBalance);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/balance');
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/balance`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
     });
 
     it('should handle balance fetch errors', async () => {
-      const networkError = {
-        isAxiosError: true,
-        message: 'Network error',
-        name: 'AxiosError',
-        code: 'ECONNREFUSED',
-      };
-      mockAxiosInstance.get.mockRejectedValue(networkError);
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch.mockRejectedValue(networkError);
 
-      await expect(client.balance.getBalance()).rejects.toThrow(
-        EchoNetworkError
-      );
-      await expect(client.balance.getBalance()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.NETWORK_ERROR
-      );
+      const promise = client.balance.getBalance();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'NETWORK_ERROR');
     });
   });
 
@@ -134,14 +135,20 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const response = await client.payments.createPaymentLink(paymentRequest);
 
       expect(response).toEqual(mockResponse);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        paymentRequest
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(paymentRequest),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -159,14 +166,20 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const response = await client.payments.createPaymentLink(paymentRequest);
 
       expect(response).toEqual(mockResponse);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        paymentRequest
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(paymentRequest),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -187,14 +200,20 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const response = await client.payments.createPaymentLink(paymentRequest);
 
       expect(response).toEqual(mockResponse);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        paymentRequest
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(paymentRequest),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -215,14 +234,20 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const response = await client.payments.createPaymentLink(paymentRequest);
 
       expect(response).toEqual(mockResponse);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        paymentRequest
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(paymentRequest),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -232,23 +257,17 @@ describe('EchoClient', () => {
         description: 'Invalid amount',
       };
 
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 400,
-          data: { error: 'Invalid amount' },
-        },
-        message: 'Request failed with status code 400',
-        name: 'AxiosError',
-      };
-      mockAxiosInstance.post.mockRejectedValue(axiosError);
+      const errorResponse = createMockResponse(
+        { error: 'Invalid amount' },
+        400,
+        'Bad Request'
+      );
+      mockFetch.mockResolvedValue(errorResponse);
 
-      await expect(
-        client.payments.createPaymentLink(paymentRequest)
-      ).rejects.toThrow(EchoApiError);
-      await expect(
-        client.payments.createPaymentLink(paymentRequest)
-      ).rejects.toHaveProperty('code', ERROR_CODES.BAD_REQUEST);
+      const promise = client.payments.createPaymentLink(paymentRequest);
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'HTTP_400');
     });
   });
 
@@ -267,17 +286,23 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const url = await client.payments.getPaymentUrl(amount, description);
 
       expect(url).toBe(mockResponse.paymentLink.url);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        {
-          amount,
-          description,
-        }
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            amount,
+            description,
+          }),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -294,17 +319,23 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const url = await client.payments.getPaymentUrl(amount);
 
       expect(url).toBe(mockResponse.paymentLink.url);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        {
-          amount,
-          description: 'Echo Credits',
-        }
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            amount,
+            description: 'Echo Credits',
+          }),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -323,7 +354,7 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const url = await client.payments.getPaymentUrl(
         amount,
@@ -332,13 +363,19 @@ describe('EchoClient', () => {
       );
 
       expect(url).toBe(mockResponse.paymentLink.url);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        {
-          amount,
-          description,
-          successUrl,
-        }
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            amount,
+            description,
+            successUrl,
+          }),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -357,7 +394,7 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const url = await client.payments.getPaymentUrl(
         amount,
@@ -366,13 +403,19 @@ describe('EchoClient', () => {
       );
 
       expect(url).toBe(mockResponse.paymentLink.url);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        {
-          amount,
-          description,
-          successUrl,
-        }
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            amount,
+            description,
+            successUrl,
+          }),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
 
@@ -390,7 +433,7 @@ describe('EchoClient', () => {
         },
       };
 
-      mockAxiosInstance.post.mockResolvedValue({ data: mockResponse });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockResponse));
 
       const url = await client.payments.getPaymentUrl(
         amount,
@@ -399,12 +442,18 @@ describe('EchoClient', () => {
       );
 
       expect(url).toBe(mockResponse.paymentLink.url);
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/api/v1/stripe/payment-link',
-        {
-          amount,
-          description,
-        }
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/stripe/payment-link`,
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            amount,
+            description,
+          }),
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
       );
     });
   });
@@ -430,16 +479,21 @@ describe('EchoClient', () => {
         },
       ];
 
-      mockAxiosInstance.get.mockResolvedValue({ data: { apps: mockApps } });
+      mockFetch.mockResolvedValueOnce(createMockResponse({ apps: mockApps }));
 
       const apps = await client.apps.listEchoApps();
 
       expect(apps).toEqual(mockApps);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/apps');
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/apps`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
     });
 
     it('should handle empty app list', async () => {
-      mockAxiosInstance.get.mockResolvedValue({ data: { apps: [] } });
+      mockFetch.mockResolvedValueOnce(createMockResponse({ apps: [] }));
 
       const apps = await client.apps.listEchoApps();
 
@@ -459,32 +513,31 @@ describe('EchoClient', () => {
         userId: 'user1',
       };
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockApp });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockApp));
 
       const app = await client.apps.getEchoApp('app1');
 
       expect(app).toEqual(mockApp);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/apps/app1');
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/apps/app1`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
     });
 
     it('should handle non-existent app', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 404,
-          data: { error: 'Echo app not found' },
-        },
-        message: 'Request failed with status code 404',
-        name: 'AxiosError',
-      };
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
-
-      await expect(client.apps.getEchoApp('nonexistent')).rejects.toThrow(
-        EchoApiError
+      const errorResponse = createMockResponse(
+        { error: 'Echo app not found' },
+        404,
+        'Not Found'
       );
-      await expect(
-        client.apps.getEchoApp('nonexistent')
-      ).rejects.toHaveProperty('code', ERROR_CODES.NOT_FOUND);
+      mockFetch.mockResolvedValue(errorResponse);
+
+      const promise = client.apps.getEchoApp('nonexistent');
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'HTTP_404');
     });
   });
 
@@ -500,49 +553,41 @@ describe('EchoClient', () => {
         updatedAt: '2024-01-02T00:00:00Z',
       };
 
-      mockAxiosInstance.get.mockResolvedValue({ data: mockUser });
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockUser));
 
       const user = await client.users.getUserInfo();
 
       expect(user).toEqual(mockUser);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/api/v1/user');
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/user`,
+        expect.objectContaining({
+          method: 'GET',
+        })
+      );
     });
 
     it('should handle user info fetch errors', async () => {
-      const networkError = {
-        isAxiosError: true,
-        message: 'Network error',
-        name: 'AxiosError',
-        code: 'ECONNREFUSED',
-      };
-      mockAxiosInstance.get.mockRejectedValue(networkError);
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch.mockRejectedValue(networkError);
 
-      await expect(client.users.getUserInfo()).rejects.toThrow(
-        EchoNetworkError
-      );
-      await expect(client.users.getUserInfo()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.NETWORK_ERROR
-      );
+      const promise = client.users.getUserInfo();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'NETWORK_ERROR');
     });
 
     it('should handle user not found errors', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 404,
-          data: { error: 'User not found' },
-        },
-        message: 'Request failed with status code 404',
-        name: 'AxiosError',
-      };
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
-
-      await expect(client.users.getUserInfo()).rejects.toThrow(EchoApiError);
-      await expect(client.users.getUserInfo()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.NOT_FOUND
+      const errorResponse = createMockResponse(
+        { error: 'User not found' },
+        404,
+        'Not Found'
       );
+      mockFetch.mockResolvedValue(errorResponse);
+
+      const promise = client.users.getUserInfo();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'HTTP_404');
     });
   });
 
@@ -671,131 +716,94 @@ describe('EchoClient', () => {
     };
 
     it('should fetch supported models successfully', async () => {
-      mockAxiosInstance.get.mockResolvedValue({
-        data: mockSupportedModelsResponse,
-      });
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(mockSupportedModelsResponse)
+      );
 
       const response = await client.models.getSupportedModels();
 
       expect(response).toEqual(mockSupportedModelsResponse);
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
-        '/api/v1/supported-models'
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_SERVER_URL}/api/v1/supported-models`,
+        expect.objectContaining({
+          method: 'GET',
+        })
       );
     });
 
     it('should handle supported models fetch errors', async () => {
-      const networkError = {
-        isAxiosError: true,
-        message: 'Network error',
-        name: 'AxiosError',
-        code: 'ECONNREFUSED',
-      };
-      mockAxiosInstance.get.mockRejectedValue(networkError);
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch.mockRejectedValue(networkError);
 
-      await expect(client.models.getSupportedModels()).rejects.toThrow(
-        EchoNetworkError
-      );
-      await expect(client.models.getSupportedModels()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.NETWORK_ERROR
-      );
+      const promise = client.models.getSupportedModels();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'NETWORK_ERROR');
     });
 
     it('should handle API error responses for supported models', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 500,
-          data: { error: 'Internal server error' },
-        },
-        message: 'Request failed with status code 500',
-        name: 'AxiosError',
-      };
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
+      const errorResponse = createMockResponse(
+        { error: 'Internal server error' },
+        500,
+        'Internal Server Error'
+      );
+      mockFetch.mockResolvedValue(errorResponse);
 
-      await expect(client.models.getSupportedModels()).rejects.toThrow(
-        EchoApiError
-      );
-      await expect(client.models.getSupportedModels()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.SERVER_ERROR
-      );
+      const promise = client.models.getSupportedModels();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'HTTP_500');
     });
   });
 
   describe('Error Handling', () => {
     it('should handle network errors gracefully', async () => {
-      const networkError = {
-        isAxiosError: true,
-        message: 'Network Error',
-        name: 'AxiosError',
-        code: 'ECONNREFUSED',
-      };
-      mockAxiosInstance.get.mockRejectedValue(networkError);
+      const networkError = new TypeError('Failed to fetch');
+      mockFetch.mockRejectedValue(networkError);
 
-      await expect(client.balance.getBalance()).rejects.toThrow(
-        EchoNetworkError
-      );
-      await expect(client.balance.getBalance()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.NETWORK_ERROR
-      );
+      const promise = client.balance.getBalance();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'NETWORK_ERROR');
     });
 
     it('should handle 401 unauthorized errors', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 401,
-          data: { error: 'Authentication required. Please sign in again.' },
-        },
-        message: 'Request failed with status code 401',
-        name: 'AxiosError',
-      };
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
-
-      await expect(client.balance.getBalance()).rejects.toThrow(EchoApiError);
-      await expect(client.balance.getBalance()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.UNAUTHORIZED
+      const errorResponse = createMockResponse(
+        { error: 'Authentication required. Please sign in again.' },
+        401,
+        'Unauthorized'
       );
+      mockFetch.mockResolvedValue(errorResponse);
+
+      const promise = client.balance.getBalance();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'HTTP_401');
     });
 
     it('should handle timeout errors', async () => {
-      const timeoutError = {
-        isAxiosError: true,
-        message: 'timeout of 30000ms exceeded',
-        name: 'AxiosError',
-        code: 'ECONNABORTED',
-      };
-      mockAxiosInstance.get.mockRejectedValue(timeoutError);
+      const timeoutError = new Error('The operation was aborted.');
+      timeoutError.name = 'AbortError';
+      mockFetch.mockRejectedValue(timeoutError);
 
-      await expect(client.balance.getBalance()).rejects.toThrow(
-        EchoTimeoutError
-      );
-      await expect(client.balance.getBalance()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.TIMEOUT_ERROR
-      );
+      const promise = client.balance.getBalance();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'UNKNOWN_ERROR');
     });
 
     it('should handle API error responses', async () => {
-      const axiosError = {
-        isAxiosError: true,
-        response: {
-          status: 400,
-          data: { error: 'Invalid request' },
-        },
-        message: 'Request failed with status code 400',
-        name: 'AxiosError',
-      };
-      mockAxiosInstance.get.mockRejectedValue(axiosError);
-
-      await expect(client.balance.getBalance()).rejects.toThrow(EchoApiError);
-      await expect(client.balance.getBalance()).rejects.toHaveProperty(
-        'code',
-        ERROR_CODES.BAD_REQUEST
+      const errorResponse = createMockResponse(
+        { error: 'Invalid request' },
+        400,
+        'Bad Request'
       );
+      mockFetch.mockResolvedValue(errorResponse);
+
+      const promise = client.balance.getBalance();
+
+      await expect(promise).rejects.toThrow(EchoError);
+      await expect(promise).rejects.toHaveProperty('code', 'HTTP_400');
     });
   });
 });
