@@ -31,7 +31,7 @@ export default function ApiKeysSettings({
   };
 
   useEffect(() => {
-    setApiKeyLink(`${window.location.origin}/cli-auth/${appId}`);
+    setApiKeyLink(`${window.location.origin}/app/${appId}/keys?generate=true`);
   }, [appId]);
 
   const copyToClipboard = async () => {

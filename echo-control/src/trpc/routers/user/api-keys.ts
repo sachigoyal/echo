@@ -10,11 +10,16 @@ import {
   updateApiKeySchema,
 } from '@/services/api-keys';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { infiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
+import { extendedInfiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
+import z from 'zod';
 
 export const userApiKeysRouter = createTRPCRouter({
   list: protectedProcedure
-    .input(infiniteQueryPaginationParamsSchema)
+    .input(
+      extendedInfiniteQueryPaginationParamsSchema({
+        appId: z.uuid().optional(),
+      })
+    )
     .query(async ({ ctx, input }) => {
       return listApiKeys(ctx.session.user.id, input);
     }),

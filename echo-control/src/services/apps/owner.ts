@@ -46,3 +46,13 @@ export const createApp = async (
     },
   });
 };
+
+export const listOwnedApps = async (userId: string) => {
+  return await db.echoApp.findMany({
+    where: {
+      appMemberships: {
+        some: { userId, role: AppRole.OWNER },
+      },
+    },
+  });
+};
