@@ -24,8 +24,6 @@ export const GenerateKeyWithSelect = () => {
   const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [isCompleted, setIsCompleted] = useState(false);
 
-  const utils = api.useUtils();
-
   const {
     mutateAsync: generateApiKey,
     isPending: isGenerating,
@@ -33,7 +31,6 @@ export const GenerateKeyWithSelect = () => {
   } = api.user.apiKeys.create.useMutation({
     onSuccess: () => {
       setIsCompleted(true);
-      utils.user.apiKeys.list.invalidate();
     },
   });
 

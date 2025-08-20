@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { api } from '@/trpc/client';
 
 interface Props {
   generateApiKey: (name?: string) => Promise<string>;
@@ -37,6 +38,8 @@ export const GenerateApiKey: React.FC<Props> = ({
   const { isCopied, copyToClipboard } = useCopyToClipboard(() => {
     toast.success('Copied to clipboard');
   });
+
+  const utils = api.useUtils();
 
   if (apiKey) {
     return (
@@ -123,6 +126,7 @@ export const GenerateApiKey: React.FC<Props> = ({
         onClick={() =>
           generateApiKey(name)
             .then(key => copyToClipboard(key))
+            .then(() => utils.user.apiKeys.list.invalidate())
             .catch(error => {
               toast.error('Failed to generate API key');
               console.error(error);

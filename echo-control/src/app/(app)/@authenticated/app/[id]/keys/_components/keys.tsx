@@ -1,13 +1,19 @@
 'use client';
 
-import { KeysList } from '../../../_components/keys/list';
+import React from 'react';
+
+import { KeysList } from '../../../../_components/keys/list';
 
 import { api } from '@/trpc/client';
 
-export const Keys = () => {
+interface Props {
+  appId: string;
+}
+
+export const Keys = ({ appId }: Props) => {
   const [{ pages }, { fetchNextPage, isFetchingNextPage }] =
     api.user.apiKeys.list.useSuspenseInfiniteQuery(
-      {},
+      { appId },
       {
         getNextPageParam(lastPage) {
           return lastPage.has_next ? lastPage.page + 1 : undefined;

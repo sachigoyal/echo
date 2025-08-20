@@ -10,7 +10,7 @@ export default function AuthenticatedHomeLayout({
       <Nav
         tabs={[
           {
-            label: 'Home',
+            label: 'Overview',
             href: '/',
           },
           {
@@ -18,7 +18,7 @@ export default function AuthenticatedHomeLayout({
             href: '/credits',
           },
           {
-            label: 'Keys',
+            label: 'API Keys',
             href: '/keys',
           },
         ]}

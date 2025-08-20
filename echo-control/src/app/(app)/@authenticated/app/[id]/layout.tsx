@@ -23,7 +23,7 @@ export default async function AuthenticatedAppLayout({
           },
         ]}
       />
-      {children}
+      <div className="flex flex-col py-4 md:py-6">{children}</div>
     </>
   );
 }

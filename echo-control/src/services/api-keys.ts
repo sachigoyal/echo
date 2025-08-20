@@ -28,11 +28,21 @@ export const getApiKey = async (
   });
 };
 
-const listUserApiKeysWhere = (userId: string): Prisma.ApiKeyWhereInput => {
-  return {
+export const listApiKeysSchema = paginationParamsSchema.extend({
+  appId: z.string().optional(),
+});
+
+export const listApiKeys = async (
+  userId: string,
+  { page = 0, page_size = 10, appId }: z.infer<typeof listApiKeysSchema>
+) => {
+  const skip = page * page_size;
+
+  const where: Prisma.ApiKeyWhereInput = {
     userId,
     isArchived: false,
     echoApp: {
+      ...(appId ? { id: appId } : {}),
       isArchived: false,
       appMemberships: {
         some: {
@@ -42,20 +52,13 @@ const listUserApiKeysWhere = (userId: string): Prisma.ApiKeyWhereInput => {
       },
     },
   };
-};
-
-export const listApiKeys = async (
-  userId: string,
-  { page = 0, page_size = 10 }: z.infer<typeof paginationParamsSchema>
-) => {
-  const skip = page * page_size;
 
   const [totalCount, apiKeys] = await Promise.all([
     db.apiKey.count({
-      where: listUserApiKeysWhere(userId),
+      where,
     }),
     db.apiKey.findMany({
-      where: listUserApiKeysWhere(userId),
+      where,
       skip,
       take: page_size,
       orderBy: {
@@ -67,6 +70,7 @@ export const listApiKeys = async (
         createdAt: true,
         echoApp: {
           select: {
+            id: true,
             name: true,
             profilePictureUrl: true,
           },
