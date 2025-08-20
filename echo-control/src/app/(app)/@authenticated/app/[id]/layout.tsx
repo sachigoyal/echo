@@ -18,6 +18,10 @@ export default async function AuthenticatedAppLayout({
             href: `/app/${id}`,
           },
           {
+            label: 'Keys',
+            href: `/app/${id}/keys`,
+          },
+          {
             label: 'Settings',
             href: `/app/${id}/settings`,
           },

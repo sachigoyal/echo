@@ -1,1 +1,3 @@
-export default DefaultAppSlo;
+export default function DefaultAppSlot() {
+  return null;
+}
