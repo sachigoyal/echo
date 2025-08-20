@@ -1,12 +1,13 @@
+import { EchoClient, User } from '@merit-systems/echo-typescript-sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { createEchoAnthropic } from 'providers/anthropic';
 import { handleCallback, handleSignIn } from './auth/oauth-handlers';
 import {
-  isSignedIn as checkSignedIn,
-  getEchoToken as getToken,
+  getEchoClient as _getEchoClient,
+  getEchoToken as _getEchoToken,
 } from './auth/token-manager';
 import { createEchoOpenAI } from './providers/openai';
 import { EchoConfig, EchoResult } from './types';
-import { createEchoAnthropic } from 'providers/anthropic';
 
 /**
  * Echo SDK for Next.js
@@ -36,15 +37,26 @@ export default function Echo(config: EchoConfig): EchoResult {
   /**
    * Check if user is currently signed in
    */
-  const isSignedIn = (): Promise<boolean> => {
-    return checkSignedIn();
-  };
+  // const getEchoUser = async (): Promise<User> => {
+  //   return getUser(config.appId);
+  // };
 
+  const getEchoClient = async (): Promise<EchoClient | null> => {
+    return _getEchoClient(config.appId);
+  };
   /**
    * Get a valid Echo token, refreshing if necessary
    */
   const getEchoToken = (): Promise<string | null> => {
-    return getToken(config.appId);
+    return _getEchoToken(config.appId);
+  };
+
+  const getUser = async (): Promise<User | null> => {
+    const echo = await getEchoClient();
+    if (!echo) {
+      return null;
+    }
+    return echo.users.getUserInfo();
   };
 
   return {
@@ -52,8 +64,11 @@ export default function Echo(config: EchoConfig): EchoResult {
       GET: httpHandler,
       POST: httpHandler,
     },
-    isSignedIn,
+    // echo auth
+    getUser,
+    getEchoClient,
     getEchoToken,
+    // providers
     openai: createEchoOpenAI(config),
     anthropic: createEchoAnthropic(config),
   };

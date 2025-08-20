@@ -1,3 +1,4 @@
+import { EchoClient, User } from '@merit-systems/echo-typescript-sdk';
 import { ECHO_BASE_URL } from 'config';
 import { cookies as getCookies } from 'next/headers';
 import { shouldRefreshToken } from './jwt-utils';
@@ -103,8 +104,41 @@ export async function getEchoToken(appId: string): Promise<string | null> {
  * Check if user is currently signed in (has valid access token)
  * @returns Promise resolving to true if signed in, false otherwise
  */
-export async function isSignedIn(): Promise<boolean> {
-  const cookies = await getCookies();
-  const accessToken = cookies.get('echo_access_token')?.value;
-  return !!accessToken;
+export async function getUser(appId: string): Promise<User> {
+  const echo = await getEchoClient(appId);
+  if (!echo) {
+    throw new Error('User not signed in');
+  }
+  return echo.users.getUserInfo();
+}
+
+export async function getEchoClient(appId: string): Promise<EchoClient | null> {
+  const token = await getEchoToken(appId);
+  if (!token) {
+    return null;
+  }
+  return new EchoClient({
+    baseUrl: ECHO_BASE_URL,
+    apiKey: token,
+    tokenProvider: {
+      getAccessToken: async () => token,
+      refreshToken: async () => {
+        const token = await getEchoToken(appId);
+        const cookies = await getCookies();
+        if (!token) {
+          throw new Error('No token found');
+        }
+        cookies.set('echo_access_token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 30, // 30 days
+          path: '/',
+        });
+      },
+      onRefreshError: error => {
+        console.error('Token refresh failed:', error);
+      },
+    },
+  });
 }

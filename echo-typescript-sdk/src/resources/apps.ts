@@ -1,10 +1,10 @@
-import { AxiosInstance } from 'axios';
+import { HttpClient } from '../http-client';
 import { EchoApp, ListEchoAppsResponse } from '../types';
 import { BaseResource } from '../utils/error-handling';
 
 export class AppsResource extends BaseResource {
   constructor(
-    http: AxiosInstance,
+    http: HttpClient,
     private baseUrl: string
   ) {
     super(http);
@@ -14,8 +14,8 @@ export class AppsResource extends BaseResource {
    * List all Echo apps for the authenticated user
    */
   async listEchoApps(): Promise<EchoApp[]> {
-    const response = await this.handleRequest(
-      () => this.http.get<ListEchoAppsResponse>('/api/v1/apps'),
+    const response = await this.handleRequest<ListEchoAppsResponse>(
+      () => this.http.get('/api/v1/apps'),
       'listing Echo apps',
       '/api/v1/apps'
     );
@@ -27,8 +27,8 @@ export class AppsResource extends BaseResource {
    * @param appId The Echo app ID
    */
   async getEchoApp(appId: string): Promise<EchoApp> {
-    return this.handleRequest(
-      () => this.http.get<EchoApp>(`/api/v1/apps/${appId}`),
+    return this.handleRequest<EchoApp>(
+      () => this.http.get(`/api/v1/apps/${appId}`),
       'fetching Echo app',
       `/api/v1/apps/${appId}`
     );

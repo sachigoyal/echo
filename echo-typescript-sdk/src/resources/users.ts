@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { HttpClient } from '../http-client';
 import {
   RegisterReferralCodeRequest,
   RegisterReferralCodeResponse,
@@ -7,7 +7,7 @@ import {
 import { BaseResource } from '../utils/error-handling';
 
 export class UsersResource extends BaseResource {
-  constructor(http: AxiosInstance) {
+  constructor(http: HttpClient) {
     super(http);
   }
 
@@ -16,7 +16,7 @@ export class UsersResource extends BaseResource {
    */
   async getUserInfo(): Promise<User> {
     return this.handleRequest(
-      () => this.http.get<User>('/api/v1/user'),
+      () => this.http.get('/api/v1/user'),
       'fetching user info',
       '/api/v1/user'
     );
@@ -33,11 +33,7 @@ export class UsersResource extends BaseResource {
   ): Promise<RegisterReferralCodeResponse> {
     const request: RegisterReferralCodeRequest = { echoAppId, code };
     return this.handleRequest(
-      () =>
-        this.http.post<RegisterReferralCodeResponse>(
-          '/api/v1/user/referral',
-          request
-        ),
+      () => this.http.post('/api/v1/user/referral', request),
       'registering referral code',
       '/api/v1/user/referral'
     );

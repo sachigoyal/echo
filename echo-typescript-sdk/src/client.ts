@@ -1,7 +1,6 @@
-import axios, { AxiosInstance } from 'axios';
-import createAuthRefreshInterceptor from 'axios-auth-refresh';
 import { ApiKeyTokenProvider, TokenProvider } from './auth/token-provider';
 import { EchoConfig, getConfig } from './config';
+import { HttpClient } from './http-client';
 import {
   AppsResource,
   BalanceResource,
@@ -15,7 +14,7 @@ export interface EchoClientOptions extends Partial<EchoConfig> {
 }
 
 export class EchoClient {
-  private http: AxiosInstance;
+  private http: HttpClient;
   private config: EchoConfig;
   private tokenProvider: TokenProvider;
 
@@ -41,42 +40,8 @@ export class EchoClient {
       this.tokenProvider = new ApiKeyTokenProvider(apiKey);
     }
 
-    // Create axios instance
-    this.http = axios.create({
-      baseURL: this.config.baseUrl,
-      timeout: 30_000,
-    });
-
-    // Set up request interceptor to include token
-    this.http.interceptors.request.use(async config => {
-      const token = await this.tokenProvider.getAccessToken();
-      if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
-      }
-      return config;
-    });
-
-    const refreshAuthLogic = async (failedRequest: any) => {
-      try {
-        await this.tokenProvider.refreshToken();
-        const newToken = await this.tokenProvider.getAccessToken();
-        if (newToken) {
-          failedRequest.response.config.headers['Authorization'] =
-            `Bearer ${newToken}`;
-        }
-        return Promise.resolve();
-      } catch (error) {
-        if (this.tokenProvider.onRefreshError) {
-          this.tokenProvider.onRefreshError(error as Error);
-        }
-        return Promise.reject(error);
-      }
-    };
-
-    createAuthRefreshInterceptor(this.http, refreshAuthLogic, {
-      statusCodes: [401],
-      pauseInstanceWhileRefreshing: true,
-    });
+    // Create fetch-based HTTP client with automatic token refresh
+    this.http = new HttpClient(this.config.baseUrl, this.tokenProvider);
 
     // Initialize resource instances
     this.balance = new BalanceResource(this.http);
