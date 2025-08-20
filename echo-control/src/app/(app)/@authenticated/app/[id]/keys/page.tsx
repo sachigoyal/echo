@@ -70,12 +70,19 @@ export default async function AppPage({
                   <h2 className="text-base font-semibold leading-none">
                     {app.name}
                   </h2>
-
-                  <Suspense fallback={<Skeleton className="h-4 w-24" />}>
-                    <p className="text-xs text-muted-foreground">
-                      <Owner appId={id} />
-                    </p>
-                  </Suspense>
+                  <ErrorBoundary
+                    fallback={
+                      <p className="text-xs text-muted-foreground">
+                        Error loading owner
+                      </p>
+                    }
+                  >
+                    <Suspense fallback={<Skeleton className="h-4 w-24" />}>
+                      <p className="text-xs text-muted-foreground">
+                        <Owner appId={id} />
+                      </p>
+                    </Suspense>
+                  </ErrorBoundary>
                 </div>
               </div>
               <div className="w-full max-w-full overflow-hidden p-4 pt-0">
