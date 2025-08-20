@@ -2,7 +2,7 @@
 
 import { api } from '@/trpc/client';
 
-import { GenerateApiKey as GenerateApiKeyComponent } from '@/app/(app)/@authenticated/_components/cli-auth/generate-key';
+import { GenerateApiKey as GenerateApiKeyComponent } from '@/app/(app)/@authenticated/_components/keys/generate-key';
 
 interface Props {
   isMember: boolean;

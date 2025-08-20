@@ -23,12 +23,14 @@ interface Props {
   generateApiKey: (name?: string) => Promise<string>;
   isPending: boolean;
   apiKey?: string;
+  disabled?: boolean;
 }
 
 export const GenerateApiKey: React.FC<Props> = ({
   generateApiKey,
   isPending,
   apiKey,
+  disabled,
 }) => {
   const [name, setName] = useState<string>();
 
@@ -38,8 +40,8 @@ export const GenerateApiKey: React.FC<Props> = ({
 
   if (apiKey) {
     return (
-      <div className="flex flex-col gap-2">
-        <div>
+      <div className="flex flex-col gap-2 w-full overflow-hidden">
+        <div className="">
           <label className="block text-sm font-medium text-card-foreground mb-2">
             Your API Key
           </label>
@@ -126,7 +128,7 @@ export const GenerateApiKey: React.FC<Props> = ({
               console.error(error);
             })
         }
-        disabled={isPending}
+        disabled={isPending || disabled}
         variant="turbo"
       >
         {isPending ? 'Generating...' : 'Generate API Key'}

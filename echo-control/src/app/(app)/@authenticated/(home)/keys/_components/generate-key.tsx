@@ -16,13 +16,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { UserAvatar } from '@/components/utils/user-avatar';
 
-import { GenerateApiKey } from '../../../../_components/cli-auth/generate-key';
+import { GenerateApiKey } from '../../../_components/keys/generate-key';
 
 import { api } from '@/trpc/client';
 
 export const GenerateKeyWithSelect = () => {
   const [selectedAppId, setSelectedAppId] = useState<string>('');
   const [isCompleted, setIsCompleted] = useState(false);
+
+  const utils = api.useUtils();
 
   const {
     mutateAsync: generateApiKey,
@@ -31,12 +33,13 @@ export const GenerateKeyWithSelect = () => {
   } = api.user.apiKeys.create.useMutation({
     onSuccess: () => {
       setIsCompleted(true);
+      utils.user.apiKeys.list.invalidate();
     },
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-4 w-full max-w-full">
+      <div className="flex flex-col gap-1 w-full">
         <Label
           htmlFor="app-select"
           className="block text-sm font-medium text-card-foreground"
@@ -65,6 +68,7 @@ export const GenerateKeyWithSelect = () => {
         }
         isPending={isGenerating}
         apiKey={apiKey?.key}
+        disabled={!selectedAppId}
       />
     </div>
   );

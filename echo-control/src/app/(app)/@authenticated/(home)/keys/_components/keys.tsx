@@ -1,10 +1,11 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { Code, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 import { api } from '@/trpc/client';
+import { UserAvatar } from '@/components/utils/user-avatar';
 
 export const Keys = () => {
   const [{ pages }, { fetchNextPage, isFetchingNextPage }] =
@@ -36,12 +37,25 @@ export const Keys = () => {
       ) : (
         flatPages.map(key => (
           <div key={key.id} className="flex items-center justify-between gap-4">
-            <div className="space-y-1 flex-1 min-w-0">
+            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{key.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {key.createdAt.toLocaleString()}
-              </p>
+              <div className="flex items-center gap-1">
+                <UserAvatar
+                  className="size-4 border-none bg-transparent"
+                  src={key.echoApp.profilePictureUrl}
+                  fallback={<Code className="size-3" />}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {key.echoApp.name}
+                </p>
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">
+              {key.createdAt.toLocaleString(undefined, {
+                dateStyle: 'short',
+                timeStyle: 'short',
+              })}
+            </p>
           </div>
         ))
       )}

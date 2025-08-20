@@ -5,16 +5,24 @@ import { Separator } from '@/components/ui/separator';
 interface HeadingProps {
   title: string;
   description?: string;
+  actions?: ReactNode;
 }
 
-export const Heading: React.FC<HeadingProps> = ({ title, description }) => {
+export const Heading: React.FC<HeadingProps> = ({
+  title,
+  description,
+  actions,
+}) => {
   return (
     <>
-      <div className="flex flex-col gap-2 max-w-4xl w-full px-2 pb-6 mx-auto text-left">
-        <h1 className="text-4xl font-bold">{title}</h1>
-        {description && (
-          <p className="text-muted-foreground max-w-2xl">{description}</p>
-        )}
+      <div className="flex items-center justify-between max-w-4xl w-full px-2 pb-4 md:pb-6 mx-auto">
+        <div className="flex flex-col gap-2 w-full text-left">
+          <h1 className="text-4xl font-bold">{title}</h1>
+          {description && (
+            <p className="text-muted-foreground/80 text-sm">{description}</p>
+          )}
+        </div>
+        {actions}
       </div>
       <Separator />
     </>

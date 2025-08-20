@@ -11,6 +11,7 @@ import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
 import { paginationParamsSchema } from '@/lib/pagination';
 import { PaginatedResponse } from '@/types/paginated-response';
+import { toPaginatedReponse } from './lib/pagination';
 
 export const getApiKeySchema = z.string();
 
@@ -46,7 +47,7 @@ const listUserApiKeysWhere = (userId: string): Prisma.ApiKeyWhereInput => {
 export const listApiKeys = async (
   userId: string,
   { page = 0, page_size = 10 }: z.infer<typeof paginationParamsSchema>
-): Promise<PaginatedResponse<ApiKey>> => {
+) => {
   const skip = page * page_size;
 
   const [totalCount, apiKeys] = await Promise.all([
@@ -57,18 +58,29 @@ export const listApiKeys = async (
       where: listUserApiKeysWhere(userId),
       skip,
       take: page_size,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        echoApp: {
+          select: {
+            name: true,
+            profilePictureUrl: true,
+          },
+        },
+      },
     }),
   ]);
 
-  const totalPages = Math.ceil(totalCount / page_size);
-
-  return {
+  return toPaginatedReponse({
     items: apiKeys,
+    total_count: totalCount,
     page,
     page_size,
-    total_count: totalCount,
-    has_next: page < totalPages - 1,
-  };
+  });
 };
 
 export const createApiKeySchema = z.object({
