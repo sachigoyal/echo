@@ -31,19 +31,11 @@ export default async function AppLayout({
         <div className="flex items-center justify-between w-full px-2 md:px-6 pb-0 md:pb-0">
           <div className="pl-12 flex items-center gap-3">{breadcrumbs}</div>
           <div className="flex items-center space-x-3">
-            <Link href="/apps/create">
+            <Link href="/new">
               <Button variant="outline">Create App</Button>
             </Link>
-            {session?.user ? (
-              <>
-                <BalanceButton />
-                <UserDropdown user={session.user} />
-              </>
-            ) : (
-              <Link href="/login">
-                <Button variant="outline">Sign in</Button>
-              </Link>
-            )}
+            <BalanceButton />
+            <UserDropdown user={session.user} />
           </div>
         </div>
       </header>

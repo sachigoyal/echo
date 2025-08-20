@@ -26,7 +26,7 @@ export const Header: React.FC<Props> = ({ user }) => {
         </div>
       </Link>
       <div className="flex items-center space-x-3">
-        <Link href="/apps/create">
+        <Link href="/new">
           <Button variant="outline">Create App</Button>
         </Link>
         <BalanceButton />

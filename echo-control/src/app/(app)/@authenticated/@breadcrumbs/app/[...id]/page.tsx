@@ -1,11 +1,13 @@
+import { Suspense } from 'react';
+
 import { Code, User } from 'lucide-react';
 
+import { ErrorBoundary } from 'react-error-boundary';
+
 import { Separator } from '../../_components/separator';
+import { Breadcrumb, LoadingBreadcrumb } from '../../_components/breadcrumb';
 
 import { api } from '@/trpc/server';
-import { Breadcrumb, LoadingBreadcrumb } from '../../_components/breadcrumb';
-import { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
 
 export default async function AppBreadcrumbs({
   params,

@@ -43,7 +43,7 @@ export const CreateAppForm = () => {
     isSuccess,
   } = api.apps.owner.create.useMutation({
     onSuccess: ({ id }) => {
-      router.push(`/apps/new/${id}`);
+      router.push(`/app/${id}`);
     },
     onError: error => {
       toast.error(error.message);

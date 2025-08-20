@@ -21,6 +21,10 @@ export default function AuthenticatedHomeLayout({
             label: 'API Keys',
             href: '/keys',
           },
+          {
+            label: 'Create',
+            href: '/new',
+          },
         ]}
       />
       <div className="flex flex-col py-4 md:py-6">{children}</div>
