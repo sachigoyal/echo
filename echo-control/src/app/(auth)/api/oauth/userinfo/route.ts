@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 
 // GET /api/oauth/userinfo - OIDC UserInfo Endpoint
 // https://openid.net/specs/openid-connect-core-1_0.html#UserInfo
-export async function GET(request: NextRequest, ctx: RouteContext) {
+export async function GET(request: NextRequest) {
   try {
     // Extract Bearer token from Authorization header
     const authHeader = request.headers.get('authorization');
