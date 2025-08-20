@@ -1,4 +1,4 @@
-import { Nav } from '../_components/nav';
+import { Nav } from '../_components/layout/nav';
 
 export default function AuthenticatedHomeLayout({
   children,
@@ -16,6 +16,10 @@ export default function AuthenticatedHomeLayout({
           {
             label: 'Credits',
             href: '/credits',
+          },
+          {
+            label: 'Keys',
+            href: '/keys',
           },
         ]}
       />

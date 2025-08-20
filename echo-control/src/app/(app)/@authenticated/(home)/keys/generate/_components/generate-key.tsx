@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { UserAvatar } from '@/components/utils/user-avatar';
 
-import { GenerateApiKey } from '../../_components/generate-key';
+import { GenerateApiKey } from '../../../../_components/cli-auth/generate-key';
 
 import { api } from '@/trpc/client';
 

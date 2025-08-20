@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 
-import { BalanceButton } from './_components/header/balance';
-import { UserDropdown } from './_components/header/user-dropdown';
-import { LogoContainer } from './_components/logo';
+import { BalanceButton } from './_components/layout/header/balance';
+import { UserDropdown } from './_components/layout/header/user-dropdown';
+import { LogoContainer } from './_components/layout/logo';
 
 export default async function AppLayout({
   children,

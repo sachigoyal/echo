@@ -1,11 +1,13 @@
 import { Suspense } from 'react';
 
-import { api, HydrateClient } from '@/trpc/server';
+import { redirect } from 'next/navigation';
+
+import { ErrorBoundary } from 'react-error-boundary';
+
+import { Plus } from 'lucide-react';
 
 import { Payments } from './_components/payments';
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
-import { Separator } from '@/components/ui/separator';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -15,15 +17,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { ErrorBoundary } from 'react-error-boundary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+
+import { Heading, Body } from '../../_components/layout/page-utils';
+
 import { AddCredits } from './_components/add-credits';
 import { RedeemCredits } from './_components/redeem-credits';
 import { Balance } from './_components/balance';
-import { Heading } from '../../_components/heading';
-import { Body } from '../../_components/body';
+
+import { auth } from '@/auth';
+
+import { api, HydrateClient } from '@/trpc/server';
 
 export default async function CreditsPage() {
   const session = await auth();
@@ -40,68 +45,66 @@ export default async function CreditsPage() {
 
   return (
     <HydrateClient>
-      <div className="w-full flex flex-col">
-        <Heading title="Credits" />
-        <Body>
-          <Card className="border rounded-lg overflow-hidden flex items-center justify-between p-4">
-            <h2 className="flex items-center gap-4 text-3xl font-bold">
-              <span className="text-muted-foreground">$</span>
-              <Suspense fallback={<Skeleton className="w-16 h-9" />}>
-                <Balance />
-              </Suspense>
-            </h2>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="turbo">
-                  <Plus className="size-4" />
-                  Add Credits
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Credits</DialogTitle>
-                  <DialogDescription>
-                    You can use Echo credits to use LLMs on any Echo app.
-                  </DialogDescription>
-                </DialogHeader>
-                <AddCredits />
-              </DialogContent>
-            </Dialog>
-          </Card>
+      <Heading title="Credits" />
+      <Body>
+        <Card className="border rounded-lg overflow-hidden flex items-center justify-between p-4">
+          <h2 className="flex items-center gap-4 text-3xl font-bold">
+            <span className="text-muted-foreground">$</span>
+            <Suspense fallback={<Skeleton className="w-16 h-9" />}>
+              <Balance />
+            </Suspense>
+          </h2>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="turbo">
                 <Plus className="size-4" />
-                Redeem Credit Code
+                Add Credits
               </Button>
             </DialogTrigger>
-
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Redeem Credit Code</DialogTitle>
+                <DialogTitle>Add Credits</DialogTitle>
                 <DialogDescription>
                   You can use Echo credits to use LLMs on any Echo app.
                 </DialogDescription>
               </DialogHeader>
-              <RedeemCredits />
+              <AddCredits />
             </DialogContent>
           </Dialog>
-          <Card className="bg-muted/50">
-            <CardHeader className="border-b p-4">
-              <CardTitle className="text-lg font-semibold">
-                Recent Transactions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4">
-              <ErrorBoundary fallback={<div>Error loading payments</div>}>
-                <Suspense fallback={<div>Loading...</div>}>
-                  <Payments />
-                </Suspense>
-              </ErrorBoundary>
-            </CardContent>
-          </Card>
-        </Body>
-      </div>
+        </Card>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="turbo">
+              <Plus className="size-4" />
+              Redeem Credit Code
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Redeem Credit Code</DialogTitle>
+              <DialogDescription>
+                You can use Echo credits to use LLMs on any Echo app.
+              </DialogDescription>
+            </DialogHeader>
+            <RedeemCredits />
+          </DialogContent>
+        </Dialog>
+        <Card className="bg-muted/50">
+          <CardHeader className="border-b p-4">
+            <CardTitle className="text-lg font-semibold">
+              Recent Transactions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <ErrorBoundary fallback={<div>Error loading payments</div>}>
+              <Suspense fallback={<div>Loading...</div>}>
+                <Payments />
+              </Suspense>
+            </ErrorBoundary>
+          </CardContent>
+        </Card>
+      </Body>
     </HydrateClient>
   );
 }

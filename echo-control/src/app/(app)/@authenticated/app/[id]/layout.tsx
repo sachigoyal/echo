@@ -1,4 +1,4 @@
-import { Nav } from '../../_components/nav';
+import { Nav } from '../../_components/layout/nav';
 
 export default async function AuthenticatedAppLayout({
   children,

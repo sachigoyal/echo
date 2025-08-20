@@ -1,12 +1,13 @@
-import { Separator } from '@/components/ui/separator';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-interface Props {
+import { Separator } from '@/components/ui/separator';
+
+interface HeadingProps {
   title: string;
   description?: string;
 }
 
-export const Heading = ({ title, description }: Props) => {
+export const Heading: React.FC<HeadingProps> = ({ title, description }) => {
   return (
     <>
       <div className="flex flex-col gap-2 max-w-4xl w-full px-2 pb-6 mx-auto text-left">
@@ -17,5 +18,17 @@ export const Heading = ({ title, description }: Props) => {
       </div>
       <Separator />
     </>
+  );
+};
+
+interface BodyProps {
+  children: ReactNode;
+}
+
+export const Body: React.FC<BodyProps> = ({ children }) => {
+  return (
+    <div className="flex flex-col gap-4 max-w-4xl w-full mx-auto py-8 px-2">
+      {children}
+    </div>
   );
 };
