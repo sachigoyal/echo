@@ -60,7 +60,7 @@ export async function getEchoToken(appId: string): Promise<string | null> {
 
   // Check if token needs refresh
   if (!accessToken || shouldRefreshToken(accessToken)) {
-    console.log(cookies)
+    console.log(cookies);
     const refreshToken = cookies.get('echo_refresh_token')?.value;
 
     if (!refreshToken) {
