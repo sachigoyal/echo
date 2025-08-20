@@ -2,8 +2,8 @@ import {
   createEchoGoogle as createEchoGoogleBase,
   EchoConfig,
   EchoGoogleProvider,
+  ROUTER_BASE_URL,
 } from '@merit-systems/echo-typescript-sdk';
-import { ROUTER_BASE_URL } from 'config';
 import { getEchoToken } from '../auth/token-manager';
 
 export function createEchoGoogle({

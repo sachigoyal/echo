@@ -1,9 +1,9 @@
-import { ROUTER_BASE_URL } from 'config';
 import { getEchoToken } from '../auth/token-manager';
 import {
   createEchoAnthropic as createEchoAnthropicBase,
   EchoAnthropicProvider,
   EchoConfig,
+  ROUTER_BASE_URL,
 } from '@merit-systems/echo-typescript-sdk';
 
 export function createEchoAnthropic({
