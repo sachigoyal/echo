@@ -29,7 +29,7 @@ export default async function AppLayout({
       </LogoContainer>
       <header className="w-full flex flex-col pt-4 justify-center">
         <div className="flex items-center justify-between w-full px-2 md:px-6 pb-0 md:pb-0">
-          <div className="pl-11">{breadcrumbs}</div>
+          <div className="pl-12 flex items-center gap-3">{breadcrumbs}</div>
           <div className="flex items-center space-x-3">
             <Link href="/apps/create">
               <Button variant="outline">Create App</Button>
