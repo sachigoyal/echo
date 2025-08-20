@@ -1,8 +1,7 @@
+import { ECHO_BASE_URL } from 'config';
 import { NextRequest, NextResponse } from 'next/server';
 import type { EchoConfig } from '../types';
-import { ECHO_BASE_URL } from 'config';
-import { getEchoToken } from './token-manager';
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { getEchoToken, RefreshTokenResponse } from './token-manager';
 
 /**
  * Generate PKCE code challenge and verifier
@@ -125,7 +124,7 @@ export async function handleCallback(
     );
   }
 
-  const tokenData = await tokenResponse.json();
+  const tokenData = (await tokenResponse.json()) as RefreshTokenResponse;
 
   const response = NextResponse.redirect(`${origin}`);
 
@@ -147,37 +146,48 @@ export async function handleCallback(
     path: '/',
   });
 
+  tokenData.refresh_token_expires_in;
+
   response.cookies.set('echo_refresh_token', tokenData.refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    // You may want to set a longer expiry for refresh tokens, adjust as needed
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+    maxAge: tokenData.refresh_token_expires_in,
     path: '/',
   });
+
+  // Store refresh token expiry time for checking
+  response.cookies.set(
+    'echo_refresh_token_expires',
+    String(Math.floor(Date.now() / 1000) + tokenData.refresh_token_expires_in),
+    {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: tokenData.refresh_token_expires_in,
+      path: '/',
+    }
+  );
 
   return response;
 }
 
-export async function handleGetUser(
+export async function handleRefresh(
   req: NextRequest,
   config: EchoConfig
 ): Promise<NextResponse> {
-  console.log('handleGetUser');
   try {
     const token = await getEchoToken(config.appId);
     if (!token) {
-      return NextResponse.json(null);
+      return NextResponse.json({ error: 'No token found' }, { status: 401 });
     }
 
-    const echo = new EchoClient({
-      apiKey: token,
-      baseUrl: ECHO_BASE_URL,
-    });
-    const user = await echo.users.getUserInfo();
-    return NextResponse.json(user);
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error fetching user:', error);
-    return NextResponse.json(null);
+    console.error('Error refreshing token:', error);
+    return NextResponse.json(
+      { error: 'Error refreshing token' },
+      { status: 500 }
+    );
   }
 }

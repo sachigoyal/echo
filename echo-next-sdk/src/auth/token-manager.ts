@@ -3,7 +3,7 @@ import { ECHO_BASE_URL } from 'config';
 import { cookies as getCookies } from 'next/headers';
 import { shouldRefreshToken } from './jwt-utils';
 
-interface RefreshTokenResponse {
+export interface RefreshTokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
@@ -60,7 +60,6 @@ export async function getEchoToken(appId: string): Promise<string | null> {
 
   // Check if token needs refresh
   if (!accessToken || shouldRefreshToken(accessToken)) {
-    console.log(cookies);
     const refreshToken = cookies.get('echo_refresh_token')?.value;
 
     if (!refreshToken) {
@@ -84,14 +83,32 @@ export async function getEchoToken(appId: string): Promise<string | null> {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30, // 30 days
+        maxAge: refreshResult.refresh_token_expires_in,
         path: '/',
       });
 
-      console.log('Token refreshed');
+      // Store refresh token expiry time for checking
+      cookies.set(
+        'echo_refresh_token_expires',
+        String(
+          Math.floor(Date.now() / 1000) + refreshResult.refresh_token_expires_in
+        ),
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: refreshResult.refresh_token_expires_in,
+          path: '/',
+        }
+      );
+
+      console.log(
+        'Token refreshed. New refresh token:',
+        refreshResult.refresh_token
+      );
       return refreshResult.access_token;
     } catch (error) {
-      console.error('Token refresh failed:', error);
+      console.error('Token refresh failed:', refreshToken, error);
       return null;
     }
   }

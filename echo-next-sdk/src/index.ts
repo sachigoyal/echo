@@ -1,18 +1,15 @@
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import { createEchoAnthropic } from 'providers/anthropic';
 import {
   handleCallback,
-  handleGetUser,
+  handleRefresh,
   handleSignIn,
 } from './auth/oauth-handlers';
-import {
-  getEchoClient as _getEchoClient,
-  getEchoToken as _getEchoToken,
-} from './auth/token-manager';
 import { createEchoOpenAI } from './providers/openai';
 import { EchoConfig, EchoResult } from './types';
-import { fetchEchoAction } from './utils/create-action-url';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { cookies } from 'next/headers';
+import { ECHO_BASE_URL } from 'config';
 
 /**
  * Echo SDK for Next.js
@@ -34,8 +31,8 @@ export default function Echo(config: EchoConfig): EchoResult {
       case '/callback':
         return handleCallback(req, config);
 
-      case '/user':
-        return handleGetUser(req, config);
+      case '/refresh':
+        return handleRefresh(req, config);
 
       default:
         return NextResponse.error();
@@ -43,28 +40,37 @@ export default function Echo(config: EchoConfig): EchoResult {
   };
 
   /**
-   * Check if user is currently signed in
-   */
-  // const getEchoUser = async (): Promise<User> => {
-  //   return getUser(config.appId);
-  // };
-
-  const getEchoClient = async (): Promise<EchoClient | null> => {
-    return _getEchoClient(config.appId);
-  };
-  /**
-   * Get a valid Echo token, refreshing if necessary
-   */
-  const getEchoToken = (): Promise<string | null> => {
-    return _getEchoToken(config.appId);
-  };
-
-  /**
    * Get current user info with automatic token refresh
    */
   const getUser = async () => {
-    const response = await fetchEchoAction('user', config);
-    return response.ok ? await response.json() : null;
+    // read only access token, if expired we are fucked
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('echo_access_token')?.value;
+    if (!accessToken) {
+      return null;
+    }
+    const echo = new EchoClient({
+      apiKey: accessToken,
+      baseUrl: ECHO_BASE_URL,
+    });
+    const user = await echo.users.getUserInfo();
+    return user;
+  };
+
+  const isSignedIn = async () => {
+    const cookieStore = await cookies();
+    const refreshTokenExpiry = cookieStore.get(
+      'echo_refresh_token_expires'
+    )?.value;
+
+    if (!refreshTokenExpiry) {
+      return false; // No expiry stored
+    }
+
+    const expiryTime = parseInt(refreshTokenExpiry);
+    const now = Math.floor(Date.now() / 1000);
+
+    return expiryTime > now; // True if not expired
   };
 
   return {
@@ -74,8 +80,7 @@ export default function Echo(config: EchoConfig): EchoResult {
     },
     // echo auth
     getUser,
-    getEchoClient,
-    getEchoToken,
+    isSignedIn,
     // providers
     openai: createEchoOpenAI(config),
     anthropic: createEchoAnthropic(config),

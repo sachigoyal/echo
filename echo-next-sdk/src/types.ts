@@ -1,4 +1,4 @@
-import { EchoClient, User } from '@merit-systems/echo-typescript-sdk';
+import { User } from '@merit-systems/echo-typescript-sdk';
 import { NextRequest } from 'next/server';
 import { EchoAnthropicProvider } from 'providers';
 import { EchoOpenAIProvider } from 'providers/openai';
@@ -22,9 +22,9 @@ export type AppRouteHandlers = Record<
 
 export type EchoResult = {
   handlers: AppRouteHandlers;
-  getEchoClient: () => Promise<EchoClient | null>;
   getUser: () => Promise<User | null>;
-  getEchoToken: () => Promise<string | null>;
+  isSignedIn: () => Promise<boolean>;
+
   openai: EchoOpenAIProvider;
   anthropic: EchoAnthropicProvider;
 };

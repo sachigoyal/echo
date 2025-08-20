@@ -31,17 +31,19 @@ export async function fetchEchoAction(
   action: string,
   config: EchoConfig,
   options?: RequestInit
-) {
+): Promise<{ response: Response }> {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
   const url = await createActionURL(action, config);
 
-  return fetch(url.toString(), {
+  const response = await fetch(url.toString(), {
     ...options,
     headers: {
       ...options?.headers,
       Cookie: cookieHeader, // Forward cookies
     },
   });
+
+  return { response };
 }
