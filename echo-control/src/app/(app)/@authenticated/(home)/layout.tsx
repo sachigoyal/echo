@@ -14,12 +14,12 @@ export default function AuthenticatedHomeLayout({
             href: '/',
           },
           {
-            label: 'Popular',
-            href: '/popular',
+            label: 'Credits',
+            href: '/credits',
           },
         ]}
       />
-      {children}
+      <div className="flex flex-col gap-4 py-6">{children}</div>
     </>
   );
 }

@@ -1,3 +1,1 @@
-export default function AuthenticatedSlot() {
-  return null;
-}
+export default () => null;

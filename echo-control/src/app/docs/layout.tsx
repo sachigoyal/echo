@@ -2,13 +2,9 @@ import { source } from '@/lib/source';
 import { CollapsibleControl, DocsLayout } from 'fumadocs-ui/layouts/docs';
 import type { ReactNode } from 'react';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { Navbar } from '@/app/(app)/@authenticated/_components/header';
 import { MobileSidebarTrigger } from './mobile-sidebar-trigger';
 
 const baseOptions: BaseLayoutProps = {
-  nav: {
-    component: <Navbar />,
-  },
   links: [
     {
       text: 'Terminal',
