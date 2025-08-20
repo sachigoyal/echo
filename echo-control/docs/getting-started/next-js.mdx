@@ -1,8 +1,177 @@
 ---
 title: Next.js
-description: Integrate Echo into your Next.js application
+description: Use Echo to make monetized AI Next.js apps.
 ---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
 
 # Getting Started with Next.js
 
-TODO: Add Next.js integration guide
+<Steps>
+
+    <Step>
+        ### Install the Echo Next SDK
+        <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+            <Tab value="npm">
+                ```sh
+                npm i @merit-systems/echo-next-sdk
+                ```
+            </Tab>
+            <Tab value="yarn">
+                ```sh
+                yarn add @merit-systems/echo-next-sdk
+                ```
+            </Tab>
+            <Tab value="pnpm">
+                ```sh
+                pnpm add @merit-systems/echo-next-sdk
+                ```
+            </Tab>
+            <Tab value="bun">
+                ```sh
+                bun add @merit-systems/echo-next-sdk
+                ```
+            </Tab>
+        </Tabs>
+    </Step>
+
+    <Step>
+        ### Install Vercel AI SDK 
+        <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+            <Tab value="npm">
+                ```sh
+                npm i ai
+                ```
+            </Tab>
+            <Tab value="yarn">
+                ```sh
+                yarn add ai
+                ```
+            </Tab>
+            <Tab value="pnpm">
+                ```sh
+                pnpm add ai
+                ```
+            </Tab>
+            <Tab value="bun">
+                ```sh
+                bun add ai
+                ```
+            </Tab>
+        </Tabs>
+    </Step>
+
+    <Step>
+        ### Create an Echo App
+        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get an `app_id`.
+    </Step>
+
+    <Step>
+        ### Add Echo Routes
+        <Files>
+            <Folder name="app" defaultOpen>
+                <Folder name="api/echo/[..slug]" defaultOpen>
+                    <File name="route.ts" />
+                </Folder>
+                <File name="layout.tsx" />
+            </Folder>
+            <File name="package.json" />
+        </Files>
+
+        ```typescript title="app/api/echo/[..slug]/route.ts"
+        import { Echo } from "@merit-systems/echo-next-sdk";
+
+        const ECHO_APP_ID = "ECHO_APP_ID";
+        const { handlers } = useEcho();
+
+        export { GET, POST } = handlers;
+        ```
+    </Step>
+
+    <Step>
+        ### Sign In From Client
+        Create an action in the front-end that redirects users to authorize your application with [echo.merit.systems](echo.merit.systems).
+        ```tsx title="app/page.tsx"
+        import { SignIn } from "@merit-systems/echo-next-sdk";
+
+        export default Home() {
+            return (
+                <div>
+                    <button onClick={() => SignIn()}>Connect LLM</button>
+                </div>
+            )
+        }
+        ```
+
+        Sign in will hit the route we setup in [Step 4](http://echo.merit.systems/docs/getting-started/next-js#add-echo-routes) and redirect from the server.
+    </Step>
+
+    <Step>
+        ### Use `generateText` / `streamText` from the server
+        Echo is a standard [Vercel AI SDK](https://ai-sdk.dev/docs/introduction) provider.
+
+        <Files>
+            <Folder name="app/api/ai" defaultOpen>
+                <File name="route.ts" />
+            </Folder>
+        </Files>
+
+
+        ```typescript title="app/api/ai/route.ts"
+        import { generateText, streamText } from 'ai';
+        import { echoOpenAI } from "@merit-systems/echo-next-sdk/providers";
+
+        const { text } = await generateText({
+            model: echoOpenAI('gpt-5'),
+            prompt: 'Can I benefit from the application layer AI wave?',
+        });
+        const { stream } = await streamText({
+            model: echoOpenAI('gpt-5'),
+            prompt: 'How can I surf AI apps?',
+        });
+        ```
+
+        <Callout type="info">
+        TODO(sragss): Could just copy this exactly: https://ai-sdk.dev/docs/ai-sdk-ui/completion
+        </Callout>
+    </Step>
+
+    <Step>
+        ### Show credit balance on the UI
+        ```tsx title="app/page.tsx"
+        import { SignIn, useBalance } from "@merit-systems/echo-next-sdk";
+
+        export default Home() {
+            // TODO: This needs to get app_id.
+            const balance = useBalance();
+            return (
+                <div>
+                    <button onClick={() => SignIn()}>Connect LLM</button>
+                    <div>Balance: ${balance}</div>
+                </div>
+            )
+        }
+        ```
+    </Step>
+    <Step>
+        ### Enable token purchase from UI
+        ```tsx title="app/page.tsx"
+        import { SignIn, useBalance, useTopUpLink } from "@merit-systems/echo-next-sdk";
+
+        export default Home() {
+            // TODO: These need app_id.
+            const balance = useBalance();
+            const topupLink = useTopUpLink();
+            return (
+                <div>
+                    <button onClick={() => SignIn()}>Connect LLM</button>
+                    <div>Balance: ${balance}</div>
+                    <button onClick={() => window.open(topupLink)}>Top Up Credits</button>
+                </div>
+            )
+        }
+        ```
+    </Step>
+
+</Steps>
