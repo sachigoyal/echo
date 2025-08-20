@@ -58,15 +58,13 @@ export async function getEchoToken(appId: string): Promise<string | null> {
   const cookies = await getCookies();
   const accessToken = cookies.get('echo_access_token')?.value;
 
-  if (!accessToken) {
-    return null;
-  }
-
   // Check if token needs refresh
-  if (shouldRefreshToken(accessToken)) {
+  if (!accessToken || shouldRefreshToken(accessToken)) {
+    console.log(cookies)
     const refreshToken = cookies.get('echo_refresh_token')?.value;
 
     if (!refreshToken) {
+      console.log('No refresh token found');
       return null;
     }
 
@@ -90,6 +88,7 @@ export async function getEchoToken(appId: string): Promise<string | null> {
         path: '/',
       });
 
+      console.log('Token refreshed');
       return refreshResult.access_token;
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -100,10 +99,6 @@ export async function getEchoToken(appId: string): Promise<string | null> {
   return accessToken;
 }
 
-/**
- * Check if user is currently signed in (has valid access token)
- * @returns Promise resolving to true if signed in, false otherwise
- */
 export async function getUser(appId: string): Promise<User> {
   const echo = await getEchoClient(appId);
   if (!echo) {
@@ -120,25 +115,5 @@ export async function getEchoClient(appId: string): Promise<EchoClient | null> {
   return new EchoClient({
     baseUrl: ECHO_BASE_URL,
     apiKey: token,
-    tokenProvider: {
-      getAccessToken: async () => token,
-      refreshToken: async () => {
-        const token = await getEchoToken(appId);
-        const cookies = await getCookies();
-        if (!token) {
-          throw new Error('No token found');
-        }
-        cookies.set('echo_access_token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 30, // 30 days
-          path: '/',
-        });
-      },
-      onRefreshError: error => {
-        console.error('Token refresh failed:', error);
-      },
-    },
   });
 }

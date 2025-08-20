@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { EchoConfig } from '../types';
 import { ECHO_BASE_URL } from 'config';
+import { getEchoToken } from './token-manager';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 
 /**
  * Generate PKCE code challenge and verifier
@@ -155,4 +157,27 @@ export async function handleCallback(
   });
 
   return response;
+}
+
+export async function handleGetUser(
+  req: NextRequest,
+  config: EchoConfig
+): Promise<NextResponse> {
+  console.log('handleGetUser');
+  try {
+    const token = await getEchoToken(config.appId);
+    if (!token) {
+      return NextResponse.json(null);
+    }
+
+    const echo = new EchoClient({
+      apiKey: token,
+      baseUrl: ECHO_BASE_URL,
+    });
+    const user = await echo.users.getUserInfo();
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    return NextResponse.json(null);
+  }
 }

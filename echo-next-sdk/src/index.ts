@@ -1,13 +1,18 @@
-import { EchoClient, User } from '@merit-systems/echo-typescript-sdk';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import { createEchoAnthropic } from 'providers/anthropic';
-import { handleCallback, handleSignIn } from './auth/oauth-handlers';
+import {
+  handleCallback,
+  handleGetUser,
+  handleSignIn,
+} from './auth/oauth-handlers';
 import {
   getEchoClient as _getEchoClient,
   getEchoToken as _getEchoToken,
 } from './auth/token-manager';
 import { createEchoOpenAI } from './providers/openai';
 import { EchoConfig, EchoResult } from './types';
+import { fetchEchoAction } from './utils/create-action-url';
 
 /**
  * Echo SDK for Next.js
@@ -28,6 +33,9 @@ export default function Echo(config: EchoConfig): EchoResult {
 
       case '/callback':
         return handleCallback(req, config);
+
+      case '/user':
+        return handleGetUser(req, config);
 
       default:
         return NextResponse.error();
@@ -51,12 +59,12 @@ export default function Echo(config: EchoConfig): EchoResult {
     return _getEchoToken(config.appId);
   };
 
-  const getUser = async (): Promise<User | null> => {
-    const echo = await getEchoClient();
-    if (!echo) {
-      return null;
-    }
-    return echo.users.getUserInfo();
+  /**
+   * Get current user info with automatic token refresh
+   */
+  const getUser = async () => {
+    const response = await fetchEchoAction('user', config);
+    return response.ok ? await response.json() : null;
   };
 
   return {
