@@ -295,37 +295,3 @@ jobs:
 
           echo "ready=true" >> $GITHUB_OUTPUT
           echo "✅ Next.js SDK is ready for publishing"
-
-  summary:
-    name: Publishing test summary
-    runs-on: ubuntu-latest
-    needs: test-publish
-    if: always()
-
-    steps:
-      - name: Test results summary
-        run: |
-          TEST_RESULT="${{ needs.test-publish.result }}"
-
-          if [ "$TEST_RESULT" = "success" ]; then
-            echo "🎉 All publishing tests passed!"
-            echo ""
-            echo "✅ All SDK packages are ready for publishing:"
-            echo "  - @merit-systems/echo-typescript-sdk (v${{ needs.test-publish.outputs.typescript-version }})"
-            echo "  - @merit-systems/echo-react-sdk (v${{ needs.test-publish.outputs.react-version }})"
-            echo "  - @merit-systems/echo-next-sdk (v${{ needs.test-publish.outputs.next-version }})"
-            echo ""
-            echo "The packages can be safely published using:"
-            echo "  1. Push to production branch (recommended)"
-            echo "  2. Or trigger manually via GitHub Actions"
-            echo ""
-            echo "📝 Release process:"
-            echo "  • Bump versions: npm version patch|minor|major"
-            echo "  • Push to production: git push origin production"
-            echo "  • GitHub Action will auto-publish + create tags"
-          else
-            echo "❌ Publishing tests failed!"
-            echo ""
-            echo "Please check the workflow logs and fix any issues before attempting to publish."
-            exit 1
-          fi
