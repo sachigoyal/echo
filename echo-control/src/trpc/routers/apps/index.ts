@@ -53,69 +53,6 @@ export const appsRouter = createTRPCRouter({
     }),
 
   /**
-   * Get a specific app as owner (requires owner permissions)
-   */
-  getOwnerApp: protectedProcedure
-    .input(
-      z.object({
-        appId: z.string(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      // Check if user is owner
-      const role = await PermissionService.getUserAppRole(
-        ctx.session.user.id,
-        input.appId
-      );
-      if (role !== AppRole.OWNER) {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have owner permissions for this app',
-        });
-      }
-
-      return getOwnerEchoApp(input.appId, ctx.session.user.id);
-    }),
-
-  /**
-   * Get a specific app as customer (requires customer permissions)
-   */
-  getCustomerApp: protectedProcedure
-    .input(
-      z.object({
-        appId: z.string(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      // Check if user has at least customer access
-      const role = await PermissionService.getUserAppRole(
-        ctx.session.user.id,
-        input.appId
-      );
-      if (role === AppRole.PUBLIC || !role) {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: 'You do not have customer permissions for this app',
-        });
-      }
-
-      return getCustomerEchoApp(input.appId, ctx.session.user.id);
-    }),
-
-  /**
-   * Get a specific app's public information
-   */
-  getPublicApp: publicProcedure
-    .input(
-      z.object({
-        appId: z.uuid(),
-      })
-    )
-    .query(async ({ input }) => {
-      return getPublicEchoApp(input.appId);
-    }),
-
-  /**
    * Get all public apps with pagination
    */
   getAllPublicApps: publicProcedure

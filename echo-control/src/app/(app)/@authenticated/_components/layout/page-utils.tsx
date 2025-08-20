@@ -18,9 +18,9 @@ export const Heading: React.FC<HeadingProps> = ({
   return (
     <>
       <div className="flex items-center justify-between max-w-4xl w-full px-2 pb-4 md:pb-6 mx-auto">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 shrink-0">
           {icon}
-          <div className="flex flex-col gap-2 w-full text-left">
+          <div className="flex flex-col gap-2 text-left">
             <h1 className="text-4xl font-bold">{title}</h1>
             {description && (
               <p className="text-muted-foreground/80 text-sm">{description}</p>
