@@ -4,7 +4,7 @@ import {
   isSignedIn as checkSignedIn,
   getEchoToken as getToken,
 } from './auth/token-manager';
-import { EchoOpenAIModelId, openai as echoOpenAI } from './providers/openai';
+import { createEchoOpenAI } from './providers/openai';
 import { EchoConfig, EchoResult } from './types';
 
 /**
@@ -46,9 +46,10 @@ export default function Echo(config: EchoConfig): EchoResult {
     return getToken(config.appId);
   };
 
-  const openai = async (model: EchoOpenAIModelId) => {
-    return echoOpenAI(config, model);
-  };
+  /**
+   * OpenAI provider with all methods available
+   */
+  const openai = createEchoOpenAI(config);
 
   return {
     handlers: {

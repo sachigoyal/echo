@@ -1,6 +1,6 @@
-import { getEchoToken, isSignedIn } from '@/echo';
+import { isSignedIn } from '@/echo';
 import Link from 'next/link';
-import Chat from './components/chat';
+import TabsContainer from './components/tabs-container';
 
 export default async function Home() {
   const signedIn = await isSignedIn();
@@ -14,10 +14,10 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      {/* <p>Echo token: {echoToken}</p> */}
-      <div className="w-full max-w-md p-4 rounded-lg shadow-md border border-gray-200">
-        <Chat />
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <h1 className="text-2xl font-bold mb-6">Next.js SDK Example</h1>
+      <div className="w-full max-w-4xl">
+        <TabsContainer />
       </div>
     </div>
   );
