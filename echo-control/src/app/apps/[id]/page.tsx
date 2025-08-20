@@ -1,12 +1,7 @@
 import EchoAppDetail from '@/components/EchoAppDetail';
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function EchoAppPage({ params }: PageProps) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
+export default async function EchoAppPage({ params }: PageProps<'/apps/[id]'>) {
+  const { id } = await params;
 
   return (
     <main className="min-h-screen bg-background">

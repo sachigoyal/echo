@@ -11,16 +11,14 @@ import { api } from '@/trpc/server';
 
 export default async function UserBreadcrumbs({
   params,
-}: {
-  params: Promise<{ userId: string }>;
-}) {
-  const { userId } = await params;
+}: PageProps<'/user/[id]'>) {
+  const { id } = await params;
 
   return (
     <ErrorBoundary fallback={null}>
       <Separator />
       <Suspense fallback={<LoadingBreadcrumb />}>
-        <UserBreadcrumb userId={userId} />
+        <UserBreadcrumb userId={id} />
       </Suspense>
     </ErrorBoundary>
   );

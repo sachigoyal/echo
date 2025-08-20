@@ -2,9 +2,7 @@ import { Nav } from '../_components/layout/nav';
 
 export default function AuthenticatedHomeLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: LayoutProps<'/'>) {
   return (
     <>
       <Nav

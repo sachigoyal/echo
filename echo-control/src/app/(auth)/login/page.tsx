@@ -17,9 +17,7 @@ import { cn } from '@/lib/utils';
 
 export default async function SignInPage({
   searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+}: PageProps<'/login'>) {
   const { redirect_url } = await searchParams;
 
   const redirectTo =
