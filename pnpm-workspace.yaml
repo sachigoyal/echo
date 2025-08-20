@@ -2,6 +2,7 @@ packages:
   - echo-control
   - echo-server
   - echo-typescript-sdk
+  - echo-next-sdk
   - create-echo-app
   - echo-react-sdk
   - echo-authjs-provider
