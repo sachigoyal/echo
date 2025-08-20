@@ -9,12 +9,15 @@ import { AsyncProvider, EchoConfig } from '../types';
 
 export type EchoAnthropicProvider = AsyncProvider<AnthropicProvider>;
 
-export function createEchoAnthropic(config: EchoConfig): EchoAnthropicProvider {
+export function createEchoAnthropic({
+  appId,
+  baseRouterUrl = ROUTER_BASE_URL,
+}: EchoConfig): EchoAnthropicProvider {
   const getProvider = async () => {
-    const token = await getEchoToken(config.appId);
+    const token = await getEchoToken(appId);
     return createAnthropicBase({
-      baseURL: ROUTER_BASE_URL,
-      apiKey: token!,
+      baseURL: baseRouterUrl,
+      apiKey: token ?? '', // null will fail auth
     });
   };
 
@@ -38,7 +41,8 @@ export function createEchoAnthropic(config: EchoConfig): EchoAnthropicProvider {
         const provider = await getProvider();
         return provider.messages(modelId);
       },
-      // These are from the base provider, unclear if they actually work (this is just passing on vercel's incomplete types)
+      // These are from the base provider, unclear if they actually work
+      // (this is just passing on vercel's incomplete types)
       textEmbeddingModel: async (modelId: string) => {
         const provider = await getProvider();
         return provider.textEmbeddingModel(modelId);
@@ -47,7 +51,7 @@ export function createEchoAnthropic(config: EchoConfig): EchoAnthropicProvider {
         const provider = await getProvider();
         return provider.imageModel(modelId);
       },
-      tools: anthropic.tools, // Sync property
+      tools: anthropic.tools,
     }
   );
 

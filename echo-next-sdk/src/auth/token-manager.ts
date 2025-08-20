@@ -102,10 +102,6 @@ export async function getEchoToken(appId: string): Promise<string | null> {
         }
       );
 
-      console.log(
-        'Token refreshed. New refresh token:',
-        refreshResult.refresh_token
-      );
       return refreshResult.access_token;
     } catch (error) {
       console.error('Token refresh failed:', refreshToken, error);

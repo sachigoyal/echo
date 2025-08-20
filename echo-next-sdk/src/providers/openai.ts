@@ -9,12 +9,15 @@ import { AsyncProvider, EchoConfig } from '../types';
 
 export type EchoOpenAIProvider = AsyncProvider<OpenAIProvider>;
 
-export function createEchoOpenAI(config: EchoConfig): EchoOpenAIProvider {
+export function createEchoOpenAI({
+  appId,
+  baseRouterUrl = ROUTER_BASE_URL,
+}: EchoConfig): EchoOpenAIProvider {
   const getProvider = async () => {
-    const token = await getEchoToken(config.appId);
+    const token = await getEchoToken(appId);
     return createOpenAIBase({
-      baseURL: ROUTER_BASE_URL,
-      apiKey: token!,
+      baseURL: baseRouterUrl,
+      apiKey: token ?? '', // null will fail auth
     });
   };
 
@@ -68,7 +71,7 @@ export function createEchoOpenAI(config: EchoConfig): EchoOpenAIProvider {
       const provider = await getProvider();
       return provider.speech(modelId);
     },
-    tools: openai.tools, // Sync property
+    tools: openai.tools,
   });
 
   return implementation;
