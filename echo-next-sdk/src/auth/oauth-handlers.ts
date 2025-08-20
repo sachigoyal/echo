@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { EchoConfig } from '../types';
-
-const ECHO_API_URL = 'https://echo.merit.systems';
+import { ECHO_BASE_URL } from 'config';
 
 /**
  * Generate PKCE code challenge and verifier
@@ -44,7 +43,7 @@ export async function handleSignIn(
   const { origin } = req.nextUrl;
   const basePath = config.basePath || '/api/echo';
 
-  const redirectUrl = new URL(`${ECHO_API_URL}/api/oauth/authorize`);
+  const redirectUrl = new URL(`${ECHO_BASE_URL}/api/oauth/authorize`);
   redirectUrl.searchParams.set('client_id', config.appId);
   redirectUrl.searchParams.set('redirect_uri', `${origin}${basePath}/callback`);
   redirectUrl.searchParams.set('response_type', 'code');
@@ -100,7 +99,7 @@ export async function handleCallback(
   }
 
   // Exchange the code for a token from the token endpoint
-  const tokenEndpoint = `${ECHO_API_URL}/api/oauth/token`;
+  const tokenEndpoint = `${ECHO_BASE_URL}/api/oauth/token`;
 
   const params = new URLSearchParams();
   params.set('grant_type', 'authorization_code');

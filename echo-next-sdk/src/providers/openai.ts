@@ -9,6 +9,7 @@ import {
   SpeechModel,
   TranscriptionModel,
 } from 'ai';
+import { ROUTER_BASE_URL } from 'config';
 import { getEchoToken } from '../auth/token-manager';
 import { EchoConfig } from '../types';
 
@@ -34,7 +35,7 @@ export function createEchoOpenAI(config: EchoConfig): EchoOpenAIProvider {
   const getProvider = async (): Promise<OpenAIProvider> => {
     const token = await getEchoToken(config.appId);
     return createOpenAIBase({
-      baseURL: 'https://echo.router.merit.systems',
+      baseURL: ROUTER_BASE_URL,
       apiKey: token!,
     });
   };

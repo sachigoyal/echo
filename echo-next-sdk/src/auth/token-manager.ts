@@ -1,7 +1,6 @@
+import { ECHO_BASE_URL } from 'config';
 import { cookies as getCookies } from 'next/headers';
 import { shouldRefreshToken } from './jwt-utils';
-
-const ECHO_API_URL = 'https://echo.merit.systems';
 
 interface RefreshTokenResponse {
   access_token: string;
@@ -32,7 +31,7 @@ export async function performTokenRefresh(
   refreshToken: string,
   appId: string
 ): Promise<RefreshTokenResponse> {
-  return fetch(`${ECHO_API_URL}/api/oauth/token`, {
+  return fetch(`${ECHO_BASE_URL}/api/oauth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

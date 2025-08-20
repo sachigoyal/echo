@@ -46,11 +46,6 @@ export default function Echo(config: EchoConfig): EchoResult {
     return getToken(config.appId);
   };
 
-  /**
-   * OpenAI provider with all methods available
-   */
-  const openai = createEchoOpenAI(config);
-
   return {
     handlers: {
       GET: httpHandler,
@@ -58,6 +53,6 @@ export default function Echo(config: EchoConfig): EchoResult {
     },
     isSignedIn,
     getEchoToken,
-    openai,
+    openai: createEchoOpenAI(config),
   };
 }
