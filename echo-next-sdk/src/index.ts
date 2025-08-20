@@ -6,6 +6,7 @@ import {
 } from './auth/token-manager';
 import { createEchoOpenAI } from './providers/openai';
 import { EchoConfig, EchoResult } from './types';
+import { createEchoAnthropic } from 'providers/anthropic';
 
 /**
  * Echo SDK for Next.js
@@ -54,5 +55,6 @@ export default function Echo(config: EchoConfig): EchoResult {
     isSignedIn,
     getEchoToken,
     openai: createEchoOpenAI(config),
+    anthropic: createEchoAnthropic(config),
   };
 }

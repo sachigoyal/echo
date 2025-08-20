@@ -32,6 +32,7 @@
   "author": "Echo Team",
   "license": "MIT",
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.5",
     "@ai-sdk/openai": "^2.0.16",
     "@merit-systems/echo-typescript-sdk": "^1.0.2",
     "ai": "^5.0.17",
