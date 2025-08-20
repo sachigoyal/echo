@@ -2,9 +2,11 @@ import { Nav } from '../_components/layout/nav';
 
 export default function AuthenticatedHomeLayout({
   children,
-}: LayoutProps<'/'>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <>
+    <div>
       <Nav
         tabs={[
           {
@@ -26,6 +28,6 @@ export default function AuthenticatedHomeLayout({
         ]}
       />
       <div className="flex flex-col py-4 md:py-6">{children}</div>
-    </>
+    </div>
   );
 }
