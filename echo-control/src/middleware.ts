@@ -53,6 +53,7 @@ const isPublicRoute = createPathMatcher([
   '/',
   '/popular',
   '/login',
+  '/docs(.*)',
   '/verify-email',
   '/auth/signin(.*)',
   // public routes

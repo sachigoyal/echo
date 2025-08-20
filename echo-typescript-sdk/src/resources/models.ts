@@ -1,9 +1,9 @@
-import { AxiosInstance } from 'axios';
+import { HttpClient } from '../http-client';
 import { SupportedModel, SupportedModelsResponse } from '../types';
 import { BaseResource } from '../utils/error-handling';
 
 export class ModelsResource extends BaseResource {
-  constructor(http: AxiosInstance) {
+  constructor(http: HttpClient) {
     super(http);
   }
 
@@ -12,7 +12,7 @@ export class ModelsResource extends BaseResource {
    */
   async getSupportedModels(): Promise<SupportedModelsResponse> {
     return this.handleRequest(
-      () => this.http.get<SupportedModelsResponse>('/api/v1/supported-models'),
+      () => this.http.get('/api/v1/supported-models'),
       'fetching supported models',
       '/api/v1/supported-models'
     );
@@ -26,7 +26,7 @@ export class ModelsResource extends BaseResource {
       const response = await this.getSupportedModels();
       return response.models;
     } catch (error) {
-      throw this.handleError(error, 'listing supported models');
+      throw error;
     }
   }
 
@@ -40,7 +40,7 @@ export class ModelsResource extends BaseResource {
       const response = await this.getSupportedModels();
       return response.models_by_provider;
     } catch (error) {
-      throw this.handleError(error, 'getting models by provider');
+      throw error;
     }
   }
 }

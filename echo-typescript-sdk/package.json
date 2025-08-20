@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-typescript-sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TypeScript SDK for Echo platform",
   "type": "module",
   "main": "./dist/index.js",
@@ -29,12 +29,8 @@
     "sdk",
     "api"
   ],
-  "author": "Echo Team",
+  "author": "Merit Systems",
   "license": "MIT",
-  "dependencies": {
-    "axios": "^1.6.0",
-    "axios-auth-refresh": "^3.3.6"
-  },
   "devDependencies": {
     "@types/node": "^24.0.3",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
