@@ -2,8 +2,6 @@
 
 import React, { useActionState } from 'react';
 
-import Link from 'next/link';
-
 import { AuthorizeParams } from '@/app/(auth)/_lib/authorize';
 
 import { authorize } from '../_actions/authorize';

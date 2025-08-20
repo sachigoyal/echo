@@ -3,7 +3,7 @@ import { createMDX } from 'fumadocs-mdx/next';
 
 const withMDX = createMDX();
 
-// @ts-ignore - No type declarations available for this package
+// @ts-expect-error - No type declarations available for this package
 import { PrismaPlugin } from '@prisma/nextjs-monorepo-workaround-plugin';
 
 const CORS_HEADERS = [
