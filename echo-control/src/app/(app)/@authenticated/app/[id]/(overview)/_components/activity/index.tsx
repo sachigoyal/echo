@@ -2,13 +2,15 @@ import { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
+import { endOfDay, subDays } from 'date-fns';
+
+import { Card } from '@/components/ui/card';
+
 import { api, HydrateClient } from '@/trpc/server';
 
 import { RangeSelector } from './range-selector';
-import { Chart } from './chart';
-import { Card } from '@/components/ui/card';
+import { Chart, LoadingChartContent } from './chart';
 import { ActivityContextProvider } from './context';
-import { endOfDay, subDays } from 'date-fns';
 
 interface Props {
   appId: string;
@@ -39,7 +41,7 @@ export const Activity: React.FC<Props> = ({ appId }) => {
             <ErrorBoundary
               fallback={<p>There was an error loading the activity data</p>}
             >
-              <Suspense fallback={<p>Loading...</p>}>
+              <Suspense fallback={<LoadingChartContent />}>
                 <Chart appId={appId} />
               </Suspense>
             </ErrorBoundary>

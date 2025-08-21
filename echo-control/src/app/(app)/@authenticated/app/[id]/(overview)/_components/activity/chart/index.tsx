@@ -3,9 +3,11 @@
 import { api } from '@/trpc/client';
 import { Area, Bar } from 'recharts';
 import { format } from 'date-fns';
-import { BaseChart } from './base';
+import { BaseChart, LoadingChart } from './base';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 import { useActivityContext } from '../context';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface Props {
   appId: string;
@@ -104,7 +106,31 @@ export const Chart: React.FC<Props> = ({ appId }) => {
         />
       </TabsList>
       <TabsContent value="profit">
-        <BaseChart data={chartData}>
+        <BaseChart
+          data={chartData}
+          tooltipContent={({ bucketDate, totalCost, totalProfit }) => (
+            <TooltipContent
+              date={bucketDate}
+              rows={[
+                {
+                  label: 'Profit',
+                  value: totalProfit.toLocaleString(undefined, {
+                    style: 'currency',
+                    currency: 'USD',
+                  }),
+                  valueClassName: 'text-primary font-bold',
+                },
+                {
+                  label: 'Base Token Cost',
+                  value: totalCost.toLocaleString(undefined, {
+                    style: 'currency',
+                    currency: 'USD',
+                  }),
+                },
+              ]}
+            />
+          )}
+        >
           <Area
             type="monotone"
             dataKey="totalCost"
@@ -122,7 +148,36 @@ export const Chart: React.FC<Props> = ({ appId }) => {
         </BaseChart>
       </TabsContent>
       <TabsContent value="tokens">
-        <BaseChart data={chartData}>
+        <BaseChart
+          data={chartData}
+          tooltipContent={({
+            bucketDate,
+            totalInputTokens,
+            totalOutputTokens,
+          }) => (
+            <TooltipContent
+              date={bucketDate}
+              rows={[
+                {
+                  label: 'Total Input Tokens',
+                  value: totalInputTokens.toLocaleString(undefined, {
+                    notation: 'compact',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }),
+                },
+                {
+                  label: 'Total Output Tokens',
+                  value: totalOutputTokens.toLocaleString(undefined, {
+                    notation: 'compact',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }),
+                },
+              ]}
+            />
+          )}
+        >
           <Area
             type="monotone"
             dataKey="totalInputTokens"
@@ -140,7 +195,24 @@ export const Chart: React.FC<Props> = ({ appId }) => {
         </BaseChart>
       </TabsContent>
       <TabsContent value="transactions">
-        <BaseChart data={chartData}>
+        <BaseChart
+          data={chartData}
+          tooltipContent={({ bucketDate, totalTransactions }) => (
+            <TooltipContent
+              date={bucketDate}
+              rows={[
+                {
+                  label: 'Total Transactions',
+                  value: totalTransactions.toLocaleString(undefined, {
+                    notation: 'compact',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }),
+                },
+              ]}
+            />
+          )}
+        >
           <Area
             type="monotone"
             dataKey="totalTransactions"
@@ -151,5 +223,90 @@ export const Chart: React.FC<Props> = ({ appId }) => {
         </BaseChart>
       </TabsContent>
     </Tabs>
+  );
+};
+
+interface TooltipRowProps {
+  label: string;
+  value: string;
+  labelClassName?: string;
+  valueClassName?: string;
+}
+
+const TooltipRow = ({
+  label,
+  value,
+  labelClassName,
+  valueClassName,
+}: TooltipRowProps) => {
+  return (
+    <div className="flex justify-between w-full gap-4">
+      <p className={cn('text-sm text-muted-foreground', labelClassName)}>
+        {label}
+      </p>
+      <p
+        className={cn(
+          'text-sm text-muted-foreground font-medium',
+          valueClassName
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  );
+};
+
+const TooltipDate = ({ date }: { date: Date }) => {
+  return (
+    <div className="flex justify-between items-center w-full gap-4">
+      <p className="font-medium">{format(date, 'MMMM d, yyyy')}</p>
+      <p className="text-sm opacity-60">{format(date, 'h:mm a')}</p>
+    </div>
+  );
+};
+
+const TooltipContent = ({
+  date,
+  rows,
+}: {
+  date: Date;
+  rows: TooltipRowProps[];
+}) => {
+  return (
+    <div>
+      <TooltipDate date={date} />
+      <Separator className="my-2" />
+      {rows.map(row => (
+        <TooltipRow key={row.label} {...row} />
+      ))}
+    </div>
+  );
+};
+
+export const LoadingChartContent = () => {
+  return (
+    <div className="animate-pulse">
+      <Tabs defaultValue="profit">
+        <TabsList>
+          <TabsTrigger value="profit" label="Profit" amount="0" isLoading />
+          <TabsTrigger value="tokens" label="Tokens" amount="0" isLoading />
+          <TabsTrigger
+            value="transactions"
+            label="Transactions"
+            amount="0"
+            isLoading
+          />
+        </TabsList>
+        <TabsContent value="profit">
+          <LoadingChart />
+        </TabsContent>
+        <TabsContent value="tokens">
+          <LoadingChart />
+        </TabsContent>
+        <TabsContent value="transactions">
+          <LoadingChart />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };

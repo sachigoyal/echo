@@ -4,6 +4,7 @@ import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function Tabs({
   className,
@@ -35,11 +36,13 @@ function TabsTrigger({
   className,
   label,
   amount,
+  isLoading,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger> & {
   label: string;
   value: string;
   amount: string;
+  isLoading?: boolean;
 }) {
   return (
     <TabsPrimitive.Trigger
@@ -49,15 +52,21 @@ function TabsTrigger({
         'border-r border-r-border',
         'data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-card',
         'cursor-pointer hover:bg-card/50',
+        'disabled:opacity-50 disabled:cursor-not-allowed',
         className
       )}
+      disabled={isLoading}
       {...props}
     >
       <div className="flex flex-col gap-1 text-left">
         <p className="text-sm font-semibold text-muted-foreground">{label}</p>
-        <p className="text-3xl font-bold text-muted-foreground group-data-[state=active]:text-foreground">
-          {amount}
-        </p>
+        {isLoading ? (
+          <Skeleton className="w-24 h-[30px] my-[3px]" />
+        ) : (
+          <p className="text-3xl font-bold text-muted-foreground group-data-[state=active]:text-foreground">
+            {amount}
+          </p>
+        )}
       </div>
     </TabsPrimitive.Trigger>
   );
