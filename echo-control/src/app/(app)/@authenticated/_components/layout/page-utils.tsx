@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface HeadingProps {
   title: string;
@@ -36,11 +37,17 @@ export const Heading: React.FC<HeadingProps> = ({
 
 interface BodyProps {
   children: ReactNode;
+  className?: string;
 }
 
-export const Body: React.FC<BodyProps> = ({ children }) => {
+export const Body: React.FC<BodyProps> = ({ children, className }) => {
   return (
-    <div className="flex flex-col gap-4 max-w-4xl w-full mx-auto py-8 px-2">
+    <div
+      className={cn(
+        'flex flex-col gap-4 max-w-4xl w-full mx-auto py-8 px-2',
+        className
+      )}
+    >
       {children}
     </div>
   );

@@ -34,7 +34,7 @@ export const Activity: React.FC<Props> = ({ appId }) => {
       >
         <div className="w-full flex flex-col gap-4 md:gap-6">
           <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold">Activity Overview</h3>
+            <h3 className="text-2xl font-bold">App Activity</h3>
             <RangeSelector />
           </div>
           <Card className="p-0 overflow-hidden">

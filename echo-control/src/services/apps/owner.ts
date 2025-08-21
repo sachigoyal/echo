@@ -56,3 +56,61 @@ export const listOwnedApps = async (userId: string) => {
     },
   });
 };
+
+export const updateAppSchema = z.object({
+  description: z.string().min(1, 'Description is required').optional(),
+  homepageUrl: z.string().min(1, 'Homepage URL is required').optional(),
+  profilePictureUrl: z
+    .string()
+    .min(1, 'Profile picture URL is required')
+    .optional(),
+});
+
+export const updateApp = async (
+  appId: string,
+  data: z.infer<typeof updateAppSchema>
+) => {
+  const validatedData = updateAppSchema.safeParse(data);
+
+  if (!validatedData.success) {
+    throw new Error(validatedData.error.message);
+  }
+
+  return await db.echoApp.update({
+    where: { id: appId },
+    data: {
+      description: data.description?.trim(),
+      homepageUrl: data.homepageUrl?.trim(),
+      profilePictureUrl: data.profilePictureUrl?.trim(),
+    },
+  });
+};
+
+export const updateGithubLinkSchema = z.object({
+  type: z.enum(['user', 'repo']),
+  value: z.string().min(1, 'GitHub ID is required'),
+});
+
+export const updateGithubLink = async (
+  appId: string,
+  data: z.infer<typeof updateGithubLinkSchema>
+) => {
+  const validatedData = updateGithubLinkSchema.safeParse(data);
+
+  if (!validatedData.success) {
+    throw new Error(validatedData.error.message);
+  }
+
+  return await db.githubLink.upsert({
+    where: { echoAppId: appId },
+    update: {
+      githubId: data.value,
+      githubType: data.type,
+    },
+    create: {
+      echoAppId: appId,
+      githubId: data.value,
+      githubType: data.type,
+    },
+  });
+};

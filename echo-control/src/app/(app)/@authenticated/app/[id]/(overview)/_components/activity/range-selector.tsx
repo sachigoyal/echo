@@ -80,10 +80,7 @@ export const RangeSelector = () => {
           setTimeframe(Number(value));
         }}
       >
-        <SelectTrigger
-          className="rounded-l-none border-border shadow-none border-l-[0.5px]"
-          hideIcon={timeframe !== ActivityTimeframe.Custom}
-        >
+        <SelectTrigger className="rounded-l-none border-border shadow-none border-l-[0.5px]">
           {timeframe !== ActivityTimeframe.Custom && (
             <span>
               {timeframe === 1 ? 'Past 24 Hours' : `Past ${timeframe} Days`}

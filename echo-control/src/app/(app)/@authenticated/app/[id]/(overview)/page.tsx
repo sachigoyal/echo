@@ -7,6 +7,7 @@ import { Activity } from './_components/activity';
 import { api, HydrateClient } from '@/trpc/server';
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { Code } from 'lucide-react';
+import { Setup } from './_components/setup';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
@@ -30,7 +31,8 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
           />
         }
       />
-      <Body>
+      <Body className="gap-8">
+        <Setup />
         <Activity appId={id} />
       </Body>
     </HydrateClient>
