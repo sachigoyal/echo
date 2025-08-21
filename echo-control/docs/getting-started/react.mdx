@@ -2,7 +2,181 @@
 title: React
 description: Integrate Echo into your React application
 ---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-# Getting Started with React Client
+# Getting Started with Echo in React
 
-TODO: Add React client integration guide
+<Steps>
+    <Step>
+        ### Install Dependencies.
+        Install `echo-react-sdk` and `ai`
+
+        <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+            <Tab value="npm">
+                ```sh
+                npm i @merit-systems/echo-react-sdk ai
+                ```
+            </Tab>
+            <Tab value="yarn">
+                ```sh
+                yarn add @merit-systems/echo-react-sdk ai
+                ```
+            </Tab>
+            <Tab value="pnpm">
+                ```sh
+                pnpm add @merit-systems/echo-react-sdk ai
+                ```
+            </Tab>
+            <Tab value="bun">
+                ```sh
+                bun add @merit-systems/echo-react-sdk ai
+                ```
+            </Tab>
+        </Tabs>
+    </Step>
+
+    <Step>
+        ### Create an Echo App
+        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get an `app_id`.
+    </Step>
+
+    <Step>
+        ### Configure `<EchoProvider>`
+        Include your App ID from the prior step.
+        ```tsx title="app.tsx"
+        import React from 'react';
+        import { EchoProvider } from '@merit-systems/echo-react-sdk';
+
+        const APP_ID="echo_...";
+
+        function App() {
+          return (
+            <EchoProvider appId={APP_ID}>
+                <h1>Time to Ship</h1>
+            </EchoProvider>
+          );
+        }
+
+        export default App;
+        ```
+    </Step>
+
+    <Step>
+        ### `<EchoSignIn>` component
+        `<EchoSignIn>` is a React component that can be placed anywhere in your app. When a user clicks
+        it will redirect to Oauth against [echo.merit.systems](echo.merit.systems).
+        
+        ```tsx title="app.tsx"
+        import React from 'react';
+        import { EchoProvider, EchoSignIn } from '@merit-systems/echo-react-sdk';
+
+        const APP_ID="echo_...";
+
+        function App() { 
+          return (  
+            <EchoProvider appId={APP_ID}>
+                <h1>Time to Ship</h1>
+                <EchoSignIn /> 
+            </EchoProvider>
+          );
+        }
+
+        export default App;
+        ```
+    </Step>
+
+    <Step>
+        ### `useEcho()` hook
+        The `useEcho()` hook surfaces everything you need to show Echo state to your users.
+
+        ```tsx title="app.tsx"
+        import React from 'react';
+        import { EchoProvider, EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
+
+        const APP_ID="echo_...";
+
+        function App() { 
+            const { isAuthenticated, user, balance, error, isLoading, signOut } = useEcho();
+
+            return (  
+                <EchoProvider appId={APP_ID}>
+                    <h1>Time to Ship</h1>
+                    <EchoSignIn /> 
+                    <div>
+                        {isLoading && <p>Loading...</p>}
+                        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+                        {isAuthenticated ? (
+                            <div>
+                                <p>Welcome, {user?.name}!</p>
+                                <p>Email: {user?.email}</p>
+                                <p>Balance: {balance?.credits} {balance?.currency}</p>
+                                <button onClick={signOut}>Sign Out</button>
+                            </div>
+                        ) : (
+                            <p>Sign in to continue.</p>
+                        )}
+                    </div>
+                </EchoProvider>
+            );
+        }
+
+        export default App;
+        ```
+    </Step>
+
+    <Step>
+        ### `generateText()` and Model Providers
+        Now let's add AI generation capabilities using the `useEchoModelProviders()` hook with `generateText()` from [Vercel AI SDK](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text).
+
+        ```tsx title="app.tsx"
+        import React, { useState } from 'react';
+        import { EchoProvider, EchoSignIn, useEcho, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+        import { generateText, type ModelMessage } from 'ai';
+
+        const APP_ID="echo_...";
+
+        function App() { 
+            const { isAuthenticated, user, balance, error, isLoading, signOut } = useEcho();
+            const { openAI } = useEchoModelProviders();
+            const [result, setResult] = useState("");
+
+            const handleGen = async () => {
+                const result = await generateText({
+                    model: await openai('gpt-5'),
+                    messages: [
+                        { role: 'user', content: 'What is the fastest way to make $1M?' }
+                    ]
+                });
+                setResult(result.text);
+            };  
+
+            return (  
+                <EchoProvider appId={APP_ID}>
+                    <h1>Time to Ship</h1>
+                    <EchoSignIn /> 
+                    <div>
+                        {isLoading && <p>Loading...</p>}
+                        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+                        {isAuthenticated ? (
+                            <div>
+                                <p>Welcome, {user?.name}!</p>
+                                <p>Email: {user?.email}</p>
+                                <p>Balance: {balance?.credits} {balance?.currency}</p>
+                                <button onClick={handleGen}>Get Wisdom</button>
+                                {result && <p>AI Response: {result}</p>}
+                                <button onClick={signOut}>Sign Out</button>
+                            </div>
+                        ) : (
+                            <p>Sign in to continue.</p>
+                        )}
+                    </div>
+                </EchoProvider>
+            );
+        }
+
+        export default App;
+        ```
+    </Step>
+
+
+</Steps>
