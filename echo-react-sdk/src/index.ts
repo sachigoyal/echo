@@ -11,6 +11,7 @@ export { useEchoOpenAI } from './hooks/useEchoOpenAI';
 // Echo provider hooks
 export { useEchoModelProviders } from './hooks/useEchoModelProviders';
 // AI SDK integration hooks
+export { EchoChatProvider } from './components/EchoChatProvider';
 export { useChat } from './hooks/useChat';
 
 export type {
