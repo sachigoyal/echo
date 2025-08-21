@@ -26,7 +26,7 @@ function TabsList({
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
-      className={cn('flex w-full border-b bg-muted', className)}
+      className={cn('flex w-full border-b bg-muted overflow-x-auto', className)}
       {...props}
     />
   );
@@ -48,7 +48,7 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        'flex flex-col gap-2 p-4 transition-all duration-200 min-w-56 group',
+        'flex flex-col gap-2 p-4 transition-all duration-200 md:min-w-56 group',
         'border-r border-r-border',
         'data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-card',
         'cursor-pointer hover:bg-card/50',

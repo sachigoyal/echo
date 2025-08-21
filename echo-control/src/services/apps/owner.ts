@@ -57,14 +57,29 @@ export const listOwnedApps = async (userId: string) => {
   });
 };
 
-export const updateAppSchema = z.object({
-  description: z.string().min(1, 'Description is required').optional(),
-  homepageUrl: z.string().min(1, 'Homepage URL is required').optional(),
-  profilePictureUrl: z
-    .string()
-    .min(1, 'Profile picture URL is required')
-    .optional(),
-});
+export const updateAppSchema = z
+  .object({
+    description: z.string().min(1, 'Description is required').optional(),
+    homepageUrl: z.string().min(1, 'Homepage URL is required').optional(),
+    profilePictureUrl: z
+      .string()
+      .min(1, 'Profile picture URL is required')
+      .optional(),
+  })
+  .refine(
+    data => {
+      // Ensure at least one of the fields is defined
+      return (
+        data.description !== undefined ||
+        data.homepageUrl !== undefined ||
+        data.profilePictureUrl !== undefined
+      );
+    },
+    {
+      message: 'At least one field must be provided',
+      path: [],
+    }
+  );
 
 export const updateApp = async (
   appId: string,

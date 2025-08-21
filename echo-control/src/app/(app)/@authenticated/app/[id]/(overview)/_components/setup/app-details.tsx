@@ -15,32 +15,53 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import { UploadIcon } from 'lucide-react';
+import { Check, Loader2, UploadIcon } from 'lucide-react';
 
 import { updateAppSchema } from '@/services/apps/owner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useActionState } from 'react';
 
-export const AppDetails = () => {
+interface Props {
+  updateApp: (data: z.infer<typeof updateAppSchema>) => Promise<boolean>;
+}
+
+export const AppDetails: React.FC<Props> = ({ updateApp }) => {
   const form = useForm<z.infer<typeof updateAppSchema>>({
-    resolver: zodResolver(updateAppSchema),
+    resolver: zodResolver(
+      updateAppSchema.refine(data => {
+        return (
+          data.description !== undefined && data.profilePictureUrl !== undefined
+        );
+      })
+    ),
     defaultValues: {
       description: undefined,
       profilePictureUrl: undefined,
     },
+    mode: 'onChange',
   });
 
-  const onSubmit = (data: z.infer<typeof updateAppSchema>) => {
-    console.log(data);
-  };
+  const [state, formAction, isPending] = useActionState(
+    async (_: { success: boolean }, formData: FormData) => {
+      const data = Object.fromEntries(formData);
+      const parsedData = updateAppSchema.safeParse(data);
+      if (!parsedData.success) {
+        return { success: false, error: 'Invalid data' };
+      }
+      const result = await updateApp(data);
+      if (result) {
+        return { success: true };
+      } else {
+        return { success: false, error: 'Failed to update app details.' };
+      }
+    },
+    { success: false, error: undefined }
+  );
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-4 h-full"
-      >
+      <form action={formAction} className="flex flex-col gap-4 h-full">
         <FormField
           control={form.control}
           name="profilePictureUrl"
@@ -81,6 +102,7 @@ export const AppDetails = () => {
                 <Input
                   placeholder="A cloud-based web development agent that..."
                   {...field}
+                  value={field.value ?? ''}
                 />
               </FormControl>
               <FormMessage />
@@ -90,9 +112,20 @@ export const AppDetails = () => {
         <Button
           type="submit"
           className="w-full mt-auto"
-          disabled={form.formState.isSubmitting || !form.formState.isValid}
+          disabled={
+            isPending ||
+            !form.formState.isDirty ||
+            !form.formState.isValid ||
+            state.success
+          }
         >
-          Save
+          {isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : state.success ? (
+            <Check className="size-4" />
+          ) : (
+            'Save'
+          )}
         </Button>
       </form>
     </Form>

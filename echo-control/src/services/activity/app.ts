@@ -1,7 +1,5 @@
 import z from 'zod';
 
-import { subDays, startOfDay, endOfDay } from 'date-fns';
-
 import { db } from '@/lib/db';
 
 export const getAppActivitySchema = z.object({

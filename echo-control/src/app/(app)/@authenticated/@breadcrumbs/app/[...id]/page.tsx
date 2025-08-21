@@ -40,6 +40,7 @@ const UserBreadcrumb = async ({ id }: { id: string }) => {
       image={owner.image ?? null}
       name={owner.name ?? 'Unknown'}
       Fallback={User}
+      mobileHideText
     />
   );
 };

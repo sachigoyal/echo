@@ -78,13 +78,15 @@ export function CreditMinter({ user, selectedApp }: CreditMinterProps) {
       const result = await mintCreditsMutation.mutateAsync({
         userId: user.id,
         amountInDollars,
-        description: description.trim() || undefined,
-        isFreeTier,
-        echoAppId: isFreeTier ? selectedApp?.id : undefined,
-        metadata:
-          Object.keys(parsedMetadata).length > 0 ? parsedMetadata : undefined,
-        poolName: poolName.trim() || undefined,
-        defaultSpendLimit: defaultSpendLimit || undefined,
+        options: {
+          description: description.trim() || undefined,
+          isFreeTier,
+          echoAppId: isFreeTier ? selectedApp?.id : undefined,
+          metadata:
+            Object.keys(parsedMetadata).length > 0 ? parsedMetadata : undefined,
+          poolName: poolName.trim() || undefined,
+          defaultSpendLimit: defaultSpendLimit || undefined,
+        },
       });
 
       setLastMintResult({

@@ -1,7 +1,7 @@
 'use client';
 
 import { api } from '@/trpc/client';
-import { Area, Bar } from 'recharts';
+import { Area } from 'recharts';
 import { format } from 'date-fns';
 import { BaseChart, LoadingChart } from './base';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
@@ -21,6 +21,8 @@ export const Chart: React.FC<Props> = ({ appId }) => {
     startDate,
     endDate,
   });
+
+  console.log(activitya);
 
   //   // Transform data for the chart
   //   const chartData = activity.map(item => ({

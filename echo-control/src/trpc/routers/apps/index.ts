@@ -12,12 +12,7 @@ import {
   getAllPublicEchoApps,
   getAllCustomerEchoApps,
   getAllOwnerEchoApps,
-  getPublicEchoApp,
-  getCustomerEchoApp,
-  getOwnerEchoApp,
 } from '@/lib/apps';
-import { AppRole } from '@/lib/permissions/types';
-import { PermissionService } from '@/lib/permissions';
 
 import { publicAppsRouter } from './public';
 import { memberAppsRouter } from './member';

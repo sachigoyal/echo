@@ -32,7 +32,11 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
         }
       />
       <Body className="gap-8">
-        <Setup />
+        <Setup
+          appId={id}
+          description={app.description}
+          profilePictureUrl={app.profilePictureUrl}
+        />
         <Activity appId={id} />
       </Body>
     </HydrateClient>

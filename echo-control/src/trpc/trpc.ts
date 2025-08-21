@@ -3,6 +3,7 @@ import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { auth } from '@/auth';
 import { Session } from 'next-auth';
+import { db } from '@/lib/db';
 
 /**
  * Context that is passed to all TRPC procedures
@@ -71,4 +72,16 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
       session: { ...ctx.session, user: ctx.session.user },
     },
   });
+});
+
+export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const user = await db.user.findUnique({
+    where: { id: ctx.session.user.id },
+  });
+
+  if (!user?.admin) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  return next({ ctx });
 });

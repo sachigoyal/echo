@@ -1,12 +1,13 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { updateGithubLinkSchema } from '@/services/apps/owner';
-import { useState } from 'react';
+import z from 'zod';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import z from 'zod';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Form,
   FormControl,
@@ -16,7 +17,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
+
+import { updateGithubLinkSchema } from '@/services/apps/owner';
 
 export const RecipientDetails = () => {
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
@@ -108,7 +110,7 @@ export const RecipientDetails = () => {
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
-                    All profits will be sent to this repo's Merit Systems
+                    All profits will be sent to this repo&apos;s Merit Systems
                     account.
                   </FormDescription>
                 </FormItem>

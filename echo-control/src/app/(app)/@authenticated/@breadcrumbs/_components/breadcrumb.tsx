@@ -7,12 +7,14 @@ import { LucideIcon } from 'lucide-react';
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Route } from 'next';
+import { cn } from '@/lib/utils';
 
 interface Props<T extends string> {
   href: Route<T>;
   image: string | null;
   name: string;
   Fallback: LucideIcon;
+  mobileHideText?: boolean;
 }
 
 export const Breadcrumb = <T extends string>({
@@ -20,6 +22,7 @@ export const Breadcrumb = <T extends string>({
   image,
   name,
   Fallback,
+  mobileHideText = false,
 }: Props<T>) => {
   return (
     <Link href={href}>
@@ -29,7 +32,14 @@ export const Breadcrumb = <T extends string>({
           fallback={<Fallback className="size-3" />}
           className="size-5"
         />
-        <p className="font-semibold text-sm">{name}</p>
+        <p
+          className={cn(
+            'font-semibold text-sm',
+            mobileHideText && 'hidden md:block'
+          )}
+        >
+          {name}
+        </p>
       </div>
     </Link>
   );
