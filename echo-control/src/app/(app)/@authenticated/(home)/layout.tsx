@@ -6,7 +6,7 @@ export default function AuthenticatedHomeLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div>
       <Nav
         tabs={[
           {
@@ -28,6 +28,6 @@ export default function AuthenticatedHomeLayout({
         ]}
       />
       <div className="flex flex-col py-4 md:py-6">{children}</div>
-    </>
+    </div>
   );
 }

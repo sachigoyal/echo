@@ -9,7 +9,16 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-export default [
+const config = [
+  {
+    ignores: [
+      'node_modules/**',
+      '.next/**',
+      'out/**',
+      'build/**',
+      'next-env.d.ts',
+    ],
+  },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
     name: 'echo-control/ignores',
@@ -23,6 +32,9 @@ export default [
       'src/generated/**',
       'prisma/generated/**',
       '**/*.d.ts',
+      '.source/**',
     ],
   },
 ];
+
+export default config;

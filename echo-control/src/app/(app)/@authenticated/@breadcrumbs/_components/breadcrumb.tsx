@@ -6,20 +6,21 @@ import { LucideIcon } from 'lucide-react';
 
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Route } from 'next';
 
-interface Props {
-  href: string;
+interface Props<T extends string> {
+  href: Route<T>;
   image: string | null;
   name: string;
   Fallback: LucideIcon;
 }
 
-export const Breadcrumb: React.FC<Props> = ({
+export const Breadcrumb = <T extends string>({
   href,
   image,
   name,
   Fallback,
-}) => {
+}: Props<T>) => {
   return (
     <Link href={href}>
       <div className="flex items-center gap-2 cursor-pointer">

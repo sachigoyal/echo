@@ -6,6 +6,7 @@ import { userPaymentsRouter } from './payments';
 import { userRedeemCodeRouter } from './redeem';
 import { userEarningsRouter } from './earnings';
 import { userReferralRouter } from './referral';
+import { userPublicRouter } from './public';
 
 export const userRouter = createTRPCRouter({
   balance: userBalanceRouter,
@@ -14,4 +15,5 @@ export const userRouter = createTRPCRouter({
   redeem: userRedeemCodeRouter,
   earnings: userEarningsRouter,
   referral: userReferralRouter,
+  public: userPublicRouter,
 });

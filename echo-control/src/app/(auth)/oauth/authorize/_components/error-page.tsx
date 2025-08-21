@@ -27,11 +27,11 @@ export const ErrorPage: React.FC<Props> = ({ message, redirectUrl }) => {
       <CardContent>{message}</CardContent>
       <CardFooter className="flex gap-2">
         {redirectUrl ? (
-          <Link href={redirectUrl} className="flex-1">
+          <a href={redirectUrl} className="flex-1">
             <Button variant="outline" className="w-full">
               Back to App
             </Button>
-          </Link>
+          </a>
         ) : (
           <Link href="/" className="flex-1">
             <Button variant="outline" className="w-full">

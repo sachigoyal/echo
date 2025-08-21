@@ -7,12 +7,9 @@ import { MoneyInput } from '@/components/ui/money-input';
 
 import { Check, Loader2 } from 'lucide-react';
 import { api } from '@/trpc/client';
-import { useRouter } from 'next/navigation';
 
 export const AddCredits = () => {
   const [amount, setAmount] = useState<number>();
-
-  const router = useRouter();
 
   const {
     mutate: createPaymentLink,
@@ -20,7 +17,7 @@ export const AddCredits = () => {
     isSuccess,
   } = api.user.payments.createLink.useMutation({
     onSuccess: data => {
-      router.push(data.paymentLink.url);
+      window.location.href = data.paymentLink.url;
     },
   });
 

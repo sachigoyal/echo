@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 export const LogoContainer = ({ children }: { children: React.ReactNode }) => {
   const { scrollY } = useScroll();
 
-  const size = useTransform(scrollY, [0, 56], [34, 24]);
-  const top = useTransform(scrollY, [0, 56], [19, 14]);
+  const size = useTransform(scrollY, [0, 56], [32, 24]);
+  const top = useTransform(scrollY, [0, 56], [20, 14]);
 
   const [isFixed, setIsFixed] = useState(false);
 

@@ -1,8 +1,8 @@
 import { source } from '@/lib/source';
 import { CollapsibleControl, DocsLayout } from 'fumadocs-ui/layouts/docs';
-import type { ReactNode } from 'react';
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import { MobileSidebarTrigger } from './mobile-sidebar-trigger';
+
+import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
 const baseOptions: BaseLayoutProps = {
   links: [
@@ -14,7 +14,7 @@ const baseOptions: BaseLayoutProps = {
   ],
 };
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: LayoutProps<'/docs'>) {
   return (
     <DocsLayout
       tree={source.pageTree}
