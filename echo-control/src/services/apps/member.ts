@@ -71,15 +71,24 @@ export const listMemberApps = async (
   });
 };
 
-// this will throw if the user is already a member because user_echoAppId is unique
+// this will succeed whether creating a new membership or if the user is already a member
 export const joinApp = async (userId: string, echoAppId: string) => {
-  return db.appMembership.create({
-    data: {
+  return db.appMembership.upsert({
+    where: {
+      userId_echoAppId: {
+        userId,
+        echoAppId,
+      },
+    },
+    create: {
       userId,
       echoAppId,
       role: AppRole.CUSTOMER,
       status: MembershipStatus.ACTIVE,
       totalSpent: 0,
+    },
+    update: {
+      // Don't update any fields if the membership already exists
     },
   });
 };
