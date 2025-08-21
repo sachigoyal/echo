@@ -4,18 +4,10 @@ import {
   EchoTokenPurchase,
   useEcho,
 } from '@merit-systems/echo-react-sdk';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChatInterface } from './components/ChatInterface';
 import { ImageGeneration } from './components/ImageGeneration';
 import UseChatInterface from './components/UseChatInterface';
-
-// Configuration constants
-const CONFIG = {
-  ECHO_CONTROL_URL: 'https://echo.merit.systems',
-  DEFAULT_CLIENT_ID: '9aabddcd-94be-428b-a914-51d3416fd443',
-  REDIRECT_URI: window.location.origin,
-  SCOPE: 'llm:invoke offline_access',
-} as const;
 
 type Tab = 'chat' | 'images' | 'use-chat';
 
@@ -158,7 +150,7 @@ function Dashboard() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              📤 Use Chat
+              📤 useChat()
             </button>
           </nav>
         </div>
@@ -192,141 +184,17 @@ function Dashboard() {
   );
 }
 
-function ConfigForm({ onSubmit }: { onSubmit: (clientId: string) => void }) {
-  const [clientId, setClientId] = useState<string>(CONFIG.DEFAULT_CLIENT_ID);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (clientId.trim()) {
-      onSubmit(clientId.trim());
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Echo Configuration
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Enter your Echo App ID to get started
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="clientId"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Echo App ID (Client ID)
-            </label>
-            <input
-              id="clientId"
-              type="text"
-              value={clientId}
-              onChange={e => setClientId(e.target.value)}
-              placeholder="your-echo-app-id"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="text-xs text-gray-500 space-y-1">
-            <p>
-              <strong>Current Configuration:</strong>
-            </p>
-            <p>• Echo Control URL: {CONFIG.ECHO_CONTROL_URL}</p>
-            <p>• Redirect URI: {CONFIG.REDIRECT_URI}</p>
-            <p>• Scope: {CONFIG.SCOPE}</p>
-          </div>
-
-          <div className="text-xs text-yellow-600 bg-yellow-50 p-3 rounded-lg">
-            ⚠️ Make sure this redirect URI is configured in your Echo app's
-            OAuth settings!
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-          >
-            Start OAuth Flow
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 function App() {
-  const [clientId, setClientId] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem('echo_oauth_client_id') || null;
-    } catch {
-      return null;
-    }
-  });
-
-  const [echoConfig, setEchoConfig] = useState<{
-    appId: string;
-    apiUrl: string;
-    redirectUri: string;
-    scope: string;
-  } | null>(() => {
-    try {
-      const stored = localStorage.getItem('echo_oauth_config');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  const handleConfigSubmit = (submittedClientId: string) => {
-    setClientId(submittedClientId);
-    const config = {
-      appId: submittedClientId,
-      apiUrl: CONFIG.ECHO_CONTROL_URL,
-      redirectUri: CONFIG.REDIRECT_URI,
-      scope: CONFIG.SCOPE,
-    };
-    setEchoConfig(config);
-
-    try {
-      localStorage.setItem('echo_oauth_client_id', submittedClientId);
-      localStorage.setItem('echo_oauth_config', JSON.stringify(config));
-    } catch (error) {
-      console.warn('Failed to save config to localStorage:', error);
-    }
-  };
-
-  const handleReset = () => {
-    setClientId(null);
-    setEchoConfig(null);
-    try {
-      localStorage.removeItem('echo_oauth_client_id');
-      localStorage.removeItem('echo_oauth_config');
-    } catch (error) {
-      console.warn('Failed to clear localStorage:', error);
-    }
-  };
-
-  if (!clientId || !echoConfig) {
-    return <ConfigForm onSubmit={handleConfigSubmit} />;
-  }
-
   return (
-    <EchoProvider config={echoConfig}>
+    <EchoProvider
+      config={{
+        apiUrl: 'https://echo.merit.systems',
+        appId: '60601628-cdb7-481e-8f7e-921981220348',
+        redirectUri: window.location.origin,
+        scope: 'llm:invoke offline_access',
+      }}
+    >
       <Dashboard />
-      {/* Reset button - only show in development */}
-      {import.meta.env.DEV && (
-        <button
-          onClick={handleReset}
-          className="fixed top-4 right-4 px-3 py-1 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-        >
-          Reset Config
-        </button>
-      )}
     </EchoProvider>
   );
 }

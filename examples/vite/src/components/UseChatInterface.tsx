@@ -27,9 +27,7 @@ export default function UseChatInterface() {
 
 function Chat() {
   const [input, setInput] = useState('');
-  const { messages, sendMessage, status } = useChat();
-
-  console.log({ status, messages });
+  const { messages, sendMessage } = useChat();
 
   return (
     <div className="space-y-4">
