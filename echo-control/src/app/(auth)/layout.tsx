@@ -1,10 +1,6 @@
 import { FlickeringGrid } from '@/components/magicui/flickering-grid';
 
-export default async function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AuthLayout({ children }: LayoutProps<'/'>) {
   return (
     <div className="pt-10 md:pt-[15vh] relative size-full flex flex-col items-center px-2">
       <FlickeringGrid

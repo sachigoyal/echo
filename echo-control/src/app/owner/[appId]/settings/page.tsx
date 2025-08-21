@@ -91,7 +91,7 @@ const sidebarItems: SidebarItem[] = [
   },
 ];
 
-const SettingsPage: React.FC = () => {
+export default function SettingsPage() {
   const params = useParams();
   const appId = params.appId as string;
   const [activeTab, setActiveTab] = useState('general');
@@ -210,6 +210,4 @@ const SettingsPage: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default SettingsPage;
+}

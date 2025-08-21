@@ -3,11 +3,7 @@ import { HydrateClient } from '@/trpc/server';
 import { notFound } from 'next/navigation';
 import { Heading } from '../../_components/layout/page-utils';
 
-export default async function AppPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
 
   const app = await api.apps.public.get(id);

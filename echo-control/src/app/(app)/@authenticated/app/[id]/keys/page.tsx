@@ -21,13 +21,10 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 import { Code } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default async function AppPage({
+export default async function AppKeysPage({
   params,
   searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+}: PageProps<'/app/[id]/keys'>) {
   const { id } = await params;
   const { generate } = await searchParams;
 

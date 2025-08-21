@@ -12,10 +12,7 @@ import { LogoContainer } from './_components/layout/logo';
 export default async function AppLayout({
   children,
   breadcrumbs,
-}: {
-  children: React.ReactNode;
-  breadcrumbs: React.ReactNode;
-}) {
+}: LayoutProps<'/'>) {
   const session = await auth();
 
   if (!session?.user) {
@@ -28,7 +25,7 @@ export default async function AppLayout({
         <Logo className="size-auto h-full aspect-square" />
       </LogoContainer>
       <header className="w-full flex flex-col pt-4 justify-center">
-        <div className="flex items-center justify-between w-full px-2 md:px-6 pb-0 md:pb-0">
+        <div className="flex items-center justify-between w-full px-2 md:px-6 pb-0 md:pb-0 h-10">
           <div className="pl-12 flex items-center gap-3">{breadcrumbs}</div>
           <div className="flex items-center space-x-3">
             <Link href="/new">

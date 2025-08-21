@@ -21,9 +21,7 @@ import { authorizeParamsSchema } from '../../_lib/authorize';
 
 export default async function OAuthAuthorizePage({
   searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+}: PageProps<'/oauth/authorize'>) {
   const resolvedParams = await searchParams;
 
   const parseResult = authorizeParamsSchema.safeParse(resolvedParams);

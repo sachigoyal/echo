@@ -3,14 +3,11 @@ import { Nav } from '../../_components/layout/nav';
 export default async function AuthenticatedAppLayout({
   children,
   params,
-}: {
-  params: Promise<{ id: string }>;
-  children: React.ReactNode;
-}) {
+}: LayoutProps<'/app/[id]'>) {
   const { id } = await params;
 
   return (
-    <>
+    <div>
       <Nav
         tabs={[
           {
@@ -28,6 +25,6 @@ export default async function AuthenticatedAppLayout({
         ]}
       />
       <div className="flex flex-col py-4 md:py-6">{children}</div>
-    </>
+    </div>
   );
 }

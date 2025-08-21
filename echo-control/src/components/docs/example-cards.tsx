@@ -1,19 +1,22 @@
 import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
+import { Route } from 'next';
 
-interface ExampleCard {
+interface ExampleCard<T extends string> {
   title: string;
   icon: React.ReactNode;
-  docsLink: string;
+  docsLink: Route<T>;
   liveExampleLink?: string;
   githubLink?: string;
 }
 
-interface ExampleCardsProps {
-  cards: ExampleCard[];
+interface ExampleCardsProps<T extends string> {
+  cards: ExampleCard<T>[];
 }
 
-export function ExampleCards({ cards }: ExampleCardsProps) {
+export function ExampleCards<T extends string>({
+  cards,
+}: ExampleCardsProps<T>) {
   return (
     <div className="flex justify-center my-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
@@ -34,7 +37,7 @@ export function ExampleCards({ cards }: ExampleCardsProps) {
             <div className="flex justify-stretch gap-2">
               {/* Live Example Link */}
               {card.liveExampleLink && (
-                <Link
+                <a
                   href={card.liveExampleLink}
                   className="flex w-full justify-center rounded-md border border-border/50 bg-muted p-2 text-sm hover:bg-accent transition-colors"
                   target="_blank"
@@ -42,12 +45,12 @@ export function ExampleCards({ cards }: ExampleCardsProps) {
                   title="Live Example"
                 >
                   <ExternalLink className="w-5 h-5" />
-                </Link>
+                </a>
               )}
 
               {/* GitHub Link */}
               {card.githubLink && (
-                <Link
+                <a
                   href={card.githubLink}
                   className="flex w-full justify-center rounded-md border border-border/50 bg-muted p-2 text-sm hover:bg-accent transition-colors"
                   target="_blank"
@@ -79,7 +82,7 @@ export function ExampleCards({ cards }: ExampleCardsProps) {
                       strokeWidth="16"
                     />
                   </svg>
-                </Link>
+                </a>
               )}
             </div>
           </div>

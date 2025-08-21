@@ -12,16 +12,18 @@ import {
   formatPriceForMiddleware,
 } from '@/lib/base';
 
-// const facilitatorUrl = process.env.NEXT_PUBLIC_FACILITATOR_URL as Resource;
-const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address;
-const network = process.env.NETWORK as Network;
+export const config = {
+  matcher: [
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+  ],
+  runtime: 'nodejs',
+};
 
 export const x402MiddlewareGenerator = (req: NextRequest) => {
   const amount = formatAmountFromQueryParams(req);
 
   if (!amount) {
-    return async (req: NextRequest) => {
-      console.log('Invalid amount', req.nextUrl.searchParams.get('amount'));
+    return async () => {
       return NextResponse.json({ error: `Invalid amount` }, { status: 400 });
     };
   }
@@ -29,11 +31,11 @@ export const x402MiddlewareGenerator = (req: NextRequest) => {
   const paymentAmount = formatPriceForMiddleware(amount);
 
   return paymentMiddleware(
-    payTo,
+    process.env.RESOURCE_WALLET_ADDRESS as Address,
     {
       '/api/v1/base/payment-link': {
         price: paymentAmount,
-        network,
+        network: process.env.NETWORK as Network,
         config: {
           description: 'Access to protected content',
         },
@@ -69,14 +71,13 @@ const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
 
 export default middleware(req => {
   if (isX402Route(req)) {
-    return NextResponse.error();
     // For OPTIONS requests on x402 routes, pass to the next auth handler
-    // if (req.method === 'OPTIONS') {
-    //   return NextResponse.next();
-    // }
+    if (req.method === 'OPTIONS') {
+      return NextResponse.next();
+    }
 
-    // const paymentMiddleware = x402MiddlewareGenerator(req);
-    // return paymentMiddleware(req);
+    const paymentMiddleware = x402MiddlewareGenerator(req);
+    return paymentMiddleware(req);
   }
 
   if (isPublicRoute(req)) {
@@ -99,11 +100,3 @@ export default middleware(req => {
     return Response.redirect(newUrl);
   }
 });
-
-export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-  ],
-  // runtime: 'nodejs',
-};
