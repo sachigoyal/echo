@@ -53,6 +53,10 @@ const createMockContext = (
   token: 'mock-token',
   error: null,
   echoClient: null,
+  config: {
+    appId: 'mock-app-123',
+    baseRouterUrl: 'https://router.echo.merit.systems',
+  },
   signIn: async () => {
     console.log('Mock sign in called');
   },

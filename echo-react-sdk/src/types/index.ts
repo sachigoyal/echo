@@ -1,6 +1,6 @@
 import { Balance } from '@merit-systems/echo-typescript-sdk';
 
-export interface EchoConfig {
+export interface EchoAuthConfig {
   appId: string;
   apiUrl?: string;
   redirectUri?: string;
