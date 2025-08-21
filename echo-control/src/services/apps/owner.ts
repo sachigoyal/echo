@@ -61,10 +61,7 @@ export const updateAppSchema = z
   .object({
     description: z.string().min(1, 'Description is required').optional(),
     homepageUrl: z.string().min(1, 'Homepage URL is required').optional(),
-    profilePictureUrl: z
-      .string()
-      .min(1, 'Profile picture URL is required')
-      .optional(),
+    profilePictureUrl: z.url().optional(),
   })
   .refine(
     data => {

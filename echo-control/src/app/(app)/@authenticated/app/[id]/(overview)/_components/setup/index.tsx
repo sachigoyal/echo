@@ -1,5 +1,11 @@
-import { Check, DollarSign, LucideIcon, Pen } from 'lucide-react';
+import { Check, DollarSign, Image, LucideIcon, Pen } from 'lucide-react';
 
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion';
 import {
   Card,
   CardContent,
@@ -13,13 +19,7 @@ import { AppDetails } from './app-details';
 import { RecipientDetails } from './recipient-details';
 
 import { cn } from '@/lib/utils';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
+
 import { api } from '@/trpc/server';
 import { revalidatePath } from 'next/cache';
 
@@ -39,7 +39,7 @@ export const Setup: React.FC<Props> = ({
       title: 'App Details',
       description: 'What your app does',
       Icon: Pen,
-      isComplete: description !== null && profilePictureUrl !== null,
+      isComplete: description !== null,
       component: (
         <AppDetails
           updateApp={async data => {
@@ -56,6 +56,8 @@ export const Setup: React.FC<Props> = ({
               return false;
             }
           }}
+          description={description}
+          profilePictureUrl={profilePictureUrl}
         />
       ),
       className: 'basis-4/5 md:basis-2/5',
@@ -91,20 +93,36 @@ export const Setup: React.FC<Props> = ({
           />
         </div>
       </div>
-      <Carousel startIndex={steps.findIndex(step => step.isComplete) ?? 0}>
-        <CarouselContent className="pb-1">
-          {steps.map(step => (
-            <CarouselItem
-              key={step.title}
-              className={cn('h-full', step.className)}
-            >
-              <StepCard {...step} />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
+      <Accordion type="multiple" className="space-y-2">
+        {steps.map(step => (
+          <AccordionItem
+            key={step.title}
+            value={step.title}
+            className="border last:border-b rounded-lg p-4"
+          >
+            <AccordionTrigger className="items-center p-0">
+              <div className="flex items-center gap-2">
+                <div
+                  className={cn(
+                    'size-6 rounded-full shrink-0 bg-primary/10 text-primary flex items-center justify-center',
+                    step.isComplete && 'bg-primary text-primary-foreground'
+                  )}
+                >
+                  {step.isComplete ? (
+                    <Check className="size-3" />
+                  ) : (
+                    <step.Icon className="size-3" />
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold">{step.title}</h3>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 pb-0">
+              {step.component}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   );
 };

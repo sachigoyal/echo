@@ -13,6 +13,37 @@ interface Props {
   appId: string;
 }
 
+const activity = Array.from({ length: 48 }, (_, i) => {
+  const now = new Date();
+  const bucketDate = new Date(now.getTime() - (19 - i) * 60 * 60 * 1000); // 1 hour per bucket, oldest first
+  // Simulate jagged cost and profit
+  const base = 100 + i * 20;
+  const jag = Math.sin(i * 1.2) * 40 + (Math.random() - 0.5) * 60;
+  const totalCost = Math.max(0, Math.round(base + jag));
+  const totalProfit = Math.max(
+    0,
+    Math.round(totalCost * (0.1 + Math.random() * 0.2))
+  );
+  const totalTokens = Math.max(
+    0,
+    Math.round(totalCost * 10 + Math.random() * 100)
+  );
+  const totalInputTokens = Math.round(
+    totalTokens * (0.6 + Math.random() * 0.2)
+  );
+  const totalOutputTokens = totalTokens - totalInputTokens;
+  const totalTransactions = (totalTokens / Math.random()) * 1000;
+  return {
+    bucketDate,
+    totalCost,
+    totalProfit,
+    totalTokens,
+    totalInputTokens,
+    totalOutputTokens,
+    totalTransactions,
+  };
+});
+
 export const Chart: React.FC<Props> = ({ appId }) => {
   const { startDate, endDate } = useActivityContext();
 
@@ -22,8 +53,6 @@ export const Chart: React.FC<Props> = ({ appId }) => {
     endDate,
   });
 
-  console.log(activitya);
-
   //   // Transform data for the chart
   //   const chartData = activity.map(item => ({
   //     ...item,
@@ -31,36 +60,6 @@ export const Chart: React.FC<Props> = ({ appId }) => {
   //   }));
 
   // Simulate 20 buckets of activity data for testing
-  const activity = Array.from({ length: 48 }, (_, i) => {
-    const now = new Date();
-    const bucketDate = new Date(now.getTime() - (19 - i) * 60 * 60 * 1000); // 1 hour per bucket, oldest first
-    // Simulate jagged cost and profit
-    const base = 100 + i * 20;
-    const jag = Math.sin(i * 1.2) * 40 + (Math.random() - 0.5) * 60;
-    const totalCost = Math.max(0, Math.round(base + jag));
-    const totalProfit = Math.max(
-      0,
-      Math.round(totalCost * (0.1 + Math.random() * 0.2))
-    );
-    const totalTokens = Math.max(
-      0,
-      Math.round(totalCost * 10 + Math.random() * 100)
-    );
-    const totalInputTokens = Math.round(
-      totalTokens * (0.6 + Math.random() * 0.2)
-    );
-    const totalOutputTokens = totalTokens - totalInputTokens;
-    const totalTransactions = (totalTokens / Math.random()) * 1000;
-    return {
-      bucketDate,
-      totalCost,
-      totalProfit,
-      totalTokens,
-      totalInputTokens,
-      totalOutputTokens,
-      totalTransactions,
-    };
-  });
 
   const totalProfit = activity.reduce((acc, item) => acc + item.totalProfit, 0);
   const totalTokens = activity.reduce((acc, item) => acc + item.totalTokens, 0);

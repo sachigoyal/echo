@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 
+import { Check, Loader2, UploadIcon } from 'lucide-react';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -15,113 +17,145 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Check, Loader2, UploadIcon } from 'lucide-react';
-
-import { updateAppSchema } from '@/services/apps/owner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useActionState } from 'react';
+
+import { api } from '@/trpc/client';
+
+import { updateAppSchema } from '@/services/apps/owner';
+import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
 
 interface Props {
+  description: string | null;
+  profilePictureUrl: string | null;
   updateApp: (data: z.infer<typeof updateAppSchema>) => Promise<boolean>;
 }
 
-export const AppDetails: React.FC<Props> = ({ updateApp }) => {
+export const AppDetails: React.FC<Props> = ({
+  updateApp,
+  description,
+  profilePictureUrl,
+}) => {
+  const isCompleted = description !== null && profilePictureUrl !== null;
+
   const form = useForm<z.infer<typeof updateAppSchema>>({
     resolver: zodResolver(
       updateAppSchema.refine(data => {
         return (
-          data.description !== undefined && data.profilePictureUrl !== undefined
+          data.description !== undefined || data.profilePictureUrl !== undefined
         );
       })
     ),
     defaultValues: {
-      description: undefined,
-      profilePictureUrl: undefined,
+      description: description ?? undefined,
+      profilePictureUrl: profilePictureUrl ?? undefined,
     },
     mode: 'onChange',
   });
 
-  const [state, formAction, isPending] = useActionState(
-    async (_: { success: boolean }, formData: FormData) => {
-      const data = Object.fromEntries(formData);
-      const parsedData = updateAppSchema.safeParse(data);
-      if (!parsedData.success) {
-        return { success: false, error: 'Invalid data' };
-      }
-      const result = await updateApp(data);
-      if (result) {
-        return { success: true };
-      } else {
-        return { success: false, error: 'Failed to update app details.' };
-      }
+  const { mutate: uploadImage, isPending: isUploading } =
+    api.upload.image.useMutation({
+      onSuccess: ({ url }) => form.setValue('profilePictureUrl', url),
+    });
+
+  const {
+    mutate: updateAppDetails,
+    isPending: isUpdating,
+    isSuccess,
+  } = useMutation({
+    mutationFn: updateApp,
+    onSuccess: () => {
+      toast.success('App details updated');
     },
-    { success: false, error: undefined }
-  );
+  });
+
+  const handleSubmit = (data: z.infer<typeof updateAppSchema>) => {
+    updateAppDetails(data);
+  };
 
   return (
     <Form {...form}>
-      <form action={formAction} className="flex flex-col gap-4 h-full">
-        <FormField
-          control={form.control}
-          name="profilePictureUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Profile Picture</FormLabel>
-              <FormControl>
-                <Dropzone onDrop={field.onChange}>
-                  {field.value ? (
-                    <div className="flex justify-start items-center gap-2 w-full">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="flex flex-col gap-4 h-full"
+      >
+        <div className="flex flex-col md:flex-row items-start gap-2">
+          <FormField
+            control={form.control}
+            name="profilePictureUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Profile Picture</FormLabel>
+                <FormControl>
+                  <Dropzone
+                    accept={{
+                      'image/*': ['.jpg', '.jpeg', '.png', '.webp'],
+                    }}
+                    maxFiles={1}
+                    maxSize={5 * 1024 * 1024}
+                    onDrop={async files => {
+                      if (files.length === 0) {
+                        toast.error('No file selected');
+                        return;
+                      }
+                      uploadImage(files[0]);
+                    }}
+                    disabled={isUploading || isCompleted}
+                    className="size-24"
+                  >
+                    {field.value ? (
                       <Image
                         src={field.value}
                         alt="Profile Picture"
-                        width={16}
-                        height={16}
+                        width={32}
+                        height={32}
                       />
-                      <span>Upload Successful</span>
-                    </div>
-                  ) : (
-                    <div className="flex justify-start items-center gap-2 w-full text-muted-foreground/60">
+                    ) : (
                       <UploadIcon className="size-4" />
-                      <span>Upload an image</span>
-                    </div>
-                  )}
-                </Dropzone>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>App Description</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="A cloud-based web development agent that..."
-                  {...field}
-                  value={field.value ?? ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                    )}
+                  </Dropzone>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>App Description</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="A cloud-based web development agent that..."
+                    {...field}
+                    value={field.value ?? ''}
+                    disabled={isCompleted}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <Button
           type="submit"
           className="w-full mt-auto"
           disabled={
-            isPending ||
+            isUpdating ||
+            isUploading ||
             !form.formState.isDirty ||
             !form.formState.isValid ||
-            state.success
+            isSuccess ||
+            isCompleted
           }
         >
-          {isPending ? (
+          {isUpdating ? (
             <Loader2 className="size-4 animate-spin" />
-          ) : state.success ? (
+          ) : isSuccess ? (
+            <Check className="size-4" />
+          ) : isCompleted ? (
             <Check className="size-4" />
           ) : (
             'Save'
