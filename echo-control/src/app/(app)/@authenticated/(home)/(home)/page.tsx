@@ -8,14 +8,10 @@ import { auth } from '@/auth';
 export default async function DashboardPage() {
   const session = await auth();
 
-  if (!session?.user) {
-    return <p>You should not be able to see this page, this is a bug.</p>;
-  }
-
   return (
     <div>
       <Heading
-        title={`Welcome Back${session.user.name ? `, ${session.user.name.split(' ')[0]}!` : '!'}`}
+        title={`Welcome Back${session?.user.name ? `, ${session.user.name.split(' ')[0]}!` : '!'}`}
         description="Manage your apps and API keys"
         actions={
           <Link href="/new">
