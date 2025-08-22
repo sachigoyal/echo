@@ -352,7 +352,7 @@ export function AppProfile({
                       </h3>
                     </div>
                     <GitHubUserInfo
-                      githubId={app.githubLink?.githubId}
+                      githubId={app.githubLink?.githubId?.toString() || ''}
                       githubType={app.githubLink?.githubType as 'user' | 'repo'}
                     />
                   </div>

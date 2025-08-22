@@ -16,21 +16,20 @@ import {
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 
-import { updateAppSchema } from '@/services/apps/owner';
 import { toast } from 'sonner';
-import { useMutation } from '@tanstack/react-query';
 import { Textarea } from '@/components/ui/textarea';
+import { api } from '@/trpc/client';
 
 const descriptionSchema = z.object({
   description: z.string().min(1).max(250),
 });
 
 interface Props {
+  appId: string;
   description: string | null;
-  updateApp: (data: z.infer<typeof updateAppSchema>) => Promise<void>;
 }
 
-export const Description: React.FC<Props> = ({ updateApp, description }) => {
+export const Description: React.FC<Props> = ({ appId, description }) => {
   const isCompleted = description !== null;
 
   const form = useForm<z.infer<typeof descriptionSchema>>({
@@ -41,14 +40,16 @@ export const Description: React.FC<Props> = ({ updateApp, description }) => {
     mode: 'onChange',
   });
 
+  const utils = api.useUtils();
+
   const {
     mutate: updateAppDetails,
     isPending: isUpdating,
     isSuccess,
-  } = useMutation({
-    mutationFn: updateApp,
+  } = api.apps.owner.update.useMutation({
     onSuccess: () => {
       toast.success('App details updated');
+      utils.apps.public.get.invalidate(appId);
     },
     onError: () => {
       toast.error('Failed to update app details');
@@ -56,7 +57,10 @@ export const Description: React.FC<Props> = ({ updateApp, description }) => {
   });
 
   const handleSubmit = (data: z.infer<typeof descriptionSchema>) => {
-    updateAppDetails(data);
+    updateAppDetails({
+      appId,
+      ...data,
+    });
   };
 
   return (

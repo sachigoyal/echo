@@ -23,18 +23,17 @@ import { api } from '@/trpc/client';
 
 import { updateAppSchema } from '@/services/apps/owner';
 import { toast } from 'sonner';
-import { useMutation } from '@tanstack/react-query';
 
 const profilePictureSchema = z.object({
   profilePictureUrl: z.url(),
 });
 
 interface Props {
+  appId: string;
   profilePictureUrl: string | null;
-  updateApp: (data: z.infer<typeof updateAppSchema>) => Promise<void>;
 }
 
-export const AppIcon: React.FC<Props> = ({ updateApp, profilePictureUrl }) => {
+export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
   const isCompleted = profilePictureUrl !== null;
 
   const form = useForm<z.infer<typeof profilePictureSchema>>({
@@ -45,8 +44,18 @@ export const AppIcon: React.FC<Props> = ({ updateApp, profilePictureUrl }) => {
     mode: 'onChange',
   });
 
-  console.log(form.formState);
+  const utils = api.useUtils();
 
+  const {
+    mutate: updateAppDetails,
+    isPending: isUpdating,
+    isSuccess,
+  } = api.apps.owner.update.useMutation({
+    onSuccess: () => {
+      toast.success('App details updated');
+      utils.apps.public.get.invalidate(appId);
+    },
+  });
   const { mutate: uploadImage, isPending: isUploading } =
     api.upload.image.useMutation({
       onSuccess: ({ url }) =>
@@ -57,19 +66,11 @@ export const AppIcon: React.FC<Props> = ({ updateApp, profilePictureUrl }) => {
         }),
     });
 
-  const {
-    mutate: updateAppDetails,
-    isPending: isUpdating,
-    isSuccess,
-  } = useMutation({
-    mutationFn: updateApp,
-    onSuccess: () => {
-      toast.success('App details updated');
-    },
-  });
-
   const handleSubmit = (data: z.infer<typeof updateAppSchema>) => {
-    updateAppDetails(data);
+    updateAppDetails({
+      appId,
+      ...data,
+    });
   };
 
   return (

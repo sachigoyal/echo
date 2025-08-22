@@ -18,8 +18,8 @@ import {
 
 import { updateGithubLinkSchema } from '@/services/apps/owner';
 import { GithubType } from '@/generated/prisma';
-import { useMutation } from '@tanstack/react-query';
 import { Check, Loader2 } from 'lucide-react';
+import { api } from '@/trpc/client';
 import { toast } from 'sonner';
 
 const tabsTriggerClassName =
@@ -30,16 +30,24 @@ interface Props {
     type: GithubType;
     githubUrl: string;
   } | null;
-  updateGithubLink: (
-    data: z.infer<typeof updateGithubLinkSchema>
-  ) => Promise<void>;
+  appId: string;
 }
 
-export const RecipientDetails: React.FC<Props> = ({
-  githubLink,
-  updateGithubLink,
-}) => {
+export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
   const isComplete = githubLink !== null;
+
+  const utils = api.useUtils();
+
+  const {
+    mutate: updateGithubLink,
+    isPending,
+    isSuccess,
+  } = api.apps.owner.updateGithubLink.useMutation({
+    onSuccess: () => {
+      utils.apps.owner.getGithubLink.invalidate({ appId });
+      toast.success('Github link updated');
+    },
+  });
 
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
     resolver: zodResolver(updateGithubLinkSchema),
@@ -50,22 +58,11 @@ export const RecipientDetails: React.FC<Props> = ({
   });
 
   const onSubmit = (data: z.infer<typeof updateGithubLinkSchema>) => {
-    updateGithubLinkMutation(data);
+    updateGithubLink({
+      appId,
+      ...data,
+    });
   };
-
-  const {
-    mutate: updateGithubLinkMutation,
-    isPending,
-    isSuccess,
-  } = useMutation({
-    mutationFn: updateGithubLink,
-    onSuccess: () => {
-      toast.success('Recipient details updated');
-    },
-    onError: () => {
-      toast.error('Failed to update recipient details');
-    },
-  });
 
   return (
     <Form {...form}>

@@ -8,11 +8,15 @@ import { api, HydrateClient } from '@/trpc/server';
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { Code } from 'lucide-react';
 import { Setup } from './_components/setup';
+import { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
 
   const app = await api.apps.public.get(id);
+  api.apps.public.get.prefetch(id);
+  api.apps.owner.getGithubLink.prefetch({ appId: id });
 
   if (!app) {
     return notFound();
@@ -32,11 +36,11 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
         }
       />
       <Body className="gap-8">
-        <Setup
-          appId={id}
-          description={app.description}
-          profilePictureUrl={app.profilePictureUrl}
-        />
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <Setup appId={id} />
+          </Suspense>
+        </ErrorBoundary>
         <Activity appId={id} />
       </Body>
     </HydrateClient>

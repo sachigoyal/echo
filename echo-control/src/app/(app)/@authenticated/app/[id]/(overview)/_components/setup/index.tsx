@@ -1,3 +1,5 @@
+'use client';
+
 import { Check, DollarSign, Image, LucideIcon, Pen } from 'lucide-react';
 
 import {
@@ -21,48 +23,23 @@ import { RecipientDetails } from './recipient-details';
 
 import { cn } from '@/lib/utils';
 
-import { api } from '@/trpc/server';
-import { revalidatePath } from 'next/cache';
+import { api } from '@/trpc/client';
 
-import { updateAppSchema, updateGithubLinkSchema } from '@/services/apps/owner';
-import { z } from 'zod';
-import { SetupContainer } from './setup-container';
 import { AppIcon } from './app-icon';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { AnimatePresence, motion } from 'motion/react';
 
 interface Props {
   appId: string;
-  description: string | null;
-  profilePictureUrl: string | null;
 }
 
-export const Setup: React.FC<Props> = async ({
-  appId,
-  description,
-  profilePictureUrl,
-}) => {
-  const githubLink = await api.apps.owner.getGithubLink({
+export const Setup: React.FC<Props> = ({ appId }) => {
+  const [app] = api.apps.public.get.useSuspenseQuery(appId);
+
+  const [githubLink] = api.apps.owner.getGithubLink.useSuspenseQuery({
     appId,
   });
-
-  const updateApp = async (data: z.infer<typeof updateAppSchema>) => {
-    'use server';
-    await api.apps.owner.update({
-      appId,
-      ...data,
-    });
-    revalidatePath(`/app/${appId}`);
-  };
-
-  const updateGithubLink = async (
-    data: z.infer<typeof updateGithubLinkSchema>
-  ) => {
-    'use server';
-    await api.apps.owner.updateGithubLink({
-      appId,
-      ...data,
-    });
-    revalidatePath(`/app/${appId}`);
-  };
 
   const steps = [
     {
@@ -80,7 +57,7 @@ export const Setup: React.FC<Props> = async ({
                 }
               : null
           }
-          updateGithubLink={updateGithubLink}
+          appId={appId}
         />
       ),
       className: 'basis-4/5 md:basis-2/5',
@@ -89,65 +66,97 @@ export const Setup: React.FC<Props> = async ({
       title: 'Describe your App',
       description: 'This will be shown on the Echo dashboard',
       Icon: Pen,
-      isComplete: description !== null,
-      component: (
-        <Description updateApp={updateApp} description={description} />
-      ),
+      isComplete: app.description !== null,
+      component: <Description appId={appId} description={app.description} />,
       className: 'basis-4/5 md:basis-2/5',
     },
     {
       title: 'Add an Icon',
       description: 'Users will see this when they connect to your app',
       Icon: Image,
-      isComplete: profilePictureUrl !== null,
+      isComplete: app.profilePictureUrl !== null,
       component: (
-        <AppIcon updateApp={updateApp} profilePictureUrl={profilePictureUrl} />
+        <AppIcon appId={appId} profilePictureUrl={app.profilePictureUrl} />
       ),
       className: 'basis-4/5 md:basis-2/5',
     },
   ];
 
+  const completedSteps = steps.filter(step => step.isComplete).length;
+  const allStepsCompleted = completedSteps === steps.length;
+
+  const [isComplete, setIsComplete] = useState(allStepsCompleted);
+
   return (
-    <SetupContainer isComplete={steps.every(step => step.isComplete)}>
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold">Let&apos;s Get Started</h1>
-            <p className="text-muted-foreground">
-              Fill out your app&apos;s details
-            </p>
+    <AnimatePresence mode="wait">
+      {!isComplete && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 350 }}
+          exit={{
+            height: 0,
+            opacity: 0,
+            transition: {
+              opacity: { delay: 0.1, duration: 0.2 },
+              height: { duration: 0.2 },
+            },
+          }}
+          layout
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+          style={{ overflow: 'hidden' }}
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center gap-4">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-2xl font-bold">Let&apos;s Get Started</h1>
+                  {allStepsCompleted && (
+                    <Button
+                      variant="turbo"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => setIsComplete(true)}
+                    >
+                      Finish Setup
+                    </Button>
+                  )}
+                </div>
+                <p className="text-muted-foreground">
+                  Fill out your app&apos;s details
+                </p>
+              </div>
+              <div className="w-1/4 flex items-center gap-2">
+                <div className="flex flex-col items-end gap-1 w-full">
+                  <p className="text-sm text-muted-foreground font-bold shrink-0">
+                    {completedSteps + 1} / {steps.length + 1} Completed
+                  </p>
+                  <Progress
+                    value={((completedSteps + 1) / (steps.length + 1)) * 100}
+                  />
+                </div>
+              </div>
+            </div>
+            <Carousel className="w-full" opts={{ loop: true }}>
+              <CarouselContent>
+                {steps.map(step => (
+                  <CarouselItem key={step.title} className={step.className}>
+                    <StepCard
+                      title={step.title}
+                      description={step.description}
+                      Icon={step.Icon}
+                      isComplete={step.isComplete}
+                      component={step.component}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
           </div>
-          <div className="w-1/4 flex items-center gap-2">
-            <p className="text-sm text-muted-foreground font-bold shrink-0">
-              {steps.filter(step => step.isComplete).length} / {steps.length}
-            </p>
-            <Progress
-              value={
-                (steps.filter(step => step.isComplete).length / steps.length) *
-                100
-              }
-            />
-          </div>
-        </div>
-        <Carousel className="w-full" opts={{ loop: true }}>
-          <CarouselContent>
-            {steps.map(step => (
-              <CarouselItem key={step.title} className={step.className}>
-                <StepCard
-                  title={step.title}
-                  description={step.description}
-                  Icon={step.Icon}
-                  isComplete={step.isComplete}
-                  component={step.component}
-                />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      </div>
-    </SetupContainer>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

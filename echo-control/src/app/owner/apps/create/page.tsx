@@ -87,7 +87,7 @@ function CreateApplicationForm() {
   );
   const githubHook = useGitHubComponent(
     app?.id || '',
-    app?.githubLink?.githubId || '',
+    app?.githubLink?.githubId?.toString() || '',
     (app?.githubLink?.githubType as 'user' | 'repo') || 'user'
   );
   const testIntegrationHook = useTestIntegrationComponent(app?.id || '');
