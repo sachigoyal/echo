@@ -2,8 +2,6 @@ import { notFound } from 'next/navigation';
 
 import { Body, Heading } from '../../../_components/layout/page-utils';
 
-import { Activity } from './_components/overview/activity';
-
 import { api, HydrateClient } from '@/trpc/server';
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { Code } from 'lucide-react';

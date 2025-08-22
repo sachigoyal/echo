@@ -1,7 +1,7 @@
 import {
   listAppUsersActivity,
   listAppUsersActivitySchema,
-} from '@/services/activity/app';
+} from '@/services/activity/app/users';
 import {
   createTRPCRouter,
   paginatedProcedure,

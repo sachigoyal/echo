@@ -4,7 +4,6 @@ import z, { ZodError } from 'zod';
 import { auth } from '@/auth';
 import { Session } from 'next-auth';
 import { db } from '@/lib/db';
-import { paginationSchema } from '@/services/lib/pagination';
 
 /**
  * Context that is passed to all TRPC procedures

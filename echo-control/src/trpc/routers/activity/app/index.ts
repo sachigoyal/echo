@@ -1,7 +1,11 @@
-import { getAppActivity, getAppActivitySchema } from '@/services/activity/app';
+import {
+  getAppActivity,
+  getAppActivitySchema,
+} from '@/services/activity/app/app';
 
 import { createTRPCRouter, protectedProcedure } from '../../../trpc';
 import { appUsersRouter } from './users';
+import { appTransactionsRouter } from './transactions';
 
 export const appActivityRouter = createTRPCRouter({
   get: protectedProcedure
@@ -11,4 +15,5 @@ export const appActivityRouter = createTRPCRouter({
     }),
 
   users: appUsersRouter,
+  transactions: appTransactionsRouter,
 });

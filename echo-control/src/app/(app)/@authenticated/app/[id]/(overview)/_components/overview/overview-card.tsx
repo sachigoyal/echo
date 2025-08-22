@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Route } from 'next';
 import { ChevronRight } from 'lucide-react';
 import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props<T extends string> {
   title: string;
