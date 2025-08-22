@@ -1,9 +1,9 @@
-import { AxiosInstance } from 'axios';
+import { HttpClient } from '../http-client';
 import { Balance, FreeBalance, GetFreeBalanceRequest } from '../types';
 import { BaseResource } from '../utils/error-handling';
 
 export class BalanceResource extends BaseResource {
-  constructor(http: AxiosInstance) {
+  constructor(http: HttpClient) {
     super(http);
   }
 
@@ -12,7 +12,7 @@ export class BalanceResource extends BaseResource {
    */
   async getBalance(): Promise<Balance> {
     return this.handleRequest(
-      () => this.http.get<Balance>('/api/v1/balance'),
+      () => this.http.get('/api/v1/balance'),
       'fetching balance',
       '/api/v1/balance'
     );
@@ -25,7 +25,7 @@ export class BalanceResource extends BaseResource {
   async getFreeBalance(echoAppId: string): Promise<FreeBalance> {
     const request: GetFreeBalanceRequest = { echoAppId };
     return this.handleRequest(
-      () => this.http.post<FreeBalance>('/api/v1/balance/free', request),
+      () => this.http.post('/api/v1/balance/free', request),
       'fetching free tier balance',
       '/api/v1/balance/free'
     );

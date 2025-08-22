@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ApiKey, Prisma } from '@/generated/prisma';
+
 import { db } from '../lib/db';
 import {
   AppRole,
@@ -10,7 +11,7 @@ import {
 import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
 import { paginationParamsSchema } from '@/lib/pagination';
-import { PaginatedResponse } from '@/types/paginated-response';
+import { toPaginatedReponse } from './lib/pagination';
 
 export const getApiKeySchema = z.string();
 
@@ -27,11 +28,21 @@ export const getApiKey = async (
   });
 };
 
-const listUserApiKeysWhere = (userId: string): Prisma.ApiKeyWhereInput => {
-  return {
+export const listApiKeysSchema = paginationParamsSchema.extend({
+  appId: z.string().optional(),
+});
+
+export const listApiKeys = async (
+  userId: string,
+  { page = 0, page_size = 10, appId }: z.infer<typeof listApiKeysSchema>
+) => {
+  const skip = page * page_size;
+
+  const where: Prisma.ApiKeyWhereInput = {
     userId,
     isArchived: false,
     echoApp: {
+      ...(appId ? { id: appId } : {}),
       isArchived: false,
       appMemberships: {
         some: {
@@ -41,34 +52,39 @@ const listUserApiKeysWhere = (userId: string): Prisma.ApiKeyWhereInput => {
       },
     },
   };
-};
-
-export const listApiKeys = async (
-  userId: string,
-  { page = 0, page_size = 10 }: z.infer<typeof paginationParamsSchema>
-): Promise<PaginatedResponse<ApiKey>> => {
-  const skip = page * page_size;
 
   const [totalCount, apiKeys] = await Promise.all([
     db.apiKey.count({
-      where: listUserApiKeysWhere(userId),
+      where,
     }),
     db.apiKey.findMany({
-      where: listUserApiKeysWhere(userId),
+      where,
       skip,
       take: page_size,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        echoApp: {
+          select: {
+            id: true,
+            name: true,
+            profilePictureUrl: true,
+          },
+        },
+      },
     }),
   ]);
 
-  const totalPages = Math.ceil(totalCount / page_size);
-
-  return {
+  return toPaginatedReponse({
     items: apiKeys,
+    total_count: totalCount,
     page,
     page_size,
-    total_count: totalCount,
-    has_next: page < totalPages - 1,
-  };
+  });
 };
 
 export const createApiKeySchema = z.object({

@@ -8,10 +8,15 @@ export { useEcho } from './hooks/useEcho';
 export { useEchoClient } from './hooks/useEchoClient';
 // OpenAI integration hook
 export { useEchoOpenAI } from './hooks/useEchoOpenAI';
+// Echo provider hooks
+export { useEchoModelProviders } from './hooks/useEchoModelProviders';
+// AI SDK integration hooks
+export { EchoChatProvider } from './components/EchoChatProvider';
+export { useChat } from './hooks/useChat';
 
 export type {
   EchoBalance,
-  EchoConfig,
+  EchoAuthConfig as EchoConfig,
   EchoSignInProps,
   EchoTokenPurchaseProps,
   EchoUser,

@@ -5,8 +5,6 @@ import { RootProvider } from 'fumadocs-ui/provider';
 
 import { TRPCReactProvider } from '@/trpc/client';
 
-import { Navbar } from './_components/navbar';
-
 import type { Metadata } from 'next';
 
 import '@/styles/globals.css';
@@ -25,13 +23,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <SessionProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className="antialiased bg-background text-foreground h-dvh overflow-y-auto">
+        <body className="antialiased bg-card">
           <RootProvider>
             <TRPCReactProvider>
               <ThemeProvider
@@ -40,11 +38,8 @@ export default function RootLayout({
                 storageKey="echo-theme"
                 enableSystem={true}
               >
-                <Navbar />
-                <main className="w-screen overflow-x-hidden pt-12 md:pt-16 h-full">
-                  {children}
-                </main>
                 <Toaster />
+                <main>{children}</main>
               </ThemeProvider>
             </TRPCReactProvider>
           </RootProvider>

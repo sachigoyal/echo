@@ -114,7 +114,7 @@ export async function loginToEcho(options: LoginOptions = {}): Promise<void> {
     console.log();
   }
 
-  const authUrl = `${baseUrl}/cli-auth/${ECHO_APP_CONFIG.appId}`;
+  const authUrl = `${baseUrl}/app/${ECHO_APP_CONFIG.appId}/keys?generate=true`;
 
   if (!silent) {
     console.log(
