@@ -196,8 +196,9 @@ model MarkUp {
 
 model GithubLink {
   id           String        @id @default(uuid()) @db.Uuid
-  githubId     String
-  githubType   String
+  githubId     Int
+  githubType   GithubType
+  githubUrl    String
   description  String?
   isArchived   Boolean       @default(false)
   archivedAt   DateTime?     @db.Timestamptz(6)
@@ -208,6 +209,11 @@ model GithubLink {
   Transactions Transaction[]
 
   @@map("github_links")
+}
+
+enum GithubType {
+  user
+  repo
 }
 
 model Transaction {

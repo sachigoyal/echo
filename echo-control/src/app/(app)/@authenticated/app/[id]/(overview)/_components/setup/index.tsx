@@ -1,11 +1,12 @@
 import { Check, DollarSign, Image, LucideIcon, Pen } from 'lucide-react';
 
 import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from '@/components/ui/accordion';
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from '@/components/ui/carousel';
 import {
   Card,
   CardContent,
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 
-import { AppDetails } from './app-details';
+import { Description } from './description';
 import { RecipientDetails } from './recipient-details';
 
 import { cn } from '@/lib/utils';
@@ -23,107 +24,130 @@ import { cn } from '@/lib/utils';
 import { api } from '@/trpc/server';
 import { revalidatePath } from 'next/cache';
 
+import { updateAppSchema, updateGithubLinkSchema } from '@/services/apps/owner';
+import { z } from 'zod';
+import { SetupContainer } from './setup-container';
+import { AppIcon } from './app-icon';
+
 interface Props {
   appId: string;
   description: string | null;
   profilePictureUrl: string | null;
 }
 
-export const Setup: React.FC<Props> = ({
+export const Setup: React.FC<Props> = async ({
   appId,
   description,
   profilePictureUrl,
 }) => {
+  const githubLink = await api.apps.owner.getGithubLink({
+    appId,
+  });
+
+  const updateApp = async (data: z.infer<typeof updateAppSchema>) => {
+    'use server';
+    await api.apps.owner.update({
+      appId,
+      ...data,
+    });
+    revalidatePath(`/app/${appId}`);
+  };
+
+  const updateGithubLink = async (
+    data: z.infer<typeof updateGithubLinkSchema>
+  ) => {
+    'use server';
+    await api.apps.owner.updateGithubLink({
+      appId,
+      ...data,
+    });
+    revalidatePath(`/app/${appId}`);
+  };
+
   const steps = [
     {
-      title: 'App Details',
-      description: 'What your app does',
-      Icon: Pen,
-      isComplete: description !== null,
+      title: 'Set Payout Details',
+      description: 'Where your earnings will be sent',
+      Icon: DollarSign,
+      isComplete: githubLink !== null,
       component: (
-        <AppDetails
-          updateApp={async data => {
-            'use server';
-            try {
-              await api.apps.owner.update({
-                appId,
-                ...data,
-              });
-              revalidatePath(`/app/${appId}`);
-              return true;
-            } catch (error) {
-              console.error(error);
-              return false;
-            }
-          }}
-          description={description}
-          profilePictureUrl={profilePictureUrl}
+        <RecipientDetails
+          githubLink={
+            githubLink
+              ? {
+                  type: githubLink.githubType,
+                  githubUrl: githubLink.githubUrl,
+                }
+              : null
+          }
+          updateGithubLink={updateGithubLink}
         />
       ),
       className: 'basis-4/5 md:basis-2/5',
     },
     {
-      title: 'Payouts',
-      description: 'Where the money goes',
-      Icon: DollarSign,
-      isComplete: false,
-      component: <RecipientDetails />,
+      title: 'Describe your App',
+      description: 'This will be shown on the Echo dashboard',
+      Icon: Pen,
+      isComplete: description !== null,
+      component: (
+        <Description updateApp={updateApp} description={description} />
+      ),
+      className: 'basis-4/5 md:basis-2/5',
+    },
+    {
+      title: 'Add an Icon',
+      description: 'Users will see this when they connect to your app',
+      Icon: Image,
+      isComplete: profilePictureUrl !== null,
+      component: (
+        <AppIcon updateApp={updateApp} profilePictureUrl={profilePictureUrl} />
+      ),
       className: 'basis-4/5 md:basis-2/5',
     },
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-between items-center gap-4">
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold">Let&apos;s Get Started</h1>
-          <p className="text-muted-foreground">
-            Fill out your app&apos;s details
-          </p>
+    <SetupContainer isComplete={steps.every(step => step.isComplete)}>
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold">Let&apos;s Get Started</h1>
+            <p className="text-muted-foreground">
+              Fill out your app&apos;s details
+            </p>
+          </div>
+          <div className="w-1/4 flex items-center gap-2">
+            <p className="text-sm text-muted-foreground font-bold shrink-0">
+              {steps.filter(step => step.isComplete).length} / {steps.length}
+            </p>
+            <Progress
+              value={
+                (steps.filter(step => step.isComplete).length / steps.length) *
+                100
+              }
+            />
+          </div>
         </div>
-        <div className="w-1/3 flex items-center gap-2">
-          <p className="text-sm text-muted-foreground font-bold shrink-0">
-            {steps.filter(step => step.isComplete).length} / {steps.length}
-          </p>
-          <Progress
-            value={
-              (steps.filter(step => step.isComplete).length / steps.length) *
-              100
-            }
-          />
-        </div>
+        <Carousel className="w-full" opts={{ loop: true }}>
+          <CarouselContent>
+            {steps.map(step => (
+              <CarouselItem key={step.title} className={step.className}>
+                <StepCard
+                  title={step.title}
+                  description={step.description}
+                  Icon={step.Icon}
+                  isComplete={step.isComplete}
+                  component={step.component}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </div>
-      <Accordion type="multiple" className="space-y-2">
-        {steps.map(step => (
-          <AccordionItem
-            key={step.title}
-            value={step.title}
-            className="border last:border-b rounded-lg p-4"
-          >
-            <AccordionTrigger className="items-center p-0">
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    'size-6 rounded-full shrink-0 bg-primary/10 text-primary flex items-center justify-center',
-                    step.isComplete && 'bg-primary text-primary-foreground'
-                  )}
-                >
-                  {step.isComplete ? (
-                    <Check className="size-3" />
-                  ) : (
-                    <step.Icon className="size-3" />
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold">{step.title}</h3>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pt-4 pb-0">
-              {step.component}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </div>
+    </SetupContainer>
   );
 };
 

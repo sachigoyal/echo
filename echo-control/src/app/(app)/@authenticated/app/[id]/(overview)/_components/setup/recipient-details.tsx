@@ -14,61 +14,99 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
-  FormMessage,
 } from '@/components/ui/form';
 
 import { updateGithubLinkSchema } from '@/services/apps/owner';
+import { GithubType } from '@/generated/prisma';
+import { useMutation } from '@tanstack/react-query';
+import { Check, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-export const RecipientDetails = () => {
+const tabsTriggerClassName =
+  'shadow-none rounded-none data-[state=active]:bg-primary/10 rounded-sm data-[state=active]:shadow-none p-0 px-1 h-fit cursor-pointer text-sm leading-none data-[state=active]:text-primary data-[state=active]:font-bold hover:bg-primary/10 transition-colors';
+
+interface Props {
+  githubLink: {
+    type: GithubType;
+    githubUrl: string;
+  } | null;
+  updateGithubLink: (
+    data: z.infer<typeof updateGithubLinkSchema>
+  ) => Promise<void>;
+}
+
+export const RecipientDetails: React.FC<Props> = ({
+  githubLink,
+  updateGithubLink,
+}) => {
+  const isComplete = githubLink !== null;
+
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
     resolver: zodResolver(updateGithubLinkSchema),
     defaultValues: {
-      type: 'repo',
-      value: '',
+      type: githubLink?.type ?? 'repo',
+      url: githubLink?.githubUrl ?? '',
     },
   });
 
   const onSubmit = (data: z.infer<typeof updateGithubLinkSchema>) => {
-    console.log(data);
+    updateGithubLinkMutation(data);
   };
+
+  const {
+    mutate: updateGithubLinkMutation,
+    isPending,
+    isSuccess,
+  } = useMutation({
+    mutationFn: updateGithubLink,
+    onSuccess: () => {
+      toast.success('Recipient details updated');
+    },
+    onError: () => {
+      toast.error('Failed to update recipient details');
+    },
+  });
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-3 h-full"
+        className="flex flex-col gap-3 h-full relative"
       >
         <Tabs
           value={form.watch('type')}
           onValueChange={value =>
             form.setValue('type', value as 'user' | 'repo')
           }
-          className="flex flex-col gap-3"
+          className="flex flex-col gap-2"
         >
           <FormField
             control={form.control}
             name="type"
             render={() => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
+              <FormItem className="">
                 <FormControl>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger
-                      value="user"
-                      onClick={() => {
-                        form.setValue('type', 'user');
-                      }}
-                    >
-                      User
-                    </TabsTrigger>
+                  <TabsList className="flex items-center gap-2 w-fit p-0 bg-transparent h-fit">
                     <TabsTrigger
                       value="repo"
                       onClick={() => {
                         form.setValue('type', 'repo');
                       }}
+                      className={tabsTriggerClassName}
                     >
-                      Repo
+                      Pay to Repo
+                    </TabsTrigger>
+                    <span className="text-xs text-muted-foreground leading-none">
+                      or
+                    </span>
+                    <TabsTrigger
+                      value="user"
+                      onClick={() => {
+                        form.setValue('type', 'user');
+                      }}
+                      className={tabsTriggerClassName}
+                    >
+                      Pay to User
                     </TabsTrigger>
                   </TabsList>
                 </FormControl>
@@ -79,14 +117,20 @@ export const RecipientDetails = () => {
           <TabsContent value="user" className="flex flex-col gap-3">
             <FormField
               control={form.control}
-              name="value"
+              name="url"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>GitHub Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="richardhendricks" {...field} />
+                <FormItem className="h-20 flex flex-col gap-2">
+                  <FormControl className="h-full">
+                    <Input
+                      placeholder="richardhendricks"
+                      {...field}
+                      value={field.value.replace('https://github.com/', '')}
+                      onChange={e => {
+                        field.onChange(`https://github.com/${e.target.value}`);
+                      }}
+                      className="h-full"
+                    />
                   </FormControl>
-                  <FormMessage />
                   <FormDescription>
                     All profits will be claimable by this account on Merit
                     Systems.
@@ -95,20 +139,31 @@ export const RecipientDetails = () => {
               )}
             />
           </TabsContent>
-          <TabsContent value="repo" className="flex flex-col gap-3">
+          <TabsContent value="repo" className="flex flex-col gap-2">
             <FormField
               control={form.control}
-              name="value"
+              name="url"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>GitHub Repository</FormLabel>
-                  <FormControl>
+                <FormItem className="h-20 flex flex-col gap-2">
+                  <FormControl className="h-full">
                     <Input
-                      placeholder="https://github.com/facebook/react"
+                      placeholder="facebook/react"
                       {...field}
+                      value={field.value.replace('https://github.com/', '')}
+                      onChange={e => {
+                        field.onChange(`https://github.com/${e.target.value}`);
+                      }}
+                      onPaste={e => {
+                        e.preventDefault();
+                        const text = e.clipboardData.getData('text');
+                        if (text.includes('github.com/')) {
+                          field.onChange(text);
+                        } else {
+                          field.onChange(`https://github.com/${text}`);
+                        }
+                      }}
                     />
                   </FormControl>
-                  <FormMessage />
                   <FormDescription>
                     All profits will be sent to this repo&apos;s Merit Systems
                     account.
@@ -121,9 +176,21 @@ export const RecipientDetails = () => {
         <Button
           type="submit"
           className="w-full mt-auto"
-          disabled={form.formState.isSubmitting || !form.formState.isValid}
+          disabled={
+            form.formState.isSubmitting ||
+            !form.formState.isValid ||
+            isPending ||
+            isSuccess ||
+            isComplete
+          }
         >
-          Save
+          {isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : isSuccess || isComplete ? (
+            <Check className="w-4 h-4" />
+          ) : (
+            'Save'
+          )}
         </Button>
       </form>
     </Form>

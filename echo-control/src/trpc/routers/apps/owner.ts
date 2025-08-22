@@ -1,6 +1,7 @@
 import {
   createApp,
   createAppSchema,
+  getGithubLink,
   updateApp,
   updateAppSchema,
   updateGithubLink,
@@ -42,4 +43,8 @@ export const ownerAppsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return await updateGithubLink(ctx.app.id, input);
     }),
+
+  getGithubLink: appOwnerProcedure.query(async ({ ctx }) => {
+    return await getGithubLink(ctx.app.id);
+  }),
 });

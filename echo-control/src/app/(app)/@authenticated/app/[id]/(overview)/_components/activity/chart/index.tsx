@@ -1,11 +1,11 @@
 'use client';
 
-import { api } from '@/trpc/client';
+// import { api } from '@/trpc/client';
 import { Area } from 'recharts';
 import { format } from 'date-fns';
 import { BaseChart, LoadingChart } from './base';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
-import { useActivityContext } from '../context';
+// import { useActivityContext } from '../context';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
@@ -44,14 +44,14 @@ const activity = Array.from({ length: 48 }, (_, i) => {
   };
 });
 
-export const Chart: React.FC<Props> = ({ appId }) => {
-  const { startDate, endDate } = useActivityContext();
+export const Chart: React.FC<Props> = ({}) => {
+  // const { startDate, endDate } = useActivityContext();
 
-  const [activitya] = api.activity.app.get.useSuspenseQuery({
-    echoAppId: appId,
-    startDate,
-    endDate,
-  });
+  // const [activitya] = api.activity.app.get.useSuspenseQuery({
+  //   echoAppId: appId,
+  //   startDate,
+  //   endDate,
+  // });
 
   //   // Transform data for the chart
   //   const chartData = activity.map(item => ({
