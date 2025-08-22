@@ -1,9 +1,10 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
-import { ZodError } from 'zod';
+import z, { ZodError } from 'zod';
 import { auth } from '@/auth';
 import { Session } from 'next-auth';
 import { db } from '@/lib/db';
+import { paginationSchema } from '@/services/lib/pagination';
 
 /**
  * Context that is passed to all TRPC procedures
@@ -85,3 +86,19 @@ export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 
   return next({ ctx });
 });
+
+export const paginatedProcedure = t.procedure
+  .input(
+    z.object({
+      cursor: z.number().optional().default(0),
+      page_size: z.number().optional().default(10),
+    })
+  )
+  .use(async ({ ctx, next, input }) => {
+    return next({
+      ctx: {
+        ...ctx,
+        pagination: { page: input.cursor, page_size: input.page_size },
+      },
+    });
+  });

@@ -103,8 +103,8 @@ async function createUser(
       email,
       name,
       image,
-      totalPaid: faker.number.float({ min: 0, max: 1000, precision: 0.01 }),
-      totalSpent: faker.number.float({ min: 0, max: 500, precision: 0.01 }),
+      totalPaid: faker.number.float({ min: 0, max: 1000, fractionDigits: 2 }),
+      totalSpent: faker.number.float({ min: 0, max: 500, fractionDigits: 2 }),
     },
   });
 
@@ -126,8 +126,8 @@ async function createAppMembership(
       userId,
       echoAppId,
       role,
-      totalSpent: faker.number.float({ min: 0, max: 200, precision: 0.01 }),
-      amountSpent: faker.number.float({ min: 0, max: 100, precision: 0.01 }),
+      totalSpent: faker.number.float({ min: 0, max: 200, fractionDigits: 2 }),
+      amountSpent: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
     },
   });
 
@@ -147,7 +147,10 @@ async function seedUsers(): Promise<void> {
 
   // Validate Echo App if provided
   if (options.echoAppId) {
-    const isValid = await validateEchoApp(options.echoAppId, options.quiet);
+    const isValid = await validateEchoApp(
+      options.echoAppId,
+      options.quiet ?? false
+    );
     if (!isValid) {
       process.exit(1);
     }
@@ -158,7 +161,7 @@ async function seedUsers(): Promise<void> {
   try {
     // Create users
     for (let i = 0; i < options.count; i++) {
-      const userId = await createUser(i, options.count, options.quiet);
+      const userId = await createUser(i, options.count, options.quiet ?? false);
       userIds.push(userId);
     }
 
@@ -175,7 +178,7 @@ async function seedUsers(): Promise<void> {
           userId,
           options.echoAppId,
           options.role!,
-          options.quiet
+          options.quiet ?? false
         );
       }
     }

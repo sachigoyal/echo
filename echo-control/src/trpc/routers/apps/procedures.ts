@@ -5,12 +5,12 @@ import { z } from 'zod';
 
 export const appProcedure = protectedProcedure
   .input(z.object({ appId: z.string() }))
-  .use(async ({ next, input: { appId } }) => {
+  .use(async ({ next, input: { appId }, ctx }) => {
     const app = await getPublicApp(appId);
     if (!app) {
       throw new TRPCError({ code: 'NOT_FOUND' });
     }
-    return next({ ctx: { app } });
+    return next({ ctx: { ...ctx, app } });
   });
 
 export const appOwnerProcedure = appProcedure.use(async ({ ctx, next }) => {
@@ -21,5 +21,5 @@ export const appOwnerProcedure = appProcedure.use(async ({ ctx, next }) => {
   if (appOwner.id !== ctx.session.user.id) {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
-  return next({ ctx: { appOwner } });
+  return next({ ctx: { ...ctx, appOwner } });
 });

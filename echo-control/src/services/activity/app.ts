@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { db } from '@/lib/db';
+import { paginationSchema } from '../lib/pagination';
 
 export const getAppActivitySchema = z.object({
   echoAppId: z.uuid(),
@@ -85,7 +86,19 @@ export const getAppActivity = async ({
   return buckets;
 };
 
-export const getTopAppUsers = async (echoAppId: string, limit: number = 10) => {
+export const getAppUsersActivitySchema = paginationSchema.extend({
+  echoAppId: z.uuid(),
+  startDate: z.date(),
+  endDate: z.date(),
+});
+
+export const getAppUsersActivity = async ({
+  echoAppId,
+  startDate,
+  endDate,
+  page,
+  page_size,
+}: z.infer<typeof getAppUsersActivitySchema>) => {
   // Get top users with their transaction statistics using a single query with aggregation
   const topUsersWithStats = await db.transaction.groupBy({
     by: ['userId'],
@@ -106,7 +119,8 @@ export const getTopAppUsers = async (echoAppId: string, limit: number = 10) => {
         totalCost: 'desc',
       },
     },
-    take: limit,
+    skip: page * page_size,
+    take: page_size,
   });
 
   // Get user details and membership info for the top users

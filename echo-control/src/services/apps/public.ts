@@ -6,7 +6,7 @@ import { paginationParamsSchema } from '@/lib/pagination';
 import { appSelect } from './lib/select';
 import { AppRole } from '@/lib/permissions';
 import { Prisma } from '@/generated/prisma';
-import { toPaginatedReponse } from '../lib/pagination';
+import { paginationSchema, toPaginatedReponse } from '../lib/pagination';
 
 export const getPublicAppSchema = z.uuid();
 
@@ -19,15 +19,14 @@ export const getPublicApp = async (
   });
 };
 
-export const listPublicAppsSchema = paginationParamsSchema.extend({
+export const listPublicAppsSchema = z.object({
   search: z.string().optional(),
 });
 
-export const listPublicApps = async ({
-  page,
-  page_size,
-  search,
-}: z.infer<typeof listPublicAppsSchema>) => {
+export const listPublicApps = async (
+  { search }: z.infer<typeof listPublicAppsSchema>,
+  { page, page_size }: z.infer<typeof paginationSchema>
+) => {
   const where: Prisma.EchoAppWhereInput = {
     isPublic: true,
     isArchived: false,
