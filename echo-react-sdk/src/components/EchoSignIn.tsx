@@ -10,14 +10,14 @@ export function EchoSignIn({
   className = '',
   children,
 }: EchoSignInProps) {
-  const { signIn, isAuthenticated, isLoading, user, error } = useEcho();
+  const { signIn, isLoading, user, error } = useEcho();
   const [isHovered, setIsHovered] = useState(false);
 
   React.useEffect(() => {
-    if (isAuthenticated && user && onSuccess) {
+    if (user && onSuccess) {
       onSuccess(user);
     }
-  }, [isAuthenticated, user, onSuccess]);
+  }, [user, onSuccess]);
 
   React.useEffect(() => {
     if (error && onError) {
@@ -35,7 +35,7 @@ export function EchoSignIn({
     }
   };
 
-  if (isAuthenticated) {
+  if (user) {
     return (
       <div className={`echo-signin-success ${className}`}>
         <div
