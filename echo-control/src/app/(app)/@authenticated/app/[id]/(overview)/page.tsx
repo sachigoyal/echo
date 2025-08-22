@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { Body, Heading } from '../../../_components/layout/page-utils';
 
-import { Activity } from './_components/activity';
+import { Activity } from './_components/overview/activity';
 
 import { api, HydrateClient } from '@/trpc/server';
 import { UserAvatar } from '@/components/utils/user-avatar';
@@ -10,6 +10,7 @@ import { Code } from 'lucide-react';
 import { Setup } from './_components/setup';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { Overview } from './_components/overview';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
@@ -41,7 +42,7 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
             <Setup appId={id} />
           </Suspense>
         </ErrorBoundary>
-        <Activity appId={id} />
+        <Overview appId={id} />
       </Body>
     </HydrateClient>
   );

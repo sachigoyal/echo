@@ -1,4 +1,4 @@
-import { source } from '@/lib/source';
+import { source } from '../../../docs/source';
 import { CollapsibleControl, DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { MobileSidebarTrigger } from './mobile-sidebar-trigger';
 

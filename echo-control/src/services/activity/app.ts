@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { db } from '@/lib/db';
-import { paginationSchema } from '../lib/pagination';
+import { paginationSchema, toPaginatedReponse } from '../lib/pagination';
 
 export const getAppActivitySchema = z.object({
   echoAppId: z.uuid(),
@@ -86,95 +86,110 @@ export const getAppActivity = async ({
   return buckets;
 };
 
-export const getAppUsersActivitySchema = paginationSchema.extend({
+export const listAppUsersActivitySchema = z.object({
   echoAppId: z.uuid(),
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.date().optional(),
+  endDate: z.date().optional(),
 });
 
-export const getAppUsersActivity = async ({
-  echoAppId,
-  startDate,
-  endDate,
-  page,
-  page_size,
-}: z.infer<typeof getAppUsersActivitySchema>) => {
-  // Get top users with their transaction statistics using a single query with aggregation
-  const topUsersWithStats = await db.transaction.groupBy({
-    by: ['userId'],
-    where: {
-      echoAppId,
-      isArchived: false,
-    },
-    _sum: {
-      totalCost: true,
-      rawTransactionCost: true,
-      markUpProfit: true,
-    },
-    _count: {
-      id: true,
-    },
-    orderBy: {
-      _sum: {
-        totalCost: 'desc',
+export const listAppUsersActivity = async (
+  { echoAppId, startDate, endDate }: z.infer<typeof listAppUsersActivitySchema>,
+  { page, page_size }: z.infer<typeof paginationSchema>
+) => {
+  const [count, users] = await Promise.all([
+    db.appMembership.count({
+      where: {
+        echoAppId,
+        isArchived: false,
       },
-    },
-    skip: page * page_size,
-    take: page_size,
-  });
-
-  // Get user details and membership info for the top users
-  const userIds = topUsersWithStats.map(stat => stat.userId);
-
-  const usersWithDetails = await db.user.findMany({
-    where: {
-      id: {
-        in: userIds,
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      image: true,
-      appMemberships: {
+    }),
+    (async () => {
+      const topUsersWithStats = await db.transaction.groupBy({
+        by: ['userId'],
         where: {
           echoAppId,
           isArchived: false,
-          status: 'active',
+          ...((startDate || endDate) && {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
+        },
+        _sum: {
+          totalCost: true,
+          rawTransactionCost: true,
+          markUpProfit: true,
+        },
+        _count: {
+          id: true,
+        },
+        orderBy: {
+          _sum: {
+            totalCost: 'desc',
+          },
+        },
+        skip: page * page_size,
+        take: page_size,
+      });
+
+      // Get user details and membership info for the top users
+      const userIds = topUsersWithStats.map(stat => stat.userId);
+
+      const usersWithDetails = await db.user.findMany({
+        where: {
+          id: {
+            in: userIds,
+          },
         },
         select: {
-          totalSpent: true,
-          amountSpent: true,
-          createdAt: true,
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          appMemberships: {
+            where: {
+              echoAppId,
+              isArchived: false,
+              status: 'active',
+            },
+            select: {
+              totalSpent: true,
+              amountSpent: true,
+              createdAt: true,
+            },
+          },
         },
-      },
-    },
+      });
+
+      // Combine the data
+      const users = topUsersWithStats.map(stat => {
+        const user = usersWithDetails.find(u => u.id === stat.userId);
+
+        if (!user) {
+          return null;
+        }
+
+        return {
+          ...user,
+          membership: user.appMemberships[0] ?? null,
+          usage: {
+            totalTransactions: stat._count.id,
+            totalCost: Number(stat._sum.totalCost ?? 0),
+            rawCost: Number(stat._sum.rawTransactionCost ?? 0),
+            markupProfit: Number(stat._sum.markUpProfit ?? 0),
+          },
+        };
+      });
+
+      return users.filter(Boolean) as NonNullable<(typeof users)[number]>[];
+    })(),
+  ]);
+
+  return toPaginatedReponse({
+    items: users,
+    total_count: count,
+    page,
+    page_size,
   });
-
-  // Combine the data
-  const usersWithStats = topUsersWithStats.map(stat => {
-    const user = usersWithDetails.find(u => u.id === stat.userId);
-    const membership = user?.appMemberships[0];
-
-    return {
-      id: user?.id ?? stat.userId,
-      name: user?.name ?? null,
-      email: user?.email ?? '',
-      image: user?.image ?? null,
-      membership: {
-        totalSpent: Number(membership?.totalSpent ?? 0),
-        amountSpent: Number(membership?.amountSpent ?? 0),
-        joinedAt: membership?.createdAt ?? null,
-      },
-      usage: {
-        totalTransactions: stat._count.id,
-        totalCost: Number(stat._sum.totalCost ?? 0),
-        rawCost: Number(stat._sum.rawTransactionCost ?? 0),
-        markupProfit: Number(stat._sum.markUpProfit ?? 0),
-      },
-    };
-  });
-
-  return usersWithStats;
 };

@@ -36,15 +36,7 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
 }: ChartProps<T>) => {
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart
-        data={data}
-        margin={{ top: 4, right: 0, left: 0, bottom: 0 }}
-        style={{
-          borderBottomLeftRadius: '0.5rem',
-          borderBottomRightRadius: '0.5rem',
-          overflow: 'hidden',
-        }}
-      >
+      <BarChart data={data} margin={{ top: 4, right: 6, left: 6, bottom: 0 }}>
         <defs>
           {bars.map(({ dataKey, color }) => (
             <linearGradient

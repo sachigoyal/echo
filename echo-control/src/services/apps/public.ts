@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
-import { paginationParamsSchema } from '@/lib/pagination';
 
 import { appSelect } from './lib/select';
 import { AppRole } from '@/lib/permissions';
