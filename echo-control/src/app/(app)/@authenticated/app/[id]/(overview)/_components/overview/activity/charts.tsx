@@ -29,7 +29,7 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
   const chartData: ChartData<Omit<(typeof activity)[number], 'timestamp'>>[] =
     activity.map(({ timestamp, ...rest }) => ({
       ...rest,
-      timestamp: format(timestamp, 'MMM dd HH:mm'),
+      timestamp: format(timestamp, 'MMM dd HH:mm yyyy'),
     }));
 
   const totalProfit = activity.reduce((acc, item) => acc + item.totalProfit, 0);
