@@ -8,19 +8,14 @@ import {
 import { ChartData } from '@/app/(app)/@authenticated/_components/charts/base-chart';
 
 import { api } from '@/trpc/client';
-import { useActivityContext } from '../../../../../../_components/time-range-selector/context';
+import { useActivityContext } from '@/app/(app)/@authenticated/_components/time-range-selector/context';
 
 import { formatCurrency } from '@/lib/utils';
 
-interface Props {
-  appId: string;
-}
-
-export const ActivityCharts: React.FC<Props> = ({ appId }) => {
+export const ActivityCharts: React.FC = () => {
   const { startDate, endDate } = useActivityContext();
 
-  const [activity] = api.activity.app.get.useSuspenseQuery({
-    echoAppId: appId,
+  const [activity] = api.activity.creator.getCurrent.useSuspenseQuery({
     startDate,
     endDate,
   });

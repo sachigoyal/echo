@@ -24,7 +24,7 @@ export const AppCard = ({
 }: Props) => {
   return (
     <Link href={`/app/${id}`}>
-      <Card className="hover:border-primary/50 transition-colors">
+      <Card className="hover:border-primary/50 transition-colors h-full">
         <CardHeader>
           <div className="flex items-center gap-2">
             <UserAvatar

@@ -1,7 +1,9 @@
 'use client';
 
-import { subDays } from 'date-fns';
 import { createContext, useContext, useEffect, useState } from 'react';
+
+import { subDays } from 'date-fns';
+
 import { ActivityTimeframe } from './types';
 
 interface ActivityContextType {

@@ -1,5 +1,9 @@
 'use client';
 
+import { format } from 'date-fns';
+
+import { CalendarDays } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -7,7 +11,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarDays } from 'lucide-react';
 import { useActivityContext } from './context';
 import {
   Select,
@@ -15,8 +18,8 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select';
+
 import { ActivityTimeframe } from './types';
-import { format } from 'date-fns';
 
 export const RangeSelector = () => {
   const { startDate, endDate, setDateRange, timeframe, setTimeframe } =
