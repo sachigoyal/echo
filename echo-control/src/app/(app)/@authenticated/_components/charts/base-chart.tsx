@@ -5,18 +5,34 @@ import {
   Area,
   Tooltip,
   ResponsiveContainer,
+  AreaProps,
 } from 'recharts';
 import { Card } from '@/components/ui/card';
 import { format, subDays } from 'date-fns';
 import { useMemo } from 'react';
+import { TooltipContent, TooltipRowProps } from './tooltip';
 
-interface Props<T> {
-  data: T[];
-  children: React.ReactNode;
-  tooltipContent?: (payload: T) => React.ReactNode;
+export type ChartData<T extends Record<string, number>> = {
+  timestamp: string;
+} & T;
+
+export interface ChartProps<T extends Record<string, number>> {
+  data: ChartData<T>[];
+  areaProps: Array<
+    AreaProps & {
+      dataKey: keyof T;
+    }
+  >;
+  children?: React.ReactNode;
+  tooltipRows?: Array<TooltipRowProps<T>>;
 }
 
-export const BaseChart = <T,>({ data, children, tooltipContent }: Props<T>) => {
+export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
+  data,
+  children,
+  tooltipRows,
+  areaProps,
+}: ChartProps<T>) => {
   return (
     <ResponsiveContainer width="100%" height={350}>
       <AreaChart
@@ -36,15 +52,30 @@ export const BaseChart = <T,>({ data, children, tooltipContent }: Props<T>) => {
           height={0}
         />
         <YAxis domain={['0', 'dataMax']} hide={true} />
+        {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+        {areaProps.map(({ ref, dataKey, ...areaProps }) => {
+          return (
+            <Area
+              key={dataKey as string}
+              type="monotone"
+              stackId="1"
+              {...areaProps}
+              dataKey={dataKey as string}
+            />
+          );
+        })}
         {children}
-        {tooltipContent && (
+        {tooltipRows && (
           <Tooltip
             content={({ payload }) => {
               console.log(payload);
               if (payload && payload.length) {
                 return (
                   <Card className="p-2">
-                    {tooltipContent(payload[0].payload as T)}
+                    <TooltipContent
+                      data={payload[0].payload as ChartData<T>}
+                      rows={tooltipRows}
+                    />
                   </Card>
                 );
               }
@@ -64,7 +95,7 @@ export const BaseChart = <T,>({ data, children, tooltipContent }: Props<T>) => {
 
 export const LoadingChart = () => {
   const simulatedData = useMemo(() => {
-    const data: { date: string; value: number }[] = [];
+    const data: ChartData<{ value: number }>[] = [];
     const baseValue = 100;
     const variance = 50;
     let currentValue = baseValue;
@@ -77,7 +108,7 @@ export const LoadingChart = () => {
         currentValue += increment;
       }
       data.push({
-        date: format(date, 'MMM dd'),
+        timestamp: format(date, 'MMM dd'),
         value: Math.round(currentValue),
       });
     }
@@ -87,17 +118,19 @@ export const LoadingChart = () => {
 
   return (
     <div className="animate-pulse">
-      <BaseChart data={simulatedData}>
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke="color-mix(in oklab, var(--color-neutral-500) 60%, transparent)"
-          strokeWidth={2}
-          fill="color-mix(in oklab, var(--color-neutral-500) 40%, transparent)"
-          fillOpacity={0.1}
-          isAnimationActive={false}
-        />
-      </BaseChart>
+      <BaseChart
+        data={simulatedData}
+        areaProps={[
+          {
+            dataKey: 'value',
+            stroke:
+              'color-mix(in oklab, var(--color-neutral-500) 60%, transparent)',
+            fill: 'color-mix(in oklab, var(--color-neutral-500) 40%, transparent)',
+            fillOpacity: 0.1,
+            isAnimationActive: false,
+          },
+        ]}
+      />
     </div>
   );
 };

@@ -32,18 +32,29 @@ function TabsList({
   );
 }
 
+export type TabsTriggerProps = React.ComponentProps<
+  typeof TabsPrimitive.Trigger
+> & {
+  label: string;
+  value: string;
+} & (
+    | {
+        isLoading: true;
+        amount?: undefined;
+      }
+    | {
+        isLoading?: undefined;
+        amount: string;
+      }
+  );
+
 function TabsTrigger({
   className,
   label,
-  amount,
   isLoading,
+  amount,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.Trigger> & {
-  label: string;
-  value: string;
-  amount: string;
-  isLoading?: boolean;
-}) {
+}: TabsTriggerProps) {
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
@@ -60,7 +71,7 @@ function TabsTrigger({
     >
       <div className="flex flex-col gap-1 text-left">
         <p className="text-sm font-semibold text-muted-foreground">{label}</p>
-        {isLoading ? (
+        {isLoading === true ? (
           <Skeleton className="w-24 h-[30px] my-[3px]" />
         ) : (
           <p className="text-3xl font-bold text-muted-foreground group-data-[state=active]:text-foreground">

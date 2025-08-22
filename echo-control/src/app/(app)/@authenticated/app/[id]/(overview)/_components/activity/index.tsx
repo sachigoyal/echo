@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { api, HydrateClient } from '@/trpc/server';
 
 import { RangeSelector } from './range-selector';
-import { Chart, LoadingChartContent } from './chart';
+import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityContextProvider } from './context';
 
 interface Props {
@@ -41,8 +41,8 @@ export const Activity: React.FC<Props> = ({ appId }) => {
             <ErrorBoundary
               fallback={<p>There was an error loading the activity data</p>}
             >
-              <Suspense fallback={<LoadingChartContent />}>
-                <Chart appId={appId} />
+              <Suspense fallback={<LoadingActivityCharts />}>
+                <ActivityCharts appId={appId} />
               </Suspense>
             </ErrorBoundary>
           </Card>
