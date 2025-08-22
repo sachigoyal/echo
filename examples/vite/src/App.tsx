@@ -12,7 +12,7 @@ import UseChatInterface from './components/UseChatInterface';
 type Tab = 'chat' | 'images' | 'use-chat';
 
 function Dashboard() {
-  const { isAuthenticated, user, balance, error, isLoading, signOut } =
+  const { user, balance, error, isLoading, signOut } =
     useEcho();
   const [activeTab, setActiveTab] = useState<Tab>('chat');
 
@@ -55,7 +55,7 @@ function Dashboard() {
   }
 
   // Not signed in - show sign in button
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

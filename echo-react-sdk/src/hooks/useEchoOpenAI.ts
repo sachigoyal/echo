@@ -22,7 +22,7 @@ export function useEchoOpenAI(
   const { baseURL = 'https://echo.router.merit.systems', enabled = true } =
     options;
 
-  const { token, isAuthenticated } = useEcho();
+  const { token, user } = useEcho();
   const [openai, setOpenai] = useState<OpenAI | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +36,7 @@ export function useEchoOpenAI(
       abortControllerRef.current.abort();
     }
 
-    if (!enabled || !token || !isAuthenticated) {
+    if (!enabled || !token) {
       setOpenai(undefined);
       setError(null);
       setIsLoading(false);
@@ -113,7 +113,7 @@ export function useEchoOpenAI(
         abortControllerRef.current.abort();
       }
     };
-  }, [token, isAuthenticated, baseURL, enabled]);
+  }, [token, user, baseURL, enabled]);
 
   return {
     openai: openai as OpenAI,
