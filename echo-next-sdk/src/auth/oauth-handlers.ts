@@ -1,7 +1,6 @@
-import { ECHO_BASE_URL } from 'config';
 import { NextRequest, NextResponse } from 'next/server';
-import type { EchoConfig } from '../types';
 import { getEchoToken, RefreshTokenResponse } from './token-manager';
+import { EchoConfig, ECHO_BASE_URL } from '@merit-systems/echo-typescript-sdk';
 
 /**
  * Generate PKCE code challenge and verifier

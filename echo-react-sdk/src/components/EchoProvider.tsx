@@ -1,5 +1,6 @@
 import type {
   EchoClient,
+  EchoConfig,
   FreeBalance,
 } from '@merit-systems/echo-typescript-sdk';
 import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
@@ -19,7 +20,7 @@ import {
 import { useEchoBalance } from '../hooks/useEchoBalance';
 import { useEchoClient } from '../hooks/useEchoClient';
 import { useEchoPayments } from '../hooks/useEchoPayments';
-import { EchoBalance, EchoConfig, EchoUser } from '../types';
+import { EchoAuthConfig, EchoBalance, EchoUser } from '../types';
 
 export interface EchoContextValue {
   // Auth & User
@@ -42,6 +43,7 @@ export interface EchoContextValue {
   ) => Promise<string>;
   getToken: () => Promise<string | null>;
   clearAuth: () => Promise<void>;
+  config: EchoConfig;
 }
 
 // Separate context for refresh state to prevent unnecessary re-renders
@@ -55,7 +57,7 @@ export const EchoRefreshContext = createContext<EchoRefreshContextValue | null>(
 );
 
 interface EchoProviderProps {
-  config: EchoConfig;
+  config: EchoAuthConfig;
   children: ReactNode;
 }
 
@@ -125,6 +127,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
       createPaymentLink,
       getToken,
       clearAuth,
+      config,
     }),
     [
       echoUser,
@@ -141,6 +144,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
       refreshBalance,
       createPaymentLink,
       getToken,
+      config,
     ]
   );
 

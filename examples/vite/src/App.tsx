@@ -4,488 +4,199 @@ import {
   EchoTokenPurchase,
   useEcho,
 } from '@merit-systems/echo-react-sdk';
-import { OpenAIExample } from './OpenAIExample';
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { ChatInterface } from './components/ChatInterface';
+import { ImageGeneration } from './components/ImageGeneration';
+import UseChatInterface from './components/UseChatInterface';
 
-// Configuration constants
-const CONFIG = {
-  ECHO_CONTROL_URL: 'https://echo.merit.systems',
-  DEFAULT_CLIENT_ID: '9aabddcd-94be-428b-a914-51d3416fd443',
-  REDIRECT_URI: window.location.origin,
-  SCOPE: 'llm:invoke offline_access',
-} as const;
+type Tab = 'chat' | 'images' | 'use-chat';
 
 function Dashboard() {
   const { isAuthenticated, user, balance, error, isLoading, signOut } =
     useEcho();
-
-  // Add debugging console logs
-  console.log('🔍 Dashboard render:', {
-    isAuthenticated,
-    user,
-    balance,
-    error,
-    isLoading,
-  });
+  const [activeTab, setActiveTab] = useState<Tab>('chat');
 
   // Show loading state
   if (isLoading) {
-    console.log('📝 Dashboard: Showing loading state');
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          gap: '20px',
-        }}
-      >
-        <h1>Processing authentication...</h1>
-        <div>Please wait while we complete the OAuth flow.</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <h1 className="text-xl font-semibold text-gray-700">
+            Processing authentication...
+          </h1>
+          <p className="text-gray-500">
+            Please wait while we complete the OAuth flow.
+          </p>
+        </div>
       </div>
     );
   }
 
   // Show error state
   if (error) {
-    console.log('❌ Dashboard: Showing error state:', error);
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          gap: '20px',
-        }}
-      >
-        <h1>❌ Authentication Error</h1>
-        <p style={{ color: 'red', textAlign: 'center', maxWidth: '500px' }}>
-          {error}
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#007cba',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
-        >
-          Try Again
-        </button>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-red-500 text-6xl mb-4">❌</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            Authentication Error
+          </h1>
+          <p className="text-red-600 mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
 
   // Not signed in - show sign in button
   if (!isAuthenticated) {
-    console.log('🔐 Dashboard: User not authenticated');
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          gap: '20px',
-        }}
-      >
-        <h1>Welcome to Echo Example</h1>
-        <EchoSignIn />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-800 mb-8">
+            Welcome to Echo
+          </h1>
+          <EchoSignIn />
+        </div>
       </div>
     );
   }
 
   // Signed in but no balance - show token purchase
-  if (balance?.credits === 0) {
-    console.log('💰 Dashboard: User has zero balance');
+  if (balance?.balance === 0) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          gap: '20px',
-        }}
-      >
-        <h1>Hi {user?.name}!</h1>
-        <p>You need tokens to get started.</p>
-        <EchoTokenPurchase amount={100} />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">
+            Hi {user?.name}!
+          </h1>
+          <p className="text-gray-600 mb-6">You need tokens to get started.</p>
+          <EchoTokenPurchase amount={100} />
+        </div>
       </div>
     );
   }
 
-  // Signed in - show success and JWT test (regardless of balance)
-  console.log('✅ Dashboard: User authenticated with balance');
+  // Main dashboard
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: '20px',
-        padding: '20px',
-      }}
-    >
-      <h1>🎉 OAuth Success!</h1>
-      <div style={{ textAlign: 'center' }}>
-        <p>
-          <strong>Welcome {user?.name}!</strong>
-        </p>
-        <p>Email: {user?.email}</p>
-        {balance && (
-          <p>
-            Balance: {balance?.credits} {balance?.currency}
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-semibold text-gray-800">
+                Echo React SDK Test
+              </h1>
+            </div>
+
+            {/* User info */}
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">
+                <span className="font-medium">{user?.name}</span>
+                {balance && (
+                  <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                    ${balance.balance.toFixed(2)}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={signOut}
+                className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tabs */}
+        <div className="mb-8">
+          <nav className="flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'chat'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              💬 Chat
+            </button>
+            <button
+              onClick={() => setActiveTab('images')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'images'
+                  ? 'border-purple-500 text-purple-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              🎨 Image Generation
+            </button>
+            <button
+              onClick={() => setActiveTab('use-chat')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'use-chat'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              📤 useChat()
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab content */}
+        <div className="bg-white rounded-lg shadow-sm p-6 min-h-[600px]">
+          {activeTab === 'chat' && <ChatInterface />}
+          {activeTab === 'images' && <ImageGeneration />}
+          {activeTab === 'use-chat' && <UseChatInterface />}
+        </div>
+
+        {/* Low balance warning */}
+        {balance && balance.balance < 5 && (
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Low Balance Warning
+                </h3>
+                <p className="text-sm text-yellow-700">
+                  You have ${balance.balance.toFixed(2)} remaining. Consider
+                  adding more credits.
+                </p>
+              </div>
+              <EchoTokenPurchase amount={100} />
+            </div>
+          </div>
         )}
-      </div>
-      <button
-        onClick={signOut}
-        style={{
-          padding: '10px 20px',
-          backgroundColor: '#dc3545',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '14px',
-        }}
-      >
-        Sign Out
-      </button>
-      <JWTTestComponent />
-      {balance?.credits === 0 && (
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <p>Need tokens to get started?</p>
-          <EchoTokenPurchase amount={100} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function JWTTestComponent() {
-  const [testResult, setTestResult] = useState<string | null>(null);
-  const [isTestLoading, setIsTestLoading] = useState(false);
-
-  const testJWTToken = useCallback(async () => {
-    console.log('🔐 Starting JWT token test...');
-    setIsTestLoading(true);
-    setTestResult(null);
-
-    try {
-      // Get current user and access token from oidc-client-ts
-      const userManager = (window as Window).__echoUserManager;
-      if (!userManager) {
-        throw new Error('UserManager not available');
-      }
-
-      const user = await userManager.getUser();
-      console.log('👤 Retrieved user from UserManager:', {
-        hasUser: !!user,
-        hasToken: !!user?.access_token,
-      });
-      if (!user?.access_token) {
-        throw new Error('No access token available');
-      }
-
-      // Test JWT validation endpoint
-      console.log('📡 Making JWT validation request...');
-      const response = await fetch(
-        `${CONFIG.ECHO_CONTROL_URL}/api/validate-jwt-token`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${user.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const result = await response.json();
-      console.log('📋 JWT validation response:', {
-        status: response.status,
-        result,
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `JWT validation failed: ${result.error || response.statusText}`
-        );
-      }
-
-      const successMessage = `✅ JWT Token Valid!\n• User ID: ${result.userId}\n• App ID: ${result.appId}\n• Scope: ${result.scope}\n• Valid: ${result.valid}`;
-      console.log('✅ JWT validation successful:', result);
-      setTestResult(successMessage);
-    } catch (error) {
-      const errorMessage = `❌ JWT Test Failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      console.error('❌ JWT validation failed:', error);
-      setTestResult(errorMessage);
-    } finally {
-      setIsTestLoading(false);
-      console.log('🏁 JWT test completed');
-    }
-  }, []);
-
-  // Auto-run JWT test on component mount
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      testJWTToken();
-    }, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [testJWTToken]);
-
-  return (
-    <div
-      style={{
-        marginTop: '20px',
-        padding: '20px',
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        backgroundColor: testResult?.includes('✅')
-          ? '#e8f5e8'
-          : testResult?.includes('❌')
-            ? '#f8e8e8'
-            : '#f9f9f9',
-      }}
-    >
-      <h3>🔐 JWT Token Validation</h3>
-      <button
-        onClick={testJWTToken}
-        disabled={isTestLoading}
-        style={{
-          padding: '10px 20px',
-          backgroundColor: '#007cba',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: isTestLoading ? 'not-allowed' : 'pointer',
-          opacity: isTestLoading ? 0.6 : 1,
-        }}
-      >
-        {isTestLoading ? 'Testing...' : 'Re-test JWT Token'}
-      </button>
-      {testResult && (
-        <pre
-          style={{
-            marginTop: '10px',
-            padding: '10px',
-            backgroundColor: '#f5f5f5',
-            borderRadius: '5px',
-            whiteSpace: 'pre-wrap',
-            fontSize: '14px',
-          }}
-        >
-          {testResult}
-        </pre>
-      )}
-    </div>
-  );
-}
-
-function ConfigForm({ onSubmit }: { onSubmit: (clientId: string) => void }) {
-  const [clientId, setClientId] = useState<string>(CONFIG.DEFAULT_CLIENT_ID);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (clientId.trim()) {
-      onSubmit(clientId.trim());
-    }
-  };
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        gap: '20px',
-        padding: '20px',
-      }}
-    >
-      <h1>Echo OAuth PKCE Test</h1>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '15px',
-          minWidth: '300px',
-        }}
-      >
-        <div>
-          <label
-            htmlFor="clientId"
-            style={{
-              display: 'block',
-              marginBottom: '5px',
-              fontWeight: 'bold',
-            }}
-          >
-            Echo App ID (Client ID):
-          </label>
-          <input
-            id="clientId"
-            type="text"
-            value={clientId}
-            onChange={e => setClientId(e.target.value)}
-            placeholder="your-echo-app-id"
-            style={{
-              width: '100%',
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '5px',
-              fontSize: '14px',
-            }}
-            required
-          />
-        </div>
-        <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
-          <p>
-            <strong>Current Configuration:</strong>
-          </p>
-          <p>• Echo Control URL: {CONFIG.ECHO_CONTROL_URL}</p>
-          <p>• Redirect URI: {CONFIG.REDIRECT_URI}</p>
-          <p>• Scope: {CONFIG.SCOPE}</p>
-        </div>
-        <div style={{ fontSize: '11px', color: '#999', fontStyle: 'italic' }}>
-          <p>
-            ⚠️ Make sure this redirect URI is configured in your Echo app's
-            OAuth settings!
-          </p>
-        </div>
-        <button
-          type="submit"
-          style={{
-            padding: '12px 24px',
-            backgroundColor: '#007cba',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            fontSize: '16px',
-            cursor: 'pointer',
-          }}
-        >
-          Start OAuth Flow
-        </button>
-      </form>
+      </main>
     </div>
   );
 }
 
 function App() {
-  const [clientId, setClientId] = useState<string | null>(() => {
-    // Restore client ID from localStorage on app start
-    try {
-      return localStorage.getItem('echo_oauth_client_id') || null;
-    } catch {
-      return null;
-    }
-  });
-
-  const [echoConfig, setEchoConfig] = useState<{
-    appId: string;
-    apiUrl: string;
-    redirectUri: string;
-    scope: string;
-  } | null>(() => {
-    // Restore config from localStorage on app start
-    try {
-      const stored = localStorage.getItem('echo_oauth_config');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  console.log('🚀 App component render:', { clientId, echoConfig });
-
-  const handleConfigSubmit = (submittedClientId: string) => {
-    console.log('📝 Config submitted:', submittedClientId);
-    setClientId(submittedClientId);
-    const config = {
-      appId: submittedClientId,
-      apiUrl: CONFIG.ECHO_CONTROL_URL,
-      redirectUri: CONFIG.REDIRECT_URI,
-      scope: CONFIG.SCOPE,
-    };
-    setEchoConfig(config);
-
-    // Persist to localStorage
-    try {
-      localStorage.setItem('echo_oauth_client_id', submittedClientId);
-      localStorage.setItem('echo_oauth_config', JSON.stringify(config));
-      console.log('💾 Config saved to localStorage');
-    } catch (error) {
-      console.warn('Failed to save config to localStorage:', error);
-    }
-  };
-
-  const handleReset = () => {
-    console.log('🔄 Config reset requested');
-    setClientId(null);
-    setEchoConfig(null);
-    try {
-      localStorage.removeItem('echo_oauth_client_id');
-      localStorage.removeItem('echo_oauth_config');
-      console.log('🧹 localStorage cleared');
-    } catch (error) {
-      console.warn('Failed to clear localStorage:', error);
-    }
-  };
-  // Show config form if no client ID is set
-  if (!clientId || !echoConfig) {
-    console.log('⚙️ Showing config form');
-    return <ConfigForm onSubmit={handleConfigSubmit} />;
-  }
-
-  console.log('🎯 Rendering EchoProvider with config:', echoConfig);
   return (
-    <EchoProvider config={echoConfig}>
-      <div>
-        <Dashboard />
-        <div style={{ position: 'fixed', top: '10px', right: '10px' }}>
-          <button
-            onClick={handleReset}
-            style={{
-              padding: '8px 12px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              fontSize: '12px',
-              cursor: 'pointer',
-            }}
-          >
-            Reset Config
-          </button>
-          <OpenAIExample />
-        </div>
-      </div>
+    <EchoProvider
+      config={{
+        apiUrl: 'https://echo.merit.systems',
+        appId: '60601628-cdb7-481e-8f7e-921981220348',
+        redirectUri: window.location.origin,
+        scope: 'llm:invoke offline_access',
+      }}
+    >
+      <Dashboard />
     </EchoProvider>
   );
 }
 
 export default App;
-
-// Store UserManager globally for JWT testing
-declare global {
-  interface Window {
-    __echoUserManager?: {
-      getUser: () => Promise<{ access_token?: string } | null>;
-    };
-  }
-}

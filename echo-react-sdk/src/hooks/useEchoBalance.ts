@@ -1,9 +1,5 @@
 import type { FreeBalance } from '@merit-systems/echo-typescript-sdk';
-import {
-  EchoClient,
-  getUserFriendlyMessage,
-  parseEchoError,
-} from '@merit-systems/echo-typescript-sdk';
+import { EchoClient, parseEchoError } from '@merit-systems/echo-typescript-sdk';
 import { useCallback, useEffect, useState } from 'react';
 import { EchoBalance } from '../types';
 
@@ -31,9 +27,11 @@ export function useEchoBalance(echoClient: EchoClient | null, appId: string) {
       setFreeTierBalance(freeTierResponse);
       setError(null);
     } catch (err) {
-      const echoError = parseEchoError(err, 'refreshing balance');
-      const userFriendlyMessage = getUserFriendlyMessage(echoError);
-      setError(userFriendlyMessage);
+      const echoError = parseEchoError(
+        err instanceof Error ? err : new Error(String(err)),
+        'refreshing balance'
+      );
+      setError(echoError.message);
       throw echoError;
     } finally {
       setIsLoading(false);

@@ -1,8 +1,4 @@
-import {
-  EchoClient,
-  getUserFriendlyMessage,
-  parseEchoError,
-} from '@merit-systems/echo-typescript-sdk';
+import { EchoClient, parseEchoError } from '@merit-systems/echo-typescript-sdk';
 import { useCallback, useState } from 'react';
 
 export function useEchoPayments(echoClient: EchoClient | null) {
@@ -30,9 +26,11 @@ export function useEchoPayments(echoClient: EchoClient | null) {
         setError(null);
         return response.paymentLink.url;
       } catch (err) {
-        const echoError = parseEchoError(err, 'creating payment link');
-        const userFriendlyMessage = getUserFriendlyMessage(echoError);
-        setError(userFriendlyMessage);
+        const echoError = parseEchoError(
+          err instanceof Error ? err : new Error(String(err)),
+          'creating payment link'
+        );
+        setError(echoError.message);
         throw echoError;
       } finally {
         setIsLoading(false);
