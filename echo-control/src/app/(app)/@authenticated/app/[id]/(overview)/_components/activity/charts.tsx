@@ -155,5 +155,5 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
 };
 
 export const LoadingActivityCharts = () => {
-  return <LoadingCharts tabs={['profit', 'tokens', 'transactions']} />;
+  return <LoadingCharts tabs={['Profit', 'Tokens', 'Transactions']} />;
 };

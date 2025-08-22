@@ -73,13 +73,13 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
           return (
             <Bar
               key={dataKey as string}
-              {...barProps}
+              isAnimationActive={index === bars.length - 1}
+              dataKey={dataKey as string}
               stackId="1"
               fill={`color-mix(in oklab, ${color} 40%, transparent)`}
               stroke={color}
-              dataKey={dataKey as string}
               radius={index === bars.length - 1 ? [4, 4, 0, 0] : undefined}
-              isAnimationActive={index === bars.length - 1}
+              {...barProps}
             />
           );
         })}
@@ -114,20 +114,20 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
 export const LoadingChart = () => {
   const simulatedData = useMemo(() => {
     const data: ChartData<{ value: number }>[] = [];
-    const baseValue = 100;
-    const variance = 50;
+    const baseValue = 10;
+    const variance = 20;
     let currentValue = baseValue;
 
     for (let i = 48; i >= 0; i--) {
       const date = subDays(new Date(), i);
       // Increment can be positive or negative, with some random variation
-      const increment = (Math.random() - 0.3) * 2 * variance; // Range: -variance to +variance
+      const increment = (Math.random() - 0.5) * 2 * variance; // Range: -variance to +variance
       if (i !== 48) {
         currentValue += increment;
       }
       data.push({
         timestamp: format(date, 'MMM dd'),
-        value: Math.round(currentValue),
+        value: Math.max(0, Math.round(currentValue)),
       });
     }
 
@@ -141,7 +141,8 @@ export const LoadingChart = () => {
         bars={[
           {
             dataKey: 'value',
-            color: 'var(--color-neutral-500)',
+            color:
+              'color-mix(in oklab, var(--color-neutral-500) 20%, transparent)',
             isAnimationActive: false,
           },
         ]}
