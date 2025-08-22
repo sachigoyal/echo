@@ -11,7 +11,7 @@ import {
 
 interface TabProps<T extends Record<string, number>> {
   trigger: TabsTriggerProps;
-  areaProps: ChartProps<T>['areaProps'];
+  bars: ChartProps<T>['bars'];
   tooltipRows?: ChartProps<T>['tooltipRows'];
 }
 
@@ -31,13 +31,9 @@ export const Charts = <T extends Record<string, number>>({
           <TabsTrigger key={tab.trigger.label} {...tab.trigger} />
         ))}
       </TabsList>
-      {tabs.map(({ trigger, areaProps, tooltipRows }) => (
+      {tabs.map(({ trigger, bars, tooltipRows }) => (
         <TabsContent key={trigger.label} value={trigger.value}>
-          <BaseChart
-            data={chartData}
-            areaProps={areaProps}
-            tooltipRows={tooltipRows}
-          />
+          <BaseChart data={chartData} bars={bars} tooltipRows={tooltipRows} />
         </TabsContent>
       ))}
     </Tabs>

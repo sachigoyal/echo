@@ -1,11 +1,11 @@
 import {
-  AreaChart,
+  BarChart,
   XAxis,
   YAxis,
-  Area,
+  Bar,
   Tooltip,
   ResponsiveContainer,
-  AreaProps,
+  BarProps,
 } from 'recharts';
 import { Card } from '@/components/ui/card';
 import { format, subDays } from 'date-fns';
@@ -18,8 +18,8 @@ export type ChartData<T extends Record<string, number>> = {
 
 export interface ChartProps<T extends Record<string, number>> {
   data: ChartData<T>[];
-  areaProps: Array<
-    AreaProps & {
+  bars: Array<
+    BarProps & {
       dataKey: keyof T;
       color: string;
     }
@@ -32,11 +32,11 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
   data,
   children,
   tooltipRows,
-  areaProps,
+  bars,
 }: ChartProps<T>) => {
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <AreaChart
+      <BarChart
         data={data}
         margin={{ top: 4, right: 0, left: 0, bottom: 0 }}
         style={{
@@ -46,7 +46,7 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
         }}
       >
         <defs>
-          {areaProps.map(({ dataKey, color }) => (
+          {bars.map(({ dataKey, color }) => (
             <linearGradient
               key={dataKey as string}
               id={`${dataKey as string}-gradient`}
@@ -69,16 +69,17 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
         />
         <YAxis domain={['0', 'dataMax']} hide={true} />
         {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-        {areaProps.map(({ ref, dataKey, ...areaProps }) => {
+        {bars.map(({ dataKey, color, ref, ...barProps }, index) => {
           return (
-            <Area
+            <Bar
               key={dataKey as string}
-              {...areaProps}
-              type="monotone"
+              {...barProps}
               stackId="1"
-              stroke={areaProps.color}
-              fill={`url(#${dataKey as string}-gradient)`}
+              fill={`color-mix(in oklab, ${color} 40%, transparent)`}
+              stroke={color}
               dataKey={dataKey as string}
+              radius={index === bars.length - 1 ? [4, 4, 0, 0] : undefined}
+              isAnimationActive={index === bars.length - 1}
             />
           );
         })}
@@ -105,7 +106,7 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
             }}
           />
         )}
-      </AreaChart>
+      </BarChart>
     </ResponsiveContainer>
   );
 };
@@ -137,7 +138,7 @@ export const LoadingChart = () => {
     <div className="animate-pulse">
       <BaseChart
         data={simulatedData}
-        areaProps={[
+        bars={[
           {
             dataKey: 'value',
             color: 'var(--color-neutral-500)',

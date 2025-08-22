@@ -48,7 +48,7 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
             label: 'Profit',
             amount: formatCurrency(totalProfit),
           },
-          areaProps: [
+          bars: [
             {
               dataKey: 'totalCost',
               color:
@@ -83,16 +83,16 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
               maximumFractionDigits: 2,
             }),
           },
-          areaProps: [
+          bars: [
             {
               dataKey: 'totalInputTokens',
               color:
-                'color-mix(in oklab, var(--color-orange-500) 80%, transparent)',
+                'color-mix(in oklab, var(--color-primary) 40%, transparent)',
             },
             {
               dataKey: 'totalOutputTokens',
               color:
-                'color-mix(in oklab, var(--color-yellow-500) 80%, transparent)',
+                'color-mix(in oklab, var(--color-primary) 100%, transparent)',
             },
           ],
           tooltipRows: [
@@ -129,7 +129,7 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
               maximumFractionDigits: 2,
             }),
           },
-          areaProps: [
+          bars: [
             {
               dataKey: 'transactionCount',
               color: 'var(--color-primary)',
