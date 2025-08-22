@@ -7,8 +7,8 @@ import {
 } from '@/app/(app)/@authenticated/_components/charts';
 import { ChartData } from '@/app/(app)/@authenticated/_components/charts/base-chart';
 
-// import { api } from '@/trpc/client';
-// import { useActivityContext } from '../context';
+import { api } from '@/trpc/client';
+import { useActivityContext } from './context';
 
 import { formatCurrency } from '@/lib/utils';
 
@@ -16,68 +16,28 @@ interface Props {
   appId: string;
 }
 
-const activity = Array.from({ length: 48 }, (_, i) => {
-  const now = new Date();
-  const bucketDate = new Date(now.getTime() - (19 - i) * 60 * 60 * 1000); // 1 hour per bucket, oldest first
-  // Simulate jagged cost and profit
-  const base = 100 + i * 20;
-  const jag = Math.sin(i * 1.2) * 40 + (Math.random() - 0.5) * 60;
-  const totalCost = Math.max(0, Math.round(base + jag));
-  const totalProfit = Math.max(
-    0,
-    Math.round(totalCost * (0.1 + Math.random() * 0.2))
-  );
-  const totalTokens = Math.max(
-    0,
-    Math.round(totalCost * 10 + Math.random() * 100)
-  );
-  const totalInputTokens = Math.round(
-    totalTokens * (0.6 + Math.random() * 0.2)
-  );
-  const totalOutputTokens = totalTokens - totalInputTokens;
-  const totalTransactions = (totalTokens / Math.random()) * 1000;
-  return {
-    bucketDate,
-    totalCost,
-    totalProfit,
-    totalTokens,
-    totalInputTokens,
-    totalOutputTokens,
-    totalTransactions,
-  };
-});
+export const ActivityCharts: React.FC<Props> = ({ appId }) => {
+  const { startDate, endDate } = useActivityContext();
 
-export const ActivityCharts: React.FC<Props> = ({}) => {
-  // const { startDate, endDate } = useActivityContext();
+  const [activity] = api.activity.app.get.useSuspenseQuery({
+    echoAppId: appId,
+    startDate,
+    endDate,
+  });
 
-  // const [activitya] = api.activity.app.get.useSuspenseQuery({
-  //   echoAppId: appId,
-  //   startDate,
-  //   endDate,
-  // });
-
-  //   // Transform data for the chart
-  //   const chartData = activity.map(item => ({
-  //     ...item,
-  //     timestamp: format(new Date(item.timestamp), 'MMM dd HH:mm'),
-  //   }));
-
-  // Simulate 20 buckets of activity data for testing
+  // Transform data for the chart
+  const chartData: ChartData<Omit<(typeof activity)[number], 'timestamp'>>[] =
+    activity.map(({ timestamp, ...rest }) => ({
+      ...rest,
+      timestamp: format(timestamp, 'MMM dd HH:mm'),
+    }));
 
   const totalProfit = activity.reduce((acc, item) => acc + item.totalProfit, 0);
   const totalTokens = activity.reduce((acc, item) => acc + item.totalTokens, 0);
   const totalTransactions = activity.reduce(
-    (acc, item) => acc + item.totalTransactions,
+    (acc, item) => acc + item.transactionCount,
     0
   );
-
-  const chartData: ChartData<Omit<(typeof activity)[number], 'bucketDate'>>[] =
-    activity.map(item => {
-      return {
-        ...item,
-        timestamp: format(item.bucketDate, 'MMM dd HH:mm'),
-      };
-    });
 
   return (
     <Charts
@@ -91,7 +51,8 @@ export const ActivityCharts: React.FC<Props> = ({}) => {
           areaProps: [
             {
               dataKey: 'totalCost',
-              color: 'var(--color-muted-foreground)',
+              color:
+                'color-mix(in oklab, var(--color-muted-foreground) 40%, transparent)',
             },
             {
               dataKey: 'totalProfit',
@@ -170,13 +131,13 @@ export const ActivityCharts: React.FC<Props> = ({}) => {
           },
           areaProps: [
             {
-              dataKey: 'totalTransactions',
+              dataKey: 'transactionCount',
               color: 'var(--color-primary)',
             },
           ],
           tooltipRows: [
             {
-              key: 'totalTransactions',
+              key: 'transactionCount',
               label: 'Transactions',
               getValue: data =>
                 data.toLocaleString(undefined, {

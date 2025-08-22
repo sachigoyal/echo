@@ -84,3 +84,83 @@ export const getAppActivity = async ({
 
   return buckets;
 };
+
+export const getTopAppUsers = async (echoAppId: string, limit: number = 10) => {
+  // Get top users with their transaction statistics using a single query with aggregation
+  const topUsersWithStats = await db.transaction.groupBy({
+    by: ['userId'],
+    where: {
+      echoAppId,
+      isArchived: false,
+    },
+    _sum: {
+      totalCost: true,
+      rawTransactionCost: true,
+      markUpProfit: true,
+    },
+    _count: {
+      id: true,
+    },
+    orderBy: {
+      _sum: {
+        totalCost: 'desc',
+      },
+    },
+    take: limit,
+  });
+
+  // Get user details and membership info for the top users
+  const userIds = topUsersWithStats.map(stat => stat.userId);
+
+  const usersWithDetails = await db.user.findMany({
+    where: {
+      id: {
+        in: userIds,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      appMemberships: {
+        where: {
+          echoAppId,
+          isArchived: false,
+          status: 'active',
+        },
+        select: {
+          totalSpent: true,
+          amountSpent: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  // Combine the data
+  const usersWithStats = topUsersWithStats.map(stat => {
+    const user = usersWithDetails.find(u => u.id === stat.userId);
+    const membership = user?.appMemberships[0];
+
+    return {
+      id: user?.id ?? stat.userId,
+      name: user?.name ?? null,
+      email: user?.email ?? '',
+      image: user?.image ?? null,
+      membership: {
+        totalSpent: Number(membership?.totalSpent ?? 0),
+        amountSpent: Number(membership?.amountSpent ?? 0),
+        joinedAt: membership?.createdAt ?? null,
+      },
+      usage: {
+        totalTransactions: stat._count.id,
+        totalCost: Number(stat._sum.totalCost ?? 0),
+        rawCost: Number(stat._sum.rawTransactionCost ?? 0),
+        markupProfit: Number(stat._sum.markUpProfit ?? 0),
+      },
+    };
+  });
+
+  return usersWithStats;
+};
