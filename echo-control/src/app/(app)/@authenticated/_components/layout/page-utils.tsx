@@ -18,7 +18,7 @@ export const Heading: React.FC<HeadingProps> = ({
 }) => {
   return (
     <>
-      <div className="flex items-center justify-between max-w-4xl w-full px-2 pb-4 md:pb-6 mx-auto">
+      <div className="flex items-center justify-between max-w-6xl w-full px-2 pb-4 md:pb-6 mx-auto">
         <div className="flex items-center gap-4 shrink-0">
           {icon}
           <div className="flex flex-col gap-2 text-left">
@@ -44,7 +44,7 @@ export const Body: React.FC<BodyProps> = ({ children, className }) => {
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 max-w-4xl w-full mx-auto py-8 px-2',
+        'flex flex-col gap-4 max-w-6xl w-full mx-auto py-8 px-2',
         className
       )}
     >

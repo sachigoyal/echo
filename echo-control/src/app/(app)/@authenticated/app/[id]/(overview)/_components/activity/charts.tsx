@@ -91,15 +91,11 @@ export const ActivityCharts: React.FC<Props> = ({}) => {
           areaProps: [
             {
               dataKey: 'totalCost',
-              stroke:
-                'color-mix(in oklab, var(--color-neutral-500) 60%, transparent)',
-              fill: 'color-mix(in oklab, var(--color-neutral-500) 20%, transparent)',
+              color: 'var(--color-muted-foreground)',
             },
             {
               dataKey: 'totalProfit',
-              stroke:
-                'color-mix(in oklab, var(--color-primary) 100%, transparent)',
-              fill: 'color-mix(in oklab, var(--color-primary) 60%, transparent)',
+              color: 'var(--color-primary)',
             },
           ],
           tooltipRows: [
@@ -129,15 +125,13 @@ export const ActivityCharts: React.FC<Props> = ({}) => {
           areaProps: [
             {
               dataKey: 'totalInputTokens',
-              stroke:
-                'color-mix(in oklab, var(--color-primary) 100%, transparent)',
-              fill: 'color-mix(in oklab, var(--color-primary) 20%, transparent)',
+              color:
+                'color-mix(in oklab, var(--color-orange-500) 80%, transparent)',
             },
             {
               dataKey: 'totalOutputTokens',
-              stroke:
-                'color-mix(in oklab, var(--color-primary) 100%, transparent)',
-              fill: 'color-mix(in oklab, var(--color-primary) 40%, transparent)',
+              color:
+                'color-mix(in oklab, var(--color-yellow-500) 80%, transparent)',
             },
           ],
           tooltipRows: [
@@ -177,9 +171,19 @@ export const ActivityCharts: React.FC<Props> = ({}) => {
           areaProps: [
             {
               dataKey: 'totalTransactions',
-              stroke:
-                'color-mix(in oklab, var(--color-primary) 100%, transparent)',
-              fill: 'color-mix(in oklab, var(--color-primary) 40%, transparent)',
+              color: 'var(--color-primary)',
+            },
+          ],
+          tooltipRows: [
+            {
+              key: 'totalTransactions',
+              label: 'Transactions',
+              getValue: data =>
+                data.toLocaleString(undefined, {
+                  notation: 'compact',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                }),
             },
           ],
         },

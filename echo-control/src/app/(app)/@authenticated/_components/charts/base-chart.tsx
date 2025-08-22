@@ -21,6 +21,7 @@ export interface ChartProps<T extends Record<string, number>> {
   areaProps: Array<
     AreaProps & {
       dataKey: keyof T;
+      color: string;
     }
   >;
   children?: React.ReactNode;
@@ -44,6 +45,21 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
           overflow: 'hidden',
         }}
       >
+        <defs>
+          {areaProps.map(({ dataKey, color }) => (
+            <linearGradient
+              key={dataKey as string}
+              id={`${dataKey as string}-gradient`}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
+              <stop offset="0%" stopColor={color} stopOpacity={0.9} />
+              <stop offset="100%" stopColor={color} stopOpacity={0.1} />
+            </linearGradient>
+          ))}
+        </defs>
         <XAxis
           tickLine={false}
           tick={false}
@@ -57,9 +73,11 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
           return (
             <Area
               key={dataKey as string}
+              {...areaProps}
               type="monotone"
               stackId="1"
-              {...areaProps}
+              stroke={areaProps.color}
+              fill={`url(#${dataKey as string}-gradient)`}
               dataKey={dataKey as string}
             />
           );
@@ -68,7 +86,6 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
         {tooltipRows && (
           <Tooltip
             content={({ payload }) => {
-              console.log(payload);
               if (payload && payload.length) {
                 return (
                   <Card className="p-2">
@@ -123,10 +140,7 @@ export const LoadingChart = () => {
         areaProps={[
           {
             dataKey: 'value',
-            stroke:
-              'color-mix(in oklab, var(--color-neutral-500) 60%, transparent)',
-            fill: 'color-mix(in oklab, var(--color-neutral-500) 40%, transparent)',
-            fillOpacity: 0.1,
+            color: 'var(--color-neutral-500)',
             isAnimationActive: false,
           },
         ]}
