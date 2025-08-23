@@ -143,7 +143,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         createRoot(document.getElementById('root')!).render(
             <StrictMode>
                 // [!code ++:1]
-                <EchoProvider appId={APP_ID}>
+                <EchoProvider config={{ appId: APP_ID }}>
                     <App />
                 // [!code ++:1]
                 </EchoProvider>
