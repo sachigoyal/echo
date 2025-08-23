@@ -130,6 +130,9 @@ importers:
       '@icons-pack/react-simple-icons':
         specifier: ^13.7.0
         version: 13.7.0(react@19.1.1)
+      '@merit-systems/echo-typescript-sdk':
+        specifier: ^1.0.3
+        version: 1.0.3(zod@4.0.15)
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -265,6 +268,9 @@ importers:
       fumadocs-mdx:
         specifier: ^11.8.0
         version: 11.8.0(acorn@8.15.0)(fumadocs-core@15.7.1(@types/react@19.1.10)(next@15.5.0(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(next@15.5.0(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)(vite@6.3.5(@types/node@20.19.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.3)(yaml@2.8.0))
+      fumadocs-typescript:
+        specifier: ^4.0.6
+        version: 4.0.6(@types/react@19.1.10)(typescript@5.8.3)
       fumadocs-ui:
         specifier: ^15.7.1
         version: 15.7.1(@types/react-dom@19.1.7(@types/react@19.1.10))(@types/react@19.1.10)(next@15.5.0(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tailwindcss@4.1.11)
@@ -798,13 +804,13 @@ importers:
     dependencies:
       '@merit-systems/echo-react-sdk':
         specifier: 1.0.1
-        version: 1.0.1(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.0.17)
+        version: 1.0.1(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@3.25.76)
       next:
         specifier: ^15.1.4
         version: 15.3.3(@babel/core@7.27.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       openai:
         specifier: ^5.10.2
-        version: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17)
+        version: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
       react:
         specifier: ^19.1.0
         version: 19.1.0
@@ -853,7 +859,7 @@ importers:
     dependencies:
       '@merit-systems/echo-react-sdk':
         specifier: file:../../echo-react-sdk
-        version: file:echo-react-sdk(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.0.17)
+        version: file:echo-react-sdk(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@3.25.76)
       react:
         specifier: ^19.1.0
         version: 19.1.0
@@ -1956,6 +1962,14 @@ packages:
     peerDependenciesMeta:
       '@types/node':
         optional: true
+
+  '@isaacs/balanced-match@4.0.1':
+    resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
+    engines: {node: 20 || >=22}
+
+  '@isaacs/brace-expansion@5.0.0':
+    resolution: {integrity: sha512-ZT55BDLV0yv0RBm2czMiZ+SqCGO7AvmOM3G/w2xhVPH+te0aKgFjmBvGlL1dH+ql2tgGO3MVrbb3jCKyvpgnxA==}
+    engines: {node: 20 || >=22}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -4361,6 +4375,9 @@ packages:
     peerDependencies:
       typescript: '>=5.7.2'
 
+  '@ts-morph/common@0.27.0':
+    resolution: {integrity: sha512-Wf29UqxWDpc+i61k3oIOzcUfQt79PIT9y/MWfAGlrkjg6lBC1hwDECLXPVJAhWjiGbfBCxZd65F/LIZF3+jeJQ==}
+
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
 
@@ -5572,6 +5589,9 @@ packages:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
 
+  code-block-writer@13.0.3:
+    resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
+
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
 
@@ -6701,6 +6721,15 @@ packages:
       react:
         optional: true
       vite:
+        optional: true
+
+  fumadocs-typescript@4.0.6:
+    resolution: {integrity: sha512-cr2GPMH1TSHQJXRBDbxWGMXpOd7F5uLU8Y2xMOXMc6kQqEpvM2KYlq+QJ/lHTfXmhNgJBr/iKZJtQ2xHSWxaaQ==}
+    peerDependencies:
+      '@types/react': '*'
+      typescript: '*'
+    peerDependenciesMeta:
+      '@types/react':
         optional: true
 
   fumadocs-ui@15.7.1:
@@ -8040,6 +8069,10 @@ packages:
   min-indent@1.0.1:
     resolution: {integrity: sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==}
     engines: {node: '>=4'}
+
+  minimatch@10.0.3:
+    resolution: {integrity: sha512-IPZ167aShDZZUMdRk66cyQAW3qr0WzbHkPdMYa8bzZhlHhO3jALbKdxcaak7W9FfT2rZNpQuUu4Od7ILEpXSaw==}
+    engines: {node: 20 || >=22}
 
   minimatch@3.0.8:
     resolution: {integrity: sha512-6FsRAQsxQ61mw+qP1ZzbL9Bc78x2p5OqNgNpnoAFLTrX8n5Kxph0CsnhmKKNXTWjXqU5L0pGPR7hYk+XWZr60Q==}
@@ -9740,6 +9773,9 @@ packages:
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
 
+  ts-morph@26.0.0:
+    resolution: {integrity: sha512-ztMO++owQnz8c/gIENcM9XfCEzgoGphTv+nKpYNM1bgsdOVC/jRZuEBf6N+mLLDNg68Kl+GgUZfOySaRiG1/Ug==}
+
   ts-node@10.9.2:
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
     hasBin: true
@@ -10512,17 +10548,29 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.4(zod@4.0.17)
       zod: 4.0.17
 
-  '@ai-sdk/anthropic@2.0.6(zod@4.0.17)':
+  '@ai-sdk/anthropic@2.0.6(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.17)
-      zod: 4.0.17
+      '@ai-sdk/provider-utils': 3.0.5(zod@3.25.76)
+      zod: 3.25.76
 
-  '@ai-sdk/gateway@1.0.11(zod@4.0.17)':
+  '@ai-sdk/anthropic@2.0.6(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.17)
-      zod: 4.0.17
+      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.15)
+      zod: 4.0.15
+
+  '@ai-sdk/gateway@1.0.11(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.5(zod@3.25.76)
+      zod: 3.25.76
+
+  '@ai-sdk/gateway@1.0.11(zod@4.0.15)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.15)
+      zod: 4.0.15
 
   '@ai-sdk/gateway@1.0.9(zod@4.0.17)':
     dependencies:
@@ -10536,11 +10584,17 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.4(zod@4.0.17)
       zod: 4.0.17
 
-  '@ai-sdk/google@2.0.8(zod@4.0.17)':
+  '@ai-sdk/google@2.0.8(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.17)
-      zod: 4.0.17
+      '@ai-sdk/provider-utils': 3.0.5(zod@3.25.76)
+      zod: 3.25.76
+
+  '@ai-sdk/google@2.0.8(zod@4.0.15)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.15)
+      zod: 4.0.15
 
   '@ai-sdk/openai@2.0.17(zod@4.0.17)':
     dependencies:
@@ -10548,11 +10602,17 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.4(zod@4.0.17)
       zod: 4.0.17
 
-  '@ai-sdk/openai@2.0.19(zod@4.0.17)':
+  '@ai-sdk/openai@2.0.19(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.17)
-      zod: 4.0.17
+      '@ai-sdk/provider-utils': 3.0.5(zod@3.25.76)
+      zod: 3.25.76
+
+  '@ai-sdk/openai@2.0.19(zod@4.0.15)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.15)
+      zod: 4.0.15
 
   '@ai-sdk/provider-utils@3.0.4(zod@4.0.17)':
     dependencies:
@@ -10562,13 +10622,21 @@ snapshots:
       zod: 4.0.17
       zod-to-json-schema: 3.24.6(zod@4.0.17)
 
-  '@ai-sdk/provider-utils@3.0.5(zod@4.0.17)':
+  '@ai-sdk/provider-utils@3.0.5(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.5
-      zod: 4.0.17
-      zod-to-json-schema: 3.24.6(zod@4.0.17)
+      zod: 3.25.76
+      zod-to-json-schema: 3.24.6(zod@3.25.76)
+
+  '@ai-sdk/provider-utils@3.0.5(zod@4.0.15)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.5
+      zod: 4.0.15
+      zod-to-json-schema: 3.24.6(zod@4.0.15)
 
   '@ai-sdk/provider@2.0.0':
     dependencies:
@@ -11468,6 +11536,12 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.0.3
 
+  '@isaacs/balanced-match@4.0.1': {}
+
+  '@isaacs/brace-expansion@5.0.0':
+    dependencies:
+      '@isaacs/balanced-match': 4.0.1
+
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -11760,28 +11834,28 @@ snapshots:
       '@types/react': 18.3.23
       react: 19.1.1
 
-  '@merit-systems/echo-react-sdk@1.0.1(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.0.17)':
+  '@merit-systems/echo-react-sdk@1.0.1(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@3.25.76)':
     dependencies:
-      '@merit-systems/echo-typescript-sdk': 1.0.3(zod@4.0.17)
+      '@merit-systems/echo-typescript-sdk': 1.0.3(zod@3.25.76)
       dompurify: 3.2.6
       oidc-client-ts: 3.3.0
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
     optionalDependencies:
-      openai: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17)
+      openai: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
     transitivePeerDependencies:
       - zod
 
-  '@merit-systems/echo-react-sdk@file:echo-react-sdk(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.0.17)':
+  '@merit-systems/echo-react-sdk@file:echo-react-sdk(openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@3.25.76)':
     dependencies:
-      '@merit-systems/echo-typescript-sdk': 1.0.3(zod@4.0.17)
+      '@merit-systems/echo-typescript-sdk': 1.0.3(zod@3.25.76)
       dompurify: 3.2.6
       oidc-client-ts: 3.3.0
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
       react-oidc-context: 3.3.0(oidc-client-ts@3.3.0)(react@19.1.0)
     optionalDependencies:
-      openai: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17)
+      openai: 5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
     transitivePeerDependencies:
       - zod
 
@@ -11792,12 +11866,21 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@merit-systems/echo-typescript-sdk@1.0.3(zod@4.0.17)':
+  '@merit-systems/echo-typescript-sdk@1.0.3(zod@3.25.76)':
     dependencies:
-      '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
-      '@ai-sdk/google': 2.0.8(zod@4.0.17)
-      '@ai-sdk/openai': 2.0.19(zod@4.0.17)
-      ai: 5.0.22(zod@4.0.17)
+      '@ai-sdk/anthropic': 2.0.6(zod@3.25.76)
+      '@ai-sdk/google': 2.0.8(zod@3.25.76)
+      '@ai-sdk/openai': 2.0.19(zod@3.25.76)
+      ai: 5.0.22(zod@3.25.76)
+    transitivePeerDependencies:
+      - zod
+
+  '@merit-systems/echo-typescript-sdk@1.0.3(zod@4.0.15)':
+    dependencies:
+      '@ai-sdk/anthropic': 2.0.6(zod@4.0.15)
+      '@ai-sdk/google': 2.0.8(zod@4.0.15)
+      '@ai-sdk/openai': 2.0.19(zod@4.0.15)
+      ai: 5.0.22(zod@4.0.15)
     transitivePeerDependencies:
       - zod
 
@@ -14602,6 +14685,12 @@ snapshots:
     dependencies:
       typescript: 5.8.3
 
+  '@ts-morph/common@0.27.0':
+    dependencies:
+      fast-glob: 3.3.3
+      minimatch: 10.0.3
+      path-browserify: 1.0.1
+
   '@tsconfig/node10@1.0.11': {}
 
   '@tsconfig/node12@1.0.11': {}
@@ -15930,13 +16019,21 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       zod: 4.0.17
 
-  ai@5.0.22(zod@4.0.17):
+  ai@5.0.22(zod@3.25.76):
     dependencies:
-      '@ai-sdk/gateway': 1.0.11(zod@4.0.17)
+      '@ai-sdk/gateway': 1.0.11(zod@3.25.76)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.17)
+      '@ai-sdk/provider-utils': 3.0.5(zod@3.25.76)
       '@opentelemetry/api': 1.9.0
-      zod: 4.0.17
+      zod: 3.25.76
+
+  ai@5.0.22(zod@4.0.15):
+    dependencies:
+      '@ai-sdk/gateway': 1.0.11(zod@4.0.15)
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.5(zod@4.0.15)
+      '@opentelemetry/api': 1.9.0
+      zod: 4.0.15
 
   ajv-draft-04@1.0.0(ajv@8.13.0):
     optionalDependencies:
@@ -16437,6 +16534,8 @@ snapshots:
   clsx@2.1.1: {}
 
   co@4.6.0: {}
+
+  code-block-writer@13.0.3: {}
 
   collapse-white-space@2.1.0: {}
 
@@ -17778,6 +17877,23 @@ snapshots:
       vite: 6.3.5(@types/node@20.19.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.3)(yaml@2.8.0)
     transitivePeerDependencies:
       - acorn
+      - supports-color
+
+  fumadocs-typescript@4.0.6(@types/react@19.1.10)(typescript@5.8.3):
+    dependencies:
+      estree-util-value-to-estree: 3.4.0
+      hast-util-to-estree: 3.1.3
+      hast-util-to-jsx-runtime: 2.3.6
+      remark: 15.0.1
+      remark-rehype: 11.1.2
+      shiki: 3.11.0
+      tinyglobby: 0.2.14
+      ts-morph: 26.0.0
+      typescript: 5.8.3
+      unist-util-visit: 5.0.0
+    optionalDependencies:
+      '@types/react': 19.1.10
+    transitivePeerDependencies:
       - supports-color
 
   fumadocs-ui@15.7.1(@types/react-dom@19.1.7(@types/react@19.1.10))(@types/react@19.1.10)(next@15.5.0(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(tailwindcss@4.1.11):
@@ -19758,6 +19874,10 @@ snapshots:
 
   min-indent@1.0.1: {}
 
+  minimatch@10.0.3:
+    dependencies:
+      '@isaacs/brace-expansion': 5.0.0
+
   minimatch@3.0.8:
     dependencies:
       brace-expansion: 1.1.12
@@ -20169,10 +20289,10 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.0.17):
+  openai@5.11.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76):
     optionalDependencies:
       ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      zod: 4.0.17
+      zod: 3.25.76
 
   optionator@0.9.4:
     dependencies:
@@ -21683,6 +21803,11 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
+  ts-morph@26.0.0:
+    dependencies:
+      '@ts-morph/common': 0.27.0
+      code-block-writer: 13.0.3
+
   ts-node@10.9.2(@types/node@20.19.1)(typescript@5.8.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
@@ -22680,6 +22805,14 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   yoctocolors-cjs@2.1.2: {}
+
+  zod-to-json-schema@3.24.6(zod@3.25.76):
+    dependencies:
+      zod: 3.25.76
+
+  zod-to-json-schema@3.24.6(zod@4.0.15):
+    dependencies:
+      zod: 4.0.15
 
   zod-to-json-schema@3.24.6(zod@4.0.17):
     dependencies:

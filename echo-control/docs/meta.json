@@ -1,0 +1,10 @@
+{
+    "pages": [
+        "index",
+        "getting-started",
+        "react-sdk",
+        "typescript-sdk",
+        "advanced"
+      ]
+  }
+  
