@@ -253,7 +253,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
                     // [!code --:1]
                     <h1>AI Coming Soon</h1>
                     // [!code ++:1]
-                    <AIComponent>
+                    {isAuthenticated && <AIComponent />}
                 </main>
             </>
         );
@@ -370,7 +370,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
             </Tab>
         </Tabs>
 
-        Visit your apps' homepage at [`http://localhost:5173`](http://localhost:5173). Sign in and click "Generate Wisdom".
+        Visit your app's homepage at [`http://localhost:5173`](http://localhost:5173). Sign in and click "Generate Wisdom".
     </Step>
 
 
