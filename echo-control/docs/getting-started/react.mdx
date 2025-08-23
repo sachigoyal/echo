@@ -8,27 +8,71 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 <Steps>
     <Step>
-        ### Install Dependencies.
-        Install `echo-react-sdk` and `ai`
+        ### Create a React app using Vite
+        Run the following commands to create a new React app using Vite.
 
         <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
             <Tab value="npm">
-                ```sh
+                ```sh lineNumbers
+                npm create vite@latest echo-react -- --template react-ts
+                cd echo-react
+                npm install
+                npm run dev
+                ```
+            </Tab>
+            <Tab value="yarn">
+                ```sh lineNumbers
+                yarn create vite echo-react --template react-ts
+                cd echo-react
+                yarn install
+                yarn dev
+                ```
+            </Tab>
+            <Tab value="pnpm">
+                ```sh lineNumbers
+                pnpm create vite echo-react --template react-ts
+                cd echo-react
+                pnpm install
+                pnpm dev
+                ```
+            </Tab>
+            <Tab value="bun">
+                ```sh lineNumbers
+                bun create vite echo-react --template react-ts
+                cd echo-react
+                bun install
+                bun dev
+                ```
+            </Tab>
+        </Tabs>
+    </Step>
+
+    <Step>
+        ### Install `@merit-systems/echo-react-sdk` and `ai`
+        The Echo React SDK gives you access to prebuilt components, hooks and helpers to make LLM billing and calling easier.
+
+        The [Vercel AI SDK](https://ai-sdk.dev/docs/introduction) is the standard SDK for interacting with AI in Typescript.
+
+        Run the following commands to install the dependencies.
+
+        <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+            <Tab value="npm">
+                ```sh lineNumbers
                 npm i @merit-systems/echo-react-sdk ai
                 ```
             </Tab>
             <Tab value="yarn">
-                ```sh
+                ```sh lineNumbers
                 yarn add @merit-systems/echo-react-sdk ai
                 ```
             </Tab>
             <Tab value="pnpm">
-                ```sh
+                ```sh lineNumbers
                 pnpm add @merit-systems/echo-react-sdk ai
                 ```
             </Tab>
             <Tab value="bun">
-                ```sh
+                ```sh lineNumbers
                 bun add @merit-systems/echo-react-sdk ai
                 ```
             </Tab>
@@ -36,49 +80,100 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
     </Step>
 
     <Step>
-        ### Create an Echo App
-        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get an `app_id`.
+        ### Setup your Echo App
+        1. In the Echo dashboard navigate to [**Create App**](https://echo.merit.systems/owner/apps/create). 
+        2. Copy your `app_id` and paste it into your `.env` file.
+
+        The final result should resemble the following:
+
+        ```sh title=".env" lineNumbers
+        VITE_ECHO_APP_ID=b30f0f78-4000-8000-000000000000
+        ```
     </Step>
 
     <Step>
-        ### Configure `<EchoProvider>`
+        ### Import your Echo App ID
+        In your `main.tsx` file, import your app id. 
         Include your App ID from the prior step.
-        ```tsx title="app.tsx"
-        import React from 'react';
+        ```tsx title="main.tsx" lineNumbers
+        import { StrictMode } from 'react'
+        import { createRoot } from 'react-dom/client'
+        import './index.css'
+        import App from './App.tsx'
+
+        // [!code ++:1]
+        const APP_ID = import.meta.env.VITE_ECHO_APP_ID;
+
+        // [!code ++:3]
+        if (!APP_ID) {
+            throw new Error('Add your Echo App ID to .env');
+        }
+    
+        createRoot(document.getElementById('root')!).render(
+            <StrictMode>
+                <App />
+            </StrictMode>,
+        )
+        ```
+
+    </Step>
+
+    <Step>
+        ### `<EchoProvider>` component
+        The `<EchoProvider>` component provides session and user context to Echo's hooks and components. It's recommended to wrap 
+        your entire app at the entry point with `<EchoProvider>` to make Echo globally available.
+
+        Pass your Echo App ID as a prop to `<EchoProvider>`.
+
+        ```tsx title="main.tsx" lineNumbers
+        import { StrictMode } from 'react'
+        import { createRoot } from 'react-dom/client'
+        import './index.css'
+        import App from './App.tsx'
+        // [!code ++:1]
         import { EchoProvider } from '@merit-systems/echo-react-sdk';
 
-        const APP_ID="echo_...";
+        const APP_ID = import.meta.env.VITE_ECHO_APP_ID;
 
-        function App() {
-          return (
-            <EchoProvider appId={APP_ID}>
-                <h1>Time to Ship</h1>
-            </EchoProvider>
-          );
+        if (!APP_ID) {
+            throw new Error('Add your Echo App ID to .env');
         }
-
-        export default App;
+    
+        createRoot(document.getElementById('root')!).render(
+            <StrictMode>
+                // [!code ++:1]
+                <EchoProvider appId={APP_ID}>
+                    <App />
+                // [!code ++:1]
+                </EchoProvider>
+            </StrictMode>,
+        )
         ```
     </Step>
 
     <Step>
         ### `<EchoSignIn>` component
         `<EchoSignIn>` is a React component that can be placed anywhere in your app. When a user clicks
-        it will redirect to Oauth against [echo.merit.systems](echo.merit.systems).
+        it will redirect to authenticate with [echo.merit.systems](echo.merit.systems). After authentication,
+        Echo can manage all LLM calls.
         
-        ```tsx title="app.tsx"
-        import React from 'react';
-        import { EchoProvider, EchoSignIn } from '@merit-systems/echo-react-sdk';
+        ```tsx title="src/App.tsx" lineNumbers
+        // [!code ++:1]
+        import { EchoSignIn } from '@merit-systems/echo-react-sdk';
 
-        const APP_ID="echo_...";
+        function App() {
 
-        function App() { 
-          return (  
-            <EchoProvider appId={APP_ID}>
-                <h1>Time to Ship</h1>
-                <EchoSignIn /> 
-            </EchoProvider>
-          );
+            return (
+                <>
+                    <header>
+                        // [!code ++:1]
+                        <EchoSignIn />
+                    </header>
+                    <main>
+                        <h1>AI Coming Soon</h1>
+                    </main>
+                </>
+            );
         }
 
         export default App;
@@ -89,35 +184,36 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         ### `useEcho()` hook
         The `useEcho()` hook surfaces everything you need to show Echo state to your users.
 
-        ```tsx title="app.tsx"
-        import React from 'react';
-        import { EchoProvider, EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
+        ```tsx title="src/App.tsx" lineNumbers
+        // [!code ++:1]
+        import { EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
 
-        const APP_ID="echo_...";
+        function App() {
 
-        function App() { 
-            const { isAuthenticated, user, balance, error, isLoading, signOut } = useEcho();
+        // [!code ++:1] 
+        const { isAuthenticated, user, balance, signOut } = useEcho();
 
-            return (  
-                <EchoProvider appId={APP_ID}>
-                    <h1>Time to Ship</h1>
-                    <EchoSignIn /> 
+        return (
+            <>
+                <header>
+                    <EchoSignIn />
+
+                // [!code ++:9] 
+                {!isAuthenticated && "Sign in to continue"}
+                {isAuthenticated && (
                     <div>
-                        {isLoading && <p>Loading...</p>}
-                        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-                        {isAuthenticated ? (
-                            <div>
-                                <p>Welcome, {user?.name}!</p>
-                                <p>Email: {user?.email}</p>
-                                <p>Balance: {balance?.credits} {balance?.currency}</p>
-                                <button onClick={signOut}>Sign Out</button>
-                            </div>
-                        ) : (
-                            <p>Sign in to continue.</p>
-                        )}
+                        <p>Welcome, {user?.name}!</p>
+                        <p>Email: {user?.email}</p>
+                        <p>Balance: {balance?.balance}</p>
+                        <button onClick={signOut}>Sign Out</button>
                     </div>
-                </EchoProvider>
-            );
+                )}
+                </header>
+                <main>
+                    <h1>AI Coming Soon</h1>
+                </main>
+            </>
+        );
         }
 
         export default App;
@@ -125,57 +221,155 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
     </Step>
 
     <Step>
-        ### `generateText()` and Model Providers
-        Now let's add AI generation capabilities using the `useEchoModelProviders()` hook with `generateText()` from [Vercel AI SDK](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text).
+        ### `generateText()` from OpenAI
+        Create a new component and use the Vercel AI SDK with Echo models.
 
-        ```tsx title="app.tsx"
-        import React, { useState } from 'react';
-        import { EchoProvider, EchoSignIn, useEcho, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
-        import { generateText, type ModelMessage } from 'ai';
+        ```tsx title="src/App.tsx" lineNumbers
+        import { EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
+        // [!code ++:1]
+        import AIComponent from './AIComponent';
 
-        const APP_ID="echo_...";
+        function App() {
 
-        function App() { 
-            const { isAuthenticated, user, balance, error, isLoading, signOut } = useEcho();
-            const { openAI } = useEchoModelProviders();
-            const [result, setResult] = useState("");
+        const { isAuthenticated, user, balance, signOut } = useEcho();
 
-            const handleGen = async () => {
-                const result = await generateText({
-                    model: await openai('gpt-5'),
-                    messages: [
-                        { role: 'user', content: 'What is the fastest way to make $1M?' }
-                    ]
-                });
-                setResult(result.text);
-            };  
+        return (
+            <>
+                <header>
+                    <EchoSignIn />
 
-            return (  
-                <EchoProvider appId={APP_ID}>
-                    <h1>Time to Ship</h1>
-                    <EchoSignIn /> 
-                    <div>
-                        {isLoading && <p>Loading...</p>}
-                        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-                        {isAuthenticated ? (
-                            <div>
-                                <p>Welcome, {user?.name}!</p>
-                                <p>Email: {user?.email}</p>
-                                <p>Balance: {balance?.credits} {balance?.currency}</p>
-                                <button onClick={handleGen}>Get Wisdom</button>
-                                {result && <p>AI Response: {result}</p>}
-                                <button onClick={signOut}>Sign Out</button>
-                            </div>
-                        ) : (
-                            <p>Sign in to continue.</p>
-                        )}
-                    </div>
-                </EchoProvider>
-            );
+                    {!isAuthenticated && "Sign in to continue"}
+                    {isAuthenticated && (
+                        <div>
+                            <p>Welcome, {user?.name}!</p>
+                            <p>Email: {user?.email}</p>
+                            <p>Balance: {balance?.balance}</p>
+                            <button onClick={signOut}>Sign Out</button>
+                        </div>
+                    )}
+                </header>
+                <main>
+                    // [!code --:1]
+                    <h1>AI Coming Soon</h1>
+                    // [!code ++:1]
+                    <AIComponent>
+                </main>
+            </>
+        );
         }
 
         export default App;
         ```
+
+        AI SDK's [`generateText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text) is used to generate a single response from the model.
+        `useEchoModelProviders()` routes the requests through Echo.
+
+        ```tsx title="src/AIComponent.tsx" lineNumbers
+        // [!code ++:100]
+        import { useState } from 'react';
+        import { generateText } from 'ai';
+        import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+
+        export default function AIComponent() { 
+            const [result, setResult] = useState("");
+            const { openai } = useEchoModelProviders();
+
+            const handleGen = async () => {
+                const { text } = await generateText({
+                    model: await openai('gpt-5-nano'),
+                    messages: [
+                        { role: 'user', content: 'Two sentences. What is the cleanest way to make $1M?' }
+                    ]
+                });
+                setResult(text);
+            };  
+
+
+            return (
+                <div>
+                    <button onClick={handleGen}>Generate Wisdom</button>
+                    <p>{result}</p>
+                </div>
+
+            );
+        }
+        ```
+    </Step>
+
+
+    <Step>
+        ### Switch to `streamText()`
+        The AI SDK [`streamText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) function is used to incrementally show the response from the model.
+        
+        ```tsx title="src/AIComponent.tsx" lineNumbers
+        import { useState } from 'react';
+        // [!code --:1]
+        import { generateText } from 'ai';
+        // [!code ++:1]
+        import { streamText } from 'ai';
+        import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+
+        export default function AIComponent() { 
+            const [result, setResult] = useState("");
+            const { openai } = useEchoModelProviders();
+
+            const handleGen = async () => {
+                // [!code ++:2]
+                setResult("Thinking...");
+                const { text } = await streamText({
+                // [!code --:1]
+                const { text } = await generateText({
+                    model: await openai('gpt-5-nano'),
+                    messages: [
+                        { role: 'user', content: 'Two sentences. What is the cleanest way to make $1M?' }
+                    ]
+                });
+
+                // [!code ++:3]
+                for await (const chunk of textStream) {
+                    setResult(prev => prev + chunk);
+                }
+            };  
+
+
+            return (
+                <div>
+                    <button onClick={handleGen}>Generate Wisdom</button>
+                    <p>{result}</p>
+                </div>
+
+            );
+        }
+        ```
+    </Step>
+
+    <Step>
+        ### Enjoy the fruits of your labor.
+        Run your project with the following command.
+        <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
+            <Tab value="npm">
+                ```sh lineNumbers
+                npm run dev
+                ```
+            </Tab>
+            <Tab value="yarn">
+                ```sh lineNumbers
+                yarn dev
+                ```
+            </Tab>
+            <Tab value="pnpm">
+                ```sh lineNumbers
+                pnpm dev
+                ```
+            </Tab>
+            <Tab value="bun">
+                ```sh lineNumbers
+                bun dev
+                ```
+            </Tab>
+        </Tabs>
+
+        Visit your apps' homepage at [`http://localhost:5173`](http://localhost:5173). Sign in and click "Generate Wisdom".
     </Step>
 
 
