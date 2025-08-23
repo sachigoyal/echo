@@ -28,11 +28,15 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
     const tokenProvider = new OAuthTokenProvider({
       getTokenFn: () => Promise.resolve(auth.user?.access_token || null),
       refreshTokenFn: async () => {
-        await auth.signinSilent();
+        const user = await auth.signinSilent();
+        if (!user) {
+          throw new Error('Silent renew did not yield a new access token');
+        }
       },
-      onRefreshErrorFn: (error: Error) => {
+      onRefreshErrorFn: async (error: Error) => {
         console.error('Token refresh failed:', error);
-        auth.signoutSilent();
+        await auth.removeUser();
+        await auth.clearStaleState();
       },
     });
 
