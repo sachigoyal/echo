@@ -9,9 +9,28 @@ The Echo TypeScript SDK provides a fully-typed interface for interacting with th
 
 ## Installation
 
-```bash
-npm install @merit-systems/echo-typescript-sdk
-```
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+</Tabs>
 
 ## Quick Start
 
@@ -22,161 +41,248 @@ const client = new EchoClient({
   apiKey: 'your-api-key'
 });
 
-// Use the client
-const apps = await client.apps.list();
+// Use the client resources
+const apps = await client.apps.listEchoApps();
+const balance = await client.balance.getBalance();
+const models = await client.models.getSupportedModels();
 ```
 
 ## Client Configuration
+
+```typescript
+import type { EchoClientOptions } from '@merit-systems/echo-typescript-sdk';
+```
+
+#### EchoClientOptions
 
 <AutoTypeTable 
   path="../echo-typescript-sdk/src/client.ts" 
   name="EchoClientOptions" 
 />
 
-## Core Types
+## API Resources
 
-### Echo App
+The EchoClient provides access to the following resources:
+
+### client.apps - App Management
+
+Manage your Echo applications.
+
+**Available Methods:**
+- `client.apps.listEchoApps(): Promise<EchoApp[]>` - List all Echo apps
+- `client.apps.getEchoApp(appId: string): Promise<EchoApp>` - Get specific app
+- `client.apps.getAppUrl(appId: string): string` - Get app URL
+
+**Related Types:**
+
+```typescript
+import type { EchoApp } from '@merit-systems/echo-typescript-sdk';
+```
+
+#### EchoApp
 
 <AutoTypeTable 
   path="../echo-typescript-sdk/src/types.ts" 
   name="EchoApp" 
 />
 
-### API Key
+### client.balance - Balance Management
 
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="ApiKey" 
-/>
+Check account balance and free tier usage.
 
-### User
+**Available Methods:**
+- `client.balance.getBalance(): Promise<Balance>` - Get account balance
+- `client.balance.getFreeBalance(echoAppId: string): Promise<FreeBalance>` - Get free tier balance
 
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="User" 
-/>
+**Related Types:**
 
-### LLM Transaction
+```typescript
+import type { Balance, FreeBalance, UserSpendInfo } from '@merit-systems/echo-typescript-sdk';
+```
 
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="LlmTransaction" 
-/>
-
-### Balance
+#### Balance
 
 <AutoTypeTable 
   path="../echo-typescript-sdk/src/types.ts" 
   name="Balance" 
 />
 
-## Request/Response Types
-
-### App Management
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateEchoAppRequest" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateEchoAppResponse" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="ListEchoAppsResponse" 
-/>
-
-### API Key Management
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateApiKeyRequest" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateApiKeyResponse" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="ListApiKeysResponse" 
-/>
-
-### Balance & Payments
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="GetBalanceResponse" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreatePaymentLinkRequest" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreatePaymentLinkResponse" 
-/>
-
-### LLM Transactions
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateLlmTransactionRequest" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateLlmTransactionResponse" 
-/>
-
-### Models & Capabilities
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="SupportedModel" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="SupportedModelsResponse" 
-/>
-
-### Authentication
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="ApiKeyValidationResult" 
-/>
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="EchoAccessJwtPayload" 
-/>
-
-### Free Tier & Referrals
+#### FreeBalance
 
 <AutoTypeTable 
   path="../echo-typescript-sdk/src/types.ts" 
   name="FreeBalance" 
 />
 
+#### UserSpendInfo
+
 <AutoTypeTable 
   path="../echo-typescript-sdk/src/types.ts" 
   name="UserSpendInfo" 
 />
+
+### client.payments - Payment Management
+
+Handle payment links and credit purchases.
+
+**Available Methods:**
+- `client.payments.createPaymentLink(request: CreatePaymentLinkRequest): Promise<CreatePaymentLinkResponse>` - Create payment link
+- `client.payments.getPaymentUrl(amount: number, description?: string, successUrl?: string): Promise<string>` - Get payment URL
+
+**Related Types:**
+
+```typescript
+import type { 
+  CreatePaymentLinkRequest, 
+  CreatePaymentLinkResponse 
+} from '@merit-systems/echo-typescript-sdk';
+```
+
+#### CreatePaymentLinkRequest
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="CreatePaymentLinkRequest" 
+/>
+
+#### CreatePaymentLinkResponse
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="CreatePaymentLinkResponse" 
+/>
+
+### client.models - Model Information
+
+Get information about supported LLM models.
+
+**Available Methods:**
+- `client.models.getSupportedModels(): Promise<SupportedModelsResponse>` - Get all supported models with metadata
+- `client.models.listSupportedModels(): Promise<SupportedModel[]>` - Get models as flat array
+- `client.models.getSupportedModelsByProvider(): Promise<Record<string, SupportedModel[]>>` - Get models grouped by provider
+
+**Related Types:**
+
+```typescript
+import type { 
+  SupportedModel, 
+  SupportedModelsResponse 
+} from '@merit-systems/echo-typescript-sdk';
+```
+
+#### SupportedModel
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="SupportedModel" 
+/>
+
+#### SupportedModelsResponse
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="SupportedModelsResponse" 
+/>
+
+### client.users - User Management
+
+Manage user information and referral codes.
+
+**Available Methods:**
+- `client.users.getUserInfo(): Promise<User>` - Get current user information
+- `client.users.registerReferralCode(echoAppId: string, code: string): Promise<RegisterReferralCodeResponse>` - Register referral code
+
+**Related Types:**
+
+```typescript
+import type { 
+  User, 
+  RegisterReferralCodeRequest, 
+  RegisterReferralCodeResponse 
+} from '@merit-systems/echo-typescript-sdk';
+```
+
+#### User
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="User" 
+/>
+
+#### RegisterReferralCodeRequest
 
 <AutoTypeTable 
   path="../echo-typescript-sdk/src/types.ts" 
   name="RegisterReferralCodeRequest" 
 />
 
+#### RegisterReferralCodeResponse
+
 <AutoTypeTable 
   path="../echo-typescript-sdk/src/types.ts" 
   name="RegisterReferralCodeResponse" 
+/>
+
+## Additional Types
+
+### Authentication & Validation
+
+```typescript
+import type { 
+  ApiKey,
+  ApiKeyValidationResult, 
+  EchoAccessJwtPayload 
+} from '@merit-systems/echo-typescript-sdk';
+```
+
+#### ApiKey
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="ApiKey" 
+/>
+
+#### ApiKeyValidationResult
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="ApiKeyValidationResult" 
+/>
+
+#### EchoAccessJwtPayload
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="EchoAccessJwtPayload" 
+/>
+
+### Transaction Types
+
+```typescript
+import type { 
+  LlmTransaction,
+  CreateLlmTransactionRequest, 
+  CreateLlmTransactionResponse 
+} from '@merit-systems/echo-typescript-sdk';
+```
+
+#### LlmTransaction
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="LlmTransaction" 
+/>
+
+#### CreateLlmTransactionRequest
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="CreateLlmTransactionRequest" 
+/>
+
+#### CreateLlmTransactionResponse
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/types.ts" 
+  name="CreateLlmTransactionResponse" 
 />

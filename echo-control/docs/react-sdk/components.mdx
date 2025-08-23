@@ -1,0 +1,365 @@
+---
+title: Components
+description: Pre-built UI components for authentication and payments
+---
+
+# Components
+
+## EchoSignIn
+
+Drop-in component for user authentication with customizable styling and callbacks.
+
+```tsx
+import { EchoSignIn } from '@merit-systems/echo-react-sdk';
+
+// Default styled button
+<EchoSignIn 
+  onSuccess={(user) => console.log('Signed in:', user)}
+  onError={(error) => console.error('Sign in failed:', error)}
+/>
+
+// Custom children (renders as clickable wrapper)
+<EchoSignIn onSuccess={handleSuccess}>
+  <button className="my-custom-button">
+    Sign in with Echo
+  </button>
+</EchoSignIn>
+```
+
+### Props
+
+```typescript
+import type { EchoSignInProps } from '@merit-systems/echo-react-sdk';
+```
+
+#### EchoSignInProps
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/types/index.ts" 
+  name="EchoSignInProps" 
+/>
+
+### Usage Patterns
+
+#### Default Button
+
+```tsx
+function LoginPage() {
+  return (
+    <div>
+      <h1>Welcome to MyApp</h1>
+      <EchoSignIn 
+        onSuccess={(user) => {
+          console.log('Welcome', user.name);
+          // Redirect to dashboard
+        }}
+        onError={(error) => {
+          console.error('Login failed:', error);
+          // Show error message
+        }}
+      />
+    </div>
+  );
+}
+```
+
+#### Custom Button
+
+```tsx
+function CustomSignIn() {
+  return (
+    <EchoSignIn onSuccess={handleSignIn}>
+      <button className="btn btn-primary">
+        <Icon name="echo" />
+        Continue with Echo
+      </button>
+    </EchoSignIn>
+  );
+}
+```
+
+#### With Loading State
+
+```tsx
+function SignInWithLoading() {
+  const { isLoading } = useEcho();
+  
+  return (
+    <EchoSignIn>
+      <button disabled={isLoading}>
+        {isLoading ? 'Signing in...' : 'Sign In'}
+      </button>
+    </EchoSignIn>
+  );
+}
+```
+
+#### Conditional Rendering
+
+```tsx
+function AuthButton() {
+  const { isAuthenticated, user, signOut } = useEcho();
+  
+  if (isAuthenticated) {
+    return (
+      <div>
+        <span>Welcome {user?.name}</span>
+        <button onClick={signOut}>Sign Out</button>
+      </div>
+    );
+  }
+  
+  return <EchoSignIn />;
+}
+```
+
+## EchoTokenPurchase
+
+Pre-built component for purchasing additional credits/tokens.
+
+```tsx
+import { EchoTokenPurchase } from '@merit-systems/echo-react-sdk';
+
+<EchoTokenPurchase 
+  amount={10} // $10 worth of credits
+  onPurchaseComplete={(balance) => console.log('New balance:', balance)}
+  onError={(error) => console.error('Purchase failed:', error)}
+/>
+```
+
+### Props
+
+```typescript
+import type { EchoTokenPurchaseProps } from '@merit-systems/echo-react-sdk';
+```
+
+#### EchoTokenPurchaseProps
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/types/index.ts" 
+  name="EchoTokenPurchaseProps" 
+/>
+
+### Usage Patterns
+
+#### Default Purchase
+
+```tsx
+function BuyCredits() {
+  return (
+    <EchoTokenPurchase 
+      amount={25}
+      onPurchaseComplete={(balance) => {
+        alert(`Purchase successful! New balance: $${balance.balance}`);
+      }}
+    />
+  );
+}
+```
+
+#### Custom Amount Selection
+
+```tsx
+function FlexiblePurchase() {
+  const [amount, setAmount] = useState(10);
+  
+  return (
+    <div>
+      <select value={amount} onChange={(e) => setAmount(Number(e.target.value))}>
+        <option value={5}>$5</option>
+        <option value={10}>$10</option>
+        <option value={25}>$25</option>
+        <option value={50}>$50</option>
+      </select>
+      
+      <EchoTokenPurchase 
+        amount={amount}
+        onPurchaseComplete={(balance) => {
+          console.log('Purchase complete:', balance);
+        }}
+      />
+    </div>
+  );
+}
+```
+
+#### Balance-Aware Purchase
+
+```tsx
+function SmartPurchase() {
+  const { balance } = useEcho();
+  
+  if (!balance || balance.balance > 5) {
+    return <div>Balance sufficient</div>;
+  }
+  
+  return (
+    <div>
+      <p>Low balance: ${balance.balance}</p>
+      <EchoTokenPurchase 
+        amount={20}
+        onPurchaseComplete={() => {
+          // Refresh balance automatically handled
+          console.log('Credits added!');
+        }}
+      />
+    </div>
+  );
+}
+```
+
+#### Custom Children
+
+```tsx
+function CustomPurchaseButton() {
+  return (
+    <EchoTokenPurchase amount={15}>
+      <button className="premium-btn">
+        Add $15 Credits
+      </button>
+    </EchoTokenPurchase>
+  );
+}
+```
+
+## Logo
+
+Echo logo component with customizable variants.
+
+```tsx
+import { Logo } from '@merit-systems/echo-react-sdk';
+
+<Logo 
+  width={24} 
+  height={24} 
+  variant="light" // or "dark"
+/>
+```
+
+### Usage Patterns
+
+#### Navigation
+
+```tsx
+function Navigation() {
+  return (
+    <nav>
+      <div className="logo">
+        <Logo width={32} height={32} variant="light" />
+        <span>MyApp</span>
+      </div>
+      {/* Other nav items */}
+    </nav>
+  );
+}
+```
+
+#### Responsive Logo
+
+```tsx
+function ResponsiveLogo() {
+  return (
+    <div>
+      {/* Desktop */}
+      <Logo width={40} height={40} variant="light" className="hidden md:block" />
+      {/* Mobile */}
+      <Logo width={24} height={24} variant="light" className="md:hidden" />
+    </div>
+  );
+}
+```
+
+#### Theme-Aware Logo
+
+```tsx
+function ThemedLogo() {
+  const { theme } = useTheme(); // Your theme context
+  
+  return (
+    <Logo 
+      width={28} 
+      height={28} 
+      variant={theme === 'dark' ? 'dark' : 'light'} 
+    />
+  );
+}
+```
+
+## Component Composition
+
+### Complete Auth Flow
+
+```tsx
+function AuthFlow() {
+  const { isAuthenticated, user, balance } = useEcho();
+  
+  if (!isAuthenticated) {
+    return (
+      <div className="auth-container">
+        <Logo width={48} height={48} variant="light" />
+        <h1>Welcome to MyApp</h1>
+        <EchoSignIn 
+          onSuccess={() => {
+            console.log('User signed in');
+          }}
+        />
+      </div>
+    );
+  }
+  
+  return (
+    <div className="dashboard">
+      <header>
+        <Logo width={32} height={32} variant="light" />
+        <span>Welcome {user?.name}</span>
+      </header>
+      
+      <div className="balance">
+        <p>Balance: ${balance?.balance || 0}</p>
+        {balance && balance.balance < 5 && (
+          <EchoTokenPurchase 
+            amount={20}
+            onPurchaseComplete={() => {
+              console.log('Credits added');
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+### Integrated Chat App
+
+```tsx
+function ChatApp() {
+  const { isAuthenticated } = useEcho();
+  const { openai, isReady } = useEchoOpenAI();
+  
+  if (!isAuthenticated) {
+    return (
+      <div className="login-screen">
+        <Logo width={64} height={64} variant="light" />
+        <h1>AI Chat</h1>
+        <EchoSignIn>
+          <button className="sign-in-btn">
+            Start Chatting
+          </button>
+        </EchoSignIn>
+      </div>
+    );
+  }
+  
+  if (!isReady) {
+    return (
+      <div className="loading">
+        <Logo width={32} height={32} variant="light" />
+        <p>Initializing AI...</p>
+      </div>
+    );
+  }
+  
+  return <ChatInterface openai={openai} />;
+}
+```

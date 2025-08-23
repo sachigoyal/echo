@@ -1,0 +1,66 @@
+---
+title: Hooks
+description: Additional hooks for Echo platform integration
+---
+
+# Hooks
+
+## useEchoClient
+
+Provides access to the Echo TypeScript SDK client for platform operations.
+
+```tsx
+import { useEchoClient } from '@merit-systems/echo-react-sdk';
+
+const echoClient = useEchoClient({ 
+  apiUrl: 'https://echo.merit.systems' 
+});
+
+// Access all TypeScript SDK functionality
+const apps = await echoClient.apps.listEchoApps();
+const balance = await echoClient.balance.getBalance();
+```
+
+**What it provides:**
+- Full [Echo TypeScript SDK](/docs/typescript-sdk) client instance
+- Automatic authentication using current user's token
+- All platform operations: apps, balance, payments, models, users
+
+**Common operations:**
+- `echoClient.apps.*` - [App management](/docs/typescript-sdk#clientapps---app-management)
+- `echoClient.balance.*` - [Balance operations](/docs/typescript-sdk#clientbalance---balance-management)  
+- `echoClient.payments.*` - [Payment links](/docs/typescript-sdk#clientpayments---payment-management)
+- `echoClient.models.*` - [Model information](/docs/typescript-sdk#clientmodels---model-information)
+- `echoClient.users.*` - [User operations](/docs/typescript-sdk#clientusers---user-management)
+
+## Balance Hooks (via useEcho)
+
+The `useEcho` hook provides balance management functionality:
+
+```tsx
+const { balance, freeTierBalance, refreshBalance, createPaymentLink } = useEcho();
+```
+
+**balance** - Current account balance
+```tsx
+<p>Balance: ${balance?.balance || 0}</p>
+<p>Total Spent: ${balance?.totalSpent || 0}</p>
+```
+
+**freeTierBalance** - Free tier usage information
+```tsx
+<p>Free Credits Remaining: ${freeTierBalance?.userSpendInfo.amountLeft || 0}</p>
+```
+
+**refreshBalance()** - Manually refresh balance data
+```tsx
+<button onClick={refreshBalance}>Refresh Balance</button>
+```
+
+**createPaymentLink()** - Create Stripe payment links
+```tsx
+const paymentUrl = await createPaymentLink(25, 'Credits', '/success');
+window.location.href = paymentUrl;
+```
+
+See [Authentication](/docs/react-sdk/authentication) for complete `useEcho` hook details.
