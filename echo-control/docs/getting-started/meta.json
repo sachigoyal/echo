@@ -1,8 +1,4 @@
 {
   "title": "Getting Started",
-  "pages": [
-    "react",
-    "next-js",
-    "cli"
-  ]
+  "pages": ["react", "next-js", "cli"]
 }
