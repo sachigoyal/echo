@@ -11,7 +11,7 @@ Most AI SDKs require API keys which must be secured in a server-side environment
 `echo-react-sdk` handles the Oauth and billing complexity, allowing your React client to make direct secure calls to AI resources.
 
 ```tsx
-import { EchoProvider, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
 import { generateText } from 'ai';
 
 function ChatComponent() {
@@ -83,7 +83,6 @@ function App() {
   return (
     <EchoProvider config={{ 
       appId: 'your-echo-app-id',
-      apiUrl: 'https://echo.merit.systems' 
     }}>
       <ChatApp />
     </EchoProvider>
