@@ -1,110 +1,123 @@
 ---
-title: Typescript CLI
-description: Use Echo to make monetized AI CLI apps.
+title: TypeScript CLI
+description: Build AI CLI apps with Echo's billing infrastructure
 ---
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
+# TypeScript CLI with Echo
 
-# Getting Started with Echo CLI
+Create CLI tools that generate revenue from AI usage. Echo handles user authentication, billing, and AI provider access through a simple API key flow.
 
 <Steps>
 
     <Step>
-        ### Install the Echo TypeScript SDK
+        ### Install SDKs
 
         <Tabs items={['npm', 'yarn', 'pnpm', 'bun']}>
             <Tab value="npm">
                 ```sh
-                npm i @merit-systems/echo-typescript-sdk
+                npm i @merit-systems/echo-typescript-sdk ai enquirer open
                 ```
             </Tab>
             <Tab value="yarn">
                 ```sh
-                yarn add @merit-systems/echo-typescript-sdk
+                yarn add @merit-systems/echo-typescript-sdk ai enquirer open
                 ```
             </Tab>
             <Tab value="pnpm">
                 ```sh
-                pnpm add @merit-systems/echo-typescript-sdk
+                pnpm add @merit-systems/echo-typescript-sdk ai enquirer open
                 ```
             </Tab>
             <Tab value="bun">
                 ```sh
-                bun add @merit-systems/echo-typescript-sdk
+                bun add @merit-systems/echo-typescript-sdk ai enquirer open
                 ```
             </Tab>
         </Tabs>
     </Step>
 
     <Step>
-        ### Create an Echo App
-        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get an `app_id`.
+        ### Create Echo App
+        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get your `app_id`.
     </Step>
 
     <Step>
-        ### Redirect user to create API key
-        ```typescript
-        const APP_ID = "your-app-id";
+        ### Set up authentication
+        ```typescript title="cli.ts"
+        import { EchoClient, createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
+        import { generateText } from 'ai';
+        import { prompt } from 'enquirer';
+        import { open } from 'open';
 
-        console.log("Redirecting to Echo for API Key.");
-        open(`https://echo.merit.systems/cli-auth/${APP_ID}`);
-        const apiKey = prompt("Enter your API key: ");
+        const APP_ID = 'your-echo-app-id';
+
+        // Get API key from user
+        console.log('Opening Echo to create your API key...');
+        await open(`https://echo.merit.systems/cli-auth/${APP_ID}`);
+        
+        const { apiKey } = await prompt({
+          type: 'input',
+          name: 'apiKey',
+          message: 'Enter your API key:'
+        });
         ```
     </Step>
 
     <Step>
-        ### Save API Key
-        ```typescript
-        // TODO: Save to .env (or util for this and prior step?)
+        ### Create AI provider
+        ```typescript title="cli.ts"
+        // Create Echo client for balance/payments
+        const echo = new EchoClient({ apiKey });
+
+        // Create OpenAI provider with Echo billing
+        const openai = createEchoOpenAI(
+          { appId: APP_ID },
+          async () => apiKey
+        );
         ```
     </Step>
 
     <Step>
-        ### Make your first LLM call
-        ```typescript
-        import { OpenAI } from 'openai';
-
-        const openai = new OpenAI({
-            apiKey: api_key,
-            baseURL: `https://echo.router.merit.systems/{APP_ID}`,
-        });
-        const response = await openai.chat.completions.create({
-            model: model,
-            messages: [{ role: 'user', content: message }],
+        ### Make AI calls
+        ```typescript title="cli.ts"
+        // Generate text with automatic billing
+        const { text } = await generateText({
+          model: openai('gpt-4'),
+          prompt: 'Explain quantum computing in simple terms',
         });
 
-        console.log(response.choices[0]?.message?.content);
+        console.log(text);
         ```
     </Step>
 
     <Step>
-        ### Check Balance
-        ```typescript
-        import { EchoClient } from '@merit-systems/echo-typescript-sdk';
-        import type {
-            CreatePaymentLinkResponse,
-            Balance,
-        } from '@merit-systems/echo-typescript-sdk';
+        ### Add balance checking
+        ```typescript title="cli.ts"
+        // Check user's balance
+        const balance = await echo.balance.getBalance();
+        console.log(`Balance: $${balance.balance}`);
 
-        const client = new EchoClient({
-            apiKey: process.env.ECHO_API_KEY ?? '',
-        });
-
-        const balance = await client.getBalance();
-
-        if (balance < 0.1) {
-            const { paymentLink } = await client.createPaymentLink({
-                amount: 10.0,
-                description: "Echo credits for my app" // TODO(sragss): Prolly rm
-            });
-            open(paymentLink.url);
+        // Create top-up link if needed
+        if (balance.balance < 1) {
+          const payment = await echo.payments.createPaymentLink({
+            amount: 10,
+            description: 'CLI Credits'
+          });
+          
+          console.log('Low balance. Opening payment link...');
+          await open(payment.url);
         }
         ```
     </Step>
 
     <Step>
-        ### Prosper.
+        ### Run your CLI
+        ```sh
+        npx tsx cli.ts
+        ```
     </Step>
+
 </Steps>
 
 ## Next Steps
