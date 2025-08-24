@@ -17,19 +17,18 @@ Get AI SDK-compatible providers for OpenAI, Anthropic, and Google models for use
 
 ```tsx title="AIComponent.tsx" lineNumbers
 import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
-import { generateText } from 'ai';
+import { generateText, streamText } from 'ai';
 
 function AIComponent() {
   const { openai, anthropic, google } = useEchoModelProviders();
   
   const handleGenerate = async () => {
-    // Use any provider with the AI SDK
     const { text } = await generateText({
       model: await openai('gpt-5'),
       prompt: 'Write a haiku about coding'
     });
     
-    console.log(text);
+    setResult(text);
   };
 
   const handleStream = async () => {
@@ -38,20 +37,16 @@ function AIComponent() {
       prompt: 'Write a story about space exploration'
     });
     
-    setResult(''); // Clear previous result
-    
-    // Stream tokens as they arrive
-    for await (const delta of textStream) {
-      setResult(prev => prev + delta);
-    }
+    setResult('');
+    for await (const delta of textStream) setResult(prev => prev + delta);
   };
   
   return (
-    <div>
+    <>
       <button onClick={handleGenerate}>Generate Text</button>
       <button onClick={handleStream}>Stream Text</button>
       <div style={{ whiteSpace: 'pre-wrap' }}>{result}</div>
-    </div>
+    </>
   );
 }
 ```
