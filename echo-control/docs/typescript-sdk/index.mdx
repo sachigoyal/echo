@@ -1,11 +1,18 @@
 ---
-title: TypeScript SDK
-description: Comprehensive TypeScript SDK for Echo platform integration
+title: Overview
+description: Foundation SDK for direct Echo platform access and AI provider integration
 ---
 
 # TypeScript SDK
 
-The Echo TypeScript SDK provides a fully-typed interface for interacting with the Echo platform. It includes client initialization, authentication, and all core resources.
+The Echo TypeScript SDK is the foundational SDK that provides direct API access to the Echo platform. It serves as the base for the React and Next.js SDKs, offering maximum flexibility for server-side applications, CLI tools, and custom integrations.
+
+## Use Cases
+
+- **Server-side applications** - API routes, backends, microservices
+- **CLI tools** - Command-line applications with AI billing
+- **Custom integrations** - When you need direct platform control
+- **Foundation for other SDKs** - React and Next.js SDKs are built on this
 
 ## Installation
 
@@ -34,255 +41,53 @@ The Echo TypeScript SDK provides a fully-typed interface for interacting with th
 
 ## Quick Start
 
+### Platform Operations
+
 ```typescript
 import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 
-const client = new EchoClient({
+const echo = new EchoClient({
   apiKey: 'your-api-key'
 });
 
-// Use the client resources
-const apps = await client.apps.listEchoApps();
-const balance = await client.balance.getBalance();
-const models = await client.models.getSupportedModels();
+// Check balance and create payment links
+const balance = await echo.balance.getBalance();
+const paymentLink = await echo.payments.createPaymentLink({
+  amount: 10,
+  description: 'Credits'
+});
 ```
 
-## Client Configuration
+### AI Integration
 
 ```typescript
-import type { EchoClientOptions } from '@merit-systems/echo-typescript-sdk';
+import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
+import { generateText } from 'ai';
+
+// Create AI provider with Echo billing
+const openai = createEchoOpenAI(
+  { appId: 'your-echo-app-id' },
+  async () => 'your-api-key'
+);
+
+// Generate text with automatic billing
+const { text } = await generateText({
+  model: openai('gpt-4'),
+  prompt: 'Hello world'
+});
 ```
 
-#### EchoClientOptions
+## Documentation Sections
 
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/client.ts" 
-  name="EchoClientOptions" 
-/>
+- **[Client](/docs/typescript-sdk/client)** - EchoClient setup, configuration, and environment management
+- **[Authentication](/docs/typescript-sdk/authentication)** - API keys, token providers, and OAuth integration patterns
+- **[Resources](/docs/typescript-sdk/resources)** - Platform operations: apps, balance, payments, users, models
 
-## API Resources
+## Architecture
 
-The EchoClient provides access to the following resources:
+The TypeScript SDK consists of two main components:
 
-### client.apps - App Management
+1. **Platform Client** - `EchoClient` for account, billing, and app management
+2. **AI Providers** - Factory functions that create Vercel AI SDK compatible providers with Echo billing
 
-Manage your Echo applications.
-
-**Available Methods:**
-- `client.apps.listEchoApps(): Promise<EchoApp[]>` - List all Echo apps
-- `client.apps.getEchoApp(appId: string): Promise<EchoApp>` - Get specific app
-- `client.apps.getAppUrl(appId: string): string` - Get app URL
-
-**Related Types:**
-
-```typescript
-import type { EchoApp } from '@merit-systems/echo-typescript-sdk';
-```
-
-#### EchoApp
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="EchoApp" 
-/>
-
-### client.balance - Balance Management
-
-Check account balance and free tier usage.
-
-**Available Methods:**
-- `client.balance.getBalance(): Promise<Balance>` - Get account balance
-- `client.balance.getFreeBalance(echoAppId: string): Promise<FreeBalance>` - Get free tier balance
-
-**Related Types:**
-
-```typescript
-import type { Balance, FreeBalance, UserSpendInfo } from '@merit-systems/echo-typescript-sdk';
-```
-
-#### Balance
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="Balance" 
-/>
-
-#### FreeBalance
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="FreeBalance" 
-/>
-
-#### UserSpendInfo
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="UserSpendInfo" 
-/>
-
-### client.payments - Payment Management
-
-Handle payment links and credit purchases.
-
-**Available Methods:**
-- `client.payments.createPaymentLink(request: CreatePaymentLinkRequest): Promise<CreatePaymentLinkResponse>` - Create payment link
-- `client.payments.getPaymentUrl(amount: number, description?: string, successUrl?: string): Promise<string>` - Get payment URL
-
-**Related Types:**
-
-```typescript
-import type { 
-  CreatePaymentLinkRequest, 
-  CreatePaymentLinkResponse 
-} from '@merit-systems/echo-typescript-sdk';
-```
-
-#### CreatePaymentLinkRequest
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreatePaymentLinkRequest" 
-/>
-
-#### CreatePaymentLinkResponse
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreatePaymentLinkResponse" 
-/>
-
-### client.models - Model Information
-
-Get information about supported LLM models.
-
-**Available Methods:**
-- `client.models.getSupportedModels(): Promise<SupportedModelsResponse>` - Get all supported models with metadata
-- `client.models.listSupportedModels(): Promise<SupportedModel[]>` - Get models as flat array
-- `client.models.getSupportedModelsByProvider(): Promise<Record<string, SupportedModel[]>>` - Get models grouped by provider
-
-**Related Types:**
-
-```typescript
-import type { 
-  SupportedModel, 
-  SupportedModelsResponse 
-} from '@merit-systems/echo-typescript-sdk';
-```
-
-#### SupportedModel
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="SupportedModel" 
-/>
-
-#### SupportedModelsResponse
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="SupportedModelsResponse" 
-/>
-
-### client.users - User Management
-
-Manage user information and referral codes.
-
-**Available Methods:**
-- `client.users.getUserInfo(): Promise<User>` - Get current user information
-- `client.users.registerReferralCode(echoAppId: string, code: string): Promise<RegisterReferralCodeResponse>` - Register referral code
-
-**Related Types:**
-
-```typescript
-import type { 
-  User, 
-  RegisterReferralCodeRequest, 
-  RegisterReferralCodeResponse 
-} from '@merit-systems/echo-typescript-sdk';
-```
-
-#### User
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="User" 
-/>
-
-#### RegisterReferralCodeRequest
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="RegisterReferralCodeRequest" 
-/>
-
-#### RegisterReferralCodeResponse
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="RegisterReferralCodeResponse" 
-/>
-
-## Additional Types
-
-### Authentication & Validation
-
-```typescript
-import type { 
-  ApiKey,
-  ApiKeyValidationResult, 
-  EchoAccessJwtPayload 
-} from '@merit-systems/echo-typescript-sdk';
-```
-
-#### ApiKey
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="ApiKey" 
-/>
-
-#### ApiKeyValidationResult
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="ApiKeyValidationResult" 
-/>
-
-#### EchoAccessJwtPayload
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="EchoAccessJwtPayload" 
-/>
-
-### Transaction Types
-
-```typescript
-import type { 
-  LlmTransaction,
-  CreateLlmTransactionRequest, 
-  CreateLlmTransactionResponse 
-} from '@merit-systems/echo-typescript-sdk';
-```
-
-#### LlmTransaction
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="LlmTransaction" 
-/>
-
-#### CreateLlmTransactionRequest
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateLlmTransactionRequest" 
-/>
-
-#### CreateLlmTransactionResponse
-
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/types.ts" 
-  name="CreateLlmTransactionResponse" 
-/>
+This separation allows you to use platform operations independently or combine them with AI functionality as needed.
