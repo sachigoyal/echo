@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Section } from '../lib/section';
 import Link from 'next/link';
+import type { Route } from 'next';
 
 const dashedBorder = 'border-dashed border-border';
 
@@ -39,9 +40,11 @@ export const Hero = () => {
               Create an App
             </Button>
           </Link>
-          <Button size="lg" variant="outline">
-            Learn More
-          </Button>
+          <Link href={'/docs' as Route}>
+            <Button size="lg" variant="outline">
+              Learn More
+            </Button>
+          </Link>
         </div>
         <div className="mt-8 flex justify-center w-full">
           <HeroGraphic />
