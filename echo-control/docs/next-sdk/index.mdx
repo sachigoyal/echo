@@ -1,0 +1,179 @@
+---
+title: Overview
+description: Server-first OAuth2 + PKCE authentication with seamless Vercel AI SDK integration
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Next.js SDK
+
+## The Killer Feature
+
+The Echo Next.js SDK provides server-side OAuth2 + PKCE authentication with automatic token management. Built for Next.js 15+ App Router, it enables secure LLM calls from server components, API routes, and server actions without exposing API keys.
+
+```typescript
+// Server component - no API keys needed
+import Echo from '@merit-systems/echo-next-sdk';
+import { streamText } from 'ai';
+
+const { isSignedIn, openai } = Echo({ appId: 'your-echo-app-id' });
+
+export default async function ChatPage() {
+  if (!(await isSignedIn())) return <SignIn />;
+  
+  // Direct LLM calls from server with automatic token management
+  const result = streamText({
+    model: await openai('gpt-4'),
+    messages: [{ role: 'user', content: 'Hello!' }]
+  });
+  
+  return <StreamableUI result={result} />;
+}
+```
+
+## Architecture
+
+Server-first design with secure cookie-based token management:
+
+1. **OAuth2 + PKCE Flow**: Complete RFC-compliant authentication with code verifier protection
+2. **Secure Cookie Storage**: HTTP-only cookies with automatic refresh handling
+3. **Async Provider Pattern**: All LLM providers return Promises for token management
+4. **App Router Native**: Built for Next.js 15+ server components and server actions
+
+This architecture provides:
+- **No token exposure** - All authentication server-side with secure cookies
+- **Automatic token refresh** - Transparent token management in providers
+- **Server-side rendering** - Authentication state available in RSC
+- **Vercel AI SDK integration** - Native compatibility with `ai` package patterns
+
+
+## Core API
+
+### Configuration
+
+<AutoTypeTable 
+  path="../echo-next-sdk/src/types.ts" 
+  name="EchoConfig" 
+/>
+
+### Main Export
+
+The `Echo()` function returns all functionality:
+
+<AutoTypeTable 
+  path="../echo-next-sdk/src/types.ts" 
+  name="EchoResult" 
+/>
+
+### Authentication State
+
+Server-side authentication checking:
+
+```typescript
+isSignedIn(): Promise<boolean>     // Check if user authenticated
+getUser(): Promise<User | null>    // Get current user info
+```
+
+### HTTP Handlers
+
+OAuth2 route handlers for App Router:
+
+```typescript
+handlers: {
+  GET: (req: NextRequest) => Promise<Response>
+  POST: (req: NextRequest) => Promise<Response>
+}
+```
+
+Handles three OAuth routes:
+- `/signin` - Initiates OAuth2 + PKCE flow
+- `/callback` - Processes authorization code exchange
+- `/refresh` - Refreshes expired access tokens
+
+### LLM Providers
+
+Async providers with automatic token management:
+
+```typescript
+openai: EchoOpenAIProvider        // OpenAI integration
+anthropic: EchoAnthropicProvider  // Anthropic integration
+```
+
+All provider methods return Promises:
+
+```typescript
+// Vercel AI SDK integration
+const model = await openai('gpt-4');
+const result = streamText({ model, messages });
+
+// Direct API calls
+const provider = await openai();
+const response = await provider.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }]
+});
+```
+
+## Integration Patterns
+
+### Server Components
+
+Authentication and LLM calls in RSC:
+
+```typescript
+export default async function DashboardPage() {
+  const [authenticated, user] = await Promise.all([
+    isSignedIn(),
+    getUser()
+  ]);
+  
+  if (!authenticated) redirect('/login');
+  
+  return <Dashboard user={user} />;
+}
+```
+
+### Server Actions
+
+Form handling with LLM processing:
+
+```typescript
+import { openai } from '@/echo';
+import { generateText } from 'ai';
+
+export async function processForm(formData: FormData) {
+  const prompt = formData.get('prompt') as string;
+  
+  const { text } = await generateText({
+    model: await openai('gpt-4'),
+    prompt
+  });
+  
+  return { result: text };
+}
+```
+
+### API Routes
+
+Streaming responses with authentication:
+
+```typescript
+export async function POST(req: Request) {
+  // Authentication automatically handled by provider
+  const result = streamText({
+    model: await openai('gpt-4o'),
+    messages: await req.json()
+  });
+  
+  return result.toUIMessageStreamResponse();
+}
+```
+
+## Documentation Sections
+
+- **[Setup & Configuration](/docs/next-sdk/setup)** - Installation, configuration, and environment setup
+- **[Authentication](/docs/next-sdk/authentication)** - OAuth2 + PKCE flow and token management
+- **[LLM Integration](/docs/next-sdk/llm-integration)** - Provider usage with Vercel AI SDK
+- **[Server Patterns](/docs/next-sdk/server-patterns)** - App Router integration and server components
+- **[Advanced Usage](/docs/next-sdk/advanced)** - Custom configuration and troubleshooting

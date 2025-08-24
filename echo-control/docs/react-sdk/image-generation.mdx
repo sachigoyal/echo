@@ -1,0 +1,51 @@
+---
+title: Image Generation
+description: Generate images using DALL-E with Echo's React SDK
+---
+
+# Image Generation
+
+Generate images directly in the browser using Echo's model providers with the [Vercel AI SDK `generateImage`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-image).
+
+```tsx {11,16}
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { experimental_generateImage as generateImage } from 'ai';
+
+function ImageGenerator() {
+  const { openai } = useEchoModelProviders();
+  const [imageUrl, setImageUrl] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    
+    const result = await generateImage({
+      model: await openai.image('dall-e-3'),
+      prompt: 'A futuristic cityscape at sunset',
+      size: '1024x1024',
+    });
+
+    if (result.image) {
+      setImageUrl(`data:image/png;base64,${result.image.base64}`);
+    }
+    
+    setIsGenerating(false);
+  };
+
+  return (
+    <div>
+      <button onClick={handleGenerate} disabled={isGenerating}>
+        {isGenerating ? 'Generating...' : 'Generate Image'}
+      </button>
+      
+      {imageUrl && (
+        <img src={imageUrl} alt="Generated image" className="mt-4 rounded-lg" />
+      )}
+    </div>
+  );
+}
+```
+
+<Callout type="warn">
+Image generation uses the `experimental_generateImage` function which may change in future Vercel AI SDK versions.
+</Callout>
