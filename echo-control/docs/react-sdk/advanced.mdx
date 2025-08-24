@@ -1,0 +1,466 @@
+---
+title: Advanced
+description: Error handling, token management, and customization patterns
+---
+
+# Advanced Usage
+
+## Error Handling
+
+### API Error Handling
+
+Handle different types of errors from LLM providers:
+
+```tsx {8-16}
+import { generateText } from 'ai';
+
+function RobustAI() {
+  const { openai } = useEchoModelProviders();
+  
+  const handleGenerate = async () => {
+    try {
+      const { text } = await generateText({
+        model: await openai('gpt-5'),
+        prompt: 'Hello world'
+      });
+      
+      return text;
+    } catch (error) {
+      if (error.message.includes('401')) {
+        console.error('Authentication failed - token expired?');
+        // Trigger re-authentication
+      } else if (error.message.includes('402')) {
+        console.error('Insufficient balance');
+        // Show purchase component
+      } else if (error.message.includes('429')) {
+        console.error('Rate limited');
+        // Implement retry logic
+      } else if (error.message.includes('502') || error.message.includes('503')) {
+        console.error('Provider temporarily unavailable');
+        // Try different provider or retry
+      } else {
+        console.error('Unexpected error:', error);
+      }
+    }
+  };
+  
+  return <button onClick={handleGenerate}>Generate</button>;
+}
+```
+
+### Global Error Boundary
+
+Catch authentication and provider errors globally:
+
+```tsx
+import { ErrorBoundary } from 'react-error-boundary';
+
+function EchoErrorFallback({ error, resetErrorBoundary }) {
+  if (error.message.includes('401')) {
+    return (
+      <div className="error-container">
+        <h2>Authentication Required</h2>
+        <p>Please sign in to continue</p>
+        <EchoSignIn onSuccess={resetErrorBoundary} />
+      </div>
+    );
+  }
+  
+  if (error.message.includes('402')) {
+    return (
+      <div className="error-container">
+        <h2>Insufficient Credits</h2>
+        <p>Add credits to continue using AI features</p>
+        <EchoTokenPurchase 
+          amount={20} 
+          onPurchaseComplete={resetErrorBoundary} 
+        />
+      </div>
+    );
+  }
+  
+  return (
+    <div className="error-container">
+      <h2>Something went wrong</h2>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ErrorBoundary FallbackComponent={EchoErrorFallback}>
+      <EchoProvider config={{ appId: 'your-app-id' }}>
+        <YourApp />
+      </EchoProvider>
+    </ErrorBoundary>
+  );
+}
+```
+
+## Token Management
+
+### Manual Token Refresh
+
+```tsx
+function TokenManager() {
+  const { token, getToken, isAuthenticated } = useEcho();
+  const [tokenInfo, setTokenInfo] = useState(null);
+  
+  const analyzeToken = async () => {
+    if (!token) return;
+    
+    try {
+      // Decode JWT payload (client-side only for debugging)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setTokenInfo({
+        expires: new Date(payload.exp * 1000),
+        scopes: payload.scope?.split(' ') || [],
+        userId: payload.sub
+      });
+    } catch (error) {
+      console.error('Invalid token format');
+    }
+  };
+  
+  const forceRefresh = async () => {
+    const newToken = await getToken(true); // Force refresh
+    console.log('Token refreshed:', !!newToken);
+  };
+  
+  return (
+    <div>
+      <p>Authenticated: {isAuthenticated ? 'Yes' : 'No'}</p>
+      <p>Token present: {token ? 'Yes' : 'No'}</p>
+      
+      {tokenInfo && (
+        <div>
+          <p>Expires: {tokenInfo.expires.toLocaleString()}</p>
+          <p>Scopes: {tokenInfo.scopes.join(', ')}</p>
+        </div>
+      )}
+      
+      <button onClick={analyzeToken}>Analyze Token</button>
+      <button onClick={forceRefresh}>Force Refresh</button>
+    </div>
+  );
+}
+```
+
+### Custom Token Storage
+
+```tsx
+import { EchoProvider } from '@merit-systems/echo-react-sdk';
+
+// Custom storage adapter
+const customTokenStorage = {
+  getItem: (key: string) => {
+    // Your custom storage logic
+    return sessionStorage.getItem(key);
+  },
+  setItem: (key: string, value: string) => {
+    sessionStorage.setItem(key, value);
+  },
+  removeItem: (key: string) => {
+    sessionStorage.removeItem(key);
+  }
+};
+
+function App() {
+  return (
+    <EchoProvider 
+      config={{
+        appId: 'your-app-id',
+        storage: customTokenStorage // Custom storage
+      }}
+    >
+      <YourApp />
+    </EchoProvider>
+  );
+}
+```
+
+## Custom Provider Configuration
+
+### Multiple Echo Apps
+
+```tsx
+function MultiAppProvider({ children }) {
+  const [currentApp, setCurrentApp] = useState('app-1');
+  
+  const appConfigs = {
+    'app-1': { appId: 'echo-app-1', apiUrl: 'https://echo.merit.systems' },
+    'app-2': { appId: 'echo-app-2', apiUrl: 'https://echo.merit.systems' }
+  };
+  
+  return (
+    <div>
+      <select 
+        value={currentApp} 
+        onChange={(e) => setCurrentApp(e.target.value)}
+      >
+        <option value="app-1">App 1</option>
+        <option value="app-2">App 2</option>
+      </select>
+      
+      <EchoProvider 
+        key={currentApp} // Force remount on app change
+        config={appConfigs[currentApp]}
+      >
+        {children}
+      </EchoProvider>
+    </div>
+  );
+}
+```
+
+### Environment-Based Configuration
+
+```tsx
+const getEchoConfig = () => {
+  const baseConfig = {
+    appId: process.env.NEXT_PUBLIC_ECHO_APP_ID!,
+  };
+  
+  if (process.env.NODE_ENV === 'development') {
+    return {
+      ...baseConfig,
+      apiUrl: 'http://localhost:3001', // Local development
+      redirectUri: 'http://localhost:3000'
+    };
+  }
+  
+  if (process.env.NODE_ENV === 'staging') {
+    return {
+      ...baseConfig,
+      apiUrl: 'https://staging-echo.merit.systems',
+      redirectUri: process.env.NEXT_PUBLIC_APP_URL
+    };
+  }
+  
+  return {
+    ...baseConfig,
+    apiUrl: 'https://echo.merit.systems',
+    redirectUri: process.env.NEXT_PUBLIC_APP_URL
+  };
+};
+
+function App() {
+  return (
+    <EchoProvider config={getEchoConfig()}>
+      <YourApp />
+    </EchoProvider>
+  );
+}
+```
+
+## Performance Optimization
+
+### Model Provider Caching
+
+```tsx
+function OptimizedAI() {
+  const { openai, anthropic } = useEchoModelProviders();
+  
+  // Cache model instances to avoid repeated async calls
+  const [models, setModels] = useState({});
+  
+  const getModel = useCallback(async (provider: string, model: string) => {
+    const key = `${provider}-${model}`;
+    
+    if (models[key]) {
+      return models[key];
+    }
+    
+    let modelInstance;
+    if (provider === 'openai') {
+      modelInstance = await openai(model);
+    } else if (provider === 'anthropic') {
+      modelInstance = await anthropic(model);
+    }
+    
+    setModels(prev => ({ ...prev, [key]: modelInstance }));
+    return modelInstance;
+  }, [openai, anthropic, models]);
+  
+  const handleGenerate = async () => {
+    const model = await getModel('openai', 'gpt-5');
+    
+    const { text } = await generateText({
+      model,
+      prompt: 'Hello!'
+    });
+    
+    return text;
+  };
+  
+  return <button onClick={handleGenerate}>Generate</button>;
+}
+```
+
+### Streaming Optimization
+
+```tsx {21-23}
+function OptimizedStreaming() {
+  const { openai } = useEchoModelProviders();
+  const [result, setResult] = useState('');
+  
+  const handleStream = async () => {
+    setResult(''); // Clear previous result
+    
+    const { textStream } = await streamText({
+      model: await openai('gpt-5'),
+      prompt: 'Write a long story about space exploration'
+    });
+    
+    // Batch updates for better performance
+    let buffer = '';
+    let lastUpdate = Date.now();
+    
+    for await (const delta of textStream) {
+      buffer += delta;
+      
+      // Update UI every 100ms or when buffer is substantial
+      if (Date.now() - lastUpdate > 100 || buffer.length > 50) {
+        setResult(prev => prev + buffer);
+        buffer = '';
+        lastUpdate = Date.now();
+      }
+    }
+    
+    // Flush remaining buffer
+    if (buffer) {
+      setResult(prev => prev + buffer);
+    }
+  };
+  
+  return (
+    <div>
+      <button onClick={handleStream}>Start Stream</button>
+      <div style={{ whiteSpace: 'pre-wrap' }}>{result}</div>
+    </div>
+  );
+}
+```
+
+## Testing Patterns
+
+### Mocking Echo Providers
+
+```tsx
+// __tests__/components/AIComponent.test.tsx
+import { render, screen } from '@testing-library/react';
+import { EchoProvider } from '@merit-systems/echo-react-sdk';
+
+const mockConfig = {
+  appId: 'test-app',
+  apiUrl: 'https://test-echo.merit.systems'
+};
+
+// Mock the model providers
+jest.mock('@merit-systems/echo-react-sdk', () => ({
+  ...jest.requireActual('@merit-systems/echo-react-sdk'),
+  useEchoModelProviders: () => ({
+    openai: jest.fn().mockResolvedValue({
+      // Mock model instance
+    }),
+    anthropic: jest.fn().mockResolvedValue({
+      // Mock model instance  
+    })
+  })
+}));
+
+test('renders AI component', () => {
+  render(
+    <EchoProvider config={mockConfig}>
+      <AIComponent />
+    </EchoProvider>
+  );
+  
+  expect(screen.getByText('Generate')).toBeInTheDocument();
+});
+```
+
+### Integration Testing
+
+```tsx
+// __tests__/integration/echo-flow.test.tsx
+import { render, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+test('complete authentication flow', async () => {
+  const { getByText } = render(
+    <EchoProvider config={testConfig}>
+      <App />
+    </EchoProvider>
+  );
+  
+  // Should show sign in initially
+  expect(getByText('Sign In')).toBeInTheDocument();
+  
+  // Mock successful authentication
+  await userEvent.click(getByText('Sign In'));
+  
+  await waitFor(() => {
+    expect(getByText('Welcome')).toBeInTheDocument();
+  });
+});
+```
+
+## Development Tools
+
+### Debug Component
+
+```tsx
+function EchoDebugger() {
+  const echoContext = useEcho();
+  const { openai, anthropic, google } = useEchoModelProviders();
+  
+  if (process.env.NODE_ENV !== 'development') {
+    return null;
+  }
+  
+  return (
+    <div style={{ 
+      position: 'fixed', 
+      bottom: 0, 
+      right: 0, 
+      background: '#f0f0f0',
+      padding: '10px',
+      fontSize: '12px',
+      maxWidth: '300px'
+    }}>
+      <h4>Echo Debug Info</h4>
+      <p>Authenticated: {echoContext.isAuthenticated ? '✅' : '❌'}</p>
+      <p>Loading: {echoContext.isLoading ? '⏳' : '✅'}</p>
+      <p>Error: {echoContext.error || 'None'}</p>
+      <p>Balance: ${echoContext.balance?.balance || 0}</p>
+      <p>User: {echoContext.user?.email || 'None'}</p>
+      <p>Providers Ready: {[openai, anthropic, google].every(p => p) ? '✅' : '❌'}</p>
+    </div>
+  );
+}
+```
+
+### Console Logging
+
+```tsx
+function useEchoLogger() {
+  const echo = useEcho();
+  
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.group('Echo State Change');
+      console.log('Authenticated:', echo.isAuthenticated);
+      console.log('Loading:', echo.isLoading);
+      console.log('Error:', echo.error);
+      console.log('User:', echo.user);
+      console.log('Balance:', echo.balance);
+      console.groupEnd();
+    }
+  }, [echo]);
+  
+  return echo;
+}
+```

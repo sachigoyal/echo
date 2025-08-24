@@ -335,7 +335,7 @@ function AuthFlow() {
 ```tsx
 function ChatApp() {
   const { isAuthenticated } = useEcho();
-  const { openai, isReady } = useEchoOpenAI();
+  const { openai } = useEchoModelProviders();
   
   if (!isAuthenticated) {
     return (
@@ -347,15 +347,6 @@ function ChatApp() {
             Start Chatting
           </button>
         </EchoSignIn>
-      </div>
-    );
-  }
-  
-  if (!isReady) {
-    return (
-      <div className="loading">
-        <Logo width={32} height={32} variant="light" />
-        <p>Initializing AI...</p>
       </div>
     );
   }

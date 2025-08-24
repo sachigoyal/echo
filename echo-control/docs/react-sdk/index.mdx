@@ -10,20 +10,23 @@ description: React SDK for direct LLM integration with OAuth2 + PKCE authenticat
 The Echo React SDK enables React applications to call LLMs directly from the browser without API keys or backend servers. Using OAuth2 + PKCE authentication, your users get short-lived JWT tokens that can invoke LLMs securely from the client-side.
 
 ```tsx
-import { EchoProvider, useEchoOpenAI } from '@merit-systems/echo-react-sdk';
+import { EchoProvider, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
 
 function ChatComponent() {
-  const { openai, isReady } = useEchoOpenAI();
+  const { openai } = useEchoModelProviders();
   
-  if (!isReady) return <div>Loading...</div>;
+  const handleGenerate = async () => {
+    // Direct AI calls from the browser - no API keys needed!
+    const { text } = await generateText({
+      model: openai('gpt-5'),
+      prompt: 'Hello!'
+    });
+    
+    return text;
+  };
   
-  // Direct LLM calls from the browser - no API keys needed!
-  const response = await openai.chat.completions.create({
-    model: "gpt-5",
-    messages: [{ role: "user", content: "Hello!" }]
-  });
-  
-  return <div>{response.choices[0].message.content}</div>;
+  return <button onClick={handleGenerate}>Generate</button>;
 }
 ```
 
@@ -72,7 +75,8 @@ This architecture provides:
 Wrap your app with `EchoProvider` and start making direct LLM calls:
 
 ```tsx
-import { EchoProvider, EchoSignIn, useEcho, useEchoOpenAI } from '@merit-systems/echo-react-sdk';
+import { EchoProvider, EchoSignIn, useEcho, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
 
 function App() {
   return (
@@ -87,24 +91,31 @@ function App() {
 
 function ChatApp() {
   const { isAuthenticated } = useEcho();
-  const { openai, isReady } = useEchoOpenAI();
+  const { openai } = useEchoModelProviders();
   
   if (!isAuthenticated) {
     return <EchoSignIn />;
   }
   
-  if (!isReady) {
-    return <div>Initializing LLM client...</div>;
-  }
+  const handleGenerate = async () => {
+    const { text } = await generateText({
+      model: openai('gpt-5'),
+      prompt: 'Tell me about React'
+    });
+    
+    console.log(text);
+  };
   
-  return <ChatInterface openai={openai} />;
+  return <button onClick={handleGenerate}>Ask AI</button>;
 }
 ```
 
 ## Documentation Sections
 
 - **[Authentication](/docs/react-sdk/authentication)** - User authentication, EchoProvider setup, and auth state management
-- **[LLM Integration](/docs/react-sdk/llm-integration)** - Direct LLM calls with useEchoOpenAI hook
+- **[LLM Integration](/docs/react-sdk/llm-integration)** - AI SDK integration and direct model access patterns
+- **[Image Generation](/docs/react-sdk/image-generation)** - Generate images using DALL-E with Echo's React SDK
 - **[Components](/docs/react-sdk/components)** - Pre-built UI components for authentication and payments
 - **[Hooks](/docs/react-sdk/hooks)** - Additional hooks for Echo platform integration
 - **[Advanced](/docs/react-sdk/advanced)** - Error handling, token management, and customization patterns
+- **[useChat Hook](/docs/react-sdk/use-chat)** - Advanced chat interfaces with streaming and tool usage

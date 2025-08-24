@@ -1,0 +1,11 @@
+{
+  "title": "Next.js SDK",
+  "pages": [
+    "index",
+    "setup",
+    "authentication", 
+    "llm-integration",
+    "server-patterns",
+    "advanced"
+  ]
+}

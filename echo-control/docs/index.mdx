@@ -2,13 +2,43 @@
 title: Introduction
 ---
 
-# What is Echo?
+# Echo
 
-Echo is the billing infrastructure for AI applications. Replace your OpenAI import with Echo's drop-in SDK and instantly get user authentication, usage-based billing, and revenue sharing. Your users get one universal balance that works across all Echo-powered apps, eliminating payment friction and creating network effects that grow your user base.
+Echo is billing infrastructure for AI applications that turns your OpenAI imports into revenue-generating user accounts across React, Next.js, Node.js, and CLI tools.
 
-Like Clerk handles authentication complexity, Echo handles AI billing complexity. No Stripe integration, no payment processing, no surprise bills. Set your markup percentage, and Echo handles everything else - from user authentication to transaction recording to revenue distribution. Your OpenAI code works unchanged, but now it generates revenue.
+## Why use Echo?
 
-Echo supports both traditional server-side patterns and modern client-side architectures. The React SDK enables secure LLM calls directly from browsers using OAuth2 + PKCE, eliminating API key exposure while maintaining per-user billing. Choose your integration pattern below to get started.
+Building AI apps means handling payments, user auth, usage tracking, and API key management. Each user needs their own balance, every LLM call needs metering, and you're stuck building Stripe flows instead of features.
+
+Echo standardizes AI billing like Clerk standardized auth. Drop in our SDK, set your markup percentage, and your existing OpenAI code instantly gets user accounts with usage-based billing. No payment processing, no surprise bills, no exposed API keys.
+
+Result: Your users get one universal balance that works across all Echo-powered apps, creating network effects that grow your user base while you focus on building.
+
+For example, here's how you can monetize LLM usage within your app:
+
+```tsx
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
+
+function ChatComponent() {
+  const { openai } = useEchoModelProviders();
+  
+  const handleGenerate = async () => {
+    const { text } = await generateText({
+      model: await openai('gpt-4'),
+      prompt: 'Hello world'
+    });
+    return text;
+  };
+  
+  return <button onClick={handleGenerate}>Ask AI</button>;
+}
+```
+
+**Three integration patterns:**
+- **React SDK** — OAuth2 + PKCE for secure client-side LLM calls
+- **Next.js SDK** — Server-side auth with automatic token management  
+- **TypeScript SDK** — API keys for backends and CLI tools
 
 <ExampleCards 
   cards={[

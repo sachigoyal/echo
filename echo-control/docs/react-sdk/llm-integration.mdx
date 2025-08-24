@@ -1,291 +1,109 @@
 ---
 title: LLM Integration
-description: Direct LLM calls with useEchoOpenAI hook
+description: AI SDK integration and direct model access patterns
 ---
 
 # LLM Integration
 
-## useEchoOpenAI Hook
+## Vercel AI SDK Integration (Recommended)
 
-The killer feature hook that provides an OpenAI client configured with your user's JWT token for direct LLM calls from the browser.
+The Echo React SDK provides first-class integration with the Vercel AI SDK for the best developer experience.
+
+### useEchoModelProviders Hook
+
+Get AI SDK-compatible providers for OpenAI, Anthropic, and Google models:
+
+```tsx {21}
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
+
+function AIComponent() {
+  const { openai, anthropic, google } = useEchoModelProviders();
+  
+  const handleGenerate = async () => {
+    // Use any provider with the AI SDK
+    const { text } = await generateText({
+      model: await openai('gpt-5'),
+      prompt: 'Write a haiku about coding'
+    });
+    
+    console.log(text);
+  };
+  
+  return <button onClick={handleGenerate}>Generate Text</button>;
+}
+```
+
+### Streaming Example
+
+Use [`streamText`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) from the Vercel AI SDK for real-time text generation:
+
+```tsx {8,16-18}
+import { streamText } from 'ai';
+
+function StreamingGenerator() {
+  const { openai } = useEchoModelProviders();
+  const [result, setResult] = useState('');
+  
+  const handleStream = async () => {
+    const { textStream } = await streamText({
+      model: await openai('gpt-5'),
+      prompt: 'Write a story about space exploration'
+    });
+    
+    setResult(''); // Clear previous result
+    
+    // Stream tokens as they arrive
+    for await (const delta of textStream) {
+      setResult(prev => prev + delta);
+    }
+  };
+  
+  return (
+    <div>
+      <button onClick={handleStream}>Start Streaming</button>
+      <div style={{ whiteSpace: 'pre-wrap' }}>{result}</div>
+    </div>
+  );
+}
+```
+
+## Custom Chat Hook
+
+For advanced chat interfaces, see our [dedicated useChat documentation](/docs/react-sdk/chat).
+
+## Raw Client Access (Advanced)
+
+For lower-level control, you can create raw clients with your JWT token:
+
+### Mental Model: JWT + Base URL
+
+Understanding how Echo enables direct LLM calls:
 
 ```tsx
-import { useEchoOpenAI } from '@merit-systems/echo-react-sdk';
+import { OpenAI } from 'openai';
 
-function ChatComponent() {
-  const { openai, isReady, error, isLoading } = useEchoOpenAI();
+function RawOpenAIExample() {
+  const { token } = useEcho();
   
-  if (isLoading) return <div>Loading OpenAI client...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!isReady) return <div>OpenAI client not ready</div>;
+  // This is what happens under the hood
+  const openai = new OpenAI({
+    apiKey: token, // Your JWT token acts as the API key
+    baseURL: 'https://echo.router.merit.systems', // Echo's proxy endpoint
+    dangerouslyAllowBrowser: true // Safe because token is user-scoped
+  });
   
-  // Direct LLM calls with automatic token handling
-  const handleChat = async (message: string) => {
+  const handleChat = async () => {
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
-      messages: [{ role: "user", content: message }]
+      model: 'gpt-5',
+      messages: [{ role: 'user', content: 'Hello!' }]
     });
+    
     return response.choices[0].message.content;
   };
   
-  return <ChatInterface onSend={handleChat} />;
+  return <button onClick={handleChat}>Raw Client Call</button>;
 }
 ```
 
-## Hook Options
 
-The `useEchoOpenAI` hook accepts options to customize the OpenAI client configuration:
-
-```tsx
-const { openai, isReady } = useEchoOpenAI({
-  baseURL: 'https://echo.router.merit.systems', // Optional custom endpoint
-  enabled: true // Optional - conditionally enable/disable the hook
-});
-```
-
-**Options Interface:**
-- `baseURL?: string` - Custom OpenAI-compatible endpoint (defaults to Echo router)
-- `enabled?: boolean` - Conditionally enable/disable the hook
-
-**Return Interface:**
-- `openai: OpenAI` - Configured OpenAI client instance
-- `isReady: boolean` - Whether the client is ready for use
-- `error: string | null` - Any initialization errors
-- `isLoading: boolean` - Loading state during client setup
-
-## Usage Patterns
-
-### Basic Chat
-
-```tsx
-function BasicChat() {
-  const { openai, isReady } = useEchoOpenAI();
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  
-  const sendMessage = async () => {
-    if (!isReady || !input.trim()) return;
-    
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    
-    try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [...messages, userMessage]
-      });
-      
-      const assistantMessage = {
-        role: 'assistant',
-        content: response.choices[0].message.content
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Chat error:', error);
-    }
-  };
-  
-  return (
-    <div>
-      <div>
-        {messages.map((msg, i) => (
-          <div key={i}>{msg.role}: {msg.content}</div>
-        ))}
-      </div>
-      <input 
-        value={input} 
-        onChange={(e) => setInput(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-      />
-      <button onClick={sendMessage} disabled={!isReady}>Send</button>
-    </div>
-  );
-}
-```
-
-### Streaming Responses
-
-```tsx
-function StreamingChat() {
-  const { openai, isReady } = useEchoOpenAI();
-  const [response, setResponse] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
-  
-  const streamChat = async (message: string) => {
-    if (!isReady) return;
-    
-    setIsStreaming(true);
-    setResponse('');
-    
-    try {
-      const stream = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [{ role: "user", content: message }],
-        stream: true
-      });
-      
-      for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        setResponse(prev => prev + content);
-      }
-    } catch (error) {
-      console.error('Streaming error:', error);
-    } finally {
-      setIsStreaming(false);
-    }
-  };
-  
-  return (
-    <div>
-      <div>{response}</div>
-      <button 
-        onClick={() => streamChat('Tell me a story')}
-        disabled={!isReady || isStreaming}
-      >
-        {isStreaming ? 'Streaming...' : 'Start Stream'}
-      </button>
-    </div>
-  );
-}
-```
-
-### Function Calling
-
-```tsx
-function FunctionCalling() {
-  const { openai, isReady } = useEchoOpenAI();
-  
-  const tools = [
-    {
-      type: "function",
-      function: {
-        name: "get_weather",
-        description: "Get weather for a location",
-        parameters: {
-          type: "object",
-          properties: {
-            location: { type: "string", description: "City name" }
-          },
-          required: ["location"]
-        }
-      }
-    }
-  ];
-  
-  const handleFunctionCall = async (message: string) => {
-    if (!isReady) return;
-    
-    const response = await openai.chat.completions.create({
-      model: "gpt-5",
-      messages: [{ role: "user", content: message }],
-      tools,
-      tool_choice: "auto"
-    });
-    
-    const toolCall = response.choices[0].message.tool_calls?.[0];
-    
-    if (toolCall?.function.name === 'get_weather') {
-      const args = JSON.parse(toolCall.function.arguments);
-      console.log(`Getting weather for ${args.location}`);
-      // Your weather API call here
-    }
-  };
-  
-  return (
-    <button onClick={() => handleFunctionCall('What\'s the weather in NYC?')}>
-      Get Weather
-    </button>
-  );
-}
-```
-
-### Conditional Enablement
-
-```tsx
-function ConditionalLLM() {
-  const { user } = useEcho();
-  const isPremium = user?.subscription === 'premium';
-  
-  const { openai, isReady } = useEchoOpenAI({
-    enabled: isPremium // Only enable for premium users
-  });
-  
-  if (!isPremium) {
-    return <div>Upgrade to premium for AI features</div>;
-  }
-  
-  if (!isReady) {
-    return <div>Loading AI...</div>;
-  }
-  
-  return <ChatInterface openai={openai} />;
-}
-```
-
-### Custom Endpoint
-
-```tsx
-function CustomEndpoint() {
-  const { openai, isReady } = useEchoOpenAI({
-    baseURL: 'https://your-custom-llm-router.com/v1'
-  });
-  
-  // Use with your custom LLM endpoint
-  return <CustomChatInterface openai={openai} isReady={isReady} />;
-}
-```
-
-## Error Handling
-
-```tsx
-function RobustChat() {
-  const { openai, isReady, error } = useEchoOpenAI();
-  
-  if (error) {
-    if (error.includes('OpenAI package not found')) {
-      return (
-        <div>
-          <p>OpenAI package not installed</p>
-          <code>pnpm add openai</code>
-        </div>
-      );
-    }
-    return <div>LLM integration error: {error}</div>;
-  }
-  
-  if (!isReady) {
-    return <div>Initializing LLM client...</div>;
-  }
-  
-  return <ChatInterface openai={openai} />;
-}
-```
-
-## Integration with useEcho
-
-```tsx
-function AuthenticatedChat() {
-  const { isAuthenticated, user, balance } = useEcho();
-  const { openai, isReady } = useEchoOpenAI();
-  
-  if (!isAuthenticated) {
-    return <EchoSignIn />;
-  }
-  
-  if (balance && balance.balance <= 0) {
-    return (
-      <div>
-        <p>Insufficient balance</p>
-        <EchoTokenPurchase amount={10} />
-      </div>
-    );
-  }
-  
-  if (!isReady) {
-    return <div>Loading AI for {user?.name}...</div>;
-  }
-  
-  return <ChatInterface openai={openai} />;
-}
-```
