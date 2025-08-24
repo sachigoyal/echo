@@ -12,7 +12,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     ...defaultMdxComponents,
     ...TabsComponents,
     ExampleCards,
-    AutoTypeTable: (props: any) => (
+    AutoTypeTable: (props: React.ComponentProps<typeof AutoTypeTable>) => (
       <AutoTypeTable {...props} generator={generator} />
     ),
     ...components,
