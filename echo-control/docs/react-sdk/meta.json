@@ -3,7 +3,7 @@
   "pages": [
     "index",
     "provider",
-    "components", 
+    "components",
     "hooks",
     "llm-integration",
     "image-generation",

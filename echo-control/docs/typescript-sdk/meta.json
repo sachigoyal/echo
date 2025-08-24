@@ -1,9 +1,4 @@
 {
   "title": "TypeScript SDK",
-  "pages": [
-    "index",
-    "client",
-    "authentication", 
-    "resources"
-  ]
+  "pages": ["index", "client", "authentication", "resources"]
 }

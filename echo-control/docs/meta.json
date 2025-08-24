@@ -1,11 +1,10 @@
 {
-    "pages": [
-        "index",
-        "getting-started",
-        "react-sdk",
-        "next-sdk",
-        "typescript-sdk",
-        "advanced"
-      ]
-  }
-  
+  "pages": [
+    "index",
+    "getting-started",
+    "react-sdk",
+    "next-sdk",
+    "typescript-sdk",
+    "advanced"
+  ]
+}

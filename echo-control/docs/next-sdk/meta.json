@@ -3,7 +3,7 @@
   "pages": [
     "index",
     "setup",
-    "authentication", 
+    "authentication",
     "llm-integration",
     "server-patterns",
     "advanced"
