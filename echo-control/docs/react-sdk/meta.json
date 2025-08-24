@@ -2,12 +2,11 @@
   "title": "React SDK",
   "pages": [
     "index",
-    "authentication", 
+    "provider",
+    "components", 
+    "hooks",
     "llm-integration",
     "image-generation",
-    "components",
-    "hooks",
-    "advanced",
     "use-chat"
   ]
 }

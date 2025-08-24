@@ -1,9 +1,81 @@
 ---
 title: Hooks
-description: Additional hooks for Echo platform integration
+description: Core hooks for authentication, model providers, and platform integration
 ---
 
 # Hooks
+
+## useEcho
+
+Primary hook for accessing authentication state, user information, and core functionality.
+
+```tsx
+import { useEcho } from '@merit-systems/echo-react-sdk';
+
+function AuthComponent() {
+  const { 
+    user, 
+    isAuthenticated, 
+    isLoading,
+    error,
+    signIn, 
+    signOut,
+    token,
+    getToken
+  } = useEcho();
+  
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <button onClick={signIn}>Sign In</button>;
+  }
+  
+  return (
+    <div>
+      <p>Welcome {user?.name || user?.email}!</p>
+      <button onClick={signOut}>Sign Out</button>
+    </div>
+  );
+}
+```
+
+### EchoContextValue
+
+The context value provided by EchoProvider, accessible via `useEcho()`.
+
+```typescript
+import type { EchoContextValue } from '@merit-systems/echo-react-sdk';
+```
+
+#### EchoContextValue
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/components/EchoProvider.tsx" 
+  name="EchoContextValue" 
+/>
+
+### EchoUser
+
+User information from OAuth2 authentication.
+
+```typescript
+import type { EchoUser } from '@merit-systems/echo-react-sdk';
+
+const { user } = useEcho();
+```
+
+#### EchoUser
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/types/index.ts" 
+  name="EchoUser" 
+/>
 
 ## useEchoClient
 
@@ -21,10 +93,7 @@ const apps = await echoClient.apps.listEchoApps();
 const balance = await echoClient.balance.getBalance();
 ```
 
-**What it provides:**
-- Full [Echo TypeScript SDK](/docs/typescript-sdk) client instance
-- Automatic authentication using current user's token
-- All platform operations: apps, balance, payments, models, users
+`useEchoClient` provides a full [Echo TypeScript SDK](/docs/typescript-sdk) client instance, automatically authenticated using the current user's token.
 
 **Common operations:**
 - `echoClient.apps.*` - [App management](/docs/typescript-sdk#clientapps---app-management)
@@ -33,7 +102,31 @@ const balance = await echoClient.balance.getBalance();
 - `echoClient.models.*` - [Model information](/docs/typescript-sdk#clientmodels---model-information)
 - `echoClient.users.*` - [User operations](/docs/typescript-sdk#clientusers---user-management)
 
-## Balance Hooks (via useEcho)
+## useEchoModelProviders
+
+Access LLM model providers for direct AI integration.
+
+```tsx
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
+
+function AIComponent() {
+  const { openai, anthropic } = useEchoModelProviders();
+  
+  const handleGenerate = async () => {
+    const { text } = await generateText({
+      model: await openai('gpt-4'),
+      prompt: 'Hello world'
+    });
+    
+    return text;
+  };
+  
+  return <button onClick={handleGenerate}>Generate</button>;
+}
+```
+
+## Balance Management
 
 The `useEcho` hook provides balance management functionality:
 
@@ -62,5 +155,3 @@ const { balance, freeTierBalance, refreshBalance, createPaymentLink } = useEcho(
 const paymentUrl = await createPaymentLink(25, 'Credits', '/success');
 window.location.href = paymentUrl;
 ```
-
-See [Authentication](/docs/react-sdk/authentication) for complete `useEcho` hook details.

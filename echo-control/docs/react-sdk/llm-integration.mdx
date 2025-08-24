@@ -7,13 +7,15 @@ description: AI SDK integration and direct model access patterns
 
 ## Vercel AI SDK Integration (Recommended)
 
-The Echo React SDK provides first-class integration with the Vercel AI SDK for the best developer experience.
+The Echo React SDK provides first-class integration with the [Vercel AI SDK](https://ai-sdk.dev/) for the best developer experience.
 
-### useEchoModelProviders Hook
+### `useEchoModelProviders` Hook
 
-Get AI SDK-compatible providers for OpenAI, Anthropic, and Google models:
+Get AI SDK-compatible providers for OpenAI, Anthropic, and Google models for use with [`generateText`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text) or [`streamText`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text).
 
-```tsx {21}
+
+
+```tsx title="AIComponent.tsx" lineNumbers
 import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
 import { generateText } from 'ai';
 
@@ -29,22 +31,7 @@ function AIComponent() {
     
     console.log(text);
   };
-  
-  return <button onClick={handleGenerate}>Generate Text</button>;
-}
-```
 
-### Streaming Example
-
-Use [`streamText`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) from the Vercel AI SDK for real-time text generation:
-
-```tsx {8,16-18}
-import { streamText } from 'ai';
-
-function StreamingGenerator() {
-  const { openai } = useEchoModelProviders();
-  const [result, setResult] = useState('');
-  
   const handleStream = async () => {
     const { textStream } = await streamText({
       model: await openai('gpt-5'),
@@ -61,12 +48,17 @@ function StreamingGenerator() {
   
   return (
     <div>
-      <button onClick={handleStream}>Start Streaming</button>
+      <button onClick={handleGenerate}>Generate Text</button>
+      <button onClick={handleStream}>Stream Text</button>
       <div style={{ whiteSpace: 'pre-wrap' }}>{result}</div>
     </div>
   );
 }
 ```
+
+<Callout type="info">
+  **Provider Required**: The `useEchoModelProviders` hook must be used within an [`EchoProvider`](/docs/react-sdk/provider) component.
+</Callout>
 
 ## Custom Chat Hook
 
@@ -74,11 +66,7 @@ For advanced chat interfaces, see our [dedicated useChat documentation](/docs/re
 
 ## Raw Client Access (Advanced)
 
-For lower-level control, you can create raw clients with your JWT token:
-
-### Mental Model: JWT + Base URL
-
-Understanding how Echo enables direct LLM calls:
+For lower-level control, you can create raw clients using your Echo JWT.
 
 ```tsx
 import { OpenAI } from 'openai';

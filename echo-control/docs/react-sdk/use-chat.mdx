@@ -1,39 +1,34 @@
 ---
 title: useChat Hook
-description: Advanced chat interfaces with Echo's useChat hook and Vercel AI SDK integration
+description: Build chat interfaces with Echo's useChat hook and streaming AI responses
 ---
 
 # useChat Hook
 
-Echo provides a specialized `useChat` hook built on top of the [Vercel AI SDK `useChat`](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat#usechat) for advanced chat interfaces with streaming, tool usage, and state management.
+Echo provides a `useChat` hook which is a wrapper around the [Vercel AI SDK](https://ai-sdk.dev/docs/reference/ai-sdk-core/use-chat) `useChat` hook and provides niceties for 
+creating an Echo-powered chat experience.
 
-```tsx {11,33,41-49}
-import { EchoChatProvider, useChat } from '@merit-systems/echo-react-sdk';
+```tsx title="ChatApp.tsx"
+import { EchoChatProvider, EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
 import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
 import { streamText, tool } from 'ai';
 import { z } from 'zod';
+import { ChatInterface } from './ChatInterface';
 
 function ChatApp() {
-  const { isAuthenticated, user, balance } = useEcho();
-  const { openai, anthropic } = useEchoModelProviders();
+  const { isAuthenticated } = useEcho();
+  const { openai } = useEchoModelProviders();
   
-  const chatFn = async ({ modelMessages, uiMessages, abortSignal }) => {
-    // Smart model selection based on content
-    const lastMessage = uiMessages[uiMessages.length - 1]?.content || '';
-    const model = lastMessage.includes('code') 
-      ? await anthropic('claude-4-sonnet')
-      : await openai('gpt-5');
-    
+  const chatFn = async ({ modelMessages, abortSignal }) => {
     const result = await streamText({
-      model,
+      model: await openai('gpt-4'),
       messages: modelMessages,
       abortSignal,
-      system: `You are chatting with ${user?.name}. Be helpful and concise.`,
       tools: {
         getWeather: tool({
-          description: 'Get weather for a location',
+          description: 'Get current weather for a location',
           parameters: z.object({ location: z.string() }),
-          execute: async ({ location }) => `Weather in ${location}: Sunny, 72°F`,
+          execute: async ({ location }) => `Weather in ${location}: 72°F and sunny`,
         }),
       },
     });
@@ -42,7 +37,6 @@ function ChatApp() {
   };
   
   if (!isAuthenticated) return <EchoSignIn />;
-  if (balance?.balance <= 0) return <EchoTokenPurchase amount={20} />;
   
   return (
     <EchoChatProvider chatFn={chatFn}>
@@ -50,49 +44,48 @@ function ChatApp() {
     </EchoChatProvider>
   );
 }
+```
+
+```tsx title="ChatInterface.tsx"
+import { useChat } from '@merit-systems/echo-react-sdk';
 
 function ChatInterface() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, stop, reload, error } = useChat();
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
   
   return (
-    <div className="chat-container">
+    <div>
       <div className="messages">
-        {messages.map((message, index) => (
-          <div key={index} className={`message ${message.role}`}>
+        {messages.map((message) => (
+          <div key={message.id}>
             <strong>{message.role}:</strong> {message.content}
-            {message.toolInvocations?.map((tool, i) => (
-              <div key={i} className="tool-result">🔧 {tool.toolName}: {tool.result}</div>
+            {message.toolInvocations?.map((tool) => (
+              <div key={tool.toolCallId}>
+                🔧 {tool.toolName}: {tool.result}
+              </div>
             ))}
           </div>
         ))}
       </div>
       
-      <div className="controls">
-        {isLoading && <button onClick={stop}>Stop</button>}
-        {error && <button onClick={reload}>Retry</button>}
-      </div>
-      
-      <form onSubmit={handleSubmit} className="input-form">
+      <form onSubmit={handleSubmit}>
         <input
           value={input}
           onChange={handleInputChange}
-          placeholder="Ask me anything..."
+          placeholder="Ask about the weather..."
           disabled={isLoading}
         />
         <button type="submit" disabled={isLoading}>
-          {isLoading ? 'Sending...' : 'Send'}
+          Send
         </button>
       </form>
-      
-      {error && <div className="error">Error: {error.message}</div>}
     </div>
   );
 }
 ```
 
-This comprehensive example demonstrates:
-- **Smart model selection** based on message content
-- **Tool integration** with weather lookup
-- **Authentication guards** and balance checking  
-- **Complete UI controls** (`stop`, `retry`, error handling)
-- **Async model provider usage** with proper `await` syntax
+## `useChat` Props
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/components/EchoChatProvider.tsx" 
+  name="EchoChatBuildContext" 
+/>

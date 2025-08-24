@@ -5,9 +5,10 @@ description: React SDK for direct LLM integration with OAuth2 + PKCE authenticat
 
 # React SDK
 
-## The Killer Feature
+The Echo React SDK enables React applications to call LLMs directly from the browser without API keys or backend servers. 
+Most AI SDKs require API keys which must be secured in a server-side environment. Echo does not.
 
-The Echo React SDK enables React applications to call LLMs directly from the browser without API keys or backend servers. Using OAuth2 + PKCE authentication, your users get short-lived JWT tokens that can invoke LLMs securely from the client-side.
+`echo-react-sdk` handles the Oauth and billing complexity, allowing your React client to make direct secure calls to AI resources.
 
 ```tsx
 import { EchoProvider, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
@@ -41,7 +42,7 @@ The React SDK implements a secure OAuth2 + PKCE flow that eliminates API key man
 
 This architecture provides:
 - **No API key exposure** - Tokens are scoped to individual users
-- **Enhanced security** - Short-lived tokens with automatic refresh
+- **Security** - Short-lived tokens with automatic refresh
 - **User-scoped billing** - Each user's usage is tracked separately
 - **Direct client calls** - No backend proxy required
 
@@ -99,7 +100,7 @@ function ChatApp() {
   
   const handleGenerate = async () => {
     const { text } = await generateText({
-      model: openai('gpt-5'),
+      model: await openai('gpt-5'),
       prompt: 'Tell me about React'
     });
     
