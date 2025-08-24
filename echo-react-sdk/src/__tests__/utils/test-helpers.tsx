@@ -1,12 +1,12 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 import { EchoProvider } from '../../components/EchoProvider';
-import { EchoConfig } from '../../types';
+import { EchoAuthConfig } from '../../types';
 
 /**
  * Default test configuration for EchoProvider
  */
-const defaultTestConfig: EchoConfig = {
+const defaultTestConfig: EchoAuthConfig = {
   appId: 'test-app-id',
   apiUrl: 'http://localhost:3000',
   redirectUri: 'http://localhost:3000/callback',
@@ -18,7 +18,7 @@ const defaultTestConfig: EchoConfig = {
  */
 interface TestEchoProviderProps {
   children: React.ReactNode;
-  config?: Partial<EchoConfig>;
+  config?: Partial<EchoAuthConfig>;
   mockUserManager?: unknown;
 }
 
@@ -45,7 +45,7 @@ export function TestEchoProvider({
 export function renderWithEcho(
   component: React.ReactElement,
   options: {
-    config?: Partial<EchoConfig>;
+    config?: Partial<EchoAuthConfig>;
     mockUserManager?: unknown;
   } = {}
 ): ReturnType<typeof render> {

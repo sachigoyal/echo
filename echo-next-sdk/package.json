@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-next-sdk",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Next.js SDK for Echo",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,10 +36,7 @@
   "author": "Merit Systems",
   "license": "MIT",
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.5",
-    "@ai-sdk/google": "^2.0.7",
-    "@ai-sdk/openai": "^2.0.16",
-    "@merit-systems/echo-typescript-sdk": "workspace:*",
+    "@merit-systems/echo-typescript-sdk": "1.0.3",
     "ai": "^5.0.17",
     "jwt-decode": "^4.0.0"
   },

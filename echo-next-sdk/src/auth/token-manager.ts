@@ -1,5 +1,8 @@
-import { EchoClient, User } from '@merit-systems/echo-typescript-sdk';
-import { ECHO_BASE_URL } from 'config';
+import {
+  EchoClient,
+  ECHO_BASE_URL,
+  User,
+} from '@merit-systems/echo-typescript-sdk';
 import { cookies as getCookies } from 'next/headers';
 import { shouldRefreshToken } from './jwt-utils';
 

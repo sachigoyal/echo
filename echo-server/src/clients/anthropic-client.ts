@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-async function makeRequest(useStreaming: boolean = false) {
+async function makeRequest(useStreaming: boolean = true) {
   try {
     // Initialize OpenAI client with custom baseURL
     const claude = new Anthropic({

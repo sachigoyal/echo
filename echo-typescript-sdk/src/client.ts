@@ -1,5 +1,5 @@
 import { ApiKeyTokenProvider, TokenProvider } from './auth/token-provider';
-import { EchoConfig, getConfig } from './config';
+import { EchoClientConfig, getConfig } from './config';
 import { HttpClient } from './http-client';
 import {
   AppsResource,
@@ -9,13 +9,13 @@ import {
   UsersResource,
 } from './resources';
 
-export interface EchoClientOptions extends Partial<EchoConfig> {
+export interface EchoClientOptions extends Partial<EchoClientConfig> {
   tokenProvider?: TokenProvider;
 }
 
 export class EchoClient {
   private http: HttpClient;
-  private config: EchoConfig;
+  private config: EchoClientConfig;
   private tokenProvider: TokenProvider;
 
   // Resource instances

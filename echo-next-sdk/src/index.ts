@@ -7,9 +7,8 @@ import {
 } from './auth/oauth-handlers';
 import { createEchoOpenAI } from './providers/openai';
 import { EchoConfig, EchoResult } from './types';
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { EchoClient, ECHO_BASE_URL } from '@merit-systems/echo-typescript-sdk';
 import { cookies } from 'next/headers';
-import { ECHO_BASE_URL } from 'config';
 
 /**
  * Echo SDK for Next.js
