@@ -1,8 +1,9 @@
 'use client';
 
+import NextImage from 'next/image';
 import { useState } from 'react';
 
-export default function Image() {
+export default function ImageGenerator() {
   const [imageUrl, setImageUrl] = useState<{
     base64Data: string;
     mediaType: string;
@@ -66,14 +67,19 @@ export default function Image() {
           <h3 className="text-sm font-medium text-foreground">
             Generated Image:
           </h3>
-          <div className="border rounded-lg overflow-hidden h-96">
-            <img
-              src={`data:image/png;base64,${imageUrl.base64Data}`}
-              alt={prompt}
-              className="w-full h-full object-contain"
+          <div className="relative border rounded-lg overflow-hidden h-96">
+            <NextImage
+              src={`data:${imageUrl.mediaType};base64,${imageUrl.base64Data}`}
+              alt={prompt || 'Generated image'}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
             />
           </div>
-          <p className="text-sm text-muted-foreground italic">"{prompt}"</p>
+          <p className="text-sm text-muted-foreground italic">
+            &quot;{prompt}&quot;
+          </p>
         </div>
       )}
     </div>
