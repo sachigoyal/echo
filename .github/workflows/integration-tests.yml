@@ -121,7 +121,7 @@ jobs:
         working-directory: echo-control
         env:
           DATABASE_URL: postgresql://test:test@localhost:5433/echo_integration_test
-        run: pnpm prisma:push
+        run: pnpm prisma:migrate-deploy
 
       - name: Setup integration test environment
         working-directory: integration-tests
