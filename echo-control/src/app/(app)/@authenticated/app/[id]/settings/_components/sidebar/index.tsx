@@ -10,7 +10,7 @@ interface Props {
 
 export const AppSettingsSidebar: React.FC<Props> = ({ appId }) => {
   return (
-    <div className="sticky top-0 hidden lg:block w-[240px]">
+    <div className="w-full">
       <SidebarLink href={`/app/${appId}/settings`}>General</SidebarLink>
     </div>
   );

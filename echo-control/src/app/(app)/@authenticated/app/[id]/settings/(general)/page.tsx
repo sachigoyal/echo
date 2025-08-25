@@ -12,6 +12,7 @@ import { AppDescription } from './_components/description';
 import { api } from '@/trpc/server';
 
 import { updateAppSchema } from '@/services/apps/owner';
+import { AppProfilePicture } from './_components/profile-picture';
 
 export default async function AppSettingsPage({
   params,
@@ -39,12 +40,13 @@ export default async function AppSettingsPage({
   return (
     <div className="flex flex-col gap-6">
       <AppDetailsFormProvider
+        title="Name"
         fields={['name']}
         action={updateApp}
         defaultValues={{ name: app.name ?? '' }}
       >
         <FormCard
-          title="App Name"
+          title="Name"
           description="The public-facing name of your app. This is shown to users when they are connecting to your app."
           docsUrl="/docs/general"
         >
@@ -53,16 +55,32 @@ export default async function AppSettingsPage({
       </AppDetailsFormProvider>
 
       <AppDetailsFormProvider
+        title="Description"
         fields={['description']}
         action={updateApp}
         defaultValues={{ description: app.description ?? '' }}
       >
         <FormCard
-          title="App Description"
+          title="Description"
           description="The description of your app. This is shown to users when they are connecting to your app."
           docsUrl="/docs/general"
         >
           <AppDescription />
+        </FormCard>
+      </AppDetailsFormProvider>
+
+      <AppDetailsFormProvider
+        fields={['profilePictureUrl']}
+        title="Profile Picture"
+        action={updateApp}
+        defaultValues={{ profilePictureUrl: app.profilePictureUrl ?? '' }}
+      >
+        <FormCard
+          title="Profile Picture"
+          description="The profile picture of your app. This is shown to users when they are connecting to your app."
+          docsUrl="/docs/general"
+        >
+          <AppProfilePicture />
         </FormCard>
       </AppDetailsFormProvider>
     </div>

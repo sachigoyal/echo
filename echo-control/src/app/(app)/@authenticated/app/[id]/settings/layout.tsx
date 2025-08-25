@@ -23,11 +23,13 @@ export default async function AppSettingsLayout({
   }
 
   return (
-    <div>
+    <div className="overflow-visible">
       <Heading title="App Settings" />
-      <Body>
+      <Body className="overflow-visible">
         <div className="flex gap-4">
-          <AppSettingsSidebar appId={id} />
+          <div className="sticky top-0 hidden lg:block w-[240px] h-fit">
+            <AppSettingsSidebar appId={id} />
+          </div>
           <div className="flex-1">{children}</div>
         </div>
       </Body>
