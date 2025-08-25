@@ -37,11 +37,11 @@ export default async function CreditsPage() {
     redirect('/login?redirect_url=/credits');
   }
 
-  await api.user.payments.list.prefetchInfinite({
+  api.user.payments.list.prefetchInfinite({
     cursor: 0,
   });
 
-  await api.user.balance.get.prefetch();
+  api.user.balance.get.prefetch();
 
   return (
     <HydrateClient>

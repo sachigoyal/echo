@@ -1,0 +1,84 @@
+---
+title: Components
+description: Pre-built UI components for authentication and payments
+---
+
+# Components
+
+## EchoSignIn
+
+Drop-in component for user authentication with customizable styling and callbacks.
+
+```tsx
+import { EchoSignIn } from '@merit-systems/echo-react-sdk';
+
+// Default styled button
+<EchoSignIn 
+  onSuccess={(user) => console.log('Signed in:', user)}
+  onError={(error) => console.error('Sign in failed:', error)}
+/>
+
+// Custom children (renders as clickable wrapper)
+<EchoSignIn onSuccess={handleSuccess}>
+  <button className="my-custom-button">
+    Sign in with Echo
+  </button>
+</EchoSignIn>
+```
+
+### Props
+
+```typescript
+import type { EchoSignInProps } from '@merit-systems/echo-react-sdk';
+```
+
+#### EchoSignInProps
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/types/index.ts" 
+  name="EchoSignInProps" 
+/>
+
+
+## EchoTokenPurchase
+
+Pre-built component for purchasing additional credits/tokens.
+
+```tsx
+import { EchoTokenPurchase } from '@merit-systems/echo-react-sdk';
+
+<EchoTokenPurchase 
+  amount={10} // $10 worth of credits
+  onPurchaseComplete={(balance) => console.log('New balance:', balance)}
+  onError={(error) => console.error('Purchase failed:', error)}
+/>
+```
+
+### Props
+
+```typescript
+import type { EchoTokenPurchaseProps } from '@merit-systems/echo-react-sdk';
+```
+
+#### EchoTokenPurchaseProps
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/types/index.ts" 
+  name="EchoTokenPurchaseProps" 
+/>
+
+
+## Logo
+
+Echo logo component with customizable variants.
+
+```tsx
+import { Logo } from '@merit-systems/echo-react-sdk';
+
+<Logo 
+  width={24} 
+  height={24} 
+  variant="light" // or "dark"
+/>
+```
+

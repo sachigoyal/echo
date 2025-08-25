@@ -1,0 +1,93 @@
+---
+title: Overview
+description: Foundation SDK for direct Echo platform access and AI provider integration
+---
+
+# TypeScript SDK
+
+The Echo TypeScript SDK is the foundational SDK that provides direct API access to the Echo platform. It serves as the base for the React and Next.js SDKs, offering maximum flexibility for server-side applications, CLI tools, and custom integrations.
+
+## Use Cases
+
+- **Server-side applications** - API routes, backends, microservices
+- **CLI tools** - Command-line applications with AI billing
+- **Custom integrations** - When you need direct platform control
+- **Foundation for other SDKs** - React and Next.js SDKs are built on this
+
+## Installation
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @merit-systems/echo-typescript-sdk
+    ```
+  </Tab>
+</Tabs>
+
+## Quick Start
+
+### Platform Operations
+
+```typescript
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+
+const echo = new EchoClient({
+  apiKey: 'your-api-key'
+});
+
+// Check balance and create payment links
+const balance = await echo.balance.getBalance();
+const paymentLink = await echo.payments.createPaymentLink({
+  amount: 10,
+  description: 'Credits'
+});
+```
+
+### AI Integration
+
+```typescript
+import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
+import { generateText } from 'ai';
+
+// Create AI provider with Echo billing
+const openai = createEchoOpenAI(
+  { appId: 'your-echo-app-id' },
+  async () => 'your-api-key'
+);
+
+// Generate text with automatic billing
+const { text } = await generateText({
+  model: openai('gpt-4'),
+  prompt: 'Hello world'
+});
+```
+
+## Documentation Sections
+
+- **[Client](/docs/typescript-sdk/client)** - EchoClient setup, configuration, and environment management
+- **[Authentication](/docs/typescript-sdk/authentication)** - API keys, token providers, and OAuth integration patterns
+- **[Resources](/docs/typescript-sdk/resources)** - Platform operations: apps, balance, payments, users, models
+
+## Architecture
+
+The TypeScript SDK consists of two main components:
+
+1. **Platform Client** - `EchoClient` for account, billing, and app management
+2. **AI Providers** - Factory functions that create Vercel AI SDK compatible providers with Echo billing
+
+This separation allows you to use platform operations independently or combine them with AI functionality as needed.

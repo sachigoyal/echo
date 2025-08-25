@@ -93,14 +93,16 @@ export const updateEchoAppById = async (
           echoAppId: appId,
         },
         update: {
-          githubId,
+          githubId: parseInt(githubId),
+          githubUrl: '',
           githubType,
           description: `GitHub ${githubType} link`,
           isArchived: false,
         },
         create: {
           echoAppId: appId,
-          githubId,
+          githubId: parseInt(githubId),
+          githubUrl: '',
           githubType,
           description: `GitHub ${githubType} link`,
           isArchived: false,
@@ -119,7 +121,7 @@ export const updateEchoAppById = async (
           echoAppId: appId,
         },
         update: {
-          githubId,
+          githubId: parseInt(githubId),
           githubType: typeToUse,
           description: `GitHub ${typeToUse} link`,
 
@@ -127,7 +129,8 @@ export const updateEchoAppById = async (
         },
         create: {
           echoAppId: appId,
-          githubId,
+          githubId: parseInt(githubId),
+          githubUrl: '',
           githubType: typeToUse,
           description: `GitHub ${typeToUse} link`,
 

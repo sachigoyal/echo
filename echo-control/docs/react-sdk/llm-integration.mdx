@@ -1,0 +1,92 @@
+---
+title: LLM Integration
+description: AI SDK integration and direct model access patterns
+---
+
+# LLM Integration
+
+## Vercel AI SDK Integration (Recommended)
+
+The Echo React SDK provides first-class integration with the [Vercel AI SDK](https://ai-sdk.dev/) for the best developer experience.
+
+### `useEchoModelProviders` Hook
+
+Get AI SDK-compatible providers for OpenAI, Anthropic, and Google models for use with [`generateText`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text) or [`streamText`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text).
+
+
+
+```tsx title="AIComponent.tsx" lineNumbers
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText, streamText } from 'ai';
+
+function AIComponent() {
+  const { openai, anthropic, google } = useEchoModelProviders();
+  
+  const handleGenerate = async () => {
+    const { text } = await generateText({
+      model: await openai('gpt-5'),
+      prompt: 'Write a haiku about coding'
+    });
+    
+    setResult(text);
+  };
+
+  const handleStream = async () => {
+    const { textStream } = await streamText({
+      model: await openai('gpt-5'),
+      prompt: 'Write a story about space exploration'
+    });
+    
+    setResult('');
+    for await (const delta of textStream) setResult(prev => prev + delta);
+  };
+  
+  return (
+    <>
+      <button onClick={handleGenerate}>Generate Text</button>
+      <button onClick={handleStream}>Stream Text</button>
+      <div style={{ whiteSpace: 'pre-wrap' }}>{result}</div>
+    </>
+  );
+}
+```
+
+<Callout type="info">
+  **Provider Required**: The `useEchoModelProviders` hook must be used within an [`EchoProvider`](/docs/react-sdk/provider) component.
+</Callout>
+
+## Custom Chat Hook
+
+For advanced chat interfaces, see our [dedicated useChat documentation](/docs/react-sdk/chat).
+
+## Raw Client Access (Advanced)
+
+For lower-level control, you can create raw clients using your Echo JWT.
+
+```tsx
+import { OpenAI } from 'openai';
+
+function RawOpenAIExample() {
+  const { token } = useEcho();
+  
+  // This is what happens under the hood
+  const openai = new OpenAI({
+    apiKey: token, // Your JWT token acts as the API key
+    baseURL: 'https://echo.router.merit.systems', // Echo's proxy endpoint
+    dangerouslyAllowBrowser: true // Safe because token is user-scoped
+  });
+  
+  const handleChat = async () => {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-5',
+      messages: [{ role: 'user', content: 'Hello!' }]
+    });
+    
+    return response.choices[0].message.content;
+  };
+  
+  return <button onClick={handleChat}>Raw Client Call</button>;
+}
+```
+
+

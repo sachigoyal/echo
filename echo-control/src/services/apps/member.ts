@@ -1,10 +1,11 @@
-import { db } from '@/lib/db';
-import { paginationParamsSchema } from '@/lib/pagination';
 import { z } from 'zod';
+
+import { db } from '@/lib/db';
 import { appSelect } from './lib/select';
 import { AppRole, MembershipStatus } from '@/lib/permissions';
 import { Prisma } from '@/generated/prisma';
-import { toPaginatedReponse } from '../lib/pagination';
+
+import { paginationSchema, toPaginatedReponse } from '../lib/pagination';
 
 export const getAppSchema = z.uuid();
 
@@ -31,7 +32,7 @@ export const getAppMembership = async (
 
 export const listMemberApps = async (
   userId: string,
-  { page = 0, page_size = 10 }: z.infer<typeof paginationParamsSchema>
+  { page, page_size }: z.infer<typeof paginationSchema>
 ) => {
   const listMembershipWhere = (
     userId: string

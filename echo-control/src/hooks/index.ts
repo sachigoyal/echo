@@ -10,5 +10,4 @@ export * from './useUserSettings';
 export * from './use-register-referral-code';
 
 // Export new TRPC hooks
-export * from './useTRPCApp';
 export * from './useTRPCApps';

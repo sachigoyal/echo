@@ -6,22 +6,22 @@ import {
   getApiKey,
   getApiKeySchema,
   listApiKeys,
+  listApiKeysSchema,
   updateApiKey,
   updateApiKeySchema,
 } from '@/services/api-keys';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { extendedInfiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
-import z from 'zod';
+import {
+  createTRPCRouter,
+  paginatedProcedure,
+  protectedProcedure,
+} from '../../trpc';
 
 export const userApiKeysRouter = createTRPCRouter({
-  list: protectedProcedure
-    .input(
-      extendedInfiniteQueryPaginationParamsSchema({
-        appId: z.uuid().optional(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      return listApiKeys(ctx.session.user.id, input);
+  list: paginatedProcedure
+    .concat(protectedProcedure)
+    .input(listApiKeysSchema)
+    .query(async ({ ctx: { session, pagination }, input }) => {
+      return listApiKeys(session.user.id, input, pagination);
     }),
 
   get: protectedProcedure

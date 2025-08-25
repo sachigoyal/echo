@@ -208,10 +208,10 @@ export const createEchoApp = async (userId: string, data: AppCreateInput) => {
       ? {
           githubLink: {
             create: {
-              githubId: data.githubId.trim(),
+              githubId: parseInt(data.githubId.trim()),
               githubType: data.githubType,
+              githubUrl: '',
               description: `GitHub ${data.githubType} link`,
-
               isArchived: false,
             },
           },

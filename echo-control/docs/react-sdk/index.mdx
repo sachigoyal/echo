@@ -1,0 +1,120 @@
+---
+title: Overview
+description: React SDK for direct LLM integration with OAuth2 + PKCE authentication
+---
+
+# React SDK
+
+The Echo React SDK enables React applications to call LLMs directly from the browser without API keys or backend servers. 
+Most AI SDKs require API keys which must be secured in a server-side environment. Echo does not.
+
+`echo-react-sdk` handles the Oauth and billing complexity, allowing your React client to make direct secure calls to AI resources.
+
+```tsx
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
+
+function ChatComponent() {
+  const { openai } = useEchoModelProviders();
+  
+  const handleGenerate = async () => {
+    // Direct AI calls from the browser - no API keys needed!
+    const { text } = await generateText({
+      model: openai('gpt-5'),
+      prompt: 'Hello!'
+    });
+    
+    return text;
+  };
+  
+  return <button onClick={handleGenerate}>Generate</button>;
+}
+```
+
+## Architecture
+
+The React SDK implements a secure OAuth2 + PKCE flow that eliminates API key management:
+
+1. **User Authentication**: OAuth2 + PKCE flow with your Echo app
+2. **JWT Token Exchange**: Receive short-lived JWTs with LLM access scope  
+3. **Direct LLM Calls**: Use tokens directly with OpenAI-compatible endpoints
+4. **Automatic Refresh**: Seamless token renewal in the background
+
+This architecture provides:
+- **No API key exposure** - Tokens are scoped to individual users
+- **Security** - Short-lived tokens with automatic refresh
+- **User-scoped billing** - Each user's usage is tracked separately
+- **Direct client calls** - No backend proxy required
+
+## Installation
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tab value="npm">
+    ```bash
+    npm install @merit-systems/echo-react-sdk openai
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @merit-systems/echo-react-sdk openai
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @merit-systems/echo-react-sdk openai
+    ```
+  </Tab>
+  <Tab value="bun">
+    ```bash
+    bun add @merit-systems/echo-react-sdk openai
+    ```
+  </Tab>
+</Tabs>
+
+## Quick Start
+
+Wrap your app with `EchoProvider` and start making direct LLM calls:
+
+```tsx
+import { EchoProvider, EchoSignIn, useEcho, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
+
+function App() {
+  return (
+    <EchoProvider config={{ 
+      appId: 'your-echo-app-id',
+    }}>
+      <ChatApp />
+    </EchoProvider>
+  );
+}
+
+function ChatApp() {
+  const { isAuthenticated } = useEcho();
+  const { openai } = useEchoModelProviders();
+  
+  if (!isAuthenticated) {
+    return <EchoSignIn />;
+  }
+  
+  const handleGenerate = async () => {
+    const { text } = await generateText({
+      model: await openai('gpt-5'),
+      prompt: 'Tell me about React'
+    });
+    
+    console.log(text);
+  };
+  
+  return <button onClick={handleGenerate}>Ask AI</button>;
+}
+```
+
+## Documentation Sections
+
+- **[Provider](/docs/react-sdk/provider)** - EchoProvider setup and configuration
+- **[Components](/docs/react-sdk/components)** - Pre-built UI components for authentication and payments
+- **[Hooks](/docs/react-sdk/hooks)** - Core hooks for authentication, model providers, and platform integration
+- **[LLM Integration](/docs/react-sdk/llm-integration)** - AI SDK integration and direct model access patterns
+- **[Image Generation](/docs/react-sdk/image-generation)** - Generate images using DALL-E with Echo's React SDK
+- **[useChat Hook](/docs/react-sdk/use-chat)** - Advanced chat interfaces with streaming and tool usage
