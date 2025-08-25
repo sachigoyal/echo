@@ -3,6 +3,9 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { RootProvider } from 'fumadocs-ui/provider';
 
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
+
 import { TRPCReactProvider } from '@/trpc/client';
 
 import type { Metadata } from 'next';
@@ -31,6 +34,8 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className="antialiased bg-card">
           <RootProvider>
+            <SpeedInsights />
+            <Analytics />
             <TRPCReactProvider>
               <ThemeProvider
                 attribute="class"

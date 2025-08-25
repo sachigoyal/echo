@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Check, Copy, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 import { toast } from 'sonner';
 
@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { api } from '@/trpc/client';
+import { CopyButton } from '@/components/ui/copy-button';
 
 interface Props {
   generateApiKey: (name?: string) => Promise<string>;
@@ -35,7 +36,7 @@ export const GenerateApiKey: React.FC<Props> = ({
 }) => {
   const [name, setName] = useState<string>();
 
-  const { isCopied, copyToClipboard } = useCopyToClipboard(() => {
+  const { copyToClipboard } = useCopyToClipboard(() => {
     toast.success('Copied to clipboard');
   });
 
@@ -52,18 +53,7 @@ export const GenerateApiKey: React.FC<Props> = ({
             <p className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm no-scrollbar pr-2">
               {apiKey}
             </p>
-            <Button
-              onClick={() => copyToClipboard(apiKey)}
-              variant="outline"
-              className="shrink-0 size-fit p-2"
-              size="icon"
-            >
-              {isCopied ? (
-                <Check className="size-3" />
-              ) : (
-                <Copy className="size-3" />
-              )}
-            </Button>
+            <CopyButton text={apiKey} toastMessage="Copied to clipboard" />
           </div>
         </div>
 

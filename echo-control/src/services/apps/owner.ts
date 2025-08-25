@@ -61,24 +61,15 @@ export const listOwnedApps = async (userId: string) => {
 
 export const updateAppSchema = z
   .object({
+    name: z.string().min(1, 'Name is required').optional(),
     description: z.string().min(1, 'Description is required').optional(),
-    homepageUrl: z.string().min(1, 'Homepage URL is required').optional(),
+    homepageUrl: z.url().optional(),
     profilePictureUrl: z.url().optional(),
   })
-  .refine(
-    data => {
-      // Ensure at least one of the fields is defined
-      return (
-        data.description !== undefined ||
-        data.homepageUrl !== undefined ||
-        data.profilePictureUrl !== undefined
-      );
-    },
-    {
-      message: 'At least one field must be provided',
-      path: [],
-    }
-  );
+  .refine(data => Object.values(data).some(value => value !== undefined), {
+    message: 'At least one field must be provided',
+    path: [],
+  });
 
 export const updateApp = async (
   appId: string,
@@ -92,11 +83,17 @@ export const updateApp = async (
 
   return await db.echoApp.update({
     where: { id: appId },
-    data: {
-      description: data.description?.trim(),
-      homepageUrl: data.homepageUrl?.trim(),
-      profilePictureUrl: data.profilePictureUrl?.trim(),
-    },
+    data: Object.fromEntries(
+      Object.entries(validatedData.data).filter(
+        ([, value]) => value !== undefined
+      )
+    ),
+  });
+};
+
+export const getGithubLink = async (appId: string) => {
+  return await db.githubLink.findUnique({
+    where: { echoAppId: appId },
   });
 };
 
@@ -129,12 +126,6 @@ export const updateGithubLinkSchema = z.discriminatedUnion('type', [
       ),
   }),
 ]);
-
-export const getGithubLink = async (appId: string) => {
-  return await db.githubLink.findUnique({
-    where: { echoAppId: appId },
-  });
-};
 
 export const updateGithubLink = async (
   appId: string,
@@ -178,6 +169,57 @@ export const updateGithubLink = async (
       githubId,
       githubType: data.type,
       githubUrl: data.url.toString(),
+    },
+  });
+};
+
+export const updateMarkupSchema = z.object({
+  markup: z
+    .number()
+    .min(1, 'Markup must be greater than 0')
+    .max(100, 'Markup must be less than 100'),
+});
+
+export const updateMarkup = async (
+  appId: string,
+  data: z.infer<typeof updateMarkupSchema>
+) => {
+  const validatedData = updateMarkupSchema.safeParse(data);
+
+  if (!validatedData.success) {
+    throw new Error(validatedData.error.message);
+  }
+
+  return await db.markUp.upsert({
+    where: { echoAppId: appId },
+    update: {
+      amount: data.markup,
+    },
+    create: {
+      echoAppId: appId,
+      amount: data.markup,
+    },
+  });
+};
+
+export const updateAuthorizedCallbackUrlsSchema = z.object({
+  authorizedCallbackUrls: z.array(z.url()),
+});
+
+export const updateAuthorizedCallbackUrls = async (
+  appId: string,
+  data: z.infer<typeof updateAuthorizedCallbackUrlsSchema>
+) => {
+  const validatedData = updateAuthorizedCallbackUrlsSchema.safeParse(data);
+
+  if (!validatedData.success) {
+    throw new Error(validatedData.error.message);
+  }
+
+  return await db.echoApp.update({
+    where: { id: appId },
+    data: {
+      authorizedCallbackUrls: validatedData.data.authorizedCallbackUrls,
     },
   });
 };
