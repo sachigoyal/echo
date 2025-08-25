@@ -42,21 +42,23 @@ async function fetchAnthropicModels(): Promise<string[]> {
     const response = await fetch('https://api.anthropic.com/v1/models', {
       headers: {
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      }
+        'anthropic-version': '2023-06-01',
+      },
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch Anthropic models: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch Anthropic models: ${response.status} ${response.statusText}`
+      );
     }
 
     const data: AnthropicApiResponse = await response.json();
     console.log(`🔍 Found ${data.data.length} models from Anthropic API`);
-    
+
     // Extract model IDs and log them
     const modelIds = data.data.map(model => model.id);
     modelIds.forEach(id => console.log(`  - ${id}`));
-    
+
     return modelIds;
   } catch (error) {
     console.error('❌ Error fetching models from Anthropic API:', error);
@@ -64,25 +66,29 @@ async function fetchAnthropicModels(): Promise<string[]> {
   }
 }
 
-function matchAnthropicModelsWithPricing(anthropicModelIds: string[], gatewayModels: SupportedModel[]): SupportedModel[] {
-
+function matchAnthropicModelsWithPricing(
+  anthropicModelIds: string[],
+  gatewayModels: SupportedModel[]
+): SupportedModel[] {
   const result: SupportedModel[] = [];
-  
+
   // Create a map of base model names to their pricing info from gateway
   const pricingMap = new Map<string, { input: number; output: number }>();
   gatewayModels.forEach(model => {
     pricingMap.set(model.model_id, {
       input: model.input_cost_per_token,
-      output: model.output_cost_per_token
+      output: model.output_cost_per_token,
     });
   });
 
-  console.log(`\n🔄 Matching ${anthropicModelIds.length} Anthropic models with gateway pricing...`);
+  console.log(
+    `\n🔄 Matching ${anthropicModelIds.length} Anthropic models with gateway pricing...`
+  );
 
   // For each Anthropic model ID, try to find matching pricing
   for (const modelId of anthropicModelIds) {
     let pricing = pricingMap.get(modelId);
-    
+
     // Check if we found an exact match first
     if (pricing) {
       console.log(`✅ Exact match found for ${modelId}`);
@@ -91,29 +97,34 @@ function matchAnthropicModelsWithPricing(anthropicModelIds: string[], gatewayMod
       // claude-3-5-sonnet-latest -> claude-3-5-sonnet
       // claude-opus-4-20250514 -> claude-opus-4
       let baseModelName = modelId;
-      
+
       // Remove specific version suffixes
       baseModelName = baseModelName.replace(/-latest$/, '');
       baseModelName = baseModelName.replace(/-\d{8}$/, ''); // Remove date suffixes like -20250514
       baseModelName = baseModelName.replace(/-\d{4}-\d{2}-\d{2}$/, ''); // Remove date suffixes like -2024-10-22
-      
+
       // Look for gateway models that match this base name
       // Handle differences in naming conventions (dots vs dashes)
-      const potentialMatches: { gatewayModelId: string; pricing: { input: number; output: number } }[] = [];
-      
+      const potentialMatches: {
+        gatewayModelId: string;
+        pricing: { input: number; output: number };
+      }[] = [];
+
       for (const [gatewayModelId, gatewayPricing] of pricingMap.entries()) {
         // Normalize both model names for comparison
         const normalizedGatewayId = gatewayModelId.replace(/\./g, '-');
         const normalizedBaseModel = baseModelName.replace(/\./g, '-');
-        
-        if (normalizedGatewayId.startsWith(normalizedBaseModel) || 
-            normalizedBaseModel.startsWith(normalizedGatewayId) ||
-            gatewayModelId.startsWith(baseModelName) || 
-            baseModelName.startsWith(gatewayModelId)) {
+
+        if (
+          normalizedGatewayId.startsWith(normalizedBaseModel) ||
+          normalizedBaseModel.startsWith(normalizedGatewayId) ||
+          gatewayModelId.startsWith(baseModelName) ||
+          baseModelName.startsWith(gatewayModelId)
+        ) {
           potentialMatches.push({ gatewayModelId, pricing: gatewayPricing });
         }
       }
-      
+
       // If we found matches, select the most specific one
       if (potentialMatches.length > 0) {
         // Sort by specificity: exact match > longest match > first match
@@ -121,36 +132,45 @@ function matchAnthropicModelsWithPricing(anthropicModelIds: string[], gatewayMod
           const aNormalized = a.gatewayModelId.replace(/\./g, '-');
           const bNormalized = b.gatewayModelId.replace(/\./g, '-');
           const baseNormalized = baseModelName.replace(/\./g, '-');
-          
+
           // Check for exact matches first
-          if (aNormalized === baseNormalized && bNormalized !== baseNormalized) return -1;
-          if (bNormalized === baseNormalized && aNormalized !== baseNormalized) return 1;
-          
+          if (aNormalized === baseNormalized && bNormalized !== baseNormalized)
+            return -1;
+          if (bNormalized === baseNormalized && aNormalized !== baseNormalized)
+            return 1;
+
           // Otherwise, prefer longer (more specific) matches
           return b.gatewayModelId.length - a.gatewayModelId.length;
         });
-        
+
         const bestMatch = potentialMatches[0];
         pricing = bestMatch.pricing;
-        console.log(`✅ Matched ${modelId} with ${bestMatch.gatewayModelId} pricing`);
+        console.log(
+          `✅ Matched ${modelId} with ${bestMatch.gatewayModelId} pricing`
+        );
       }
     }
-    
+
     // If we found pricing info, add the model
     if (pricing) {
       result.push({
         model_id: modelId,
         input_cost_per_token: pricing.input,
         output_cost_per_token: pricing.output,
-        provider: "Anthropic"
+        provider: 'Anthropic',
       });
     } else {
       // Extract base model name for logging
       let debugBaseModelName = modelId;
       debugBaseModelName = debugBaseModelName.replace(/-latest$/, '');
       debugBaseModelName = debugBaseModelName.replace(/-\d{8}$/, '');
-      debugBaseModelName = debugBaseModelName.replace(/-\d{4}-\d{2}-\d{2}$/, '');
-      console.warn(`⚠️  No pricing found for Anthropic model: ${modelId} (base: ${debugBaseModelName}) - dropping from list`);
+      debugBaseModelName = debugBaseModelName.replace(
+        /-\d{4}-\d{2}-\d{2}$/,
+        ''
+      );
+      console.warn(
+        `⚠️  No pricing found for Anthropic model: ${modelId} (base: ${debugBaseModelName}) - dropping from list`
+      );
     }
   }
 
@@ -162,8 +182,10 @@ function cleanModelId(modelId: string): string {
 }
 
 function generateAnthropicModelFile(models: SupportedModel[]): string {
-  const sortedModels = models.sort((a, b) => a.model_id.localeCompare(b.model_id));
-  
+  const sortedModels = models.sort((a, b) =>
+    a.model_id.localeCompare(b.model_id)
+  );
+
   // Generate union type
   const unionType = sortedModels
     .map(model => `  | "${model.model_id}"`)
@@ -197,37 +219,40 @@ ${modelObjects}
 async function updateAnthropicModels() {
   try {
     console.log('🔄 Starting Anthropic model update process...\n');
-    
+
     // Step 1: Fetch available models from Anthropic API
     console.log('📡 Fetching available models from Anthropic API...');
     const anthropicModelIds = await fetchAnthropicModels();
-    
+
     // Step 2: Fetch pricing data from AI Gateway
     console.log('\n💰 Fetching pricing data from AI SDK Gateway...');
     const availableModels = await gateway.getAvailableModels();
-    
+
     // Filter for Anthropic models from the gateway
     const anthropicGatewayModels = availableModels.models
       .filter(model => model.id.startsWith('anthropic/'))
-      .filter(model => model.modelType === "language")
+      .filter(model => model.modelType === 'language')
       .map(model => {
         const cleanId = cleanModelId(model.id);
 
         console.log(`Found gateway model: ${model.id} -> ${cleanId}`);
-        
+
         // Validate that required fields exist in gateway response
         if (!model.pricing) {
           throw new Error(`Model ${model.id} is missing pricing information`);
         }
-        
+
         if (model.pricing.input === undefined || model.pricing.input === null) {
           throw new Error(`Model ${model.id} is missing input pricing`);
         }
-        
-        if (model.pricing.output === undefined || model.pricing.output === null) {
+
+        if (
+          model.pricing.output === undefined ||
+          model.pricing.output === null
+        ) {
           throw new Error(`Model ${model.id} is missing output pricing`);
         }
-        
+
         const inputCost = Number(model.pricing.input);
         const outputCost = Number(model.pricing.output);
 
@@ -235,7 +260,7 @@ async function updateAnthropicModels() {
           model_id: cleanId,
           input_cost_per_token: inputCost,
           output_cost_per_token: outputCost,
-          provider: "Anthropic"
+          provider: 'Anthropic',
         };
       });
 
@@ -244,29 +269,37 @@ async function updateAnthropicModels() {
       return;
     }
 
-    console.log(`Found ${anthropicGatewayModels.length} Anthropic models in gateway`);
-    
+    console.log(
+      `Found ${anthropicGatewayModels.length} Anthropic models in gateway`
+    );
+
     // Step 3: Match Anthropic API models with gateway pricing
-    const finalModels = matchAnthropicModelsWithPricing(anthropicModelIds, anthropicGatewayModels);
-    
+    const finalModels = matchAnthropicModelsWithPricing(
+      anthropicModelIds,
+      anthropicGatewayModels
+    );
+
     // Generate the new file content
     const fileContent = generateAnthropicModelFile(finalModels);
-    
+
     // Write the updated file
     const fullPath = join(process.cwd(), 'src/supported-models/anthropic.ts');
     writeFileSync(fullPath, fileContent, 'utf8');
-    
-    console.log(`\n✅ Successfully updated anthropic.ts with ${finalModels.length} models`);
+
+    console.log(
+      `\n✅ Successfully updated anthropic.ts with ${finalModels.length} models`
+    );
     console.log(`📊 Models included:`);
     finalModels.forEach(model => {
       console.log(`  - ${model.model_id}`);
     });
-    
+
     const droppedCount = anthropicModelIds.length - finalModels.length;
     if (droppedCount > 0) {
-      console.log(`\n⚠️  ${droppedCount} models were dropped due to missing pricing data`);
+      console.log(
+        `\n⚠️  ${droppedCount} models were dropped due to missing pricing data`
+      );
     }
-    
   } catch (error) {
     console.error('❌ Error updating Anthropic models:', error);
     process.exit(1);
@@ -274,7 +307,7 @@ async function updateAnthropicModels() {
 }
 
 // Run the script
-updateAnthropicModels().catch((error) => {
+updateAnthropicModels().catch(error => {
   console.error('❌ Unexpected error:', error);
   process.exit(1);
 });
