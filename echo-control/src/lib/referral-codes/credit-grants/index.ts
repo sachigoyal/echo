@@ -1,45 +1,6 @@
-import { Prisma } from '@/generated/prisma';
 import { db } from '@/lib/db';
-import { CreditGrantReferralCode, ReferralCodeType } from '../types';
-import { isGlobalAdmin } from '@/lib/admin';
-import { mintCreditsToUser } from '@/lib/admin/mint-credits';
-
-export async function mintCreditReferralCode(
-  amountInDollars: number,
-  expiresAt?: Date,
-  tx?: Prisma.TransactionClient
-): Promise<CreditGrantReferralCode> {
-  const isAdmin = await isGlobalAdmin();
-
-  if (!isAdmin) {
-    throw new Error('Only admins can mint credit referral codes');
-  }
-
-  const code = crypto.randomUUID();
-
-  const client = tx ?? db;
-
-  // Set default expiration to 1 year from now if not provided
-  const defaultExpiresAt =
-    expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-
-  const referralCode = await client.referralCode.create({
-    data: {
-      code,
-      echoAppId: null,
-      grantType: ReferralCodeType.CREDITS,
-      grantAmount: amountInDollars,
-      reusable: false,
-      expiresAt: defaultExpiresAt,
-    },
-  });
-
-  return {
-    code: referralCode.code,
-    grantAmount: referralCode.grantAmount,
-    expiresAt: referralCode.expiresAt,
-  };
-}
+import { ReferralCodeType } from '../types';
+import { mintCreditsToUser } from '@/services/credits';
 
 export async function redeemCreditReferralCode(
   userId: string,
@@ -93,9 +54,11 @@ export async function redeemCreditReferralCode(
       echoAppId: echoAppIdFromReferralCode,
       isFreeTier,
     } = await mintCreditsToUser(
-      userId,
-      Number(referralCode.grantAmount),
-      { isFreeTier: freeTier, echoAppId },
+      {
+        userId,
+        amountInDollars: Number(referralCode.grantAmount),
+        options: { isFreeTier: freeTier, echoAppId },
+      },
       tx
     );
 

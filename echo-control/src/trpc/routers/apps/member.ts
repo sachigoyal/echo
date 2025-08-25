@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import {
+  createTRPCRouter,
+  paginatedProcedure,
+  protectedProcedure,
+} from '../../trpc';
 
 import {
   getAppMembership,
@@ -8,7 +12,6 @@ import {
   listMemberApps,
 } from '@/services/apps/member';
 
-import { infiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
 import { TRPCError } from '@trpc/server';
 import { getPublicApp } from '@/services/apps/public';
 
@@ -17,11 +20,9 @@ export const memberAppsRouter = createTRPCRouter({
     return await getAppMembership(ctx.session.user.id, input);
   }),
 
-  list: protectedProcedure
-    .input(infiniteQueryPaginationParamsSchema)
-    .query(async ({ ctx, input }) => {
-      return await listMemberApps(ctx.session.user.id, input);
-    }),
+  list: paginatedProcedure.concat(protectedProcedure).query(async ({ ctx }) => {
+    return await listMemberApps(ctx.session.user.id, ctx.pagination);
+  }),
 
   join: protectedProcedure
     .input(z.string())

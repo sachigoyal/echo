@@ -1,77 +1,45 @@
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { isGlobalAdmin } from '@/lib/admin';
-import { mintCreditsToUserAdmin } from '@/lib/admin/mint-credits';
-import { getUsers } from '@/lib/admin';
-import { getAppsForUser } from '@/lib/admin';
-import { mintCreditReferralCode } from '@/lib/referral-codes/credit-grants';
+
+import { adminProcedure, createTRPCRouter } from '../trpc';
+
+import {
+  adminGetUsers,
+  adminGetAppsForUser,
+  adminMintCreditsToUser,
+  adminMintCreditReferralCode,
+  adminMintCreditReferralCodeSchema,
+} from '@/services/admin';
+import { mintCreditsToUserSchema } from '@/services/credits';
 
 export const adminRouter = createTRPCRouter({
-  isAdmin: protectedProcedure.query(async () => {
-    return await isGlobalAdmin();
+  isAdmin: adminProcedure.query(async () => {
+    return true;
   }),
 
-  mintCredits: protectedProcedure
-    .input(
-      z.object({
-        userId: z.string(),
-        amountInDollars: z.number().positive('Amount must be positive'),
-        description: z.string().optional(),
-        isFreeTier: z.boolean().optional().default(false),
-        echoAppId: z.string().optional(),
-        metadata: z.record(z.string(), z.string()).optional(),
-        poolName: z.string().optional(),
-        defaultSpendLimit: z.number().positive().optional(),
-      })
-    )
+  mintCredits: adminProcedure
+    .input(mintCreditsToUserSchema)
     .mutation(async ({ input }) => {
-      const {
-        userId,
-        amountInDollars,
-        description,
-        isFreeTier,
-        echoAppId,
-        metadata,
-        poolName,
-        defaultSpendLimit,
-      } = input;
-
-      await mintCreditsToUserAdmin(userId, amountInDollars, {
-        description,
-        isFreeTier,
-        echoAppId,
-        metadata,
-        poolName,
-        defaultSpendLimit,
-      });
+      await adminMintCreditsToUser(input);
 
       return {
         success: true,
-        message: `Successfully minted $${amountInDollars} to user ${userId}`,
+        message: `Successfully minted $${input.amountInDollars} to user ${input.userId}`,
       };
     }),
 
-  getUsers: protectedProcedure.query(async () => {
-    return await getUsers();
+  getUsers: adminProcedure.query(async () => {
+    return await adminGetUsers();
   }),
 
-  getAppsForUser: protectedProcedure
+  getAppsForUser: adminProcedure
     .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
-      return await getAppsForUser(input.userId);
+      return await adminGetAppsForUser(input.userId);
     }),
 
-  mintCreditReferralCode: protectedProcedure
-    .input(
-      z.object({
-        amountInDollars: z.number().positive('Amount must be positive'),
-        expiresAt: z.date().optional(),
-      })
-    )
+  mintCreditReferralCode: adminProcedure
+    .input(adminMintCreditReferralCodeSchema)
     .mutation(async ({ input }) => {
-      return await mintCreditReferralCode(
-        input.amountInDollars,
-        input.expiresAt
-      );
+      return await adminMintCreditReferralCode(input);
     }),
 });

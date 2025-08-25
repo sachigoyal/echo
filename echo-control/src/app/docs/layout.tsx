@@ -1,6 +1,8 @@
-import { source } from '@/lib/source';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+
 import { DocsLogo } from '@/components/docs/docs-logo';
+
+import { source } from '../../../docs/source';
 
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 

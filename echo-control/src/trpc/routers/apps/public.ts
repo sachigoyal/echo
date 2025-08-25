@@ -1,13 +1,16 @@
-import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '../../trpc';
+import {
+  createTRPCRouter,
+  paginatedProcedure,
+  publicProcedure,
+} from '../../trpc';
 import { TRPCError } from '@trpc/server';
 import {
   getAppOwner,
   getPublicApp,
   getPublicAppSchema,
   listPublicApps,
+  listPublicAppsSchema,
 } from '@/services/apps/public';
-import { extendedInfiniteQueryPaginationParamsSchema } from '@/trpc/lib/infinite-query';
 
 export const publicAppsRouter = createTRPCRouter({
   get: publicProcedure.input(getPublicAppSchema).query(async ({ input }) => {
@@ -22,14 +25,11 @@ export const publicAppsRouter = createTRPCRouter({
     return app;
   }),
 
-  list: publicProcedure
-    .input(
-      extendedInfiniteQueryPaginationParamsSchema({
-        search: z.string().optional(),
-      })
-    )
-    .query(async ({ input }) => {
-      return await listPublicApps(input);
+  list: paginatedProcedure
+    .concat(publicProcedure)
+    .input(listPublicAppsSchema)
+    .query(async ({ ctx: { pagination }, input }) => {
+      return await listPublicApps(input, pagination);
     }),
 
   owner: publicProcedure.input(getPublicAppSchema).query(async ({ input }) => {

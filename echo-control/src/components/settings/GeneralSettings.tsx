@@ -65,8 +65,9 @@ export default function GeneralSettings({ appId }: GeneralSettingsProps) {
       // Update local state after successful API call only if values are defined
       if (newGithubId !== undefined && newGithubType !== undefined) {
         const githubLink: AppGithubLink = {
-          githubId: newGithubId,
+          githubId: parseInt(newGithubId),
           githubType: newGithubType,
+          githubUrl: '',
           isArchived: false,
           description: '',
         };
@@ -135,7 +136,7 @@ export default function GeneralSettings({ appId }: GeneralSettingsProps) {
       {/* GitHub User Settings */}
       <div>
         <GithubSelection
-          initialGithubId={app.githubLink?.githubId || ''}
+          initialGithubId={app.githubLink?.githubId?.toString() || ''}
           initialGithubType={
             app.githubLink?.githubType as 'user' | 'repo' | null
           }

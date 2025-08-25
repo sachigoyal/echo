@@ -5,13 +5,19 @@ import { cn } from '@/lib/utils';
 
 interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
+  containerClassName?: string;
   onClick?: () => void;
   priority?: boolean;
 }
 export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
-  ({ className, onClick, priority, ...props }, ref) => {
+  ({ className, containerClassName, onClick, priority, ...props }, ref) => {
     return (
-      <div ref={ref} onClick={onClick} {...props}>
+      <div
+        ref={ref}
+        onClick={onClick}
+        className={containerClassName}
+        {...props}
+      >
         <Image
           src="/logo/light.svg"
           alt="Merit Systems Logo"
