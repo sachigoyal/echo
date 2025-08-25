@@ -17,6 +17,7 @@ import { AppHomepage } from './homepage';
 import { updateAppSchema } from '@/services/apps/owner';
 
 import { api } from '@/trpc/server';
+import { CopyButton } from '@/components/ui/copy-button';
 
 interface Props {
   appId: string;
@@ -42,6 +43,18 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
   };
   return (
     <div className="flex flex-col gap-6">
+      <FormCard
+        title="App ID"
+        description="Use this ID when authenticating users in your app."
+        hideSaveButton
+      >
+        <div className="flex items-center w-full border border-primary rounded-md overflow-hidden pl-2 pr-1 py-1 bg-muted">
+          <p className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-sm no-scrollbar pr-2">
+            {app.id}
+          </p>
+          <CopyButton text={app.id} toastMessage="Copied to clipboard" />
+        </div>
+      </FormCard>
       <AppDetailsFormProvider
         title="Name"
         fields={['name']}
