@@ -107,8 +107,6 @@ RUN pnpm run build
 # Step 4: Install production dependencies only
 RUN pnpm install
 
-RUN pnpm run prisma:migrate-deploy
-
 # Expose the port that echo-server runs on
 EXPOSE 3069
 
