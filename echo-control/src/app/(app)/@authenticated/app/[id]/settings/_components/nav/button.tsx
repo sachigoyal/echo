@@ -8,11 +8,13 @@ import { usePathname } from 'next/navigation';
 interface Props<T extends string> {
   children: React.ReactNode;
   href: Route<T>;
+  appId: string;
 }
 
 export const AppSettingsSidebarButton = <T extends string>({
   children,
   href,
+  appId,
 }: Props<T>) => {
   const pathname = usePathname();
 
@@ -20,8 +22,12 @@ export const AppSettingsSidebarButton = <T extends string>({
     <Button
       variant="ghost"
       className={cn(
-        'w-full justify-start',
-        pathname === href ? 'text-foreground' : 'text-muted-foreground'
+        'w-full justify-start text-base',
+        pathname === href ||
+          (href === `/app/${appId}/settings/general` &&
+            pathname === `/app/${appId}/settings`)
+          ? 'text-foreground'
+          : 'text-muted-foreground'
       )}
     >
       {children}

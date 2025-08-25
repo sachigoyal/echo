@@ -1,6 +1,6 @@
 import { api } from '@/trpc/server';
 import { Body, Heading } from '../../../_components/layout/page-utils';
-import { AppSettingsSidebar } from './_components/sidebar';
+import { SettingsNav } from './_components/nav';
 import { notFound, unauthorized } from 'next/navigation';
 import { auth } from '@/auth';
 
@@ -23,12 +23,12 @@ export default async function AppSettingsLayout({
   }
 
   return (
-    <div className="overflow-visible">
+    <div>
       <Heading title="App Settings" />
-      <Body className="overflow-visible">
+      <Body>
         <div className="flex gap-4">
-          <div className="sticky top-0 hidden lg:block w-[240px] h-fit">
-            <AppSettingsSidebar appId={id} />
+          <div className="hidden lg:block w-[240px] sticky top-0">
+            <SettingsNav appId={id} />
           </div>
           <div className="flex-1">{children}</div>
         </div>

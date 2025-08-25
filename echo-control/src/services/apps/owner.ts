@@ -63,7 +63,7 @@ export const updateAppSchema = z
   .object({
     name: z.string().min(1, 'Name is required').optional(),
     description: z.string().min(1, 'Description is required').optional(),
-    homepageUrl: z.string().min(1, 'Homepage URL is required').optional(),
+    homepageUrl: z.url().optional(),
     profilePictureUrl: z.url().optional(),
   })
   .refine(data => Object.values(data).some(value => value !== undefined), {
@@ -88,6 +88,12 @@ export const updateApp = async (
         ([_, value]) => value !== undefined
       )
     ),
+  });
+};
+
+export const getGithubLink = async (appId: string) => {
+  return await db.githubLink.findUnique({
+    where: { echoAppId: appId },
   });
 };
 
@@ -120,12 +126,6 @@ export const updateGithubLinkSchema = z.discriminatedUnion('type', [
       ),
   }),
 ]);
-
-export const getGithubLink = async (appId: string) => {
-  return await db.githubLink.findUnique({
-    where: { echoAppId: appId },
-  });
-};
 
 export const updateGithubLink = async (
   appId: string,

@@ -1,0 +1,107 @@
+import React from 'react';
+
+import z from 'zod';
+
+import { notFound } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
+
+import { FormCard } from '../../_components/form/card';
+
+import { AppDetailsFormProvider } from './provider';
+
+import { AppName } from './name';
+import { AppDescription } from './description';
+import { AppProfilePicture } from './profile-picture';
+import { AppHomepage } from './homepage';
+
+import { updateAppSchema } from '@/services/apps/owner';
+
+import { api } from '@/trpc/server';
+
+interface Props {
+  appId: string;
+}
+
+export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
+  const app = await api.apps.public.get(appId);
+
+  if (!app) {
+    return notFound();
+  }
+
+  const updateApp = async (values: z.infer<typeof updateAppSchema>) => {
+    'use server';
+    await api.apps.owner
+      .update({
+        appId,
+        ...values,
+      })
+      .then(() => {
+        revalidatePath(`/app/${appId}`);
+      });
+  };
+  return (
+    <div className="flex flex-col gap-6">
+      <AppDetailsFormProvider
+        title="Name"
+        fields={['name']}
+        action={updateApp}
+        defaultValues={{ name: app.name ?? '' }}
+      >
+        <FormCard
+          title="Name"
+          description="The public-facing name of your app. This is shown to users when they are connecting to your app."
+          docsUrl="/docs/general"
+        >
+          <AppName />
+        </FormCard>
+      </AppDetailsFormProvider>
+
+      <AppDetailsFormProvider
+        title="Description"
+        fields={['description']}
+        action={updateApp}
+        defaultValues={{ description: app.description ?? '' }}
+        validationMode="onChange"
+      >
+        <FormCard
+          title="Description"
+          description="The description of your app. This is shown to users when they are connecting to your app."
+          docsUrl="/docs/general"
+        >
+          <AppDescription />
+        </FormCard>
+      </AppDetailsFormProvider>
+
+      <AppDetailsFormProvider
+        fields={['profilePictureUrl']}
+        title="Profile Picture"
+        action={updateApp}
+        defaultValues={{ profilePictureUrl: app.profilePictureUrl ?? '' }}
+      >
+        <FormCard
+          title="Profile Picture"
+          description="The profile picture of your app. This is shown to users when they are connecting to your app."
+          docsUrl="/docs/general"
+        >
+          <AppProfilePicture />
+        </FormCard>
+      </AppDetailsFormProvider>
+
+      <AppDetailsFormProvider
+        fields={['homepageUrl']}
+        title="Homepage"
+        action={updateApp}
+        defaultValues={{ homepageUrl: app.homepageUrl ?? '' }}
+      >
+        <FormCard
+          title="Deployed App URL"
+          description="The URL of your deployed app. This will aid in the discovery of your app."
+          docsUrl="/docs/general"
+        >
+          <AppHomepage />
+        </FormCard>
+      </AppDetailsFormProvider>
+    </div>
+  );
+};

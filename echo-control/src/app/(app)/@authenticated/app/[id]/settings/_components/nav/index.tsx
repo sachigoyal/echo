@@ -8,10 +8,12 @@ interface Props {
   appId: string;
 }
 
-export const AppSettingsSidebar: React.FC<Props> = ({ appId }) => {
+export const SettingsNav: React.FC<Props> = ({ appId }) => {
   return (
     <div className="w-full">
-      <SidebarLink href={`/app/${appId}/settings`}>General</SidebarLink>
+      <SettingsNavLink href={`/app/${appId}/settings/general`} appId={appId}>
+        General
+      </SettingsNavLink>
     </div>
   );
 };
@@ -19,15 +21,17 @@ export const AppSettingsSidebar: React.FC<Props> = ({ appId }) => {
 interface SidebarLinkProps<T extends string> {
   href: Route<T>;
   children: React.ReactNode;
+  appId: string;
 }
 
-const SidebarLink = <T extends string>({
+const SettingsNavLink = <T extends string>({
   href,
   children,
+  appId,
 }: SidebarLinkProps<T>) => {
   return (
     <Link href={href}>
-      <AppSettingsSidebarButton href={href}>
+      <AppSettingsSidebarButton href={href} appId={appId}>
         {children}
       </AppSettingsSidebarButton>
     </Link>
