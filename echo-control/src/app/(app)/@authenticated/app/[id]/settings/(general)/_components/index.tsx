@@ -64,7 +64,6 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
         <FormCard
           title="Name"
           description="The public-facing name of your app. This is shown to users when they are connecting to your app."
-          docsUrl="/docs/general"
         >
           <AppName />
         </FormCard>
@@ -80,7 +79,6 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
         <FormCard
           title="Description"
           description="The description of your app. This is shown to users when they are connecting to your app."
-          docsUrl="/docs/general"
         >
           <AppDescription />
         </FormCard>
@@ -95,7 +93,6 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
         <FormCard
           title="Profile Picture"
           description="The profile picture of your app. This is shown to users when they are connecting to your app."
-          docsUrl="/docs/general"
         >
           <AppProfilePicture />
         </FormCard>
@@ -110,7 +107,6 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
         <FormCard
           title="Deployed App URL"
           description="The URL of your deployed app. This will aid in the discovery of your app."
-          docsUrl="/docs/general"
         >
           <AppHomepage />
         </FormCard>
