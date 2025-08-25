@@ -12,7 +12,7 @@ export interface TokenProvider {
    * Refresh the access token when it expires or becomes invalid
    * @returns Promise that resolves when the token is refreshed
    */
-  refreshToken(): Promise<void>;
+  refreshToken(): Promise<string | void>;
 
   /**
    * Optional callback to be called when a token refresh fails
@@ -42,13 +42,13 @@ export class ApiKeyTokenProvider implements TokenProvider {
  */
 interface OAuthTokenProviderConfig {
   getTokenFn: () => Promise<string | null>;
-  refreshTokenFn: () => Promise<void>;
+  refreshTokenFn: () => Promise<string | void>;
   onRefreshErrorFn?: (error: Error) => void;
 }
 
 export class OAuthTokenProvider implements TokenProvider {
   private getTokenFn: () => Promise<string | null>;
-  private refreshTokenFn: () => Promise<void>;
+  private refreshTokenFn: () => Promise<string | void>;
   private onRefreshErrorFn: ((error: Error) => void) | undefined;
 
   constructor(config: OAuthTokenProviderConfig) {
@@ -61,7 +61,7 @@ export class OAuthTokenProvider implements TokenProvider {
     return this.getTokenFn();
   }
 
-  async refreshToken(): Promise<void> {
+  async refreshToken(): Promise<string | void> {
     return this.refreshTokenFn();
   }
 

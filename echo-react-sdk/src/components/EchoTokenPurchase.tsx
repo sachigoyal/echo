@@ -134,13 +134,8 @@ export function EchoTokenPurchase({
   className = '',
   children,
 }: EchoTokenPurchaseProps) {
-  const {
-    createPaymentLink,
-    user,
-    balance,
-    freeTierBalance,
-    refreshBalance,
-  } = useEcho();
+  const { createPaymentLink, user, balance, freeTierBalance, refreshBalance } =
+    useEcho();
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
