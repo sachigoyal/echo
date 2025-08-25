@@ -102,12 +102,12 @@ RUN pnpm run copy-prisma
 # Step 3: Build echo-server
 RUN pnpm run build
 
-RUN pnpm run prisma:migrate-deploy
-
 # Set NODE_OPTIONS to enable OpenTelemetry for echo-server
 
 # Step 4: Install production dependencies only
 RUN pnpm install
+
+RUN pnpm run prisma:migrate-deploy
 
 # Expose the port that echo-server runs on
 EXPOSE 3069
