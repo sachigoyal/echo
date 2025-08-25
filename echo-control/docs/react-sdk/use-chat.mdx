@@ -1,0 +1,91 @@
+---
+title: useChat Hook
+description: Build chat interfaces with Echo's useChat hook and streaming AI responses
+---
+
+# useChat Hook
+
+Echo provides a `useChat` hook which is a wrapper around the [Vercel AI SDK](https://ai-sdk.dev/docs/reference/ai-sdk-core/use-chat) `useChat` hook and provides niceties for 
+creating an Echo-powered chat experience.
+
+```tsx title="ChatApp.tsx"
+import { EchoChatProvider, EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { streamText, tool } from 'ai';
+import { z } from 'zod';
+import { ChatInterface } from './ChatInterface';
+
+function ChatApp() {
+  const { isAuthenticated } = useEcho();
+  const { openai } = useEchoModelProviders();
+  
+  const chatFn = async ({ modelMessages, abortSignal }) => {
+    const result = await streamText({
+      model: await openai('gpt-4'),
+      messages: modelMessages,
+      abortSignal,
+      tools: {
+        getWeather: tool({
+          description: 'Get current weather for a location',
+          parameters: z.object({ location: z.string() }),
+          execute: async ({ location }) => `Weather in ${location}: 72°F and sunny`,
+        }),
+      },
+    });
+    
+    return result.toAIStreamResponse().pipeThrough(new TextDecoderStream());
+  };
+  
+  if (!isAuthenticated) return <EchoSignIn />;
+  
+  return (
+    <EchoChatProvider chatFn={chatFn}>
+      <ChatInterface />
+    </EchoChatProvider>
+  );
+}
+```
+
+```tsx title="ChatInterface.tsx"
+import { useChat } from '@merit-systems/echo-react-sdk';
+
+function ChatInterface() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
+  
+  return (
+    <div>
+      <div className="messages">
+        {messages.map((message) => (
+          <div key={message.id}>
+            <strong>{message.role}:</strong> {message.content}
+            {message.toolInvocations?.map((tool) => (
+              <div key={tool.toolCallId}>
+                🔧 {tool.toolName}: {tool.result}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      
+      <form onSubmit={handleSubmit}>
+        <input
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Ask about the weather..."
+          disabled={isLoading}
+        />
+        <button type="submit" disabled={isLoading}>
+          Send
+        </button>
+      </form>
+    </div>
+  );
+}
+```
+
+## `useChat` Props
+
+<AutoTypeTable 
+  path="../echo-react-sdk/src/components/EchoChatProvider.tsx" 
+  name="EchoChatBuildContext" 
+/>

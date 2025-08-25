@@ -19,7 +19,7 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
 
   useEffect(() => {
     // Only recreate client when authentication state changes, not token refresh
-    if (!auth.isAuthenticated || !auth.user) {
+    if (!auth.user) {
       setClient(null);
       return;
     }
@@ -48,7 +48,7 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
     };
   }, [
     apiUrl,
-    auth.isAuthenticated,
+    auth.user,
     auth.user?.profile?.sub, // Only recreate if user ID changes
     auth.signinSilent,
     auth.signoutSilent,

@@ -136,7 +136,7 @@ export function EchoTokenPurchase({
 }: EchoTokenPurchaseProps) {
   const {
     createPaymentLink,
-    isAuthenticated,
+    user,
     balance,
     freeTierBalance,
     refreshBalance,
@@ -164,7 +164,7 @@ export function EchoTokenPurchase({
   };
 
   const handlePurchase = async (purchaseAmount: number) => {
-    if (!isAuthenticated) {
+    if (!user) {
       const error = new Error('Please sign in to purchase tokens');
       setPurchaseError(error.message);
       if (onError) onError(error);
@@ -221,7 +221,7 @@ export function EchoTokenPurchase({
     setPurchaseError(null);
   };
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <div className={`echo-token-purchase ${className}`}>
         <div

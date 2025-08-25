@@ -1,10 +1,15 @@
+import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+
+import { DocsLogo } from '@/components/docs/docs-logo';
+
 import { source } from '../../../docs/source';
-import { CollapsibleControl, DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { MobileSidebarTrigger } from './mobile-sidebar-trigger';
 
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
 const baseOptions: BaseLayoutProps = {
+  nav: {
+    title: <DocsLogo />,
+  },
   links: [
     {
       text: 'Terminal',
@@ -23,17 +28,6 @@ export default function Layout({ children }: LayoutProps<'/docs'>) {
         collapsible: true,
       }}
     >
-      {/* Hack: move collapsible control below the default layout navbar. */}
-      <div
-        style={
-          {
-            '--fd-banner-height': '4rem',
-          } as React.CSSProperties
-        }
-      >
-        <CollapsibleControl />
-        <MobileSidebarTrigger />
-      </div>
       {children}
     </DocsLayout>
   );

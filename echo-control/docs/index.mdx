@@ -2,14 +2,45 @@
 title: Introduction
 ---
 
-# What is Echo?
+# Echo
 
-Echo is a service and set of client libraries that provides authentication and 
-usage-based billing for expensive AI resources. Install in your app and ship your 
-monetized AI application without the risk massive OpenAI bills.
+Echo is billing infrastructure for AI applications that turns your OpenAI imports into revenue-generating user accounts across React, Next.js, Node.js, and CLI tools.
 
-Select your app's architecture to get started or view the example application 
-or repository with the buttons below.
+## Why use Echo?
+
+Building AI apps means handling payments, user auth, usage tracking, and API key management. Each user needs their own balance, every LLM call needs metering, and you're stuck building Stripe flows instead of features.
+
+Echo standardizes AI billing like Clerk standardized auth. Drop in our SDK, set your markup percentage, and your existing OpenAI code instantly gets user accounts with usage-based billing. No payment processing, no surprise bills, no exposed API keys.
+
+Result: Your users get one universal balance that works across all Echo-powered apps, creating network effects that grow your user base while you focus on building.
+
+For example, here's how you can monetize LLM usage within your app:
+
+```tsx
+import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
+
+function ChatComponent() {
+  const { openai } = useEchoModelProviders();
+  
+  const handleGenerate = async () => {
+    const { text } = await generateText({
+      model: await openai('gpt-4'),
+      prompt: 'Hello world'
+    });
+    return text;
+  };
+  
+  return <button onClick={handleGenerate}>Ask AI</button>;
+}
+```
+
+**Three integration patterns:**
+- **React SDK** — OAuth2 + PKCE for secure client-side LLM calls
+- **Next.js SDK** — Server-side auth with automatic token management  
+- **TypeScript SDK** — API keys for backends and CLI tools
+
+The React and Next.js SDKs are opinionated wrappers around the TypeScript SDK, providing framework-specific patterns while the TypeScript SDK offers direct API access for maximum flexibility.
 
 <ExampleCards 
   cards={[
