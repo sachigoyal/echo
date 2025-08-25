@@ -58,10 +58,6 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run all workspace build
-        run: |
-          pnpm run build
-
       - name: Run all workspace unit tests
         run: |
           echo "🧪 Running all workspace unit tests..."
