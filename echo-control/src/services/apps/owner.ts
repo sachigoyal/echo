@@ -85,7 +85,7 @@ export const updateApp = async (
     where: { id: appId },
     data: Object.fromEntries(
       Object.entries(validatedData.data).filter(
-        ([_, value]) => value !== undefined
+        ([, value]) => value !== undefined
       )
     ),
   });
@@ -198,6 +198,28 @@ export const updateMarkup = async (
     create: {
       echoAppId: appId,
       amount: data.markup,
+    },
+  });
+};
+
+export const updateAuthorizedCallbackUrlsSchema = z.object({
+  authorizedCallbackUrls: z.array(z.url()),
+});
+
+export const updateAuthorizedCallbackUrls = async (
+  appId: string,
+  data: z.infer<typeof updateAuthorizedCallbackUrlsSchema>
+) => {
+  const validatedData = updateAuthorizedCallbackUrlsSchema.safeParse(data);
+
+  if (!validatedData.success) {
+    throw new Error(validatedData.error.message);
+  }
+
+  return await db.echoApp.update({
+    where: { id: appId },
+    data: {
+      authorizedCallbackUrls: validatedData.data.authorizedCallbackUrls,
     },
   });
 };

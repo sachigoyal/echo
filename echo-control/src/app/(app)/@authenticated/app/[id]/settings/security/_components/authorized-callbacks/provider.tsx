@@ -1,6 +1,6 @@
 'use client';
 
-import { updateGithubLinkSchema } from '@/services/apps/owner';
+import { updateAuthorizedCallbackUrlsSchema } from '@/services/apps/owner';
 import {
   FormProvider,
   type FormProviderProps,
@@ -9,20 +9,20 @@ import { toast } from 'sonner';
 import z from 'zod';
 
 type Props = Omit<
-  FormProviderProps<z.infer<typeof updateGithubLinkSchema>>,
+  FormProviderProps<z.infer<typeof updateAuthorizedCallbackUrlsSchema>>,
   'schema'
 >;
 
-export const GithubLinkFormProvider: React.FC<Props> = ({
+export const AuthorizedCallbacksFormProvider: React.FC<Props> = ({
   children,
   ...props
 }) => {
   return (
     <FormProvider
       {...props}
-      schema={updateGithubLinkSchema}
+      schema={updateAuthorizedCallbackUrlsSchema}
       onSuccess={() => {
-        toast.success(`Github link updated successfully`);
+        toast.success(`Authorized callbacks updated successfully`);
       }}
     >
       {children}

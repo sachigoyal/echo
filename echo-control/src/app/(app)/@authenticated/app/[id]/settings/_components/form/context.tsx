@@ -36,7 +36,7 @@ export const FormProvider = <T, Schema extends z.ZodType<T, any, any>>({
   const form = useForm({
     resolver: zodResolver(schema) as Resolver<
       z.core.output<Schema>,
-      any,
+      unknown,
       z.core.output<Schema>
     >,
     defaultValues: defaultValues as DefaultValues<z.core.output<Schema>>,
@@ -48,7 +48,7 @@ export const FormProvider = <T, Schema extends z.ZodType<T, any, any>>({
       await action(values as z.core.output<Schema>);
       form.reset(values as z.core.output<Schema>);
       onSuccess?.();
-    } catch (error) {
+    } catch {
       onError?.();
     }
   });

@@ -24,7 +24,7 @@ const MarkupFormCard = ({
 };
 
 export const MarkupForm = async ({ appId }: { appId: string }) => {
-  const markup = await api.apps.public.getMarkup(appId);
+  const markup = await api.apps.public.markup(appId);
 
   return (
     <MarkupFormProvider

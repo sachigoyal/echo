@@ -20,6 +20,9 @@ export const SettingsNav: React.FC<Props> = ({ appId }) => {
       >
         Monetization
       </SettingsNavLink>
+      <SettingsNavLink href={`/app/${appId}/settings/security`} appId={appId}>
+        Security
+      </SettingsNavLink>
     </div>
   );
 };

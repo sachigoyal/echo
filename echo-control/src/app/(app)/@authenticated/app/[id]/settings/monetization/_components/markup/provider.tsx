@@ -8,13 +8,12 @@ import {
 import { toast } from 'sonner';
 import z from 'zod';
 
-interface Props
-  extends Omit<
-    FormProviderProps<z.infer<typeof updateMarkupSchema>>,
-    'schema'
-  > {}
+type Props = Omit<
+  FormProviderProps<z.infer<typeof updateMarkupSchema>>,
+  'schema'
+>;
 
-export const MarkupFormProvider = ({ children, ...props }: Props) => {
+export const MarkupFormProvider: React.FC<Props> = ({ children, ...props }) => {
   return (
     <FormProvider
       {...props}

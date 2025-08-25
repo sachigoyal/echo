@@ -1,6 +1,6 @@
 import { Nav } from '../_components/layout/nav';
 
-export default function AuthenticatedHomeLayout({
+export default async function AuthenticatedHomeLayout({
   children,
 }: {
   children: React.ReactNode;

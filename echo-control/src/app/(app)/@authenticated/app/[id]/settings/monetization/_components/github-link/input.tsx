@@ -36,7 +36,7 @@ export const GithubLinkInput = () => {
           form.setValue('url', '');
         }
       }}
-      className="flex flex-col gap-2"
+      className="flex flex-col gap-4"
     >
       <FormField
         control={form.control}

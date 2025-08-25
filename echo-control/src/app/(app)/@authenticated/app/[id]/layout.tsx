@@ -21,6 +21,11 @@ export default async function AuthenticatedAppLayout({
           {
             label: 'Settings',
             href: `/app/${id}/settings`,
+            subRoutes: [
+              `/app/${id}/settings/general`,
+              `/app/${id}/settings/monetization`,
+              `/app/${id}/settings/security`,
+            ],
           },
         ]}
       />

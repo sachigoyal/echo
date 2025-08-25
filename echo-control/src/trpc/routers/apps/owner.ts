@@ -4,6 +4,8 @@ import {
   getGithubLink,
   updateApp,
   updateAppSchema,
+  updateAuthorizedCallbackUrls,
+  updateAuthorizedCallbackUrlsSchema,
   updateGithubLink,
   updateGithubLinkSchema,
   updateMarkup,
@@ -54,5 +56,11 @@ export const ownerAppsRouter = createTRPCRouter({
     .input(updateMarkupSchema)
     .mutation(async ({ ctx, input }) => {
       return await updateMarkup(ctx.app.id, input);
+    }),
+
+  updateAuthorizedCallbackUrls: appOwnerProcedure
+    .input(updateAuthorizedCallbackUrlsSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await updateAuthorizedCallbackUrls(ctx.app.id, input);
     }),
 });
