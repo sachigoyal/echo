@@ -7,13 +7,16 @@ import { forwardRef } from 'react';
 interface Props {
   href: string;
   children: React.ReactNode;
+  subRoutes?: string[];
 }
 
 export const MotionTab = forwardRef<HTMLLIElement, Props>(
-  ({ href, children }, ref) => {
+  ({ href, children, subRoutes }, ref) => {
     const pathname = usePathname();
 
-    const isSelected = pathname === href;
+    const isSelected =
+      pathname === href ||
+      (subRoutes && subRoutes.some(route => pathname === route));
 
     return (
       <motion.li key={href} ref={ref}>

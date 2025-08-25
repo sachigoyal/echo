@@ -10,6 +10,7 @@ import { Route } from 'next';
 interface Tab<T extends string> {
   label: string;
   href: Route<T>;
+  subRoutes?: string[];
 }
 
 interface Props<T extends string = string> {
@@ -60,7 +61,9 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
                   }
                 }}
               >
-                <MotionTab href={tab.href}>{tab.label}</MotionTab>
+                <MotionTab href={tab.href} subRoutes={tab.subRoutes}>
+                  {tab.label}
+                </MotionTab>
               </Link>
             </div>
           ))}
