@@ -18,6 +18,8 @@ import { auth } from '@/auth';
 import { api } from '@/trpc/server';
 
 import { authorizeParamsSchema } from '../../_lib/authorize';
+import { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
 export default async function OAuthAuthorizePage({
   searchParams,
@@ -63,21 +65,13 @@ export default async function OAuthAuthorizePage({
     return redirect(loginUrl.toString());
   }
 
-  const appDetails = await api.apps
-    .getPublicApp({
-      appId: authParams.client_id,
-    })
-    .catch(() => null);
+  const appDetails = await api.apps.public.get(authParams.client_id);
 
   if (!appDetails) {
     return notFound();
   }
 
-  const {
-    name,
-    profilePictureUrl,
-    owner: { name: ownerName, image: ownerImageUrl },
-  } = appDetails;
+  const { name, profilePictureUrl } = appDetails;
 
   const scopes = authParams.scope.split(' ');
 
@@ -85,7 +79,7 @@ export default async function OAuthAuthorizePage({
     <div className="w-full flex flex-col items-center justify-center gap-8">
       <h1 className="text-3xl font-bold text-foreground">Connect to {name}</h1>
       <ConnectionBeam
-        appImage={profilePictureUrl ?? ownerImageUrl}
+        appImage={profilePictureUrl}
         userImage={session.user.image}
       />
       <div className="flex flex-col items-center gap-4 w-full">
@@ -94,7 +88,20 @@ export default async function OAuthAuthorizePage({
           <CardHeader className="p-4 border-b">
             <h2 className="text-lg text-foreground font-light">
               <span className="font-bold">{name}</span> by{' '}
-              <span className="font-bold">{ownerName}</span> wants to:
+              <ErrorBoundary
+                fallback={
+                  <span className="font-bold text-red-500">
+                    Error Loading Owner
+                  </span>
+                }
+              >
+                <Suspense
+                  fallback={<span className="font-light">Loading...</span>}
+                >
+                  <OwnerName appId={appDetails.id} />
+                </Suspense>
+              </ErrorBoundary>
+              wants to:
             </h2>
           </CardHeader>
           <CardContent className="p-4 border-b">
@@ -113,3 +120,9 @@ export default async function OAuthAuthorizePage({
     </div>
   );
 }
+
+const OwnerName = async ({ appId }: { appId: string }) => {
+  const owner = await api.apps.public.owner(appId);
+
+  return <span className="font-bold">{owner.name}</span>;
+};

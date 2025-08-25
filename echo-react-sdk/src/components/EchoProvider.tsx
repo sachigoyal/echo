@@ -190,6 +190,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
         redirect_uri: config.redirectUri || window.location.origin,
         scope: config.scope || 'llm:invoke offline_access',
         silentRequestTimeoutInSeconds: 10,
+        automaticSilentRenew: true,
 
         // Silent renewal configuration
         silent_redirect_uri: config.redirectUri || window.location.origin,

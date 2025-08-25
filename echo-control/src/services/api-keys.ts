@@ -10,8 +10,7 @@ import {
 } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
-import { paginationParamsSchema } from '@/lib/pagination';
-import { toPaginatedReponse } from './lib/pagination';
+import { paginationSchema, toPaginatedReponse } from './lib/pagination';
 
 export const getApiKeySchema = z.string();
 
@@ -28,13 +27,14 @@ export const getApiKey = async (
   });
 };
 
-export const listApiKeysSchema = paginationParamsSchema.extend({
+export const listApiKeysSchema = z.object({
   appId: z.string().optional(),
 });
 
 export const listApiKeys = async (
   userId: string,
-  { page = 0, page_size = 10, appId }: z.infer<typeof listApiKeysSchema>
+  { appId }: z.infer<typeof listApiKeysSchema>,
+  { page, page_size }: z.infer<typeof paginationSchema>
 ) => {
   const skip = page * page_size;
 

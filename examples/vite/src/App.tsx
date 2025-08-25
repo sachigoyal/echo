@@ -12,8 +12,7 @@ import UseChatInterface from './components/UseChatInterface';
 type Tab = 'chat' | 'images' | 'use-chat';
 
 function Dashboard() {
-  const { user, balance, error, isLoading, signOut } =
-    useEcho();
+  const { user, balance, error, isLoading, signOut } = useEcho();
   const [activeTab, setActiveTab] = useState<Tab>('chat');
 
   // Show loading state
