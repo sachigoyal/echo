@@ -30,7 +30,7 @@ export class EchoControlService {
   private referralCodeId: string | null = null;
   private githubLinkId: string | null = null;
   private freeTierSpendPool: SpendPool | null = null;
-  private githubId: string | null = null;
+  private githubId: number | null = null;
   private githubType: string | null = null;
 
   constructor(apiKey: string) {
@@ -159,7 +159,7 @@ export class EchoControlService {
   }
 
   async getAppGithubLink(): Promise<{
-    githubId: string | null;
+    githubId: number | null;
     githubType: string | null;
     id: string | null;
   }> {
