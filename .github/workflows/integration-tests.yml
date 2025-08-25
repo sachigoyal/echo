@@ -6,6 +6,7 @@ on:
       - 'echo-control/**'
       - 'echo-server/**'
       - 'echo-react-sdk/**'
+      - 'echo-next-sdk/**'
       - 'echo-typescript-sdk/**'
       - 'integration-tests/**'
       - '.github/workflows/**'

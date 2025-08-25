@@ -25,7 +25,8 @@
     "test": "echo 'no tests'",
     "test:unit": "echo 'no tests'",
     "test:watch": "echo 'no tests'",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "prepare": "tsup src/index.ts src/client.ts --dts --format esm --out-dir dist"
   },
   "keywords": [
     "echo",

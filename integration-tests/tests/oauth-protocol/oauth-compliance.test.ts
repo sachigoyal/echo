@@ -84,7 +84,9 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           code_challenge: codeChallenge,
           code_challenge_method: 'S256',
         })
-      ).rejects.toThrow(/invalid_request.*redirect_uri is not authorized/i);
+      ).rejects.toThrow(
+        /invalid_request.*redirect_uri.*is not authorized for this app/i
+      );
     });
 
     test('validates PKCE challenge format', async () => {

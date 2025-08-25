@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "if [ -n \"$DATABASE_URL\" ]; then prisma generate; else echo 'Skipping Prisma generation - DATABASE_URL not set'; fi && next build",
-    "start": "pnpm run prisma:migrate-deploy && next start",
+    "prebuild": "prisma generate",
+    "build": "next build",
+    "start": "next start",
     "lint": "eslint .",
     "setup-webhook": "node scripts/setup-webhook.js",
     "test": "echo 'All tests passed!'",
