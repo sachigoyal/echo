@@ -6,9 +6,10 @@ import {
   type FormProviderProps,
 } from '../../_components/form/context';
 import { toast } from 'sonner';
+import z from 'zod';
 
 interface Props
-  extends Omit<FormProviderProps<typeof updateAppSchema>, 'schema'> {
+  extends Omit<FormProviderProps<z.infer<typeof updateAppSchema>>, 'schema'> {
   fields: (keyof typeof updateAppSchema.shape)[];
   title: string;
 }

@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 export interface FormProviderProps<T> {
   children: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: z.ZodType<T, any, any>;
   defaultValues: DefaultValues<T>;
   action: (values: T) => Promise<void>;
@@ -17,7 +18,8 @@ export interface FormProviderProps<T> {
   validationMode?: 'onBlur' | 'onChange' | 'onSubmit' | 'all' | 'onTouched';
 }
 
-export const FormProvider = <T,>({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const FormProvider = <T, Schema extends z.ZodType<T, any, any>>({
   children,
   schema,
   defaultValues,
@@ -28,18 +30,18 @@ export const FormProvider = <T,>({
 }: FormProviderProps<T>) => {
   const form = useForm({
     resolver: zodResolver(schema) as Resolver<
-      FieldValues,
+      z.core.output<Schema>,
       any,
-      z.core.output<T>
+      z.core.output<Schema>
     >,
-    defaultValues: defaultValues as DefaultValues<z.core.output<T>>,
+    defaultValues: defaultValues as DefaultValues<z.core.output<Schema>>,
     mode: validationMode,
   });
 
   const onSubmit = form.handleSubmit(async values => {
     try {
-      await action(values as T);
-      form.reset(values as FieldValues);
+      await action(values as z.core.output<Schema>);
+      form.reset(values as z.core.output<Schema>);
       onSuccess?.();
     } catch (error) {
       onError?.();

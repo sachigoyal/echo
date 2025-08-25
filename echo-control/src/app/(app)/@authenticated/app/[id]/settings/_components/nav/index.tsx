@@ -10,9 +10,15 @@ interface Props {
 
 export const SettingsNav: React.FC<Props> = ({ appId }) => {
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col gap-2">
       <SettingsNavLink href={`/app/${appId}/settings/general`} appId={appId}>
         General
+      </SettingsNavLink>
+      <SettingsNavLink
+        href={`/app/${appId}/settings/monetization`}
+        appId={appId}
+      >
+        Monetization
       </SettingsNavLink>
     </div>
   );

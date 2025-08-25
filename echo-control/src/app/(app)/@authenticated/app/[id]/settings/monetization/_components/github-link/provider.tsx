@@ -6,9 +6,13 @@ import {
   type FormProviderProps,
 } from '../../../_components/form/context';
 import { toast } from 'sonner';
+import z from 'zod';
 
 interface Props
-  extends Omit<FormProviderProps<typeof updateGithubLinkSchema>, 'schema'> {}
+  extends Omit<
+    FormProviderProps<z.infer<typeof updateGithubLinkSchema>>,
+    'schema'
+  > {}
 
 export const GithubLinkFormProvider = ({ children, ...props }: Props) => {
   return (

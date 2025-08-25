@@ -26,8 +26,8 @@ export const AppSettingsSidebarButton = <T extends string>({
         pathname === href ||
           (href === `/app/${appId}/settings/general` &&
             pathname === `/app/${appId}/settings`)
-          ? 'text-foreground'
-          : 'text-muted-foreground'
+          ? 'text-foreground font-medium'
+          : 'text-muted-foreground/80 font-normal'
       )}
     >
       {children}

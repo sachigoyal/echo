@@ -1,7 +1,7 @@
 import { api } from '@/trpc/server';
-import { MonetizationAppSettings } from './_components';
 import { GithubLinkInput } from './_components/github-link/input';
 import { GithubLinkFormProvider } from './_components/github-link/provider';
+import { FormCard } from '../_components/form/card';
 
 export default async function MonetizationAppSettingsPage({
   params,
@@ -24,7 +24,7 @@ export default async function MonetizationAppSettingsPage({
           await api.apps.owner.updateGithubLink({
             appId: id,
             type: values.type,
-            githubUrl: values.url,
+            url: values.url,
           });
         }}
       >
