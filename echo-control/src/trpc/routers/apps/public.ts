@@ -7,6 +7,7 @@ import { TRPCError } from '@trpc/server';
 import {
   getAppOwner,
   getPublicApp,
+  getPublicAppMarkup,
   getPublicAppSchema,
   listPublicApps,
   listPublicAppsSchema,
@@ -42,4 +43,18 @@ export const publicAppsRouter = createTRPCRouter({
     }
     return owner;
   }),
+
+  getMarkup: publicProcedure
+    .input(getPublicAppSchema)
+    .query(async ({ input }) => {
+      const markup = await getPublicAppMarkup(input);
+      if (!markup) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Markup not found',
+        });
+      }
+
+      return markup;
+    }),
 });

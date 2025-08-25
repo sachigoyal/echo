@@ -172,3 +172,32 @@ export const updateGithubLink = async (
     },
   });
 };
+
+export const updateMarkupSchema = z.object({
+  markup: z
+    .number()
+    .min(1, 'Markup must be greater than 0')
+    .max(100, 'Markup must be less than 100'),
+});
+
+export const updateMarkup = async (
+  appId: string,
+  data: z.infer<typeof updateMarkupSchema>
+) => {
+  const validatedData = updateMarkupSchema.safeParse(data);
+
+  if (!validatedData.success) {
+    throw new Error(validatedData.error.message);
+  }
+
+  return await db.markUp.upsert({
+    where: { echoAppId: appId },
+    update: {
+      amount: data.markup,
+    },
+    create: {
+      echoAppId: appId,
+      amount: data.markup,
+    },
+  });
+};

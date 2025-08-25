@@ -2,7 +2,12 @@
 
 import z from 'zod';
 
-import { DefaultValues, useForm, Resolver, FieldValues } from 'react-hook-form';
+import {
+  DefaultValues,
+  useForm,
+  Resolver,
+  UseFormProps,
+} from 'react-hook-form';
 
 import { Form } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +16,7 @@ export interface FormProviderProps<T> {
   children: React.ReactNode;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: z.ZodType<T, any, any>;
-  defaultValues: DefaultValues<T>;
+  defaultValues: UseFormProps['defaultValues'];
   action: (values: T) => Promise<void>;
   onSuccess?: () => void;
   onError?: () => void;

@@ -20,6 +20,8 @@ interface Props<DocsUrl extends string> {
   description: string;
   children: React.ReactNode;
   docsUrl: Route<DocsUrl>;
+  isLoading?: boolean;
+  hideSaveButton?: boolean;
 }
 
 export const FormCard = <DocsUrl extends string>({
@@ -27,10 +29,12 @@ export const FormCard = <DocsUrl extends string>({
   description,
   children,
   docsUrl,
+  isLoading,
+  hideSaveButton,
 }: Props<DocsUrl>) => {
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="gap-2">
+      <CardHeader>
         <CardTitle className="text-xl">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
@@ -45,7 +49,7 @@ export const FormCard = <DocsUrl extends string>({
             {title} <ExternalLink className="w-4 h-4" />
           </Link>
         </p>
-        <FormButton />
+        {!hideSaveButton && !isLoading && <FormButton />}
       </CardFooter>
     </Card>
   );

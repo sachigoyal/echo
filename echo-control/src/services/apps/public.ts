@@ -18,6 +18,17 @@ export const getPublicApp = async (
   });
 };
 
+export const getPublicAppMarkup = async (
+  appId: z.infer<typeof getPublicAppSchema>
+) => {
+  return await db.markUp.findUnique({
+    where: { echoAppId: appId },
+    select: {
+      amount: true,
+    },
+  });
+};
+
 export const listPublicAppsSchema = z.object({
   search: z.string().optional(),
 });
