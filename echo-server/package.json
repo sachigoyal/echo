@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "copy-schema": "mkdir -p prisma && cp ../echo-control/prisma/schema.prisma prisma/",
+    "copy-schema": "mkdir -p prisma && cp ../echo-control/prisma/schema.prisma prisma/ && cp -r ../echo-control/prisma/migrations prisma/",
     "prisma:generate": "pnpx prisma generate",
     "setup-prisma": "pnpm run copy-schema && pnpm run prisma:generate",
     "copy-prisma": "pnpm run setup-prisma",
