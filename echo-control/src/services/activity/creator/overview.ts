@@ -36,7 +36,6 @@ export const getCreatorActivity = async ({
         lte: endDate,
       },
       isArchived: false,
-      ...(userId && { userId }),
     },
     select: {
       totalCost: true,
