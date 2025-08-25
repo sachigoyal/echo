@@ -27,11 +27,12 @@ export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
     // Create client once when authenticated - token provider handles refresh internally
     const tokenProvider = new OAuthTokenProvider({
       getTokenFn: () => Promise.resolve(auth.user?.access_token || null),
-      refreshTokenFn: async () => {
+      refreshTokenFn: async (): Promise<string> => {
         const user = await auth.signinSilent();
         if (!user) {
           throw new Error('Silent renew did not yield a new access token');
         }
+        return user.access_token;
       },
       onRefreshErrorFn: async (error: Error) => {
         console.error('Token refresh failed:', error);
