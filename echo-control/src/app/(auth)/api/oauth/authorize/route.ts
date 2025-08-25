@@ -142,14 +142,19 @@ export async function GET(req: NextRequest) {
 
     // Validate redirect_uri against authorized callback URLs
     const isLocalhostUrl = redirectUri.startsWith('http://localhost:');
+    const redirectUriWithoutTrailingSlash = redirectUri.replace(/\/$/, '');
     const isAuthorizedUrl =
-      echoApp.authorizedCallbackUrls.includes(redirectUri);
+      echoApp.authorizedCallbackUrls.includes(redirectUri) ||
+      echoApp.authorizedCallbackUrls.includes(redirectUriWithoutTrailingSlash);
 
     if (!isLocalhostUrl && !isAuthorizedUrl) {
       return NextResponse.json(
         {
           error: 'invalid_request',
-          error_description: 'redirect_uri is not authorized for this client',
+          error_description:
+            'redirect_uri (' +
+            redirectUriWithoutTrailingSlash +
+            ') is not authorized for this app',
         },
         { status: 400 }
       );

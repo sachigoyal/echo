@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-next-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Next.js SDK for Echo",
   "type": "module",
   "main": "./dist/index.js",
@@ -25,7 +25,8 @@
     "test": "echo 'no tests'",
     "test:unit": "echo 'no tests'",
     "test:watch": "echo 'no tests'",
-    "prepublishOnly": "pnpm run build"
+    "prepublishOnly": "pnpm run build",
+    "prepare": "tsup src/index.ts src/client.ts --dts --format esm --out-dir dist"
   },
   "keywords": [
     "echo",
@@ -36,7 +37,7 @@
   "author": "Merit Systems",
   "license": "MIT",
   "dependencies": {
-    "@merit-systems/echo-typescript-sdk": "1.0.3",
+    "@merit-systems/echo-typescript-sdk": "1.0.4",
     "ai": "^5.0.17",
     "jwt-decode": "^4.0.0"
   },

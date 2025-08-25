@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Chat from './chat';
-import Image from './image';
+import ImageGenerator from './image';
 
 export default function TabsContainer() {
   const [activeTab, setActiveTab] = useState<'chat' | 'image'>('chat');
@@ -48,7 +48,7 @@ export default function TabsContainer() {
             <h2 className="text-lg font-semibold mb-4 text-foreground">
               AI Image Generation
             </h2>
-            <Image />
+            <ImageGenerator />
           </div>
         )}
       </div>

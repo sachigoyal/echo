@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
+    "prebuild": "prisma generate",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "setup-webhook": "node scripts/setup-webhook.js",
@@ -14,6 +15,7 @@
     "prisma:push": "pnpx prisma db push",
     "prisma:studio": "pnpx prisma studio",
     "prisma:reset": "pnpx prisma migrate reset",
+    "prisma:migrate-deploy": "pnpx prisma migrate deploy",
     "copy:model-prices": "cp ../echo-server/model_prices.json ./model_prices.json",
     "check-types": "next typegen && tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
