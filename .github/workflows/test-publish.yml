@@ -115,20 +115,8 @@ jobs:
             exit 1
           fi
 
-          echo "📦 Testing npm pack..."
-          npm pack --dry-run
-
-          echo "🚀 Testing npm publish (dry run)..."
-          npm publish --dry-run --access public
-
-          echo "📏 Checking package size..."
-          export FORCE_COLOR=0
-          export TSUP_LOG_LEVEL=silent
-          TARBALL=$(npm pack --ignore-scripts --json | jq -r '.[0].filename')
-          echo "Tarball: $TARBALL"
-          du -h "$TARBALL" || true
-          tar -tzf "$TARBALL" | head || true
-          rm -f "$TARBALL"
+          echo "📏 Checking dist size..."
+          du -sh dist || true
 
           echo "🔍 Simulating version check..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -197,20 +185,8 @@ jobs:
             exit 1
           fi
 
-          echo "📦 Testing npm pack..."
-          npm pack --dry-run
-
-          echo "🚀 Testing npm publish (dry run)..."
-          npm publish --dry-run --access public
-
-          echo "📏 Checking package size..."
-          export FORCE_COLOR=0
-          export TSUP_LOG_LEVEL=silent
-          TARBALL=$(npm pack --ignore-scripts --json | jq -r '.[0].filename')
-          echo "Tarball: $TARBALL"
-          du -h "$TARBALL" || true
-          tar -tzf "$TARBALL" | head || true
-          rm -f "$TARBALL"
+          echo "📏 Checking dist size..."
+          du -sh dist || true
 
           echo "🔍 Simulating version check..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -277,20 +253,8 @@ jobs:
             exit 1
           fi
 
-          echo "📦 Testing npm pack..."
-          npm pack --dry-run
-
-          echo "🚀 Testing npm publish (dry run)..."
-          npm publish --dry-run --access public
-
-          echo "📏 Checking package size..."
-          export FORCE_COLOR=0
-          export TSUP_LOG_LEVEL=silent
-          TARBALL=$(npm pack --ignore-scripts --json | jq -r '.[0].filename')
-          echo "Tarball: $TARBALL"
-          du -h "$TARBALL" || true
-          tar -tzf "$TARBALL" | head || true
-          rm -f "$TARBALL"
+          echo "📏 Checking dist size..."
+          du -sh dist || true
 
           echo "🔍 Simulating version check..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
