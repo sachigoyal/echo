@@ -122,10 +122,13 @@ jobs:
           npm publish --dry-run --access public
 
           echo "📏 Checking package size..."
-          TARBALL=$(npm pack --silent)
-          SIZE=$(ls -lh "$TARBALL" | awk '{print $5}')
-          echo "Package size: $SIZE"
-          rm "$TARBALL"
+          export FORCE_COLOR=0
+          export TSUP_LOG_LEVEL=silent
+          TARBALL=$(npm pack --ignore-scripts --json | jq -r '.[0].filename')
+          echo "Tarball: $TARBALL"
+          du -h "$TARBALL" || true
+          tar -tzf "$TARBALL" | head || true
+          rm -f "$TARBALL"
 
           echo "🔍 Simulating version check..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -201,10 +204,13 @@ jobs:
           npm publish --dry-run --access public
 
           echo "📏 Checking package size..."
-          TARBALL=$(npm pack --silent)
-          SIZE=$(ls -lh "$TARBALL" | awk '{print $5}')
-          echo "Package size: $SIZE"
-          rm "$TARBALL"
+          export FORCE_COLOR=0
+          export TSUP_LOG_LEVEL=silent
+          TARBALL=$(npm pack --ignore-scripts --json | jq -r '.[0].filename')
+          echo "Tarball: $TARBALL"
+          du -h "$TARBALL" || true
+          tar -tzf "$TARBALL" | head || true
+          rm -f "$TARBALL"
 
           echo "🔍 Simulating version check..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -278,10 +284,13 @@ jobs:
           npm publish --dry-run --access public
 
           echo "📏 Checking package size..."
-          TARBALL=$(npm pack --silent)
-          SIZE=$(ls -lh "$TARBALL" | awk '{print $5}')
-          echo "Package size: $SIZE"
-          rm "$TARBALL"
+          export FORCE_COLOR=0
+          export TSUP_LOG_LEVEL=silent
+          TARBALL=$(npm pack --ignore-scripts --json | jq -r '.[0].filename')
+          echo "Tarball: $TARBALL"
+          du -h "$TARBALL" || true
+          tar -tzf "$TARBALL" | head || true
+          rm -f "$TARBALL"
 
           echo "🔍 Simulating version check..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
