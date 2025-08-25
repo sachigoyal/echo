@@ -61,24 +61,15 @@ export const listOwnedApps = async (userId: string) => {
 
 export const updateAppSchema = z
   .object({
+    name: z.string().min(1, 'Name is required').optional(),
     description: z.string().min(1, 'Description is required').optional(),
     homepageUrl: z.string().min(1, 'Homepage URL is required').optional(),
     profilePictureUrl: z.url().optional(),
   })
-  .refine(
-    data => {
-      // Ensure at least one of the fields is defined
-      return (
-        data.description !== undefined ||
-        data.homepageUrl !== undefined ||
-        data.profilePictureUrl !== undefined
-      );
-    },
-    {
-      message: 'At least one field must be provided',
-      path: [],
-    }
-  );
+  .refine(data => Object.values(data).some(value => value !== undefined), {
+    message: 'At least one field must be provided',
+    path: [],
+  });
 
 export const updateApp = async (
   appId: string,
@@ -92,11 +83,11 @@ export const updateApp = async (
 
   return await db.echoApp.update({
     where: { id: appId },
-    data: {
-      description: data.description?.trim(),
-      homepageUrl: data.homepageUrl?.trim(),
-      profilePictureUrl: data.profilePictureUrl?.trim(),
-    },
+    data: Object.fromEntries(
+      Object.entries(validatedData.data).filter(
+        ([_, value]) => value !== undefined
+      )
+    ),
   });
 };
 
