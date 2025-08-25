@@ -14,6 +14,7 @@
     "prisma:push": "pnpx prisma db push",
     "prisma:studio": "pnpx prisma studio",
     "prisma:reset": "pnpx prisma migrate reset",
+    "prisma:migrate-deploy": "pnpx prisma migrate deploy",
     "copy:model-prices": "cp ../echo-server/model_prices.json ./model_prices.json",
     "check-types": "next typegen && tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
