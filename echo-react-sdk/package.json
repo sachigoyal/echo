@@ -31,7 +31,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "publish:test": "npm publish --access public --dry-run",
-    "publish:real": "npm publish --access public"
+    "publish:real": "npm publish --access public",
+    "prepare": "tsup src/index.ts --dts --format esm,cjs --out-dir dist"
   },
   "keywords": [
     "react",
