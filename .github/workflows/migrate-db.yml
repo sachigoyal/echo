@@ -8,7 +8,8 @@ on:
       - 'echo-control/prisma/**'
 
 jobs:
-  migrate:
+  migrate-staging:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     
     steps:
@@ -30,8 +31,37 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: ./echo-control
       
-      - name: Run Prisma migrate deploy
+      - name: Run Prisma migrate deploy (Staging)
         run: pnpm run prisma:migrate-deploy
         working-directory: ./echo-control
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.STAGING_DB_URL }}
+
+  migrate-production:
+    if: github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ./echo-control
+      
+      - name: Run Prisma migrate deploy (Production)
+        run: pnpm run prisma:migrate-deploy
+        working-directory: ./echo-control
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DB_URL }}
