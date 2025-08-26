@@ -6,7 +6,6 @@ packages:
   - create-echo-app
   - echo-react-sdk
   - echo-authjs-provider
-  - echo-shared-components
   - integration-tests
   - examples/*
 allowBuiltDependencies:

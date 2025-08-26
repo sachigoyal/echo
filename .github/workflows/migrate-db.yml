@@ -19,7 +19,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 10.11.0
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -28,7 +28,7 @@ jobs:
           cache: 'pnpm'
       
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter echo-control
         working-directory: ./echo-control
       
       - name: Run Prisma migrate deploy (Staging)
@@ -48,7 +48,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 10.11.0
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -57,7 +57,7 @@ jobs:
           cache: 'pnpm'
       
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter echo-control
         working-directory: ./echo-control
       
       - name: Run Prisma migrate deploy (Production)

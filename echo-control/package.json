@@ -129,11 +129,5 @@
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.6",
     "typescript": "^5.0.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.1.10",
-      "@types/react-dom": "19.1.7"
-    }
   }
 }

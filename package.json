@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Echo platform monorepo",
   "private": true,
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "dev": "pnpm run --recursive dev",
     "build": "pnpm run --recursive build",
@@ -64,5 +65,16 @@
   },
   "dependencies": {
     "vitest": "^3.2.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.1.10",
+      "@types/react-dom": "19.1.7"
+    },
+    "engine-strict": true
   }
 }
