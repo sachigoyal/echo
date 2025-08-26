@@ -4,6 +4,7 @@ import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from '../logger';
+import { getImageModelCost } from '../services/AccountingService';
 
 // Use OpenAI SDK's ResponseUsage for non-streaming responses
 
@@ -84,8 +85,30 @@ export class OpenAIImageProvider extends BaseProvider {
           parsed.usage.total_tokens || input_tokens + output_tokens;
       }
 
-      // Use image-specific cost calculation
-      cost = getImageCost(parsed);
+      // Use image-specific cost calculation from AccountingService
+      if (parsed.usage) {
+        const { input_tokens, output_tokens, input_tokens_details } =
+          parsed.usage;
+        let textTokens = 0;
+        let imageInputTokens = 0;
+        const imageOutputTokens = output_tokens || 0;
+
+        if (input_tokens_details) {
+          // Separate image and text tokens if available
+          imageInputTokens = input_tokens_details.image_tokens || 0;
+          textTokens = input_tokens_details.text_tokens || 0;
+        } else {
+          // Fallback: treat all input tokens as image tokens
+          imageInputTokens = input_tokens || 0;
+        }
+
+        cost = getImageModelCost(
+          this.getModel(),
+          textTokens,
+          imageInputTokens,
+          imageOutputTokens
+        );
+      }
 
       // Extract provider ID if available
       if (parsed.created) {
@@ -114,66 +137,3 @@ export class OpenAIImageProvider extends BaseProvider {
     }
   }
 }
-
-// Calculates the cost of an OpenAI image generation response (gpt-image-1).
-// See: https://platform.openai.com/docs/guides/images/pricing
-
-// Prices per 1M tokens (image tokens):
-// Model        Input      Cached Input   Output
-// gpt-image-1  $10.00     $2.50          $40.00
-
-// Prices per 1M tokens (text tokens):
-// gpt-image-1  $5.00      $1.25
-
-const IMAGE_TOKEN_PRICES = {
-  'gpt-image-1': {
-    input: 10.0 / 1_000_000,
-    cached_input: 2.5 / 1_000_000,
-    output: 40.0 / 1_000_000,
-    text_input: 5.0 / 1_000_000,
-    text_cached_input: 1.25 / 1_000_000,
-  },
-};
-
-/**
- * Calculate the cost of an image generation response.
- * @param image - The image response from OpenAI
- * @returns The calculated cost in dollars
- */
-export const getImageCost = (image: ImagesResponse): Decimal => {
-  // Only gpt-image-1 currently supported
-  if (!image.usage) {
-    return new Decimal(0);
-  }
-
-  // If usage tokens are present, use token-based pricing
-  const { input_tokens, output_tokens, input_tokens_details } = image.usage;
-  let cost = new Decimal(0);
-  if (input_tokens_details) {
-    // Separate image and text tokens if available
-    const imageTokens = input_tokens_details.image_tokens || 0;
-    const textTokens = input_tokens_details.text_tokens || 0;
-
-    const imageCost = new Decimal(
-      imageTokens * IMAGE_TOKEN_PRICES['gpt-image-1'].input
-    );
-    const textCost = new Decimal(
-      textTokens * IMAGE_TOKEN_PRICES['gpt-image-1'].text_input
-    );
-
-    cost = cost.plus(imageCost);
-    cost = cost.plus(textCost);
-  } else {
-    // Fallback: treat all as image tokens
-    const inputCost = new Decimal(
-      (input_tokens || 0) * IMAGE_TOKEN_PRICES['gpt-image-1'].input
-    );
-    cost = cost.plus(inputCost);
-  }
-
-  const outputCost =
-    (output_tokens || 0) * IMAGE_TOKEN_PRICES['gpt-image-1'].output;
-  cost = cost.plus(outputCost);
-
-  return cost;
-};

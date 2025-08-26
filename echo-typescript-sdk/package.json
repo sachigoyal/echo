@@ -3,12 +3,14 @@
   "version": "1.0.4",
   "description": "TypeScript SDK for Echo platform",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "scripts": {
@@ -21,6 +23,12 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:watch": "vitest --watch",
+    "get-models": "tsx scripts/get-available-models.ts",
+    "update-models": "tsx scripts/update-models.ts",
+    "update-models:openai": "tsx scripts/update-openai-models.ts",
+    "update-models:anthropic": "tsx scripts/update-anthropic-models.ts",
+    "update-models:gemini": "tsx scripts/update-gemini-models.ts",
+    "update-models:openrouter": "tsx scripts/update-openrouter-models.ts",
     "prepublishOnly": "pnpm run build"
   },
   "keywords": [
@@ -32,11 +40,14 @@
   "author": "Merit Systems",
   "license": "MIT",
   "devDependencies": {
+    "@ai-sdk/gateway": "^1.0.12",
     "@types/node": "^24.0.3",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
+    "dotenv": "^16.5.0",
     "eslint": "^9.29.0",
     "tsup": "^8.5.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.8.3",
     "vitest": "^3.2.3"
   },
@@ -44,7 +55,7 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.5",
+    "@ai-sdk/anthropic": "^2.0.6",
     "@ai-sdk/google": "^2.0.7",
     "@ai-sdk/openai": "^2.0.16",
     "ai": "^5.0.18"

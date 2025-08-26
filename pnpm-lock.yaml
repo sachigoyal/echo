@@ -706,7 +706,7 @@ importers:
   echo-typescript-sdk:
     dependencies:
       '@ai-sdk/anthropic':
-        specifier: ^2.0.5
+        specifier: ^2.0.6
         version: 2.0.6(zod@4.0.17)
       '@ai-sdk/google':
         specifier: ^2.0.7
@@ -718,6 +718,9 @@ importers:
         specifier: ^5.0.18
         version: 5.0.22(zod@4.0.17)
     devDependencies:
+      '@ai-sdk/gateway':
+        specifier: ^1.0.12
+        version: 1.0.13(zod@4.0.17)
       '@types/node':
         specifier: ^24.0.3
         version: 24.0.3
@@ -727,12 +730,18 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.34.1
         version: 8.34.1(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.3)
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
       eslint:
         specifier: ^9.29.0
         version: 9.29.0(jiti@2.4.2)
       tsup:
         specifier: ^8.5.0
         version: 8.5.0(@microsoft/api-extractor@7.52.8(@types/node@24.0.3))(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.8.3)(yaml@2.8.0)
+      tsx:
+        specifier: ^4.19.2
+        version: 4.20.3
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -949,6 +958,12 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
+  '@ai-sdk/gateway@1.0.13':
+    resolution: {integrity: sha512-szF5ZsvNUY+GuCT3GYkXDqKjfoVk8i0SegVogD3bT9h4Wr1lkNI9QpUzo+ji3TayczG0kDAW+WKL0jjdIwZ4TQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
   '@ai-sdk/gateway@1.0.9':
     resolution: {integrity: sha512-kIfwunyUUwyBLg2KQcaRtjRQ1bDuJYPNIs4CNWaWPpMZ4SV5cRL1hLGMuX4bhfCJYDXHMGvJGLtUK6+iAJH2ZQ==}
     engines: {node: '>=18'}
@@ -981,6 +996,12 @@ packages:
 
   '@ai-sdk/provider-utils@3.0.5':
     resolution: {integrity: sha512-HliwB/yzufw3iwczbFVE2Fiwf1XqROB/I6ng8EKUsPM5+2wnIa8f4VbljZcDx+grhFrPV+PnRZH7zBqi8WZM7Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
+  '@ai-sdk/provider-utils@3.0.6':
+    resolution: {integrity: sha512-s1+9okDSqbxKvwf1mqyyqtOY27/RV9O+XTzaRKEamVKbmVBM7BiCSfui7vH7A/1EETECtTJkS2MUL5D3Pw5GFw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -9849,6 +9870,12 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.5(zod@4.0.17)
       zod: 4.0.17
 
+  '@ai-sdk/gateway@1.0.13(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.6(zod@4.0.17)
+      zod: 4.0.17
+
   '@ai-sdk/gateway@1.0.9(zod@4.0.17)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
@@ -9908,6 +9935,13 @@ snapshots:
       eventsource-parser: 3.0.5
       zod: 4.0.17
       zod-to-json-schema: 3.24.6(zod@4.0.17)
+
+  '@ai-sdk/provider-utils@3.0.6(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.5
+      zod: 4.0.17
 
   '@ai-sdk/provider@2.0.0':
     dependencies:

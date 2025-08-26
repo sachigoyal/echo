@@ -158,42 +158,6 @@ export interface EchoAccessJwtPayload {
 }
 
 /**
- * Supported model information
- */
-export interface SupportedModel {
-  name: string;
-  provider: string;
-  pricing: {
-    input_cost_per_token: number;
-    output_cost_per_token: number;
-  };
-  limits: {
-    max_tokens: number;
-    max_input_tokens: number;
-    max_output_tokens: number;
-  };
-  capabilities: {
-    mode: string;
-    supports_function_calling: boolean;
-    supports_system_messages: boolean;
-    supports_native_streaming: boolean;
-  };
-  metadata: {
-    deprecation_date?: string;
-    supported_endpoints?: string[];
-    tool_use_system_prompt_tokens?: number;
-  };
-}
-
-/**
- * Response from the supported models endpoint
- */
-export interface SupportedModelsResponse {
-  models: SupportedModel[];
-  models_by_provider: Record<string, SupportedModel[]>;
-}
-
-/**
  * User spend information for a specific app
  */
 export interface UserSpendInfo {
