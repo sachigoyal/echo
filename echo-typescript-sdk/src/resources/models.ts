@@ -1,6 +1,12 @@
 import { HttpClient } from '../http-client';
-import { SupportedModel, SupportedModelsResponse } from '../types';
 import { BaseResource } from '../utils/error-handling';
+import { 
+  OpenAIModels,
+  AnthropicModels, 
+  GeminiModels,
+  OpenRouterModels,
+  OpenAIImageModels
+} from '../supported-models';
 
 export class ModelsResource extends BaseResource {
   constructor(http: HttpClient) {
@@ -8,39 +14,48 @@ export class ModelsResource extends BaseResource {
   }
 
   /**
-   * Get supported models with pricing, limits, and capabilities
+   * Get supported models as a list of model names
    */
-  async getSupportedModels(): Promise<SupportedModelsResponse> {
-    return this.handleRequest(
-      () => this.http.get('/api/v1/supported-models'),
-      'fetching supported models',
-      '/api/v1/supported-models'
-    );
+  async getSupportedModels(): Promise<string[]> {
+    const allModels = [
+      ...OpenAIModels,
+      ...AnthropicModels,
+      ...GeminiModels,
+      ...OpenRouterModels,
+      ...OpenAIImageModels
+    ];
+    
+    return allModels.map(model => model.model_id);
   }
 
   /**
-   * Get supported models as a flat array
+   * Get supported models as a flat array of model names
    */
-  async listSupportedModels(): Promise<SupportedModel[]> {
-    try {
-      const response = await this.getSupportedModels();
-      return response.models;
-    } catch (error) {
-      throw error;
-    }
+  async listSupportedModels(): Promise<string[]> {
+    return this.getSupportedModels();
   }
 
   /**
-   * Get supported models grouped by provider
+   * Get supported models grouped by provider (model names only)
    */
-  async getSupportedModelsByProvider(): Promise<
-    Record<string, SupportedModel[]>
-  > {
-    try {
-      const response = await this.getSupportedModels();
-      return response.models_by_provider;
-    } catch (error) {
-      throw error;
+  async getSupportedModelsByProvider(): Promise<Record<string, string[]>> {
+    const allModels = [
+      ...OpenAIModels,
+      ...AnthropicModels,
+      ...GeminiModels,
+      ...OpenRouterModels,
+      ...OpenAIImageModels
+    ];
+    
+    const modelsByProvider: Record<string, string[]> = {};
+    
+    for (const model of allModels) {
+      if (!modelsByProvider[model.provider]) {
+        modelsByProvider[model.provider] = [];
+      }
+      modelsByProvider[model.provider]!.push(model.model_id);
     }
+    
+    return modelsByProvider;
   }
 }
