@@ -21,7 +21,8 @@ export const Code: React.FC<Props> = ({ value, initial, lang }) => {
   useLayoutEffect(() => {
     void highlight(value, lang)
       .then(setNodes)
-      .catch(() =>
+      .catch(e => {
+        console.error(e);
         setNodes(
           <code
             className={
@@ -30,8 +31,8 @@ export const Code: React.FC<Props> = ({ value, initial, lang }) => {
           >
             {value}
           </code>
-        )
-      );
+        );
+      });
   }, [value, lang]);
 
   return (
@@ -47,6 +48,11 @@ export const Code: React.FC<Props> = ({ value, initial, lang }) => {
             display: none;
           }
             font-size: 12px;
+        }
+
+        .shiki .line {
+          padding-left: 0rem !important;
+          padding-right: 0rem !important;
         }
 
         @media (max-width: 768px) {

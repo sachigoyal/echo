@@ -103,28 +103,30 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
   );
 };
 
-export const LoadingChart = () => {
-  const simulatedData = useMemo(() => {
-    const data: ChartData<{ value: number }>[] = [];
-    const baseValue = 10;
-    const variance = 20;
-    let currentValue = baseValue;
+const simulateChartData = () => {
+  const data: ChartData<{ value: number }>[] = [];
+  const baseValue = 10;
+  const variance = 20;
+  let currentValue = baseValue;
 
-    for (let i = 48; i >= 0; i--) {
-      const date = subDays(new Date(), i);
-      // Increment can be positive or negative, with some random variation
-      const increment = (Math.random() - 0.5) * 2 * variance; // Range: -variance to +variance
-      if (i !== 48) {
-        currentValue += increment;
-      }
-      data.push({
-        timestamp: format(date, 'MMM dd'),
-        value: Math.max(0, Math.round(currentValue)),
-      });
+  for (let i = 48; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    // Increment can be positive or negative, with some random variation
+    const increment = (Math.random() - 0.5) * 2 * variance; // Range: -variance to +variance
+    if (i !== 48) {
+      currentValue += increment;
     }
+    data.push({
+      timestamp: format(date, 'MMM dd'),
+      value: Math.max(0, Math.round(currentValue)),
+    });
+  }
 
-    return data;
-  }, []);
+  return data;
+};
+
+export const LoadingChart = () => {
+  const simulatedData = useMemo(simulateChartData, []);
 
   return (
     <div className="animate-pulse">
