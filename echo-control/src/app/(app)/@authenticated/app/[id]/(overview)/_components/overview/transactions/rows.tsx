@@ -12,6 +12,18 @@ export const TransactionRows = async ({ appId }: { appId: string }) => {
     page_size: 1000,
   });
 
+  if (transactions.length === 0) {
+    return (
+      <TableRow className="mt-2">
+        <TableCellBase colSpan={2} className="text-left pl-4">
+          <p className="text-xs text-muted-foreground/60">
+            No transactions yet
+          </p>
+        </TableCellBase>
+      </TableRow>
+    );
+  }
+
   return transactions.slice(0, 5).map(transaction => (
     <TableRow key={transaction.id}>
       <TableCell className="pl-4">

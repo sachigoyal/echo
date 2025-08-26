@@ -21,6 +21,9 @@ export const listAppUsersActivity = async (
       where: {
         echoAppId,
         isArchived: false,
+        totalSpent: {
+          gt: 0,
+        },
       },
     }),
     (async () => {
