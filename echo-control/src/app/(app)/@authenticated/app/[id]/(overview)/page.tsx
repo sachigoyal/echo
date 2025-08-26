@@ -34,7 +34,7 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
           />
         }
       />
-      <Body className="gap-8">
+      <Body className="gap-0">
         <ErrorBoundary fallback={null}>
           <Suspense fallback={null}>
             <Setup appId={id} />
