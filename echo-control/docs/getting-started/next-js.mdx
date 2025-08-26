@@ -64,41 +64,56 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
 
     <Step>
         ### Create an Echo App
-        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get an `app_id`.
+        Go to [echo.merit.systems/new](https://echo.merit.systems/new) to get an `app_id`.
     </Step>
+
+    <Step>
+        ### Add Echo configuration file
+
+        <Files>
+            <Folder name="src/echo" defaultOpen>
+                <File name="index.ts" />
+            </Folder>
+        </Files>
+
+        ```typescript title="src/echo/index.ts" lineNumbers
+        import Echo from "@merit-systems/echo-next-sdk";
+
+        export const { handlers, isSignedIn, openai, anthropic } = Echo({
+            appId: "YOUR_ECHO_APP_ID", // from previous step
+        });
+
+        ```
+    </Step>
+    
 
     <Step>
         ### Add Echo Routes
         <Files>
-            <Folder name="app" defaultOpen>
-                <Folder name="api/echo/[..slug]" defaultOpen>
-                    <File name="route.ts" />
-                </Folder>
-                <File name="layout.tsx" />
+            <Folder name="src/app/api/echo/[...echo]" defaultOpen>
+                <File name="route.ts" />
             </Folder>
-            <File name="package.json" />
         </Files>
 
-        ```typescript title="app/api/echo/[..slug]/route.ts"
-        import { Echo } from "@merit-systems/echo-next-sdk";
-
-        const ECHO_APP_ID = "ECHO_APP_ID";
-        const { handlers } = useEcho();
-
-        export { GET, POST } = handlers;
+        ```typescript title="src/app/api/echo/[...echo]/route.ts" lineNumbers
+        import { handlers } from "@/echo";
+        export const { GET, POST } = handlers;
         ```
     </Step>
 
     <Step>
         ### Sign In From Client
         Create an action in the front-end that redirects users to authorize your application with [echo.merit.systems](echo.merit.systems).
-        ```tsx title="app/page.tsx"
-        import { SignIn } from "@merit-systems/echo-next-sdk";
+        ```tsx title="app/page.tsx" lineNumbers
+        import { signIn, isSignedIn } from "@merit-systems/echo-next-sdk/client";
 
         export default Home() {
+            if (!isSignedIn()) {
+                return <button onClick={() => signIn()}>Sign In</button>
+            }
             return (
                 <div>
-                    <button onClick={() => SignIn()}>Connect LLM</button>
+                    <p>Monetization Activated 📈</p> 
                 </div>
             )
         }
@@ -118,61 +133,83 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
         </Files>
 
 
-        ```typescript title="app/api/ai/route.ts"
-        import { generateText, streamText } from 'ai';
-        import { echoOpenAI } from "@merit-systems/echo-next-sdk/providers";
 
-        const { text } = await generateText({
-            model: echoOpenAI('gpt-5'),
-            prompt: 'Can I benefit from the application layer AI wave?',
-        });
-        const { stream } = await streamText({
-            model: echoOpenAI('gpt-5'),
-            prompt: 'How can I surf AI apps?',
-        });
+        Add [Vercel AI SDK server routes](https://ai-sdk.dev/docs/ai-sdk-ui/completion) with Echo providers.
+
+        ```typescript title="app/api/completion/route.ts" lineNumbers
+        // [!code highlight:1]
+        import { openai } from "@/echo";
+        import { convertToModelMessages, streamText } from "ai";
+
+        export async function POST(req: Request) {
+            const { messages } = await req.json();
+
+            const result = streamText({
+                // [!code highlight:1]
+                model: await openai("gpt-5"), 
+                messages: convertToModelMessages(messages),
+            });
+
+            return result.toUIMessageStreamResponse();
+        }
+        
         ```
-
-        <Callout type="info">
-        TODO(sragss): Could just copy this exactly: https://ai-sdk.dev/docs/ai-sdk-ui/completion
-        </Callout>
     </Step>
 
     <Step>
-        ### Show credit balance on the UI
-        ```tsx title="app/page.tsx"
-        import { SignIn, useBalance } from "@merit-systems/echo-next-sdk";
+        ### `useChat()` from the client
+        ```tsx title="app/components/chat.tsx" lineNumbers
+        "use client";
 
-        export default Home() {
-            // TODO: This needs to get app_id.
-            const balance = useBalance();
+        import { useChat } from "@ai-sdk/react";
+        import { useState } from "react";
+
+        export default function Chat() {
+            const [input, setInput] = useState("");
+            const { messages, sendMessage } = useChat();
             return (
                 <div>
-                    <button onClick={() => SignIn()}>Connect LLM</button>
-                    <div>Balance: ${balance}</div>
+					{messages.map((message) => (
+						<div>{JSON.stringify(message)}</div>
+					))}
+					<input value={input} onChange={(e) => setInput(e.currentTarget.value)} />
+					<button type="submit" onClick={() => sendMessage({ text: input })}>Send</button>
                 </div>
+            );
+        }
+
+        ```
+
+
+
+        Then add use it on the authenticated page. 
+
+        ```tsx title="app/page.tsx" lineNumbers
+        // [!code ++:1]
+        import Chat from "./components/chat";
+        import { signIn, isSignedIn } from "@merit-systems/echo-next-sdk/client";
+
+
+        export default Home() {
+            if (!isSignedIn()) {
+                return <button onClick={() => signIn()}>Sign In</button>
+            }
+            // [!code ++:1]
+            return <Chat />;
+            // [!code --:3]
+            return (
+                <div> Monetization Activated 📈</div>
             )
+            
         }
         ```
+
     </Step>
+
     <Step>
-        ### Enable token purchase from UI
-        ```tsx title="app/page.tsx"
-        import { SignIn, useBalance, useTopUpLink } from "@merit-systems/echo-next-sdk";
-
-        export default Home() {
-            // TODO: These need app_id.
-            const balance = useBalance();
-            const topupLink = useTopUpLink();
-            return (
-                <div>
-                    <button onClick={() => SignIn()}>Connect LLM</button>
-                    <div>Balance: ${balance}</div>
-                    <button onClick={() => window.open(topupLink)}>Top Up Credits</button>
-                </div>
-            )
-        }
-        ```
+        ### Prosper
     </Step>
+
 
 </Steps>
 
