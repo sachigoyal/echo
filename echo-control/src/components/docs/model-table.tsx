@@ -1,28 +1,23 @@
-interface Model {
-  model_id: string;
-  input_cost_per_token: number;
-  output_cost_per_token: number;
-}
+import { SupportedModel } from '../../../../echo-typescript-sdk/src/supported-models/types';
+import { AnthropicModels } from '../../../../echo-typescript-sdk/src/supported-models/chat/anthropic';
+import { OpenAIModels } from '../../../../echo-typescript-sdk/src/supported-models/chat/openai';
+import { GeminiModels } from '../../../../echo-typescript-sdk/src/supported-models/chat/gemini';
 
 interface ModelTableProps {
   path: string;
-  name: string;
 }
 
-export function ModelTable({ path, name }: ModelTableProps) {
+export function ModelTable({ path }: ModelTableProps) {
   // Dynamic import functionality would need to be handled at build time
   // For now, we'll map the known paths to their respective imports
-  const getModels = (): Model[] => {
+  const getModels = (): SupportedModel[] => {
     if (path.includes('anthropic')) {
-      const { AnthropicModels } = require('../../../../echo-typescript-sdk/src/supported-models/chat/anthropic');
       return AnthropicModels;
     }
     if (path.includes('openai')) {
-      const { OpenAIModels } = require('../../../../echo-typescript-sdk/src/supported-models/chat/openai');
       return OpenAIModels;
     }
     if (path.includes('gemini')) {
-      const { GeminiModels } = require('../../../../echo-typescript-sdk/src/supported-models/chat/gemini');
       return GeminiModels;
     }
     return [];

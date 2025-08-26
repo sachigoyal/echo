@@ -13,7 +13,6 @@ All Gemini models are supported via the `GeminiModel` type:
 
 <ModelTable 
   path="../echo-typescript-sdk/src/supported-models/chat/gemini.ts" 
-  name="GeminiModel" 
 />
 
 ## Usage
@@ -43,27 +42,31 @@ Works with Vercel AI SDK functions including `generateText`, and `generateObject
 
 - Direct Gemini API streaming may not work as expected
 - For the most reliable streaming experience, ensure your implementation uses the chat completions interface
-- To enable this, you should use the OpenAI provider for Gemini models.
+- To enable this, you should use the OpenAI SDK, which will hit Gemini's supported chat/completions endpoint.
+- For more information, see Google's documentation [here](https://cloud.google.com/vertex-ai/generative-ai/docs/samples/generativeaionvertexai-gemini-chat-completions-non-streaming).
+- Streaming will be supported through the Vercel interface as soon as possible. 
+
 
 ```typescript
-import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
-import { streamText } from 'ai';
+import OpenAI from 'openai';
 
-// Create provider with Echo billing
-const google = createEchoOpenAI(
-  { appId: 'your-echo-app-id' },
-  async () => 'your-api-key'
-);
 
-// Generate text with Gemini
-const { text } = await streamText({
-  model: google('gemini-2.5-flash'),
-  prompt: 'Explain the importance of multimodal AI models'
+// Create OpenAI client with Echo integration
+const client = new OpenAI({
+  apiKey: 'your-jwt-token-or-api-key', // Your JWT token acts as the API key
+  baseURL: 'https://echo.router.merit.systems', // Echo's proxy endpoint
 });
+
+const stream = await client.chat.completions.create({
+    model: "gemini-2.5-flash",
+    messages: [
+      { role: "system", content: "You are a helpful assistant." },
+      { role: "user", content: "Tell me a short story about a robot." },
+    ],
+    stream: true,
+  });
+
 ```
-
-
-If you encounter issues with streaming, try switching to non-streaming methods like `generateText()` or `generateObject()`.
 
 
 
