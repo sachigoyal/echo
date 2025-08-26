@@ -191,6 +191,8 @@ export type OpenRouterModel =
   | 'nousresearch/hermes-2-pro-llama-3-8b'
   | 'nousresearch/hermes-3-llama-3.1-405b'
   | 'nousresearch/hermes-3-llama-3.1-70b'
+  | 'nousresearch/hermes-4-405b'
+  | 'nousresearch/hermes-4-70b'
   | 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo'
   | 'nvidia/llama-3.1-nemotron-70b-instruct'
   | 'nvidia/llama-3.1-nemotron-ultra-253b-v1'
@@ -1453,6 +1455,18 @@ export const OpenRouterModels: SupportedModel[] = [
     model_id: 'nousresearch/hermes-3-llama-3.1-70b',
     input_cost_per_token: 1e-7,
     output_cost_per_token: 2.8e-7,
+    provider: 'OpenRouter',
+  },
+  {
+    model_id: 'nousresearch/hermes-4-405b',
+    input_cost_per_token: 0.000001,
+    output_cost_per_token: 0.000003,
+    provider: 'OpenRouter',
+  },
+  {
+    model_id: 'nousresearch/hermes-4-70b',
+    input_cost_per_token: 1.3e-7,
+    output_cost_per_token: 4e-7,
     provider: 'OpenRouter',
   },
   {
