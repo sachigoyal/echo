@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { AppDetails } from './app-details';
 
 import { api } from '@/trpc/client';
+import { Connection } from './connection';
 
 interface Props {
   appId: string;
@@ -83,6 +84,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             </div>
           </div>
           <AppDetails appId={appId} />
+          <Connection appId={appId} />
         </motion.div>
       )}
     </AnimatePresence>

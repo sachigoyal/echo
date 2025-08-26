@@ -7,7 +7,7 @@ export const Code: React.FC<{ value: string; lang: BundledLanguage }> = ({
   lang,
 }) => {
   return (
-    <div className="border rounded-md overflow-hidden">
+    <div className="border rounded-md overflow-hidden bg-muted">
       <CodeComponent value={value} lang={lang} />
     </div>
   );

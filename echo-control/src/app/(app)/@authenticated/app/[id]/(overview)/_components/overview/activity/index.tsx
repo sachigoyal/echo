@@ -11,7 +11,6 @@ import { api, HydrateClient } from '@/trpc/server';
 import { RangeSelector } from '../../../../../../_components/time-range-selector/range-selector';
 import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityContextProvider } from '../../../../../../_components/time-range-selector/context';
-import { ActivityOverlay } from './overlay';
 
 interface Props {
   appId: string;
@@ -25,10 +24,6 @@ export const Activity: React.FC<Props> = ({ appId }) => {
     echoAppId: appId,
     startDate: defaultStartDate,
     endDate: defaultEndDate,
-  });
-
-  api.apps.app.getNumTokens.prefetch({
-    appId,
   });
 
   return (
@@ -48,11 +43,6 @@ export const Activity: React.FC<Props> = ({ appId }) => {
             >
               <Suspense fallback={<LoadingActivityCharts />}>
                 <ActivityCharts appId={appId} />
-              </Suspense>
-            </ErrorBoundary>
-            <ErrorBoundary fallback={null}>
-              <Suspense fallback={null}>
-                <ActivityOverlay appId={appId} />
               </Suspense>
             </ErrorBoundary>
           </Card>

@@ -6,8 +6,8 @@ export const NextStep1 = () => {
   return (
     <InstallStep
       index={0}
-      title="Install"
-      description="Install the Echo SDK"
+      title="Install SDKs"
+      description="Utilities for authentication and LLM generation"
       body={
         <ScriptCopyBtn
           commandMap={{
@@ -25,7 +25,7 @@ export const NextStep1 = () => {
 const step2Code = (appId: string) => `// echo.ts
 import { Echo } from '@merit-systems/echo-next-sdk';
 export const { handlers, isSignedIn, openai, anthropic } = Echo({
-    appId: "${appId}", // from previous step
+    appId: "${appId}"
 });
 
 // api/echo/[...echo].ts
@@ -35,14 +35,17 @@ export const NextStep2 = ({ appId }: { appId: string }) => {
   return (
     <InstallStep
       index={1}
-      title="Configure"
-      description="Configure the Echo SDK"
+      title="Configure Provider"
+      description="Set up the Echo provider with your app ID"
       body={<Code value={step2Code(appId)} lang="typescript" />}
     />
   );
 };
 
-const step3Code = ``;
+const step3Code = `import { signIn } from "@merit-systems/echo-next-sdk/client";
+export default Home() {
+    return <button onClick={() => signIn()}>Sign In</button>
+}`;
 
 export const NextStep3 = () => {
   return (
