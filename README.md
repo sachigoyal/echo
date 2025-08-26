@@ -14,7 +14,7 @@ In this repository, you'll find the following:
 
 ## Control Plane: (echo.merit.systems)
 
-- [Echo Control](./echo-control) 
+- [Echo Control](./echo-control)
 
 ## Data Plane: (echo.router.merit.systems)
 
