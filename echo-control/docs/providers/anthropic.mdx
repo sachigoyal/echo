@@ -1,0 +1,38 @@
+---
+title: Anthropic Provider
+description: Claude models with Echo billing integration
+---
+
+# Anthropic Provider
+
+The Anthropic provider gives you access to Claude models through the Vercel AI SDK with automatic Echo billing integration.
+
+## Supported Models
+
+All Anthropic models are supported via the `AnthropicModel` type:
+
+<ModelTable 
+  path="../echo-typescript-sdk/src/supported-models/chat/anthropic.ts" 
+  name="AnthropicModels" 
+/>
+
+## Usage
+
+```typescript
+import { createEchoAnthropic } from '@merit-systems/echo-typescript-sdk';
+import { generateText } from 'ai';
+
+// Create provider with Echo billing
+const anthropic = createEchoAnthropic(
+  { appId: 'your-echo-app-id' },
+  async () => 'your-api-key'
+);
+
+// Generate text with Claude
+const { text } = await generateText({
+  model: anthropic('claude-3-5-sonnet-20241022'),
+  prompt: 'Explain quantum computing in simple terms'
+});
+```
+
+Works with all Vercel AI SDK functions including `generateText`, `streamText`, `generateObject`, and `streamObject`.

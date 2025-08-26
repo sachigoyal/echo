@@ -1,0 +1,71 @@
+---
+title: Gemini Provider
+description: Google Gemini models with Echo billing integration
+---
+
+# Gemini Provider
+
+The Gemini provider gives you access to Google's Gemini models through the Vercel AI SDK with automatic Echo billing integration.
+
+## Supported Models
+
+All Gemini models are supported via the `GeminiModel` type:
+
+<ModelTable 
+  path="../echo-typescript-sdk/src/supported-models/chat/gemini.ts" 
+  name="GeminiModel" 
+/>
+
+## Usage
+
+```typescript
+import { createEchoGoogle } from '@merit-systems/echo-typescript-sdk';
+import { generateText } from 'ai';
+
+// Create provider with Echo billing
+const google = createEchoGoogle(
+  { appId: 'your-echo-app-id' },
+  async () => 'your-api-key'
+);
+
+// Generate text with Gemini
+const { text } = await generateText({
+  model: google('gemini-2.5-flash'),
+  prompt: 'Explain the importance of multimodal AI models'
+});
+```
+
+Works with Vercel AI SDK functions including `generateText`, and `generateObject`.
+
+## ⚠️ Streaming Limitations
+
+**Important:** Gemini streaming is currently only supported via the `/chat/completions` endpoint. This means:
+
+- Direct Gemini API streaming may not work as expected
+- For the most reliable streaming experience, ensure your implementation uses the chat completions interface
+- To enable this, you should use the OpenAI provider for Gemini models.
+
+```typescript
+import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
+import { streamText } from 'ai';
+
+// Create provider with Echo billing
+const google = createEchoOpenAI(
+  { appId: 'your-echo-app-id' },
+  async () => 'your-api-key'
+);
+
+// Generate text with Gemini
+const { text } = await streamText({
+  model: google('gemini-2.5-flash'),
+  prompt: 'Explain the importance of multimodal AI models'
+});
+```
+
+
+If you encounter issues with streaming, try switching to non-streaming methods like `generateText()` or `generateObject()`.
+
+
+
+
+

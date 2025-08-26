@@ -5,6 +5,7 @@
     "react-sdk",
     "next-sdk",
     "typescript-sdk",
+    "providers",
     "advanced"
   ]
 }
