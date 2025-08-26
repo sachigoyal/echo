@@ -27,7 +27,7 @@ export default async function ChatPage() {
   });
   
   return result.toUIMessageStreamResponse();
- }
+}
 ```
 
 
@@ -90,74 +90,10 @@ All provider methods return Promises:
 // Vercel AI SDK integration
 const model = await openai('gpt-4');
 const result = streamText({ model, messages });
-
-// Direct API calls
-const provider = await openai();
-const response = await provider.chat.completions.create({
-  model: 'gpt-4',
-  messages: [{ role: 'user', content: 'Hello' }]
-});
-```
-
-## Integration Patterns
-
-### Server Components
-
-Authentication and LLM calls in RSC:
-
-```typescript
-export default async function DashboardPage() {
-  const [authenticated, user] = await Promise.all([
-    isSignedIn(),
-    getUser()
-  ]);
-  
-  if (!authenticated) redirect('/login');
-  
-  return <Dashboard user={user} />;
-}
-```
-
-### Server Actions
-
-Form handling with LLM processing:
-
-```typescript
-import { openai } from '@/echo';
-import { generateText } from 'ai';
-
-export async function processForm(formData: FormData) {
-  const prompt = formData.get('prompt') as string;
-  
-  const { text } = await generateText({
-    model: await openai('gpt-4'),
-    prompt
-  });
-  
-  return { result: text };
-}
-```
-
-### API Routes
-
-Streaming responses with authentication:
-
-```typescript
-export async function POST(req: Request) {
-  // Authentication automatically handled by provider
-  const result = streamText({
-    model: await openai('gpt-4o'),
-    messages: await req.json()
-  });
-  
-  return result.toUIMessageStreamResponse();
-}
 ```
 
 ## Documentation Sections
 
-- **[Setup & Configuration](/docs/next-sdk/setup)** - Installation, configuration, and environment setup
-- **[Authentication](/docs/next-sdk/authentication)** - OAuth2 + PKCE flow and token management
-- **[LLM Integration](/docs/next-sdk/llm-integration)** - Provider usage with Vercel AI SDK
-- **[Server Patterns](/docs/next-sdk/server-patterns)** - App Router integration and server components
-- **[Advanced Usage](/docs/next-sdk/advanced)** - Custom configuration and troubleshooting
+- **[Authentication](authentication.mdx)** - OAuth2 + PKCE flow and token management
+- **[Client](client.mdx)** - Provider usage with Vercel AI SDK
+- **[Providers](llm-integration.mdx)** - Custom configuration and troubleshooting
