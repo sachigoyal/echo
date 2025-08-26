@@ -41,7 +41,7 @@ export const CreateAppForm = () => {
     mutate: createApp,
     isPending,
     isSuccess,
-  } = api.apps.app.create.useMutation({
+  } = api.apps.create.useMutation({
     onSuccess: ({ id }) => {
       router.push(`/app/${id}`);
     },
