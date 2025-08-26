@@ -65,7 +65,7 @@ export default async function OAuthAuthorizePage({
     return redirect(loginUrl.toString());
   }
 
-  const appDetails = await api.apps.public.get(authParams.client_id);
+  const appDetails = await api.apps.app.get({ appId: authParams.client_id });
 
   if (!appDetails) {
     return notFound();
@@ -122,7 +122,7 @@ export default async function OAuthAuthorizePage({
 }
 
 const OwnerName = async ({ appId }: { appId: string }) => {
-  const owner = await api.apps.public.owner(appId);
+  const owner = await api.apps.app.getOwner(appId);
 
   return <span className="font-bold">{owner.name}</span>;
 };

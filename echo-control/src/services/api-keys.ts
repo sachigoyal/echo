@@ -10,7 +10,7 @@ import {
 } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
-import { paginationSchema, toPaginatedReponse } from './lib/pagination';
+import { PaginationParams, toPaginatedReponse } from './lib/pagination';
 
 export const getApiKeySchema = z.string();
 
@@ -34,7 +34,7 @@ export const listApiKeysSchema = z.object({
 export const listApiKeys = async (
   userId: string,
   { appId }: z.infer<typeof listApiKeysSchema>,
-  { page, page_size }: z.infer<typeof paginationSchema>
+  { page, page_size }: PaginationParams
 ) => {
   const skip = page * page_size;
 

@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
+  paginatedProcedure,
 } from '@/trpc/trpc';
 import { TRPCError } from '@trpc/server';
 
@@ -14,14 +15,166 @@ import {
   getAllOwnerEchoApps,
 } from '@/lib/apps';
 
-import { publicAppsRouter } from './public';
-import { memberAppsRouter } from './member';
-import { ownerAppsRouter } from './owner';
+import { createApp, createAppSchema } from '@/services/apps/create';
+import {
+  appOwnerProcedure,
+  protectedAppProcedure,
+  publicAppProcedure,
+} from './procedures';
+import {
+  createAppMembership,
+  getAppMembership,
+} from '@/services/apps/membership';
+import {
+  listAppsSchema,
+  listPublicApps,
+  listMemberApps,
+  listOwnerApps,
+} from '@/services/apps/list';
+import { updateApp, updateAppSchema } from '@/services/apps/app';
+import { getAppOwner } from '@/services/apps/app';
+import { appIdSchema } from '@/services/apps/lib/schemas';
+import {
+  getAppMarkup,
+  updateMarkup,
+  updateMarkupSchema,
+} from '@/services/apps/markup';
+import {
+  getGithubLink,
+  updateGithubLinkSchema,
+  updateGithubLink,
+} from '@/services/apps/github-link';
+import {
+  createFreeTierPaymentLink,
+  createFreeTierPaymentLinkSchema,
+} from '@/services/stripe';
+import {
+  getFreeTierSpendPool,
+  updateFreeTierSpendPool,
+  updateFreeTierSpendPoolSchema,
+} from '@/services/apps/free-tier';
+import { listFreeTierPayments } from '@/services/payments';
 
 export const appsRouter = createTRPCRouter({
-  public: publicAppsRouter,
-  member: memberAppsRouter,
-  owner: ownerAppsRouter,
+  create: protectedProcedure
+    .input(createAppSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await createApp(ctx.session.user.id, input);
+    }),
+
+  app: {
+    get: publicAppProcedure.query(async ({ ctx }) => {
+      return ctx.app;
+    }),
+
+    getOwner: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+      const owner = await getAppOwner(input);
+      if (!owner) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Owner not found',
+        });
+      }
+      return owner;
+    }),
+
+    update: appOwnerProcedure
+      .input(updateAppSchema)
+      .mutation(async ({ ctx, input }) => {
+        return await updateApp(input.appId, ctx.session.user.id, input);
+      }),
+
+    markup: {
+      get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await getAppMarkup(input);
+      }),
+
+      update: appOwnerProcedure
+        .input(updateMarkupSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await updateMarkup(input.appId, ctx.session.user.id, input);
+        }),
+    },
+
+    githubLink: {
+      get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await getGithubLink(input);
+      }),
+
+      update: appOwnerProcedure
+        .input(updateGithubLinkSchema)
+        .mutation(async ({ input }) => {
+          return await updateGithubLink(input.appId, input);
+        }),
+    },
+
+    freeTier: {
+      payments: {
+        list: paginatedProcedure
+          .concat(appOwnerProcedure)
+          .query(async ({ input, ctx }) => {
+            return await listFreeTierPayments(
+              ctx.session.user.id,
+              input.appId,
+              ctx.pagination
+            );
+          }),
+
+        create: appOwnerProcedure
+          .input(createFreeTierPaymentLinkSchema)
+          .mutation(async ({ ctx, input }) => {
+            return await createFreeTierPaymentLink(ctx.session.user.id, input);
+          }),
+      },
+
+      get: appOwnerProcedure.query(async ({ input, ctx }) => {
+        return await getFreeTierSpendPool(input.appId, ctx.session.user.id);
+      }),
+
+      update: appOwnerProcedure
+        .input(updateFreeTierSpendPoolSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await updateFreeTierSpendPool(
+            input.appId,
+            ctx.session.user.id,
+            input
+          );
+        }),
+    },
+  },
+
+  membership: {
+    create: protectedAppProcedure.mutation(async ({ ctx }) => {
+      return await createAppMembership(ctx.session.user.id, ctx.app.id);
+    }),
+
+    get: protectedAppProcedure.query(async ({ ctx }) => {
+      return await getAppMembership(ctx.session.user.id, ctx.app.id);
+    }),
+  },
+
+  list: {
+    public: paginatedProcedure
+      .concat(publicProcedure)
+      .input(listAppsSchema)
+      .query(async ({ input, ctx }) => {
+        return await listPublicApps(input, ctx.pagination);
+      }),
+
+    member: paginatedProcedure
+      .concat(protectedProcedure)
+      .input(listAppsSchema)
+      .query(async ({ input, ctx }) => {
+        return await listMemberApps(ctx.session.user.id, input, ctx.pagination);
+      }),
+
+    owner: paginatedProcedure
+      .concat(protectedProcedure)
+      .input(listAppsSchema)
+      .query(async ({ input, ctx }) => {
+        return await listOwnerApps(ctx.session.user.id, input, ctx.pagination);
+      }),
+  },
 
   /**
    * Get a single app with appropriate permissions

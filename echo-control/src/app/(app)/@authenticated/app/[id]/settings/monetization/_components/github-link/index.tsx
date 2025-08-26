@@ -24,9 +24,7 @@ const GithubLinkFormCard = ({
 };
 
 export const GithubLinkForm = async ({ appId }: { appId: string }) => {
-  const githubLink = await api.apps.owner.getGithubLink({
-    appId,
-  });
+  const githubLink = await api.apps.app.githubLink.get(appId);
 
   return (
     <GithubLinkFormProvider
@@ -36,7 +34,7 @@ export const GithubLinkForm = async ({ appId }: { appId: string }) => {
       }}
       action={async values => {
         'use server';
-        await api.apps.owner.updateGithubLink({
+        await api.apps.app.githubLink.update({
           appId,
           type: values.type,
           url: values.url,

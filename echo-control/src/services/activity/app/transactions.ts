@@ -1,7 +1,10 @@
 import z from 'zod';
-import { db } from '@/lib/db';
+
 import { format } from 'date-fns';
-import { paginationSchema } from '@/services/lib/pagination';
+
+import { db } from '@/lib/db';
+
+import type { PaginationParams } from '@/services/lib/pagination';
 
 export const listAppTransactionsSchema = z.object({
   echoAppId: z.uuid(),
@@ -11,7 +14,7 @@ export const listAppTransactionsSchema = z.object({
 
 export const listAppTransactions = async (
   { echoAppId, startDate, endDate }: z.infer<typeof listAppTransactionsSchema>,
-  { page, page_size }: z.infer<typeof paginationSchema>
+  { page, page_size }: PaginationParams
 ) => {
   // Single query to get all transactions with related data
   const transactions = await db.transaction.findMany({

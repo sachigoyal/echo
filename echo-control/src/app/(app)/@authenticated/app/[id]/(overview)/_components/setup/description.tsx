@@ -46,10 +46,10 @@ export const Description: React.FC<Props> = ({ appId, description }) => {
     mutate: updateAppDetails,
     isPending: isUpdating,
     isSuccess,
-  } = api.apps.owner.update.useMutation({
+  } = api.apps.app.update.useMutation({
     onSuccess: () => {
       toast.success('App details updated');
-      utils.apps.public.get.invalidate(appId);
+      utils.apps.app.get.invalidate({ appId });
     },
     onError: () => {
       toast.error('Failed to update app details');
