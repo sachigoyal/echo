@@ -27,9 +27,10 @@ export const protectedAppProcedure = protectedProcedure
     return next({ ctx: { ...ctx, app } });
   });
 
-export const appOwnerProcedure = protectedAppProcedure.use(
-  async ({ ctx, next }) => {
-    const appOwner = await getAppOwner(ctx.app.id);
+export const appOwnerProcedure = protectedProcedure
+  .input(appIdInput)
+  .use(async ({ input: { appId }, ctx, next }) => {
+    const appOwner = await getAppOwner(appId);
     if (!appOwner) {
       throw new TRPCError({ code: 'NOT_FOUND' });
     }
@@ -37,5 +38,4 @@ export const appOwnerProcedure = protectedAppProcedure.use(
       throw new TRPCError({ code: 'FORBIDDEN' });
     }
     return next({ ctx: { ...ctx, appOwner } });
-  }
-);
+  });

@@ -48,8 +48,15 @@ import {
   createFreeTierPaymentLink,
   createFreeTierPaymentLinkSchema,
 } from '@/services/stripe';
+import { getFreeTierSpendPool } from '@/services/apps/free-tier';
 
 export const appsRouter = createTRPCRouter({
+  create: protectedProcedure
+    .input(createAppSchema)
+    .mutation(async ({ ctx, input }) => {
+      return await createApp(ctx.session.user.id, input);
+    }),
+
   app: {
     get: publicAppProcedure.query(async ({ ctx }) => {
       return ctx.app;
@@ -66,16 +73,10 @@ export const appsRouter = createTRPCRouter({
       return owner;
     }),
 
-    create: protectedProcedure
-      .input(createAppSchema)
-      .mutation(async ({ ctx, input }) => {
-        return await createApp(ctx.session.user.id, input);
-      }),
-
     update: appOwnerProcedure
       .input(updateAppSchema)
       .mutation(async ({ ctx, input }) => {
-        return await updateApp(ctx.app.id, ctx.session.user.id, input);
+        return await updateApp(input.appId, ctx.session.user.id, input);
       }),
 
     markup: {
@@ -86,7 +87,7 @@ export const appsRouter = createTRPCRouter({
       update: appOwnerProcedure
         .input(updateMarkupSchema)
         .mutation(async ({ ctx, input }) => {
-          return await updateMarkup(ctx.app.id, ctx.session.user.id, input);
+          return await updateMarkup(input.appId, ctx.session.user.id, input);
         }),
     },
 
@@ -98,16 +99,20 @@ export const appsRouter = createTRPCRouter({
       update: appOwnerProcedure
         .input(updateGithubLinkSchema)
         .mutation(async ({ ctx, input }) => {
-          return await updateGithubLink(ctx.app.id, input);
+          return await updateGithubLink(input.appId, input);
         }),
     },
 
     freeTier: {
       createPaymentLink: appOwnerProcedure
         .input(createFreeTierPaymentLinkSchema)
-        .mutation(async ({ ctx, input }) => {
-          return await createFreeTierPaymentLink(ctx.app.id, input);
+        .mutation(async ({ input }) => {
+          return await createFreeTierPaymentLink(input.appId, input);
         }),
+
+      get: appOwnerProcedure.query(async ({ input, ctx }) => {
+        return await getFreeTierSpendPool(input.appId, ctx.session.user.id);
+      }),
     },
   },
 

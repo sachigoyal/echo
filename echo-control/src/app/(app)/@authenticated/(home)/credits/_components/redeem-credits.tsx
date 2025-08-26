@@ -38,13 +38,11 @@ export const RedeemCredits = () => {
 
   return (
     <div className="flex flex-col w-full gap-4">
-      <NumberInput
-        setValue={setCode}
+      <Input
         value={code}
+        onChange={e => setCode(e.target.value)}
         placeholder="Enter Code"
-        className="w-full text-right"
-        hideHashSign
-        icon={<CodeSquare className="size-4" />}
+        className="w-full"
       />
 
       {/* Free Tier Toggle */}
