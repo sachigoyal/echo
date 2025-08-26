@@ -96,7 +96,6 @@ WORKDIR /app/echo-typescript-sdk
 RUN pnpm install
 RUN pnpm run build
 
-# Step 2: Copy the generated Prisma files to echo-server
 WORKDIR /app/echo-server
 RUN pnpm run copy-prisma
 

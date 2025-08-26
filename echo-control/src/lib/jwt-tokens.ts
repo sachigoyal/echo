@@ -1,13 +1,13 @@
-import { SignJWT, jwtVerify } from 'jose';
-import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
 import {
   createEchoAccessTokenExpiry,
   createEchoRefreshTokenExpiry,
 } from '@/lib/oauth-config';
-import { createHash } from 'crypto';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
+import { createHash } from 'crypto';
+import { SignJWT, jwtVerify } from 'jose';
+import { nanoid } from 'nanoid';
 
 // JWT secret for API tokens (different from OAuth codes)
 const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
@@ -403,12 +403,18 @@ export async function handleInitialTokenIssuance(
 
   /* 8️⃣ Validate redirect_uri against authorized callback URLs */
   const isLocalhostUrl = redirect_uri.startsWith('http://localhost:');
-  const isAuthorizedUrl = echoApp.authorizedCallbackUrls.includes(redirect_uri);
+  const redirectUriWithoutTrailingSlash = redirect_uri.replace(/\/$/, '');
+  const isAuthorizedUrl =
+    echoApp.authorizedCallbackUrls.includes(redirect_uri) ||
+    echoApp.authorizedCallbackUrls.includes(redirectUriWithoutTrailingSlash);
 
   if (!isLocalhostUrl && !isAuthorizedUrl) {
     return {
       error: 'invalid_grant',
-      error_description: 'redirect_uri is not authorized for this client',
+      error_description:
+        'redirect_uri (' +
+        redirectUriWithoutTrailingSlash +
+        ') is not authorized for this app',
     };
   }
 

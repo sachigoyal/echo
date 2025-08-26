@@ -28,7 +28,7 @@ const tabsTriggerClassName =
 interface Props {
   githubLink: {
     type: GithubType;
-    githubUrl: string;
+    githubUrl: string | null;
   } | null;
   appId: string;
 }

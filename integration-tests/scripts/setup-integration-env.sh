@@ -155,7 +155,7 @@ else
     done
     
     # Run Prisma migrations
-    pnpm prisma:push
+    pnpm prisma:migrate-deploy
     
     # Seed integration test data
     echo "🌱 Seeding integration test database..."
