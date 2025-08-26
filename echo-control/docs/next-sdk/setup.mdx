@@ -11,39 +11,25 @@ import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 ## Installation
 
 <Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
-  <Tab value="npm">
-    ```bash
-    npm install @merit-systems/echo-next-sdk ai
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash
-    pnpm add @merit-systems/echo-next-sdk ai
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash
-    yarn add @merit-systems/echo-next-sdk ai
-    ```
-  </Tab>
-  <Tab value="bun">
-    ```bash
-    bun add @merit-systems/echo-next-sdk ai
-    ```
-  </Tab>
+  <Tab value="npm">```bash npm install @merit-systems/echo-next-sdk ai ```</Tab>
+  <Tab value="pnpm">```bash pnpm add @merit-systems/echo-next-sdk ai ```</Tab>
+  <Tab value="yarn">```bash yarn add @merit-systems/echo-next-sdk ai ```</Tab>
+  <Tab value="bun">```bash bun add @merit-systems/echo-next-sdk ai ```</Tab>
 </Tabs>
 
 ### Dependencies
 
 **Required:**
-- `@merit-systems/echo-next-sdk` - Next.js SDK with OAuth2 authentication  
-- `ai` - Vercel AI SDK for streaming and model integration
+
+- `@merit-systems/echo-next-sdk` - Next.js SDK with OAuth2 authentication
 
 **Peer Dependencies:**
+
 - `next@>=15.0.0` - Next.js App Router support
 
 <Callout type="warn">
-The SDK requires Next.js 15 or higher for App Router compatibility and server component patterns.
+  The SDK requires Next.js 15 or higher for App Router compatibility and server
+  component patterns.
 </Callout>
 
 ## Basic Configuration
@@ -53,37 +39,28 @@ The SDK requires Next.js 15 or higher for App Router compatibility and server co
 ```typescript title="echo/index.ts"
 import Echo from '@merit-systems/echo-next-sdk';
 
-export const { 
-  handlers, 
-  isSignedIn, 
-  getUser, 
-  openai, 
-  anthropic 
-} = Echo({
-  appId: 'your-echo-app-id' // Get from https://echo.merit.systems
+export const { handlers, isSignedIn, getUser, openai, anthropic } = Echo({
+  appId: 'your-echo-app-id', // Get from https://echo.merit.systems
 });
 ```
 
 ### Configuration Options
 
-<AutoTypeTable 
-  path="../echo-next-sdk/src/types.ts" 
-  name="EchoConfig" 
-/>
+<AutoTypeTable path="../echo-next-sdk/src/types.ts" name="EchoConfig" />
 
 **Configuration Parameters:**
 
 - `appId` **(required)** - Your Echo application ID from the dashboard
-- `basePath` *(optional)* - OAuth route path (default: `/api/echo`)  
-- `baseRouterUrl` *(optional)* - Custom Echo router endpoint for LLM requests
+- `basePath` _(optional)_ - OAuth route path (default: `/api/echo`)
+- `baseRouterUrl` _(optional)_ - Custom Echo router endpoint for LLM requests
 
 ### Advanced Configuration
 
 ```typescript title="echo/index.ts"
 export const { handlers, isSignedIn, openai, anthropic } = Echo({
   appId: process.env.ECHO_APP_ID!,
-  basePath: '/api/auth/echo',           // Custom OAuth path
-  baseRouterUrl: 'https://custom.echo.merit.systems' // Custom endpoint
+  basePath: '/api/auth/echo', // Custom OAuth path
+  baseRouterUrl: 'https://custom.echo.merit.systems', // Custom endpoint
 });
 ```
 
@@ -94,16 +71,15 @@ export const { handlers, isSignedIn, openai, anthropic } = Echo({
 Create the catch-all OAuth route:
 
 ```typescript title="app/api/echo/[...echo]/route.ts"
-import Echo from '@merit-systems/echo-next-sdk';
-
-const { handlers } = Echo({ appId: 'your-echo-app-id' });
+import { handlers } from '@/echo';
 
 export const { GET, POST } = handlers;
 ```
 
 This handles three OAuth endpoints:
+
 - `GET /api/echo/signin` - Initiates OAuth2 + PKCE flow
-- `GET /api/echo/callback` - Processes authorization code exchange  
+- `GET /api/echo/callback` - Processes authorization code exchange
 - `POST /api/echo/refresh` - Refreshes expired access tokens
 
 ### Custom Base Path
@@ -113,16 +89,16 @@ If using custom `basePath`, update the route location:
 ```typescript title="echo/index.ts"
 const echo = Echo({
   appId: 'your-app-id',
-  basePath: '/api/auth/echo'
+  basePath: '/api/auth/echo',
 });
 ```
 
 ```typescript title="app/api/auth/echo/[...echo]/route.ts"
 import Echo from '@merit-systems/echo-next-sdk';
 
-const { handlers } = Echo({ 
+const { handlers } = Echo({
   appId: 'your-echo-app-id',
-  basePath: '/api/auth/echo'
+  basePath: '/api/auth/echo',
 });
 
 export const { GET, POST } = handlers;
@@ -166,12 +142,14 @@ Configure authorized callback URLs in your Echo app dashboard:
 - **Production**: `https://yourdomain.com/api/echo/callback`
 
 <Callout type="info">
-The callback URL must match your `basePath` configuration. Default is `/api/echo/callback`.
+  The callback URL must match your `basePath` configuration. Default is
+  `/api/echo/callback`.
 </Callout>
 
 ### App Settings
 
 Required Echo app configuration:
+
 - **App Type**: Web application
 - **OAuth Flow**: Authorization Code with PKCE
 - **Token Endpoint Auth**: None (public client)
@@ -220,8 +198,7 @@ Ensure your `tsconfig.json` supports App Router patterns:
     "plugins": [{ "name": "next" }],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/echo": ["./echo"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
@@ -240,8 +217,8 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['@merit-systems/echo-next-sdk']
-  }
+    serverComponentsExternalPackages: ['@merit-systems/echo-next-sdk'],
+  },
 };
 
 export default nextConfig;
@@ -260,12 +237,12 @@ export function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/echo/')) {
     return NextResponse.next();
   }
-  
+
   // Your middleware logic
 }
 
 export const config = {
-  matcher: ['/((?!api/echo|_next/static|_next/image|favicon.ico).*)']
+  matcher: ['/((?!api/echo|_next/static|_next/image|favicon.ico).*)'],
 };
 ```
 
@@ -292,5 +269,6 @@ export async function debugAuth() {
 ```
 
 <Callout type="info">
-OAuth cookies are HTTP-only and secure. Use server-side functions `isSignedIn()` and `getUser()` to check authentication state.
+  OAuth cookies are HTTP-only and secure. Use server-side functions
+  `isSignedIn()` and `getUser()` to check authentication state.
 </Callout>

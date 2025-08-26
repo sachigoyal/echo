@@ -1,12 +1,30 @@
-To dev:
+# Echo by Merit Systems
 
-pnpm install,
-Add integration-tests/env.test, add echo-server/.env, add echo-control/.env,
-cd echo-control && pnpm run prisma:generate,
+Monetize AI Apps in Minutes
 
-4.cd integration-tests && pnpm run env:setup
-pnpm run test
+Charge usage-based billing for your product to start generating revenue risk-free. You set the markup, we handle the rest.
 
-# Echo React SDK Setup
+In this repository, you'll find the following:
 
-Check out the [Echo SDK Documentation](ECHO_SDK_DOCUMENTATION.md)
+## SDKs:
+
+- [Echo TS SDK](./echo-typescript-sdk) Typescript SDK that all the framework specific SDKs are built on top of.
+- [Echo Next.js SDK](./echo-next-sdk) SDK for simple Next.js 15+ App Router integration.
+- [Echo React SDK](./echo-react-sdk) SDK for simple React client side SPA integration.
+
+## Control Plane: (echo.merit.systems)
+
+- [Echo Control](./echo-control)
+
+## Data Plane: (echo.router.merit.systems)
+
+- [Echo Server](./echo-server)
+
+## Examples:
+
+- [Echo Next.js Example](./examples/next-sdk-example)
+- [Echo React SDK](./examples/vite)
+
+## Tests:
+
+- [Integration Tests](./integration-tests)
