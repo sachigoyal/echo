@@ -18,7 +18,6 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
   },
   typedRoutes: true,
-  swcMinify: true,
   images: {
     remotePatterns: [
       {
