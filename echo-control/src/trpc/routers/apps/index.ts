@@ -103,7 +103,7 @@ export const appsRouter = createTRPCRouter({
 
       update: appOwnerProcedure
         .input(updateGithubLinkSchema)
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({ input }) => {
           return await updateGithubLink(input.appId, input);
         }),
     },

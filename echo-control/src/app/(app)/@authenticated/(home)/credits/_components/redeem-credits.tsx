@@ -1,17 +1,12 @@
 'use client';
 import { useState } from 'react';
 
+import { Check, Loader2, Smartphone, Building2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import {
-  Check,
-  CodeSquare,
-  Loader2,
-  Smartphone,
-  Building2,
-} from 'lucide-react';
-import { NumberInput } from '@/components/ui/number-input';
+
 import { api } from '@/trpc/client';
 
 export const RedeemCredits = () => {

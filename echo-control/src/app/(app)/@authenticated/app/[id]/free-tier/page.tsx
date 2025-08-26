@@ -96,29 +96,3 @@ export default async function FreeTierPage({
     </div>
   );
 }
-
-interface BannerSectionProps {
-  title: string;
-  children: React.ReactNode;
-  actions?: React.ReactNode;
-}
-
-const BannerSection: React.FC<BannerSectionProps> = ({
-  title,
-  children,
-  actions,
-}) => {
-  return (
-    <div className="space-y-2 p-4 border-r last:border-r-0 flex-1">
-      <h1 className="text-lg font-semibold text-muted-foreground">{title}</h1>
-      <div className="flex items-center gap-4 w-full">
-        <h2 className="flex items-center gap-4 text-3xl font-bold">
-          <Suspense fallback={<Skeleton className="w-16 h-9" />}>
-            {children}
-          </Suspense>
-        </h2>
-        {actions}
-      </div>
-    </div>
-  );
-};
