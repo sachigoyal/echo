@@ -8,15 +8,13 @@ import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
 # Next.js SDK
 
-## The Killer Feature
-
-The Echo Next.js SDK provides server-side OAuth2 + PKCE authentication with automatic token management. Built for Next.js 15+ App Router, it enables secure LLM calls from server components, API routes, and server actions without exposing API keys.
+The Echo Next.js SDK provides server-side authentication with automatic token management. Built for Next.js 15+ App Router, it enables secure LLM calls from server components, API routes, and server actions without API keys.
 
 ```typescript
-// Server component - no API keys needed
-import Echo from '@merit-systems/echo-next-sdk';
 import { streamText } from 'ai';
 
+import Echo from '@merit-systems/echo-next-sdk';
+// Server component - no API keys needed
 const { isSignedIn, openai } = Echo({ appId: 'your-echo-app-id' });
 
 export default async function ChatPage() {
@@ -28,24 +26,9 @@ export default async function ChatPage() {
     messages: [{ role: 'user', content: 'Hello!' }]
   });
   
-  return <StreamableUI result={result} />;
-}
+  return result.toUIMessageStreamResponse();
+ }
 ```
-
-## Architecture
-
-Server-first design with secure cookie-based token management:
-
-1. **OAuth2 + PKCE Flow**: Complete RFC-compliant authentication with code verifier protection
-2. **Secure Cookie Storage**: HTTP-only cookies with automatic refresh handling
-3. **Async Provider Pattern**: All LLM providers return Promises for token management
-4. **App Router Native**: Built for Next.js 15+ server components and server actions
-
-This architecture provides:
-- **No token exposure** - All authentication server-side with secure cookies
-- **Automatic token refresh** - Transparent token management in providers
-- **Server-side rendering** - Authentication state available in RSC
-- **Vercel AI SDK integration** - Native compatibility with `ai` package patterns
 
 
 ## Core API
@@ -98,6 +81,7 @@ Async providers with automatic token management:
 ```typescript
 openai: EchoOpenAIProvider        // OpenAI integration
 anthropic: EchoAnthropicProvider  // Anthropic integration
+google: EchoGoogleProvider  // Google integration
 ```
 
 All provider methods return Promises:
