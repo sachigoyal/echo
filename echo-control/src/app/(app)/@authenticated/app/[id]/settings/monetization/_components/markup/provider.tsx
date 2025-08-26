@@ -1,6 +1,6 @@
 'use client';
 
-import { updateMarkupSchema } from '@/services/apps/owner';
+import { updateMarkupSchema } from '@/services/apps/markup';
 import {
   FormProvider,
   type FormProviderProps,

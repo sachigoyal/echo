@@ -1,6 +1,6 @@
 'use client';
 
-import { updateGithubLinkSchema } from '@/services/apps/owner';
+import { updateGithubLinkSchema } from '@/services/apps/github-link';
 import {
   FormProvider,
   type FormProviderProps,

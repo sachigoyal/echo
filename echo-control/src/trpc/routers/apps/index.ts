@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
+  paginatedProcedure,
 } from '@/trpc/trpc';
 import { TRPCError } from '@trpc/server';
 
@@ -14,13 +15,125 @@ import {
   getAllOwnerEchoApps,
 } from '@/lib/apps';
 
-import { publicAppsRouter } from './public';
-import { memberAppsRouter } from './member';
 import { ownerAppsRouter } from './owner';
 
+import { createApp, createAppSchema } from '@/services/apps/create';
+import {
+  appOwnerProcedure,
+  protectedAppProcedure,
+  publicAppProcedure,
+} from './procedures';
+import {
+  createAppMembership,
+  getAppMembership,
+} from '@/services/apps/membership';
+import {
+  listAppsSchema,
+  listPublicApps,
+  listMemberApps,
+  listOwnerApps,
+} from '@/services/apps/list';
+import { updateApp, updateAppSchema } from '@/services/apps/app';
+import { getAppOwner } from '@/services/apps/app';
+import { appIdSchema } from '@/services/apps/lib/schemas';
+import {
+  getAppMarkup,
+  updateMarkup,
+  updateMarkupSchema,
+} from '@/services/apps/markup';
+import {
+  getGithubLink,
+  updateGithubLinkSchema,
+  updateGithubLink,
+} from '@/services/apps/github-link';
+
 export const appsRouter = createTRPCRouter({
-  public: publicAppsRouter,
-  member: memberAppsRouter,
+  app: {
+    get: publicAppProcedure.query(async ({ ctx }) => {
+      return ctx.app;
+    }),
+
+    getOwner: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+      const owner = await getAppOwner(input);
+      if (!owner) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Owner not found',
+        });
+      }
+      return owner;
+    }),
+
+    create: protectedAppProcedure
+      .input(createAppSchema)
+      .mutation(async ({ ctx, input }) => {
+        return await createApp(ctx.session.user.id, input);
+      }),
+
+    update: appOwnerProcedure
+      .input(updateAppSchema)
+      .mutation(async ({ ctx, input }) => {
+        return await updateApp(ctx.app.id, ctx.session.user.id, input);
+      }),
+
+    markup: {
+      get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await getAppMarkup(input);
+      }),
+
+      update: appOwnerProcedure
+        .input(updateMarkupSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await updateMarkup(ctx.app.id, ctx.session.user.id, input);
+        }),
+    },
+
+    githubLink: {
+      get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await getGithubLink(input);
+      }),
+
+      update: appOwnerProcedure
+        .input(updateGithubLinkSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await updateGithubLink(ctx.app.id, input);
+        }),
+    },
+  },
+
+  membership: {
+    create: protectedAppProcedure.mutation(async ({ ctx }) => {
+      return await createAppMembership(ctx.session.user.id, ctx.app.id);
+    }),
+
+    get: protectedAppProcedure.query(async ({ ctx }) => {
+      return await getAppMembership(ctx.session.user.id, ctx.app.id);
+    }),
+  },
+
+  list: {
+    public: paginatedProcedure
+      .concat(publicProcedure)
+      .input(listAppsSchema)
+      .query(async ({ input, ctx }) => {
+        return await listPublicApps(input, ctx.pagination);
+      }),
+
+    member: paginatedProcedure
+      .concat(protectedProcedure)
+      .input(listAppsSchema)
+      .query(async ({ input, ctx }) => {
+        return await listMemberApps(ctx.session.user.id, input, ctx.pagination);
+      }),
+
+    owner: paginatedProcedure
+      .concat(protectedProcedure)
+      .input(listAppsSchema)
+      .query(async ({ input, ctx }) => {
+        return await listOwnerApps(ctx.session.user.id, input, ctx.pagination);
+      }),
+  },
+
   owner: ownerAppsRouter,
 
   /**

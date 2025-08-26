@@ -33,7 +33,7 @@ export default async function KeysPage() {
   }
 
   api.user.apiKeys.list.prefetchInfinite({});
-  api.apps.member.list.prefetchInfinite({});
+  api.apps.list.member.prefetchInfinite({});
 
   return (
     <HydrateClient>

@@ -16,7 +16,7 @@ import {
   FormItem,
 } from '@/components/ui/form';
 
-import { updateGithubLinkSchema } from '@/services/apps/owner';
+import { updateGithubLinkSchema } from '@/services/apps/github-link';
 import { GithubType } from '@/generated/prisma';
 import { Check, Loader2 } from 'lucide-react';
 import { api } from '@/trpc/client';
@@ -42,9 +42,9 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
     mutate: updateGithubLink,
     isPending,
     isSuccess,
-  } = api.apps.owner.updateGithubLink.useMutation({
+  } = api.apps.app.githubLink.update.useMutation({
     onSuccess: () => {
-      utils.apps.owner.getGithubLink.invalidate({ appId });
+      utils.apps.app.githubLink.get.invalidate(appId);
       toast.success('Github link updated');
     },
   });

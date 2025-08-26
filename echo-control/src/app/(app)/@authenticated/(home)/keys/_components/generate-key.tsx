@@ -73,7 +73,7 @@ export const GenerateKeyWithSelect = () => {
 
 const AppSelect = () => {
   const [apps, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    api.apps.member.list.useSuspenseInfiniteQuery(
+    api.apps.list.member.useSuspenseInfiniteQuery(
       {},
       {
         getNextPageParam: lastPage => lastPage.page + 1,

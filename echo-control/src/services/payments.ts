@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 import { db } from '@/lib/db';
 
-import { paginationSchema, toPaginatedReponse } from './lib/pagination';
+import { type PaginationParams, toPaginatedReponse } from './lib/pagination';
 
 export async function listPayments(
   userId: string,
-  { page, page_size }: z.infer<typeof paginationSchema>
+  { page, page_size }: PaginationParams
 ) {
   const skip = page * page_size;
 

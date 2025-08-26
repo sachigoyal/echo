@@ -1,25 +1,41 @@
-import { getAppOwner, getPublicApp } from '@/services/apps/public';
-import { protectedProcedure } from '../../trpc';
+import { getAppOwner } from '@/services/apps/app';
+import { protectedProcedure, publicProcedure } from '../../trpc';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { appIdSchema } from '@/services/apps/lib/schemas';
+import { getApp } from '@/services/apps/app';
 
-export const appProcedure = protectedProcedure
-  .input(z.object({ appId: z.string() }))
-  .use(async ({ next, input: { appId }, ctx }) => {
-    const app = await getPublicApp(appId);
+const appIdInput = z.object({ appId: appIdSchema });
+
+export const publicAppProcedure = publicProcedure
+  .input(appIdInput)
+  .use(async ({ input: { appId }, next, ctx }) => {
+    const app = await getApp(appId);
     if (!app) {
       throw new TRPCError({ code: 'NOT_FOUND' });
     }
     return next({ ctx: { ...ctx, app } });
   });
 
-export const appOwnerProcedure = appProcedure.use(async ({ ctx, next }) => {
-  const appOwner = await getAppOwner(ctx.app.id);
-  if (!appOwner) {
-    throw new TRPCError({ code: 'NOT_FOUND' });
+export const protectedAppProcedure = protectedProcedure
+  .input(appIdInput)
+  .use(async ({ next, input: { appId }, ctx }) => {
+    const app = await getApp(appId);
+    if (!app) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'App not found' });
+    }
+    return next({ ctx: { ...ctx, app } });
+  });
+
+export const appOwnerProcedure = protectedAppProcedure.use(
+  async ({ ctx, next }) => {
+    const appOwner = await getAppOwner(ctx.app.id);
+    if (!appOwner) {
+      throw new TRPCError({ code: 'NOT_FOUND' });
+    }
+    if (appOwner.id !== ctx.session.user.id) {
+      throw new TRPCError({ code: 'FORBIDDEN' });
+    }
+    return next({ ctx: { ...ctx, appOwner } });
   }
-  if (appOwner.id !== ctx.session.user.id) {
-    throw new TRPCError({ code: 'FORBIDDEN' });
-  }
-  return next({ ctx: { ...ctx, appOwner } });
-});
+);

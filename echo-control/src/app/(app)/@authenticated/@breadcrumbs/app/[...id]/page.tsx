@@ -33,7 +33,7 @@ export default async function AppBreadcrumbs({
 }
 
 const UserBreadcrumb = async ({ id }: { id: string }) => {
-  const owner = await api.apps.public.owner(id);
+  const owner = await api.apps.app.getOwner(id);
   return (
     <Breadcrumb
       href={`/user/${owner.id}`}
@@ -46,7 +46,7 @@ const UserBreadcrumb = async ({ id }: { id: string }) => {
 };
 
 const AppBreadcrumb = async ({ id }: { id: string }) => {
-  const app = await api.apps.public.get(id);
+  const app = await api.apps.app.get({ appId: id });
   return (
     <Breadcrumb
       href={`/app/${id}`}

@@ -31,7 +31,7 @@ export const Apps = () => {
 };
 
 export const AppsGrid = async () => {
-  const apps = await api.apps.owner.list();
+  const apps = await api.apps.list.owner({});
 
-  return apps.map(app => <AppCard key={app.id} {...app} />);
+  return apps.items.map(app => <AppCard key={app.id} {...app} />);
 };
