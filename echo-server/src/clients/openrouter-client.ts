@@ -1,19 +1,19 @@
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import * as modelPrices from '../../open_router_model_prices.json';
+import { OpenRouterModels } from '@merit-systems/echo-typescript-sdk';
 
 dotenv.config();
 
 // Function to get a random model from the OpenRouter model prices
 function getRandomModel(): string {
-  const models = modelPrices.data;
+  const models = OpenRouterModels;
   const randomIndex = Math.floor(Math.random() * models.length);
   const selectedModel = models[randomIndex];
   if (selectedModel) {
     console.log(
-      `Selected random model: ${selectedModel.id} (${selectedModel.name})`
+      `Selected random model: ${selectedModel.model_id} (${selectedModel.provider})`
     );
-    return selectedModel.id;
+    return selectedModel.model_id;
   }
   throw new Error('No models found');
 }
