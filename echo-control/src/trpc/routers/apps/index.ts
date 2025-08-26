@@ -48,7 +48,12 @@ import {
   createFreeTierPaymentLink,
   createFreeTierPaymentLinkSchema,
 } from '@/services/stripe';
-import { getFreeTierSpendPool } from '@/services/apps/free-tier';
+import {
+  getFreeTierSpendPool,
+  updateFreeTierSpendPool,
+  updateFreeTierSpendPoolSchema,
+} from '@/services/apps/free-tier';
+import { listFreeTierPayments } from '@/services/payments';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -104,15 +109,37 @@ export const appsRouter = createTRPCRouter({
     },
 
     freeTier: {
-      createPaymentLink: appOwnerProcedure
-        .input(createFreeTierPaymentLinkSchema)
-        .mutation(async ({ input }) => {
-          return await createFreeTierPaymentLink(input.appId, input);
-        }),
+      payments: {
+        list: paginatedProcedure
+          .concat(appOwnerProcedure)
+          .query(async ({ input, ctx }) => {
+            return await listFreeTierPayments(
+              ctx.session.user.id,
+              input.appId,
+              ctx.pagination
+            );
+          }),
+
+        create: appOwnerProcedure
+          .input(createFreeTierPaymentLinkSchema)
+          .mutation(async ({ ctx, input }) => {
+            return await createFreeTierPaymentLink(ctx.session.user.id, input);
+          }),
+      },
 
       get: appOwnerProcedure.query(async ({ input, ctx }) => {
         return await getFreeTierSpendPool(input.appId, ctx.session.user.id);
       }),
+
+      update: appOwnerProcedure
+        .input(updateFreeTierSpendPoolSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await updateFreeTierSpendPool(
+            input.appId,
+            ctx.session.user.id,
+            input
+          );
+        }),
     },
   },
 
