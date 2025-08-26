@@ -1,6 +1,5 @@
 import {
   OpenAIModels,
-  OpenAIModel,
   AnthropicModels,
   GeminiModels,
   OpenRouterModels,
@@ -8,10 +7,6 @@ import {
   SupportedOpenAIResponseToolPricing,
   SupportedModel,
   SupportedImageModel,
-  OpenAIImageModel,
-  OpenRouterModel,
-  GeminiModel,
-  AnthropicModel,
 } from '@merit-systems/echo-typescript-sdk';
 
 import { Decimal } from '@prisma/client/runtime/library';

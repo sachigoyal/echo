@@ -123,16 +123,37 @@ import type {
 Get information about supported LLM models, pricing, and capabilities.
 
 ```typescript
-const models = await echo.models.getSupportedModels();
-const modelList = await echo.models.listSupportedModels();
-const modelsByProvider = await echo.models.getSupportedModelsByProvider();
+const chatModels = await echo.models.listSupportedChatModels();
+const imageModels = await echo.models.listSupportedImageModels();
 ```
 
 ### Methods
 
-- **`getSupportedModels()`** - Get all models with full metadata
-- **`listSupportedModels()`** - Get models as a flat array
-- **`getSupportedModelsByProvider()`** - Get models grouped by provider
+- **`listSupportedChatModels()`** - Get all supported chat models with pricing and metadata
+- **`listSupportedImageModels()`** - Get all supported image models with pricing and metadata
+
+### Types
+
+```typescript
+import type { 
+  SupportedModel, 
+  SupportedImageModel 
+} from '@merit-systems/echo-typescript-sdk';
+```
+
+#### SupportedModel
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/supported-models/types.ts" 
+  name="SupportedModel" 
+/>
+
+#### SupportedImageModel
+
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/supported-models/types.ts" 
+  name="SupportedImageModel" 
+/>
 
 
 ## Users Resource
@@ -207,8 +228,10 @@ async function platformDemo() {
   }
   
   // List available models
-  const models = await echo.models.listSupportedModels();
-  console.log(`Available models: ${models.length}`);
+  const chatModels = await echo.models.listSupportedChatModels();
+  const imageModels = await echo.models.listSupportedImageModels();
+  console.log(`Available chat models: ${chatModels.length}`);
+  console.log(`Available image models: ${imageModels.length}`);
   
   // Get app information
   const apps = await echo.apps.listEchoApps();
