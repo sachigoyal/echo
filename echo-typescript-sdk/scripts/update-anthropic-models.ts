@@ -283,7 +283,10 @@ async function updateAnthropicModels() {
     const fileContent = generateAnthropicModelFile(finalModels);
 
     // Write the updated file
-    const fullPath = join(process.cwd(), 'src/supported-models/chat/anthropic.ts');
+    const fullPath = join(
+      process.cwd(),
+      'src/supported-models/chat/anthropic.ts'
+    );
     writeFileSync(fullPath, fileContent, 'utf8');
 
     console.log(

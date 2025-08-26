@@ -39,11 +39,14 @@ async function fetchGeminiModels(): Promise<string[]> {
   }
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(
@@ -58,13 +61,18 @@ async function fetchGeminiModels(): Promise<string[]> {
     const modelIds = data.models
       .filter(model => {
         // Filter for generation models (language models)
-        const hasGenerateContent = model.supportedGenerationMethods?.includes('generateContent');
-        
+        const hasGenerateContent =
+          model.supportedGenerationMethods?.includes('generateContent');
+
         // Filter out embedding models
-        const isNotEmbedding = !model.name.includes('embedding') && !model.displayName.toLowerCase().includes('embedding');
-        
+        const isNotEmbedding =
+          !model.name.includes('embedding') &&
+          !model.displayName.toLowerCase().includes('embedding');
+
         // Filter out vision-only models (keep multimodal ones that can do text)
-        const isNotVisionOnly = !model.displayName.toLowerCase().includes('vision');
+        const isNotVisionOnly = !model.displayName
+          .toLowerCase()
+          .includes('vision');
 
         return hasGenerateContent && isNotEmbedding && isNotVisionOnly;
       })

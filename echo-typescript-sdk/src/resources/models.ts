@@ -1,11 +1,11 @@
 import { HttpClient } from '../http-client';
 import { BaseResource } from '../utils/error-handling';
-import { 
+import {
   OpenAIModels,
-  AnthropicModels, 
+  AnthropicModels,
   GeminiModels,
   OpenRouterModels,
-  OpenAIImageModels
+  OpenAIImageModels,
 } from '../supported-models';
 
 export class ModelsResource extends BaseResource {
@@ -22,9 +22,9 @@ export class ModelsResource extends BaseResource {
       ...AnthropicModels,
       ...GeminiModels,
       ...OpenRouterModels,
-      ...OpenAIImageModels
+      ...OpenAIImageModels,
     ];
-    
+
     return allModels.map(model => model.model_id);
   }
 
@@ -44,18 +44,18 @@ export class ModelsResource extends BaseResource {
       ...AnthropicModels,
       ...GeminiModels,
       ...OpenRouterModels,
-      ...OpenAIImageModels
+      ...OpenAIImageModels,
     ];
-    
+
     const modelsByProvider: Record<string, string[]> = {};
-    
+
     for (const model of allModels) {
       if (!modelsByProvider[model.provider]) {
         modelsByProvider[model.provider] = [];
       }
       modelsByProvider[model.provider]!.push(model.model_id);
     }
-    
+
     return modelsByProvider;
   }
 }

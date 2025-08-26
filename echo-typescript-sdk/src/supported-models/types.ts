@@ -5,7 +5,6 @@ export interface SupportedModel {
   provider: string;
 }
 
-
 export interface SupportedImageModel {
   model_id: string;
   text_input_cost_per_token: number;
@@ -16,9 +15,9 @@ export interface SupportedImageModel {
 
 // Tool pricing types
 export interface ImageGenerationQualityPricing {
-  "1024x1024": number;
-  "1024x1536": number;
-  "1536x1024": number;
+  '1024x1024': number;
+  '1024x1536': number;
+  '1536x1024': number;
 }
 
 export interface ImageGenerationModelPricing {
@@ -59,18 +58,22 @@ export interface ToolPricing {
 }
 
 // Supported tool types
-export type SupportedToolType = 
-  | "image_generation"
-  | "code_interpreter" 
-  | "file_search"
-  | "web_search_preview";
+export type SupportedToolType =
+  | 'image_generation'
+  | 'code_interpreter'
+  | 'file_search'
+  | 'web_search_preview';
 
-export type ImageGenerationQuality = "low" | "medium" | "high";
-export type ImageDimensions = "1024x1024" | "1024x1536" | "1536x1024";
-export type WebSearchModel = "gpt_4o" | "gpt_5" | "o_series";
+export type ImageGenerationQuality = 'low' | 'medium' | 'high';
+export type ImageDimensions = '1024x1024' | '1024x1536' | '1536x1024';
+export type WebSearchModel = 'gpt_4o' | 'gpt_5' | 'o_series';
 
 export interface SupportedTool {
   type: SupportedToolType;
   description: string;
-  pricing_structure: "per_generation" | "per_session" | "per_call" | "per_gb_per_day";
+  pricing_structure:
+    | 'per_generation'
+    | 'per_session'
+    | 'per_call'
+    | 'per_gb_per_day';
 }
