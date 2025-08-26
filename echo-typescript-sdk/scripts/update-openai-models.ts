@@ -308,7 +308,7 @@ async function updateOpenAIModels() {
     const fileContent = generateOpenAIModelFile(finalModels);
 
     // Write the updated file
-    const fullPath = join(process.cwd(), 'src/supported-models/openai.ts');
+    const fullPath = join(process.cwd(), 'src/supported-models/chat/openai.ts');
     writeFileSync(fullPath, fileContent, 'utf8');
 
     console.log(

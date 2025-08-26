@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-// -> Get all model slugs from Anthropic's API directly
+// -> Get all model slugs from Gemini's API directly
 // Match them to the AI gateway model slugs for accurate pricing
-// Write to a static file in the src/supported-models/anthropic.ts file
+// Write to a static file in the src/supported-models/gemini.ts file
 
 import { config } from 'dotenv';
 import { gateway } from '@ai-sdk/gateway';
@@ -18,56 +18,74 @@ interface SupportedModel {
   provider: string;
 }
 
-interface AnthropicApiModel {
-  type: string;
-  id: string;
-  display_name: string;
-  created_at: string;
+interface GeminiApiModel {
+  name: string;
+  version: string;
+  displayName: string;
+  description: string;
+  inputTokenLimit: number;
+  outputTokenLimit: number;
+  supportedGenerationMethods: string[];
 }
 
-interface AnthropicApiResponse {
-  data: AnthropicApiModel[];
-  has_more: boolean;
-  first_id: string;
-  last_id: string;
+interface GeminiApiResponse {
+  models: GeminiApiModel[];
 }
 
-async function fetchAnthropicModels(): Promise<string[]> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+async function fetchGeminiModels(): Promise<string[]> {
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY environment variable is required');
+    throw new Error('GEMINI_API_KEY environment variable is required');
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/models', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {
       headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch Anthropic models: ${response.status} ${response.statusText}`
+        `Failed to fetch Gemini models: ${response.status} ${response.statusText}`
       );
     }
 
-    const data: AnthropicApiResponse = await response.json();
-    console.log(`🔍 Found ${data.data.length} models from Anthropic API`);
+    const data: GeminiApiResponse = await response.json();
+    console.log(`🔍 Found ${data.models.length} models from Gemini API`);
 
-    // Extract model IDs and log them
-    const modelIds = data.data.map(model => model.id);
+    // Filter for language models and extract model IDs
+    const modelIds = data.models
+      .filter(model => {
+        // Filter for generation models (language models)
+        const hasGenerateContent = model.supportedGenerationMethods?.includes('generateContent');
+        
+        // Filter out embedding models
+        const isNotEmbedding = !model.name.includes('embedding') && !model.displayName.toLowerCase().includes('embedding');
+        
+        // Filter out vision-only models (keep multimodal ones that can do text)
+        const isNotVisionOnly = !model.displayName.toLowerCase().includes('vision');
+
+        return hasGenerateContent && isNotEmbedding && isNotVisionOnly;
+      })
+      .map(model => {
+        // Extract model ID from the full name (e.g., "models/gemini-pro" -> "gemini-pro")
+        const modelId = model.name.replace('models/', '');
+        return modelId;
+      });
+
+    console.log(`📝 Filtered to ${modelIds.length} language models:`);
     modelIds.forEach(id => console.log(`  - ${id}`));
 
     return modelIds;
   } catch (error) {
-    console.error('❌ Error fetching models from Anthropic API:', error);
+    console.error('❌ Error fetching models from Gemini API:', error);
     throw error;
   }
 }
 
-function matchAnthropicModelsWithPricing(
-  anthropicModelIds: string[],
+function matchGeminiModelsWithPricing(
+  geminiModelIds: string[],
   gatewayModels: SupportedModel[]
 ): SupportedModel[] {
   const result: SupportedModel[] = [];
@@ -82,11 +100,11 @@ function matchAnthropicModelsWithPricing(
   });
 
   console.log(
-    `\n🔄 Matching ${anthropicModelIds.length} Anthropic models with gateway pricing...`
+    `\n🔄 Matching ${geminiModelIds.length} Gemini models with gateway pricing...`
   );
 
-  // For each Anthropic model ID, try to find matching pricing
-  for (const modelId of anthropicModelIds) {
+  // For each Gemini model ID, try to find matching pricing
+  for (const modelId of geminiModelIds) {
     let pricing = pricingMap.get(modelId);
 
     // Check if we found an exact match first
@@ -94,17 +112,18 @@ function matchAnthropicModelsWithPricing(
       console.log(`✅ Exact match found for ${modelId}`);
     } else {
       // Extract base model name for matching
-      // claude-3-5-sonnet-latest -> claude-3-5-sonnet
-      // claude-opus-4-20250514 -> claude-opus-4
+      // gemini-1.5-pro-001 -> gemini-1.5-pro
+      // gemini-pro-vision -> gemini-pro
       let baseModelName = modelId;
 
-      // Remove specific version suffixes
-      baseModelName = baseModelName.replace(/-latest$/, '');
-      baseModelName = baseModelName.replace(/-\d{8}$/, ''); // Remove date suffixes like -20250514
-      baseModelName = baseModelName.replace(/-\d{4}-\d{2}-\d{2}$/, ''); // Remove date suffixes like -2024-10-22
+      // Remove specific version suffixes for Gemini models
+      baseModelName = baseModelName.replace(/-\d{3}$/, ''); // Remove version suffixes like -001
+      baseModelName = baseModelName.replace(/-latest$/, ''); // Remove latest suffixes
+      baseModelName = baseModelName.replace(/-preview$/, ''); // Remove preview suffixes
+      baseModelName = baseModelName.replace(/-vision$/, ''); // Remove vision suffixes
+      baseModelName = baseModelName.replace(/-experimental.*$/, ''); // Remove experimental suffixes
 
       // Look for gateway models that match this base name
-      // Handle differences in naming conventions (dots vs dashes)
       const potentialMatches: {
         gatewayModelId: string;
         pricing: { input: number; output: number };
@@ -157,19 +176,18 @@ function matchAnthropicModelsWithPricing(
         model_id: modelId,
         input_cost_per_token: pricing.input,
         output_cost_per_token: pricing.output,
-        provider: 'Anthropic',
+        provider: 'Gemini',
       });
     } else {
       // Extract base model name for logging
       let debugBaseModelName = modelId;
+      debugBaseModelName = debugBaseModelName.replace(/-\d{3}$/, '');
       debugBaseModelName = debugBaseModelName.replace(/-latest$/, '');
-      debugBaseModelName = debugBaseModelName.replace(/-\d{8}$/, '');
-      debugBaseModelName = debugBaseModelName.replace(
-        /-\d{4}-\d{2}-\d{2}$/,
-        ''
-      );
+      debugBaseModelName = debugBaseModelName.replace(/-preview$/, '');
+      debugBaseModelName = debugBaseModelName.replace(/-vision$/, '');
+      debugBaseModelName = debugBaseModelName.replace(/-experimental.*$/, '');
       console.warn(
-        `⚠️  No pricing found for Anthropic model: ${modelId} (base: ${debugBaseModelName}) - dropping from list`
+        `⚠️  No pricing found for Gemini model: ${modelId} (base: ${debugBaseModelName}) - dropping from list`
       );
     }
   }
@@ -181,7 +199,7 @@ function cleanModelId(modelId: string): string {
   return modelId.split('/')[1];
 }
 
-function generateAnthropicModelFile(models: SupportedModel[]): string {
+function generateGeminiModelFile(models: SupportedModel[]): string {
   const sortedModels = models.sort((a, b) =>
     a.model_id.localeCompare(b.model_id)
   );
@@ -198,39 +216,39 @@ function generateAnthropicModelFile(models: SupportedModel[]): string {
     model_id: "${model.model_id}",
     input_cost_per_token: ${model.input_cost_per_token},
     output_cost_per_token: ${model.output_cost_per_token},
-    provider: "Anthropic"
+    provider: "Gemini"
   }`;
     })
     .join(',\n');
 
   return `import { SupportedModel } from "./types";
 
-// Union type of all valid Anthropic model IDs
-export type AnthropicModel = 
+// Union type of all valid Gemini model IDs
+export type GeminiModel = 
 ${unionType};
 
-export const AnthropicModels: SupportedModel[] = [
+export const GeminiModels: SupportedModel[] = [
 ${modelObjects}
 ];
 
 `;
 }
 
-async function updateAnthropicModels() {
+async function updateGeminiModels() {
   try {
-    console.log('🔄 Starting Anthropic model update process...\n');
+    console.log('🔄 Starting Gemini model update process...\n');
 
-    // Step 1: Fetch available models from Anthropic API
-    console.log('📡 Fetching available models from Anthropic API...');
-    const anthropicModelIds = await fetchAnthropicModels();
+    // Step 1: Fetch available models from Gemini API
+    console.log('📡 Fetching available models from Gemini API...');
+    const geminiModelIds = await fetchGeminiModels();
 
     // Step 2: Fetch pricing data from AI Gateway
     console.log('\n💰 Fetching pricing data from AI SDK Gateway...');
     const availableModels = await gateway.getAvailableModels();
 
-    // Filter for Anthropic models from the gateway
-    const anthropicGatewayModels = availableModels.models
-      .filter(model => model.id.startsWith('anthropic/'))
+    // Filter for Gemini models from the gateway
+    const geminiGatewayModels = availableModels.models
+      .filter(model => model.id.startsWith('google/'))
       .filter(model => model.modelType === 'language')
       .map(model => {
         const cleanId = cleanModelId(model.id);
@@ -260,54 +278,52 @@ async function updateAnthropicModels() {
           model_id: cleanId,
           input_cost_per_token: inputCost,
           output_cost_per_token: outputCost,
-          provider: 'Anthropic',
+          provider: 'Gemini',
         };
       });
 
-    if (anthropicGatewayModels.length === 0) {
-      console.log('No Anthropic models found in gateway response');
+    if (geminiGatewayModels.length === 0) {
+      console.log('No Gemini models found in gateway response');
       return;
     }
 
-    console.log(
-      `Found ${anthropicGatewayModels.length} Anthropic models in gateway`
-    );
+    console.log(`Found ${geminiGatewayModels.length} Gemini models in gateway`);
 
-    // Step 3: Match Anthropic API models with gateway pricing
-    const finalModels = matchAnthropicModelsWithPricing(
-      anthropicModelIds,
-      anthropicGatewayModels
+    // Step 3: Match Gemini API models with gateway pricing
+    const finalModels = matchGeminiModelsWithPricing(
+      geminiModelIds,
+      geminiGatewayModels
     );
 
     // Generate the new file content
-    const fileContent = generateAnthropicModelFile(finalModels);
+    const fileContent = generateGeminiModelFile(finalModels);
 
     // Write the updated file
-    const fullPath = join(process.cwd(), 'src/supported-models/chat/anthropic.ts');
+    const fullPath = join(process.cwd(), 'src/supported-models/chat/gemini.ts');
     writeFileSync(fullPath, fileContent, 'utf8');
 
     console.log(
-      `\n✅ Successfully updated anthropic.ts with ${finalModels.length} models`
+      `\n✅ Successfully updated gemini.ts with ${finalModels.length} models`
     );
     console.log(`📊 Models included:`);
     finalModels.forEach(model => {
       console.log(`  - ${model.model_id}`);
     });
 
-    const droppedCount = anthropicModelIds.length - finalModels.length;
+    const droppedCount = geminiModelIds.length - finalModels.length;
     if (droppedCount > 0) {
       console.log(
         `\n⚠️  ${droppedCount} models were dropped due to missing pricing data`
       );
     }
   } catch (error) {
-    console.error('❌ Error updating Anthropic models:', error);
+    console.error('❌ Error updating Gemini models:', error);
     process.exit(1);
   }
 }
 
 // Run the script
-updateAnthropicModels().catch(error => {
+updateGeminiModels().catch(error => {
   console.error('❌ Unexpected error:', error);
   process.exit(1);
 });

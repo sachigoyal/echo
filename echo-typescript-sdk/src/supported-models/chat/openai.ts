@@ -1,4 +1,4 @@
-import { SupportedModel } from './types';
+import { SupportedModel } from '../types';
 
 // Union type of all valid OpenAI model IDs
 export type OpenAIModel =

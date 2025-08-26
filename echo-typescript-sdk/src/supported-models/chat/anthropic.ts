@@ -1,4 +1,4 @@
-import { SupportedModel } from './types';
+import { SupportedModel } from '../types';
 
 // Union type of all valid Anthropic model IDs
 export type AnthropicModel =
