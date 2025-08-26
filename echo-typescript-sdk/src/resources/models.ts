@@ -1,6 +1,14 @@
 import { HttpClient } from '../http-client';
-import { SupportedModel, SupportedModelsResponse } from '../types';
 import { BaseResource } from '../utils/error-handling';
+import {
+  OpenAIModels,
+  AnthropicModels,
+  GeminiModels,
+  OpenRouterModels,
+  OpenAIImageModels,
+  SupportedModel,
+  SupportedImageModel,
+} from '../supported-models';
 
 export class ModelsResource extends BaseResource {
   constructor(http: HttpClient) {
@@ -8,39 +16,20 @@ export class ModelsResource extends BaseResource {
   }
 
   /**
-   * Get supported models with pricing, limits, and capabilities
+   * Get supported models as a flat array of model names
    */
-  async getSupportedModels(): Promise<SupportedModelsResponse> {
-    return this.handleRequest(
-      () => this.http.get('/api/v1/supported-models'),
-      'fetching supported models',
-      '/api/v1/supported-models'
-    );
+  async listSupportedChatModels(): Promise<SupportedModel[]> {
+    const allModels = [
+      ...OpenAIModels,
+      ...AnthropicModels,
+      ...GeminiModels,
+      ...OpenRouterModels,
+    ];
+
+    return allModels;
   }
 
-  /**
-   * Get supported models as a flat array
-   */
-  async listSupportedModels(): Promise<SupportedModel[]> {
-    try {
-      const response = await this.getSupportedModels();
-      return response.models;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Get supported models grouped by provider
-   */
-  async getSupportedModelsByProvider(): Promise<
-    Record<string, SupportedModel[]>
-  > {
-    try {
-      const response = await this.getSupportedModels();
-      return response.models_by_provider;
-    } catch (error) {
-      throw error;
-    }
+  async listSupportedImageModels(): Promise<SupportedImageModel[]> {
+    return OpenAIImageModels;
   }
 }

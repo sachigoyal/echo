@@ -14,6 +14,8 @@ export const paginationSchema = z.object({
   page_size: z.number().optional().default(10),
 });
 
+export type PaginationParams = z.infer<typeof paginationSchema>;
+
 export const toPaginatedReponse = <T>({
   items,
   page,

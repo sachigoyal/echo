@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { db } from '@/lib/db';
 import {
-  paginationSchema,
+  type PaginationParams,
   toPaginatedReponse,
 } from '@/services/lib/pagination';
 
@@ -14,7 +14,7 @@ export const listAppUsersActivitySchema = z.object({
 
 export const listAppUsersActivity = async (
   { echoAppId, startDate, endDate }: z.infer<typeof listAppUsersActivitySchema>,
-  { page, page_size }: z.infer<typeof paginationSchema>
+  { page, page_size }: PaginationParams
 ) => {
   const [count, users] = await Promise.all([
     db.appMembership.count({

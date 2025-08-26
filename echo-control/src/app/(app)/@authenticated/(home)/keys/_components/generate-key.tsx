@@ -73,7 +73,7 @@ export const GenerateKeyWithSelect = () => {
 
 const AppSelect = () => {
   const [apps, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
-    api.apps.member.list.useSuspenseInfiniteQuery(
+    api.apps.list.member.useSuspenseInfiniteQuery(
       {},
       {
         getNextPageParam: lastPage => lastPage.page + 1,
@@ -95,14 +95,14 @@ const AppSelect = () => {
       {apps.pages
         .flatMap(page => page.items)
         .map(app => (
-          <SelectItem key={app.echoApp.id} value={app.echoApp.id}>
+          <SelectItem key={app.id} value={app.id}>
             <div className="flex items-center gap-2">
               <UserAvatar
-                src={app.echoApp.profilePictureUrl}
+                src={app.profilePictureUrl}
                 fallback={<Code className="size-4" />}
                 className="bg-transparent border-none"
               />
-              {app.echoApp.name}
+              {app.name}
             </div>
           </SelectItem>
         ))}

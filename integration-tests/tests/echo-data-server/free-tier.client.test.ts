@@ -159,7 +159,7 @@ describe('Echo Data Server Free Tier Integration Tests', () => {
       let accessToken = await getAccessTokenForFreeTierUser();
 
       // Initialize OpenAI client with the valid access token
-      const openaiClient = new OpenAI({
+      let openaiClient = new OpenAI({
         baseURL: TEST_CONFIG.services.echoDataServer,
         apiKey: accessToken.access_token,
       });
@@ -192,6 +192,11 @@ describe('Echo Data Server Free Tier Integration Tests', () => {
             console.log('💸 User has reached their spend limit');
             break;
           }
+          accessToken = await getAccessTokenForFreeTierUser();
+          openaiClient = new OpenAI({
+            baseURL: TEST_CONFIG.services.echoDataServer,
+            apiKey: accessToken.access_token,
+          });
 
           const completion = await openaiClient.chat.completions.create({
             messages: [

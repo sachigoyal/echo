@@ -35,11 +35,9 @@ interface Props {
 }
 
 export const Setup: React.FC<Props> = ({ appId }) => {
-  const [app] = api.apps.public.get.useSuspenseQuery(appId);
+  const [app] = api.apps.app.get.useSuspenseQuery({ appId });
 
-  const [githubLink] = api.apps.owner.getGithubLink.useSuspenseQuery({
-    appId,
-  });
+  const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
 
   const steps = [
     {

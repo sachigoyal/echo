@@ -1,17 +1,12 @@
 'use client';
 import { useState } from 'react';
 
+import { Check, Loader2, Smartphone, Building2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import {
-  Check,
-  CodeSquare,
-  Loader2,
-  Smartphone,
-  Building2,
-} from 'lucide-react';
-import { NumberInput } from '@/components/ui/number-input';
+
 import { api } from '@/trpc/client';
 
 export const RedeemCredits = () => {
@@ -38,13 +33,11 @@ export const RedeemCredits = () => {
 
   return (
     <div className="flex flex-col w-full gap-4">
-      <NumberInput
-        setValue={setCode}
+      <Input
         value={code}
+        onChange={e => setCode(e.target.value)}
         placeholder="Enter Code"
-        className="w-full text-right"
-        hideHashSign
-        icon={<CodeSquare className="size-4" />}
+        className="w-full"
       />
 
       {/* Free Tier Toggle */}

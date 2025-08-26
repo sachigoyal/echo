@@ -1,12 +1,12 @@
 'use client';
 
-import { updateAppSchema } from '@/services/apps/owner';
-import {
-  FormProvider,
-  type FormProviderProps,
-} from '../../_components/form/context';
-import { toast } from 'sonner';
 import z from 'zod';
+
+import { toast } from 'sonner';
+
+import { FormProvider, type FormProviderProps } from './form/context';
+
+import { updateAppSchema } from '@/services/apps/app';
 
 interface Props
   extends Omit<FormProviderProps<z.infer<typeof updateAppSchema>>, 'schema'> {

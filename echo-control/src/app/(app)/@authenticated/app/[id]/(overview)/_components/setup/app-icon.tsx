@@ -8,6 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { toast } from 'sonner';
+
 import { Dropzone } from '@/components/ui/dropzone';
 import {
   Form,
@@ -21,8 +23,7 @@ import { Button } from '@/components/ui/button';
 
 import { api } from '@/trpc/client';
 
-import { updateAppSchema } from '@/services/apps/owner';
-import { toast } from 'sonner';
+import { updateAppSchema } from '@/services/apps/app';
 
 const profilePictureSchema = z.object({
   profilePictureUrl: z.url(),
@@ -50,10 +51,10 @@ export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
     mutate: updateAppDetails,
     isPending: isUpdating,
     isSuccess,
-  } = api.apps.owner.update.useMutation({
+  } = api.apps.app.update.useMutation({
     onSuccess: () => {
       toast.success('App details updated');
-      utils.apps.public.get.invalidate(appId);
+      utils.apps.app.get.invalidate({ appId });
     },
   });
   const { mutate: uploadImage, isPending: isUploading } =
