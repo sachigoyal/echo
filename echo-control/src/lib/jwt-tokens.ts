@@ -199,7 +199,6 @@ export async function handleRefreshToken(
   const echoRefreshTokenRecord = await db.refreshToken.findUnique({
     where: {
       token: refreshToken,
-      // isArchived: false,
     },
     include: {
       user: true,
