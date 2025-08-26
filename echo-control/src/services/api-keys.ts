@@ -10,11 +10,7 @@ import {
 } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
-import {
-  PaginationParams,
-  paginationSchema,
-  toPaginatedReponse,
-} from './lib/pagination';
+import { PaginationParams, toPaginatedReponse } from './lib/pagination';
 
 export const getApiKeySchema = z.string();
 
