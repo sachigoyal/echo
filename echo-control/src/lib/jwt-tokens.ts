@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import {
   createEchoAccessTokenExpiry,
   createEchoRefreshTokenExpiry,
+  getArchivedRefreshTokenGraceMs,
 } from '@/lib/oauth-config';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
@@ -206,10 +207,13 @@ export async function handleRefreshToken(
     },
   });
 
+  // Grace period for archived tokens
+  const archivedGraceMs = getArchivedRefreshTokenGraceMs();
   if (
     !echoRefreshTokenRecord ||
     (echoRefreshTokenRecord.archivedAt &&
-      echoRefreshTokenRecord.archivedAt < new Date(Date.now() - 2 * 60 * 1000))
+      echoRefreshTokenRecord.archivedAt <
+        new Date(Date.now() - archivedGraceMs))
   ) {
     console.log('🔄 Refresh token not found or archived beyond grace period');
     return {
