@@ -37,8 +37,8 @@ export function ModelTable({ path }: ModelTableProps) {
         </thead>
         <tbody>
           {models.map((model, index) => (
-            <tr 
-              key={model.model_id} 
+            <tr
+              key={model.model_id}
               className={`border-b border-border/50 ${
                 index % 2 === 0 ? 'bg-muted/20' : ''
               }`}
@@ -52,7 +52,8 @@ export function ModelTable({ path }: ModelTableProps) {
                 ${(model.input_cost_per_token * 1000000).toFixed(2)} / 1M tokens
               </td>
               <td className="p-2 text-sm">
-                ${(model.output_cost_per_token * 1000000).toFixed(2)} / 1M tokens
+                ${(model.output_cost_per_token * 1000000).toFixed(2)} / 1M
+                tokens
               </td>
             </tr>
           ))}
