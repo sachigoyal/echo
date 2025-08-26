@@ -21,7 +21,7 @@ import { Separator } from '@/components/ui/separator';
 
 import { ProfitChart } from './chart';
 
-import { createAppSchema } from '@/services/apps/github-link';
+import { createAppSchema } from '@/services/apps/app';
 
 import { api } from '@/trpc/client';
 
@@ -41,7 +41,7 @@ export const CreateAppForm = () => {
     mutate: createApp,
     isPending,
     isSuccess,
-  } = api.apps.create.useMutation({
+  } = api.apps.app.create.useMutation({
     onSuccess: ({ id }) => {
       router.push(`/app/${id}`);
     },

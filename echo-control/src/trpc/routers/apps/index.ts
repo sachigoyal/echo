@@ -15,8 +15,6 @@ import {
   getAllOwnerEchoApps,
 } from '@/lib/apps';
 
-import { ownerAppsRouter } from './owner';
-
 import { createApp, createAppSchema } from '@/services/apps/create';
 import {
   appOwnerProcedure,
@@ -46,6 +44,10 @@ import {
   updateGithubLinkSchema,
   updateGithubLink,
 } from '@/services/apps/github-link';
+import {
+  createFreeTierPaymentLink,
+  createFreeTierPaymentLinkSchema,
+} from '@/services/stripe';
 
 export const appsRouter = createTRPCRouter({
   app: {
@@ -64,7 +66,7 @@ export const appsRouter = createTRPCRouter({
       return owner;
     }),
 
-    create: protectedAppProcedure
+    create: protectedProcedure
       .input(createAppSchema)
       .mutation(async ({ ctx, input }) => {
         return await createApp(ctx.session.user.id, input);
@@ -97,6 +99,14 @@ export const appsRouter = createTRPCRouter({
         .input(updateGithubLinkSchema)
         .mutation(async ({ ctx, input }) => {
           return await updateGithubLink(ctx.app.id, input);
+        }),
+    },
+
+    freeTier: {
+      createPaymentLink: appOwnerProcedure
+        .input(createFreeTierPaymentLinkSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await createFreeTierPaymentLink(ctx.app.id, input);
         }),
     },
   },
@@ -133,8 +143,6 @@ export const appsRouter = createTRPCRouter({
         return await listOwnerApps(ctx.session.user.id, input, ctx.pagination);
       }),
   },
-
-  owner: ownerAppsRouter,
 
   /**
    * Get a single app with appropriate permissions

@@ -29,7 +29,7 @@ export default function FreeTierCreditsSettings({
   const {
     mutate: createFreeTierPaymentLink,
     isPending: isCreatingFreeTierPaymentLink,
-  } = api.apps.owner.createFreeTierPaymentLink.useMutation({
+  } = api.apps.app.freeTier.createPaymentLink.useMutation({
     onSuccess: async data => {
       window.open(data.paymentLink.url, '_blank');
       setDepositAmount('');
