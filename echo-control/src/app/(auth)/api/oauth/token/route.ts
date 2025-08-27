@@ -20,10 +20,14 @@ export async function POST(req: NextRequest) {
 
     const { grant_type, code, redirect_uri, code_verifier } = body;
 
-    // Capture metadata from standard headers only
-    const deviceName = undefined; // derive on server later from userAgent if desired
-    const forwardedUserAgent = req.headers.get('user-agent') || undefined;
+    // Capture metadata from forwarded headers if present, fallback to standard
+    const deviceName = undefined; // derive later from userAgent if desired
+    const forwardedUserAgent =
+      req.headers.get('x-client-user-agent') ||
+      req.headers.get('user-agent') ||
+      undefined;
     const forwardedIp =
+      req.headers.get('x-client-ip') ||
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       req.headers.get('x-real-ip') ||
       req.headers.get('cf-connecting-ip') ||

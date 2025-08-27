@@ -115,6 +115,9 @@ export async function handleCallback(
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
+      'x-client-user-agent': req.headers.get('user-agent') || '',
+      'x-client-ip':
+        req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '',
     },
     body: params.toString(),
   });

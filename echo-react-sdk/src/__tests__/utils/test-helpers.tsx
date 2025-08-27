@@ -8,7 +8,7 @@ import { EchoAuthConfig } from '../../types';
  */
 const defaultTestConfig: EchoAuthConfig = {
   appId: 'test-app-id',
-  apiUrl: 'http://localhost:3000',
+  baseEchoUrl: 'http://localhost:3000',
   redirectUri: 'http://localhost:3000/callback',
   scope: 'llm:invoke offline_access',
 };
