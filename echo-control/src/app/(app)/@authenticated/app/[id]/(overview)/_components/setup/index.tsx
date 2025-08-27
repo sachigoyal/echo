@@ -13,6 +13,7 @@ import { api } from '@/trpc/client';
 import { Connection } from './connection';
 import { Accordion } from '@/components/ui/accordion';
 import { GenerateText } from './generate-text';
+import { cn } from '@/lib/utils';
 
 interface Props {
   appId: string;
@@ -66,17 +67,19 @@ export const Setup: React.FC<Props> = ({ appId }) => {
     if (connectionSteps.every(Boolean) && !generateTextSteps.every(Boolean)) {
       setAccordionValue('generate-text');
     }
+    if (allStepsCompleted) {
+      setAccordionValue('');
+    }
   }, [appDetailsSteps, connectionSteps, generateTextSteps]);
 
   return (
     <AnimatePresence mode="wait">
       {!isComplete && (
         <motion.div
-          initial={{ opacity: 0, height: 0, paddingBottom: 0 }}
-          animate={{ opacity: 1, height: 'auto', paddingBottom: 32 }}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
           exit={{
             height: 0,
-            paddingBottom: 0,
             opacity: 0,
             transition: {
               opacity: { delay: 0.1, duration: 0.2 },
@@ -92,16 +95,6 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             <div className="flex flex-col">
               <div className="flex items-center gap-4">
                 <h1 className="text-2xl font-bold">Set Up Your App</h1>
-                {allStepsCompleted && (
-                  <Button
-                    variant="turbo"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => setIsComplete(true)}
-                  >
-                    Finish Setup
-                  </Button>
-                )}
               </div>
               <p className="text-muted-foreground">
                 Complete the following steps to set up your app
@@ -131,6 +124,32 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             <Connection appId={appId} />
             <GenerateText appId={appId} />
           </Accordion>
+          <motion.div
+            initial={{ opacity: 0, marginBottom: 0, height: 32 }}
+            animate={{
+              height: allStepsCompleted ? 48 : 32,
+              opacity: allStepsCompleted ? 1 : 0,
+              marginBottom: allStepsCompleted ? 32 : 0,
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+            }}
+            className="h-8 mb-8"
+          >
+            <Button
+              variant="turbo"
+              className={cn(
+                'size-full text-lg font-bold',
+                !allStepsCompleted && 'pointer-events-none'
+              )}
+              onClick={
+                allStepsCompleted ? () => setIsComplete(true) : undefined
+              }
+            >
+              Finish Setup
+            </Button>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

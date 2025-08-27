@@ -33,10 +33,14 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
     appId,
   });
 
+  const isInitialized = useMemo(() => {
+    return numTokens > 0 && numTransactions > 0;
+  }, [numTokens, numTransactions]);
+
   // Transform data for the chart
   const chartData: ChartData<Omit<(typeof activity)[number], 'timestamp'>>[] =
     useMemo(() => {
-      if (numTokens === 0 || numTransactions === 0) {
+      if (!isInitialized) {
         return Array.from({ length: 48 }, (_, i) => ({
           timestamp: format(subDays(new Date(), i), 'MMM dd HH:mm yyyy'),
           totalProfit: Math.random() * 100,
@@ -52,7 +56,7 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
         ...rest,
         timestamp: format(timestamp, 'MMM dd HH:mm yyyy'),
       }));
-    }, [activity, numTokens]);
+    }, [activity, isInitialized]);
 
   const totalProfit = chartData.reduce(
     (acc, item) => acc + item.totalProfit,
