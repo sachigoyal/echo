@@ -39,7 +39,7 @@ export const parseSSEAnthropicGPTFormat = (
       }
     } catch (error) {
       // Log error but continue processing other events
-      logger.warn('Error parsing SSE chunk:', { error });
+      logger.warn(`Error parsing SSE chunk: ${error}`);
       continue;
     }
   }
@@ -110,7 +110,7 @@ export class AnthropicGPTProvider extends GPTProvider {
 
       return transaction;
     } catch (error) {
-      logger.error('Error processing data:', { error });
+      logger.error(`Error processing data: ${error}`);
       throw error;
     }
   }

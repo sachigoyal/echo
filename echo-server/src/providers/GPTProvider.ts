@@ -48,7 +48,7 @@ export const parseSSEGPTFormat = (data: string): StreamingChunkBody[] => {
         const parsed = JSON.parse(jsonStr);
         chunks.push(parsed);
       } catch (error) {
-        logger.error('Error parsing SSE chunk:', { error });
+        logger.error(`Error parsing SSE chunk: ${error}`);
       }
     }
   }
@@ -118,7 +118,7 @@ export class GPTProvider extends BaseProvider {
 
       return transaction;
     } catch (error) {
-      logger.error('Error processing data:', { error });
+      logger.error(`Error processing data: ${error}`);
       throw error;
     }
   }
