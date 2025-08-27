@@ -11,6 +11,7 @@ import { AppDetails } from './app-details';
 
 import { api } from '@/trpc/client';
 import { Connection } from './connection';
+import { Accordion } from '@/components/ui/accordion';
 
 interface Props {
   appId: string;
@@ -21,12 +22,15 @@ export const Setup: React.FC<Props> = ({ appId }) => {
   const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
 
-  const steps = [
+  const appDetailsSteps = [
     app.profilePictureUrl !== null,
     app.description !== null,
     githubLink !== null,
-    numTokens > 0,
   ];
+
+  const connectionSteps = [numTokens > 0];
+
+  const steps = [...appDetailsSteps, ...connectionSteps];
 
   const completedSteps = steps.filter(Boolean).length;
   const allStepsCompleted = completedSteps === steps.length;
@@ -83,8 +87,16 @@ export const Setup: React.FC<Props> = ({ appId }) => {
               </div>
             </div>
           </div>
-          <AppDetails appId={appId} />
-          <Connection appId={appId} />
+          <Accordion
+            type="multiple"
+            defaultValue={[
+              ...(!appDetailsSteps.some(Boolean) ? ['app-details'] : []),
+              ...(!connectionSteps.some(Boolean) ? ['connection'] : []),
+            ]}
+          >
+            <AppDetails appId={appId} />
+            <Connection appId={appId} />
+          </Accordion>
         </motion.div>
       )}
     </AnimatePresence>

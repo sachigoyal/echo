@@ -26,6 +26,11 @@ import { cn } from '@/lib/utils';
 import { api } from '@/trpc/client';
 
 import { AppIcon } from './app-icon';
+import {
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 interface Props {
   appId: string;
@@ -78,26 +83,30 @@ export const AppDetails: React.FC<Props> = ({ appId }) => {
   ];
 
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-lg font-bold">App Details</h2>
-      <Carousel className="w-full" opts={{ loop: true }}>
-        <CarouselContent>
-          {steps.map(step => (
-            <CarouselItem key={step.title} className={step.className}>
-              <StepCard
-                title={step.title}
-                description={step.description}
-                Icon={step.Icon}
-                isComplete={step.isComplete}
-                component={step.component}
-              />
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
-    </div>
+    <AccordionItem value="app-details" className="border-none">
+      <AccordionTrigger className="text-lg font-semibold">
+        App Details
+      </AccordionTrigger>
+      <AccordionContent>
+        <Carousel className="w-full" opts={{ loop: true }}>
+          <CarouselContent>
+            {steps.map(step => (
+              <CarouselItem key={step.title} className={step.className}>
+                <StepCard
+                  title={step.title}
+                  description={step.description}
+                  Icon={step.Icon}
+                  isComplete={step.isComplete}
+                  component={step.component}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </AccordionContent>
+    </AccordionItem>
   );
 };
 

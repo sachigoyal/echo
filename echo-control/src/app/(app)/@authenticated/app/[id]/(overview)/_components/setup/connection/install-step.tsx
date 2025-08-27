@@ -1,13 +1,5 @@
 import React from 'react';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-
 export interface InstallStepProps {
   index: number;
   title: string;

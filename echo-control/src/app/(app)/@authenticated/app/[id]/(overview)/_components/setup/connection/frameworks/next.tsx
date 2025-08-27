@@ -1,6 +1,7 @@
 import { InstallStep } from '../install-step';
 import { ScriptCopyBtn } from '@/components/ui/script-copy';
 import { Code } from './code';
+import { CodeTabs } from '@/components/ui/shadcn-io/code-tabs';
 
 export const NextStep1 = () => {
   return (
@@ -9,8 +10,8 @@ export const NextStep1 = () => {
       title="Install SDKs"
       description="Utilities for authentication and LLM generation"
       body={
-        <ScriptCopyBtn
-          commandMap={{
+        <CodeTabs
+          codes={{
             npm: 'npm install @merit-systems/echo-next-sdk ai',
             yarn: 'yarn add @merit-systems/echo-next-sdk ai',
             bun: 'bun add @merit-systems/echo-next-sdk ai',
@@ -35,7 +36,7 @@ export const NextStep2 = ({ appId }: { appId: string }) => {
   return (
     <InstallStep
       index={1}
-      title="Configure Provider"
+      title="Configure Provider and Handlers"
       description="Set up the Echo provider with your app ID"
       body={<Code value={step2Code(appId)} lang="typescript" />}
     />
@@ -51,8 +52,8 @@ export const NextStep3 = () => {
   return (
     <InstallStep
       index={2}
-      title="Add to your app"
-      description="Add the Echo SDK to your app"
+      title="Authenticate your Users"
+      description="Use our sign in utilities to authenticate your users"
       body={<Code value={step3Code} lang="typescript" />}
     />
   );
