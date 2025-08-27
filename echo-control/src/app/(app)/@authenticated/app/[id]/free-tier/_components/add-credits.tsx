@@ -8,14 +8,18 @@ import { MoneyInput } from '@/components/ui/money-input';
 import { Check, Loader2 } from 'lucide-react';
 import { api } from '@/trpc/client';
 
-export const AddCredits = () => {
+interface Props {
+  appId: string;
+}
+
+export const AddCredits: React.FC<Props> = ({ appId }) => {
   const [amount, setAmount] = useState<number>();
 
   const {
     mutate: createPaymentLink,
     isPending,
     isSuccess,
-  } = api.user.payments.createLink.useMutation({
+  } = api.apps.app.freeTier.payments.create.useMutation({
     onSuccess: data => {
       window.location.href = data.paymentLink.url;
     },
@@ -25,7 +29,7 @@ export const AddCredits = () => {
     if (!amount) {
       throw new Error('Amount is required');
     }
-    createPaymentLink({ amount });
+    createPaymentLink({ appId, amount });
   };
 
   return (

@@ -54,6 +54,7 @@ export const LoadingFreeTierDetails = () => {
   return (
     <DetailsContent
       items={[
+        { label: 'User Spend Limit', value: <Skeleton className="w-24 h-6" /> },
         { label: 'Total Purchased', value: <Skeleton className="w-24 h-6" /> },
         { label: 'Total Spent', value: <Skeleton className="w-24 h-6" /> },
       ]}

@@ -14,6 +14,12 @@ import { Connection } from './connection';
 import { Accordion } from '@/components/ui/accordion';
 import { GenerateText } from './generate-text';
 import { cn } from '@/lib/utils';
+import {
+  getSingletonHighlighter,
+  Highlighter,
+} from '@/components/ui/code/shiki.bundle';
+import { createJavaScriptRegexEngine } from '@shikijs/engine-javascript';
+import { HighlighterProvider } from './lib/highlighter-context';
 
 interface Props {
   appId: string;
@@ -26,6 +32,16 @@ export const Setup: React.FC<Props> = ({ appId }) => {
   const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
     appId,
   });
+
+  const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
+
+  useEffect(() => {
+    void getSingletonHighlighter({
+      langs: ['tsx', 'shell'],
+      themes: ['github-light', 'github-dark'],
+      engine: createJavaScriptRegexEngine(),
+    }).then(setHighlighter);
+  }, []);
 
   const appDetailsSteps = useMemo(
     () => [
@@ -74,83 +90,86 @@ export const Setup: React.FC<Props> = ({ appId }) => {
 
   return (
     <AnimatePresence mode="wait">
-      {!isComplete && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{
-            height: 0,
-            opacity: 0,
-            transition: {
-              opacity: { delay: 0.1, duration: 0.2 },
-              height: { duration: 0.2 },
-            },
-          }}
-          layout
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
-          style={{ overflow: 'hidden' }}
-          className="flex flex-col gap-4 h-full"
-        >
-          <div className="flex justify-between items-center gap-4">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-4">
-                <h1 className="text-2xl font-bold">Set Up Your App</h1>
-              </div>
-              <p className="text-muted-foreground">
-                Complete the following steps to set up your app
-              </p>
-            </div>
-            <div className="w-1/4 flex items-center gap-2">
-              <div className="flex flex-col items-end gap-1 w-full">
-                <p className="text-sm text-muted-foreground font-bold shrink-0">
-                  {(((completedSteps + 1) / (steps.length + 1)) * 100).toFixed(
-                    0
-                  )}
-                  % Complete
-                </p>
-                <Progress
-                  value={((completedSteps + 1) / (steps.length + 1)) * 100}
-                />
-              </div>
-            </div>
-          </div>
-          <Accordion
-            type="single"
-            collapsible
-            value={accordionValue}
-            onValueChange={setAccordionValue}
-          >
-            <AppDetails appId={appId} />
-            <Connection appId={appId} />
-            <GenerateText appId={appId} />
-          </Accordion>
+      {!isComplete && highlighter && (
+        <HighlighterProvider highlighter={highlighter}>
           <motion.div
-            initial={{ opacity: 0, marginBottom: 0, height: 32 }}
-            animate={{
-              height: allStepsCompleted ? 48 : 32,
-              opacity: allStepsCompleted ? 1 : 0,
-              marginBottom: allStepsCompleted ? 32 : 0,
-            }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
             exit={{
               height: 0,
               opacity: 0,
+              transition: {
+                opacity: { delay: 0.1, duration: 0.2 },
+                height: { duration: 0.2 },
+              },
             }}
-            className="h-8 mb-8"
+            layout
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+            className="flex flex-col gap-4 h-full"
           >
-            <Button
-              variant="turbo"
-              className={cn(
-                'size-full text-lg font-bold',
-                !allStepsCompleted && 'pointer-events-none'
-              )}
-              onClick={
-                allStepsCompleted ? () => setIsComplete(true) : undefined
-              }
+            <div className="flex justify-between items-center gap-4">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-2xl font-bold">Set Up Your App</h1>
+                </div>
+                <p className="text-muted-foreground">
+                  Complete the following steps to set up your app
+                </p>
+              </div>
+              <div className="w-1/4 flex items-center gap-2">
+                <div className="flex flex-col items-end gap-1 w-full">
+                  <p className="text-sm text-muted-foreground font-bold shrink-0">
+                    {(
+                      ((completedSteps + 1) / (steps.length + 1)) *
+                      100
+                    ).toFixed(0)}
+                    % Complete
+                  </p>
+                  <Progress
+                    value={((completedSteps + 1) / (steps.length + 1)) * 100}
+                  />
+                </div>
+              </div>
+            </div>
+            <Accordion
+              type="single"
+              collapsible
+              value={accordionValue}
+              onValueChange={setAccordionValue}
             >
-              Finish Setup
-            </Button>
+              <AppDetails appId={appId} />
+              <Connection appId={appId} />
+              <GenerateText appId={appId} />
+            </Accordion>
+            <motion.div
+              initial={{ opacity: 0, marginBottom: 0, height: 32 }}
+              animate={{
+                height: allStepsCompleted ? 48 : 32,
+                opacity: allStepsCompleted ? 1 : 0,
+                marginBottom: allStepsCompleted ? 32 : 0,
+              }}
+              exit={{
+                height: 0,
+                opacity: 0,
+              }}
+              className="h-8 mb-8"
+            >
+              <Button
+                variant="turbo"
+                className={cn(
+                  'size-full text-lg font-bold',
+                  !allStepsCompleted && 'pointer-events-none'
+                )}
+                onClick={
+                  allStepsCompleted ? () => setIsComplete(true) : undefined
+                }
+              >
+                Finish Setup
+              </Button>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </HighlighterProvider>
       )}
     </AnimatePresence>
   );

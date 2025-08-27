@@ -1,5 +1,10 @@
 import { Suspense } from 'react';
 
+import { Plus } from 'lucide-react';
+
+import { ErrorBoundary } from 'react-error-boundary';
+
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -13,13 +18,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { Body, Heading } from '../../../_components/layout/page-utils';
 
-import { api } from '@/trpc/server';
 import { Balance } from './_components/balance';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { ErrorBoundary } from 'react-error-boundary';
 import { Payments } from './_components/payments';
 import { Details, LoadingFreeTierDetails } from './_components/details';
+
+import { api } from '@/trpc/server';
+
+import { AddCredits } from './_components/add-credits';
 
 export default async function FreeTierPage({
   params,
@@ -68,7 +73,7 @@ export default async function FreeTierPage({
                       they have to buy credits and spend their Echo balance.
                     </DialogDescription>
                   </DialogHeader>
-                  {/* <AddCredits /> */}
+                  <AddCredits appId={id} />
                 </DialogContent>
               </Dialog>
             </div>

@@ -27,7 +27,7 @@ export const Transactions: React.FC<Props> = ({ appId }) => {
         <TableHeader>
           <TableRow className="hover:bg-transparent text-xs">
             <TableHead className="pl-4 flex items-center gap-2">
-              <div className="size-6 flex items-center justify-center bg-muted rounded-md">
+              <div className="size-8 flex items-center justify-center bg-muted rounded-md">
                 <Activity className="size-4" />
               </div>
               Activity
