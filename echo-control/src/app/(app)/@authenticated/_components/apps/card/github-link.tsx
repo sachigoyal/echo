@@ -13,12 +13,11 @@ interface Props {
 
 export const GithubLink: React.FC<Props> = ({ appId }) => {
   return (
-    <Badge variant="muted" className="rounded-full gap-2 w-fit px-1">
-      <SiGithub className="size-3" />
-      <Suspense fallback={<Skeleton className="size-4" />}>
+    <GithubLinkContainer>
+      <Suspense fallback={<UrlSkeleton />}>
         <Url appId={appId} />
       </Suspense>
-    </Badge>
+    </GithubLinkContainer>
   );
 };
 
@@ -30,5 +29,26 @@ export const Url = async ({ appId }: Props) => {
         ? githubUrl.githubUrl.split('/').slice(3).join('/')
         : 'Not connected'}
     </span>
+  );
+};
+
+const UrlSkeleton = () => {
+  return <Skeleton className="h-4 w-12" />;
+};
+
+const GithubLinkContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <Badge variant="muted" className="rounded-full gap-2 w-fit px-1">
+      <SiGithub className="size-3" />
+      {children}
+    </Badge>
+  );
+};
+
+export const LoadingGithubLink = () => {
+  return (
+    <GithubLinkContainer>
+      <UrlSkeleton />
+    </GithubLinkContainer>
   );
 };

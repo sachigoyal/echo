@@ -15,7 +15,7 @@ interface Props {
 export const Earnings: React.FC<Props> = ({ appId }) => {
   return (
     <ErrorBoundary fallback={<div>Error</div>}>
-      <Suspense fallback={<Skeleton className="h-4 w-16" />}>
+      <Suspense fallback={<LoadingEarningsAmount />}>
         <EarningsAmount appId={appId} />
       </Suspense>
     </ErrorBoundary>
@@ -29,4 +29,8 @@ export const EarningsAmount: React.FC<Props> = async ({ appId }) => {
       {formatCurrency(earnings)}
     </span>
   );
+};
+
+export const LoadingEarningsAmount = () => {
+  return <Skeleton className="h-4 w-16" />;
 };

@@ -14,6 +14,18 @@ import { ActivityContextProvider } from '@/app/(app)/@authenticated/_components/
 import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityOverlay } from './overlay';
 
+const ActivityContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
+      <div className="flex justify-between items-center">
+        <h3 className="font-bold">Your Earnings</h3>
+        <RangeSelector />
+      </div>
+      <Card className="p-0 overflow-hidden relative">{children}</Card>
+    </div>
+  );
+};
+
 export const Activity: React.FC = () => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
@@ -30,27 +42,29 @@ export const Activity: React.FC = () => {
         initialStartDate={defaultStartDate}
         initialEndDate={defaultEndDate}
       >
-        <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
-          <div className="flex justify-between items-center">
-            <h3 className="font-bold">Your Earnings</h3>
-            <RangeSelector />
-          </div>
-          <Card className="p-0 overflow-hidden relative">
-            <ErrorBoundary
-              fallback={<p>There was an error loading the activity data</p>}
-            >
-              <Suspense fallback={<LoadingActivityCharts />}>
-                <ActivityCharts />
-              </Suspense>
-            </ErrorBoundary>
-            <Suspense fallback={null}>
-              <ErrorBoundary fallback={null}>
-                <ActivityOverlay />
-              </ErrorBoundary>
+        <ActivityContainer>
+          <ErrorBoundary
+            fallback={<p>There was an error loading the activity data</p>}
+          >
+            <Suspense fallback={<LoadingActivityCharts />}>
+              <ActivityCharts />
             </Suspense>
-          </Card>
-        </div>
+          </ErrorBoundary>
+          <Suspense fallback={null}>
+            <ErrorBoundary fallback={null}>
+              <ActivityOverlay />
+            </ErrorBoundary>
+          </Suspense>
+        </ActivityContainer>
       </ActivityContextProvider>
     </HydrateClient>
+  );
+};
+
+export const LoadingActivity = () => {
+  return (
+    <ActivityContainer>
+      <LoadingActivityCharts />
+    </ActivityContainer>
   );
 };

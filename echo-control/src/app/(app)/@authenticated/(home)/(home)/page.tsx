@@ -30,10 +30,10 @@ export default async function DashboardPage() {
       />
       <Body>
         <div className="flex flex-col md:flex-row gap-8 md:gap-4 max-w-full w-full">
-          <div className="flex flex-col gap-4 w-full md:w-80 lg:w-96 max-w-full overflow-hidden shrink-0">
+          <div className="flex flex-col gap-4 w-full md:w-80 lg:w-96 max-w-full overflow-hidden shrink-0 pt-2">
             <Apps />
           </div>
-          <div className="flex flex-col gap-4 flex-1">
+          <div className="flex flex-col gap-4 flex-1 overflow-hidden py-2">
             <Activity />
           </div>
         </div>
