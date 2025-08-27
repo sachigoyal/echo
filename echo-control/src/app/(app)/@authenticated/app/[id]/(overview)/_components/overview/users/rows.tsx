@@ -28,7 +28,7 @@ export const UserRows = async ({
     <TableRow key={user.id}>
       <TableCell className="pl-4">
         <div className="flex flex-row items-center gap-2">
-          <UserAvatar src={user.image} className="size-6" />
+          <UserAvatar src={user.image} className="size-8" />
           <p className="text-sm font-medium">{user.name}</p>
         </div>
       </TableCell>

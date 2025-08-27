@@ -23,6 +23,10 @@ export default async function AuthenticatedAppLayout({
             href: `/app/${id}/keys`,
           },
           {
+            label: 'Users',
+            href: `/app/${id}/users`,
+          },
+          {
             label: 'Settings',
             href: `/app/${id}/settings`,
             subRoutes: [
