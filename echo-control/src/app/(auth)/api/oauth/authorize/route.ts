@@ -9,6 +9,7 @@ import { db } from '@/lib/db';
 import { SignJWT } from 'jose';
 import { nanoid } from 'nanoid';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/logger';
 
 // TTL for the one-time authorization code (seconds)
 const AUTH_CODE_TTL = 300; // 5 minutes
@@ -35,6 +36,17 @@ export async function GET(req: NextRequest) {
     const prompt = qs.get('prompt');
 
     if (!clientId || !redirectUri || !codeChallenge) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Missing required OAuth authorization parameters',
+        attributes: {
+          hasClientId: !!clientId,
+          hasRedirectUri: !!redirectUri,
+          hasCodeChallenge: !!codeChallenge,
+          endpoint: '/api/oauth/authorize',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         {
           error: 'invalid_request',
@@ -120,7 +132,16 @@ export async function GET(req: NextRequest) {
         },
       });
     } catch (error) {
-      console.error('Error fetching echo app:', error);
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'Error fetching echo app during OAuth authorization',
+        attributes: {
+          error: error instanceof Error ? error.message : String(error),
+          clientId,
+          endpoint: '/api/oauth/authorize',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         {
           error: 'invalid_client',
@@ -131,6 +152,15 @@ export async function GET(req: NextRequest) {
     }
 
     if (!echoApp) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Echo app not found for client_id',
+        attributes: {
+          clientId,
+          endpoint: '/api/oauth/authorize',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         {
           error: 'invalid_client',
@@ -188,7 +218,17 @@ export async function GET(req: NextRequest) {
     try {
       await getOrCreateUser(userId!);
     } catch (error) {
-      console.error('Error creating user:', error);
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'Error creating user during OAuth authorization',
+        attributes: {
+          error: error instanceof Error ? error.message : String(error),
+          userId,
+          clientId,
+          endpoint: '/api/oauth/authorize',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         { error: 'server_error', error_description: 'Error creating user' },
         { status: 500 }
@@ -236,7 +276,16 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.redirect(consentUrl.toString(), 302);
   } catch (error) {
-    console.error('OAuth authorization error:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'OAuth authorization error',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        endpoint: '/api/oauth/authorize',
+        method: 'GET',
+      },
+    });
     return NextResponse.json(
       {
         error: 'server_error',
@@ -274,7 +323,16 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ redirect_url });
   } catch (error) {
-    console.error('OAuth authorization POST error:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'OAuth authorization POST error',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        endpoint: '/api/oauth/authorize',
+        method: 'POST',
+      },
+    });
     return NextResponse.json(
       {
         error: 'server_error',

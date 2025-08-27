@@ -2,6 +2,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOwnerEchoApps } from '@/lib/apps';
 import { User } from '@/generated/prisma';
+import { logger } from '@/logger';
 
 // GET /api/v1/apps - List all Echo apps for the authenticated user
 export async function GET(req: NextRequest) {
@@ -11,17 +12,55 @@ export async function GET(req: NextRequest) {
       const { user: userResult } = await getAuthenticatedUser(req);
       user = userResult;
     } catch (error) {
-      console.error('Error fetching apps:', error);
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'Error fetching user for apps endpoint',
+        attributes: {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          endpoint: '/api/v1/apps',
+          method: 'GET',
+        },
+      });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const apps = await getAllOwnerEchoApps(user.id);
 
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully fetched Echo apps',
+      attributes: {
+        userId: user.id,
+        appCount: apps.length,
+        endpoint: '/api/v1/apps',
+        method: 'GET',
+      },
+    });
+
     return NextResponse.json({ apps });
   } catch (error) {
-    console.error('Error fetching Echo apps:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error fetching Echo apps',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        endpoint: '/api/v1/apps',
+        method: 'GET',
+      },
+    });
 
     // Check if it's an authentication error
     if (error instanceof Error && error.message.includes('authentication')) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Authentication error in v1 apps endpoint',
+        attributes: {
+          error: error.message,
+          endpoint: '/api/v1/apps',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         { error: 'Authentication required', details: error.message },
         { status: 401 }

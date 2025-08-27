@@ -184,9 +184,12 @@ function Dashboard() {
 }
 
 function App() {
-  const baseEchoUrl = import.meta.env.VITE_ECHO_URL || 'https://echo.merit.systems';
-  const baseRouterUrl = import.meta.env.VITE_ROUTER_URL || 'https://echo.router.merit.systems';
-  const appId = import.meta.env.VITE_ECHO_APP_ID || '60601628-cdb7-481e-8f7e-921981220348';
+  const baseEchoUrl =
+    import.meta.env.VITE_ECHO_URL || 'https://echo.merit.systems';
+  const baseRouterUrl =
+    import.meta.env.VITE_ROUTER_URL || 'https://echo.router.merit.systems';
+  const appId =
+    import.meta.env.VITE_ECHO_APP_ID || '60601628-cdb7-481e-8f7e-921981220348';
 
   return (
     <EchoProvider

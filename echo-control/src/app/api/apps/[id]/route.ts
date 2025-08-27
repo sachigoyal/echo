@@ -7,6 +7,7 @@ import {
 } from '@/lib/apps/crud';
 import { isValidUUID } from '@/lib/oauth-config/index';
 import { AppUpdateInput, getApp } from '@/lib/apps';
+import { logger } from '@/logger';
 
 // GET /api/apps/[id] - Get detailed app information
 export async function GET(
@@ -20,14 +21,52 @@ export async function GET(
 
   // Validate UUID format
   if (!isValidUUID(appId)) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Invalid app ID format in GET request',
+      attributes: {
+        appId,
+        userId: user.id,
+        endpoint: '/api/apps/[id]',
+        method: 'GET',
+      },
+    });
     return NextResponse.json(
       { error: 'Invalid app ID format' },
       { status: 400 }
     );
   }
-  const appData = await getApp(appId, user.id);
 
-  return NextResponse.json(appData);
+  try {
+    const appData = await getApp(appId, user.id);
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully fetched app data',
+      attributes: {
+        appId,
+        userId: user.id,
+        endpoint: '/api/apps/[id]',
+        method: 'GET',
+      },
+    });
+
+    return NextResponse.json(appData);
+  } catch (error) {
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error fetching app data',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        appId,
+        userId: user.id,
+        endpoint: '/api/apps/[id]',
+        method: 'GET',
+      },
+    });
+    throw error;
+  }
 }
 
 // PUT /api/apps/[id] - Update an existing Echo app
@@ -90,11 +129,33 @@ export async function PUT(
     const updatedApp = await updateEchoAppById(appId, user.id, updateData);
 
     if (!updatedApp) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Echo app not found for update',
+        attributes: {
+          appId,
+          userId: user.id,
+          endpoint: '/api/apps/[id]',
+          method: 'PUT',
+        },
+      });
       return NextResponse.json(
         { error: 'Echo app not found' },
         { status: 404 }
       );
     }
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully updated Echo app',
+      attributes: {
+        appId,
+        userId: user.id,
+        updateFields: Object.keys(updateData),
+        endpoint: '/api/apps/[id]',
+        method: 'PUT',
+      },
+    });
 
     return NextResponse.json({
       id: updatedApp.id,
@@ -111,7 +172,17 @@ export async function PUT(
       isPublic: updatedApp.isPublic,
     });
   } catch (error) {
-    console.error('Error updating Echo app:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error updating Echo app',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        appId: (await params).id,
+        endpoint: '/api/apps/[id]',
+        method: 'PUT',
+      },
+    });
 
     // Handle validation errors
     if (
@@ -144,6 +215,16 @@ export async function DELETE(
 
     // Validate UUID format
     if (!isValidUUID(appId)) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Invalid app ID format in DELETE request',
+        attributes: {
+          appId,
+          userId: user.id,
+          endpoint: '/api/apps/[id]',
+          method: 'DELETE',
+        },
+      });
       return NextResponse.json(
         { error: 'Invalid app ID format' },
         { status: 400 }
@@ -152,15 +233,45 @@ export async function DELETE(
 
     const result = await deleteEchoAppById(appId, user.id);
 
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully archived Echo app',
+      attributes: {
+        appId,
+        userId: user.id,
+        endpoint: '/api/apps/[id]',
+        method: 'DELETE',
+      },
+    });
+
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error archiving echo app:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error archiving echo app',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        appId: (await params).id,
+        endpoint: '/api/apps/[id]',
+        method: 'DELETE',
+      },
+    });
 
     if (
       error instanceof Error &&
       (error.message === 'Not authenticated' ||
         error.message.includes('Invalid'))
     ) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Authentication error in DELETE app endpoint',
+        attributes: {
+          error: error.message,
+          endpoint: '/api/apps/[id]',
+          method: 'DELETE',
+        },
+      });
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -171,6 +282,15 @@ export async function DELETE(
       error instanceof Error &&
       error.message.includes('not found or access denied')
     ) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Echo app not found or access denied in DELETE endpoint',
+        attributes: {
+          error: error.message,
+          endpoint: '/api/apps/[id]',
+          method: 'DELETE',
+        },
+      });
       return NextResponse.json(
         { error: 'Echo app not found or access denied' },
         { status: 404 }

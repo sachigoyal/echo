@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateEchoAccessJwtToken } from '@/lib/jwt-tokens';
 import { db } from '@/lib/db';
+import { logger } from '@/logger';
 
 // GET /api/oauth/userinfo - OIDC UserInfo Endpoint
 // https://openid.net/specs/openid-connect-core-1_0.html#UserInfo
@@ -27,7 +28,15 @@ export async function GET(request: NextRequest) {
       const authResult = await authenticateEchoAccessJwtToken(accessToken);
       userId = authResult.userId;
     } catch (_error) {
-      console.log('🔄 Invalid or expired access token: ', _error);
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Invalid or expired access token in OAuth userinfo endpoint',
+        attributes: {
+          error: _error instanceof Error ? _error.message : String(_error),
+          endpoint: '/api/oauth/userinfo',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         {
           error: 'invalid_token',
@@ -51,6 +60,15 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'User not found for valid access token in OAuth userinfo endpoint',
+        attributes: {
+          userId,
+          endpoint: '/api/oauth/userinfo',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         {
           error: 'invalid_token',
@@ -80,6 +98,16 @@ export async function GET(request: NextRequest) {
       )
     );
 
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully returned OAuth userinfo',
+      attributes: {
+        userId: user.id,
+        endpoint: '/api/oauth/userinfo',
+        method: 'GET',
+      },
+    });
+
     return NextResponse.json(cleanUserInfo, {
       headers: {
         'Content-Type': 'application/json',
@@ -88,7 +116,16 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('UserInfo endpoint error:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'UserInfo endpoint error',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        endpoint: '/api/oauth/userinfo',
+        method: 'GET',
+      },
+    });
 
     return NextResponse.json(
       {

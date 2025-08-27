@@ -1,5 +1,6 @@
 import { authenticateEchoAccessJwtToken } from '@/lib/jwt-tokens';
 import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@/logger';
 
 // POST /api/validate-jwt-token - Fast JWT validation without DB lookup
 export async function POST(request: NextRequest) {
@@ -11,6 +12,14 @@ export async function POST(request: NextRequest) {
     const tokenToValidate = echoTokenHeader || authHeader;
 
     if (!tokenToValidate) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Missing token header in JWT validation request',
+        attributes: {
+          endpoint: '/api/validate-jwt-token',
+          method: 'POST',
+        },
+      });
       return NextResponse.json(
         {
           valid: false,
@@ -27,6 +36,19 @@ export async function POST(request: NextRequest) {
     try {
       const validationResult =
         await authenticateEchoAccessJwtToken(tokenRemovedBearer);
+
+      logger.emit({
+        severityText: 'INFO',
+        body: 'JWT token validation successful',
+        attributes: {
+          userId: validationResult.userId,
+          appId: validationResult.appId,
+          scope: validationResult.scope,
+          endpoint: '/api/validate-jwt-token',
+          method: 'POST',
+        },
+      });
+
       return NextResponse.json({
         valid: true,
         userId: validationResult.userId,
@@ -35,6 +57,15 @@ export async function POST(request: NextRequest) {
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('Invalid')) {
+        logger.emit({
+          severityText: 'WARN',
+          body: 'Invalid JWT token provided',
+          attributes: {
+            error: error.message,
+            endpoint: '/api/validate-jwt-token',
+            method: 'POST',
+          },
+        });
         return NextResponse.json(
           { valid: false, error: 'Invalid token' },
           { status: 401 }
@@ -47,7 +78,16 @@ export async function POST(request: NextRequest) {
       { status: 401 }
     );
   } catch (error) {
-    console.error('JWT token validation error:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'JWT token validation error',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        endpoint: '/api/validate-jwt-token',
+        method: 'POST',
+      },
+    });
     return NextResponse.json(
       {
         valid: false,

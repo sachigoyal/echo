@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { EchoApp, User } from '@/generated/prisma';
 import { getApp } from '@/lib/apps';
+import { logger } from '@/logger';
 
 // GET /api/v1/apps/[id] - Get detailed app information
 export async function GET(
@@ -17,7 +18,15 @@ export async function GET(
       user = userResult;
       echoApp = echoAppResult;
     } catch (error) {
-      console.error('Error fetching echo app:', error);
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Authentication failed for app request',
+        attributes: {
+          error: error instanceof Error ? error.message : String(error),
+          endpoint: '/api/v1/apps/[id]',
+          method: 'GET',
+        },
+      });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -25,6 +34,17 @@ export async function GET(
     const { id: appId } = resolvedParams;
 
     if (echoApp && echoApp.id !== appId) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Access denied: User trying to access different app',
+        attributes: {
+          requestedAppId: appId,
+          userAppId: echoApp.id,
+          userId: user.id,
+          endpoint: '/api/v1/apps/[id]',
+          method: 'GET',
+        },
+      });
       return NextResponse.json(
         { error: 'Access denied: App not found' },
         { status: 403 }
@@ -33,9 +53,29 @@ export async function GET(
 
     const appWithStats = await getApp(appId, user.id);
 
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully retrieved app details',
+      attributes: {
+        appId,
+        userId: user.id,
+        endpoint: '/api/v1/apps/[id]',
+        method: 'GET',
+      },
+    });
+
     return NextResponse.json(appWithStats);
   } catch (error) {
-    console.error('Error fetching echo app:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error fetching echo app',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        endpoint: '/api/v1/apps/[id]',
+        method: 'GET',
+      },
+    });
 
     if (
       error instanceof Error &&

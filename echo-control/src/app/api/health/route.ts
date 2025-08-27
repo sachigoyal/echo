@@ -1,13 +1,31 @@
 import { NextResponse } from 'next/server';
+import { logger } from '@/logger';
 
 export async function GET() {
   try {
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Health check successful',
+      attributes: {
+        endpoint: '/api/health',
+        method: 'GET',
+      },
+    });
     return NextResponse.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Health check failed:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Health check failed',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        endpoint: '/api/health',
+        method: 'GET',
+      },
+    });
 
     return NextResponse.json(
       {

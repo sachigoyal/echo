@@ -132,7 +132,9 @@ export class OpenAIImageProvider extends BaseProvider {
 
       return transaction;
     } catch (error) {
-      logger.error(`Error processing OpenAI Image Generation API data: ${error}`);
+      logger.error(
+        `Error processing OpenAI Image Generation API data: ${error}`
+      );
       throw error;
     }
   }
