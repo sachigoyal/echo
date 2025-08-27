@@ -7,6 +7,7 @@ import { authenticateRequest } from './auth';
 import { modelRequestService } from './services/ModelRequestService';
 import { checkBalance } from './services/BalanceCheckService';
 import standardRouter from './routers/common';
+import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
 import logger from './logger';
 
 dotenv.config();
@@ -14,6 +15,7 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 3069;
 
+app.use(traceEnrichmentMiddleware);
 // Add middleware
 app.use(
   cors({
