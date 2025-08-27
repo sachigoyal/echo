@@ -184,13 +184,19 @@ function Dashboard() {
 }
 
 function App() {
+  const baseEchoUrl = import.meta.env.VITE_ECHO_URL || 'https://echo.merit.systems';
+  const baseRouterUrl = import.meta.env.VITE_ROUTER_URL || 'https://echo.router.merit.systems';
+  const appId = import.meta.env.VITE_ECHO_APP_ID || '60601628-cdb7-481e-8f7e-921981220348';
+
   return (
     <EchoProvider
       config={{
         // for local development
         // baseEchoUrl: 'http://localhost:3001',
         // baseRouterUrl: 'http://localhost:3070',
-        appId: '60601628-cdb7-481e-8f7e-921981220348',
+        appId,
+        baseEchoUrl,
+        baseRouterUrl,
         redirectUri: window.location.origin,
         scope: 'llm:invoke offline_access',
       }}
