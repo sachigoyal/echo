@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/logo';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { Suspense } from 'react';

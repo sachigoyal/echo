@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from 'recharts';
+import { XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 // Simulate trending up revenue data
 const baseData = [
