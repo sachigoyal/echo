@@ -23,6 +23,7 @@ const NODE_ENV = process.env.NODE_ENV!;
 const OTEL_EXPORTER_OTLP_ENDPOINT =
   process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT!;
 const SIGNOZ_INGESTION_KEY = process.env.SIGNOZ_INGESTION_KEY!;
+const OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT!;
 
 const resource = resourceFromAttributes({
   'service.name': OTEL_SERVICE_NAME,
@@ -85,7 +86,7 @@ const logger = winston.createLogger({
 // -------------------------
 
 const metricExporter = new OTLPMetricExporter({
-  url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT! + '/v1/metrics',
+  url: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
   headers: {
     'signoz-access-token': SIGNOZ_INGESTION_KEY,
   },
