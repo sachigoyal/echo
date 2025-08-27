@@ -27,11 +27,11 @@ const step2Code = (appId: string) => `// main.tsx
 import { EchoProvider } from '@merit-systems/echo-react-sdk';
 
 createRoot(document.getElementById('root')!).render(
-    <EchoProvider config={{ 
-      appId: "${appId}" 
-    }}>
-      <App />
-    </EchoProvider>
+  <EchoProvider 
+    config={{ appId: "${appId}" }}
+  >
+    <App />
+  </EchoProvider>
 )`;
 
 export const ReactStep2 = ({ appId }: { appId: string }) => {
@@ -40,7 +40,7 @@ export const ReactStep2 = ({ appId }: { appId: string }) => {
       index={1}
       title="Configure Provider"
       description="Set up the Echo provider with your app ID"
-      body={<Code value={step2Code(appId)} lang="typescript" />}
+      body={<Code value={step2Code(appId)} lang="tsx" />}
     />
   );
 };
@@ -48,9 +48,12 @@ export const ReactStep2 = ({ appId }: { appId: string }) => {
 const step3Code = `import { useEcho } from '@merit-systems/echo-react-sdk';
 
 export default SignInButton() {
-    const { signIn } = useEcho();
-    
-    return <button onClick={() => signIn()}>Sign In</button>;
+  const { signIn } = useEcho();
+  return (
+    <button onClick={signIn}>
+      Sign In
+    </button>
+  );
 }`;
 
 export const ReactStep3 = () => {
@@ -59,7 +62,7 @@ export const ReactStep3 = () => {
       index={2}
       title="Authenticate your Users"
       description="Use our sign in utilities to authenticate your users"
-      body={<Code value={step3Code} lang="typescript" />}
+      body={<Code value={step3Code} lang="tsx" />}
     />
   );
 };

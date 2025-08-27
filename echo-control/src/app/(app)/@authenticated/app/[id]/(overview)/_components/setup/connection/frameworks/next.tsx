@@ -25,7 +25,10 @@ export const NextStep1 = () => {
 
 const step2Code = (appId: string) => `// echo.ts
 import { Echo } from '@merit-systems/echo-next-sdk';
-export const { handlers, isSignedIn, openai, anthropic } = Echo({
+
+export const { 
+  handlers, isSignedIn, openai, anthropic,
+} = Echo({
     appId: "${appId}"
 });
 
@@ -38,14 +41,22 @@ export const NextStep2 = ({ appId }: { appId: string }) => {
       index={1}
       title="Configure Provider and Handlers"
       description="Set up the Echo provider with your app ID"
-      body={<Code value={step2Code(appId)} lang="typescript" />}
+      body={<Code value={step2Code(appId)} lang="tsx" />}
     />
   );
 };
 
 const step3Code = `import { signIn } from "@merit-systems/echo-next-sdk/client";
+
 export default Home() {
-    return <button onClick={() => signIn()}>Sign In</button>
+    return (
+      <button
+        className="bg-primary text-primary-foreground px-4 py-2 rounded-md"
+        onClick={signIn}
+      >
+        Sign In
+      </button>
+    );
 }`;
 
 export const NextStep3 = () => {
@@ -54,7 +65,7 @@ export const NextStep3 = () => {
       index={2}
       title="Authenticate your Users"
       description="Use our sign in utilities to authenticate your users"
-      body={<Code value={step3Code} lang="typescript" />}
+      body={<Code value={step3Code} lang="tsx" />}
     />
   );
 };

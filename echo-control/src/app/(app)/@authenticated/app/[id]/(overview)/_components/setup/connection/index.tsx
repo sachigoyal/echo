@@ -71,7 +71,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
           </TabsList>
           <TabsContents>
             <TabsContent value="next" className="gap-2 flex flex-col">
-              <Card className="flex flex-col md:flex-row overflow-hidden gap-2 divide-y md:divide-y-0 md:divide-x">
+              <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">
                 <NextStep1 />
                 <NextStep2 appId={appId} />
                 <NextStep3 />
@@ -88,7 +88,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
               </p>
             </TabsContent>
             <TabsContent value="react" className="gap-2 flex flex-col">
-              <Card className="flex flex-col md:flex-row overflow-hidden gap-2 divide-y md:divide-y-0 md:divide-x">
+              <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">
                 <ReactStep1 />
                 <ReactStep2 appId={appId} />
                 <ReactStep3 />
