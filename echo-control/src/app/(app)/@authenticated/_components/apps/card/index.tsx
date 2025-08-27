@@ -32,30 +32,30 @@ export const AppCard = ({
   return (
     <Link href={`/app/${id}`}>
       <Card className="hover:border-primary/50 transition-colors h-full">
-        <CardHeader className="flex flex-row items-start justify-between">
-          <div className="flex items-center gap-2">
-            <UserAvatar
-              className="size-10"
-              src={profilePictureUrl ?? undefined}
-              fallback={<Code className="size-4" />}
-            />
-            <div className="flex flex-col gap-1 items-start">
-              <CardTitle className="max-w-full text-ellipsis whitespace-nowrap">
-                {name}
-              </CardTitle>
-              <CardDescription
-                className={cn(
-                  'text-xs text-muted-foreground/60',
-                  homepageUrl
-                    ? 'underline text-foreground/80'
-                    : 'text-foreground/40'
-                )}
-              >
-                {homepageUrl ?? 'No homepage URL'}
-              </CardDescription>
-            </div>
+        <CardHeader className="flex flex-row items-start gap-2 w-full overflow-hidden">
+          <UserAvatar
+            className="size-10 shrink-0"
+            src={profilePictureUrl ?? undefined}
+            fallback={<Code className="size-4" />}
+          />
+          <div className="flex flex-col gap-1 min-w-0 flex-1">
+            <CardTitle className="text-ellipsis whitespace-nowrap overflow-x-hidden">
+              {name}
+            </CardTitle>
+            <CardDescription
+              className={cn(
+                'text-xs text-muted-foreground/60',
+                homepageUrl
+                  ? 'underline text-foreground/80'
+                  : 'text-foreground/40'
+              )}
+            >
+              {homepageUrl ?? 'No homepage URL'}
+            </CardDescription>
           </div>
-          <Earnings appId={id} />
+          <div className="shrink-0">
+            <Earnings appId={id} />
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p

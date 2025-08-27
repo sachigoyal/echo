@@ -30,9 +30,9 @@ export const Activity: React.FC = () => {
         initialStartDate={defaultStartDate}
         initialEndDate={defaultEndDate}
       >
-        <div className="w-full flex flex-col gap-4 md:gap-6">
+        <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
           <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold">Your Earnings</h3>
+            <h3 className="font-bold">Your Earnings</h3>
             <RangeSelector />
           </div>
           <Card className="p-0 overflow-hidden relative">

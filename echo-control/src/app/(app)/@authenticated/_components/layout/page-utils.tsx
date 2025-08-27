@@ -22,7 +22,7 @@ export const Heading: React.FC<HeadingProps> = ({
         <div className="flex items-center gap-4 shrink-0">
           {icon}
           <div className="flex flex-col gap-2 text-left">
-            <h1 className="text-4xl font-bold">{title}</h1>
+            <h1 className="text-2xl md:text-4xl font-bold">{title}</h1>
             {description && (
               <p className="text-muted-foreground/80 text-sm">{description}</p>
             )}
