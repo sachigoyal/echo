@@ -15,7 +15,14 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3069;
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL ?? 'postgresql://localhost:5469/echo',
+    },
+  },
+  log: ['warn', 'error'],
+});
 
 app.use(traceEnrichmentMiddleware);
 // Add middleware
