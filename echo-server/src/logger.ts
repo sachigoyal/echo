@@ -7,7 +7,10 @@ import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { trace, context, metrics } from '@opentelemetry/api';
-import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import {
+  MeterProvider,
+  PeriodicExportingMetricReader,
+} from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import winston from 'winston';
 import dotenv from 'dotenv';
@@ -48,7 +51,7 @@ loggerProvider.addLogRecordProcessor(
 logs.setGlobalLoggerProvider(loggerProvider);
 
 // Custom Winston format to inject traceId/spanId
-const traceContextFormat = winston.format((info) => {
+const traceContextFormat = winston.format(info => {
   const span = trace.getSpan(context.active());
   if (span) {
     const spanContext = span.spanContext();
@@ -81,7 +84,6 @@ const logger = winston.createLogger({
 // 🔹 METRICS SETUP
 // -------------------------
 
-
 const metricExporter = new OTLPMetricExporter({
   url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT! + '/v1/metrics',
   headers: {
@@ -95,7 +97,7 @@ const meterProvider = new MeterProvider({
     new PeriodicExportingMetricReader({
       exporter: metricExporter,
       exportIntervalMillis: 1000, // optional, defaults to 60s
-    })
+    }),
   ],
 });
 
@@ -124,5 +126,3 @@ export const logMetric = (
 };
 
 export default logger;
-
-

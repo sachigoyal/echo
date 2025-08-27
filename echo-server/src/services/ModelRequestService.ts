@@ -30,7 +30,7 @@ export class ModelRequestService {
     const model = extractModelName(req);
 
     if (!model || !isValidModel(model)) {
-      logMetric('model.invalid', 1, { model: model || "undefined" });
+      logMetric('model.invalid', 1, { model: model || 'undefined' });
       logger.error(`Invalid model: ${model}`);
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
@@ -55,7 +55,9 @@ export class ModelRequestService {
       res.status(422).json({
         error: `Model ${model} does not support streaming.`,
       });
-      logMetric('model.does_not_support_streaming', 1, { model: model || "undefined" });
+      logMetric('model.does_not_support_streaming', 1, {
+        model: model || 'undefined',
+      });
       throw new UnknownModelError('Invalid model');
     }
 
