@@ -63,6 +63,11 @@ import {
 } from '@/services/apps/transactions';
 import { getAppActivity, getAppActivitySchema } from '@/services/apps/activity';
 import { listAppUsers, listAppUsersSchema } from '@/services/apps/users';
+import {
+  countMemberApps,
+  countOwnerApps,
+  countPublicApps,
+} from '@/services/apps/count';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -218,6 +223,20 @@ export const appsRouter = createTRPCRouter({
       .query(async ({ input, ctx }) => {
         return await listOwnerApps(ctx.session.user.id, input, ctx.pagination);
       }),
+  },
+
+  count: {
+    public: publicProcedure.query(async () => {
+      return await countPublicApps();
+    }),
+
+    member: protectedProcedure.query(async ({ ctx }) => {
+      return await countMemberApps(ctx.session.user.id);
+    }),
+
+    owner: protectedProcedure.query(async ({ ctx }) => {
+      return await countOwnerApps(ctx.session.user.id);
+    }),
   },
 
   /**

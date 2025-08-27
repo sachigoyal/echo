@@ -12,6 +12,7 @@ import { RangeSelector } from '@/app/(app)/@authenticated/_components/time-range
 import { ActivityContextProvider } from '@/app/(app)/@authenticated/_components/time-range-selector/context';
 
 import { ActivityCharts, LoadingActivityCharts } from './charts';
+import { ActivityOverlay } from './overlay';
 
 export const Activity: React.FC = () => {
   const defaultStartDate = subDays(new Date(), 7);
@@ -21,6 +22,7 @@ export const Activity: React.FC = () => {
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });
+  api.apps.count.owner.prefetch();
 
   return (
     <HydrateClient>
@@ -33,7 +35,7 @@ export const Activity: React.FC = () => {
             <h3 className="text-2xl font-bold">Your Earnings</h3>
             <RangeSelector />
           </div>
-          <Card className="p-0 overflow-hidden">
+          <Card className="p-0 overflow-hidden relative">
             <ErrorBoundary
               fallback={<p>There was an error loading the activity data</p>}
             >
@@ -41,6 +43,11 @@ export const Activity: React.FC = () => {
                 <ActivityCharts />
               </Suspense>
             </ErrorBoundary>
+            <Suspense fallback={null}>
+              <ErrorBoundary fallback={null}>
+                <ActivityOverlay />
+              </ErrorBoundary>
+            </Suspense>
           </Card>
         </div>
       </ActivityContextProvider>

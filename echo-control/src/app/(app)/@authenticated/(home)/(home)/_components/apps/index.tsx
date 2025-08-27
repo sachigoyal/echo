@@ -8,6 +8,15 @@ import {
 } from '@/app/(app)/@authenticated/_components/apps/card';
 
 import { api } from '@/trpc/server';
+import {
+  Card,
+  CardTitle,
+  CardHeader,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export const Apps = () => {
   return (
@@ -32,6 +41,26 @@ export const Apps = () => {
 
 export const AppsGrid = async () => {
   const apps = await api.apps.list.owner({});
+
+  if (apps.items.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Create your First App</CardTitle>
+          <CardDescription>
+            Get started by creating an app and setting a markup on LLM credits.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/new" className="w-full">
+            <Button variant="turbo" className="w-full">
+              Create App
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return apps.items.map(app => <AppCard key={app.id} {...app} />);
 };
