@@ -2,6 +2,8 @@ import z from 'zod';
 
 import { db } from '@/lib/db';
 
+import { countApps } from './count';
+
 import { type PaginationParams, toPaginatedReponse } from '../lib/pagination';
 
 import { appSelect } from './lib/select';
@@ -38,9 +40,7 @@ export const listPublicApps = async (
         createdAt: 'desc',
       },
     }),
-    db.echoApp.count({
-      where,
-    }),
+    countApps(where),
   ]);
 
   return toPaginatedReponse({
@@ -72,10 +72,7 @@ export const listMemberApps = async (
 
   const skip = page * page_size;
 
-  const [totalCount, appMemberships] = await Promise.all([
-    db.echoApp.count({
-      where,
-    }),
+  const [apps, totalCount] = await Promise.all([
     db.echoApp.findMany({
       where,
       skip,
@@ -90,10 +87,11 @@ export const listMemberApps = async (
         },
       },
     }),
+    countApps(where),
   ]);
 
   return toPaginatedReponse({
-    items: appMemberships,
+    items: apps,
     page,
     page_size,
     total_count: totalCount,
@@ -118,10 +116,7 @@ export const listOwnerApps = async (
 
   const skip = page * page_size;
 
-  const [totalCount, apps] = await Promise.all([
-    db.echoApp.count({
-      where,
-    }),
+  const [apps, totalCount] = await Promise.all([
     db.echoApp.findMany({
       where,
       skip,
@@ -136,6 +131,7 @@ export const listOwnerApps = async (
         },
       },
     }),
+    countApps(where),
   ]);
 
   return toPaginatedReponse({
