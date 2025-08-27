@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import { getProvider } from '../providers/ProviderFactory';
-import { EchoControlService } from './EchoControlService';
-import { isValidModel } from './AccountingService';
-import { extractIsStream, extractModelName } from './RequestDataService';
-import { handleStreamService } from './HandleStreamService';
-import { handleNonStreamingService } from './HandleNonStreamingService';
-import { Transaction } from '../types';
 import { HttpError, UnknownModelError } from '../errors/http';
 import logger from '../logger';
+import { getProvider } from '../providers/ProviderFactory';
+import { Transaction } from '../types';
+import { isValidImageModel, isValidModel } from './AccountingService';
+import { EchoControlService } from './EchoControlService';
+import { handleNonStreamingService } from './HandleNonStreamingService';
+import { handleStreamService } from './HandleStreamService';
+import { extractIsStream, extractModelName } from './RequestDataService';
 
 export class ModelRequestService {
   /**
@@ -29,7 +29,7 @@ export class ModelRequestService {
     // Extract and validate model
     const model = extractModelName(req);
 
-    if (!model || !isValidModel(model)) {
+    if (!model || (!isValidModel(model) && !isValidImageModel(model))) {
       logger.error(`Invalid model: ${model}`);
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
