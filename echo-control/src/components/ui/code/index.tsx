@@ -39,7 +39,7 @@ export const Code: React.FC<Props> = ({
           </code>
         );
       });
-  }, [value, lang]);
+  }, [value, lang, highlighter]);
 
   return (
     <>
