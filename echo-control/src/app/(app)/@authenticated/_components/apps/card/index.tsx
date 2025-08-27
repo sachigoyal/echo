@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { Code, UsersIcon } from 'lucide-react';
+import { Code } from 'lucide-react';
 
 import {
   Card,

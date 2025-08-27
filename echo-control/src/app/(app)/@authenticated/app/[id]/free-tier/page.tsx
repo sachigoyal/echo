@@ -1,9 +1,5 @@
 import { Suspense } from 'react';
 
-import { ErrorBoundary } from 'react-error-boundary';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
 import { Body, Heading } from '../../../_components/layout/page-utils';
 
 import { Balance } from './_components/balance';
