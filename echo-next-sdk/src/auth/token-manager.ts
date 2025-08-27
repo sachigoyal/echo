@@ -1,9 +1,10 @@
 import {
   EchoClient,
-  ECHO_BASE_URL,
+  EchoConfig,
   User,
 } from '@merit-systems/echo-typescript-sdk';
 import { cookies as getCookies } from 'next/headers';
+import { resolveEchoBaseUrl } from '../config';
 import { shouldRefreshToken } from './jwt-utils';
 
 export interface RefreshTokenResponse {
@@ -33,15 +34,15 @@ export interface RefreshTokenResponse {
  */
 export async function performTokenRefresh(
   refreshToken: string,
-  appId: string
+  config: EchoConfig
 ): Promise<RefreshTokenResponse> {
-  return fetch(`${ECHO_BASE_URL}/api/oauth/token`, {
+  return fetch(`${resolveEchoBaseUrl(config)}/api/oauth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
-      client_id: appId,
+      client_id: config.appId,
     }),
   }).then(async r => {
     if (r.ok) {
@@ -57,7 +58,7 @@ export async function performTokenRefresh(
  * @param appId - The Echo app ID for token refresh
  * @returns Promise resolving to a valid access token or null if authentication failed
  */
-export async function getEchoToken(appId: string): Promise<string | null> {
+export async function getEchoToken(config: EchoConfig): Promise<string | null> {
   const cookies = await getCookies();
   const accessToken = cookies.get('echo_access_token')?.value;
 
@@ -71,7 +72,7 @@ export async function getEchoToken(appId: string): Promise<string | null> {
     }
 
     try {
-      const refreshResult = await performTokenRefresh(refreshToken, appId);
+      const refreshResult = await performTokenRefresh(refreshToken, config);
 
       // Set new tokens in cookies
       cookies.set('echo_access_token', refreshResult.access_token, {
@@ -115,21 +116,23 @@ export async function getEchoToken(appId: string): Promise<string | null> {
   return accessToken;
 }
 
-export async function getUser(appId: string): Promise<User> {
-  const echo = await getEchoClient(appId);
+export async function getUser(config: EchoConfig): Promise<User> {
+  const echo = await getEchoClient(config);
   if (!echo) {
     throw new Error('User not signed in');
   }
   return echo.users.getUserInfo();
 }
 
-export async function getEchoClient(appId: string): Promise<EchoClient | null> {
-  const token = await getEchoToken(appId);
+export async function getEchoClient(
+  config: EchoConfig
+): Promise<EchoClient | null> {
+  const token = await getEchoToken(config);
   if (!token) {
     return null;
   }
   return new EchoClient({
-    baseUrl: ECHO_BASE_URL,
+    baseUrl: resolveEchoBaseUrl(config),
     apiKey: token,
   });
 }

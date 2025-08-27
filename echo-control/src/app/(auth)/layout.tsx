@@ -2,7 +2,7 @@ import { FlickeringGrid } from '@/components/magicui/flickering-grid';
 
 export default async function AuthLayout({ children }: LayoutProps<'/'>) {
   return (
-    <div className="pt-10 md:pt-[15vh] relative size-full flex flex-col items-center px-2">
+    <div className="pt-10 md:pt-[15vh] relative min-h-screen flex flex-col items-center px-2 flex-1">
       <FlickeringGrid
         className="absolute inset-0 pointer-events-none"
         frameRate={8}

@@ -7,10 +7,22 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 import { formatDistanceToNow } from 'date-fns';
 
 export const TransactionRows = async ({ appId }: { appId: string }) => {
-  const transactions = await api.activity.app.transactions.list({
-    echoAppId: appId,
+  const transactions = await api.apps.app.transactions.list({
+    appId,
     page_size: 1000,
   });
+
+  if (transactions.length === 0) {
+    return (
+      <TableRow className="mt-2">
+        <TableCellBase colSpan={2} className="text-left pl-4">
+          <p className="text-xs text-muted-foreground/60">
+            No transactions yet
+          </p>
+        </TableCellBase>
+      </TableRow>
+    );
+  }
 
   return transactions.slice(0, 5).map(transaction => (
     <TableRow key={transaction.id}>

@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { ECHO_BASE_URL, EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { resolveEchoBaseUrl } from './config';
 import { EchoConfig, EchoResult } from './types';
 
 import { createEchoAnthropic } from 'providers/anthropic';
@@ -52,10 +53,8 @@ export default function Echo(config: EchoConfig): EchoResult {
     if (!accessToken) {
       return null;
     }
-    const echo = new EchoClient({
-      apiKey: accessToken,
-      baseUrl: ECHO_BASE_URL,
-    });
+    const baseUrl = resolveEchoBaseUrl(config);
+    const echo = new EchoClient({ apiKey: accessToken, baseUrl });
     const user = await echo.users.getUserInfo();
     return user;
   };

@@ -1,6 +1,6 @@
 import {
-  handleRefreshToken,
   handleInitialTokenIssuance,
+  handleRefreshToken,
 } from '@/lib/jwt-tokens';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -19,6 +19,19 @@ export async function POST(req: NextRequest) {
     }
 
     const { grant_type, code, redirect_uri, code_verifier } = body;
+
+    // Capture metadata from forwarded headers if present, fallback to standard
+    const deviceName = undefined; // derive later from userAgent if desired
+    const forwardedUserAgent =
+      req.headers.get('x-client-user-agent') ||
+      req.headers.get('user-agent') ||
+      undefined;
+    const forwardedIp =
+      req.headers.get('x-client-ip') ||
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      req.headers.get('x-real-ip') ||
+      req.headers.get('cf-connecting-ip') ||
+      undefined;
 
     const client_id =
       body.client_id || req.nextUrl.searchParams.get('client_id');
@@ -48,7 +61,11 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const result = await handleRefreshToken(refresh_token);
+      const result = await handleRefreshToken(refresh_token, {
+        userAgent: forwardedUserAgent,
+        ipAddress: forwardedIp,
+        deviceName,
+      });
 
       // Check if result is an error
       if ('error' in result) {
@@ -74,6 +91,9 @@ export async function POST(req: NextRequest) {
       redirect_uri,
       client_id,
       code_verifier,
+      deviceName,
+      userAgent: forwardedUserAgent,
+      ipAddress: forwardedIp,
     });
 
     // Check if result is an error

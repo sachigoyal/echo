@@ -54,6 +54,15 @@ import {
   updateFreeTierSpendPoolSchema,
 } from '@/services/apps/free-tier';
 import { listFreeTierPayments } from '@/services/payments';
+import { countAppTokens } from '@/services/apps/tokens';
+import {
+  countAppTransactions,
+  countAppTransactionsSchema,
+  listAppTransactions,
+  listAppTransactionsSchema,
+} from '@/services/apps/transactions';
+import { getAppActivity, getAppActivitySchema } from '@/services/apps/activity';
+import { listAppUsers, listAppUsersSchema } from '@/services/apps/users';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -83,6 +92,10 @@ export const appsRouter = createTRPCRouter({
       .mutation(async ({ ctx, input }) => {
         return await updateApp(input.appId, ctx.session.user.id, input);
       }),
+
+    getNumTokens: appOwnerProcedure.query(async ({ input }) => {
+      return await countAppTokens(input.appId);
+    }),
 
     markup: {
       get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
@@ -139,6 +152,37 @@ export const appsRouter = createTRPCRouter({
             ctx.session.user.id,
             input
           );
+        }),
+    },
+
+    transactions: {
+      list: paginatedProcedure
+        .concat(protectedProcedure)
+        .input(listAppTransactionsSchema)
+        .query(async ({ input, ctx }) => {
+          return await listAppTransactions(input, ctx.pagination);
+        }),
+      count: protectedProcedure
+        .input(countAppTransactionsSchema)
+        .query(async ({ input }) => {
+          return await countAppTransactions(input);
+        }),
+    },
+
+    users: {
+      list: paginatedProcedure
+        .concat(protectedProcedure)
+        .input(listAppUsersSchema)
+        .query(async ({ input, ctx }) => {
+          return await listAppUsers(input, ctx.pagination);
+        }),
+    },
+
+    activity: {
+      get: protectedProcedure
+        .input(getAppActivitySchema)
+        .query(async ({ input }) => {
+          return await getAppActivity(input);
         }),
     },
   },

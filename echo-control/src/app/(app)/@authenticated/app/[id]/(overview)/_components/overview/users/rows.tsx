@@ -9,10 +9,20 @@ export const UserRows = async ({
   usersPromise,
 }: {
   usersPromise: Promise<
-    Awaited<ReturnType<typeof api.activity.app.users.list>>['items']
+    Awaited<ReturnType<typeof api.apps.app.users.list>>['items']
   >;
 }) => {
   const users = await usersPromise;
+
+  if (users.length === 0) {
+    return (
+      <TableRow className="mt-2">
+        <TableCellBase colSpan={4} className="text-left pl-4">
+          <p className="text-xs text-muted-foreground/60">No users yet</p>
+        </TableCellBase>
+      </TableRow>
+    );
+  }
 
   return users.map(user => (
     <TableRow key={user.id}>

@@ -1,34 +1,19 @@
 'use client';
 
-import { Check, DollarSign, Image, LucideIcon, Pen } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from '@/components/ui/carousel';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { AnimatePresence, motion } from 'motion/react';
+
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
-import { Description } from './description';
-import { RecipientDetails } from './recipient-details';
-
-import { cn } from '@/lib/utils';
+import { AppDetails } from './app-details';
 
 import { api } from '@/trpc/client';
-
-import { AppIcon } from './app-icon';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { AnimatePresence, motion } from 'motion/react';
+import { Connection } from './connection';
+import { Accordion } from '@/components/ui/accordion';
+import { GenerateText } from './generate-text';
+import { cn } from '@/lib/utils';
 
 interface Props {
   appId: string;
@@ -36,61 +21,63 @@ interface Props {
 
 export const Setup: React.FC<Props> = ({ appId }) => {
   const [app] = api.apps.app.get.useSuspenseQuery({ appId });
-
   const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
+  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
+  const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
+    appId,
+  });
 
-  const steps = [
-    {
-      title: 'Set Payout Details',
-      description: 'Where your earnings will be sent',
-      Icon: DollarSign,
-      isComplete: githubLink !== null,
-      component: (
-        <RecipientDetails
-          githubLink={
-            githubLink
-              ? {
-                  type: githubLink.githubType,
-                  githubUrl: githubLink.githubUrl,
-                }
-              : null
-          }
-          appId={appId}
-        />
-      ),
-      className: 'basis-4/5 md:basis-2/5',
-    },
-    {
-      title: 'Describe your App',
-      description: 'This will be shown on the Echo dashboard',
-      Icon: Pen,
-      isComplete: app.description !== null,
-      component: <Description appId={appId} description={app.description} />,
-      className: 'basis-4/5 md:basis-2/5',
-    },
-    {
-      title: 'Add an Icon',
-      description: 'Users will see this when they connect to your app',
-      Icon: Image,
-      isComplete: app.profilePictureUrl !== null,
-      component: (
-        <AppIcon appId={appId} profilePictureUrl={app.profilePictureUrl} />
-      ),
-      className: 'basis-4/5 md:basis-2/5',
-    },
-  ];
+  const appDetailsSteps = useMemo(
+    () => [
+      app.profilePictureUrl !== null,
+      app.description !== null,
+      githubLink !== null,
+    ],
+    [app.profilePictureUrl, app.description, githubLink]
+  );
 
-  const completedSteps = steps.filter(step => step.isComplete).length;
+  const connectionSteps = useMemo(() => [numTokens > 0], [numTokens]);
+
+  const generateTextSteps = useMemo(
+    () => [numTransactions > 0],
+    [numTransactions]
+  );
+
+  const steps = [...appDetailsSteps, ...connectionSteps, ...generateTextSteps];
+
+  const completedSteps = steps.filter(Boolean).length;
   const allStepsCompleted = completedSteps === steps.length;
 
   const [isComplete, setIsComplete] = useState(allStepsCompleted);
+
+  const [accordionValue, setAccordionValue] = useState<string>(
+    !appDetailsSteps.every(Boolean)
+      ? 'app-details'
+      : !connectionSteps.every(Boolean)
+        ? 'connection'
+        : !generateTextSteps.every(Boolean)
+          ? 'generate-text'
+          : ''
+  );
+
+  useEffect(() => {
+    if (appDetailsSteps.every(Boolean) && !connectionSteps.every(Boolean)) {
+      setAccordionValue('connection');
+    }
+    if (connectionSteps.every(Boolean) && !generateTextSteps.every(Boolean)) {
+      setAccordionValue('generate-text');
+    }
+    if (allStepsCompleted) {
+      setAccordionValue('');
+    }
+  }, [appDetailsSteps, connectionSteps, generateTextSteps, allStepsCompleted]);
 
   return (
     <AnimatePresence mode="wait">
       {!isComplete && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 350 }}
+          animate={{ opacity: 1, height: 'auto' }}
           exit={{
             height: 0,
             opacity: 0,
@@ -102,98 +89,69 @@ export const Setup: React.FC<Props> = ({ appId }) => {
           layout
           transition={{ duration: 0.5, ease: 'easeInOut' }}
           style={{ overflow: 'hidden' }}
+          className="flex flex-col gap-4 h-full"
         >
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center gap-4">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-2xl font-bold">Let&apos;s Get Started</h1>
-                  {allStepsCompleted && (
-                    <Button
-                      variant="turbo"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => setIsComplete(true)}
-                    >
-                      Finish Setup
-                    </Button>
-                  )}
-                </div>
-                <p className="text-muted-foreground">
-                  Fill out your app&apos;s details
-                </p>
+          <div className="flex justify-between items-center gap-4">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-bold">Set Up Your App</h1>
               </div>
-              <div className="w-1/4 flex items-center gap-2">
-                <div className="flex flex-col items-end gap-1 w-full">
-                  <p className="text-sm text-muted-foreground font-bold shrink-0">
-                    {completedSteps + 1} / {steps.length + 1} Completed
-                  </p>
-                  <Progress
-                    value={((completedSteps + 1) / (steps.length + 1)) * 100}
-                  />
-                </div>
+              <p className="text-muted-foreground">
+                Complete the following steps to set up your app
+              </p>
+            </div>
+            <div className="w-1/4 flex items-center gap-2">
+              <div className="flex flex-col items-end gap-1 w-full">
+                <p className="text-sm text-muted-foreground font-bold shrink-0">
+                  {(((completedSteps + 1) / (steps.length + 1)) * 100).toFixed(
+                    0
+                  )}
+                  % Complete
+                </p>
+                <Progress
+                  value={((completedSteps + 1) / (steps.length + 1)) * 100}
+                />
               </div>
             </div>
-            <Carousel className="w-full" opts={{ loop: true }}>
-              <CarouselContent>
-                {steps.map(step => (
-                  <CarouselItem key={step.title} className={step.className}>
-                    <StepCard
-                      title={step.title}
-                      description={step.description}
-                      Icon={step.Icon}
-                      isComplete={step.isComplete}
-                      component={step.component}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
           </div>
+          <Accordion
+            type="single"
+            collapsible
+            value={accordionValue}
+            onValueChange={setAccordionValue}
+          >
+            <AppDetails appId={appId} />
+            <Connection appId={appId} />
+            <GenerateText appId={appId} />
+          </Accordion>
+          <motion.div
+            initial={{ opacity: 0, marginBottom: 0, height: 32 }}
+            animate={{
+              height: allStepsCompleted ? 48 : 32,
+              opacity: allStepsCompleted ? 1 : 0,
+              marginBottom: allStepsCompleted ? 32 : 0,
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+            }}
+            className="h-8 mb-8"
+          >
+            <Button
+              variant="turbo"
+              className={cn(
+                'size-full text-lg font-bold',
+                !allStepsCompleted && 'pointer-events-none'
+              )}
+              onClick={
+                allStepsCompleted ? () => setIsComplete(true) : undefined
+              }
+            >
+              Finish Setup
+            </Button>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
-};
-
-interface StepCardProps {
-  title: string;
-  description: string;
-  isComplete: boolean;
-  Icon: LucideIcon;
-  component: React.ReactNode;
-}
-
-const StepCard: React.FC<StepCardProps> = ({
-  title,
-  description,
-  Icon,
-  isComplete,
-  component,
-}: StepCardProps) => {
-  return (
-    <Card className="flex flex-col">
-      <CardHeader className="border-b">
-        <div className="flex items-center gap-2">
-          <div
-            className={cn(
-              'size-6 rounded-full shrink-0 bg-primary/10 text-primary flex items-center justify-center',
-              isComplete && 'bg-primary text-primary-foreground'
-            )}
-          >
-            {isComplete ? (
-              <Check className="size-3" />
-            ) : (
-              <Icon className="size-3" />
-            )}
-          </div>
-          <CardTitle>{title}</CardTitle>
-        </div>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="p-4 pt-4 flex-1">{component}</CardContent>
-    </Card>
   );
 };

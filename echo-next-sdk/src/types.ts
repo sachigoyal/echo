@@ -10,6 +10,7 @@ export interface EchoConfig {
   appId: string;
   basePath?: string;
   baseRouterUrl?: string;
+  baseEchoUrl?: string;
 }
 
 // We went pretty ham here just so that we can generically construct the provider

@@ -11,6 +11,7 @@ import { api, HydrateClient } from '@/trpc/server';
 import { RangeSelector } from '../../../../../../_components/time-range-selector/range-selector';
 import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityContextProvider } from '../../../../../../_components/time-range-selector/context';
+import { ActivityOverlay } from './overlay';
 
 interface Props {
   appId: string;
@@ -20,8 +21,8 @@ export const Activity: React.FC<Props> = ({ appId }) => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
-  api.activity.app.get.prefetch({
-    echoAppId: appId,
+  api.apps.app.activity.get.prefetch({
+    appId,
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });
@@ -37,7 +38,7 @@ export const Activity: React.FC<Props> = ({ appId }) => {
             <h3 className="text-2xl font-bold">App Activity</h3>
             <RangeSelector />
           </div>
-          <Card className="p-0 overflow-hidden">
+          <Card className="p-0 overflow-hidden relative">
             <ErrorBoundary
               fallback={<p>There was an error loading the activity data</p>}
             >
@@ -45,6 +46,7 @@ export const Activity: React.FC<Props> = ({ appId }) => {
                 <ActivityCharts appId={appId} />
               </Suspense>
             </ErrorBoundary>
+            <ActivityOverlay appId={appId} />
           </Card>
         </div>
       </ActivityContextProvider>
