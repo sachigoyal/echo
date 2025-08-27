@@ -25,6 +25,7 @@ import { ReactStep1, ReactStep2, ReactStep3 } from './frameworks/react';
 import { NextStep1, NextStep2, NextStep3 } from './frameworks/next';
 
 import { api } from '@/trpc/client';
+import { Check, ChevronsLeftRightEllipsis } from 'lucide-react';
 
 interface Props {
   appId: string;
@@ -46,10 +47,17 @@ export const Connection: React.FC<Props> = ({ appId }) => {
 
   return (
     <AccordionItem value="connection" className="border-none">
-      <AccordionTrigger className="text-lg font-semibold">
-        Connect to Echo
+      <AccordionTrigger className="text-lg font-semibold pt-0">
+        <div className="flex items-center gap-2">
+          {numTokens > 0 ? (
+            <Check className="size-4 text-primary" />
+          ) : (
+            <ChevronsLeftRightEllipsis className="size-4" />
+          )}
+          Connect to Echo
+        </div>
       </AccordionTrigger>
-      <AccordionContent>
+      <AccordionContent className="pb-0">
         <Tabs className="flex flex-col gap-2" defaultValue="next">
           <TabsList className="rounded-lg">
             <TabsTrigger value="next" className="px-8 gap-2 rounded-lg">

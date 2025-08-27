@@ -1,6 +1,13 @@
 'use client';
 
-import { Check, DollarSign, Image, LucideIcon, Pen } from 'lucide-react';
+import {
+  AppWindow,
+  Check,
+  DollarSign,
+  Image,
+  LucideIcon,
+  Pen,
+} from 'lucide-react';
 
 import {
   Carousel,
@@ -97,10 +104,17 @@ export const AppDetails: React.FC<Props> = ({ appId }) => {
 
   return (
     <AccordionItem value="app-details" className="border-none">
-      <AccordionTrigger className="text-lg font-semibold">
-        App Details
+      <AccordionTrigger className="text-lg font-semibold pt-0">
+        <div className="flex items-center gap-2">
+          {steps.every(step => step.isComplete) ? (
+            <Check className="size-4 text-primary" />
+          ) : (
+            <AppWindow className="size-4" />
+          )}
+          App Details
+        </div>
       </AccordionTrigger>
-      <AccordionContent>
+      <AccordionContent className="pb-0">
         <Carousel className="w-full" setApi={setCarouselApi}>
           <CarouselContent>
             {steps.map(step => (
