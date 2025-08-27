@@ -46,7 +46,7 @@ export async function fundRepo(
       name: 'echo-fund-smart-account',
       owner,
     });
-    logger.info('Smart account address:', { address: smartAccount.address });
+    logger.info(`Smart account address: ${smartAccount.address}`);
 
     // Send user operation to fund the repo
     const result = await cdp.evm.sendUserOperation({
@@ -96,12 +96,7 @@ export async function fundRepo(
       tokenAddress: tokenAddress,
     };
   } catch (error) {
-    logger.error('Error in funding repo:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      amount,
-      timestamp: new Date().toISOString(),
-    });
+    logger.error(`Error in funding repo: ${error instanceof Error ? error.message : 'Unknown error'} | Amount: ${amount} | Stack: ${error instanceof Error ? error.stack : 'No stack'} | Timestamp: ${new Date().toISOString()}`);
 
     throw error;
   }

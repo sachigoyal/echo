@@ -63,10 +63,7 @@ export class EchoDbService {
 
         // Validate required fields exist
         if (!payload.user_id || !payload.app_id) {
-          logger.error('JWT missing required fields:', {
-            user_id: payload.user_id,
-            app_id: payload.app_id,
-          });
+          logger.error(`JWT missing required fields: user_id=${payload.user_id}, app_id=${payload.app_id}`);
           return null;
         }
 
@@ -172,7 +169,7 @@ export class EchoDbService {
         apiKeyId: apiKeyRecord.id,
       };
     } catch (error) {
-      logger.error('Error validating API key:', { error });
+      logger.error(`Error validating API key: ${error}`);
       return null;
     }
   }
@@ -220,7 +217,7 @@ export class EchoDbService {
       });
 
       if (!user) {
-        logger.error('User not found:', { userId });
+        logger.error(`User not found: ${userId}`);
         return {
           balance: 0,
           totalPaid: 0,
@@ -238,7 +235,7 @@ export class EchoDbService {
         totalSpent,
       };
     } catch (error) {
-      logger.error('Error fetching balance:', { error });
+      logger.error(`Error fetching balance: ${error}`);
       return {
         balance: 0,
         totalPaid: 0,
@@ -418,9 +415,7 @@ export class EchoDbService {
       );
       return result;
     } catch (error) {
-      logger.error('Error creating transaction and updating balance:', {
-        error,
-      });
+      logger.error(`Error creating transaction and updating balance: ${error}`);
       return null;
     }
   }
@@ -487,7 +482,7 @@ export class EchoDbService {
         };
       });
     } catch (error) {
-      logger.error('Error creating free tier transaction:', { error });
+      logger.error(`Error creating free tier transaction: ${error}`);
       throw error;
     }
   }

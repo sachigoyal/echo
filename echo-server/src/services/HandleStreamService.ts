@@ -54,7 +54,7 @@ export class HandleStreamService {
       ]);
       return transaction;
     } catch (error) {
-      logger.error('Error in stream coordination:', { error });
+      logger.error(`Error in stream coordination: ${error}`);
       if (!res.headersSent) {
         res.status(500).json({ error: 'Stream processing failed' });
       }
@@ -78,7 +78,7 @@ export class HandleStreamService {
         res.write(value);
       }
     } catch (error) {
-      logger.error('Error reading stream:', { error });
+      logger.error(`Error reading stream: ${error}`);
       throw error;
     }
   }
@@ -102,7 +102,7 @@ export class HandleStreamService {
       // Wait for transaction to complete before resolving
       return await provider.handleBody(data);
     } catch (error) {
-      logger.error('Error processing stream:', { error });
+      logger.error(`Error processing stream: ${error}`);
       throw error;
     }
   }

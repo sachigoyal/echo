@@ -30,7 +30,7 @@ export class ModelRequestService {
     const model = extractModelName(req);
 
     if (!model || !isValidModel(model)) {
-      logger.error('Invalid model:', { model });
+      logger.error(`Invalid model: ${model}`);
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
       });
@@ -50,6 +50,7 @@ export class ModelRequestService {
 
     // Validate streaming support
     if (!provider.supportsStream() && isStream) {
+      logger.error(`Model does not support streaming: ${model}`);
       res.status(422).json({
         error: `Model ${model} does not support streaming.`,
       });
@@ -81,7 +82,7 @@ export class ModelRequestService {
     // Handle non-200 responses
     if (response.status !== 200) {
       const error = await response.json();
-      logger.error('Error response:', { error });
+      logger.error(`Error response: ${JSON.stringify(error)}`);
       res.status(response.status).json({
         error: error,
       });
