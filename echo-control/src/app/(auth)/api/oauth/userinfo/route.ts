@@ -33,8 +33,6 @@ export async function GET(request: NextRequest) {
         body: 'Invalid or expired access token in OAuth userinfo endpoint',
         attributes: {
           error: _error instanceof Error ? _error.message : String(_error),
-          endpoint: '/api/oauth/userinfo',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -65,8 +63,6 @@ export async function GET(request: NextRequest) {
         body: 'User not found for valid access token in OAuth userinfo endpoint',
         attributes: {
           userId,
-          endpoint: '/api/oauth/userinfo',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -103,8 +99,6 @@ export async function GET(request: NextRequest) {
       body: 'Successfully returned OAuth userinfo',
       attributes: {
         userId: user.id,
-        endpoint: '/api/oauth/userinfo',
-        method: 'GET',
       },
     });
 
@@ -122,8 +116,6 @@ export async function GET(request: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/oauth/userinfo',
-        method: 'GET',
       },
     });
 

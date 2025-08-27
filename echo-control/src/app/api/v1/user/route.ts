@@ -17,8 +17,6 @@ export async function GET(request: NextRequest) {
         attributes: {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
-          endpoint: '/api/v1/user',
-          method: 'GET',
         },
       });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -40,8 +38,6 @@ export async function GET(request: NextRequest) {
       body: 'Successfully fetched user information',
       attributes: {
         userId: user.id,
-        endpoint: '/api/v1/user',
-        method: 'GET',
       },
     });
 
@@ -53,8 +49,6 @@ export async function GET(request: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/v1/user',
-        method: 'GET',
       },
     });
 
@@ -68,8 +62,6 @@ export async function GET(request: NextRequest) {
         body: 'Authentication error in v1 user endpoint',
         attributes: {
           error: error.message,
-          endpoint: '/api/v1/user',
-          method: 'GET',
         },
       });
       return NextResponse.json({ error: error.message }, { status: 401 });

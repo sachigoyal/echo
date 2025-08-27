@@ -25,7 +25,6 @@ const handler = (req: NextRequest) =>
           path: path ?? '<no-path>',
           error: error.message,
           stack: error.stack,
-          endpoint: '/api/trpc',
           procedure: path,
         },
       });

@@ -30,8 +30,6 @@ export async function GET(
           userId: user.id,
           appId,
           permission: Permission.MANAGE_ALL_API_KEYS,
-          endpoint: '/api/owner/apps/[id]/api-keys',
-          method: 'GET',
         },
       });
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
@@ -81,8 +79,6 @@ export async function GET(
         count: apiKeys.length,
         totalCount,
         page,
-        endpoint: '/api/owner/apps/[id]/api-keys',
-        method: 'GET',
       },
     });
 
@@ -104,8 +100,6 @@ export async function GET(
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/owner/apps/[id]/api-keys',
-        method: 'GET',
       },
     });
 

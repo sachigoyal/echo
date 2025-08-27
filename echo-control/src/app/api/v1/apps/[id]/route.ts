@@ -23,8 +23,6 @@ export async function GET(
         body: 'Authentication failed for app request',
         attributes: {
           error: error instanceof Error ? error.message : String(error),
-          endpoint: '/api/v1/apps/[id]',
-          method: 'GET',
         },
       });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -41,8 +39,6 @@ export async function GET(
           requestedAppId: appId,
           userAppId: echoApp.id,
           userId: user.id,
-          endpoint: '/api/v1/apps/[id]',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -59,8 +55,6 @@ export async function GET(
       attributes: {
         appId,
         userId: user.id,
-        endpoint: '/api/v1/apps/[id]',
-        method: 'GET',
       },
     });
 
@@ -72,8 +66,6 @@ export async function GET(
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/v1/apps/[id]',
-        method: 'GET',
       },
     });
 

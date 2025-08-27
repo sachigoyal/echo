@@ -35,8 +35,6 @@ export async function POST(request: NextRequest) {
         attributes: {
           error: err instanceof Error ? err.message : String(err),
           stack: err instanceof Error ? err.stack : undefined,
-          endpoint: '/api/stripe/webhook',
-          method: 'POST',
         },
       });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -48,8 +46,6 @@ export async function POST(request: NextRequest) {
       attributes: {
         eventType: event.type,
         eventId: event.id,
-        endpoint: '/api/stripe/webhook',
-        method: 'POST',
       },
     });
 
@@ -74,8 +70,6 @@ export async function POST(request: NextRequest) {
           attributes: {
             eventType: event.type,
             eventId: event.id,
-            endpoint: '/api/stripe/webhook',
-            method: 'POST',
           },
         });
     }
@@ -88,8 +82,6 @@ export async function POST(request: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/stripe/webhook',
-        method: 'POST',
       },
     });
     return NextResponse.json(
@@ -117,7 +109,6 @@ async function handleCheckoutSessionCompleted(
           sessionId: session.id,
           userId,
           amount_total,
-          endpoint: '/api/stripe/webhook',
           handler: 'handleCheckoutSessionCompleted',
         },
       });
@@ -135,7 +126,6 @@ async function handleCheckoutSessionCompleted(
         attributes: {
           paymentId,
           sessionId: session.id,
-          endpoint: '/api/stripe/webhook',
           handler: 'handleCheckoutSessionCompleted',
         },
       });
@@ -148,7 +138,6 @@ async function handleCheckoutSessionCompleted(
         attributes: {
           paymentId,
           sessionId: session.id,
-          endpoint: '/api/stripe/webhook',
           handler: 'handleCheckoutSessionCompleted',
         },
       });
@@ -158,7 +147,6 @@ async function handleCheckoutSessionCompleted(
         body: 'No payment_link or payment_intent found in checkout session',
         attributes: {
           sessionId: session.id,
-          endpoint: '/api/stripe/webhook',
           handler: 'handleCheckoutSessionCompleted',
         },
       });
@@ -186,7 +174,6 @@ async function handleCheckoutSessionCompleted(
           body: 'No pending payment found for payment ID, creating new record',
           attributes: {
             paymentId,
-            endpoint: '/api/stripe/webhook',
             handler: 'handleCheckoutSessionCompleted',
           },
         });
@@ -207,7 +194,6 @@ async function handleCheckoutSessionCompleted(
           attributes: {
             paymentId,
             userId,
-            endpoint: '/api/stripe/webhook',
             handler: 'handleCheckoutSessionCompleted',
           },
         });
@@ -242,7 +228,6 @@ async function handleCheckoutSessionCompleted(
         echoAppId,
         creditsAdded,
         isFreeTier,
-        endpoint: '/api/stripe/webhook',
         handler: 'handleCheckoutSessionCompleted',
       },
     });
@@ -253,7 +238,6 @@ async function handleCheckoutSessionCompleted(
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/stripe/webhook',
         handler: 'handleCheckoutSessionCompleted',
       },
     });
@@ -274,7 +258,6 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
       body: 'Payment failed',
       attributes: {
         paymentIntentId: id,
-        endpoint: '/api/stripe/webhook',
         handler: 'handlePaymentFailure',
       },
     });
@@ -285,7 +268,6 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/stripe/webhook',
         handler: 'handlePaymentFailure',
       },
     });
@@ -304,7 +286,6 @@ async function handleInvoicePayment(invoice: Stripe.Invoice) {
         invoiceId: id,
         amount_paid,
         currency,
-        endpoint: '/api/stripe/webhook',
         handler: 'handleInvoicePayment',
       },
     });
@@ -315,7 +296,6 @@ async function handleInvoicePayment(invoice: Stripe.Invoice) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/stripe/webhook',
         handler: 'handleInvoicePayment',
       },
     });

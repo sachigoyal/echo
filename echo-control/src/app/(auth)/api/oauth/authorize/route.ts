@@ -43,8 +43,6 @@ export async function GET(req: NextRequest) {
           hasClientId: !!clientId,
           hasRedirectUri: !!redirectUri,
           hasCodeChallenge: !!codeChallenge,
-          endpoint: '/api/oauth/authorize',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -138,8 +136,6 @@ export async function GET(req: NextRequest) {
         attributes: {
           error: error instanceof Error ? error.message : String(error),
           clientId,
-          endpoint: '/api/oauth/authorize',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -157,8 +153,6 @@ export async function GET(req: NextRequest) {
         body: 'Echo app not found for client_id',
         attributes: {
           clientId,
-          endpoint: '/api/oauth/authorize',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -225,8 +219,6 @@ export async function GET(req: NextRequest) {
           error: error instanceof Error ? error.message : String(error),
           userId,
           clientId,
-          endpoint: '/api/oauth/authorize',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -282,8 +274,6 @@ export async function GET(req: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/oauth/authorize',
-        method: 'GET',
       },
     });
     return NextResponse.json(
@@ -329,8 +319,6 @@ export async function POST(req: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/oauth/authorize',
-        method: 'POST',
       },
     });
     return NextResponse.json(

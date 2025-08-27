@@ -37,8 +37,6 @@ export async function POST(req: NextRequest) {
         appId: echoApp.id,
         userId: user.id,
         appName: name,
-        endpoint: '/api/apps',
-        method: 'POST',
       },
     });
 
@@ -50,8 +48,6 @@ export async function POST(req: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/apps',
-        method: 'POST',
       },
     });
 

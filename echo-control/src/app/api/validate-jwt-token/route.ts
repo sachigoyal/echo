@@ -15,10 +15,7 @@ export async function POST(request: NextRequest) {
       logger.emit({
         severityText: 'WARN',
         body: 'Missing token header in JWT validation request',
-        attributes: {
-          endpoint: '/api/validate-jwt-token',
-          method: 'POST',
-        },
+        attributes: {},
       });
       return NextResponse.json(
         {
@@ -44,8 +41,6 @@ export async function POST(request: NextRequest) {
           userId: validationResult.userId,
           appId: validationResult.appId,
           scope: validationResult.scope,
-          endpoint: '/api/validate-jwt-token',
-          method: 'POST',
         },
       });
 
@@ -62,8 +57,6 @@ export async function POST(request: NextRequest) {
           body: 'Invalid JWT token provided',
           attributes: {
             error: error.message,
-            endpoint: '/api/validate-jwt-token',
-            method: 'POST',
           },
         });
         return NextResponse.json(
@@ -84,8 +77,6 @@ export async function POST(request: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/validate-jwt-token',
-        method: 'POST',
       },
     });
     return NextResponse.json(

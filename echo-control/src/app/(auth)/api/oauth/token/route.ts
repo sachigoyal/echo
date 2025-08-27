@@ -44,8 +44,6 @@ export async function POST(req: NextRequest) {
         body: 'Unsupported grant type in OAuth token exchange',
         attributes: {
           grant_type,
-          endpoint: '/api/oauth/token',
-          method: 'POST',
         },
       });
       return NextResponse.json(
@@ -67,8 +65,6 @@ export async function POST(req: NextRequest) {
           body: 'Missing refresh_token in OAuth token exchange',
           attributes: {
             grant_type,
-            endpoint: '/api/oauth/token',
-            method: 'POST',
           },
         });
         return NextResponse.json(
@@ -94,8 +90,6 @@ export async function POST(req: NextRequest) {
           attributes: {
             error: result.error,
             error_description: result.error_description,
-            endpoint: '/api/oauth/token',
-            method: 'POST',
           },
         });
         return NextResponse.json(result, { status: 400 });
@@ -105,8 +99,6 @@ export async function POST(req: NextRequest) {
         severityText: 'INFO',
         body: 'Successfully refreshed OAuth token',
         attributes: {
-          endpoint: '/api/oauth/token',
-          method: 'POST',
           grant_type: 'refresh_token',
         },
       });
@@ -124,8 +116,6 @@ export async function POST(req: NextRequest) {
           hasRedirectUri: !!redirect_uri,
           hasClientId: !!client_id,
           hasCodeVerifier: !!code_verifier,
-          endpoint: '/api/oauth/token',
-          method: 'POST',
         },
       });
       return NextResponse.json(
@@ -156,8 +146,6 @@ export async function POST(req: NextRequest) {
           error: result.error,
           error_description: result.error_description,
           client_id,
-          endpoint: '/api/oauth/token',
-          method: 'POST',
         },
       });
       return NextResponse.json(result, { status: 400 });
@@ -168,8 +156,6 @@ export async function POST(req: NextRequest) {
       body: 'Successfully issued OAuth token',
       attributes: {
         client_id,
-        endpoint: '/api/oauth/token',
-        method: 'POST',
         grant_type: 'authorization_code',
       },
     });
@@ -183,8 +169,6 @@ export async function POST(req: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/oauth/token',
-        method: 'POST',
       },
     });
     return NextResponse.json(

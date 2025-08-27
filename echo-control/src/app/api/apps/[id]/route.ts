@@ -27,8 +27,6 @@ export async function GET(
       attributes: {
         appId,
         userId: user.id,
-        endpoint: '/api/apps/[id]',
-        method: 'GET',
       },
     });
     return NextResponse.json(
@@ -46,8 +44,6 @@ export async function GET(
       attributes: {
         appId,
         userId: user.id,
-        endpoint: '/api/apps/[id]',
-        method: 'GET',
       },
     });
 
@@ -61,8 +57,6 @@ export async function GET(
         stack: error instanceof Error ? error.stack : undefined,
         appId,
         userId: user.id,
-        endpoint: '/api/apps/[id]',
-        method: 'GET',
       },
     });
     throw error;
@@ -135,8 +129,6 @@ export async function PUT(
         attributes: {
           appId,
           userId: user.id,
-          endpoint: '/api/apps/[id]',
-          method: 'PUT',
         },
       });
       return NextResponse.json(
@@ -152,8 +144,6 @@ export async function PUT(
         appId,
         userId: user.id,
         updateFields: Object.keys(updateData),
-        endpoint: '/api/apps/[id]',
-        method: 'PUT',
       },
     });
 
@@ -179,8 +169,6 @@ export async function PUT(
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         appId: (await params).id,
-        endpoint: '/api/apps/[id]',
-        method: 'PUT',
       },
     });
 
@@ -221,8 +209,6 @@ export async function DELETE(
         attributes: {
           appId,
           userId: user.id,
-          endpoint: '/api/apps/[id]',
-          method: 'DELETE',
         },
       });
       return NextResponse.json(
@@ -239,8 +225,6 @@ export async function DELETE(
       attributes: {
         appId,
         userId: user.id,
-        endpoint: '/api/apps/[id]',
-        method: 'DELETE',
       },
     });
 
@@ -253,8 +237,6 @@ export async function DELETE(
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         appId: (await params).id,
-        endpoint: '/api/apps/[id]',
-        method: 'DELETE',
       },
     });
 
@@ -268,8 +250,6 @@ export async function DELETE(
         body: 'Authentication error in DELETE app endpoint',
         attributes: {
           error: error.message,
-          endpoint: '/api/apps/[id]',
-          method: 'DELETE',
         },
       });
       return NextResponse.json(
@@ -287,8 +267,6 @@ export async function DELETE(
         body: 'Echo app not found or access denied in DELETE endpoint',
         attributes: {
           error: error.message,
-          endpoint: '/api/apps/[id]',
-          method: 'DELETE',
         },
       });
       return NextResponse.json(

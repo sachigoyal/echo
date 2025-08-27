@@ -6,10 +6,7 @@ export async function GET() {
     logger.emit({
       severityText: 'INFO',
       body: 'Health check successful',
-      attributes: {
-        endpoint: '/api/health',
-        method: 'GET',
-      },
+      attributes: {},
     });
     return NextResponse.json({
       status: 'healthy',
@@ -22,8 +19,6 @@ export async function GET() {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/health',
-        method: 'GET',
       },
     });
 

@@ -17,8 +17,6 @@ export async function GET(request: NextRequest) {
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        endpoint: '/api/v1/balance',
-        method: 'GET',
       },
     });
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -36,8 +34,6 @@ export async function GET(request: NextRequest) {
         attributes: {
           userId: user.id,
           balance: balance.balance,
-          endpoint: '/api/v1/balance',
-          method: 'GET',
         },
       });
 
@@ -50,8 +46,6 @@ export async function GET(request: NextRequest) {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
           userId: user.id,
-          endpoint: '/api/v1/balance',
-          method: 'GET',
         },
       });
       return NextResponse.json(
@@ -71,8 +65,6 @@ export async function GET(request: NextRequest) {
         userId: user.id,
         echoAppId,
         balance: balanceResult.balance,
-        endpoint: '/api/v1/balance',
-        method: 'GET',
       },
     });
 
@@ -86,8 +78,6 @@ export async function GET(request: NextRequest) {
         stack: error instanceof Error ? error.stack : undefined,
         userId: user.id,
         echoAppId,
-        endpoint: '/api/v1/balance',
-        method: 'GET',
       },
     });
 
@@ -106,8 +96,6 @@ export async function GET(request: NextRequest) {
           userId: user.id,
           echoAppId,
           status,
-          endpoint: '/api/v1/balance',
-          method: 'GET',
         },
       });
       return NextResponse.json({ error: error.message }, { status });
