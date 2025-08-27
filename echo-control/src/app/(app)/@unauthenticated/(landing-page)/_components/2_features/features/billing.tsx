@@ -68,7 +68,6 @@ export const Billing = () => {
         >
           <XAxis hide />
           <YAxis hide />
-          <Tooltip />
           <Area
             type="monotone"
             dataKey="usage"
