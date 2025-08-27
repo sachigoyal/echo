@@ -156,7 +156,9 @@ export class GeminiProvider extends BaseProvider {
         }
       }
 
-      logger.info(`Gemini usage tokens (prompt/candidates/total): ${promptTokens}/${candidatesTokens}/${totalTokens}`);
+      logger.info(
+        `Gemini usage tokens (prompt/candidates/total): ${promptTokens}/${candidatesTokens}/${totalTokens}`
+      );
 
       const metadata: LlmTransactionMetadata = {
         model: this.getModel(),

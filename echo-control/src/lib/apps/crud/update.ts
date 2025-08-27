@@ -12,12 +12,18 @@ import {
   validateGithubType,
   validateHomepageUrl,
 } from '.';
+import { logger, createPerformanceLogger } from '@/logger';
 
 export const updateEchoAppById = async (
   appId: string,
   userId: string,
   data: AppUpdateInput
 ): Promise<OwnerEchoApp> => {
+  const perfLogger = createPerformanceLogger('updateEchoAppById', {
+    appId,
+    userId,
+  });
+
   // Check if user has permission to edit this app
   const hasEditPermission = await PermissionService.hasPermission(
     userId,
@@ -26,8 +32,29 @@ export const updateEchoAppById = async (
   );
 
   if (!hasEditPermission) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'App update denied - insufficient permissions',
+      attributes: {
+        userId,
+        appId,
+        attemptedAction: 'update',
+        function: 'updateEchoAppById',
+      },
+    });
     throw new Error('Echo app not found or access denied');
   }
+
+  logger.emit({
+    severityText: 'INFO',
+    body: 'Starting app update',
+    attributes: {
+      userId,
+      appId,
+      updateFields: Object.keys(data),
+      function: 'updateEchoAppById',
+    },
+  });
 
   // Validate input if provided
   if (data.name !== undefined) {
@@ -201,6 +228,22 @@ export const updateEchoAppById = async (
   });
 
   const ownerApp = await getOwnerEchoApp(appId, userId);
+
+  perfLogger.finish({
+    success: true,
+    updatedFields: Object.keys(data).join(', '),
+  });
+
+  logger.emit({
+    severityText: 'INFO',
+    body: 'Successfully updated app',
+    attributes: {
+      userId,
+      appId,
+      updatedFields: Object.keys(data),
+      function: 'updateEchoAppById',
+    },
+  });
 
   return ownerApp;
 };

@@ -4,6 +4,7 @@ import type { Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
 import { db } from './db';
 import type Stripe from 'stripe';
+import { logger } from '@/logger';
 
 export interface PaymentProcessingData {
   userId: string;
@@ -34,16 +35,30 @@ export async function processPaymentUpdate(
       metadata
     );
 
-    console.log(
-      `Free tier payment processed for app ${echoAppId}: $${amountInCents / 100}`
-    );
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Free tier payment processed',
+      attributes: {
+        echoAppId,
+        amountInCents,
+        amountInDollars: amountInCents / 100,
+        function: 'processPaymentUpdate',
+      },
+    });
   } else {
     // For non-free-tier payments, update user's totalPaid balance
     await updateUserBalanceFromPayment(tx, userId, amountInCents);
 
-    console.log(
-      `Personal balance updated for user ${userId}: +$${amountInCents / 100}`
-    );
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Personal balance updated for user',
+      attributes: {
+        userId,
+        amountInCents,
+        amountInDollars: amountInCents / 100,
+        function: 'processPaymentUpdate',
+      },
+    });
   }
 }
 
@@ -86,10 +101,25 @@ export async function handlePaymentSuccess(
     });
 
     const isFreeTier = metadata?.type === 'free-tier-credits';
-    console.log(
-      `Payment succeeded: ${id}${isFreeTier ? ' (free tier pool)' : ', totalPaid updated'}`
-    );
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Payment succeeded',
+      attributes: {
+        paymentIntentId: id,
+        isFreeTier,
+        function: 'handlePaymentSuccess',
+      },
+    });
   } catch (error) {
-    console.error('Error handling payment success:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error handling payment success',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        paymentIntentId: paymentIntent.id,
+        function: 'handlePaymentSuccess',
+      },
+    });
   }
 }

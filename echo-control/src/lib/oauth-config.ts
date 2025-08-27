@@ -1,6 +1,7 @@
 /**
  * OAuth configuration utilities
  */
+import { logger } from '@/logger';
 
 /**
  * Get the refresh token expiry duration in seconds from environment variable
@@ -10,15 +11,27 @@
 export function getEchoRefreshTokenExpirySeconds(): number {
   // Check for seconds first (more granular control, useful for testing)
   const secondsEnv = process.env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS;
-  console.log('🔄 DEBUG: Refresh token expiry seconds: ', secondsEnv);
+  logger.emit({
+    severityText: 'DEBUG',
+    body: 'Refresh token expiry seconds',
+    attributes: {
+      secondsEnv,
+      function: 'getEchoRefreshTokenExpirySeconds',
+    },
+  });
   if (secondsEnv) {
     const parsed = parseInt(secondsEnv, 10);
     if (!isNaN(parsed) && parsed > 0) {
       return parsed;
     }
-    console.warn(
-      `Invalid OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS value: ${secondsEnv}. Falling back to days or default.`
-    );
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Invalid OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS value, falling back to default',
+      attributes: {
+        invalidValue: secondsEnv,
+        function: 'getEchoRefreshTokenExpirySeconds',
+      },
+    });
   }
   // Default to 1 second
   return 1;
@@ -31,16 +44,27 @@ export function createEchoRefreshTokenExpiry(): Date {
   const expiry = new Date();
   const expirySeconds = getEchoRefreshTokenExpirySeconds();
   expiry.setTime(expiry.getTime() + expirySeconds * 1000); // multiply by 1000 to convert to milliseconds
-  console.log(
-    '🔄 DEBUG: Echo Refresh token will expire at ',
-    expiry.toLocaleString('en-US', { timeZone: 'America/New_York' })
-  );
+  logger.emit({
+    severityText: 'DEBUG',
+    body: 'Echo refresh token expiry calculated',
+    attributes: {
+      expiryTime: expiry.toISOString(),
+      function: 'createEchoRefreshTokenExpiry',
+    },
+  });
   return expiry;
 }
 
 export function getEchoAccessTokenExpirySeconds(): number {
   const secondsEnv = process.env.OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS;
-  console.log('🔄 DEBUG: Access token expiry seconds: ', secondsEnv);
+  logger.emit({
+    severityText: 'DEBUG',
+    body: 'Access token expiry seconds',
+    attributes: {
+      secondsEnv,
+      function: 'getEchoAccessTokenExpirySeconds',
+    },
+  });
   if (secondsEnv) {
     const parsed = parseInt(secondsEnv, 10);
     if (!isNaN(parsed) && parsed > 0) {
@@ -54,10 +78,14 @@ export function createEchoAccessTokenExpiry(): Date {
   const expiry = new Date();
   const expirySeconds = getEchoAccessTokenExpirySeconds();
   expiry.setTime(expiry.getTime() + expirySeconds * 1000);
-  console.log(
-    '🔄 DEBUG: Echo Access token will expire at ',
-    expiry.toLocaleString('en-US', { timeZone: 'America/New_York' })
-  );
+  logger.emit({
+    severityText: 'DEBUG',
+    body: 'Echo access token expiry calculated',
+    attributes: {
+      expiryTime: expiry.toISOString(),
+      function: 'createEchoAccessTokenExpiry',
+    },
+  });
   return expiry;
 }
 
@@ -77,9 +105,14 @@ export function getArchivedRefreshTokenGraceMs(): number {
     if (!isNaN(parsedMs) && parsedMs >= 0) {
       return parsedMs;
     }
-    console.warn(
-      `Invalid OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS value: ${msEnv}. Falling back to default.`
-    );
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Invalid OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS value, falling back to default',
+      attributes: {
+        invalidValue: msEnv,
+        function: 'getArchivedRefreshTokenGraceMs',
+      },
+    });
   }
 
   // Default behavior: zero grace in local/integration tests, 2 minutes otherwise

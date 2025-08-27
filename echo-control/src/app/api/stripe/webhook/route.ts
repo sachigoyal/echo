@@ -5,6 +5,7 @@ import {
   processPaymentUpdate,
 } from '@/lib/payment-processing';
 import Stripe from 'stripe';
+import { logger } from '@/logger';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
@@ -28,11 +29,25 @@ export async function POST(request: NextRequest) {
       // Verify webhook signature
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'Webhook signature verification failed',
+        attributes: {
+          error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+        },
+      });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
-    console.log(`Received webhook: ${event.type}`);
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Received Stripe webhook',
+      attributes: {
+        eventType: event.type,
+        eventId: event.id,
+      },
+    });
 
     // Handle the event
     switch (event.type) {
@@ -49,12 +64,26 @@ export async function POST(request: NextRequest) {
         await handleInvoicePayment(event.data.object);
         break;
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        logger.emit({
+          severityText: 'WARN',
+          body: 'Unhandled Stripe webhook event type',
+          attributes: {
+            eventType: event.type,
+            eventId: event.id,
+          },
+        });
     }
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Webhook handler failed',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+    });
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
@@ -73,7 +102,16 @@ async function handleCheckoutSessionCompleted(
     const description = metadata?.description;
 
     if (!userId || !amount_total) {
-      console.error('Missing userId or amount in session metadata');
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'Missing userId or amount in checkout session metadata',
+        attributes: {
+          sessionId: session.id,
+          userId,
+          amount_total,
+          handler: 'handleCheckoutSessionCompleted',
+        },
+      });
       return;
     }
 
@@ -82,15 +120,36 @@ async function handleCheckoutSessionCompleted(
     if (payment_link) {
       // This checkout session was created from a payment link
       paymentId = payment_link as string;
-      console.log(`Checkout session completed from payment link: ${paymentId}`);
+      logger.emit({
+        severityText: 'INFO',
+        body: 'Checkout session completed from payment link',
+        attributes: {
+          paymentId,
+          sessionId: session.id,
+          handler: 'handleCheckoutSessionCompleted',
+        },
+      });
     } else if (payment_intent) {
       // This is a direct checkout session
       paymentId = session.id;
-      console.log(`Direct checkout session completed: ${paymentId}`);
+      logger.emit({
+        severityText: 'INFO',
+        body: 'Direct checkout session completed',
+        attributes: {
+          paymentId,
+          sessionId: session.id,
+          handler: 'handleCheckoutSessionCompleted',
+        },
+      });
     } else {
-      console.error(
-        'No payment_link or payment_intent found in checkout session'
-      );
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'No payment_link or payment_intent found in checkout session',
+        attributes: {
+          sessionId: session.id,
+          handler: 'handleCheckoutSessionCompleted',
+        },
+      });
       return;
     }
 
@@ -110,7 +169,14 @@ async function handleCheckoutSessionCompleted(
 
       let paymentRecord;
       if (updatedPayment.count === 0) {
-        console.warn(`No pending payment found for payment ID: ${paymentId}`);
+        logger.emit({
+          severityText: 'WARN',
+          body: 'No pending payment found for payment ID, creating new record',
+          attributes: {
+            paymentId,
+            handler: 'handleCheckoutSessionCompleted',
+          },
+        });
         // Create a new payment record if one doesn't exist
         paymentRecord = await tx.payment.create({
           data: {
@@ -122,7 +188,15 @@ async function handleCheckoutSessionCompleted(
             userId,
           },
         });
-        console.log(`Created new payment record for payment ID: ${paymentId}`);
+        logger.emit({
+          severityText: 'INFO',
+          body: 'Created new payment record',
+          attributes: {
+            paymentId,
+            userId,
+            handler: 'handleCheckoutSessionCompleted',
+          },
+        });
       } else {
         // Get the existing payment record
         paymentRecord = await tx.payment.findFirst({
@@ -146,11 +220,27 @@ async function handleCheckoutSessionCompleted(
 
     const creditsAdded = Math.floor(amount_total / 100);
     const isFreeTier = metadata?.type === 'free-tier-credits';
-    console.log(
-      `Checkout completed for user ${userId}${echoAppId ? ` and app ${echoAppId}` : ''}: ${creditsAdded} credits ${isFreeTier ? 'added to free tier pool' : 'added, totalPaid updated'}`
-    );
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Checkout completed successfully',
+      attributes: {
+        userId,
+        echoAppId,
+        creditsAdded,
+        isFreeTier,
+        handler: 'handleCheckoutSessionCompleted',
+      },
+    });
   } catch (error) {
-    console.error('Error handling checkout completion:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error handling checkout completion',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        handler: 'handleCheckoutSessionCompleted',
+      },
+    });
   }
 }
 
@@ -163,9 +253,24 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
       data: { status: 'failed' },
     });
 
-    console.log(`Payment failed: ${id}`);
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Payment failed',
+      attributes: {
+        paymentIntentId: id,
+        handler: 'handlePaymentFailure',
+      },
+    });
   } catch (error) {
-    console.error('Error handling payment failure:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error handling payment failure',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        handler: 'handlePaymentFailure',
+      },
+    });
   }
 }
 
@@ -174,10 +279,25 @@ async function handleInvoicePayment(invoice: Stripe.Invoice) {
     const { id, amount_paid, currency } = invoice;
 
     // Handle recurring payments if needed
-    console.log(
-      `Invoice payment received: ${id} for ${amount_paid} ${currency}`
-    );
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Invoice payment received',
+      attributes: {
+        invoiceId: id,
+        amount_paid,
+        currency,
+        handler: 'handleInvoicePayment',
+      },
+    });
   } catch (error) {
-    console.error('Error handling invoice payment:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error handling invoice payment',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        handler: 'handleInvoicePayment',
+      },
+    });
   }
 }

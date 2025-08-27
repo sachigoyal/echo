@@ -96,7 +96,9 @@ export async function fundRepo(
       tokenAddress: tokenAddress,
     };
   } catch (error) {
-    logger.error(`Error in funding repo: ${error instanceof Error ? error.message : 'Unknown error'} | Amount: ${amount} | Stack: ${error instanceof Error ? error.stack : 'No stack'} | Timestamp: ${new Date().toISOString()}`);
+    logger.error(
+      `Error in funding repo: ${error instanceof Error ? error.message : 'Unknown error'} | Amount: ${amount} | Stack: ${error instanceof Error ? error.stack : 'No stack'} | Timestamp: ${new Date().toISOString()}`
+    );
 
     throw error;
   }

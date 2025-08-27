@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { db } from '@/lib/db';
 import { AppRole, MembershipStatus } from '@/lib/permissions';
+import { logger } from '@/logger';
 
 export const createAppSchema = z.object({
   name: z
@@ -21,27 +22,65 @@ export const createApp = async (
   const validatedData = createAppSchema.safeParse(data);
 
   if (!validatedData.success) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Invalid data provided for app creation',
+      attributes: {
+        userId,
+        validationError: validatedData.error.message,
+        function: 'createApp',
+      },
+    });
     throw new Error(validatedData.error.message);
   }
 
-  return await db.echoApp.create({
-    data: {
-      name: data.name.trim(),
-      markUp: {
-        create: {
-          amount: data.markup,
+  try {
+    const app = await db.echoApp.create({
+      data: {
+        name: data.name.trim(),
+        markUp: {
+          create: {
+            amount: data.markup,
+          },
         },
-      },
-      appMemberships: {
-        create: {
-          userId,
-          role: AppRole.OWNER,
-          status: MembershipStatus.ACTIVE,
-          isArchived: false,
-          totalSpent: 0,
+        appMemberships: {
+          create: {
+            userId,
+            role: AppRole.OWNER,
+            status: MembershipStatus.ACTIVE,
+            isArchived: false,
+            totalSpent: 0,
+          },
         },
+        authorizedCallbackUrls: [],
       },
-      authorizedCallbackUrls: [],
-    },
-  });
+    });
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully created new app',
+      attributes: {
+        userId,
+        appId: app.id,
+        appName: app.name,
+        markup: data.markup,
+        function: 'createApp',
+      },
+    });
+
+    return app;
+  } catch (error) {
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error creating app',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        appName: data.name,
+        function: 'createApp',
+      },
+    });
+    throw error;
+  }
 };

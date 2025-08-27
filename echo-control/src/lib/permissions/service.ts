@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { AppRole, MembershipStatus, Permission, UserAppAccess } from './types';
 import { EchoApp, AppMembership } from '@/generated/prisma';
+import { logger } from '@/logger';
 
 export class PermissionService {
   private static rolePermissions: Record<AppRole, Permission[]> = {
@@ -45,7 +46,21 @@ export class PermissionService {
       },
     });
 
-    return membership ? (membership.role as AppRole) : AppRole.PUBLIC;
+    const role = membership ? (membership.role as AppRole) : AppRole.PUBLIC;
+
+    logger.emit({
+      severityText: 'DEBUG',
+      body: 'Retrieved user app role',
+      attributes: {
+        userId,
+        appId,
+        role,
+        hasMembership: !!membership,
+        function: 'getUserAppRole',
+      },
+    });
+
+    return role;
   }
 
   static async hasPermission(
@@ -54,10 +69,37 @@ export class PermissionService {
     permission: Permission
   ): Promise<boolean> {
     const role = await this.getUserAppRole(userId, appId);
-    if (!role) return false;
+    if (!role) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Permission check failed - no role found',
+        attributes: {
+          userId,
+          appId,
+          permission,
+          function: 'hasPermission',
+        },
+      });
+      return false;
+    }
 
     const rolePermissions = this.rolePermissions[role];
-    return rolePermissions.includes(permission);
+    const hasAccess = rolePermissions.includes(permission);
+
+    logger.emit({
+      severityText: hasAccess ? 'INFO' : 'WARN',
+      body: hasAccess ? 'Permission granted' : 'Permission denied',
+      attributes: {
+        userId,
+        appId,
+        permission,
+        role,
+        hasAccess,
+        function: 'hasPermission',
+      },
+    });
+
+    return hasAccess;
   }
 
   static async getUserAppAccess(
@@ -98,6 +140,17 @@ export class PermissionService {
         userRole: m.role as AppRole,
       }))
     );
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Retrieved accessible apps for user',
+      attributes: {
+        userId,
+        requestedRole: role,
+        appCount: results.length,
+        function: 'getAccessibleApps',
+      },
+    });
 
     return results;
   }
