@@ -1,50 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 226.03 261">
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 363.81 363.81">
   <defs>
     <style>
       .cls-1 {
         fill: none;
       }
 
-      .cls-2 {
-        clip-path: url(#clippath);
-      }
-
       .cls-3 {
-        fill: #7f0404;
+        fill: #02b2bf;
       }
 
       .cls-4 {
-        fill: #232323;
+        fill: #0199ae;
       }
 
       .cls-5 {
-        fill: #a50404;
+        fill: #05c7cc;
       }
 
-      .cls-6 {
-        fill: #cd0202;
-        opacity: .9;
+      .ring {
+        stroke: #262626;
+        fill: transparent;
+      }
+
+      .first-ring {
+        stroke-width: 16;
+        stroke-opacity: 0.5;
+      }
+
+      .second-ring {
+        stroke-width: 12;
+        stroke-opacity: 0.4;
+      }
+
+      .third-ring {
+        stroke-width: 8;
+        stroke-opacity: 0.3;
+      }
+
+      .cls-8 {
+        clip-path: url(#clippath);
       }
     </style>
     <clipPath id="clippath">
-      <rect class="cls-1" x="-2246.03" y="-677" width="2000" height="3017"/>
+      <rect class="cls-1" width="363.81" height="363.81"/>
     </clipPath>
   </defs>
-  <polygon class="cls-6" points="59.23 99.45 59.23 161.55 113.02 192.61 113.02 130.5 59.23 99.45"/>
-  <polygon class="cls-5" points="113.02 68.39 113.02 68.39 59.23 99.45 113.02 130.5 166.8 99.45 113.02 68.39"/>
-  <polygon class="cls-3" points="166.8 99.45 113.02 130.5 113.02 192.61 113.02 192.61 166.8 161.55 166.8 99.45"/>
-  <g>
-    <path class="cls-4" d="m113.02,196.41l-57.08-32.95v-65.91l57.08-32.95,57.08,32.95v65.91l-57.08,32.95Zm-52.53-35.58l52.53,30.33,52.53-30.33v-60.66l-52.53-30.33-52.53,30.33v60.66Z"/>
-    <path class="cls-4" d="m113.02,261L0,195.75V65.25L113.02,0l113.02,65.25v130.5l-113.02,65.25ZM6.82,191.81l106.2,61.31,106.2-61.31v-122.62L113.02,7.88,6.82,69.19v122.62Z"/>
-    <rect class="cls-4" x="111.88" y="3.94" width="2.27" height="63.28"/>
-    <rect class="cls-4" x="-.83" y="176.82" width="63.28" height="2.27" transform="translate(-84.84 39.24) rotate(-29.99)"/>
-    <rect class="cls-4" x="194.08" y="146.32" width="2.27" height="63.28" transform="translate(-56.51 258.05) rotate(-60)"/>
-    <rect class="cls-4" x="111.88" y="130.5" width="2.27" height="126.56"/>
-    <rect class="cls-4" x="104.54" y="97.72" width="126.56" height="2.27" transform="translate(-26.95 97.14) rotate(-29.99)"/>
-    <rect class="cls-4" x="57.08" y="35.58" width="2.27" height="126.56" transform="translate(-56.51 99.84) rotate(-60)"/>
-  </g>
-  <g class="cls-2">
-    <image width="1856" height="2464" transform="translate(-2534.13 -861.53) scale(1.37)" xlink:href="srags_Computer_terminal_high_tech_interface_to_labor_coordinati_2bd089c7-4038-4d4f-a649-cfed17d9f3eb.png"/>
+  <g class="cls-8">
+    <g id="Layer_1-2" data-name="Layer 1-2">
+      <g class="ring first-ring">
+        <polygon points="183.23,292.39 88.75,237.84 86.94,236.94 86.94,125.62 183.23,70.03 279.52,125.62 279.52,236.8 183.23,292.39"/>
+      </g>
+      <g class="ring second-ring">
+        <polygon points="181.53,329.96 54.34,256.53 53.31,256.19 53.31,107.88 181.53,33.85 309.75,107.88 309.75,255.94 181.53,329.96"/>
+      </g>
+      <g class="ring third-ring">
+        <polygon points="181.53,362.94 181.09,362.69 24.75,272.43 24.75,91.39 25.19,91.14 181.53,0.87 181.97,1.12 338.32,91.39 338.32,272.43 181.97,362.69 181.53,362.94"/>
+      </g>
+      <polygon class="cls-5" points="122.32 145.8 122.32 217.35 184.29 253.13 184.29 181.58 122.32 145.8"/>
+      <polygon class="cls-3" points="184.29 110.03 184.29 110.03 122.32 145.8 184.29 181.58 246.25 145.8 184.29 110.03"/>
+      <polygon class="cls-4" points="246.33 145.8 184.36 181.58 184.36 253.13 184.37 253.13 246.33 217.35 246.33 145.8"/>
+      
+    </g>
   </g>
 </svg>

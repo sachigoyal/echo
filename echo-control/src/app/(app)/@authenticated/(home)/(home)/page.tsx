@@ -19,7 +19,7 @@ export default async function DashboardPage() {
     <div>
       <Heading
         title={`Welcome Back${session?.user.name ? `, ${session.user.name.split(' ')[0]}!` : '!'}`}
-        description="Manage your apps and API keys"
+        description="Build apps and make money risk free"
         actions={
           <ErrorBoundary fallback={null}>
             <Suspense fallback={null}>

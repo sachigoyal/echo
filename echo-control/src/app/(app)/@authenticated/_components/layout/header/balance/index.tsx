@@ -16,10 +16,6 @@ export const BalanceButton = async () => {
     <HydrateClient>
       <Link href="/credits">
         <Button variant="outline">
-          <Logo
-            containerClassName="hidden md:block"
-            className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors"
-          />
           <Suspense fallback={<Skeleton className="h-5 w-10" />}>
             <Balance />
           </Suspense>
