@@ -69,7 +69,7 @@ export const parseSSEAnthropicFormat = (
           };
         }
       } catch (error) {
-        logger.error('Error parsing Anthropic SSE chunk:', { error });
+        logger.error(`Error parsing Anthropic SSE chunk: ${error}`);
       }
     }
   }
@@ -161,7 +161,7 @@ export class AnthropicNativeProvider extends BaseProvider {
           outputTokens,
           totalTokens
         );
-        logger.info('Message ID: ', parsed.id);
+        logger.info(`Message ID: ${parsed.id}`);
 
         const metadata: LlmTransactionMetadata = {
           model: this.getModel(),
@@ -185,7 +185,7 @@ export class AnthropicNativeProvider extends BaseProvider {
         return transaction;
       }
     } catch (error) {
-      logger.error('Error processing data:', { error });
+      logger.error(`Error processing data: ${error}`);
       throw error;
     }
   }

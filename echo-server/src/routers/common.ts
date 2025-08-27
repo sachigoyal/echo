@@ -13,6 +13,15 @@ standardRouter.get('/health', (req: Request, res: Response) => {
   });
 });
 
+standardRouter.get('/', (req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: process.version,
+  });
+});
+
 // Handle favicon and other common browser requests
 standardRouter.get('/favicon.ico', (req: Request, res: Response) => {
   res.status(204).send(); // No content

@@ -7,6 +7,7 @@ import { authenticateRequest } from './auth';
 import { modelRequestService } from './services/ModelRequestService';
 import { checkBalance } from './services/BalanceCheckService';
 import standardRouter from './routers/common';
+import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
 import logger from './logger';
 
 dotenv.config();
@@ -14,6 +15,7 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 3069;
 
+app.use(traceEnrichmentMiddleware);
 // Add middleware
 app.use(
   cors({
@@ -62,10 +64,7 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response) => {
-  logger.error('Error handling request:', {
-    error: error.message,
-    stack: error.stack,
-  });
+  logger.error(`Error handling request: ${error.message} | Stack: ${error.stack}`);
 
   if (error instanceof HttpError) {
     res.status(error.statusCode).json({
