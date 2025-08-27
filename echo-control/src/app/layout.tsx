@@ -7,6 +7,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 
 import { TRPCReactProvider } from '@/trpc/client';
+import { PostHogProvider } from '@/components/PostHogProvider';
 
 import type { Metadata } from 'next';
 
@@ -43,8 +44,10 @@ export default function RootLayout({
                 storageKey="echo-theme"
                 enableSystem={true}
               >
-                <Toaster />
-                <main>{children}</main>
+                <PostHogProvider>
+                  <Toaster />
+                  <main>{children}</main>
+                </PostHogProvider>
               </ThemeProvider>
             </TRPCReactProvider>
           </RootProvider>
