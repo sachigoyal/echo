@@ -114,7 +114,7 @@ export const AppDetails: React.FC<Props> = ({ appId }) => {
           App Details
         </div>
       </AccordionTrigger>
-      <AccordionContent className="pb-0">
+      <AccordionContent>
         <Carousel className="w-full" setApi={setCarouselApi}>
           <CarouselContent>
             {steps.map(step => (

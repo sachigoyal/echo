@@ -99,7 +99,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             <div className="w-1/4 flex items-center gap-2">
               <div className="flex flex-col items-end gap-1 w-full">
                 <p className="text-sm text-muted-foreground font-bold shrink-0">
-                  {completedSteps + 1} / {steps.length + 1} Completed
+                  {((completedSteps + 1) / (steps.length + 1)) * 100}% Complete
                 </p>
                 <Progress
                   value={((completedSteps + 1) / (steps.length + 1)) * 100}

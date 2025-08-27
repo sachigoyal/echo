@@ -11,6 +11,7 @@ import { api, HydrateClient } from '@/trpc/server';
 import { RangeSelector } from '../../../../../../_components/time-range-selector/range-selector';
 import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityContextProvider } from '../../../../../../_components/time-range-selector/context';
+import { ActivityOverlay } from './overlay';
 
 interface Props {
   appId: string;
@@ -45,6 +46,7 @@ export const Activity: React.FC<Props> = ({ appId }) => {
                 <ActivityCharts appId={appId} />
               </Suspense>
             </ErrorBoundary>
+            <ActivityOverlay appId={appId} />
           </Card>
         </div>
       </ActivityContextProvider>
