@@ -4,26 +4,11 @@ import { MarkupInput } from './input';
 import { MarkupFormProvider } from './provider';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const MarkupFormCard = ({
-  children,
-  isLoading,
-}: {
-  children: React.ReactNode;
-  isLoading: boolean;
-}) => {
-  return (
-    <FormCard
-      title="Markup"
-      description="How much you want to upcharge for each input and output token processed on your app."
-      docsUrl="/docs/monetization"
-      isLoading={isLoading}
-    >
-      {children}
-    </FormCard>
-  );
-};
+interface Props {
+  appId: string;
+}
 
-export const MarkupForm = async ({ appId }: { appId: string }) => {
+export const MarkupForm: React.FC<Props> = async ({ appId }) => {
   const markup = await api.apps.app.markup.get(appId);
 
   return (
@@ -51,5 +36,24 @@ export const LoadingMarkupForm = () => {
     <MarkupFormCard isLoading={true}>
       <Skeleton className="w-full h-[238px]" />
     </MarkupFormCard>
+  );
+};
+
+const MarkupFormCard = ({
+  children,
+  isLoading,
+}: {
+  children: React.ReactNode;
+  isLoading: boolean;
+}) => {
+  return (
+    <FormCard
+      title="Markup"
+      description="How much you want to upcharge for each input and output token processed on your app."
+      docsUrl="/docs/monetization"
+      isLoading={isLoading}
+    >
+      {children}
+    </FormCard>
   );
 };
