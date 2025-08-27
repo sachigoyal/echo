@@ -1,19 +1,21 @@
-import express, { Request, Response, NextFunction, Express } from 'express';
-import dotenv from 'dotenv';
 import compression from 'compression';
 import cors from 'cors';
-import { HttpError } from './errors/http';
+import dotenv from 'dotenv';
+import express, { Express, NextFunction, Request, Response } from 'express';
 import { authenticateRequest } from './auth';
-import { modelRequestService } from './services/ModelRequestService';
-import { checkBalance } from './services/BalanceCheckService';
-import standardRouter from './routers/common';
-import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
+import { HttpError } from './errors/http';
+import { PrismaClient } from './generated/prisma';
 import logger from './logger';
+import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
+import standardRouter from './routers/common';
+import { checkBalance } from './services/BalanceCheckService';
+import { modelRequestService } from './services/ModelRequestService';
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3069;
+const prisma = new PrismaClient();
 
 app.use(traceEnrichmentMiddleware);
 // Add middleware
@@ -40,7 +42,8 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     const { processedHeaders, echoControlService, forwardingPath } =
       await authenticateRequest(
         req.path,
-        req.headers as Record<string, string>
+        req.headers as Record<string, string>,
+        prisma
       );
 
     await checkBalance(echoControlService);
