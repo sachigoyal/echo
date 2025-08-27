@@ -59,9 +59,7 @@ export const UserRows: React.FC<Props> = ({ appId }) => {
               </div>
             </TableCell>
             <TableCell>{user.usage.totalTransactions}</TableCell>
-            <TableCell>
-              {formatCurrency(user.usage.rawCost - user.usage.markupProfit)}
-            </TableCell>
+            <TableCell>{formatCurrency(user.usage.rawCost)}</TableCell>
             <TableCell className="text-right pr-4 text-primary font-bold">
               {formatCurrency(user.usage.markupProfit)}
             </TableCell>
