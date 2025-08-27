@@ -31,6 +31,7 @@ model User {
   transactions   Transaction[]
   spendPoolUsage UserSpendPoolUsage[]
   ReferralCode   ReferralCode[]
+  appSessions    AppSession[]
 
   @@map("users")
 }
@@ -96,6 +97,7 @@ model EchoApp {
   currentReferralRewardId String?          @db.Uuid // Reference to current active referral reward
   currentReferralReward   ReferralReward?  @relation("CurrentReferralReward", fields: [currentReferralRewardId], references: [id])
   ReferralRewards         ReferralReward[] @relation("AppReferralRewards") // All referral rewards for this app
+  appSessions             AppSession[]
 
   @@map("echo_apps")
 }
@@ -157,7 +159,35 @@ model RefreshToken {
   echoApp    EchoApp   @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  sessionId String?     @db.Uuid
+  session   AppSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, echoAppId, isArchived])
+  @@index([sessionId, isArchived])
+  @@index([expiresAt])
   @@map("refresh_tokens")
+}
+
+model AppSession {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  echoAppId  String    @db.Uuid
+  deviceName String?
+  userAgent  String?
+  ipAddress  String?
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime  @updatedAt @db.Timestamptz(6)
+  lastSeenAt DateTime? @db.Timestamptz(6)
+  revokedAt  DateTime? @db.Timestamptz(6)
+  isArchived Boolean   @default(false)
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp       EchoApp        @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId, echoAppId])
+  @@index([echoAppId, isArchived])
+  @@map("app_sessions")
 }
 
 model Payment {
@@ -296,7 +326,7 @@ model TransactionMetadata {
   inputTokens  Int
   outputTokens Int
   totalTokens  Int
-  toolCost     Decimal   @default(0.0) @db.Decimal(65, 14) 
+  toolCost     Decimal       @default(0.0) @db.Decimal(65, 14)
   prompt       String?
   isArchived   Boolean       @default(false)
   archivedAt   DateTime?     @db.Timestamptz(6)

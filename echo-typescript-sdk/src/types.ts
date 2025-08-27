@@ -8,6 +8,7 @@ export interface EchoConfig {
   appId: string;
   basePath?: string;
   baseRouterUrl?: string;
+  baseEchoUrl?: string; // control plane url
 }
 
 export interface EchoApp {

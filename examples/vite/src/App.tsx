@@ -16,7 +16,7 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
 
   // Show loading state
-  if (isLoading) {
+  if (!user && isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -187,7 +187,9 @@ function App() {
   return (
     <EchoProvider
       config={{
-        apiUrl: 'https://echo.merit.systems',
+        // for local development
+        // baseEchoUrl: 'http://localhost:3001',
+        // baseRouterUrl: 'http://localhost:3070',
         appId: '60601628-cdb7-481e-8f7e-921981220348',
         redirectUri: window.location.origin,
         scope: 'llm:invoke offline_access',
