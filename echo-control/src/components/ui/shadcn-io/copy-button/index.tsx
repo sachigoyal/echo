@@ -35,7 +35,7 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  },
+  }
 );
 
 type CopyButtonProps = Omit<HTMLMotionProps<'button'>, 'children' | 'onCopy'> &
@@ -71,7 +71,7 @@ function CopyButton({
       setLocalIsCopied(isCopied);
       onCopyChange?.(isCopied);
     },
-    [onCopyChange],
+    [onCopyChange]
   );
 
   const handleCopy = React.useCallback(
@@ -85,13 +85,13 @@ function CopyButton({
             setTimeout(() => handleIsCopied(false), delay);
             onCopy?.(content);
           })
-          .catch((error) => {
+          .catch(error => {
             console.error('Error copying command', error);
           });
       }
       onClick?.(e);
     },
-    [isCopied, content, delay, onClick, onCopy, handleIsCopied],
+    [isCopied, content, delay, onClick, onCopy, handleIsCopied]
   );
 
   return (

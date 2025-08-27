@@ -17,15 +17,24 @@ export const listAppUsers = async (
   { page, page_size }: PaginationParams
 ) => {
   const [count, users] = await Promise.all([
-    db.appMembership.count({
-      where: {
-        echoAppId: appId,
-        isArchived: false,
-        totalSpent: {
-          gt: 0,
+    db.transaction
+      .groupBy({
+        by: ['userId'],
+        where: {
+          echoAppId: appId,
+          isArchived: false,
+          ...((startDate || endDate) && {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
         },
-      },
-    }),
+        _count: {
+          userId: true,
+        },
+      })
+      .then(groups => groups.length),
     (async () => {
       const topUsersWithStats = await db.transaction.groupBy({
         by: ['userId'],
@@ -70,18 +79,6 @@ export const listAppUsers = async (
           name: true,
           email: true,
           image: true,
-          appMemberships: {
-            where: {
-              echoAppId: appId,
-              isArchived: false,
-              status: 'active',
-            },
-            select: {
-              totalSpent: true,
-              amountSpent: true,
-              createdAt: true,
-            },
-          },
         },
       });
 
@@ -95,7 +92,6 @@ export const listAppUsers = async (
 
         return {
           ...user,
-          membership: user.appMemberships[0] ?? null,
           usage: {
             totalTransactions: stat._count.id,
             totalCost: Number(stat._sum.totalCost ?? 0),

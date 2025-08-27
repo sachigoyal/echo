@@ -63,7 +63,9 @@ export class EchoDbService {
 
         // Validate required fields exist
         if (!payload.user_id || !payload.app_id) {
-          logger.error(`JWT missing required fields: user_id=${payload.user_id}, app_id=${payload.app_id}`);
+          logger.error(
+            `JWT missing required fields: user_id=${payload.user_id}, app_id=${payload.app_id}`
+          );
           return null;
         }
 

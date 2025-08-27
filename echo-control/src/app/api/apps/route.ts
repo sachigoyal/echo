@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AppCreateInput } from '@/lib/apps/types';
 import { createEchoApp } from '@/lib/apps/crud';
 import { getOwnerEchoApp } from '@/lib/apps';
+import { logger } from '@/logger';
 
 // POST /api/apps - Create a new Echo app
 export async function POST(req: NextRequest) {
@@ -29,9 +30,26 @@ export async function POST(req: NextRequest) {
       throw new Error('Failed to retrieve created app details');
     }
 
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully created Echo app',
+      attributes: {
+        appId: echoApp.id,
+        userId: user.id,
+        appName: name,
+      },
+    });
+
     return NextResponse.json(detailedApp, { status: 201 });
   } catch (error) {
-    console.error('Error creating Echo app:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error creating Echo app',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+    });
 
     // Handle validation errors
     if (

@@ -64,7 +64,9 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response) => {
-  logger.error(`Error handling request: ${error.message} | Stack: ${error.stack}`);
+  logger.error(
+    `Error handling request: ${error.message} | Stack: ${error.stack}`
+  );
 
   if (error instanceof HttpError) {
     res.status(error.statusCode).json({

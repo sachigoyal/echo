@@ -4,7 +4,10 @@ import { format } from 'date-fns';
 
 import { db } from '@/lib/db';
 
-import type { PaginationParams } from '@/services/lib/pagination';
+import {
+  toPaginatedReponse,
+  type PaginationParams,
+} from '@/services/lib/pagination';
 
 export const listAppTransactionsSchema = z.object({
   appId: z.uuid(),
@@ -16,33 +19,47 @@ export const listAppTransactions = async (
   { appId, startDate, endDate }: z.infer<typeof listAppTransactionsSchema>,
   { page, page_size }: PaginationParams
 ) => {
-  // Single query to get all transactions with related data
-  const transactions = await db.transaction.findMany({
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-      ...((startDate || endDate) && {
-        createdAt: {
-          gte: startDate,
-          lte: endDate,
-        },
-      }),
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
+  // Run count and findMany in parallel using Promise.all
+  const [count, transactions] = await Promise.all([
+    db.transaction.count({
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+        ...((startDate || endDate) && {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        }),
+      },
+    }),
+    db.transaction.findMany({
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+        ...((startDate || endDate) && {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        }),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    skip: page * page_size,
-    take: page_size,
-  });
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: page * page_size,
+      take: page_size,
+    }),
+  ]);
 
   // Group transactions by user, date, and model
   const groupedTransactions = new Map<
@@ -56,7 +73,7 @@ export const listAppTransactions = async (
       };
       date: Date;
       callCount: number;
-      appProfit: number;
+      markUpProfit: number;
     }
   >();
 
@@ -67,7 +84,7 @@ export const listAppTransactions = async (
       // Aggregate existing group
       const existing = groupedTransactions.get(userKey)!;
       existing.callCount += 1;
-      existing.appProfit += Number(transaction.markUpProfit);
+      existing.markUpProfit += Number(transaction.markUpProfit);
     } else {
       // Create new group
       groupedTransactions.set(userKey, {
@@ -78,18 +95,23 @@ export const listAppTransactions = async (
           image: transaction.user.image,
         },
         callCount: 1,
-        appProfit: Number(transaction.markUpProfit),
+        markUpProfit: Number(transaction.markUpProfit),
         date: transaction.createdAt,
       });
     }
   }
 
   // Convert to array and sort by date (newest first)
-  const result = Array.from(groupedTransactions.values()).sort(
+  const items = Array.from(groupedTransactions.values()).sort(
     (a, b) => b.date.getTime() - a.date.getTime()
   );
 
-  return result;
+  return toPaginatedReponse({
+    items,
+    total_count: count,
+    page,
+    page_size,
+  });
 };
 
 export const countAppTransactionsSchema = z.object({

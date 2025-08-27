@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
+import { logger } from '@/logger';
 
 const stripe = new Stripe(
   process.env.STRIPE_SECRET_KEY || 'test_secret_stripe_key',
@@ -26,13 +27,44 @@ export async function createPaymentLink(
   }: z.infer<typeof createPaymentLinkSchema>
 ) {
   if (amount <= 0) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Invalid amount for payment link creation',
+      attributes: {
+        userId,
+        amount,
+        function: 'createPaymentLink',
+      },
+    });
     throw new Error('Valid amount is required');
   }
+
+  logger.emit({
+    severityText: 'INFO',
+    body: 'Creating Stripe payment link',
+    attributes: {
+      userId,
+      amount,
+      description,
+      function: 'createPaymentLink',
+    },
+  });
 
   // Create Stripe product
   const product = await stripe.products.create({
     name: description,
     description: `${description} - ${amount} USD`,
+  });
+
+  logger.emit({
+    severityText: 'DEBUG',
+    body: 'Created Stripe product',
+    attributes: {
+      productId: product.id,
+      productName: product.name,
+      userId,
+      function: 'createPaymentLink',
+    },
   });
 
   // Create Stripe price

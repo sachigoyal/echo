@@ -1,19 +1,15 @@
 import { Suspense } from 'react';
 
-import { Code, User } from 'lucide-react';
-
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { Separator } from '../../_components/separator';
+import { Code, User } from 'lucide-react';
+
 import { Breadcrumb, LoadingBreadcrumb } from '../../_components/breadcrumb';
+import { Separator } from '../../_components/separator';
 
 import { api } from '@/trpc/server';
 
-export default async function AppBreadcrumbs({
-  params,
-}: PageProps<'/app/[id]'>) {
-  const { id } = await params;
-
+export const AppBreadcrumbs = ({ id }: { id: string }) => {
   return (
     <>
       <ErrorBoundary fallback={null}>
@@ -30,7 +26,7 @@ export default async function AppBreadcrumbs({
       </ErrorBoundary>
     </>
   );
-}
+};
 
 const UserBreadcrumb = async ({ id }: { id: string }) => {
   const owner = await api.apps.app.getOwner(id);
@@ -41,6 +37,7 @@ const UserBreadcrumb = async ({ id }: { id: string }) => {
       name={owner.name ?? 'Unknown'}
       Fallback={User}
       mobileHideText
+      disabled
     />
   );
 };

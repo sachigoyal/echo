@@ -45,7 +45,7 @@ loggerProvider.addLogRecordProcessor(
 logs.setGlobalLoggerProvider(loggerProvider);
 
 // Custom Winston format to inject traceId/spanId
-const traceContextFormat = winston.format((info) => {
+const traceContextFormat = winston.format(info => {
   const span = trace.getSpan(context.active());
   if (span) {
     const spanContext = span.spanContext();

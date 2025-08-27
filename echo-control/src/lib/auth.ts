@@ -4,11 +4,21 @@ import { NextRequest } from 'next/server';
 import { hashApiKey } from './crypto';
 import { authenticateEchoAccessJwtToken } from './jwt-tokens';
 import { auth } from '@/auth';
+import { logger } from '@/logger';
 
 export async function getCurrentUser(): Promise<User> {
   const session = await auth();
 
   if (!session?.user?.id) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Unauthenticated session in getCurrentUser',
+      attributes: {
+        function: 'getCurrentUser',
+        hasSession: !!session,
+        hasUser: !!session?.user,
+      },
+    });
     throw new Error('Not authenticated');
   }
 
@@ -26,6 +36,16 @@ export async function getCurrentUser(): Promise<User> {
         image: session.user.image || null,
       },
     });
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Created new user from session',
+      attributes: {
+        userId: user.id,
+        email: user.email,
+        function: 'getCurrentUser',
+      },
+    });
   } else {
     if (user.image !== session.user.image) {
       user = await db.user.update({
@@ -34,8 +54,26 @@ export async function getCurrentUser(): Promise<User> {
           image: session.user.image || null,
         },
       });
+
+      logger.emit({
+        severityText: 'DEBUG',
+        body: 'Updated user image from session',
+        attributes: {
+          userId: user.id,
+          function: 'getCurrentUser',
+        },
+      });
     }
   }
+
+  logger.emit({
+    severityText: 'DEBUG',
+    body: 'Successfully retrieved current user',
+    attributes: {
+      userId: user.id,
+      function: 'getCurrentUser',
+    },
+  });
 
   return user;
 }
@@ -44,6 +82,16 @@ export async function getOrCreateUser(userId: string): Promise<User> {
   const session = await auth();
 
   if (!session?.user?.id) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Unauthenticated session in getOrCreateUser',
+      attributes: {
+        function: 'getOrCreateUser',
+        targetUserId: userId,
+        hasSession: !!session,
+        hasUser: !!session?.user,
+      },
+    });
     throw new Error('Not authenticated');
   }
 
@@ -91,6 +139,15 @@ export async function getCurrentUserByApiKeyOrEchoJwt(
   const authHeader = request.headers.get('authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Invalid authorization header in API authentication',
+      attributes: {
+        hasAuthHeader: !!authHeader,
+        authHeaderPrefix: authHeader?.substring(0, 10) || null,
+        function: 'getCurrentUserByApiKeyOrEchoJwt',
+      },
+    });
     throw new Error('Invalid authorization header');
   }
 
@@ -102,6 +159,15 @@ export async function getCurrentUserByApiKeyOrEchoJwt(
   const isJWT = token.split('.').length === 3;
 
   if (isJWT) {
+    logger.emit({
+      severityText: 'DEBUG',
+      body: 'Authenticating with JWT token',
+      attributes: {
+        tokenType: 'JWT',
+        function: 'getCurrentUserByApiKeyOrEchoJwt',
+      },
+    });
+
     const { userId, appId } = await authenticateEchoAccessJwtToken(token);
 
     const user = await db.user.findUnique({
@@ -117,12 +183,40 @@ export async function getCurrentUserByApiKeyOrEchoJwt(
     });
 
     if (!user) {
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'User not found for valid JWT token',
+        attributes: {
+          userId,
+          appId,
+          function: 'getCurrentUserByApiKeyOrEchoJwt',
+        },
+      });
       throw new Error('User not found');
     }
 
     if (!app) {
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'App not found for valid JWT token',
+        attributes: {
+          userId,
+          appId,
+          function: 'getCurrentUserByApiKeyOrEchoJwt',
+        },
+      });
       throw new Error('App not found');
     }
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully authenticated with JWT token',
+      attributes: {
+        userId,
+        appId,
+        function: 'getCurrentUserByApiKeyOrEchoJwt',
+      },
+    });
 
     return {
       user,

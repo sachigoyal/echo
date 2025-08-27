@@ -9,6 +9,7 @@ import { AppRole, MembershipStatus } from '@/lib/permissions/types';
 import { createHash } from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
+import { logger } from '@/logger';
 
 // JWT secret for API tokens (different from OAuth codes)
 const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
@@ -198,7 +199,13 @@ export async function handleRefreshToken(
   refreshToken: string,
   metadata?: { deviceName?: string; userAgent?: string; ipAddress?: string }
 ): Promise<RefreshTokenResponse | RefreshTokenError> {
-  console.log('🔄 Processing refresh token request');
+  logger.emit({
+    severityText: 'INFO',
+    body: 'Processing refresh token request',
+    attributes: {
+      function: 'handleRefreshToken',
+    },
+  });
 
   /* 1️⃣ Find and validate refresh token */
   const echoRefreshTokenRecord = await db.refreshToken.findUnique({
@@ -220,7 +227,13 @@ export async function handleRefreshToken(
       echoRefreshTokenRecord.archivedAt <
         new Date(Date.now() - archivedGraceMs))
   ) {
-    console.log('🔄 Refresh token not found or archived beyond grace period');
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Refresh token not found or archived beyond grace period',
+      attributes: {
+        function: 'handleRefreshToken',
+      },
+    });
     return {
       error: 'invalid_grant',
       error_description: 'Invalid or expired refresh token',
@@ -374,7 +387,14 @@ export async function handleInitialTokenIssuance(
     ipAddress,
   } = params;
 
-  console.log('🎫 Processing authorization code token request');
+  logger.emit({
+    severityText: 'INFO',
+    body: 'Processing authorization code token request',
+    attributes: {
+      function: 'handleInitialTokenIssuance',
+      client_id,
+    },
+  });
 
   /* 1️⃣ Validate code verifier length (RFC 7636 Section 4.1) */
   if (code_verifier.length < 43 || code_verifier.length > 128) {
@@ -475,12 +495,15 @@ export async function handleInitialTokenIssuance(
 
   if (userRole === AppRole.PUBLIC) {
     try {
-      console.log(
-        'Creating app membership for user:',
-        user.id,
-        'and app:',
-        echoApp.id
-      );
+      logger.emit({
+        severityText: 'INFO',
+        body: 'Creating app membership for user',
+        attributes: {
+          userId: user.id,
+          echoAppId: echoApp.id,
+          function: 'handleInitialTokenIssuance',
+        },
+      });
       // User needs to join the app
       const appMembership = await db.appMembership.create({
         data: {
@@ -551,7 +574,15 @@ export async function handleInitialTokenIssuance(
     sessionId: appSession.id,
   });
 
-  console.log('🎫 JWT access token generated');
+  logger.emit({
+    severityText: 'INFO',
+    body: 'JWT access token generated',
+    attributes: {
+      userId: user.id,
+      echoAppId: echoApp.id,
+      function: 'handleInitialTokenIssuance',
+    },
+  });
 
   /* 1️⃣2️⃣ Return the JWT access token response with refresh token */
   return {
