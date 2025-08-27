@@ -48,7 +48,7 @@ export const LoadingUserRows = () => {
     <TableRow key={index}>
       <TableCell className="pl-4">
         <div className="flex flex-row items-center gap-2">
-          <Skeleton className="size-6" />
+          <Skeleton className="size-8" />
           <Skeleton className="w-16 h-4" />
         </div>
       </TableCell>

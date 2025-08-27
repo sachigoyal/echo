@@ -12,7 +12,9 @@ export const TransactionRows = async ({ appId }: { appId: string }) => {
     page_size: 1000,
   });
 
-  if (transactions.length === 0) {
+  const rows = transactions.items;
+
+  if (rows.length === 0) {
     return (
       <TableRow className="mt-2">
         <TableCellBase colSpan={2} className="text-left pl-4">
@@ -24,7 +26,7 @@ export const TransactionRows = async ({ appId }: { appId: string }) => {
     );
   }
 
-  return transactions.slice(0, 5).map(transaction => (
+  return rows.slice(0, 5).map(transaction => (
     <TableRow key={transaction.id}>
       <TableCell className="pl-4">
         <div className="flex flex-row items-center gap-2">
@@ -54,7 +56,7 @@ export const LoadingTransactionRows = () => {
     <TableRow key={index}>
       <TableCell className="pl-4">
         <div className="flex flex-row items-center gap-2">
-          <Skeleton className="size-6" />
+          <Skeleton className="size-8" />
           <Skeleton className="w-32 h-4" />
         </div>
       </TableCell>
