@@ -57,7 +57,11 @@ async function fetchOpenAIModels(): Promise<string[]> {
         // Exclude specific non-language model types
         const isNotEmbedding = !model.id.includes('embedding');
         const isNotAudio =
-          !model.id.includes('whisper') && !model.id.includes('tts');
+          !model.id.includes('whisper') &&
+          !model.id.includes('tts') &&
+          !model.id.includes('audio') &&
+          !model.id.includes('transcribe') &&
+          !model.id.includes('realtime');
         const isNotVision = !model.id.includes('dall-e');
 
         return isLanguageModel && isNotEmbedding && isNotAudio && isNotVision;

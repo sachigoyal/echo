@@ -15,67 +15,19 @@ All OpenAI models are supported via the `OpenAIModel` type:
   path="../echo-typescript-sdk/src/supported-models/chat/openai.ts" 
 />
 
-## Usage
-
-```typescript
-import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
-import { generateText } from 'ai';
-
-// Create provider with Echo billing
-const openai = createEchoOpenAI(
-  { appId: 'your-echo-app-id' },
-  async () => 'your-api-key'
-);
-
-// Generate text with GPT
-const { text } = await generateText({
-  model: openai('gpt-4o'),
-  prompt: 'Explain the concept of recursion in programming'
-});
-```
-
-Works with all Vercel AI SDK functions including `generateText`, `streamText`, `generateObject`, and `streamObject`.
 
 ## Additional Features
 
 ### Responses API Support
 
-The OpenAI Responses API is fully supported through Echo's OpenAI provider. This API enables structured outputs with guaranteed schema compliance:
+The OpenAI Responses API is fully supported through Echo's OpenAI provider.
 
 ```typescript
-import OpenAI from 'openai';
+  const result = streamText({
+    model: await openai.responses('gpt-4o'),
+    messages: convertToModelMessages(messages),
+  });
 
-
-// Create OpenAI client with Echo integration
-const openai = new OpenAI({
-  apiKey: 'your-jwt-token-or-api-key', // Your JWT token acts as the API key
-  baseURL: 'https://echo.router.merit.systems', // Echo's proxy endpoint
-});
-
-// Use structured outputs with the Responses API
-const response = await openai.chat.completions.create({
-  model: 'gpt-4o-2024-08-06',
-  messages: [
-    { role: 'user', content: 'Generate a person profile' }
-  ],
-  response_format: {
-    type: 'json_schema',
-    json_schema: {
-      name: 'person_profile',
-      strict: true,
-      schema: {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-          age: { type: 'number' },
-          occupation: { type: 'string' }
-        },
-        required: ['name', 'age', 'occupation'],
-        additionalProperties: false
-      }
-    }
-  }
-});
 ```
 
 ### Image Generation with GPT-image-1
@@ -83,20 +35,14 @@ const response = await openai.chat.completions.create({
 Echo also supports OpenAI's image generation capabilities through the GPT-image-1 model:
 
 ```typescript
-import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
-
-const openai = createEchoOpenAI(
-  { appId: 'your-echo-app-id' },
-  async () => 'your-api-key'
-);
-
-// Generate images using GPT-image-1
-const response = await openai.images.generate({
-  model: 'gpt-image-1',
-  prompt: 'A serene mountain landscape at sunset',
-  n: 1,
-  size: '1024x1024'
-});
+  const result = await generateImage({
+    model: await openai.image('gpt-image-1'),
+    prompt,
+  });
 ```
 
-All usage through these APIs is automatically tracked and billed through your Echo app configuration.
+To instantiate `openai.responses` in these examples, see the following guides:
+
+For React applications, see [React SDK LLM Integration](/docs/react-sdk/llm-integration)
+
+For server-side usage, see [Next.js SDK LLM Integration](/docs/next-sdk/llm-integration)

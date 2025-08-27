@@ -25,26 +25,12 @@ export type OpenAIModel =
   | 'gpt-4o-2024-05-13'
   | 'gpt-4o-2024-08-06'
   | 'gpt-4o-2024-11-20'
-  | 'gpt-4o-audio-preview'
-  | 'gpt-4o-audio-preview-2024-10-01'
-  | 'gpt-4o-audio-preview-2024-12-17'
-  | 'gpt-4o-audio-preview-2025-06-03'
   | 'gpt-4o-mini'
   | 'gpt-4o-mini-2024-07-18'
-  | 'gpt-4o-mini-audio-preview'
-  | 'gpt-4o-mini-audio-preview-2024-12-17'
-  | 'gpt-4o-mini-realtime-preview'
-  | 'gpt-4o-mini-realtime-preview-2024-12-17'
   | 'gpt-4o-mini-search-preview'
   | 'gpt-4o-mini-search-preview-2025-03-11'
-  | 'gpt-4o-mini-transcribe'
-  | 'gpt-4o-realtime-preview'
-  | 'gpt-4o-realtime-preview-2024-10-01'
-  | 'gpt-4o-realtime-preview-2024-12-17'
-  | 'gpt-4o-realtime-preview-2025-06-03'
   | 'gpt-4o-search-preview'
   | 'gpt-4o-search-preview-2025-03-11'
-  | 'gpt-4o-transcribe'
   | 'gpt-5'
   | 'gpt-5-2025-08-07'
   | 'gpt-5-chat-latest'
@@ -207,30 +193,6 @@ export const OpenAIModels: SupportedModel[] = [
     provider: 'OpenAI',
   },
   {
-    model_id: 'gpt-4o-audio-preview',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-audio-preview-2024-10-01',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-audio-preview-2024-12-17',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-audio-preview-2025-06-03',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
     model_id: 'gpt-4o-mini',
     input_cost_per_token: 1.5e-7,
     output_cost_per_token: 6e-7,
@@ -238,30 +200,6 @@ export const OpenAIModels: SupportedModel[] = [
   },
   {
     model_id: 'gpt-4o-mini-2024-07-18',
-    input_cost_per_token: 1.5e-7,
-    output_cost_per_token: 6e-7,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-mini-audio-preview',
-    input_cost_per_token: 1.5e-7,
-    output_cost_per_token: 6e-7,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-mini-audio-preview-2024-12-17',
-    input_cost_per_token: 1.5e-7,
-    output_cost_per_token: 6e-7,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-mini-realtime-preview',
-    input_cost_per_token: 1.5e-7,
-    output_cost_per_token: 6e-7,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-mini-realtime-preview-2024-12-17',
     input_cost_per_token: 1.5e-7,
     output_cost_per_token: 6e-7,
     provider: 'OpenAI',
@@ -279,36 +217,6 @@ export const OpenAIModels: SupportedModel[] = [
     provider: 'OpenAI',
   },
   {
-    model_id: 'gpt-4o-mini-transcribe',
-    input_cost_per_token: 1.5e-7,
-    output_cost_per_token: 6e-7,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-realtime-preview',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-realtime-preview-2024-10-01',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-realtime-preview-2024-12-17',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-realtime-preview-2025-06-03',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
     model_id: 'gpt-4o-search-preview',
     input_cost_per_token: 0.0000025,
     output_cost_per_token: 0.00001,
@@ -316,12 +224,6 @@ export const OpenAIModels: SupportedModel[] = [
   },
   {
     model_id: 'gpt-4o-search-preview-2025-03-11',
-    input_cost_per_token: 0.0000025,
-    output_cost_per_token: 0.00001,
-    provider: 'OpenAI',
-  },
-  {
-    model_id: 'gpt-4o-transcribe',
     input_cost_per_token: 0.0000025,
     output_cost_per_token: 0.00001,
     provider: 'OpenAI',
