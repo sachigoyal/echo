@@ -21,8 +21,8 @@ export const Activity: React.FC<Props> = ({ appId }) => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
-  api.activity.app.get.prefetch({
-    echoAppId: appId,
+  api.apps.app.activity.get.prefetch({
+    appId,
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });

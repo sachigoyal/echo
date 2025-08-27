@@ -7,19 +7,19 @@ import { db } from '@/lib/db';
 import type { PaginationParams } from '@/services/lib/pagination';
 
 export const listAppTransactionsSchema = z.object({
-  echoAppId: z.uuid(),
+  appId: z.uuid(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
 });
 
 export const listAppTransactions = async (
-  { echoAppId, startDate, endDate }: z.infer<typeof listAppTransactionsSchema>,
+  { appId, startDate, endDate }: z.infer<typeof listAppTransactionsSchema>,
   { page, page_size }: PaginationParams
 ) => {
   // Single query to get all transactions with related data
   const transactions = await db.transaction.findMany({
     where: {
-      echoAppId,
+      echoAppId: appId,
       isArchived: false,
       ...((startDate || endDate) && {
         createdAt: {
@@ -90,4 +90,29 @@ export const listAppTransactions = async (
   );
 
   return result;
+};
+
+export const countAppTransactionsSchema = z.object({
+  appId: z.uuid(),
+  startDate: z.date().optional(),
+  endDate: z.date().optional(),
+});
+
+export const countAppTransactions = async ({
+  appId,
+  startDate,
+  endDate,
+}: z.infer<typeof countAppTransactionsSchema>) => {
+  return await db.transaction.count({
+    where: {
+      echoAppId: appId,
+      isArchived: false,
+      ...((startDate || endDate) && {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      }),
+    },
+  });
 };

@@ -3,7 +3,7 @@ import z from 'zod';
 import { db } from '@/lib/db';
 
 export const getAppActivitySchema = z.object({
-  echoAppId: z.uuid(),
+  appId: z.uuid(),
   startDate: z.date(),
   endDate: z.date(),
   numBuckets: z.number().optional().default(48),
@@ -11,7 +11,7 @@ export const getAppActivitySchema = z.object({
 });
 
 export const getAppActivity = async ({
-  echoAppId,
+  appId,
   startDate,
   endDate,
   numBuckets,
@@ -20,7 +20,7 @@ export const getAppActivity = async ({
   // Get all transactions for the time period
   const transactions = await db.transaction.findMany({
     where: {
-      echoAppId,
+      echoAppId: appId,
       createdAt: {
         gte: startDate,
         lte: endDate,

@@ -23,8 +23,8 @@ interface Props {
 }
 
 export const Users: React.FC<Props> = ({ appId }) => {
-  const usersPromise = api.activity.app.users.list({
-    echoAppId: appId,
+  const usersPromise = api.apps.app.users.list({
+    appId,
     page_size: 5,
   });
 

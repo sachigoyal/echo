@@ -12,6 +12,7 @@ import { AppDetails } from './app-details';
 import { api } from '@/trpc/client';
 import { Connection } from './connection';
 import { Accordion } from '@/components/ui/accordion';
+import { GenerateText } from './generate-text';
 
 interface Props {
   appId: string;
@@ -21,6 +22,9 @@ export const Setup: React.FC<Props> = ({ appId }) => {
   const [app] = api.apps.app.get.useSuspenseQuery({ appId });
   const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
+  const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
+    appId,
+  });
 
   const appDetailsSteps = useMemo(
     () => [
@@ -33,29 +37,36 @@ export const Setup: React.FC<Props> = ({ appId }) => {
 
   const connectionSteps = useMemo(() => [numTokens > 0], [numTokens]);
 
-  const steps = [...appDetailsSteps, ...connectionSteps];
+  const generateTextSteps = useMemo(
+    () => [numTransactions > 0],
+    [numTransactions]
+  );
+
+  const steps = [...appDetailsSteps, ...connectionSteps, ...generateTextSteps];
 
   const completedSteps = steps.filter(Boolean).length;
   const allStepsCompleted = completedSteps === steps.length;
 
   const [isComplete, setIsComplete] = useState(allStepsCompleted);
 
-  const [accordionValue, setAccordionValue] = useState<string[]>([
-    ...(!appDetailsSteps.every(Boolean) ? ['app-details'] : []),
-    ...(!connectionSteps.every(Boolean) ? ['connection'] : []),
-  ]);
+  const [accordionValue, setAccordionValue] = useState<string>(
+    !appDetailsSteps.every(Boolean)
+      ? 'app-details'
+      : !connectionSteps.every(Boolean)
+        ? 'connection'
+        : !generateTextSteps.every(Boolean)
+          ? 'generate-text'
+          : ''
+  );
 
   useEffect(() => {
-    if (appDetailsSteps.every(Boolean)) {
-      setAccordionValue(prev => prev.filter(value => value !== 'app-details'));
+    if (appDetailsSteps.every(Boolean) && !connectionSteps.every(Boolean)) {
+      setAccordionValue('connection');
     }
-  }, [appDetailsSteps]);
-
-  useEffect(() => {
-    if (connectionSteps.every(Boolean)) {
-      setAccordionValue(prev => prev.filter(value => value !== 'connection'));
+    if (connectionSteps.every(Boolean) && !generateTextSteps.every(Boolean)) {
+      setAccordionValue('generate-text');
     }
-  }, [connectionSteps]);
+  }, [appDetailsSteps, connectionSteps, generateTextSteps]);
 
   return (
     <AnimatePresence mode="wait">
@@ -99,7 +110,10 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             <div className="w-1/4 flex items-center gap-2">
               <div className="flex flex-col items-end gap-1 w-full">
                 <p className="text-sm text-muted-foreground font-bold shrink-0">
-                  {((completedSteps + 1) / (steps.length + 1)) * 100}% Complete
+                  {(((completedSteps + 1) / (steps.length + 1)) * 100).toFixed(
+                    0
+                  )}
+                  % Complete
                 </p>
                 <Progress
                   value={((completedSteps + 1) / (steps.length + 1)) * 100}
@@ -108,12 +122,14 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             </div>
           </div>
           <Accordion
-            type="multiple"
+            type="single"
+            collapsible
             value={accordionValue}
             onValueChange={setAccordionValue}
           >
             <AppDetails appId={appId} />
             <Connection appId={appId} />
+            <GenerateText appId={appId} />
           </Accordion>
         </motion.div>
       )}

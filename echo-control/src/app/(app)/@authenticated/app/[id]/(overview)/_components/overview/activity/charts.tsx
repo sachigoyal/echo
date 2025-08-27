@@ -20,8 +20,8 @@ interface Props {
 export const ActivityCharts: React.FC<Props> = ({ appId }) => {
   const { startDate, endDate } = useActivityContext();
 
-  const [activity] = api.activity.app.get.useSuspenseQuery({
-    echoAppId: appId,
+  const [activity] = api.apps.app.activity.get.useSuspenseQuery({
+    appId,
     startDate,
     endDate,
   });

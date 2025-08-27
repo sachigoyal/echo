@@ -5,17 +5,20 @@ import { Check, Copy } from 'lucide-react';
 import { Button, ButtonProps } from './button';
 import { toast } from 'sonner';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { cn } from '@/lib/utils';
 
 interface Props extends ButtonProps {
   text: string;
   toastMessage?: string;
   onCopy?: () => void;
+  className?: string;
 }
 
 export const CopyButton: React.FC<Props> = ({
   text,
   toastMessage,
   onCopy,
+  className,
   ...props
 }) => {
   const { isCopied, copyToClipboard } = useCopyToClipboard(() => {
@@ -29,7 +32,7 @@ export const CopyButton: React.FC<Props> = ({
     <Button
       onClick={() => copyToClipboard(text)}
       variant="outline"
-      className="shrink-0 size-fit p-2"
+      className={cn('shrink-0 size-fit p-2', className)}
       size="icon"
       {...props}
     >

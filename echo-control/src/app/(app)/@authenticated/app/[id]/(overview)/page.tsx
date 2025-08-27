@@ -17,6 +17,7 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   api.apps.app.get.prefetch({ appId: id });
   api.apps.app.githubLink.get.prefetch(id);
   api.apps.app.getNumTokens.prefetch({ appId: id });
+  api.apps.app.transactions.count.prefetch({ appId: id });
 
   if (!app) {
     return notFound();

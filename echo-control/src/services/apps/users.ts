@@ -6,20 +6,20 @@ import {
   toPaginatedReponse,
 } from '@/services/lib/pagination';
 
-export const listAppUsersActivitySchema = z.object({
-  echoAppId: z.uuid(),
+export const listAppUsersSchema = z.object({
+  appId: z.uuid(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
 });
 
-export const listAppUsersActivity = async (
-  { echoAppId, startDate, endDate }: z.infer<typeof listAppUsersActivitySchema>,
+export const listAppUsers = async (
+  { appId, startDate, endDate }: z.infer<typeof listAppUsersSchema>,
   { page, page_size }: PaginationParams
 ) => {
   const [count, users] = await Promise.all([
     db.appMembership.count({
       where: {
-        echoAppId,
+        echoAppId: appId,
         isArchived: false,
         totalSpent: {
           gt: 0,
@@ -30,7 +30,7 @@ export const listAppUsersActivity = async (
       const topUsersWithStats = await db.transaction.groupBy({
         by: ['userId'],
         where: {
-          echoAppId,
+          echoAppId: appId,
           isArchived: false,
           ...((startDate || endDate) && {
             createdAt: {
@@ -72,7 +72,7 @@ export const listAppUsersActivity = async (
           image: true,
           appMemberships: {
             where: {
-              echoAppId,
+              echoAppId: appId,
               isArchived: false,
               status: 'active',
             },

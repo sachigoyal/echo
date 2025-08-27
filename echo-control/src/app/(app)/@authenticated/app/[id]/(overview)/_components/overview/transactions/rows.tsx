@@ -7,8 +7,8 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 import { formatDistanceToNow } from 'date-fns';
 
 export const TransactionRows = async ({ appId }: { appId: string }) => {
-  const transactions = await api.activity.app.transactions.list({
-    echoAppId: appId,
+  const transactions = await api.apps.app.transactions.list({
+    appId,
     page_size: 1000,
   });
 

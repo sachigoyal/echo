@@ -25,18 +25,17 @@ import { ReactStep1, ReactStep2, ReactStep3 } from './frameworks/react';
 import { NextStep1, NextStep2, NextStep3 } from './frameworks/next';
 
 import { api } from '@/trpc/client';
-import { Check, ChevronsLeftRightEllipsis } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { CopyButton } from '@/components/ui/copy-button';
+import { Check, Lock, MessageSquare } from 'lucide-react';
 
 interface Props {
   appId: string;
 }
 
-export const Connection: React.FC<Props> = ({ appId }) => {
+export const GenerateText: React.FC<Props> = ({ appId }) => {
   const [shouldRefetch, setShouldRefetch] = useState(true);
 
-  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery(
+  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
+  const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery(
     { appId },
     {
       refetchInterval: shouldRefetch ? 2500 : undefined,
@@ -44,53 +43,38 @@ export const Connection: React.FC<Props> = ({ appId }) => {
   );
 
   useEffect(() => {
-    setShouldRefetch(numTokens === 0);
-  }, [numTokens]);
+    setShouldRefetch(numTransactions === 0);
+  }, [numTransactions]);
 
   return (
-    <AccordionItem value="connection" className="border-none">
-      <AccordionTrigger className="text-lg font-semibold pt-0">
-        <div
-          className={cn(
-            'flex items-center gap-2',
-            numTokens > 0 && 'text-primary'
-          )}
-        >
-          {numTokens > 0 ? (
-            <Check className="size-4" />
+    <AccordionItem value="generate-text" className="border-none">
+      <AccordionTrigger
+        className="text-lg font-semibold pt-0"
+        disabled={numTokens === 0}
+      >
+        <div className="flex items-center gap-2">
+          {numTokens === 0 ? (
+            <Lock className="size-4" />
+          ) : numTransactions > 0 ? (
+            <Check className="size-4 text-primary" />
           ) : (
-            <ChevronsLeftRightEllipsis className="size-4" />
+            <MessageSquare className="size-4" />
           )}
-          Connect to Echo
+          Make an LLM Request
         </div>
       </AccordionTrigger>
-      <AccordionContent>
+      <AccordionContent className="pb-0">
         <Tabs className="flex flex-col gap-2" defaultValue="next">
-          <div className="flex items-center gap-2 justify-between">
-            <TabsList className="rounded-lg">
-              <TabsTrigger value="next" className="px-8 gap-2 rounded-lg">
-                <SiNextdotjs className="size-4" />
-                Next.js
-              </TabsTrigger>
-              <TabsTrigger value="react" className="px-8 gap-2 rounded-lg">
-                <SiReact className="size-4" />
-                React
-              </TabsTrigger>
-            </TabsList>
-            <div className="flex flex-col items-end">
-              <p className="text-[10px] text-muted-foreground">Your App ID</p>
-              <div className="flex items-center w-fit border border-primary rounded-md overflow-hidden pl-2 pr-1 py-1 bg-muted">
-                <p className="flex-1 overflow-x-auto whitespace-nowrap font-mono text-xs no-scrollbar pr-2">
-                  {appId}
-                </p>
-                <CopyButton
-                  text={appId}
-                  toastMessage="Copied to clipboard"
-                  className="shadow-none p-1"
-                />
-              </div>
-            </div>
-          </div>
+          <TabsList className="rounded-lg">
+            <TabsTrigger value="next" className="px-8 gap-2 rounded-lg">
+              <SiNextdotjs className="size-4" />
+              Next.js
+            </TabsTrigger>
+            <TabsTrigger value="react" className="px-8 gap-2 rounded-lg">
+              <SiReact className="size-4" />
+              React
+            </TabsTrigger>
+          </TabsList>
           <TabsContents>
             <TabsContent value="next" className="gap-2 flex flex-col">
               <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">

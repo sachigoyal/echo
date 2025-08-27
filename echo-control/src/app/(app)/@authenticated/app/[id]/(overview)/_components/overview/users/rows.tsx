@@ -9,7 +9,7 @@ export const UserRows = async ({
   usersPromise,
 }: {
   usersPromise: Promise<
-    Awaited<ReturnType<typeof api.activity.app.users.list>>['items']
+    Awaited<ReturnType<typeof api.apps.app.users.list>>['items']
   >;
 }) => {
   const users = await usersPromise;

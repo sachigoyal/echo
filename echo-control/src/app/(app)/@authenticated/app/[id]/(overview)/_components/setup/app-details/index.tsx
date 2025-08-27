@@ -105,9 +105,14 @@ export const AppDetails: React.FC<Props> = ({ appId }) => {
   return (
     <AccordionItem value="app-details" className="border-none">
       <AccordionTrigger className="text-lg font-semibold pt-0">
-        <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            'flex items-center gap-2',
+            steps.every(step => step.isComplete) && 'text-primary'
+          )}
+        >
           {steps.every(step => step.isComplete) ? (
-            <Check className="size-4 text-primary" />
+            <Check className="size-4" />
           ) : (
             <AppWindow className="size-4" />
           )}
