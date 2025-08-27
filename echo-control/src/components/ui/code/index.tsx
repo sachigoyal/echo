@@ -7,19 +7,25 @@ import { Skeleton } from '../skeleton';
 import { highlight } from './shared';
 
 import type { JSX } from 'react';
-import type { BundledLanguage } from './shiki.bundle.ts';
+import type { BundledLanguage, Highlighter } from './shiki.bundle.ts';
 
 interface Props {
   value: string;
   lang: BundledLanguage;
   initial?: JSX.Element;
+  highlighter?: Highlighter;
 }
 
-export const Code: React.FC<Props> = ({ value, initial, lang }) => {
+export const Code: React.FC<Props> = ({
+  value,
+  initial,
+  lang,
+  highlighter,
+}) => {
   const [nodes, setNodes] = useState(initial);
 
   useLayoutEffect(() => {
-    void highlight(value, lang)
+    void highlight(value, lang, highlighter)
       .then(setNodes)
       .catch(e => {
         console.error(e);
@@ -33,7 +39,7 @@ export const Code: React.FC<Props> = ({ value, initial, lang }) => {
           </code>
         );
       });
-  }, [value, lang]);
+  }, [value, lang, highlighter]);
 
   return (
     <>

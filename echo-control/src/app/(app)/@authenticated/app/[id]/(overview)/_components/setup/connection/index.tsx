@@ -91,7 +91,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
               </div>
             </div>
           </div>
-          <TabsContents>
+          <TabsContents className="h-[354px]">
             <TabsContent value="next" className="gap-2 flex flex-col">
               <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">
                 <NextStep1 />
