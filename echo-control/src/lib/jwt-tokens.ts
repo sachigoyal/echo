@@ -256,6 +256,8 @@ export async function handleRefreshToken(
     };
   }
 
+  const sessionId = echoRefreshTokenRecord.session.id;
+
   if (echoRefreshTokenRecord.echoApp.isArchived) {
     return {
       error: 'invalid_grant',
@@ -281,13 +283,13 @@ export async function handleRefreshToken(
       userId: echoRefreshTokenRecord.userId,
       echoAppId: echoRefreshTokenRecord.echoAppId,
       scope: echoRefreshTokenRecord.scope,
-      sessionId: echoRefreshTokenRecord.sessionId,
+      sessionId,
     },
   });
 
   // Update session last seen
   await db.appSession.update({
-    where: { id: echoRefreshTokenRecord.sessionId },
+    where: { id: sessionId },
     data: {
       lastSeenAt: new Date(),
       ...(metadata?.userAgent ? { userAgent: metadata.userAgent } : {}),
@@ -305,7 +307,7 @@ export async function handleRefreshToken(
     scope: echoRefreshTokenRecord.scope,
     keyVersion: 1,
     expiry: newEchoAccessTokenExpiry,
-    sessionId: echoRefreshTokenRecord.sessionId,
+    sessionId,
   });
 
   /* 6️⃣ Return new tokens with user and app info */

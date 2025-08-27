@@ -1,11 +1,5 @@
-/*
-  Warnings:
-
-  - Added the required column `sessionId` to the `refresh_tokens` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- AlterTable
-ALTER TABLE "refresh_tokens" ADD COLUMN     "sessionId" UUID NOT NULL;
+ALTER TABLE "refresh_tokens" ADD COLUMN     "sessionId" UUID;
 
 -- CreateTable
 CREATE TABLE "app_sessions" (

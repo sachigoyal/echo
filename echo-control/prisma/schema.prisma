@@ -159,8 +159,8 @@ model RefreshToken {
   echoApp    EchoApp   @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  sessionId String     @db.Uuid
-  session   AppSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String?     @db.Uuid
+  session   AppSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([userId, echoAppId, isArchived])
   @@index([sessionId, isArchived])
