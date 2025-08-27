@@ -1,7 +1,7 @@
-import { Separator } from '@/components/ui/separator';
 import { LoadingBreadcrumb } from '../../_components/breadcrumb';
+import { Separator } from '../../_components/separator';
 
-export default function Loading() {
+export const LoadingAppBreadcrumbs = () => {
   return (
     <>
       <Separator />
@@ -10,4 +10,4 @@ export default function Loading() {
       <LoadingBreadcrumb />
     </>
   );
-}
+};
