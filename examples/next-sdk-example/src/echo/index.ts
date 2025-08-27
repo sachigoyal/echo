@@ -1,5 +1,7 @@
 import Echo from '@merit-systems/echo-next-sdk';
 
 export const { handlers, isSignedIn, openai, anthropic, getUser } = Echo({
-  appId: 'ebad0cbb-384d-41ca-945b-47a534267cc6',
+  appId: '60601628-cdb7-481e-8f7e-921981220348',
+  // baseEchoUrl: 'http://localhost:3001',
+  // baseRouterUrl: 'http://localhost:3070',
 });

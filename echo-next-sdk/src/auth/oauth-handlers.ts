@@ -1,6 +1,7 @@
+import { EchoConfig } from '@merit-systems/echo-typescript-sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { resolveEchoBaseUrl } from '../config';
 import { getEchoToken, RefreshTokenResponse } from './token-manager';
-import { EchoConfig, ECHO_BASE_URL } from '@merit-systems/echo-typescript-sdk';
 
 /**
  * Generate PKCE code challenge and verifier
@@ -43,7 +44,9 @@ export async function handleSignIn(
   const { origin } = req.nextUrl;
   const basePath = config.basePath || '/api/echo';
 
-  const redirectUrl = new URL(`${ECHO_BASE_URL}/api/oauth/authorize`);
+  const baseUrl = resolveEchoBaseUrl(config);
+
+  const redirectUrl = new URL(`${baseUrl}/api/oauth/authorize`);
   redirectUrl.searchParams.set('client_id', config.appId);
   redirectUrl.searchParams.set('redirect_uri', `${origin}${basePath}/callback`);
   redirectUrl.searchParams.set('response_type', 'code');
@@ -99,7 +102,7 @@ export async function handleCallback(
   }
 
   // Exchange the code for a token from the token endpoint
-  const tokenEndpoint = `${ECHO_BASE_URL}/api/oauth/token`;
+  const tokenEndpoint = `${resolveEchoBaseUrl(config)}/api/oauth/token`;
 
   const params = new URLSearchParams();
   params.set('grant_type', 'authorization_code');
@@ -176,7 +179,7 @@ export async function handleRefresh(
   config: EchoConfig
 ): Promise<NextResponse> {
   try {
-    const token = await getEchoToken(config.appId);
+    const token = await getEchoToken(config);
     if (!token) {
       return NextResponse.json({ error: 'No token found' }, { status: 401 });
     }

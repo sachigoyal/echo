@@ -9,10 +9,10 @@ export function ImageGeneration() {
   const [error, setError] = useState<string | null>(null);
 
   const { openai } = useEchoModelProviders();
-  const { isAuthenticated, isLoading } = useEcho();
+  const { user, isLoading } = useEcho();
 
   const handleGenerateImage = async () => {
-    if (!prompt.trim() || isGenerating || !isAuthenticated) return;
+    if (!prompt.trim() || isGenerating || !user) return;
 
     setIsGenerating(true);
     setError(null);
@@ -38,7 +38,7 @@ export function ImageGeneration() {
     }
   };
 
-  if (isLoading) {
+  if (!user && isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-600">Loading Echo providers...</div>
@@ -46,7 +46,7 @@ export function ImageGeneration() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-600">Please sign in to generate images.</div>
