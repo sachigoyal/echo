@@ -66,7 +66,10 @@ export default async function OAuthAuthorizePage({
     return redirect(loginUrl.toString());
   }
 
-  const appDetails = await api.apps.app.get({ appId: authParams.client_id });
+  const [appDetails, owner] = await Promise.all([
+    api.apps.app.get({ appId: authParams.client_id }),
+    api.apps.app.getOwner(authParams.client_id),
+  ]);
 
   if (!appDetails) {
     return notFound();
@@ -89,18 +92,7 @@ export default async function OAuthAuthorizePage({
           <CardHeader className="p-4 border-b">
             <h2 className="text-lg text-foreground font-light">
               <span className="font-bold">{name}</span> by{' '}
-              <ErrorBoundary
-                fallback={
-                  <span className="font-bold text-red-500">
-                    Error Loading Owner
-                  </span>
-                }
-              >
-                <Suspense fallback={<Skeleton className="w-16 h-4" />}>
-                  <OwnerName appId={appDetails.id} />
-                </Suspense>
-              </ErrorBoundary>{' '}
-              wants to:
+              <span className="font-bold">{owner.name}</span> wants to:
             </h2>
           </CardHeader>
           <CardContent className="p-4 border-b">
@@ -119,9 +111,3 @@ export default async function OAuthAuthorizePage({
     </div>
   );
 }
-
-const OwnerName = async ({ appId }: { appId: string }) => {
-  const owner = await api.apps.app.getOwner(appId);
-
-  return <span className="font-bold">{owner.name}</span>;
-};

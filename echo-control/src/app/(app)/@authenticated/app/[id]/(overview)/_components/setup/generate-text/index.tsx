@@ -26,6 +26,7 @@ import { NextStep1, NextStep2 } from './frameworks/next';
 
 import { api } from '@/trpc/client';
 import { Check, Lock, MessageSquare } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Props {
   appId: string;
@@ -52,11 +53,16 @@ export const GenerateText: React.FC<Props> = ({ appId }) => {
         className="text-lg font-semibold pt-0"
         disabled={numTokens === 0}
       >
-        <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            'flex items-center gap-2',
+            numTransactions > 0 && 'text-primary'
+          )}
+        >
           {numTokens === 0 ? (
             <Lock className="size-4" />
           ) : numTransactions > 0 ? (
-            <Check className="size-4 text-primary" />
+            <Check className="size-4" />
           ) : (
             <MessageSquare className="size-4" />
           )}
