@@ -84,10 +84,12 @@ app.use((error: Error, req: Request, res: Response) => {
     });
   } else if (error instanceof Error) {
     // Handle other errors with a more specific message
+    logger.error('Internal server error', error);
     res.status(500).json({
       error: error.message || 'Internal Server Error',
     });
   } else {
+    logger.error('Internal server error', error);
     res.status(500).json({
       error: 'Internal Server Error',
     });
