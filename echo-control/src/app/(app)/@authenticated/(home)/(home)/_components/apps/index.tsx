@@ -39,7 +39,7 @@ export const Apps = () => {
   );
 };
 
-export const AppsGrid = async () => {
+const AppsGrid = async () => {
   const apps = await api.apps.list.owner({});
 
   if (apps.items.length === 0) {
@@ -63,4 +63,21 @@ export const AppsGrid = async () => {
   }
 
   return apps.items.map(app => <AppCard key={app.id} {...app} />);
+};
+
+const LoadingAppsGrid = () => {
+  return Array.from({ length: 5 }).map((_, i) => <AppCardSkeleton key={i} />);
+};
+
+export const LoadingAppsSection = () => {
+  return (
+    <div className="w-full flex flex-col gap-4 md:gap-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-2xl font-bold">Your Apps</h3>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <LoadingAppsGrid />
+      </div>
+    </div>
+  );
 };
