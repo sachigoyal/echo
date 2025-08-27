@@ -29,11 +29,14 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({
     appId,
   });
+  const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
+    appId,
+  });
 
   // Transform data for the chart
   const chartData: ChartData<Omit<(typeof activity)[number], 'timestamp'>>[] =
     useMemo(() => {
-      if (numTokens === 0) {
+      if (numTokens === 0 || numTransactions === 0) {
         return Array.from({ length: 48 }, (_, i) => ({
           timestamp: format(subDays(new Date(), i), 'MMM dd HH:mm yyyy'),
           totalProfit: Math.random() * 100,

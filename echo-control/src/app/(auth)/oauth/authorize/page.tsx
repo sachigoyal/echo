@@ -20,6 +20,7 @@ import { api } from '@/trpc/server';
 import { authorizeParamsSchema } from '../../_lib/authorize';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default async function OAuthAuthorizePage({
   searchParams,
@@ -95,12 +96,10 @@ export default async function OAuthAuthorizePage({
                   </span>
                 }
               >
-                <Suspense
-                  fallback={<span className="font-light">Loading...</span>}
-                >
+                <Suspense fallback={<Skeleton className="w-16 h-4" />}>
                   <OwnerName appId={appDetails.id} />
                 </Suspense>
-              </ErrorBoundary>
+              </ErrorBoundary>{' '}
               wants to:
             </h2>
           </CardHeader>

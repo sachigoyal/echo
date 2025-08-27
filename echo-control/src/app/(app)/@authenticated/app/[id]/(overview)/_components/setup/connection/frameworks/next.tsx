@@ -27,7 +27,7 @@ const step2Code = (appId: string) => `// echo.ts
 import { Echo } from '@merit-systems/echo-next-sdk';
 
 export const { 
-  handlers, isSignedIn, openai, anthropic,
+  handlers,
 } = Echo({
     appId: "${appId}"
 });
@@ -48,15 +48,14 @@ export const NextStep2 = ({ appId }: { appId: string }) => {
 
 const step3Code = `import { signIn } from "@merit-systems/echo-next-sdk/client";
 
-export default Home() {
-    return (
-      <button
-        className="bg-primary text-primary-foreground px-4 py-2 rounded-md"
-        onClick={signIn}
-      >
-        Sign In
-      </button>
-    );
+export const Home = () => {
+  return (
+    <button
+      onClick={signIn}
+    >
+      Sign In
+    </button>
+  );
 }`;
 
 export const NextStep3 = () => {

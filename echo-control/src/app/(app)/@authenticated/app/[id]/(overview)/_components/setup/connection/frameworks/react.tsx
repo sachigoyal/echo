@@ -47,7 +47,7 @@ export const ReactStep2 = ({ appId }: { appId: string }) => {
 
 const step3Code = `import { useEcho } from '@merit-systems/echo-react-sdk';
 
-export default SignInButton() {
+export const SignInButton = () => {
   const { signIn } = useEcho();
   return (
     <button onClick={signIn}>
