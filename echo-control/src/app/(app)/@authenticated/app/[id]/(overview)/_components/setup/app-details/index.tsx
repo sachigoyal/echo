@@ -24,7 +24,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 
 import { Description } from './description';
 import { RecipientDetails } from './recipient-details';
@@ -39,7 +38,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Props {
   appId: string;
@@ -52,46 +51,49 @@ export const AppDetails: React.FC<Props> = ({ appId }) => {
 
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 
-  const steps = [
-    {
-      title: 'Set Payout Details',
-      description: 'Where your earnings will be sent',
-      Icon: DollarSign,
-      isComplete: githubLink !== null,
-      component: (
-        <RecipientDetails
-          githubLink={
-            githubLink
-              ? {
-                  type: githubLink.githubType,
-                  githubUrl: githubLink.githubUrl,
-                }
-              : null
-          }
-          appId={appId}
-        />
-      ),
-      className: 'basis-4/5 md:basis-2/5',
-    },
-    {
-      title: 'Describe your App',
-      description: 'This will be shown on the Echo dashboard',
-      Icon: Pen,
-      isComplete: app.description !== null,
-      component: <Description appId={appId} description={app.description} />,
-      className: 'basis-4/5 md:basis-2/5',
-    },
-    {
-      title: 'Add an Icon',
-      description: 'Users will see this when they connect to your app',
-      Icon: Image,
-      isComplete: app.profilePictureUrl !== null,
-      component: (
-        <AppIcon appId={appId} profilePictureUrl={app.profilePictureUrl} />
-      ),
-      className: 'basis-4/5 md:basis-2/5',
-    },
-  ];
+  const steps = useMemo(
+    () => [
+      {
+        title: 'Set Payout Details',
+        description: 'Where your earnings will be sent',
+        Icon: DollarSign,
+        isComplete: githubLink !== null,
+        component: (
+          <RecipientDetails
+            githubLink={
+              githubLink
+                ? {
+                    type: githubLink.githubType,
+                    githubUrl: githubLink.githubUrl,
+                  }
+                : null
+            }
+            appId={appId}
+          />
+        ),
+        className: 'basis-4/5 md:basis-2/5',
+      },
+      {
+        title: 'Describe your App',
+        description: 'This will be shown on the Echo dashboard',
+        Icon: Pen,
+        isComplete: app.description !== null,
+        component: <Description appId={appId} description={app.description} />,
+        className: 'basis-4/5 md:basis-2/5',
+      },
+      {
+        title: 'Add an Icon',
+        description: 'Users will see this when they connect to your app',
+        Icon: Image,
+        isComplete: app.profilePictureUrl !== null,
+        component: (
+          <AppIcon appId={appId} profilePictureUrl={app.profilePictureUrl} />
+        ),
+        className: 'basis-4/5 md:basis-2/5',
+      },
+    ],
+    [app, appId, githubLink]
+  );
 
   useEffect(() => {
     if (carouselApi) {

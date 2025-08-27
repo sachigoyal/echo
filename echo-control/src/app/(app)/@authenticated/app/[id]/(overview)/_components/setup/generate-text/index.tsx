@@ -21,8 +21,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-import { ReactStep1, ReactStep2, ReactStep3 } from './frameworks/react';
-import { NextStep1, NextStep2, NextStep3 } from './frameworks/next';
+import { ReactStep1, ReactStep2 } from './frameworks/react';
+import { NextStep1, NextStep2 } from './frameworks/next';
 
 import { api } from '@/trpc/client';
 import { Check, Lock, MessageSquare } from 'lucide-react';
@@ -79,8 +79,7 @@ export const GenerateText: React.FC<Props> = ({ appId }) => {
             <TabsContent value="next" className="gap-2 flex flex-col">
               <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">
                 <NextStep1 />
-                <NextStep2 appId={appId} />
-                <NextStep3 />
+                <NextStep2 />
               </Card>
               <p className="text-sm text-muted-foreground">
                 For more detailed instructions, see our{' '}
@@ -96,8 +95,7 @@ export const GenerateText: React.FC<Props> = ({ appId }) => {
             <TabsContent value="react" className="gap-2 flex flex-col">
               <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">
                 <ReactStep1 />
-                <ReactStep2 appId={appId} />
-                <ReactStep3 />
+                <ReactStep2 />
               </Card>
               <p className="text-sm text-muted-foreground">
                 For more detailed instructions, see our{' '}

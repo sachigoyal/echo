@@ -1,5 +1,4 @@
 import { InstallStep } from '../../lib/install-step';
-import { ScriptCopyBtn } from '@/components/ui/script-copy';
 import { Code } from '../../lib/code';
 import { CodeTabs } from '@/components/ui/shadcn-io/code-tabs';
 
@@ -27,7 +26,8 @@ const step2Code = (appId: string) => `// echo.ts
 import { Echo } from '@merit-systems/echo-next-sdk';
 
 export const { 
-  handlers,
+  handlers, 
+  openai
 } = Echo({
     appId: "${appId}"
 });

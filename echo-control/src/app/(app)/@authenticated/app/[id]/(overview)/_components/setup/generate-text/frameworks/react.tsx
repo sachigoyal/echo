@@ -1,68 +1,70 @@
 import { InstallStep } from '../../lib/install-step';
-import { ScriptCopyBtn } from '@/components/ui/script-copy';
 import { Code } from '../../lib/code';
-import { CodeTabs } from '@/components/ui/shadcn-io/code-tabs';
+
+const step1Code = `import { EchoSignIn, useEcho } from '@merit-systems/echo-react-sdk';
+import Chat from './chat';
+
+export const App = () => {
+  const { isAuthenticated, user, balance, signOut } = useEcho();
+  return (
+    <>
+      <header>
+        {isAuthenticated && (
+          <div>
+            <p>Balance: {balance?.balance}</p>
+            <button onClick={signOut}>Sign Out</button>
+          </div>
+        )}
+      </header>
+      <main>
+        {isAuthenticated ? <Chat /> : <EchoSignIn />}
+      </main>
+    </>
+  );
+}
+export default App;`;
 
 export const ReactStep1 = () => {
   return (
     <InstallStep
       index={0}
-      title="Install SDKs"
-      description="Utilities for authentication and LLM generation"
-      body={
-        <CodeTabs
-          codes={{
-            npm: 'npm install @merit-systems/echo-react-sdk ai',
-            yarn: 'yarn add @merit-systems/echo-react-sdk ai',
-            bun: 'bun add @merit-systems/echo-react-sdk ai',
-            pnpm: 'pnpm add @merit-systems/echo-react-sdk ai',
-          }}
-        />
-      }
+      title="Check Authentication State"
+      description="Use the Echo hooks to check if the user is authenticated"
+      body={<Code value={step1Code} lang="tsx" />}
     />
   );
 };
 
-const step2Code = (appId: string) => `// main.tsx
-import { EchoProvider } from '@merit-systems/echo-react-sdk';
+const step2Code = `import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { useState } from 'react';
+import { generateText } from 'ai';
 
-createRoot(document.getElementById('root')!).render(
-  <EchoProvider 
-    config={{ appId: "${appId}" }}
-  >
-    <App />
-  </EchoProvider>
-)`;
+export default function Chat() { 
+  const [result, setResult] = useState("");
+  const { openai } = useEchoModelProviders();
 
-export const ReactStep2 = ({ appId }: { appId: string }) => {
+  const handleGen = async () => {
+      const { text } = await generateText({
+          model: await openai('gpt-5-nano'),
+          prompt: 'Two sentences. What is the cleanest way to make $1M?'
+      });
+      setResult(text);
+  };
+  return (
+      <div>
+          <button onClick={handleGen}>Generate Wisdom</button>
+          <p>{result}</p>
+      </div>
+  );
+}`;
+
+export const ReactStep2 = () => {
   return (
     <InstallStep
       index={1}
       title="Configure Provider"
       description="Set up the Echo provider with your app ID"
-      body={<Code value={step2Code(appId)} lang="tsx" />}
-    />
-  );
-};
-
-const step3Code = `import { useEcho } from '@merit-systems/echo-react-sdk';
-
-export default SignInButton() {
-  const { signIn } = useEcho();
-  return (
-    <button onClick={signIn}>
-      Sign In
-    </button>
-  );
-}`;
-
-export const ReactStep3 = () => {
-  return (
-    <InstallStep
-      index={2}
-      title="Authenticate your Users"
-      description="Use our sign in utilities to authenticate your users"
-      body={<Code value={step3Code} lang="tsx" />}
+      body={<Code value={step2Code} lang="tsx" />}
     />
   );
 };

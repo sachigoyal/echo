@@ -70,7 +70,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
     if (allStepsCompleted) {
       setAccordionValue('');
     }
-  }, [appDetailsSteps, connectionSteps, generateTextSteps]);
+  }, [appDetailsSteps, connectionSteps, generateTextSteps, allStepsCompleted]);
 
   return (
     <AnimatePresence mode="wait">

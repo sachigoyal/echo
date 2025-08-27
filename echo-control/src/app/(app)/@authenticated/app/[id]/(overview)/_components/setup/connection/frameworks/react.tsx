@@ -1,5 +1,4 @@
 import { InstallStep } from '../../lib/install-step';
-import { ScriptCopyBtn } from '@/components/ui/script-copy';
 import { Code } from '../../lib/code';
 import { CodeTabs } from '@/components/ui/shadcn-io/code-tabs';
 
