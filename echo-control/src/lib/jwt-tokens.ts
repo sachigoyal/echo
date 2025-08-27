@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import {
   createEchoAccessTokenExpiry,
   createEchoRefreshTokenExpiry,
+  getArchivedRefreshTokenGraceMs,
 } from '@/lib/oauth-config';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
@@ -199,7 +200,6 @@ export async function handleRefreshToken(
   const echoRefreshTokenRecord = await db.refreshToken.findUnique({
     where: {
       token: refreshToken,
-      isArchived: false,
     },
     include: {
       user: true,
@@ -207,12 +207,23 @@ export async function handleRefreshToken(
     },
   });
 
-  if (!echoRefreshTokenRecord) {
-    console.log('🔄 Refresh token not found');
+  // Grace period for archived tokens
+  const archivedGraceMs = getArchivedRefreshTokenGraceMs();
+  if (
+    !echoRefreshTokenRecord ||
+    (echoRefreshTokenRecord.archivedAt &&
+      echoRefreshTokenRecord.archivedAt <
+        new Date(Date.now() - archivedGraceMs))
+  ) {
+    console.log('🔄 Refresh token not found or archived beyond grace period');
     return {
       error: 'invalid_grant',
       error_description: 'Invalid or expired refresh token',
     };
+  }
+
+  if (echoRefreshTokenRecord.archivedAt) {
+    console.warn('🔄 Allowed a refresh for archived token within grace period');
   }
 
   /* 2️⃣ Check if refresh token is expired */

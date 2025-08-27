@@ -1,0 +1,74 @@
+---
+title: Gemini Provider
+description: Google Gemini models with Echo billing integration
+---
+
+# Gemini Provider
+
+The Gemini provider gives you access to Google's Gemini models through the Vercel AI SDK with automatic Echo billing integration.
+
+## Supported Models
+
+All Gemini models are supported via the `GeminiModel` type:
+
+<ModelTable 
+  path="../echo-typescript-sdk/src/supported-models/chat/gemini.ts" 
+/>
+
+## Usage
+
+```typescript
+import { createEchoGoogle } from '@merit-systems/echo-typescript-sdk';
+import { generateText } from 'ai';
+
+// Create provider with Echo billing
+const google = createEchoGoogle(
+  { appId: 'your-echo-app-id' },
+  async () => 'your-api-key'
+);
+
+// Generate text with Gemini
+const { text } = await generateText({
+  model: google('gemini-2.5-flash'),
+  prompt: 'Explain the importance of multimodal AI models'
+});
+```
+
+Works with Vercel AI SDK functions including `generateText`, and `generateObject`.
+
+## ⚠️ Streaming Limitations
+
+**Important:** Gemini streaming is currently only supported via the `/chat/completions` endpoint. This means:
+
+- Direct Gemini API streaming may not work as expected
+- For the most reliable streaming experience, ensure your implementation uses the chat completions interface
+- To enable this, you should use the OpenAI SDK, which will hit Gemini's supported chat/completions endpoint.
+- For more information, see Google's documentation [here](https://cloud.google.com/vertex-ai/generative-ai/docs/samples/generativeaionvertexai-gemini-chat-completions-non-streaming).
+- Streaming will be supported through the Vercel interface as soon as possible. 
+
+
+```typescript
+import OpenAI from 'openai';
+
+
+// Create OpenAI client with Echo integration
+const client = new OpenAI({
+  apiKey: 'your-jwt-token-or-api-key', // Your JWT token acts as the API key
+  baseURL: 'https://echo.router.merit.systems', // Echo's proxy endpoint
+});
+
+const stream = await client.chat.completions.create({
+    model: "gemini-2.5-flash",
+    messages: [
+      { role: "system", content: "You are a helpful assistant." },
+      { role: "user", content: "Tell me a short story about a robot." },
+    ],
+    stream: true,
+  });
+
+```
+
+
+
+
+

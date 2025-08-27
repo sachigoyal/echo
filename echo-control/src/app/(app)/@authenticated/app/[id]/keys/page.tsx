@@ -28,13 +28,13 @@ export default async function AppKeysPage({
   const { id } = await params;
   const { generate } = await searchParams;
 
-  const app = await api.apps.public.get(id);
+  const app = await api.apps.app.get({ appId: id });
 
   if (!app) {
     return notFound();
   }
 
-  const member = await api.apps.member.get(id);
+  const member = await api.apps.membership.get({ appId: id });
 
   api.user.apiKeys.list.prefetchInfinite({ appId: id });
 
@@ -108,8 +108,8 @@ export default async function AppKeysPage({
 }
 
 const Owner = async ({ appId }: { appId: string }) => {
-  const owner = await api.apps.public
-    .owner(appId)
+  const owner = await api.apps.app
+    .getOwner(appId)
     .then(owner => owner.name)
     .catch(() => 'Owner not found');
 

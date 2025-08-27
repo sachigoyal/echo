@@ -3,8 +3,10 @@ import {
   ResponseStreamEvent,
   Tool,
 } from 'openai/resources/responses/responses';
-import toolPrices from '../../tool_prices.json';
-import { getCostPerToken } from '../services/AccountingService';
+import {
+  getCostPerToken,
+  calculateToolCost,
+} from '../services/AccountingService';
 import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
@@ -55,44 +57,6 @@ export const parseSSEResponsesFormat = (
   }
 
   return chunks;
-};
-
-const calculateToolCost = (tool: Tool): Decimal => {
-  switch (tool.type) {
-    case 'image_generation': {
-      const quality = tool.quality;
-      const size = tool.size;
-
-      // Get pricing from JSON - assume gpt-image-1 if no model specified
-      const gptImage1Prices = toolPrices.image_generation.gpt_image_1;
-
-      if (quality && size) {
-        // GPT Image 1 supports low, medium, high (auto defaults to medium)
-        const gptQuality = quality === 'auto' ? 'medium' : quality;
-        if (gptQuality in gptImage1Prices && size !== 'auto') {
-          return new Decimal(
-            gptImage1Prices[gptQuality as keyof typeof gptImage1Prices]?.[
-              size
-            ] || 0
-          );
-        }
-      }
-      return new Decimal(0);
-    }
-
-    case 'code_interpreter':
-      return new Decimal(toolPrices.code_interpreter.cost_per_session);
-
-    case 'file_search':
-      return new Decimal(toolPrices.file_search.cost_per_call);
-
-    case 'web_search_preview':
-      // Default to gpt-4o pricing, could be enhanced to check model
-      return new Decimal(toolPrices.web_search_preview.gpt_4o.cost_per_call);
-
-    default:
-      return new Decimal(0);
-  }
 };
 
 export class OpenAIResponsesProvider extends BaseProvider {

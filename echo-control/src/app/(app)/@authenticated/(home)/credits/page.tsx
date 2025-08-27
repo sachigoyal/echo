@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { Plus } from 'lucide-react';
+import { Gift, Plus } from 'lucide-react';
 
 import { Payments } from './_components/payments';
 
@@ -54,42 +54,45 @@ export default async function CreditsPage() {
               <Balance />
             </Suspense>
           </h2>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="turbo">
-                <Plus className="size-4" />
-                Add Credits
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Credits</DialogTitle>
-                <DialogDescription>
-                  You can use Echo credits to use LLMs on any Echo app.
-                </DialogDescription>
-              </DialogHeader>
-              <AddCredits />
-            </DialogContent>
-          </Dialog>
-        </Card>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="turbo">
-              <Plus className="size-4" />
-              Redeem Credit Code
-            </Button>
-          </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="turbo">
+                  <Plus className="size-4" />
+                  Buy Credits
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Credits</DialogTitle>
+                  <DialogDescription>
+                    You can use Echo credits to use LLMs on any Echo app.
+                  </DialogDescription>
+                </DialogHeader>
+                <AddCredits />
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Gift className="size-4" />
+                  Redeem Code
+                </Button>
+              </DialogTrigger>
 
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Redeem Credit Code</DialogTitle>
-              <DialogDescription>
-                You can use Echo credits to use LLMs on any Echo app.
-              </DialogDescription>
-            </DialogHeader>
-            <RedeemCredits />
-          </DialogContent>
-        </Dialog>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Redeem Credit Code</DialogTitle>
+                  <DialogDescription>
+                    You can use Echo credits to use LLMs on any Echo app.
+                  </DialogDescription>
+                </DialogHeader>
+                <RedeemCredits />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </Card>
+
         <Card className="bg-muted/50">
           <CardHeader className="border-b p-4">
             <CardTitle className="text-lg font-semibold">

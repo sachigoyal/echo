@@ -1,8 +1,5 @@
 import { UnknownModelError } from '../errors/http';
 import type { EchoControlService } from '../services/EchoControlService';
-import modelPricesData from '../../model_prices.json';
-import openRouterModelPrices from '../../open_router_model_prices.json';
-
 import { AnthropicGPTProvider } from './AnthropicGPTProvider';
 import { AnthropicNativeProvider } from './AnthropicNativeProvider';
 import type { BaseProvider } from './BaseProvider';
@@ -13,30 +10,33 @@ import { GeminiGPTProvider } from './GeminiGPTProvider';
 import { OpenAIResponsesProvider } from './OpenAIResponsesProvider';
 import { OpenRouterProvider } from './OpenRouterProvider';
 import { OpenAIImageProvider } from './OpenAIImageProvider';
+import {
+  ALL_SUPPORTED_IMAGE_MODELS,
+  ALL_SUPPORTED_MODELS,
+} from '../services/AccountingService';
 
 /**
  * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
  * This dynamically loads all supported models and maps them to their appropriate provider types
  * based on the litellm_provider field in the JSON configuration.
  */
-const createModelToProviderMapping = (): Record<string, ProviderType> => {
+const createChatModelToProviderMapping = (): Record<string, ProviderType> => {
   const mapping: Record<string, ProviderType> = {};
 
-  for (const [modelName, modelConfig] of Object.entries(modelPricesData)) {
-    // Skip the sample_spec entry
-    if (modelName === 'sample_spec') continue;
-
-    const config = modelConfig as any;
-    if (config.litellm_provider) {
-      switch (config.litellm_provider) {
-        case 'openai':
-          mapping[modelName] = ProviderType.GPT;
+  for (const modelConfig of ALL_SUPPORTED_MODELS) {
+    if (modelConfig.provider) {
+      switch (modelConfig.provider) {
+        case 'OpenAI':
+          mapping[modelConfig.model_id] = ProviderType.GPT;
           break;
-        case 'anthropic':
-          mapping[modelName] = ProviderType.ANTHROPIC_GPT;
+        case 'Anthropic':
+          mapping[modelConfig.model_id] = ProviderType.ANTHROPIC_GPT;
           break;
-        case 'vertex_ai-language-models':
-          mapping[modelName] = ProviderType.GEMINI;
+        case 'Gemini':
+          mapping[modelConfig.model_id] = ProviderType.GEMINI;
+          break;
+        case 'OpenRouter':
+          mapping[modelConfig.model_id] = ProviderType.OPENROUTER;
           break;
         // Add other providers as needed
         default:
@@ -49,28 +49,27 @@ const createModelToProviderMapping = (): Record<string, ProviderType> => {
   return mapping;
 };
 
-const createOpenRouterModelToProviderMapping = (): Record<
-  string,
-  ProviderType
-> => {
+const createImageModelToProviderMapping = (): Record<string, ProviderType> => {
   const mapping: Record<string, ProviderType> = {};
 
-  for (const model of openRouterModelPrices['data']) {
-    mapping[model.id] = ProviderType.OPENROUTER;
+  for (const modelConfig of ALL_SUPPORTED_IMAGE_MODELS) {
+    if (modelConfig.provider === 'OpenAI') {
+      mapping[modelConfig.model_id] = ProviderType.OPENAI_IMAGES;
+    }
   }
-
   return mapping;
 };
+
 /**
  * Model-to-provider mapping loaded from model_prices_and_context_window.json
  * This replaces the previous hardcoded mapping and automatically includes all
  * supported models from the JSON configuration file.
  */
 export const MODEL_TO_PROVIDER: Record<string, ProviderType> =
-  createModelToProviderMapping();
+  createChatModelToProviderMapping();
 
-export const OPEN_ROUTER_MODEL_TO_PROVIDER: Record<string, ProviderType> =
-  createOpenRouterModelToProviderMapping();
+export const IMAGE_MODEL_TO_PROVIDER: Record<string, ProviderType> =
+  createImageModelToProviderMapping();
 
 export const getProvider = (
   model: string,
@@ -80,11 +79,13 @@ export const getProvider = (
 ): BaseProvider => {
   // First check if the model is in the model to provider mapping
   let type = MODEL_TO_PROVIDER[model];
-  // If the model is not in the model to provider mapping, check if it is in the OpenRouter model to provider mapping
-  if (type === undefined) {
-    type = OPEN_ROUTER_MODEL_TO_PROVIDER[model];
+
+  const imageType = IMAGE_MODEL_TO_PROVIDER[model];
+  if (imageType) {
+    type = imageType;
   }
-  // If the model is not in either mapping, throw an error
+
+  // If the model is not in the model to provider mapping, throw an error
   if (type === undefined) {
     throw new UnknownModelError(`Unknown model: ${model}`);
   }

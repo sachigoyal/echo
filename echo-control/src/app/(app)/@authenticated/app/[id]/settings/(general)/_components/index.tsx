@@ -7,14 +7,14 @@ import { revalidatePath } from 'next/cache';
 
 import { FormCard } from '../../_components/form/card';
 
-import { AppDetailsFormProvider } from './provider';
+import { AppDetailsFormProvider } from '../../_components/app-details-form-provider';
 
 import { AppName } from './name';
 import { AppDescription } from './description';
 import { AppProfilePicture } from './profile-picture';
 import { AppHomepage } from './homepage';
 
-import { updateAppSchema } from '@/services/apps/owner';
+import { updateAppSchema } from '@/services/apps/app';
 
 import { api } from '@/trpc/server';
 import { CopyButton } from '@/components/ui/copy-button';
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
-  const app = await api.apps.public.get(appId);
+  const app = await api.apps.app.get({ appId });
 
   if (!app) {
     return notFound();
@@ -32,7 +32,7 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
 
   const updateApp = async (values: z.infer<typeof updateAppSchema>) => {
     'use server';
-    await api.apps.owner
+    await api.apps.app
       .update({
         appId,
         ...values,

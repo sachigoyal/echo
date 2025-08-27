@@ -12,7 +12,7 @@ export default async function AppSettingsLayout({
 
   const session = await auth();
 
-  const owner = await api.apps.public.owner(id);
+  const owner = await api.apps.app.getOwner(id);
 
   if (!owner) {
     return notFound();

@@ -13,9 +13,9 @@ import { Overview } from './_components/overview';
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
 
-  const app = await api.apps.public.get(id);
-  api.apps.public.get.prefetch(id);
-  api.apps.owner.getGithubLink.prefetch({ appId: id });
+  const app = await api.apps.app.get({ appId: id });
+  api.apps.app.get.prefetch({ appId: id });
+  api.apps.app.githubLink.get.prefetch(id);
 
   if (!app) {
     return notFound();

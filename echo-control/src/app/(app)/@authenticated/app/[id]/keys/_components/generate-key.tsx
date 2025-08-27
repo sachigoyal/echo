@@ -42,11 +42,11 @@ const NonMemberGenerateKey = ({ appId }: { appId: string }) => {
     isPending: isGenerating,
   } = api.user.apiKeys.create.useMutation();
 
-  const { mutateAsync: joinApp, isPending: isJoining } =
-    api.apps.member.join.useMutation();
+  const { mutateAsync: createMembership, isPending: isJoining } =
+    api.apps.membership.create.useMutation();
 
   const handleGenerateApiKey = async (name?: string) => {
-    await joinApp(appId);
+    await createMembership({ appId });
     return (await generateApiKey({ echoAppId: appId, name })).key;
   };
 

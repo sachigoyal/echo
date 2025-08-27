@@ -10,4 +10,5 @@ export const appSelect = {
   isPublic: true,
   createdAt: true,
   updatedAt: true,
+  authorizedCallbackUrls: true,
 } satisfies Prisma.EchoAppSelect;
