@@ -18,9 +18,6 @@ import { auth } from '@/auth';
 import { api } from '@/trpc/server';
 
 import { authorizeParamsSchema } from '../../_lib/authorize';
-import { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default async function OAuthAuthorizePage({
   searchParams,
