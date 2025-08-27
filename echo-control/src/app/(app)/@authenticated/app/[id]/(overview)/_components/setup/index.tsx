@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { AnimatePresence, motion } from 'motion/react';
 
@@ -22,13 +22,16 @@ export const Setup: React.FC<Props> = ({ appId }) => {
   const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
 
-  const appDetailsSteps = [
-    app.profilePictureUrl !== null,
-    app.description !== null,
-    githubLink !== null,
-  ];
+  const appDetailsSteps = useMemo(
+    () => [
+      app.profilePictureUrl !== null,
+      app.description !== null,
+      githubLink !== null,
+    ],
+    [app.profilePictureUrl, app.description, githubLink]
+  );
 
-  const connectionSteps = [numTokens > 0];
+  const connectionSteps = useMemo(() => [numTokens > 0], [numTokens]);
 
   const steps = [...appDetailsSteps, ...connectionSteps];
 
@@ -36,6 +39,23 @@ export const Setup: React.FC<Props> = ({ appId }) => {
   const allStepsCompleted = completedSteps === steps.length;
 
   const [isComplete, setIsComplete] = useState(allStepsCompleted);
+
+  const [accordionValue, setAccordionValue] = useState<string[]>([
+    ...(!appDetailsSteps.every(Boolean) ? ['app-details'] : []),
+    ...(!connectionSteps.every(Boolean) ? ['connection'] : []),
+  ]);
+
+  useEffect(() => {
+    if (appDetailsSteps.every(Boolean)) {
+      setAccordionValue(prev => prev.filter(value => value !== 'app-details'));
+    }
+  }, [appDetailsSteps]);
+
+  useEffect(() => {
+    if (connectionSteps.every(Boolean)) {
+      setAccordionValue(prev => prev.filter(value => value !== 'connection'));
+    }
+  }, [connectionSteps]);
 
   return (
     <AnimatePresence mode="wait">
@@ -89,10 +109,8 @@ export const Setup: React.FC<Props> = ({ appId }) => {
           </div>
           <Accordion
             type="multiple"
-            defaultValue={[
-              ...(!appDetailsSteps.some(Boolean) ? ['app-details'] : []),
-              ...(!connectionSteps.some(Boolean) ? ['connection'] : []),
-            ]}
+            value={accordionValue}
+            onValueChange={setAccordionValue}
           >
             <AppDetails appId={appId} />
             <Connection appId={appId} />

@@ -8,6 +8,7 @@ import {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  CarouselApi,
 } from '@/components/ui/carousel';
 import {
   Card,
@@ -31,6 +32,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { useEffect, useState } from 'react';
 
 interface Props {
   appId: string;
@@ -40,6 +42,8 @@ export const AppDetails: React.FC<Props> = ({ appId }) => {
   const [app] = api.apps.app.get.useSuspenseQuery({ appId });
 
   const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
+
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 
   const steps = [
     {
@@ -82,13 +86,22 @@ export const AppDetails: React.FC<Props> = ({ appId }) => {
     },
   ];
 
+  useEffect(() => {
+    if (carouselApi) {
+      const firstIncompleteStep = steps.findIndex(step => !step.isComplete);
+      if (firstIncompleteStep !== -1) {
+        carouselApi.scrollTo(firstIncompleteStep);
+      }
+    }
+  }, [steps, carouselApi]);
+
   return (
     <AccordionItem value="app-details" className="border-none">
       <AccordionTrigger className="text-lg font-semibold">
         App Details
       </AccordionTrigger>
       <AccordionContent>
-        <Carousel className="w-full" opts={{ loop: true }}>
+        <Carousel className="w-full" setApi={setCarouselApi}>
           <CarouselContent>
             {steps.map(step => (
               <CarouselItem key={step.title} className={step.className}>
