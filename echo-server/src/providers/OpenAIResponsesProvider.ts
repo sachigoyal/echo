@@ -137,7 +137,7 @@ export class OpenAIResponsesProvider extends BaseProvider {
 
       return transaction;
     } catch (error) {
-      logger.error('Error processing OpenAI Responses API data:', error);
+      logger.error(`Error processing OpenAI Responses API data: ${error}`);
       throw error;
     }
   }

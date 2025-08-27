@@ -34,7 +34,7 @@ export const verifyUserHeaderCheck = async (
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
   if (!(authorization || xApiKey || xGoogleApiKey)) {
-    logger.error('Missing authentication headers:', { headers });
+    logger.error(`Missing authentication headers: ${JSON.stringify(headers)}`);
     throw new UnauthorizedError('Please include auth headers.');
   }
 
