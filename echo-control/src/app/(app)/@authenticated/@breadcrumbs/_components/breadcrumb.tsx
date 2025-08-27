@@ -15,6 +15,7 @@ interface Props<T extends string> {
   name: string;
   Fallback: LucideIcon;
   mobileHideText?: boolean;
+  disabled?: boolean;
 }
 
 export const Breadcrumb = <T extends string>({
@@ -23,9 +24,14 @@ export const Breadcrumb = <T extends string>({
   name,
   Fallback,
   mobileHideText = false,
+  disabled = false,
 }: Props<T>) => {
   return (
-    <Link href={href}>
+    <Link
+      href={href}
+      className={cn(disabled && 'pointer-events-none')}
+      aria-disabled={disabled}
+    >
       <div className="flex items-center gap-2 cursor-pointer">
         <UserAvatar
           src={image ?? undefined}

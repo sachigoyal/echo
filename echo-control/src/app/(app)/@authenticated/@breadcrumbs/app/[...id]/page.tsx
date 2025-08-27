@@ -41,6 +41,7 @@ const UserBreadcrumb = async ({ id }: { id: string }) => {
       name={owner.name ?? 'Unknown'}
       Fallback={User}
       mobileHideText
+      disabled
     />
   );
 };
