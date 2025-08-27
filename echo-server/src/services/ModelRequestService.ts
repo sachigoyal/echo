@@ -61,9 +61,7 @@ export class ModelRequestService {
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
-      'new outbound request',
-      `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
-      req.method
+      `New outbound request: ${req.method} ${provider.getBaseUrl(forwardingPath)}${forwardingPath}`
     );
 
     // Ensure stream usage is set correctly (OpenAI Format)

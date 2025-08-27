@@ -96,7 +96,11 @@ export class GeminiProvider extends BaseProvider {
 
   getBaseUrl(reqPath?: string): string {
     // For Gemini native API, we use the Google AI API endpoint
-    return 'https://generativelanguage.googleapis.com';
+    if (reqPath && reqPath.startsWith('/v1beta')) {
+      return 'https://generativelanguage.googleapis.com';
+    } else {
+      return 'https://generativelanguage.googleapis.com/v1beta';
+    }
   }
 
   getApiKey(): string | undefined {
