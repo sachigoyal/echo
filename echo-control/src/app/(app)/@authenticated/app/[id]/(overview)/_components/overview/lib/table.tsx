@@ -7,6 +7,7 @@ import {
   TableRow,
   TableHead as TableHeadBase,
   TableBody,
+  TableEmpty,
 } from '@/components/ui/table';
 
 import { cn } from '@/lib/utils';
@@ -60,18 +61,6 @@ export const Table: React.FC<Props> = ({ Icon, columns, children }) => {
   );
 };
 
-export const EmptyTableRow = ({ children }: { children: string }) => {
-  return (
-    <TableRow className="mt-2 hover:bg-transparent">
-      <TableCellBase colSpan={4} className="text-left pl-4 h-24">
-        <p className="text-xs text-muted-foreground/60 mt-2 text-center">
-          {children}
-        </p>
-      </TableCellBase>
-    </TableRow>
-  );
-};
-
 export const TableCell = ({
   children,
   className,
@@ -86,4 +75,8 @@ export const TableCell = ({
       {children}
     </TableCellBase>
   );
+};
+
+export const EmptyTableRow = ({ children }: { children: string }) => {
+  return <TableEmpty colSpan={4}>{children}</TableEmpty>;
 };
