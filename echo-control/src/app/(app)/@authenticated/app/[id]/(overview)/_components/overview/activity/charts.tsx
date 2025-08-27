@@ -1,6 +1,6 @@
 'use client';
 
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   Charts,
   LoadingCharts,
@@ -11,6 +11,7 @@ import { api } from '@/trpc/client';
 import { useActivityContext } from '../../../../../../_components/time-range-selector/context';
 
 import { formatCurrency } from '@/lib/utils';
+import { useMemo } from 'react';
 
 interface Props {
   appId: string;
@@ -19,22 +20,53 @@ interface Props {
 export const ActivityCharts: React.FC<Props> = ({ appId }) => {
   const { startDate, endDate } = useActivityContext();
 
-  const [activity] = api.activity.app.get.useSuspenseQuery({
-    echoAppId: appId,
+  const [activity] = api.apps.app.activity.get.useSuspenseQuery({
+    appId,
     startDate,
     endDate,
   });
 
+  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({
+    appId,
+  });
+  const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
+    appId,
+  });
+
+  const isInitialized = useMemo(() => {
+    return numTokens > 0 && numTransactions > 0;
+  }, [numTokens, numTransactions]);
+
   // Transform data for the chart
   const chartData: ChartData<Omit<(typeof activity)[number], 'timestamp'>>[] =
-    activity.map(({ timestamp, ...rest }) => ({
-      ...rest,
-      timestamp: format(timestamp, 'MMM dd HH:mm yyyy'),
-    }));
+    useMemo(() => {
+      if (!isInitialized) {
+        return Array.from({ length: 48 }, (_, i) => ({
+          timestamp: format(subDays(new Date(), i), 'MMM dd HH:mm yyyy'),
+          totalProfit: Math.random() * 100,
+          totalCost: Math.random() * 100,
+          totalTokens: Math.random() * 100,
+          totalInputTokens: Math.random() * 100,
+          totalOutputTokens: Math.random() * 100,
+          transactionCount: Math.random() * 100,
+        }));
+      }
 
-  const totalProfit = activity.reduce((acc, item) => acc + item.totalProfit, 0);
-  const totalTokens = activity.reduce((acc, item) => acc + item.totalTokens, 0);
-  const totalTransactions = activity.reduce(
+      return activity.map(({ timestamp, ...rest }) => ({
+        ...rest,
+        timestamp: format(timestamp, 'MMM dd HH:mm yyyy'),
+      }));
+    }, [activity, isInitialized]);
+
+  const totalProfit = chartData.reduce(
+    (acc, item) => acc + item.totalProfit,
+    0
+  );
+  const totalTokens = chartData.reduce(
+    (acc, item) => acc + item.totalTokens,
+    0
+  );
+  const totalTransactions = chartData.reduce(
     (acc, item) => acc + item.transactionCount,
     0
   );
@@ -46,7 +78,7 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
           trigger: {
             value: 'profit',
             label: 'Profit',
-            amount: formatCurrency(totalProfit),
+            amount: numTokens === 0 ? '--' : formatCurrency(totalProfit),
           },
           bars: [
             {
@@ -77,11 +109,14 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
           trigger: {
             value: 'tokens',
             label: 'Tokens',
-            amount: totalTokens.toLocaleString(undefined, {
-              notation: 'compact',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            }),
+            amount:
+              numTokens === 0
+                ? '--'
+                : totalTokens.toLocaleString(undefined, {
+                    notation: 'compact',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  }),
           },
           bars: [
             {
@@ -123,11 +158,14 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
           trigger: {
             value: 'transactions',
             label: 'Transactions',
-            amount: totalTransactions.toLocaleString(undefined, {
-              notation: 'compact',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            }),
+            amount:
+              numTokens === 0
+                ? '--'
+                : totalTransactions.toLocaleString(undefined, {
+                    notation: 'compact',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  }),
           },
           bars: [
             {

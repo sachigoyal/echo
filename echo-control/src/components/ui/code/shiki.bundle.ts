@@ -17,7 +17,8 @@ type BundledLanguage =
   | 'js'
   | 'jsx'
   | 'tsx'
-  | 'json';
+  | 'json'
+  | 'shell';
 type BundledTheme = 'github-light' | 'github-dark';
 type Highlighter = HighlighterGeneric<BundledLanguage, BundledTheme>;
 
@@ -28,6 +29,7 @@ const bundledLanguages = {
   js: () => import('@shikijs/langs/javascript'),
   jsx: () => import('@shikijs/langs/jsx'),
   tsx: () => import('@shikijs/langs/tsx'),
+  shell: () => import('@shikijs/langs/shell'),
 } as Record<BundledLanguage, DynamicImportLanguageRegistration>;
 
 const bundledThemes = {

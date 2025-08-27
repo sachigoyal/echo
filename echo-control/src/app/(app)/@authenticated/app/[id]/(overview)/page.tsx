@@ -16,6 +16,8 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const app = await api.apps.app.get({ appId: id });
   api.apps.app.get.prefetch({ appId: id });
   api.apps.app.githubLink.get.prefetch(id);
+  api.apps.app.getNumTokens.prefetch({ appId: id });
+  api.apps.app.transactions.count.prefetch({ appId: id });
 
   if (!app) {
     return notFound();
@@ -34,7 +36,7 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
           />
         }
       />
-      <Body className="gap-8">
+      <Body className="gap-0">
         <ErrorBoundary fallback={null}>
           <Suspense fallback={null}>
             <Setup appId={id} />

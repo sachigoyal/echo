@@ -29,7 +29,7 @@ export const SpendLimit: React.FC<Props> = ({ appId, spendLimit }) => {
   if (spendLimit === undefined) {
     return (
       <SpendLimitDialog appId={appId} spendLimit={spendLimit}>
-        <Button variant="outline" size="sm" className="mt-2">
+        <Button variant="outline" size="sm" className="w-fit">
           Set Spend Limit
         </Button>
       </SpendLimitDialog>
@@ -40,7 +40,7 @@ export const SpendLimit: React.FC<Props> = ({ appId, spendLimit }) => {
     <div className="flex items-center gap-2">
       <p>{formatCurrency(spendLimit)} per user</p>
       <SpendLimitDialog appId={appId} spendLimit={spendLimit}>
-        <Button variant="ghost" size="icon" className="size-fit p-1.5">
+        <Button variant="ghost" size="icon" className="size-fit p-1.5 mt-1">
           <Pencil className="size-3.5" />
         </Button>
       </SpendLimitDialog>
