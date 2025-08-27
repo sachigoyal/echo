@@ -28,7 +28,7 @@
     "@headlessui/react": "^2.2.4",
     "@hookform/resolvers": "^5.2.1",
     "@icons-pack/react-simple-icons": "^13.7.0",
-    "@merit-systems/echo-typescript-sdk": "^1.0.3",
+    "@merit-systems/echo-typescript-sdk": "workspace:*",
     "@number-flow/react": "^0.5.10",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "0.57.2",
