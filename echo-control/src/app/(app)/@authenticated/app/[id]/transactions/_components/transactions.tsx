@@ -72,7 +72,7 @@ export const TransactionRows: React.FC<Props> = ({ appId }) => {
               </div>
             </TableCell>
             <TableCell className="text-right pr-4 text-primary font-bold">
-              {formatCurrency(transaction.appProfit)}
+              {formatCurrency(transaction.markUpProfit)}
             </TableCell>
           </TableRow>
         ))}

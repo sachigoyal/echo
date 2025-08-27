@@ -45,7 +45,7 @@ export const TransactionRows = async ({ appId }: { appId: string }) => {
         </div>
       </TableCell>
       <TableCell className="text-right pr-4 text-primary font-bold">
-        {formatCurrency(transaction.appProfit)}
+        {formatCurrency(transaction.markUpProfit)}
       </TableCell>
     </TableRow>
   ));
