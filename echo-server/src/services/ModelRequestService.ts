@@ -29,7 +29,7 @@ export class ModelRequestService {
     // Extract and validate model
     const model = extractModelName(req);
 
-    if (!model || !isValidModel(model) || !isValidImageModel(model)) {
+    if (!model || (!isValidModel(model) && !isValidImageModel(model))) {
       logger.error(`Invalid model: ${model}`);
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
