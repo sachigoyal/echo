@@ -49,6 +49,19 @@ export async function softDeleteEchoApp(appId: string) {
     },
   });
 
+  // Archive related app sessions
+  await db.appSession.updateMany({
+    where: {
+      echoAppId: appId,
+      isArchived: false,
+    },
+    data: {
+      isArchived: true,
+      revokedAt: now,
+      updatedAt: now,
+    },
+  });
+
   // Archive related app memberships
   await db.appMembership.updateMany({
     where: {
@@ -155,6 +168,18 @@ export async function softDeleteUser(userId: string) {
     data: {
       isArchived: true,
       archivedAt: now,
+    },
+  });
+
+  await db.appSession.updateMany({
+    where: {
+      userId,
+      isArchived: false,
+    },
+    data: {
+      isArchived: true,
+      revokedAt: now,
+      updatedAt: now,
     },
   });
 

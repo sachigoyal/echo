@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import {
   createEchoAccessTokenExpiry,
   createEchoRefreshTokenExpiry,
+  getArchivedRefreshTokenGraceMs,
 } from '@/lib/oauth-config';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
@@ -26,6 +27,7 @@ export interface ApiTokenPayload {
   app_id: string;
   scope: string;
   key_version: number;
+  sid?: string;
   // Standard JWT claims
   sub: string; // user_id
   aud: string; // app_id
@@ -54,8 +56,9 @@ export async function createEchoAccessJwtToken(params: {
   scope: string;
   expiry: Date;
   keyVersion?: number;
+  sessionId?: string;
 }): Promise<string> {
-  const { userId, appId, scope, expiry, keyVersion = 1 } = params;
+  const { userId, appId, scope, expiry, keyVersion = 1, sessionId } = params;
 
   const tokenId = nanoid(16);
   const now = Math.floor(Date.now() / 1000); // divide by 1000 to convert to seconds
@@ -66,6 +69,7 @@ export async function createEchoAccessJwtToken(params: {
     app_id: appId,
     scope,
     key_version: keyVersion,
+    ...(sessionId ? { sid: sessionId } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(userId)
@@ -191,7 +195,8 @@ export interface RefreshTokenError {
  * Handle refresh token logic
  */
 export async function handleRefreshToken(
-  refreshToken: string
+  refreshToken: string,
+  metadata?: { deviceName?: string; userAgent?: string; ipAddress?: string }
 ): Promise<RefreshTokenResponse | RefreshTokenError> {
   console.log('🔄 Processing refresh token request');
 
@@ -199,20 +204,31 @@ export async function handleRefreshToken(
   const echoRefreshTokenRecord = await db.refreshToken.findUnique({
     where: {
       token: refreshToken,
-      isArchived: false,
     },
     include: {
       user: true,
       echoApp: true,
+      session: true,
     },
   });
 
-  if (!echoRefreshTokenRecord) {
-    console.log('🔄 Refresh token not found');
+  // Grace period for archived tokens
+  const archivedGraceMs = getArchivedRefreshTokenGraceMs();
+  if (
+    !echoRefreshTokenRecord ||
+    (echoRefreshTokenRecord.archivedAt &&
+      echoRefreshTokenRecord.archivedAt <
+        new Date(Date.now() - archivedGraceMs))
+  ) {
+    console.log('🔄 Refresh token not found or archived beyond grace period');
     return {
       error: 'invalid_grant',
       error_description: 'Invalid or expired refresh token',
     };
+  }
+
+  if (echoRefreshTokenRecord.archivedAt) {
+    console.warn('🔄 Allowed a refresh for archived token within grace period');
   }
 
   /* 2️⃣ Check if refresh token is expired */
@@ -229,7 +245,19 @@ export async function handleRefreshToken(
     };
   }
 
-  /* 3️⃣ Check if echo app is still active */
+  /* 3️⃣ Check if session and echo app are still active */
+  if (
+    !echoRefreshTokenRecord.session ||
+    echoRefreshTokenRecord.session.revokedAt
+  ) {
+    return {
+      error: 'invalid_grant',
+      error_description: 'Session is revoked or invalid',
+    };
+  }
+
+  const sessionId = echoRefreshTokenRecord.session.id;
+
   if (echoRefreshTokenRecord.echoApp.isArchived) {
     return {
       error: 'invalid_grant',
@@ -237,7 +265,7 @@ export async function handleRefreshToken(
     };
   }
 
-  /* 4️⃣ Generate new refresh token */
+  /* 4️⃣ Generate new refresh token (rotate within the same session) */
   const newEchoRefreshTokenValue = `refresh_${nanoid(48)}`;
   const newEchoRefreshTokenExpiry = createEchoRefreshTokenExpiry();
 
@@ -255,6 +283,18 @@ export async function handleRefreshToken(
       userId: echoRefreshTokenRecord.userId,
       echoAppId: echoRefreshTokenRecord.echoAppId,
       scope: echoRefreshTokenRecord.scope,
+      sessionId,
+    },
+  });
+
+  // Update session last seen
+  await db.appSession.update({
+    where: { id: sessionId },
+    data: {
+      lastSeenAt: new Date(),
+      ...(metadata?.userAgent ? { userAgent: metadata.userAgent } : {}),
+      ...(metadata?.ipAddress ? { ipAddress: metadata.ipAddress } : {}),
+      ...(metadata?.deviceName ? { deviceName: metadata.deviceName } : {}),
     },
   });
 
@@ -267,6 +307,7 @@ export async function handleRefreshToken(
     scope: echoRefreshTokenRecord.scope,
     keyVersion: 1,
     expiry: newEchoAccessTokenExpiry,
+    sessionId,
   });
 
   /* 6️⃣ Return new tokens with user and app info */
@@ -302,6 +343,9 @@ export interface AuthCodeTokenRequest {
   redirect_uri: string;
   client_id: string;
   code_verifier: string;
+  deviceName?: string;
+  userAgent?: string;
+  ipAddress?: string;
 }
 
 /**
@@ -320,7 +364,15 @@ export type InitialTokenError = RefreshTokenError;
 export async function handleInitialTokenIssuance(
   params: AuthCodeTokenRequest
 ): Promise<InitialTokenResponse | InitialTokenError> {
-  const { code, redirect_uri, client_id, code_verifier } = params;
+  const {
+    code,
+    redirect_uri,
+    client_id,
+    code_verifier,
+    deviceName,
+    userAgent,
+    ipAddress,
+  } = params;
 
   console.log('🎫 Processing authorization code token request');
 
@@ -462,21 +514,20 @@ export async function handleInitialTokenIssuance(
     };
   }
 
-  /* 🔟 Generate refresh token */
+  /* 🔟 Create an app session and refresh token */
+  const appSession = await db.appSession.create({
+    data: {
+      userId: user.id,
+      echoAppId: echoApp.id,
+      deviceName,
+      userAgent,
+      ipAddress,
+    },
+  });
+
   const echoRefreshTokenValue = `refresh_${nanoid(48)}`;
   const echoRefreshTokenExpiry = createEchoRefreshTokenExpiry();
 
-  // Deactivate any existing refresh tokens for this app
-  await db.refreshToken.updateMany({
-    where: {
-      userId: user.id,
-      echoAppId: echoApp.id,
-      isArchived: false,
-    },
-    data: { isArchived: true },
-  });
-
-  // Create new refresh token
   const newEchoRefreshToken = await db.refreshToken.create({
     data: {
       token: echoRefreshTokenValue,
@@ -484,6 +535,7 @@ export async function handleInitialTokenIssuance(
       userId: user.id,
       echoAppId: echoApp.id,
       scope: authData.scope,
+      sessionId: appSession.id,
     },
   });
 
@@ -496,6 +548,7 @@ export async function handleInitialTokenIssuance(
     scope: authData.scope,
     keyVersion: 1,
     expiry: newEchoAccessTokenExpiry,
+    sessionId: appSession.id,
   });
 
   console.log('🎫 JWT access token generated');

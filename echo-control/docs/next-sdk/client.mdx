@@ -1,0 +1,59 @@
+---
+title: Client Side Utilities
+description: Client-side sign-in helper
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Client
+
+Minimal client-side API for initiating the Echo OAuth flow.
+
+## signIn
+
+Starts the OAuth flow by redirecting the browser to your Echo OAuth route.
+
+```typescript
+import { signIn } from '@merit-systems/echo-next-sdk/client';
+
+'use client';
+
+export default function SignInButton() {
+  return (
+    <button onClick={() => signIn()}>
+      Sign in with Echo
+    </button>
+  );
+}
+```
+
+<Callout type="info">
+`signIn()` must be called from client components. It performs a full-page redirect to `/api/echo/signin` by default.
+</Callout>
+
+### Custom basePath
+
+If you placed your catch‑all route somewhere else, pass a `basePath` override:
+
+```typescript
+signIn({ basePath: '/api/auth/echo' });
+```
+
+Make sure the matching catch‑all route exists at `app/api/auth/echo/[...echo]/route.ts` and that your Echo instance is configured with the same `basePath`.
+
+## useChat
+
+Echo works seamlessly with Vercel AI SDK’s `useChat` hook; usage is the same as in their docs.
+
+```typescript
+import { useChat } from 'ai/react';
+```
+
+See the official guide: [Vercel AI – useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat#usechat).
+
+### Other AI React hooks
+
+Echo works out of the box with all `use*` hooks from the Vercel AI React SDK (for example `useCompletion`, `useAssistant`). No extra configuration is needed—the SDK handles auth via cookies and your API routes work the same.
+
+Browse the references: [AI SDK UI – React hooks](https://ai-sdk.dev/docs/reference/ai-sdk-ui).
+

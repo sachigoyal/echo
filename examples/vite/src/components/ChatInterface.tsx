@@ -8,10 +8,10 @@ export function ChatInterface() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { openai } = useEchoModelProviders();
-  const { isAuthenticated, isLoading } = useEcho();
+  const { user, isLoading } = useEcho();
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isGenerating || !isAuthenticated) return;
+    if (!input.trim() || isGenerating || !user) return;
 
     setIsGenerating(true);
     const userMessage = input.trim();
@@ -46,7 +46,7 @@ export function ChatInterface() {
     }
   };
 
-  if (isLoading) {
+  if (!user && isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-600">Loading Echo providers...</div>
@@ -54,7 +54,7 @@ export function ChatInterface() {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-600">Please sign in to start chatting.</div>

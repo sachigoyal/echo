@@ -64,7 +64,7 @@ export class EchoControlService {
     try {
       this.authResult = await this.dbService.validateApiKey(this.apiKey);
     } catch (error) {
-      logger.error('Error verifying API key:', { error });
+      logger.error(`Error verifying API key: ${error}`);
       return null;
     }
 
@@ -153,7 +153,7 @@ export class EchoControlService {
 
       return balance.balance;
     } catch (error) {
-      logger.error('Error fetching balance:', { error });
+      logger.error(`Error fetching balance: ${error}`);
       return 0;
     }
   }
@@ -216,7 +216,7 @@ export class EchoControlService {
         return;
       }
     } catch (error) {
-      logger.error('Error creating transaction:', { error });
+      logger.error(`Error creating transaction: ${error}`);
     }
   }
 

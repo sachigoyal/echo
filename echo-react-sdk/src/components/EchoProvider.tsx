@@ -67,7 +67,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
 
   const user = auth.user;
   const echoUser: EchoUser | null = user ? parseEchoUser(user) : null;
-  const apiUrl = config.apiUrl || 'https://echo.merit.systems';
+  const apiUrl = config.baseEchoUrl || 'https://echo.merit.systems';
   const token = auth.user?.access_token || null;
 
   const echoClient = useEchoClient({ apiUrl });
@@ -179,7 +179,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
     return null;
   }
 
-  const apiUrl = config.apiUrl || 'https://echo.merit.systems';
+  const apiUrl = config.baseEchoUrl || 'https://echo.merit.systems';
 
   const oidcConfig: AuthProviderUserManagerProps = {
     userManager:

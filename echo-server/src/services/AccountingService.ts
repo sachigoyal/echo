@@ -1,48 +1,78 @@
 import {
-  MODEL_TO_PROVIDER,
-  OPEN_ROUTER_MODEL_TO_PROVIDER,
-} from '../providers/ProviderFactory';
-import modelPrices from '../../model_prices.json';
-import openRouterModelPrices from '../../open_router_model_prices.json';
+  OpenAIModels,
+  AnthropicModels,
+  GeminiModels,
+  OpenRouterModels,
+  OpenAIImageModels,
+  SupportedOpenAIResponseToolPricing,
+  SupportedModel,
+  SupportedImageModel,
+} from '@merit-systems/echo-typescript-sdk';
+
 import { Decimal } from '@prisma/client/runtime/library';
+import { Tool } from 'openai/resources/responses/responses';
+
+// Combine all supported chat models from the TypeScript SDK
+export const ALL_SUPPORTED_MODELS: SupportedModel[] = [
+  ...OpenAIModels,
+  ...AnthropicModels,
+  ...GeminiModels,
+  ...OpenRouterModels,
+];
+
+// Handle image models separately since they have different pricing structure
+export const ALL_SUPPORTED_IMAGE_MODELS: SupportedImageModel[] =
+  OpenAIImageModels;
+
+// Create a lookup map for O(1) model price retrieval
+const MODEL_PRICE_MAP = new Map<string, SupportedModel>();
+ALL_SUPPORTED_MODELS.forEach(model => {
+  MODEL_PRICE_MAP.set(model.model_id, model);
+});
+
+// Create a separate map for image models
+const IMAGE_MODEL_MAP = new Map();
+ALL_SUPPORTED_IMAGE_MODELS.forEach(model => {
+  IMAGE_MODEL_MAP.set(model.model_id, model);
+});
 
 const getModelPrice = (model: string) => {
-  // First check if the model is in the main model_prices.json
-  if (model in modelPrices) {
-    return modelPrices[model as keyof typeof modelPrices];
-  }
+  const supportedModel = MODEL_PRICE_MAP.get(model);
 
-  // If not found, check in open_router_model_prices.json
-  const openRouterModel = openRouterModelPrices.data.find(
-    (modelData: any) => modelData.id === model
-  );
-
-  if (openRouterModel) {
-    // Convert OpenRouter pricing format to our internal format
+  if (supportedModel) {
     return {
-      input_cost_per_token: parseFloat(openRouterModel.pricing.prompt),
-      output_cost_per_token: parseFloat(openRouterModel.pricing.completion),
-      max_tokens: openRouterModel.context_length,
-      max_input_tokens: openRouterModel.context_length,
-      max_output_tokens:
-        openRouterModel.top_provider?.max_completion_tokens ||
-        openRouterModel.context_length,
-      litellm_provider: 'openrouter',
-      mode: 'chat',
+      input_cost_per_token: supportedModel.input_cost_per_token,
+      output_cost_per_token: supportedModel.output_cost_per_token,
+      provider: supportedModel.provider,
+      model: supportedModel.model_id,
     };
   }
 
   return null;
 };
 
-export { getModelPrice };
+const getImageModelPrice = (model: string) => {
+  const imageModel = IMAGE_MODEL_MAP.get(model);
+
+  if (imageModel) {
+    return {
+      text_input_cost_per_token: imageModel.text_input_cost_per_token,
+      image_input_cost_per_token: imageModel.image_input_cost_per_token,
+      image_output_cost_per_token: imageModel.image_output_cost_per_token,
+      provider: imageModel.provider,
+      mode: 'image',
+    };
+  }
+
+  return null;
+};
 
 export const isValidModel = (model: string) => {
-  return (
-    model in MODEL_TO_PROVIDER ||
-    model in OPEN_ROUTER_MODEL_TO_PROVIDER ||
-    getModelPrice(model) !== null
-  );
+  return MODEL_PRICE_MAP.has(model);
+};
+
+export const isValidImageModel = (model: string) => {
+  return IMAGE_MODEL_MAP.has(model);
 };
 
 export const getCostPerToken = (
@@ -62,4 +92,72 @@ export const getCostPerToken = (
   return new Decimal(modelPrice.input_cost_per_token)
     .mul(inputTokens)
     .plus(new Decimal(modelPrice.output_cost_per_token).mul(outputTokens));
+};
+
+export const getImageModelCost = (
+  model: string,
+  textTokens: number,
+  imageInputTokens: number,
+  imageOutputTokens: number
+) => {
+  if (!isValidImageModel(model)) {
+    throw new Error(`Invalid image model: ${model}`);
+  }
+
+  const imageModelPrice = getImageModelPrice(model);
+  if (!imageModelPrice) {
+    throw new Error(`Pricing information not found for image model: ${model}`);
+  }
+
+  const textCost = new Decimal(imageModelPrice.text_input_cost_per_token).mul(
+    textTokens
+  );
+  const imageInputCost = new Decimal(
+    imageModelPrice.image_input_cost_per_token
+  ).mul(imageInputTokens);
+  const imageOutputCost = new Decimal(
+    imageModelPrice.image_output_cost_per_token
+  ).mul(imageOutputTokens);
+
+  return textCost.plus(imageInputCost).plus(imageOutputCost);
+};
+
+export const calculateToolCost = (tool: Tool): Decimal => {
+  const toolPricing = SupportedOpenAIResponseToolPricing;
+
+  switch (tool.type) {
+    case 'image_generation': {
+      const quality = tool.quality;
+      const size = tool.size;
+
+      // Get pricing from TypeScript SDK - assume gpt-image-1 if no model specified
+      const gptImage1Prices = toolPricing.image_generation.gpt_image_1;
+
+      if (quality && size) {
+        // GPT Image 1 supports low, medium, high (auto defaults to medium)
+        const gptQuality = quality === 'auto' ? 'medium' : quality;
+        if (gptQuality in gptImage1Prices && size !== 'auto') {
+          return new Decimal(
+            gptImage1Prices[gptQuality as keyof typeof gptImage1Prices]?.[
+              size
+            ] || 0
+          );
+        }
+      }
+      return new Decimal(0);
+    }
+
+    case 'code_interpreter':
+      return new Decimal(toolPricing.code_interpreter.cost_per_session);
+
+    case 'file_search':
+      return new Decimal(toolPricing.file_search.cost_per_call);
+
+    case 'web_search_preview':
+      // Default to gpt-4o pricing, could be enhanced to check model
+      return new Decimal(toolPricing.web_search_preview.gpt_4o.cost_per_call);
+
+    default:
+      return new Decimal(0);
+  }
 };

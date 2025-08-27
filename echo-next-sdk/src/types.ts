@@ -1,14 +1,16 @@
-import { User } from '@merit-systems/echo-typescript-sdk';
-import { NextRequest } from 'next/server';
 import {
-  EchoOpenAIProvider,
   EchoAnthropicProvider,
+  EchoGoogleProvider,
+  EchoOpenAIProvider,
+  User,
 } from '@merit-systems/echo-typescript-sdk';
+import { NextRequest } from 'next/server';
 
 export interface EchoConfig {
   appId: string;
   basePath?: string;
   baseRouterUrl?: string;
+  baseEchoUrl?: string;
 }
 
 // We went pretty ham here just so that we can generically construct the provider
@@ -30,4 +32,5 @@ export type EchoResult = {
 
   openai: EchoOpenAIProvider;
   anthropic: EchoAnthropicProvider;
+  google: EchoGoogleProvider;
 };

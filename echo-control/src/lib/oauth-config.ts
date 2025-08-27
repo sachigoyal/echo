@@ -60,3 +60,31 @@ export function createEchoAccessTokenExpiry(): Date {
   );
   return expiry;
 }
+
+/**
+ * Get the grace period (in milliseconds) allowed for refreshing using an archived
+ * refresh token. This enables a short overlap window during token rotation.
+ *
+ * Priority:
+ * - OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS (milliseconds)
+ * - OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_SECONDS (seconds)
+ * - Default: 2 minutes in normal environments, 0 in test mode
+ */
+export function getArchivedRefreshTokenGraceMs(): number {
+  const msEnv = process.env.OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS;
+  if (msEnv) {
+    const parsedMs = parseInt(msEnv, 10);
+    if (!isNaN(parsedMs) && parsedMs >= 0) {
+      return parsedMs;
+    }
+    console.warn(
+      `Invalid OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS value: ${msEnv}. Falling back to default.`
+    );
+  }
+
+  // Default behavior: zero grace in local/integration tests, 2 minutes otherwise
+  const isTestMode =
+    process.env.INTEGRATION_TEST_MODE === 'true' ||
+    process.env.NODE_ENV === 'test';
+  return isTestMode ? 0 : 2 * 60 * 1000;
+}

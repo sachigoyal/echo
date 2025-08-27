@@ -78,7 +78,7 @@ export const parseSSEGeminiFormat = (data: string): GeminiUsage | null => {
             };
           }
         } catch (error) {
-          logger.error('Error parsing Gemini SSE chunk:', { error });
+          logger.error(`Error parsing Gemini SSE chunk: ${error}`);
         }
       }
     }
@@ -156,12 +156,7 @@ export class GeminiProvider extends BaseProvider {
         }
       }
 
-      logger.info(
-        'Gemini usage tokens (prompt/candidates/total): ',
-        promptTokens,
-        candidatesTokens,
-        totalTokens
-      );
+      logger.info(`Gemini usage tokens (prompt/candidates/total): ${promptTokens}/${candidatesTokens}/${totalTokens}`);
 
       const metadata: LlmTransactionMetadata = {
         model: this.getModel(),
@@ -184,7 +179,7 @@ export class GeminiProvider extends BaseProvider {
 
       return transaction;
     } catch (error) {
-      logger.error('Error processing Gemini response data:', { error });
+      logger.error(`Error processing Gemini response data: ${error}`);
       throw error;
     }
   }

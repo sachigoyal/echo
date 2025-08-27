@@ -8,3 +8,38 @@ export * from './resources';
 export * from './types';
 export * from './utils/error-handling';
 export * from './providers';
+
+// Export tool-related types and utilities
+export type {
+  ToolPricing,
+  SupportedToolType,
+  SupportedModel,
+  SupportedImageModel,
+  ImageGenerationQuality,
+  ImageDimensions,
+  WebSearchModel,
+  SupportedTool,
+  ImageGenerationQualityPricing,
+  ImageGenerationModelPricing,
+  ImageGenerationPricing,
+  CodeInterpreterPricing,
+  FileSearchPricing,
+  WebSearchModelPricing,
+  WebSearchPricing,
+} from './supported-models/types';
+
+export {
+  SupportedOpenAIResponseModels,
+  SupportedOpenAIResponseTools,
+  SupportedOpenAIResponseToolPricing,
+} from './supported-models/responses/openai';
+export { OpenAIModels } from './supported-models/chat/openai';
+export type { OpenAIModel } from './supported-models/chat/openai';
+export { AnthropicModels } from './supported-models/chat/anthropic';
+export type { AnthropicModel } from './supported-models/chat/anthropic';
+export { GeminiModels } from './supported-models/chat/gemini';
+export type { GeminiModel } from './supported-models/chat/gemini';
+export { OpenRouterModels } from './supported-models/chat/openrouter';
+export type { OpenRouterModel } from './supported-models/chat/openrouter';
+export { OpenAIImageModels } from './supported-models/image/openai';
+export type { OpenAIImageModel } from './supported-models/image/openai';

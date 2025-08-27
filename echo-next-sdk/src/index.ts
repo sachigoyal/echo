@@ -1,14 +1,19 @@
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+
+import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import { resolveEchoBaseUrl } from './config';
+import { EchoConfig, EchoResult } from './types';
+
 import { createEchoAnthropic } from 'providers/anthropic';
+import { createEchoGoogle } from 'providers/google';
+import { createEchoOpenAI } from 'providers/openai';
+
 import {
   handleCallback,
   handleRefresh,
   handleSignIn,
 } from './auth/oauth-handlers';
-import { createEchoOpenAI } from './providers/openai';
-import { EchoConfig, EchoResult } from './types';
-import { EchoClient, ECHO_BASE_URL } from '@merit-systems/echo-typescript-sdk';
-import { cookies } from 'next/headers';
 
 /**
  * Echo SDK for Next.js
@@ -48,10 +53,8 @@ export default function Echo(config: EchoConfig): EchoResult {
     if (!accessToken) {
       return null;
     }
-    const echo = new EchoClient({
-      apiKey: accessToken,
-      baseUrl: ECHO_BASE_URL,
-    });
+    const baseUrl = resolveEchoBaseUrl(config);
+    const echo = new EchoClient({ apiKey: accessToken, baseUrl });
     const user = await echo.users.getUserInfo();
     return user;
   };
@@ -73,15 +76,19 @@ export default function Echo(config: EchoConfig): EchoResult {
   };
 
   return {
+    // http handlers
     handlers: {
       GET: httpHandler,
       POST: httpHandler,
     },
+
     // echo auth
     getUser,
     isSignedIn,
+
     // providers
     openai: createEchoOpenAI(config),
     anthropic: createEchoAnthropic(config),
+    google: createEchoGoogle(config),
   };
 }

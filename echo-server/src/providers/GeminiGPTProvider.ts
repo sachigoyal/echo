@@ -37,7 +37,7 @@ export const parseSSEGeminiGPTFormat = (data: string): StreamingChunkBody[] => {
       }
     } catch (error) {
       // Log error but continue processing other events
-      logger.warn('Error parsing SSE chunk:', { error });
+      logger.warn(`Error parsing SSE chunk: ${error}`);
       continue;
     }
   }
@@ -106,7 +106,7 @@ export class GeminiGPTProvider extends GPTProvider {
 
       return transaction;
     } catch (error) {
-      logger.error('Error processing data:', { error });
+      logger.error(`Error processing data: ${error}`);
       throw error;
     }
   }
