@@ -8,15 +8,19 @@ import { KeysCard } from '@/app/(app)/@authenticated/_components/keys/table/card
 import { KeysTable } from './table';
 
 const KeysWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <KeysCard title="Your Keys">{children}</KeysCard>;
+  return <KeysCard title="Your App Keys">{children}</KeysCard>;
 };
 
-export const Keys = () => {
+interface Props {
+  appId: string;
+}
+
+export const Keys: React.FC<Props> = ({ appId }) => {
   return (
     <KeysWrapper>
       <ErrorBoundary fallback={<div>Error loading keys</div>}>
         <Suspense fallback={<LoadingKeysTable />}>
-          <KeysTable />
+          <KeysTable appId={appId} />
         </Suspense>
       </ErrorBoundary>
     </KeysWrapper>
