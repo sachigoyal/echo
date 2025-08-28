@@ -1,10 +1,10 @@
 'use client';
 
-import { KeysList } from '../../../_components/keys/list';
-
 import { api } from '@/trpc/client';
 
-export const Keys = () => {
+import { KeysTable as KeysTableBase } from '@/app/(app)/@authenticated/_components/keys/table/table';
+
+export const KeysTable = () => {
   const [{ pages }, { fetchNextPage, isFetchingNextPage }] =
     api.user.apiKeys.list.useSuspenseInfiniteQuery(
       {},
@@ -18,11 +18,13 @@ export const Keys = () => {
   const keys = pages.flatMap(page => page.items);
 
   return (
-    <KeysList
+    <KeysTableBase
       keys={keys}
-      hasNext={pages[pages.length - 1].has_next}
-      fetchNextPage={fetchNextPage}
-      isFetchingNextPage={isFetchingNextPage}
+      pagination={{
+        hasNext: pages[pages.length - 1].has_next,
+        fetchNextPage,
+        isFetchingNextPage,
+      }}
     />
   );
 };
