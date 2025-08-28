@@ -1,19 +1,28 @@
-import express, { Request, Response, NextFunction, Express } from 'express';
-import dotenv from 'dotenv';
 import compression from 'compression';
 import cors from 'cors';
-import { HttpError } from './errors/http';
+import dotenv from 'dotenv';
+import express, { Express, NextFunction, Request, Response } from 'express';
 import { authenticateRequest } from './auth';
-import { modelRequestService } from './services/ModelRequestService';
-import { checkBalance } from './services/BalanceCheckService';
-import standardRouter from './routers/common';
+import logger, { logMetric } from './logger';
+import { HttpError } from './errors/http';
+import { PrismaClient } from './generated/prisma';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
-import logger from './logger';
+import standardRouter from './routers/common';
+import { checkBalance } from './services/BalanceCheckService';
+import { modelRequestService } from './services/ModelRequestService';
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3069;
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL ?? 'postgresql://localhost:5469/echo',
+    },
+  },
+  log: ['warn', 'error'],
+});
 
 app.use(traceEnrichmentMiddleware);
 // Add middleware
@@ -40,7 +49,8 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
     const { processedHeaders, echoControlService, forwardingPath } =
       await authenticateRequest(
         req.path,
-        req.headers as Record<string, string>
+        req.headers as Record<string, string>,
+        prisma
       );
 
     await checkBalance(echoControlService);
@@ -64,18 +74,33 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
 
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response) => {
-  logger.error(`Error handling request: ${error.message} | Stack: ${error.stack}`);
+  logger.error(
+    `Error handling request: ${error.message} | Stack: ${error.stack}`
+  );
 
   if (error instanceof HttpError) {
+    logMetric('server.internal_error', 1, {
+      error_type: 'http_error',
+      error_message: error.message,
+    });
     res.status(error.statusCode).json({
       error: error.message,
     });
   } else if (error instanceof Error) {
+    logMetric('server.internal_error', 1, {
+      error_type: error.name,
+      error_message: error.message,
+    });
     // Handle other errors with a more specific message
+    logger.error('Internal server error', error);
     res.status(500).json({
       error: error.message || 'Internal Server Error',
     });
   } else {
+    logMetric('server.internal_error', 1, {
+      error_type: 'unknown_error',
+    });
+    logger.error('Internal server error', error);
     res.status(500).json({
       error: 'Internal Server Error',
     });

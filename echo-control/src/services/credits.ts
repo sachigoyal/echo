@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { processPaymentUpdate } from '@/lib/payment-processing';
 
 import type { Prisma } from '@/generated/prisma';
+import { logger } from '@/logger';
 
 export const mintCreditsToUserSchema = z.object({
   userId: z.uuid(),
@@ -36,6 +37,15 @@ export const mintCreditsToUser = async (
   const result = mintCreditsToUserSchema.safeParse(input);
 
   if (!result.success) {
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Invalid input for credit minting',
+      attributes: {
+        validationError: result.error.message,
+        input: JSON.stringify(input),
+        function: 'mintCreditsToUser',
+      },
+    });
     throw new Error(result.error.message, { cause: result.error });
   }
 
@@ -84,6 +94,21 @@ export const mintCreditsToUser = async (
       }),
     },
     echoAppId: isFreeTier ? echoAppId : undefined,
+  });
+
+  logger.emit({
+    severityText: 'INFO',
+    body: 'Successfully minted credits to user',
+    attributes: {
+      userId,
+      amountInDollars,
+      amountInCents,
+      isFreeTier,
+      echoAppId,
+      paymentId,
+      poolName,
+      function: 'mintCreditsToUser',
+    },
   });
 
   return {

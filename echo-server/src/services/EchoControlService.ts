@@ -1,20 +1,20 @@
+import { existsSync } from 'fs';
+import { join } from 'path';
 import type {
   ApiKeyValidationResult,
   EchoApp,
-  User,
   Transaction,
   TransactionRequest,
+  User,
 } from '../types';
 import { EchoDbService } from './DbService';
-import { existsSync } from 'fs';
-import { join } from 'path';
 
-import { PrismaClient, SpendPool } from '../generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
-import FreeTierService from './FreeTierService';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
-import { EarningsService } from './EarningsService';
+import { PrismaClient, SpendPool } from '../generated/prisma';
 import logger from '../logger';
+import { EarningsService } from './EarningsService';
+import FreeTierService from './FreeTierService';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
@@ -33,7 +33,7 @@ export class EchoControlService {
   private githubId: number | null = null;
   private githubType: string | null = null;
 
-  constructor(apiKey: string) {
+  constructor(db: PrismaClient, apiKey: string) {
     // Check if the generated Prisma client exists
     const generatedPrismaPath = join(__dirname, '..', 'generated', 'prisma');
     if (!existsSync(generatedPrismaPath)) {
@@ -44,13 +44,7 @@ export class EchoControlService {
     }
 
     this.apiKey = apiKey;
-    this.db = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL ?? 'postgresql://localhost:5469/echo',
-        },
-      },
-    });
+    this.db = db;
     this.dbService = new EchoDbService(this.db);
     this.freeTierService = new FreeTierService(this.db);
     this.earningsService = new EarningsService(this.db);

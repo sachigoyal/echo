@@ -9,6 +9,7 @@ import {
   OriginalRouteHandler,
 } from './types';
 import { NextResponse } from 'next/server';
+import { logger } from '@/logger';
 
 /**
  * Type of the middleware function passed to a safe action client.
@@ -358,8 +359,28 @@ const handleError = (
   handleServerError?: HandlerServerErrorFn
 ): NextResponse => {
   if (error instanceof InternalRouteHandlerError) {
+    logger.emit({
+      severityText: 'WARN',
+      body: 'Route handler validation error',
+      attributes: {
+        error: error.message,
+        errorBody: JSON.stringify(error.body),
+        errorType: 'InternalRouteHandlerError',
+      },
+    });
     return NextResponse.json(error.body, { status: 400 });
   }
+
+  logger.emit({
+    severityText: 'ERROR',
+    body: 'Unhandled route handler error',
+    attributes: {
+      error: error.message,
+      stack: error.stack,
+      errorType: error.constructor.name,
+      hasCustomHandler: !!handleServerError,
+    },
+  });
 
   if (handleServerError) {
     return handleServerError(error as Error);

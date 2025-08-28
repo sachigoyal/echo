@@ -7,7 +7,7 @@ const baseRouterUrl =
 const appId =
   process.env.NEXT_PUBLIC_ECHO_APP_ID || '74d9c979-e036-4e43-904f-32d214b361fc';
 
-export const { handlers, isSignedIn, openai, anthropic, getUser } = Echo({
+export const { handlers, isSignedIn, openai, anthropic, google, getUser } = Echo({
   appId,
   baseEchoUrl,
   baseRouterUrl,

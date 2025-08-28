@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { PermissionService } from '@/lib/permissions/service';
 import { Permission } from '@/lib/permissions/types';
+import { logger } from '@/logger';
 
 // GET /api/owner/apps/[id]/api-keys - List all API keys for an app with pagination
 export async function GET(
@@ -22,6 +23,15 @@ export async function GET(
     );
 
     if (!hasPermission) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Permission denied for API keys access',
+        attributes: {
+          userId: user.id,
+          appId,
+          permission: Permission.MANAGE_ALL_API_KEYS,
+        },
+      });
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
     }
 
@@ -60,6 +70,18 @@ export async function GET(
 
     const totalPages = Math.ceil(totalCount / limit);
 
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Successfully retrieved API keys for app',
+      attributes: {
+        appId,
+        userId: user.id,
+        count: apiKeys.length,
+        totalCount,
+        page,
+      },
+    });
+
     return NextResponse.json({
       apiKeys,
       pagination: {
@@ -72,7 +94,14 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error fetching app API keys:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error fetching app API keys',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+    });
 
     if (
       error instanceof Error &&

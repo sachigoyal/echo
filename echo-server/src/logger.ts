@@ -5,9 +5,13 @@ import {
 } from '@opentelemetry/sdk-logs';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
-import { Resource } from '@opentelemetry/resources';
-import { trace, context } from '@opentelemetry/api';
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import { trace, context, metrics } from '@opentelemetry/api';
+import {
+  MeterProvider,
+  PeriodicExportingMetricReader,
+} from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import winston from 'winston';
 import dotenv from 'dotenv';
 
@@ -19,14 +23,17 @@ const NODE_ENV = process.env.NODE_ENV!;
 const OTEL_EXPORTER_OTLP_ENDPOINT =
   process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT!;
 const SIGNOZ_INGESTION_KEY = process.env.SIGNOZ_INGESTION_KEY!;
+const OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT!;
+
+const resource = resourceFromAttributes({
+  'service.name': OTEL_SERVICE_NAME,
+  'service.version': OTEL_SERVICE_VERSION,
+  'deployment.environment': NODE_ENV,
+});
 
 // Initialize the Logger provider
 const loggerProvider = new LoggerProvider({
-  resource: new Resource({
-    'service.name': OTEL_SERVICE_NAME,
-    'service.version': OTEL_SERVICE_VERSION,
-    'deployment.environment': NODE_ENV,
-  }),
+  resource: resource,
 });
 
 const otlpExporter = new OTLPLogExporter({
@@ -45,7 +52,7 @@ loggerProvider.addLogRecordProcessor(
 logs.setGlobalLoggerProvider(loggerProvider);
 
 // Custom Winston format to inject traceId/spanId
-const traceContextFormat = winston.format((info) => {
+const traceContextFormat = winston.format(info => {
   const span = trace.getSpan(context.active());
   if (span) {
     const spanContext = span.spanContext();
@@ -73,5 +80,50 @@ const logger = winston.createLogger({
     new OpenTelemetryTransportV3(),
   ],
 });
+
+// -------------------------
+// 🔹 METRICS SETUP
+// -------------------------
+
+const metricExporter = new OTLPMetricExporter({
+  url: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
+  headers: {
+    'signoz-access-token': SIGNOZ_INGESTION_KEY,
+  },
+});
+
+const meterProvider = new MeterProvider({
+  resource: resource,
+  readers: [
+    new PeriodicExportingMetricReader({
+      exporter: metricExporter,
+      exportIntervalMillis: 1000, // optional, defaults to 60s
+    }),
+  ],
+});
+
+// Register the meter provider globally
+metrics.setGlobalMeterProvider(meterProvider);
+
+const meter = meterProvider.getMeter(OTEL_SERVICE_NAME);
+
+// Cache for counters
+const counters: Record<string, ReturnType<typeof meter.createCounter>> = {};
+
+// Custom metric function
+export const logMetric = (
+  metricName: string,
+  value: number = 1,
+  attributes?: Record<string, string | number | boolean>
+) => {
+  if (!counters[metricName]) {
+    logger.info(`Creating counter for ${metricName}`);
+    counters[metricName] = meter.createCounter(metricName, {
+      description: `${metricName} counter`,
+    });
+  }
+
+  counters[metricName].add(value, attributes);
+};
 
 export default logger;

@@ -1,9 +1,11 @@
 import { UnauthorizedError } from '../errors/http';
-import { EchoControlService } from '../services/EchoControlService';
+import type { PrismaClient } from '../generated/prisma';
 import logger from '../logger';
+import { EchoControlService } from '../services/EchoControlService';
 
 export const verifyUserHeaderCheck = async (
-  headers: Record<string, string>
+  headers: Record<string, string>,
+  prisma: PrismaClient
 ): Promise<[Record<string, string>, EchoControlService]> => {
   /**
    * Process authentication for the user (authenticated with Echo Api Key)
@@ -42,7 +44,7 @@ export const verifyUserHeaderCheck = async (
 
   const cleanApiKey = apiKey?.replace('Bearer ', '') ?? '';
 
-  const echoControlService = new EchoControlService(cleanApiKey);
+  const echoControlService = new EchoControlService(prisma, cleanApiKey);
   const authResult = await echoControlService.verifyApiKey();
 
   if (!authResult) {
