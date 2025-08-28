@@ -13,17 +13,20 @@ export default async function AppBreadcrumbsLayout({
   children,
   params,
 }: LayoutProps<'/app/[id]'>) {
-  const { id } = await params;
-  console.log('AppBreadcrumbsLayout', id);
   return (
-    <>
-      <AppBreadcrumbs id={id} />
+    <Suspense fallback={<LoadingAppBreadcrumbs />}>
+      <AppBreadcrumbs idPromise={params.then(p => p.id)} />
       {children}
-    </>
+    </Suspense>
   );
 }
 
-const AppBreadcrumbs = ({ id }: { id: string }) => {
+const AppBreadcrumbs = async ({
+  idPromise,
+}: {
+  idPromise: Promise<string>;
+}) => {
+  const id = await idPromise;
   return (
     <>
       <ErrorBoundary fallback={null}>
@@ -38,6 +41,17 @@ const AppBreadcrumbs = ({ id }: { id: string }) => {
           <AppBreadcrumb id={id} />
         </Suspense>
       </ErrorBoundary>
+    </>
+  );
+};
+
+const LoadingAppBreadcrumbs = () => {
+  return (
+    <>
+      <Separator />
+      <LoadingBreadcrumb />
+      <Separator />
+      <LoadingBreadcrumb />
     </>
   );
 };

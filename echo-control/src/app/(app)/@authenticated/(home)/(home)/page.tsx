@@ -38,7 +38,7 @@ export default async function DashboardPage() {
           </div>
           <div className="flex flex-col gap-4 flex-1 overflow-hidden py-2">
             <Activity />
-            {/* <PopularApps /> */}
+            <PopularApps />
           </div>
         </div>
       </Body>
