@@ -61,9 +61,7 @@ export class ModelRequestService {
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
-      'new outbound request',
-      `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
-      req.method
+      `New outbound request: ${req.method} ${provider.getBaseUrl(forwardingPath)}${forwardingPath}`
     );
 
     // Ensure stream usage is set correctly (OpenAI Format)
@@ -81,11 +79,14 @@ export class ModelRequestService {
 
     // Handle non-200 responses
     if (response.status !== 200) {
-      const error = await response.json();
-      logger.error(`Error response: ${JSON.stringify(error)}`);
-      res.status(response.status).json({
-        error: error,
-      });
+      const errorMessage = `${response.status} ${response.statusText}`;
+      logger.error(`Error response: ${errorMessage}`);
+      
+      const errorBody = await response.text().catch(() => '');
+      const error = this.parseErrorResponse(errorBody, response.status);
+      
+      logger.error(`Error details: ${JSON.stringify(error)}`);
+      res.status(response.status).json({ error });
       throw new HttpError(response.status, JSON.stringify(error));
     }
 
@@ -115,6 +116,18 @@ export class ModelRequestService {
       res.json(data);
     }
     return;
+  }
+
+  private parseErrorResponse(errorBody: string, status: number): object {
+    if (!errorBody.trim()) {
+      return { message: `HTTP ${status} error` };
+    }
+
+    try {
+      return JSON.parse(errorBody);
+    } catch {
+      return { message: errorBody };
+    }
   }
 }
 

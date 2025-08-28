@@ -1,13 +1,13 @@
-import { openai } from '@/echo';
-import { convertToModelMessages, streamText } from 'ai';
+import { google } from '@/echo';
+import { convertToModelMessages, generateText } from 'ai';
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
-  const result = streamText({
-    model: await openai('gpt-4o'),
+  const result = await generateText({
+    model: await google.chat('gemini-2.5-flash'),
     messages: convertToModelMessages(messages),
   });
 
-  return result.toUIMessageStreamResponse();
+  return Response.json(result.text);
 }
