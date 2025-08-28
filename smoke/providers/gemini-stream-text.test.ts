@@ -14,7 +14,7 @@ import {
 
 beforeAll(assertEnv);
 
-describe.concurrent('Gemini generateText per model', () => {
+describe.concurrent('Gemini streamText per model', () => {
   const gemini = createEchoGoogle(
     { appId: ECHO_APP_ID!, baseRouterUrl },
     getToken
