@@ -12,10 +12,29 @@ import { RangeSelector } from '../../../../../../_components/time-range-selector
 import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityContextProvider } from '../../../../../../_components/time-range-selector/context';
 import { ActivityOverlay } from './overlay';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   appId: string;
 }
+
+const ActivityContainer = ({
+  children,
+  isLoading = false,
+}: {
+  children: React.ReactNode;
+  isLoading?: boolean;
+}) => {
+  return (
+    <div className="w-full flex flex-col gap-4 md:gap-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-2xl font-bold">App Activity</h3>
+        {isLoading ? <Skeleton className="w-24 h-8" /> : <RangeSelector />}
+      </div>
+      <Card className="p-0 overflow-hidden relative">{children}</Card>
+    </div>
+  );
+};
 
 export const Activity: React.FC<Props> = ({ appId }) => {
   const defaultStartDate = subDays(new Date(), 7);
@@ -33,23 +52,25 @@ export const Activity: React.FC<Props> = ({ appId }) => {
         initialStartDate={defaultStartDate}
         initialEndDate={defaultEndDate}
       >
-        <div className="w-full flex flex-col gap-4 md:gap-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold">App Activity</h3>
-            <RangeSelector />
-          </div>
-          <Card className="p-0 overflow-hidden relative">
-            <ErrorBoundary
-              fallback={<p>There was an error loading the activity data</p>}
-            >
-              <Suspense fallback={<LoadingActivityCharts />}>
-                <ActivityCharts appId={appId} />
-              </Suspense>
-            </ErrorBoundary>
-            <ActivityOverlay appId={appId} />
-          </Card>
-        </div>
+        <ActivityContainer>
+          <ErrorBoundary
+            fallback={<p>There was an error loading the activity data</p>}
+          >
+            <Suspense fallback={<LoadingActivityCharts />}>
+              <ActivityCharts appId={appId} />
+            </Suspense>
+          </ErrorBoundary>
+          <ActivityOverlay appId={appId} />
+        </ActivityContainer>
       </ActivityContextProvider>
     </HydrateClient>
+  );
+};
+
+export const LoadingActivity = () => {
+  return (
+    <ActivityContainer isLoading>
+      <LoadingActivityCharts />
+    </ActivityContainer>
   );
 };

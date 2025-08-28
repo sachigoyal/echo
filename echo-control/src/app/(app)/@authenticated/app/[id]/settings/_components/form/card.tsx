@@ -14,6 +14,7 @@ import {
 import { FormButton } from './button';
 
 import type { Route } from 'next';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props<DocsUrl extends string> {
   title: string;
@@ -54,7 +55,11 @@ export const FormCard = <DocsUrl extends string>({
           ) : (
             <div />
           )}
-          {!hideSaveButton && !isLoading && <FormButton />}
+          {!hideSaveButton && isLoading ? (
+            <Skeleton className="h-9 w-16" />
+          ) : (
+            <FormButton />
+          )}
         </CardFooter>
       )}
     </Card>

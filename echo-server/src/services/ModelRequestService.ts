@@ -23,10 +23,8 @@ export class ModelRequestService {
     req: Request,
     res: Response,
     processedHeaders: Record<string, string>,
-    echoControlService: EchoControlService,
-    forwardingPath: string
+    echoControlService: EchoControlService
   ): Promise<{ transaction: Transaction; isStream: boolean; data: unknown }> {
-    // Extract and validate model
     const model = extractModelName(req);
 
     if (!model || (!isValidModel(model) && !isValidImageModel(model))) {
@@ -41,50 +39,43 @@ export class ModelRequestService {
     const isStream = extractIsStream(req);
 
     // Get the appropriate provider
-    const provider = getProvider(
-      model,
-      echoControlService,
-      isStream,
-      forwardingPath
-    );
-
-    // Validate streaming support
-    if (!provider.supportsStream() && isStream) {
-      logger.error(`Model does not support streaming: ${model}`);
-      res.status(422).json({
-        error: `Model ${model} does not support streaming.`,
-      });
-      throw new UnknownModelError('Invalid model');
-    }
+    const provider = getProvider(model, echoControlService, isStream, req.path);
 
     // Format authentication headers
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
-      `New outbound request: ${req.method} ${provider.getBaseUrl(forwardingPath)}${forwardingPath}`
+      `New outbound request: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`
     );
 
     // Ensure stream usage is set correctly (OpenAI Format)
-    req.body = provider.ensureStreamUsage(req.body, forwardingPath);
+    req.body = provider.ensureStreamUsage(req.body, req.path);
 
-    // Forward the request to the provider's API
-    const response = await fetch(
-      `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
-      {
-        method: req.method,
-        headers: authenticatedHeaders,
-        ...(req.method !== 'GET' && { body: JSON.stringify(req.body) }),
-      }
+    // Format request body and headers based on content type
+    const { requestBody, headers: formattedHeaders } = this.formatRequestBody(
+      req,
+      authenticatedHeaders
     );
+
+    // this rewrites the base url to the provider's base url and retains the rest
+    const upstreamUrl = `${provider.getBaseUrl(req.path)}${req.path}${
+      req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''
+    }`;
+    // Forward the request to the provider's API
+    const response = await fetch(upstreamUrl, {
+      method: req.method,
+      headers: formattedHeaders,
+      ...(requestBody && { body: requestBody }),
+    });
 
     // Handle non-200 responses
     if (response.status !== 200) {
       const errorMessage = `${response.status} ${response.statusText}`;
       logger.error(`Error response: ${errorMessage}`);
-      
+
       const errorBody = await response.text().catch(() => '');
       const error = this.parseErrorResponse(errorBody, response.status);
-      
+
       logger.error(`Error details: ${JSON.stringify(error)}`);
       res.status(response.status).json({ error });
       throw new HttpError(response.status, JSON.stringify(error));
@@ -116,6 +107,61 @@ export class ModelRequestService {
       res.json(data);
     }
     return;
+  }
+
+  /**
+   * Formats the request body and headers based on content type
+   * @param req - Express request object
+   * @param authenticatedHeaders - Base authenticated headers
+   * @returns Object with formatted requestBody and headers
+   */
+  private formatRequestBody(
+    req: Request,
+    authenticatedHeaders: Record<string, string>
+  ): {
+    requestBody: string | FormData | undefined;
+    headers: Record<string, string>;
+  } {
+    let requestBody: string | FormData | undefined;
+    let finalHeaders = { ...authenticatedHeaders };
+
+    if (req.method !== 'GET') {
+      // Check if this is a form data request
+      const hasFiles =
+        req.files && Array.isArray(req.files) && req.files.length > 0;
+      const isMultipart =
+        req.get('content-type')?.includes('multipart/form-data') ?? false;
+
+      if (hasFiles || isMultipart) {
+        // Create FormData for multipart requests
+        const formData = new FormData();
+
+        // Add text fields from req.body
+        Object.entries(req.body || {}).forEach(([key, value]) => {
+          formData.append(key, String(value));
+        });
+
+        // Add files from req.files
+        if (req.files && Array.isArray(req.files)) {
+          req.files.forEach(file => {
+            const blob = new Blob([file.buffer], { type: file.mimetype });
+            formData.append(file.fieldname, blob, file.originalname);
+          });
+        }
+
+        requestBody = formData;
+        // Remove content-type header to let fetch set it with boundary
+        delete finalHeaders['content-type'];
+        delete finalHeaders['Content-Type'];
+
+        logger.info('Forwarding form data request with files');
+      } else {
+        // Handle as JSON request
+        requestBody = JSON.stringify(req.body);
+      }
+    }
+
+    return { requestBody, headers: finalHeaders };
   }
 
   private parseErrorResponse(errorBody: string, status: number): object {

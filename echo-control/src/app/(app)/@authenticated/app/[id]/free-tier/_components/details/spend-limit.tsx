@@ -22,28 +22,30 @@ import { api } from '@/trpc/client';
 
 interface Props {
   appId: string;
-  spendLimit: number | undefined;
+  spendLimit: number | undefined | null;
 }
 
 export const SpendLimit: React.FC<Props> = ({ appId, spendLimit }) => {
-  if (spendLimit === undefined) {
-    return (
-      <SpendLimitDialog appId={appId} spendLimit={spendLimit}>
-        <Button variant="outline" size="sm" className="w-fit">
-          Set Spend Limit
-        </Button>
-      </SpendLimitDialog>
-    );
-  }
-
   return (
     <div className="flex items-center gap-2">
-      <p>{formatCurrency(spendLimit)} per user</p>
-      <SpendLimitDialog appId={appId} spendLimit={spendLimit}>
-        <Button variant="ghost" size="icon" className="size-fit p-1.5 mt-1">
-          <Pencil className="size-3.5" />
-        </Button>
-      </SpendLimitDialog>
+      {spendLimit === null ? (
+        <h3 className="text-2xl font-bold text-foreground/60">No Free Tier</h3>
+      ) : spendLimit === undefined ? (
+        <h3 className="text-2xl font-bold text-foreground/60">
+          No Spend Limit
+        </h3>
+      ) : (
+        <h3 className="text-2xl font-bold text-foreground/80">
+          {formatCurrency(spendLimit)}
+        </h3>
+      )}
+      {spendLimit !== null && (
+        <SpendLimitDialog appId={appId} spendLimit={spendLimit}>
+          <Button variant="ghost" size="icon" className="size-fit p-1.5 mt-1">
+            <Pencil className="size-3.5" />
+          </Button>
+        </SpendLimitDialog>
+      )}
     </div>
   );
 };

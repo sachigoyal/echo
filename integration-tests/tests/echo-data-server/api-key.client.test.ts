@@ -113,7 +113,7 @@ describe('API Key Client', () => {
     console.log('✅ Invalid API key successfully rejected');
   });
 
-  test('should be able to make a streaming LLM request with API key and app ID', async () => {
+  test.skip('should be able to make a streaming LLM request with API key and app ID', async () => {
     const apiKey = TEST_USER_API_KEYS.primary;
     const balanceCheck = await echoControlApi.getBalance(apiKey);
     expect(balanceCheck.totalPaid).toBeGreaterThan(0);

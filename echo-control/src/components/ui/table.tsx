@@ -104,6 +104,24 @@ function TableCaption({
   );
 }
 
+function TableEmpty({
+  children,
+  colSpan,
+}: {
+  children: React.ReactNode;
+  colSpan: number;
+}) {
+  return (
+    <TableRow className="mt-2 hover:bg-transparent">
+      <TableCell colSpan={colSpan} className="text-left pl-4 h-24">
+        <p className="text-xs text-muted-foreground/60 mt-2 text-center">
+          {children}
+        </p>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export {
   Table,
   TableHeader,
@@ -113,4 +131,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TableEmpty,
 };

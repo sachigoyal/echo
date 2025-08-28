@@ -13,13 +13,13 @@ export const BalanceButton = async () => {
 
   return (
     <HydrateClient>
-      <Link href="/credits">
-        <Button variant="outline">
+      <Button variant="outline" asChild>
+        <Link href="/credits">
           <Suspense fallback={<Skeleton className="h-5 w-10" />}>
             <Balance />
           </Suspense>
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </HydrateClient>
   );
 };

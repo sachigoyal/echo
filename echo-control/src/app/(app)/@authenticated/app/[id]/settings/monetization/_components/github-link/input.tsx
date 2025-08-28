@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFormContext } from 'react-hook-form';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const tabsTriggerClassName = cn(
   'shadow-none rounded-sm text-sm leading-none transition-colors bg-muted/80 border border-border',
@@ -133,5 +134,21 @@ export const GithubLinkInput = () => {
         />
       </TabsContent>
     </Tabs>
+  );
+};
+
+export const LoadingGithubLinkInput = () => {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <Skeleton className="w-28 h-8" />
+        <span className="text-xs text-muted-foreground leading-none">or</span>
+        <Skeleton className="w-28 h-8" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Skeleton className="w-full md:w-1/2 h-8" />
+        <Skeleton className="w-64 h-4" />
+      </div>
+    </div>
   );
 };

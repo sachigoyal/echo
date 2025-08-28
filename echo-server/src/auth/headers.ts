@@ -54,7 +54,6 @@ export const verifyUserHeaderCheck = async (
   return [
     {
       ...restHeaders,
-      'content-type': 'application/json',
       'accept-encoding': 'gzip, deflate',
     },
     echoControlService,

@@ -1,4 +1,4 @@
-import { ApiKeyValidationResult } from 'types';
+import { ApiKeyValidationResult } from '../types';
 import { MarkUp, ReferralReward, PrismaClient } from '../generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from '../logger';

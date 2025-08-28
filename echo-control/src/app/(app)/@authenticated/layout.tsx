@@ -31,12 +31,12 @@ export default async function AppLayout({
             {breadcrumbs}
           </div>
           <div className="flex items-center gap-1 md:gap-3">
-            <Link href="/new">
-              <Button variant="outline" size="navbar">
+            <Button variant="outline" size="navbar" asChild>
+              <Link href="/new">
                 <Plus className="size-4" />
                 <span className="hidden md:block">Create App</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
             <BalanceButton />
             <UserDropdown user={session.user} />
           </div>

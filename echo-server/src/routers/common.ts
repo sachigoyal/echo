@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
-import logger from '../logger';
+import logger, { logMetric } from '../logger';
 const standardRouter = Router();
 
 // Health check route
 standardRouter.get('/health', (req: Request, res: Response) => {
   logger.info('Server is healthy');
+  logMetric('server.health', 1);
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
