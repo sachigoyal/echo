@@ -15,8 +15,15 @@ export class HandleNonStreamingService {
     provider: BaseProvider,
     res: ExpressResponse
   ): Promise<{ transaction: Transaction; data: unknown }> {
-    // Parse the JSON response
-    const data = await response.json();
+    // Parse the JSON response with error handling
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      // If JSON parsing fails, get the text response instead
+      const text = await response.text();
+      throw new Error(`Failed to parse JSON response: ${text}`);
+    }
 
     // Process the response body for accounting/transaction creation
     const transaction = await provider.handleBody(JSON.stringify(data));

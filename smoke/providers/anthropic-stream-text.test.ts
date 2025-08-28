@@ -1,0 +1,42 @@
+import {
+  AnthropicModels,
+  createEchoAnthropic,
+} from '@merit-systems/echo-typescript-sdk';
+import { streamText } from 'ai';
+import { beforeAll, describe, expect, it } from 'vitest';
+import {
+  ECHO_APP_ID,
+  assertEnv,
+  baseRouterUrl,
+  getApiErrorDetails,
+  getToken,
+} from './test-helpers';
+
+beforeAll(assertEnv);
+
+describe.concurrent('Anthropic streamText per model', () => {
+  const anthropic = createEchoAnthropic(
+    { appId: ECHO_APP_ID!, baseRouterUrl },
+    getToken
+  );
+
+  for (const { model_id } of AnthropicModels) {
+    it(`Anthropic stream ${model_id}`, async () => {
+      try {
+        const { textStream } = streamText({
+          model: await anthropic(model_id),
+          prompt: 'One-word greeting.',
+        });
+        let streamed = '';
+        for await (const d of textStream) streamed += d;
+        expect(streamed).toBeDefined();
+        expect(streamed).not.toBe('');
+      } catch (err) {
+        const details = getApiErrorDetails(err);
+        throw new Error(
+          `[streamText] Anthropic ${model_id} failed: ${details}`
+        );
+      }
+    });
+  }
+});
