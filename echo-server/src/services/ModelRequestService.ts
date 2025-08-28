@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { HttpError, UnknownModelError } from '../errors/http';
-import logger from '../logger';
+import logger, { logMetric } from '../logger';
 import { getProvider } from '../providers/ProviderFactory';
 import { Transaction } from '../types';
 import { isValidImageModel, isValidModel } from './AccountingService';
@@ -53,6 +53,9 @@ export class ModelRequestService {
       logger.error(`Model does not support streaming: ${model}`);
       res.status(422).json({
         error: `Model ${model} does not support streaming.`,
+      });
+      logMetric('model.does_not_support_streaming', 1, {
+        model: model || 'undefined',
       });
       throw new UnknownModelError('Invalid model');
     }

@@ -3,9 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import { authenticateRequest } from './auth';
+import logger, { logMetric } from './logger';
 import { HttpError } from './errors/http';
 import { PrismaClient } from './generated/prisma';
-import logger from './logger';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
 import standardRouter from './routers/common';
 import { checkBalance } from './services/BalanceCheckService';
@@ -79,16 +79,27 @@ app.use((error: Error, req: Request, res: Response) => {
   );
 
   if (error instanceof HttpError) {
+    logMetric('server.internal_error', 1, {
+      error_type: 'http_error',
+      error_message: error.message,
+    });
     res.status(error.statusCode).json({
       error: error.message,
     });
   } else if (error instanceof Error) {
+    logMetric('server.internal_error', 1, {
+      error_type: error.name,
+      error_message: error.message,
+    });
     // Handle other errors with a more specific message
     logger.error('Internal server error', error);
     res.status(500).json({
       error: error.message || 'Internal Server Error',
     });
   } else {
+    logMetric('server.internal_error', 1, {
+      error_type: 'unknown_error',
+    });
     logger.error('Internal server error', error);
     res.status(500).json({
       error: 'Internal Server Error',
