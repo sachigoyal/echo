@@ -2,6 +2,7 @@ import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
+import multer from 'multer';
 import { authenticateRequest } from './auth';
 import { HttpError } from './errors/http';
 import { PrismaClient } from './generated/prisma';
@@ -15,6 +16,14 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3069;
+
+// Configure multer for handling form data and file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+});
 const prisma = new PrismaClient({
   datasources: {
     db: {
@@ -38,6 +47,7 @@ app.use(
   })
 );
 app.use(express.json({ limit: '100mb' }));
+app.use(upload.any()); // Handle multipart/form-data with any field names
 app.use(compression());
 
 // Use common router for utility routes

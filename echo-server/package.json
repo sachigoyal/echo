@@ -21,6 +21,7 @@
     "gemini-gpt-client": "npx tsx src/clients/gemini-gpt-client.ts",
     "openai-client": "npx tsx src/clients/gpt-client.ts",
     "openrouter-client": "npx tsx src/clients/openrouter-client.ts",
+    "openai-image-formdata-client": "npx tsx src/clients/openai-image-formdata-client.ts",
     "test": "vitest run",
     "test:integration": "vitest run",
     "test:watch": "vitest",
@@ -32,8 +33,7 @@
     "format:check": "prettier --check src/**/*.{ts,js}",
     "docker:build": "./scripts/build-local-docker.sh",
     "docker:run": "./scripts/run-local-docker.sh",
-    "docker:build-and-run": "pnpm run docker:build && pnpm run docker:run",
-    "fetch-openrouter-models": "npx tsx scripts/fetch-openrouter-models.ts"
+    "docker:build-and-run": "pnpm run docker:build && pnpm run docker:run"
   },
   "keywords": [],
   "author": "",
@@ -53,6 +53,7 @@
     "@types/compression": "^1.7.5",
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
+    "@types/multer": "^2.0.0",
     "@types/node": "^20.11.24",
     "@types/node-fetch": "^2.6.11",
     "compression": "^1.8.0",
@@ -60,6 +61,7 @@
     "dotenv": "^16.5.0",
     "express": "^4.18.3",
     "jose": "^6.0.11",
+    "multer": "^2.0.2",
     "node-fetch": "^2.7.0",
     "openai": "^4.97.0",
     "prisma": "^6.8.2",
