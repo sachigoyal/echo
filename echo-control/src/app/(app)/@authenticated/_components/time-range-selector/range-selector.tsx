@@ -47,7 +47,7 @@ export const RangeSelector = () => {
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center h-6">
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -83,7 +83,7 @@ export const RangeSelector = () => {
           setTimeframe(Number(value));
         }}
       >
-        <SelectTrigger className="rounded-l-none border-border shadow-none border-l-[0.5px]">
+        <SelectTrigger className="rounded-l-none border-border shadow-none border-l-[0.5px] text-xs">
           {timeframe !== ActivityTimeframe.Custom && (
             <span>
               {timeframe === 1 ? 'Past 24 Hours' : `Past ${timeframe} Days`}

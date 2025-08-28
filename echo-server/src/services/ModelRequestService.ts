@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { HttpError, UnknownModelError } from '../errors/http';
-import logger from '../logger';
+import logger, { logMetric } from '../logger';
 import { getProvider } from '../providers/ProviderFactory';
 import { Transaction } from '../types';
 import { isValidImageModel, isValidModel } from './AccountingService';

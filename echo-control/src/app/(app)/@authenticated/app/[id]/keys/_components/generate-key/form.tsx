@@ -5,37 +5,14 @@ import { api } from '@/trpc/client';
 import { GenerateApiKey as GenerateApiKeyComponent } from '@/app/(app)/@authenticated/_components/keys/generate-key';
 
 interface Props {
-  isMember: boolean;
   appId: string;
 }
 
-export const GenerateKey: React.FC<Props> = ({ isMember, appId }) => {
-  if (!isMember) {
-    return <NonMemberGenerateKey appId={appId} />;
-  }
+export const GenerateKeyForm: React.FC<Props> = ({ appId }) => {
+  const { data: member, isLoading } = api.apps.membership.get.useQuery({
+    appId,
+  });
 
-  return <MemberGenerateKey appId={appId} />;
-};
-
-const MemberGenerateKey = ({ appId }: { appId: string }) => {
-  const {
-    mutateAsync: generateApiKey,
-    data: apiKey,
-    isPending,
-  } = api.user.apiKeys.create.useMutation();
-
-  return (
-    <GenerateApiKeyComponent
-      apiKey={apiKey?.key}
-      isPending={isPending}
-      generateApiKey={async name =>
-        (await generateApiKey({ echoAppId: appId, name })).key
-      }
-    />
-  );
-};
-
-const NonMemberGenerateKey = ({ appId }: { appId: string }) => {
   const {
     mutateAsync: generateApiKey,
     data: apiKey,
@@ -46,7 +23,10 @@ const NonMemberGenerateKey = ({ appId }: { appId: string }) => {
     api.apps.membership.create.useMutation();
 
   const handleGenerateApiKey = async (name?: string) => {
-    await createMembership({ appId });
+    if (isLoading) throw new Error('Loading...');
+    if (!member) {
+      await createMembership({ appId });
+    }
     return (await generateApiKey({ echoAppId: appId, name })).key;
   };
 
@@ -55,6 +35,7 @@ const NonMemberGenerateKey = ({ appId }: { appId: string }) => {
       apiKey={apiKey?.key}
       isPending={isGenerating || isJoining}
       generateApiKey={handleGenerateApiKey}
+      disabled={isLoading}
     />
   );
 };

@@ -6,35 +6,18 @@ import {
   toPaginatedReponse,
 } from '@/services/lib/pagination';
 
-export const listAppUsersSchema = z.object({
+export const appUsersSchema = z.object({
   appId: z.uuid(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
 });
 
 export const listAppUsers = async (
-  { appId, startDate, endDate }: z.infer<typeof listAppUsersSchema>,
+  { appId, startDate, endDate }: z.infer<typeof appUsersSchema>,
   { page, page_size }: PaginationParams
 ) => {
   const [count, users] = await Promise.all([
-    db.transaction
-      .groupBy({
-        by: ['userId'],
-        where: {
-          echoAppId: appId,
-          isArchived: false,
-          ...((startDate || endDate) && {
-            createdAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-          }),
-        },
-        _count: {
-          userId: true,
-        },
-      })
-      .then(groups => groups.length),
+    countAppUsers({ appId, startDate, endDate }),
     (async () => {
       const topUsersWithStats = await db.transaction.groupBy({
         by: ['userId'],
@@ -111,4 +94,29 @@ export const listAppUsers = async (
     page,
     page_size,
   });
+};
+
+export const countAppUsers = async ({
+  appId,
+  startDate,
+  endDate,
+}: z.infer<typeof appUsersSchema>) => {
+  return await db.transaction
+    .groupBy({
+      by: ['userId'],
+      where: {
+        echoAppId: appId,
+        isArchived: false,
+        ...((startDate || endDate) && {
+          createdAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        }),
+      },
+      _count: {
+        userId: true,
+      },
+    })
+    .then(groups => groups.length);
 };

@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 
-import { ProfitChart } from './chart';
+import { LoadingProfitChart, ProfitChart } from './chart';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   markup: number;
@@ -46,8 +47,6 @@ export const MarkupInput = ({ markup, onMarkupChange }: Props) => {
     MARKUP_OPTIONS.find(option => option.value === markup)?.label ??
       MarkupOption.Custom
   );
-
-  console.log(markup);
 
   return (
     <div className="flex flex-col">
@@ -128,6 +127,21 @@ export const MarkupInput = ({ markup, onMarkupChange }: Props) => {
       </AnimatePresence>
       <div className="w-full mt-4">
         <ProfitChart markup={markup - 1} />
+      </div>
+    </div>
+  );
+};
+
+export const LoadingMarkupInput = () => {
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 w-full">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-[54px] flex-1" />
+        ))}
+      </div>
+      <div className="w-full mt-4">
+        <LoadingProfitChart />
       </div>
     </div>
   );

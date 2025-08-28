@@ -1,19 +1,13 @@
 'use client';
 
-import React from 'react';
-
-import { KeysList } from '../../../../_components/keys/list';
-
 import { api } from '@/trpc/client';
 
-interface Props {
-  appId: string;
-}
+import { KeysTable as KeysTableBase } from '@/app/(app)/@authenticated/_components/keys/table/table';
 
-export const Keys = ({ appId }: Props) => {
+export const KeysTable = () => {
   const [{ pages }, { fetchNextPage, isFetchingNextPage }] =
     api.user.apiKeys.list.useSuspenseInfiniteQuery(
-      { appId },
+      {},
       {
         getNextPageParam(lastPage) {
           return lastPage.has_next ? lastPage.page + 1 : undefined;
@@ -24,11 +18,13 @@ export const Keys = ({ appId }: Props) => {
   const keys = pages.flatMap(page => page.items);
 
   return (
-    <KeysList
+    <KeysTableBase
       keys={keys}
-      hasNext={pages[pages.length - 1].has_next}
-      fetchNextPage={fetchNextPage}
-      isFetchingNextPage={isFetchingNextPage}
+      pagination={{
+        hasNext: pages[pages.length - 1].has_next,
+        fetchNextPage,
+        isFetchingNextPage,
+      }}
     />
   );
 };

@@ -11,7 +11,6 @@ import {
   Prisma,
   Transaction,
   UserSpendPoolUsage,
-  ReferralCode,
 } from '../generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from '../logger';
