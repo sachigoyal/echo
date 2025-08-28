@@ -9,7 +9,7 @@ interface Props {
 
 export const KeysCard: React.FC<Props> = ({ title, children }) => {
   return (
-    <Card className="bg-transparent">
+    <Card>
       <CardHeader className="p-4 pb-2">
         <CardTitle className="text-lg font-semibold">{title}</CardTitle>
       </CardHeader>
