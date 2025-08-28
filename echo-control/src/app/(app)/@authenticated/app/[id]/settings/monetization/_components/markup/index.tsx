@@ -2,7 +2,7 @@ import { api } from '@/trpc/server';
 import { FormCard } from '../../../_components/form/card';
 import { MarkupInput } from './input';
 import { MarkupFormProvider } from './provider';
-import { Skeleton } from '@/components/ui/skeleton';
+import { LoadingMarkupInput } from '@/app/(app)/@authenticated/_components/markup/input';
 
 interface Props {
   appId: string;
@@ -34,7 +34,7 @@ export const MarkupForm: React.FC<Props> = async ({ appId }) => {
 export const LoadingMarkupForm = () => {
   return (
     <MarkupFormCard isLoading={true}>
-      <Skeleton className="w-full h-[238px]" />
+      <LoadingMarkupInput />
     </MarkupFormCard>
   );
 };

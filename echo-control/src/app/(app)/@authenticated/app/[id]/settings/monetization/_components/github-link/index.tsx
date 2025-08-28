@@ -1,8 +1,7 @@
 import { api } from '@/trpc/server';
 import { FormCard } from '../../../_components/form/card';
-import { GithubLinkInput } from './input';
+import { GithubLinkInput, LoadingGithubLinkInput } from './input';
 import { GithubLinkFormProvider } from './provider';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const GithubLinkFormCard = ({
   children,
@@ -51,7 +50,7 @@ export const GithubLinkForm = async ({ appId }: { appId: string }) => {
 export const LoadingGithubLinkForm = () => {
   return (
     <GithubLinkFormCard isLoading={true}>
-      <Skeleton className="w-full h-[100px]" />
+      <LoadingGithubLinkInput />
     </GithubLinkFormCard>
   );
 };

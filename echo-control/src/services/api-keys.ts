@@ -43,7 +43,6 @@ export const listApiKeys = async (
     isArchived: false,
     echoApp: {
       ...(appId ? { id: appId } : {}),
-      isArchived: false,
       appMemberships: {
         some: {
           userId,
@@ -68,6 +67,8 @@ export const listApiKeys = async (
         id: true,
         name: true,
         createdAt: true,
+        lastUsed: true,
+        isArchived: true,
         echoApp: {
           select: {
             id: true,

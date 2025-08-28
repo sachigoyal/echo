@@ -2,12 +2,9 @@ import React, { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import {
-  AppCard,
-  AppCardSkeleton,
-} from '@/app/(app)/@authenticated/_components/apps/card';
+import Link from 'next/link';
 
-import { api } from '@/trpc/server';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardTitle,
@@ -15,31 +12,40 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
-export const Apps = () => {
+import {
+  AppCard,
+  LoadingAppCard,
+} from '@/app/(app)/@authenticated/_components/apps/card';
+
+import { api } from '@/trpc/server';
+
+const AppsContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full flex flex-col gap-4 md:gap-6">
+    <div className="w-full flex flex-col gap-2 md:gap-3">
       <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-bold">Your Apps</h3>
+        <h3 className="font-bold">Your Apps</h3>
       </div>
-      <ErrorBoundary fallback={<p>There was an error loading your apps</p>}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Suspense
-            fallback={Array.from({ length: 5 }).map((_, i) => (
-              <AppCardSkeleton key={i} />
-            ))}
-          >
-            <AppsGrid />
-          </Suspense>
-        </div>
-      </ErrorBoundary>
+      {children}
     </div>
   );
 };
 
-export const AppsGrid = async () => {
+export const Apps = () => {
+  return (
+    <AppsContainer>
+      <ErrorBoundary fallback={<p>There was an error loading your apps</p>}>
+        <div className="flex flex-col gap-2">
+          <Suspense fallback={<LoadingAppsGrid />}>
+            <AppsCards />
+          </Suspense>
+        </div>
+      </ErrorBoundary>
+    </AppsContainer>
+  );
+};
+
+const AppsCards = async () => {
   const apps = await api.apps.list.owner({});
 
   if (apps.items.length === 0) {
@@ -63,4 +69,16 @@ export const AppsGrid = async () => {
   }
 
   return apps.items.map(app => <AppCard key={app.id} {...app} />);
+};
+
+const LoadingAppsGrid = () => {
+  return Array.from({ length: 3 }).map((_, i) => <LoadingAppCard key={i} />);
+};
+
+export const LoadingAppsSection = () => {
+  return (
+    <AppsContainer>
+      <LoadingAppsGrid />
+    </AppsContainer>
+  );
 };
