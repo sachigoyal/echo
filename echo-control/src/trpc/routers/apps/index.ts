@@ -73,6 +73,11 @@ import {
   countPublicApps,
 } from '@/services/apps/count';
 import { appEarningsSchema, getAppEarnings } from '@/services/apps/earnings';
+import {
+  getAppReferralReward,
+  setAppReferralReward,
+  setAppReferralRewardSchema,
+} from '@/services/apps/referral-codes';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -158,6 +163,22 @@ export const appsRouter = createTRPCRouter({
         .input(updateFreeTierSpendPoolSchema)
         .mutation(async ({ ctx, input }) => {
           return await updateFreeTierSpendPool(
+            input.appId,
+            ctx.session.user.id,
+            input
+          );
+        }),
+    },
+
+    referralReward: {
+      get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await getAppReferralReward(input);
+      }),
+
+      set: appOwnerProcedure
+        .input(setAppReferralRewardSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await setAppReferralReward(
             input.appId,
             ctx.session.user.id,
             input
