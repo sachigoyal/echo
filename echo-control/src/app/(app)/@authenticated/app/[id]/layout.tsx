@@ -19,6 +19,10 @@ export default async function AuthenticatedAppLayout({
             href: `/app/${id}/free-tier`,
           },
           {
+            label: 'Referrals',
+            href: `/app/${id}/referrals`,
+          },
+          {
             label: 'Keys',
             href: `/app/${id}/keys`,
           },

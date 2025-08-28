@@ -24,6 +24,8 @@ import {
 import {
   createAppMembership,
   getAppMembership,
+  listAppMemberships,
+  listAppMembershipsSchema,
 } from '@/services/apps/membership';
 import {
   listAppsSchema,
@@ -73,6 +75,11 @@ import {
   countPublicApps,
 } from '@/services/apps/count';
 import { appEarningsSchema, getAppEarnings } from '@/services/apps/earnings';
+import {
+  getAppReferralReward,
+  setAppReferralReward,
+  setAppReferralRewardSchema,
+} from '@/services/apps/referral-codes';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -165,6 +172,22 @@ export const appsRouter = createTRPCRouter({
         }),
     },
 
+    referralReward: {
+      get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await getAppReferralReward(input);
+      }),
+
+      set: appOwnerProcedure
+        .input(setAppReferralRewardSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await setAppReferralReward(
+            input.appId,
+            ctx.session.user.id,
+            input
+          );
+        }),
+    },
+
     transactions: {
       list: paginatedProcedure
         .concat(protectedProcedure)
@@ -209,16 +232,23 @@ export const appsRouter = createTRPCRouter({
           return await getAppEarnings(input);
         }),
     },
-  },
 
-  membership: {
-    create: protectedAppProcedure.mutation(async ({ ctx }) => {
-      return await createAppMembership(ctx.session.user.id, ctx.app.id);
-    }),
+    memberships: {
+      create: protectedAppProcedure.mutation(async ({ ctx }) => {
+        return await createAppMembership(ctx.session.user.id, ctx.app.id);
+      }),
 
-    get: protectedAppProcedure.query(async ({ ctx }) => {
-      return await getAppMembership(ctx.session.user.id, ctx.app.id);
-    }),
+      get: protectedAppProcedure.query(async ({ ctx }) => {
+        return await getAppMembership(ctx.session.user.id, ctx.app.id);
+      }),
+
+      list: paginatedProcedure
+        .concat(protectedProcedure)
+        .input(listAppMembershipsSchema)
+        .query(async ({ input, ctx }) => {
+          return await listAppMemberships(input, ctx.pagination);
+        }),
+    },
   },
 
   list: {
