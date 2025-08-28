@@ -37,7 +37,9 @@ export const listPublicApps = async (
       take: page_size,
       select: appSelect,
       orderBy: {
-        createdAt: 'desc',
+        Transactions: {
+          _count: 'desc',
+        },
       },
     }),
     countApps(where),

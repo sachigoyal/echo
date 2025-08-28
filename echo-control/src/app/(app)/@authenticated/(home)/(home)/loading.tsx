@@ -2,6 +2,7 @@ import { Body, Heading } from '../../_components/layout/page-utils';
 
 import { LoadingAppsSection } from './_components/apps';
 import { LoadingActivity } from './_components/activity';
+import { LoadingPopularApps } from './_components/popular';
 
 import { auth } from '@/auth';
 
@@ -25,6 +26,7 @@ export default async function LoadingDashboardPage() {
           </div>
           <div className="flex flex-col gap-4 flex-1 overflow-hidden py-2">
             <LoadingActivity />
+            <LoadingPopularApps />
           </div>
         </div>
       </Body>
