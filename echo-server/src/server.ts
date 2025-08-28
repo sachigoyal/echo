@@ -8,7 +8,7 @@ import { modelRequestService } from './services/ModelRequestService';
 import { checkBalance } from './services/BalanceCheckService';
 import standardRouter from './routers/common';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
-import logger from './logger';
+import logger, { logMetric } from './logger';
 
 dotenv.config();
 
@@ -69,15 +69,25 @@ app.use((error: Error, req: Request, res: Response) => {
   );
 
   if (error instanceof HttpError) {
+    logMetric('server.internal_error', 1, {
+      error_type: 'http_error',
+      error_message: error.message,
+    });
     res.status(error.statusCode).json({
       error: error.message,
     });
   } else if (error instanceof Error) {
-    // Handle other errors with a more specific message
+    logMetric('server.internal_error', 1, {
+      error_type: error.name,
+      error_message: error.message,
+    });
     res.status(500).json({
       error: error.message || 'Internal Server Error',
     });
   } else {
+    logMetric('server.internal_error', 1, {
+      error_type: 'unknown_error',
+    });
     res.status(500).json({
       error: 'Internal Server Error',
     });
