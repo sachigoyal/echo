@@ -9,7 +9,9 @@ export function extractGeminiModelName(req: Request): string | undefined {
   const expectedSuffixes = [':streamGenerateContent', ':generateContent'];
 
   // Check if path matches any of the expected prefixes
-  const matchingPrefix = expectedPrefixes.find(prefix => path.startsWith(prefix));
+  const matchingPrefix = expectedPrefixes.find(prefix =>
+    path.startsWith(prefix)
+  );
   if (!matchingPrefix) {
     return undefined;
   }
