@@ -66,7 +66,7 @@ export const PercentInput: React.FC<Props> = ({
         autoNumericRef.current.remove();
       }
     };
-  }, [setAmount, decimalPlaces]);
+  }, [setAmount, decimalPlaces, min, max]);
 
   return (
     <div

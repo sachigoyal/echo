@@ -1,15 +1,11 @@
 import { Suspense } from 'react';
 
-import { ErrorBoundary } from 'react-error-boundary';
-
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-
-import { PaymentsCard } from '@/app/(app)/@authenticated/_components/payments/card';
 
 import { ReferralsTable, LoadingReferralsTable } from './table';
 
