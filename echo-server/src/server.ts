@@ -46,12 +46,8 @@ app.use(standardRouter);
 // Main route handler - only for API paths that need authentication
 app.all('*', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { processedHeaders, echoControlService, forwardingPath } =
-      await authenticateRequest(
-        req.path,
-        req.headers as Record<string, string>,
-        prisma
-      );
+    const { processedHeaders, echoControlService } =
+      await authenticateRequest(req.headers as Record<string, string>, prisma);
 
     await checkBalance(echoControlService);
 
@@ -61,7 +57,6 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
         res,
         processedHeaders,
         echoControlService,
-        forwardingPath
       );
 
     await echoControlService.createTransaction(transaction);

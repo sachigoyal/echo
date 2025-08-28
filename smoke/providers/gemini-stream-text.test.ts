@@ -21,7 +21,7 @@ describe.concurrent('Gemini streamText per model', () => {
   );
 
   for (const { model_id } of GeminiModels) {
-    it(`Gemini generateText ${model_id}`, async () => {
+    it(`Gemini streamText ${model_id}`, async () => {
       try {
         const { textStream } = streamText({
           model: await gemini(model_id),
