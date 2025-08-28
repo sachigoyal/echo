@@ -1,8 +1,11 @@
 import { Response as ExpressResponse } from 'express';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web';
 import { ReadableStream } from 'stream/web';
+import logger from '../logger';
 import { BaseProvider } from '../providers/BaseProvider';
 import { Transaction } from '../types';
-import logger from '../logger';
 
 export class HandleStreamService {
   /**
@@ -34,16 +37,13 @@ export class HandleStreamService {
     }
 
     // Duplicate the stream - one for client, one for processing
-    const [stream1, stream2] = this.duplicateStream(bodyStream);
-
-    // Create readers for both streams
-    const reader1 = stream1.getReader();
-    const reader2 = stream2.getReader();
+    const [clientStream, accountingStream] = this.duplicateStream(bodyStream);
 
     // Promise for streaming data to client
-    const streamToClientPromise = this.streamToClient(reader1, res);
+    const streamToClientPromise = this.streamToClient(clientStream, res);
 
     // Promise for processing data and creating transaction
+    const reader2 = accountingStream.getReader();
     const transactionPromise = this.processStreamData(reader2, provider);
 
     // Wait for both streams to complete before ending response
@@ -68,19 +68,10 @@ export class HandleStreamService {
    * @param res - Express response object
    */
   private async streamToClient(
-    reader: ReadableStreamDefaultReader<Uint8Array>,
+    stream: NodeWebReadableStream<Uint8Array>,
     res: ExpressResponse
   ): Promise<void> {
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        res.write(value);
-      }
-    } catch (error) {
-      logger.error(`Error reading stream: ${error}`);
-      throw error;
-    }
+    await pipeline(Readable.fromWeb(stream), res);
   }
 
   /**
@@ -93,12 +84,15 @@ export class HandleStreamService {
     provider: BaseProvider
   ): Promise<Transaction> {
     let data = '';
+    const decoder = new TextDecoder();
     try {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        data += new TextDecoder().decode(value);
+        data += decoder.decode(value, { stream: true });
       }
+      // flush any remaining decoder state
+      data += decoder.decode();
       // Wait for transaction to complete before resolving
       return await provider.handleBody(data);
     } catch (error) {
