@@ -30,8 +30,6 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
     return notFound();
   }
 
-  await new Promise(resolve => setTimeout(resolve, 5 * 1000));
-
   const updateApp = async (values: z.infer<typeof updateAppSchema>) => {
     'use server';
     await api.apps.app
