@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const GenerateKeyForm: React.FC<Props> = ({ appId }) => {
-  const { data: member, isLoading } = api.apps.membership.get.useQuery({
+  const { data: member, isLoading } = api.apps.app.memberships.get.useQuery({
     appId,
   });
 
@@ -20,7 +20,7 @@ export const GenerateKeyForm: React.FC<Props> = ({ appId }) => {
   } = api.user.apiKeys.create.useMutation();
 
   const { mutateAsync: createMembership, isPending: isJoining } =
-    api.apps.membership.create.useMutation();
+    api.apps.app.memberships.create.useMutation();
 
   const handleGenerateApiKey = async (name?: string) => {
     if (isLoading) throw new Error('Loading...');

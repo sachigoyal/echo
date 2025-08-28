@@ -1,6 +1,7 @@
 import { Body, Heading } from '../../../_components/layout/page-utils';
 
 import { LoadingReferralBonus } from './_components/referral-amount';
+import { LoadingReferrals } from './_components/referrals';
 
 export default async function LoadingAppReferralsPage() {
   return (
@@ -11,6 +12,7 @@ export default async function LoadingAppReferralsPage() {
       />
       <Body>
         <LoadingReferralBonus />
+        <LoadingReferrals />
       </Body>
     </div>
   );

@@ -24,6 +24,8 @@ import {
 import {
   createAppMembership,
   getAppMembership,
+  listAppMemberships,
+  listAppMembershipsSchema,
 } from '@/services/apps/membership';
 import {
   listAppsSchema,
@@ -230,16 +232,23 @@ export const appsRouter = createTRPCRouter({
           return await getAppEarnings(input);
         }),
     },
-  },
 
-  membership: {
-    create: protectedAppProcedure.mutation(async ({ ctx }) => {
-      return await createAppMembership(ctx.session.user.id, ctx.app.id);
-    }),
+    memberships: {
+      create: protectedAppProcedure.mutation(async ({ ctx }) => {
+        return await createAppMembership(ctx.session.user.id, ctx.app.id);
+      }),
 
-    get: protectedAppProcedure.query(async ({ ctx }) => {
-      return await getAppMembership(ctx.session.user.id, ctx.app.id);
-    }),
+      get: protectedAppProcedure.query(async ({ ctx }) => {
+        return await getAppMembership(ctx.session.user.id, ctx.app.id);
+      }),
+
+      list: paginatedProcedure
+        .concat(protectedProcedure)
+        .input(listAppMembershipsSchema)
+        .query(async ({ input, ctx }) => {
+          return await listAppMemberships(input, ctx.pagination);
+        }),
+    },
   },
 
   list: {
