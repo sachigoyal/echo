@@ -1,9 +1,23 @@
 import { PrismaClient } from '@/generated/prisma';
+import { logger } from '@/logger';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+declare global {
+  var prisma: PrismaClient | undefined;
+}
 
-export const db = globalForPrisma.prisma ?? new PrismaClient();
+let prisma: PrismaClient;
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
+if (process.env.NODE_ENV === 'production') {
+  logger.emit({
+    body: 'Initializing Prisma client in production',
+    severityText: 'INFO',
+  });
+  prisma = new PrismaClient();
+} else {
+  if (!globalThis.prisma) {
+    globalThis.prisma = new PrismaClient();
+  }
+  prisma = globalThis.prisma;
+}
+
+export { prisma as db };
