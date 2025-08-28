@@ -23,8 +23,7 @@ export class ModelRequestService {
     req: Request,
     res: Response,
     processedHeaders: Record<string, string>,
-    echoControlService: EchoControlService,
-    forwardingPath: string
+    echoControlService: EchoControlService
   ): Promise<{ transaction: Transaction; isStream: boolean; data: unknown }> {
     const model = extractModelName(req);
 
@@ -40,31 +39,17 @@ export class ModelRequestService {
     const isStream = extractIsStream(req);
 
     // Get the appropriate provider
-    const provider = getProvider(
-      model,
-      echoControlService,
-      isStream,
-      forwardingPath
-    );
-
-    // Validate streaming support
-    if (!provider.supportsStream() && isStream) {
-      logger.error(`Model does not support streaming: ${model}`);
-      res.status(422).json({
-        error: `Model ${model} does not support streaming.`,
-      });
-      throw new UnknownModelError('Invalid model');
-    }
+    const provider = getProvider(model, echoControlService, isStream, req.path);
 
     // Format authentication headers
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
-      `New outbound request: ${req.method} ${provider.getBaseUrl(forwardingPath)}${forwardingPath}`
+      `New outbound request: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`
     );
 
     // Ensure stream usage is set correctly (OpenAI Format)
-    req.body = provider.ensureStreamUsage(req.body, forwardingPath);
+    req.body = provider.ensureStreamUsage(req.body, req.path);
 
     // Format request body and headers based on content type
     const { requestBody, headers: formattedHeaders } = this.formatRequestBody(
@@ -72,15 +57,16 @@ export class ModelRequestService {
       authenticatedHeaders
     );
 
+    // this rewrites the base url to the provider's base url and retains the rest
+    const upstreamUrl = `${provider.getBaseUrl(req.path)}${req.path}${
+      req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''
+    }`;
     // Forward the request to the provider's API
-    const response = await fetch(
-      `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
-      {
-        method: req.method,
-        headers: formattedHeaders,
-        ...(requestBody && { body: requestBody }),
-      }
-    );
+    const response = await fetch(upstreamUrl, {
+      method: req.method,
+      headers: formattedHeaders,
+      ...(requestBody && { body: requestBody }),
+    });
 
     // Handle non-200 responses
     if (response.status !== 200) {

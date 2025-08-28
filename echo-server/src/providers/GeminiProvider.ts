@@ -1,8 +1,8 @@
+import logger from '../logger';
 import { getCostPerToken } from '../services/AccountingService';
+import { LlmTransactionMetadata, Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
-import { LlmTransactionMetadata, Transaction } from '../types';
-import logger from '../logger';
 
 export interface GeminiUsage {
   promptTokenCount: number;
@@ -132,17 +132,16 @@ export class GeminiProvider extends BaseProvider {
       let providerId = 'gemini-response';
 
       if (this.getIsStream()) {
-        throw new Error('Gemini does not support streaming');
-        // const usage = parseSSEGeminiFormat(data);
+        const usage = parseSSEGeminiFormat(data);
 
-        // if (!usage) {
-        //   console.error('No usage data found in streaming response');
-        //   throw new Error('No usage data found in streaming response');
-        // }
+        if (!usage) {
+          console.error('No usage data found in streaming response');
+          throw new Error('No usage data found in streaming response');
+        }
 
-        // promptTokens = usage.promptTokenCount;
-        // candidatesTokens = usage.candidatesTokenCount;
-        // totalTokens = usage.totalTokenCount;
+        promptTokens = usage.promptTokenCount;
+        candidatesTokens = usage.candidatesTokenCount;
+        totalTokens = usage.totalTokenCount;
       } else {
         const parsed = JSON.parse(data) as GeminiResponse;
 

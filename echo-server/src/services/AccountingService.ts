@@ -10,7 +10,9 @@ import {
 } from '@merit-systems/echo-typescript-sdk';
 
 import { Decimal } from '@prisma/client/runtime/library';
+import { UnknownModelError } from '../errors/http';
 import { Tool } from 'openai/resources/responses/responses';
+import { logMetric } from '../logger';
 
 // Combine all supported chat models from the TypeScript SDK
 export const ALL_SUPPORTED_MODELS: SupportedModel[] = [
@@ -81,7 +83,8 @@ export const getCostPerToken = (
   outputTokens: number
 ) => {
   if (!isValidModel(model)) {
-    throw new Error(`Invalid model: ${model}`);
+    logMetric('model.invalid', 1, { model });
+    throw new UnknownModelError(`Invalid model: ${model}`);
   }
 
   const modelPrice = getModelPrice(model);
