@@ -1,29 +1,43 @@
 'use client';
 
-import React from 'react';
+import { Loader2, User } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import {
+  Table,
   TableRow,
-  TableCell as TableCellBase,
-  TableFooter,
+  TableHead,
+  TableHeader,
   TableBody,
+  TableCell,
+  TableEmpty,
 } from '@/components/ui/table';
+
 import { Skeleton } from '@/components/ui/skeleton';
-
 import { UserAvatar } from '@/components/utils/user-avatar';
-
-import { formatCurrency } from '@/lib/utils';
-
+import { formatCurrency } from '@/lib/balance';
 import { api } from '@/trpc/client';
 
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+interface User {
+  id: string;
+  name: string | null;
+  image: string | null;
+  totalTransactions: number;
+  rawCost: number;
+  totalProfit: number;
+}
+
+interface Pagination {
+  hasNext: boolean;
+  fetchNextPage: () => void;
+  isFetchingNextPage: boolean;
+}
 
 interface Props {
   appId: string;
 }
 
-export const UserRows: React.FC<Props> = ({ appId }) => {
+export const UsersTable: React.FC<Props> = ({ appId }) => {
   const [users, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
     api.apps.app.users.list.useSuspenseInfiniteQuery(
       { appId },
@@ -35,98 +49,130 @@ export const UserRows: React.FC<Props> = ({ appId }) => {
 
   const rows = users.pages.flatMap(page => page.items);
 
-  if (rows.length === 0) {
-    return (
-      <TableBody>
-        <TableRow className="mt-2">
-          <TableCellBase colSpan={4} className="text-left pl-4">
-            <p className="text-xs text-muted-foreground/60">No users yet</p>
-          </TableCellBase>
-        </TableRow>
-      </TableBody>
-    );
-  }
+  return (
+    <BaseUsersTable
+      pagination={
+        hasNextPage
+          ? {
+              hasNext: hasNextPage,
+              fetchNextPage,
+              isFetchingNextPage,
+            }
+          : undefined
+      }
+    >
+      {rows.length > 0 ? (
+        <UserRows
+          users={rows.map(row => ({
+            id: row.id,
+            name: row.name,
+            image: row.image,
+            totalTransactions: row.usage.totalTransactions,
+            rawCost: row.usage.rawCost,
+            totalProfit: row.usage.markupProfit,
+          }))}
+        />
+      ) : (
+        <TableEmpty colSpan={4}>No users found</TableEmpty>
+      )}
+    </BaseUsersTable>
+  );
+};
 
+export const LoadingUsersTable = () => {
+  return (
+    <BaseUsersTable>
+      <LoadingUserRow />
+      <LoadingUserRow />
+    </BaseUsersTable>
+  );
+};
+
+const UserRows = ({ users }: { users: User[] }) => {
+  return users.map(user => <UserRow key={user.id} user={user} />);
+};
+
+const UserRow = ({ user }: { user: User }) => {
+  return (
+    <TableRow key={user.id}>
+      <TableCell className="pl-4">
+        <div className="flex flex-row items-center gap-2">
+          <UserAvatar src={user.image} className="size-6" />
+          <p className="text-sm font-medium">{user.name}</p>
+        </div>
+      </TableCell>
+      <TableCell>{user.totalTransactions}</TableCell>
+      <TableCell>{formatCurrency(user.rawCost)}</TableCell>
+      <TableCell className="text-right pr-4 text-primary font-bold">
+        {formatCurrency(user.totalProfit)}
+      </TableCell>
+    </TableRow>
+  );
+};
+
+const LoadingUserRow = () => {
+  return (
+    <TableRow>
+      <TableCell className="pl-4">
+        <div className="flex flex-row items-center gap-2">
+          <Skeleton className="size-6" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-20" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+    </TableRow>
+  );
+};
+
+interface BaseUsersTableProps {
+  children: React.ReactNode;
+  pagination?: Pagination;
+}
+
+const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
   return (
     <>
-      <TableBody>
-        {rows.map(user => (
-          <TableRow key={user.id}>
-            <TableCell className="pl-4">
-              <div className="flex flex-row items-center gap-2">
-                <UserAvatar src={user.image} className="size-6" />
-                <p className="text-sm font-medium">{user.name}</p>
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent text-xs">
+            <TableHead className="pl-4 flex items-center gap-2">
+              <div className="size-6 flex items-center justify-center bg-muted rounded-md">
+                <User className="size-4" />
               </div>
-            </TableCell>
-            <TableCell>{user.usage.totalTransactions}</TableCell>
-            <TableCell>
-              {formatCurrency(user.usage.rawCost - user.usage.markupProfit)}
-            </TableCell>
-            <TableCell className="text-right pr-4 text-primary font-bold">
-              {formatCurrency(user.usage.markupProfit)}
-            </TableCell>
+              Name
+            </TableHead>
+            <TableHead className="text-center">Transactions</TableHead>
+            <TableHead className="text-center">Cost</TableHead>
+            <TableHead className="text-right pr-4">Profit</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-      {hasNextPage && (
-        <TableFooter className="bg-transparent hover:bg-transparent">
-          <TableRow>
-            <TableCellBase colSpan={4} className="text-center p-0">
-              <Button
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-                variant="ghost"
-                className="w-full text-muted-foreground/60 rounded-none"
-                size="sm"
-              >
-                {isFetchingNextPage ? 'Loading...' : 'Load more'}
-              </Button>
-            </TableCellBase>
-          </TableRow>
-        </TableFooter>
+        </TableHeader>
+        <TableBody>{children}</TableBody>
+      </Table>
+      {pagination?.hasNext && (
+        <div className="flex justify-center">
+          <Button
+            onClick={pagination.fetchNextPage}
+            className="w-full"
+            variant="ghost"
+            disabled={pagination.isFetchingNextPage}
+            size="sm"
+          >
+            {pagination.isFetchingNextPage ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              'Load more'
+            )}
+          </Button>
+        </div>
       )}
     </>
-  );
-};
-
-export const LoadingUserRows = () => {
-  return (
-    <TableBody>
-      {Array.from({ length: 5 }).map((_, index) => (
-        <TableRow key={index}>
-          <TableCell className="pl-4">
-            <div className="flex flex-row items-center gap-2">
-              <Skeleton className="size-6" />
-              <Skeleton className="w-16 h-4" />
-            </div>
-          </TableCell>
-          <TableCell>
-            <Skeleton className="w-16 h-4 mx-auto" />
-          </TableCell>
-          <TableCell>
-            <Skeleton className="w-16 h-4 mx-auto" />
-          </TableCell>
-          <TableCell className="pr-4">
-            <Skeleton className="w-16 h-4 ml-auto" />
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  );
-};
-
-const TableCell = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <TableCellBase
-      className={cn('text-center text-xs text-muted-foreground', className)}
-    >
-      {children}
-    </TableCellBase>
   );
 };

@@ -62,7 +62,17 @@ import {
   listAppTransactionsSchema,
 } from '@/services/apps/transactions';
 import { getAppActivity, getAppActivitySchema } from '@/services/apps/activity';
-import { listAppUsers, listAppUsersSchema } from '@/services/apps/users';
+import {
+  listAppUsers,
+  countAppUsers,
+  appUsersSchema,
+} from '@/services/apps/users';
+import {
+  countMemberApps,
+  countOwnerApps,
+  countPublicApps,
+} from '@/services/apps/count';
+import { appEarningsSchema, getAppEarnings } from '@/services/apps/earnings';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -172,9 +182,15 @@ export const appsRouter = createTRPCRouter({
     users: {
       list: paginatedProcedure
         .concat(protectedProcedure)
-        .input(listAppUsersSchema)
+        .input(appUsersSchema)
         .query(async ({ input, ctx }) => {
           return await listAppUsers(input, ctx.pagination);
+        }),
+
+      count: protectedProcedure
+        .input(appUsersSchema)
+        .query(async ({ input }) => {
+          return await countAppUsers(input);
         }),
     },
 
@@ -183,6 +199,14 @@ export const appsRouter = createTRPCRouter({
         .input(getAppActivitySchema)
         .query(async ({ input }) => {
           return await getAppActivity(input);
+        }),
+    },
+
+    earnings: {
+      get: protectedProcedure
+        .input(appEarningsSchema)
+        .query(async ({ input }) => {
+          return await getAppEarnings(input);
         }),
     },
   },
@@ -218,6 +242,20 @@ export const appsRouter = createTRPCRouter({
       .query(async ({ input, ctx }) => {
         return await listOwnerApps(ctx.session.user.id, input, ctx.pagination);
       }),
+  },
+
+  count: {
+    public: publicProcedure.query(async () => {
+      return await countPublicApps();
+    }),
+
+    member: protectedProcedure.query(async ({ ctx }) => {
+      return await countMemberApps(ctx.session.user.id);
+    }),
+
+    owner: protectedProcedure.query(async ({ ctx }) => {
+      return await countOwnerApps(ctx.session.user.id);
+    }),
   },
 
   /**

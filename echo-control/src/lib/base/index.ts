@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { db } from '../db';
 import { processPaymentUpdate } from '../payment-processing';
+import { logger } from '@/logger';
 
 export const formatAmountFromQueryParams = (
   req: NextRequest
@@ -33,7 +34,13 @@ export async function handlePaymentSuccessFromx402({
 }) {
   try {
     if (!userId) {
-      console.error('No userId in payment metadata');
+      logger.emit({
+        severityText: 'ERROR',
+        body: 'No userId in payment metadata',
+        attributes: {
+          function: 'handlePaymentSuccessFromx402',
+        },
+      });
       return;
     }
 
@@ -72,10 +79,26 @@ export async function handlePaymentSuccessFromx402({
     });
 
     const isFreeTier = metadata?.type === 'free-tier-credits';
-    console.log(
-      `Payment succeeded: ${cryptoMetadata['transaction-id']}${isFreeTier ? ' (free tier pool)' : ', totalPaid updated'}`
-    );
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Payment succeeded',
+      attributes: {
+        transactionId: cryptoMetadata['transaction-id'],
+        isFreeTier,
+        userId,
+        function: 'handlePaymentSuccessFromx402',
+      },
+    });
   } catch (error) {
-    console.error('Error handling payment success:', error);
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error handling payment success',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        function: 'handlePaymentSuccessFromx402',
+      },
+    });
   }
 }

@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import { getProvider } from '../providers/ProviderFactory';
-import { EchoControlService } from './EchoControlService';
-import { isValidModel } from './AccountingService';
-import { extractIsStream, extractModelName } from './RequestDataService';
-import { handleStreamService } from './HandleStreamService';
-import { handleNonStreamingService } from './HandleNonStreamingService';
-import { Transaction } from '../types';
 import { HttpError, UnknownModelError } from '../errors/http';
 import logger, { logMetric } from '../logger';
+import { getProvider } from '../providers/ProviderFactory';
+import { Transaction } from '../types';
+import { isValidImageModel, isValidModel } from './AccountingService';
+import { EchoControlService } from './EchoControlService';
+import { handleNonStreamingService } from './HandleNonStreamingService';
+import { handleStreamService } from './HandleStreamService';
+import { extractIsStream, extractModelName } from './RequestDataService';
 
 export class ModelRequestService {
   /**
@@ -29,8 +29,7 @@ export class ModelRequestService {
     // Extract and validate model
     const model = extractModelName(req);
 
-    if (!model || !isValidModel(model)) {
-      logMetric('model.invalid', 1, { model: model || 'undefined' });
+    if (!model || (!isValidModel(model) && !isValidImageModel(model))) {
       logger.error(`Invalid model: ${model}`);
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
@@ -65,9 +64,7 @@ export class ModelRequestService {
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
-      'new outbound request',
-      `${provider.getBaseUrl(forwardingPath)}${forwardingPath}`,
-      req.method
+      `New outbound request: ${req.method} ${provider.getBaseUrl(forwardingPath)}${forwardingPath}`
     );
 
     // Ensure stream usage is set correctly (OpenAI Format)
@@ -85,11 +82,14 @@ export class ModelRequestService {
 
     // Handle non-200 responses
     if (response.status !== 200) {
-      const error = await response.json();
-      logger.error(`Error response: ${JSON.stringify(error)}`);
-      res.status(response.status).json({
-        error: error,
-      });
+      const errorMessage = `${response.status} ${response.statusText}`;
+      logger.error(`Error response: ${errorMessage}`);
+      
+      const errorBody = await response.text().catch(() => '');
+      const error = this.parseErrorResponse(errorBody, response.status);
+      
+      logger.error(`Error details: ${JSON.stringify(error)}`);
+      res.status(response.status).json({ error });
       throw new HttpError(response.status, JSON.stringify(error));
     }
 
@@ -119,6 +119,18 @@ export class ModelRequestService {
       res.json(data);
     }
     return;
+  }
+
+  private parseErrorResponse(errorBody: string, status: number): object {
+    if (!errorBody.trim()) {
+      return { message: `HTTP ${status} error` };
+    }
+
+    try {
+      return JSON.parse(errorBody);
+    } catch {
+      return { message: errorBody };
+    }
   }
 }
 

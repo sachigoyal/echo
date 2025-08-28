@@ -73,7 +73,7 @@ export const listAppTransactions = async (
       };
       date: Date;
       callCount: number;
-      appProfit: number;
+      markUpProfit: number;
     }
   >();
 
@@ -84,7 +84,7 @@ export const listAppTransactions = async (
       // Aggregate existing group
       const existing = groupedTransactions.get(userKey)!;
       existing.callCount += 1;
-      existing.appProfit += Number(transaction.markUpProfit);
+      existing.markUpProfit += Number(transaction.markUpProfit);
     } else {
       // Create new group
       groupedTransactions.set(userKey, {
@@ -95,7 +95,7 @@ export const listAppTransactions = async (
           image: transaction.user.image,
         },
         callCount: 1,
-        appProfit: Number(transaction.markUpProfit),
+        markUpProfit: Number(transaction.markUpProfit),
         date: transaction.createdAt,
       });
     }

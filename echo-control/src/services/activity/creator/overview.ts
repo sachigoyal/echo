@@ -38,7 +38,7 @@ export const getCreatorActivity = async ({
       isArchived: false,
     },
     select: {
-      totalCost: true,
+      rawTransactionCost: true,
       transactionMetadata: true,
       markUpProfit: true,
       createdAt: true,
@@ -71,7 +71,7 @@ export const getCreatorActivity = async ({
 
     if (bucketIndex >= 0 && bucketIndex < numBuckets) {
       const bucket = buckets[bucketIndex];
-      bucket.totalCost += Number(transaction.totalCost);
+      bucket.totalCost += Number(transaction.rawTransactionCost);
       bucket.totalProfit += Number(transaction.markUpProfit);
       bucket.transactionCount += 1;
       // Extract token information from transactionMetadata

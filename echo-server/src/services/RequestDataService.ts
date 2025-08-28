@@ -4,12 +4,13 @@ export function extractGeminiModelName(req: Request): string | undefined {
   const path = req.path;
 
   // Expected format: /v1beta/models/{model-name}:streamGenerateContent or /v1beta/models/{model-name}:generateContent
-  const expectedPrefix = '/v1beta/models/';
-  // Expected
+  // OR: /models/{model-name}:streamGenerateContent or /models/{model-name}:generateContent
+  const expectedPrefixes = ['/v1beta/models/', '/models/'];
   const expectedSuffixes = [':streamGenerateContent', ':generateContent'];
 
-  // Check if path matches the expected format
-  if (!path.startsWith(expectedPrefix)) {
+  // Check if path matches any of the expected prefixes
+  const matchingPrefix = expectedPrefixes.find(prefix => path.startsWith(prefix));
+  if (!matchingPrefix) {
     return undefined;
   }
 
@@ -21,7 +22,7 @@ export function extractGeminiModelName(req: Request): string | undefined {
 
   // Extract the model name from between the prefix and suffix
   const modelName = path.slice(
-    expectedPrefix.length,
+    matchingPrefix.length,
     path.length - matchingSuffix.length
   );
   // Ensure the model name is not empty

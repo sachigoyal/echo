@@ -11,6 +11,7 @@ import { api } from '@/trpc/client';
 import { useActivityContext } from '@/app/(app)/@authenticated/_components/time-range-selector/context';
 
 import { formatCurrency } from '@/lib/utils';
+import { useMemo } from 'react';
 
 export const ActivityCharts: React.FC = () => {
   const { startDate, endDate } = useActivityContext();
@@ -19,17 +20,45 @@ export const ActivityCharts: React.FC = () => {
     startDate,
     endDate,
   });
+  const [numApps] = api.apps.count.owner.useSuspenseQuery();
+
+  const hasApps = useMemo(() => {
+    return numApps > 0;
+  }, [numApps]);
 
   // Transform data for the chart
   const chartData: ChartData<Omit<(typeof activity)[number], 'timestamp'>>[] =
-    activity.map(({ timestamp, ...rest }) => ({
-      ...rest,
-      timestamp: format(timestamp, 'MMM dd HH:mm yyyy'),
-    }));
+    useMemo(() => {
+      if (!hasApps) {
+        // Show placeholder data if user has no apps
+        return Array.from({ length: 48 }, (_, i) => ({
+          timestamp: format(
+            new Date(Date.now() - i * 60 * 60 * 1000),
+            'MMM dd HH:mm yyyy'
+          ),
+          totalProfit: Math.random() * 100,
+          totalCost: Math.random() * 100,
+          totalTokens: Math.random() * 100,
+          totalInputTokens: Math.random() * 100,
+          totalOutputTokens: Math.random() * 100,
+          transactionCount: Math.random() * 100,
+        }));
+      }
+      return activity.map(({ timestamp, ...rest }) => ({
+        ...rest,
+        timestamp: format(timestamp, 'MMM dd HH:mm yyyy'),
+      }));
+    }, [activity, hasApps]);
 
-  const totalProfit = activity.reduce((acc, item) => acc + item.totalProfit, 0);
-  const totalTokens = activity.reduce((acc, item) => acc + item.totalTokens, 0);
-  const totalTransactions = activity.reduce(
+  const totalProfit = chartData.reduce(
+    (acc, item) => acc + item.totalProfit,
+    0
+  );
+  const totalTokens = chartData.reduce(
+    (acc, item) => acc + item.totalTokens,
+    0
+  );
+  const totalTransactions = chartData.reduce(
     (acc, item) => acc + item.transactionCount,
     0
   );
@@ -41,7 +70,7 @@ export const ActivityCharts: React.FC = () => {
           trigger: {
             value: 'profit',
             label: 'Profit',
-            amount: formatCurrency(totalProfit),
+            amount: hasApps ? formatCurrency(totalProfit) : '--',
           },
           bars: [
             {
@@ -72,11 +101,13 @@ export const ActivityCharts: React.FC = () => {
           trigger: {
             value: 'tokens',
             label: 'Tokens',
-            amount: totalTokens.toLocaleString(undefined, {
-              notation: 'compact',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            }),
+            amount: hasApps
+              ? totalTokens.toLocaleString(undefined, {
+                  notation: 'compact',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })
+              : '--',
           },
           bars: [
             {
@@ -118,11 +149,13 @@ export const ActivityCharts: React.FC = () => {
           trigger: {
             value: 'transactions',
             label: 'Transactions',
-            amount: totalTransactions.toLocaleString(undefined, {
-              notation: 'compact',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            }),
+            amount: hasApps
+              ? totalTransactions.toLocaleString(undefined, {
+                  notation: 'compact',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })
+              : '--',
           },
           bars: [
             {

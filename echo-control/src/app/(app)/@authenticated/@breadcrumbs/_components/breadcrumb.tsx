@@ -55,7 +55,7 @@ export const LoadingBreadcrumb = () => {
   return (
     <div className="flex items-center gap-2 cursor-pointer">
       <Skeleton className="size-5" />
-      <Skeleton className="w-10 h-[14px]" />
+      <Skeleton className="w-16 h-[14px]" />
     </div>
   );
 };

@@ -1,10 +1,15 @@
-import { api } from '@/trpc/server';
-import { formatCurrency } from '@/lib/utils';
-import { TableRow, TableCell as TableCellBase } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { UserAvatar } from '@/components/utils/user-avatar';
 import { formatDistanceToNow } from 'date-fns';
+
+import { TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+
+import { UserAvatar } from '@/components/utils/user-avatar';
+
+import { EmptyTableRow, TableCell } from '../lib/table';
+
+import { api } from '@/trpc/server';
+
+import { formatCurrency } from '@/lib/utils';
 
 export const TransactionRows = async ({ appId }: { appId: string }) => {
   const transactions = await api.apps.app.transactions.list({
@@ -15,15 +20,7 @@ export const TransactionRows = async ({ appId }: { appId: string }) => {
   const rows = transactions.items;
 
   if (rows.length === 0) {
-    return (
-      <TableRow className="mt-2">
-        <TableCellBase colSpan={2} className="text-left pl-4">
-          <p className="text-xs text-muted-foreground/60">
-            No transactions yet
-          </p>
-        </TableCellBase>
-      </TableRow>
-    );
+    return <EmptyTableRow>No transactions yet</EmptyTableRow>;
   }
 
   return rows.slice(0, 5).map(transaction => (
@@ -45,7 +42,7 @@ export const TransactionRows = async ({ appId }: { appId: string }) => {
         </div>
       </TableCell>
       <TableCell className="text-right pr-4 text-primary font-bold">
-        {formatCurrency(transaction.appProfit)}
+        {formatCurrency(transaction.markUpProfit)}
       </TableCell>
     </TableRow>
   ));
@@ -65,20 +62,4 @@ export const LoadingTransactionRows = () => {
       </TableCell>
     </TableRow>
   ));
-};
-
-const TableCell = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <TableCellBase
-      className={cn('text-center text-xs text-muted-foreground', className)}
-    >
-      {children}
-    </TableCellBase>
-  );
 };

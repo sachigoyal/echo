@@ -1,7 +1,8 @@
-import { verifyUserHeaderCheck } from './headers';
-import { extractAppIdFromPath } from '../services/PathDataService';
-import { EchoControlService } from '../services/EchoControlService';
 import { UnauthorizedError } from '../errors/http';
+import type { PrismaClient } from '../generated/prisma';
+import { EchoControlService } from '../services/EchoControlService';
+import { extractAppIdFromPath } from '../services/PathDataService';
+import { verifyUserHeaderCheck } from './headers';
 
 /**
  * Handles complete authentication flow including path extraction, header verification, and app ID validation.
@@ -18,7 +19,8 @@ import { UnauthorizedError } from '../errors/http';
  */
 export async function authenticateRequest(
   path: string,
-  headers: Record<string, string>
+  headers: Record<string, string>,
+  prisma: PrismaClient
 ): Promise<{
   processedHeaders: Record<string, string>;
   echoControlService: EchoControlService;
@@ -31,8 +33,10 @@ export async function authenticateRequest(
   const forwardingPath = pathAppId ? remainingPath : path;
 
   // Process headers and instantiate provider
-  const [processedHeaders, echoControlService] =
-    await verifyUserHeaderCheck(headers);
+  const [processedHeaders, echoControlService] = await verifyUserHeaderCheck(
+    headers,
+    prisma
+  );
 
   // Validate app ID authorization if app ID is in path
   if (pathAppId) {
