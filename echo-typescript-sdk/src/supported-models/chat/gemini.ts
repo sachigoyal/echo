@@ -24,7 +24,8 @@ export type GeminiModel =
   | 'gemini-2.5-pro-preview-03-25'
   | 'gemini-2.5-pro-preview-05-06'
   | 'gemini-2.5-pro-preview-06-05'
-  | 'gemini-2.5-pro-preview-tts';
+  | 'gemini-2.5-pro-preview-tts'
+  | 'gemini-2.5-flash-image-preview';
 
 export const GeminiModels: SupportedModel[] = [
   {
