@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserSearch } from './UserSearch';
 import { AppSearch } from './AppSearch';
 import { CreditMinter } from './CreditMinter';
+import { UserEarningsTable, UserSpendingTable } from '@/app/admin/_components';
 import {
   Card,
   CardContent,
@@ -14,8 +16,13 @@ import {
 import { User, EchoApp } from '@/generated/prisma';
 
 export function AdminDashboard() {
+  const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedApp, setSelectedApp] = useState<EchoApp | null>(null);
+
+  const handleAppClick = (appId: string) => {
+    router.push(`/admin/apps/${appId}`);
+  };
 
   return (
     <div className="grid gap-6">
@@ -69,6 +76,12 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* User Earnings Section */}
+      <UserEarningsTable onAppClick={handleAppClick} />
+
+      {/* User Spending Section */}
+      <UserSpendingTable onAppClick={handleAppClick} />
     </div>
   );
 }
