@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import {
   handlePaymentSuccess,
   processPaymentUpdate,
+  PaymentStatus,
 } from '@/lib/payment-processing';
 import Stripe from 'stripe';
 import { logger } from '@/logger';
@@ -156,19 +157,15 @@ async function handleCheckoutSessionCompleted(
     // Use a database transaction to atomically update payment status and user balance
     await db.$transaction(async tx => {
       // Update payment in database
-      const updatedPayment = await tx.payment.updateMany({
+      const updatedPayment = await tx.payment.findMany({
         where: {
           paymentId: paymentId,
-          status: 'pending',
-        },
-        data: {
-          status: 'completed',
-          updatedAt: new Date(),
+          status: PaymentStatus.PENDING,
         },
       });
 
       let paymentRecord;
-      if (updatedPayment.count === 0) {
+      if (updatedPayment.length === 0) {
         logger.emit({
           severityText: 'WARN',
           body: 'No pending payment found for payment ID, creating new record',
@@ -183,7 +180,7 @@ async function handleCheckoutSessionCompleted(
             paymentId: paymentId,
             amount: amount_total,
             currency: currency || 'usd',
-            status: 'completed',
+            status: PaymentStatus.COMPLETED,
             description: description || 'Echo credits purchase',
             userId,
           },
@@ -250,7 +247,7 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
 
     await db.payment.updateMany({
       where: { paymentId: id },
-      data: { status: 'failed' },
+      data: { status: PaymentStatus.FAILED },
     });
 
     logger.emit({

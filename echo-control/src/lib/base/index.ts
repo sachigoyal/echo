@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { db } from '../db';
-import { processPaymentUpdate } from '../payment-processing';
+import { processPaymentUpdate, PaymentStatus } from '../payment-processing';
 import { logger } from '@/logger';
 
 export const formatAmountFromQueryParams = (
@@ -57,12 +57,12 @@ export async function handlePaymentSuccessFromx402({
       // Update payment in database
       const paymentRecord = await tx.payment.upsert({
         where: { paymentId: cryptoMetadata['transaction-id'] },
-        update: { status: 'completed' },
+        update: { status: PaymentStatus.COMPLETED },
         create: {
           paymentId: cryptoMetadata['transaction-id'],
           amount,
           currency,
-          status: 'completed',
+          status: PaymentStatus.COMPLETED,
           description: 'Echo credits purchase with x402',
           userId,
         },

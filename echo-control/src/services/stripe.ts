@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { z } from 'zod';
 
 import { db } from '@/lib/db';
+import { PaymentStatus } from '@/lib/payment-processing';
 import { logger } from '@/logger';
 
 const stripe = new Stripe(
@@ -106,7 +107,7 @@ export async function createPaymentLink(
       paymentId: paymentLink.id,
       amount: amount,
       currency: 'usd',
-      status: 'pending',
+      status: PaymentStatus.PENDING,
       description: description,
       userId,
     },
@@ -118,7 +119,7 @@ export async function createPaymentLink(
       url: paymentLink.url,
       amount: amount,
       currency: 'usd',
-      status: 'pending',
+      status: PaymentStatus.PENDING,
       created: Math.floor(Date.now() / 1000),
       metadata: {
         userId,
@@ -236,7 +237,7 @@ export async function createFreeTierPaymentLink(
       paymentId: paymentLink.id,
       amount: amount,
       currency: 'usd',
-      status: 'pending',
+      status: PaymentStatus.PENDING,
       description: description,
       userId,
     },
@@ -248,7 +249,7 @@ export async function createFreeTierPaymentLink(
       url: paymentLink.url,
       amount: amount,
       currency: 'usd',
-      status: 'pending',
+      status: PaymentStatus.PENDING,
       created: Math.floor(Date.now() / 1000),
       metadata: {
         userId,

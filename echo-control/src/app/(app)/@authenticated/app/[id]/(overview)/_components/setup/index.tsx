@@ -49,7 +49,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
       app.description !== null,
       githubLink !== null,
     ],
-    [app.profilePictureUrl, app.description, githubLink, numTokens]
+    [app.profilePictureUrl, app.description, githubLink]
   );
 
   const connectionSteps = useMemo(() => [numTokens > 0], [numTokens]);
