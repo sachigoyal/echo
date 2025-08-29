@@ -23,8 +23,16 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   CreditCard,
   TrendingDown,
   Users,
@@ -62,32 +70,33 @@ export function UserSpendingTable({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('totalSpent');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [viewMode, setViewMode] = useState<'all' | 'user' | 'global'>('all');
-
-  // Fetch data based on view mode
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+  // Fetch spending data with pagination
   const {
-    data: globalData,
-    isLoading: globalLoading,
-    error: globalError,
-  } = api.admin.spending.getAllUsersSpending.useQuery(undefined, {
-    enabled: viewMode === 'all' || viewMode === 'global',
+    data: paginatedData,
+    isLoading,
+    error,
+  } = api.admin.spending.getAllUsersSpendingPaginated.useQuery({
+    cursor: currentPage,
+    page_size: pageSize,
   });
 
-  const {
-    data: userData,
-    isLoading: userLoading,
-    error: userError,
-  } = api.admin.spending.getUserSpending.useQuery(
-    { userId: selectedUserId! },
-    { enabled: !!selectedUserId && viewMode === 'user' }
-  );
-
-  const isLoading = viewMode === 'user' ? userLoading : globalLoading;
-  const error = viewMode === 'user' ? userError : globalError;
-  const users =
-    viewMode === 'user' && userData
-      ? [userData]
-      : globalData?.userBreakdowns || [];
+  const globalData = paginatedData ? {
+    totalUsers: paginatedData.totalUsers,
+    totalApps: paginatedData.totalApps,
+    totalTransactions: paginatedData.totalTransactions,
+    totalSpent: paginatedData.totalSpent,
+    totalInputTokens: paginatedData.totalInputTokens,
+    totalOutputTokens: paginatedData.totalOutputTokens,
+    totalTokens: paginatedData.totalTokens,
+    totalToolCost: paginatedData.totalToolCost,
+    totalSpendPoolUsage: paginatedData.totalSpendPoolUsage,
+    totalDirectSpending: paginatedData.totalDirectSpending,
+  } : null;
+  
+  const users = paginatedData?.userBreakdowns || [];
+  const pagination = paginatedData?.pagination;
 
   // Filter and sort users
   const filteredAndSortedUsers = useMemo(() => {
@@ -248,8 +257,8 @@ export function UserSpendingTable({
 
   return (
     <div className="space-y-6">
-      {/* Global Summary - only show when viewing all users */}
-      {viewMode === 'all' && globalData && (
+      {/* Global Summary */}
+      {globalData && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -337,33 +346,11 @@ export function UserSpendingTable({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                User Spending {selectedUserId ? 'Details' : 'Overview'}
+                User Spending Overview
               </CardTitle>
               <CardDescription>
-                {selectedUserId
-                  ? 'Detailed spending breakdown for selected user'
-                  : 'Comprehensive spending data aggregated by user and app'}
+                Comprehensive spending data aggregated by user and app
               </CardDescription>
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('all')}
-              >
-                All Users
-              </Button>
-              {selectedUserId && (
-                <Button
-                  variant={viewMode === 'user' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('user')}
-                >
-                  Selected User
-                </Button>
-              )}
             </div>
           </div>
         </CardHeader>
@@ -536,6 +523,60 @@ export function UserSpendingTable({
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination Controls */}
+          {pagination && (
+            <div className="flex items-center justify-between pt-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {currentPage * pageSize + 1} to{' '}
+                {Math.min((currentPage + 1) * pageSize, pagination.total)} of{' '}
+                {pagination.total} users
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Rows per page:</span>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value) => {
+                      setPageSize(parseInt(value));
+                      setCurrentPage(0);
+                    }}
+                  >
+                    <SelectTrigger className="w-16">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Page {currentPage + 1} of {Math.ceil(pagination.total / pageSize)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={!pagination.hasMore}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {filteredAndSortedUsers.length === 0 && (
             <div className="text-center py-12">

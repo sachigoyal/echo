@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { adminProcedure, createTRPCRouter } from '../trpc';
+import { adminProcedure, createTRPCRouter, paginatedProcedure } from '../trpc';
 
 import {
   adminGetUsers,
@@ -11,10 +11,12 @@ import {
   getUserEarningsAggregates,
   getAppTransactionAggregates,
   getAllUsersEarningsAggregates,
+  getAllUsersEarningsAggregatesPaginated,
   getAppEarningsAcrossAllUsers,
   getUserSpendingAggregates,
   getAppSpendingAggregates,
   getAllUsersSpendingAggregates,
+  getAllUsersSpendingAggregatesPaginated,
   getAppSpendingAcrossAllUsers,
   getAppTransactionsPaginated,
   getAppTransactionTotals,
@@ -82,6 +84,18 @@ export const adminRouter = createTRPCRouter({
     }),
 
     /**
+     * Get paginated earnings aggregates across all users and apps
+     */
+    getAllUsersEarningsPaginated: paginatedProcedure
+      .concat(adminProcedure)
+      .query(async ({ ctx }) => {
+        return await getAllUsersEarningsAggregatesPaginated(
+          ctx.pagination.page,
+          ctx.pagination.page_size
+        );
+      }),
+
+    /**
      * Get earnings aggregates for a specific app across all users
      */
     getAppEarningsAcrossAllUsers: adminProcedure
@@ -116,6 +130,18 @@ export const adminRouter = createTRPCRouter({
     getAllUsersSpending: adminProcedure.query(async () => {
       return await getAllUsersSpendingAggregates();
     }),
+
+    /**
+     * Get paginated spending aggregates across all users and apps
+     */
+    getAllUsersSpendingPaginated: paginatedProcedure
+      .concat(adminProcedure)
+      .query(async ({ ctx }) => {
+        return await getAllUsersSpendingAggregatesPaginated(
+          ctx.pagination.page,
+          ctx.pagination.page_size
+        );
+      }),
 
     /**
      * Get spending aggregates for a specific app across all users with detailed breakdowns

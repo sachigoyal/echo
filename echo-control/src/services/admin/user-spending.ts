@@ -262,8 +262,65 @@ export async function getAllUsersSpendingAggregates(): Promise<GlobalSpendingAgg
     select: { id: true, name: true, email: true },
   });
 
+  return await processUsersSpendingAggregates(usersWithTransactions);
+}
+
+/**
+ * Get paginated spending aggregates for all users across all apps
+ */
+export async function getAllUsersSpendingAggregatesPaginated(
+  page: number = 0,
+  pageSize: number = 10
+): Promise<GlobalSpendingAggregates & { pagination: { page: number; pageSize: number; total: number; hasMore: boolean } }> {
+  // Get total count of users who have made transactions
+  const totalUsers = await db.user.count({
+    where: {
+      transactions: {
+        some: {
+          isArchived: false,
+        },
+      },
+      isArchived: false,
+    },
+  });
+
+  // Get paginated users who have made transactions
+  const usersWithTransactions = await db.user.findMany({
+    where: {
+      transactions: {
+        some: {
+          isArchived: false,
+        },
+      },
+      isArchived: false,
+    },
+    select: { id: true, name: true, email: true },
+    skip: page * pageSize,
+    take: pageSize,
+  });
+
+  const aggregates = await processUsersSpendingAggregates(usersWithTransactions);
+
+  return {
+    ...aggregates,
+    pagination: {
+      page,
+      pageSize,
+      total: totalUsers,
+      hasMore: (page + 1) * pageSize < totalUsers,
+    },
+  };
+}
+
+/**
+ * Helper function to process users spending aggregates
+ */
+async function processUsersSpendingAggregates(
+  users: { id: string; name: string | null; email: string }[]
+): Promise<GlobalSpendingAggregates> {
+
   const userBreakdowns: UserSpendingAggregates[] = [];
-  let totalUsers = usersWithTransactions.length;
+  let totalUsers = users.length;
   let totalApps = 0;
   let totalTransactions = 0;
   let totalSpent = 0;
@@ -275,7 +332,7 @@ export async function getAllUsersSpendingAggregates(): Promise<GlobalSpendingAgg
   let totalDirectSpending = 0;
 
   // Process each user
-  for (const user of usersWithTransactions) {
+  for (const user of users) {
     const userSpending = await getUserSpendingAggregates(user.id);
     userBreakdowns.push(userSpending);
 

@@ -226,8 +226,63 @@ export async function getAllUsersEarningsAggregates(): Promise<GlobalEarningsAgg
     select: { id: true, name: true, email: true },
   });
 
+  return await processUsersEarningsAggregates(usersWithApps);
+}
+
+/**
+ * Get paginated transaction aggregates for all users across all apps
+ */
+export async function getAllUsersEarningsAggregatesPaginated(
+  page: number = 0,
+  pageSize: number = 10
+): Promise<GlobalEarningsAggregates & { pagination: { page: number; pageSize: number; total: number; hasMore: boolean } }> {
+  // Get total count of users who own at least one app
+  const totalUsers = await db.user.count({
+    where: {
+      appMemberships: {
+        some: {
+          role: 'owner',
+        },
+      },
+    },
+  });
+
+  // Get paginated users who own at least one app
+  const usersWithApps = await db.user.findMany({
+    where: {
+      appMemberships: {
+        some: {
+          role: 'owner',
+        },
+      },
+    },
+    select: { id: true, name: true, email: true },
+    skip: page * pageSize,
+    take: pageSize,
+  });
+
+  const aggregates = await processUsersEarningsAggregates(usersWithApps);
+
+  return {
+    ...aggregates,
+    pagination: {
+      page,
+      pageSize,
+      total: totalUsers,
+      hasMore: (page + 1) * pageSize < totalUsers,
+    },
+  };
+}
+
+/**
+ * Helper function to process users earnings aggregates
+ */
+async function processUsersEarningsAggregates(
+  users: { id: string; name: string | null; email: string }[]
+): Promise<GlobalEarningsAggregates> {
+
   const userBreakdowns: UserEarningsAggregates[] = [];
-  let totalUsers = usersWithApps.length;
+  let totalUsers = users.length;
   let totalApps = 0;
   let totalTransactions = 0;
   let totalCost = 0;
@@ -241,7 +296,7 @@ export async function getAllUsersEarningsAggregates(): Promise<GlobalEarningsAgg
   let totalToolCost = 0;
 
   // Process each user
-  for (const user of usersWithApps) {
+  for (const user of users) {
     const userAggregates = await getUserEarningsAggregates(user.id);
     userBreakdowns.push(userAggregates);
 
