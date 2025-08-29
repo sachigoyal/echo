@@ -1,3 +1,4 @@
+import { context, trace } from '@opentelemetry/api';
 import { UnauthorizedError } from '../errors/http';
 import type { PrismaClient } from '../generated/prisma';
 import logger from '../logger';
@@ -49,6 +50,15 @@ export const verifyUserHeaderCheck = async (
 
   if (!authResult) {
     throw new UnauthorizedError('Authentication failed.');
+  }
+
+  const span = trace.getSpan(context.active());
+  if (span) {
+    span.setAttribute('echo.app.id', authResult.echoApp.id);
+    span.setAttribute('echo.app.name', authResult.echoApp.name);
+    span.setAttribute('echo.user.id', authResult.user.id);
+    span.setAttribute('echo.user.email', authResult.user.email);
+    span.setAttribute('echo.user.name', authResult.user.name ?? '');
   }
 
   return [
