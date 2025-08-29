@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { api } from '@/trpc/client';
 import {
   Card,
@@ -434,10 +435,14 @@ export function UserSpendingTable({
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {user.userName || 'No name'}
+                            <Link href={`/admin/users/${user.userId}`} className="hover:underline">
+                              {user.userName || 'No name'}
+                            </Link>
                           </div>
                           <div className="text-sm text-muted-foreground truncate max-w-48">
-                            {user.userEmail}
+                            <Link href={`/admin/users/${user.userId}`} className="hover:underline">
+                              {user.userEmail}
+                            </Link>
                           </div>
                         </div>
                       </TableCell>
