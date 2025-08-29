@@ -5,6 +5,11 @@ import { UserSearch } from './UserSearch';
 import { AppSearch } from './AppSearch';
 import { CreditMinter } from './CreditMinter';
 import {
+  UserEarningsTable,
+  UserSpendingTable,
+  AppTransactionDetails,
+} from '@/app/admin/_components';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -16,6 +21,21 @@ import { User, EchoApp } from '@/generated/prisma';
 export function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedApp, setSelectedApp] = useState<EchoApp | null>(null);
+  const [viewingTransactions, setViewingTransactions] = useState<{
+    appId: string;
+    appName: string;
+  } | null>(null);
+
+  // If viewing transaction details, show that component
+  if (viewingTransactions) {
+    return (
+      <AppTransactionDetails
+        appId={viewingTransactions.appId}
+        appName={viewingTransactions.appName}
+        onBack={() => setViewingTransactions(null)}
+      />
+    );
+  }
 
   return (
     <div className="grid gap-6">
@@ -69,6 +89,17 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* User Earnings Section */}
+      <UserEarningsTable selectedUserId={selectedUser?.id} />
+
+      {/* User Spending Section */}
+      <UserSpendingTable
+        selectedUserId={selectedUser?.id}
+        onAppClick={(appId, appName) =>
+          setViewingTransactions({ appId, appName })
+        }
+      />
     </div>
   );
 }

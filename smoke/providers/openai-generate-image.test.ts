@@ -85,9 +85,7 @@ describe.concurrent('OpenAI editImage per model', () => {
         ).toBeDefined();
       } catch (err) {
         const details = getApiErrorDetails(err);
-        throw new Error(
-          `[editImage] OpenAI ${model_id} failed: ${details}`
-        );
+        throw new Error(`[editImage] OpenAI ${model_id} failed: ${details}`);
       }
     });
   }
