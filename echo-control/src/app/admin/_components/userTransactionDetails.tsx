@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/trpc/client';
+import { PaymentStatus } from '@/lib/payment-processing';
 import {
   Card,
   CardContent,
@@ -44,14 +45,12 @@ interface UserTransactionDetailsProps {
   userId: string;
   userName?: string | null;
   userEmail?: string;
-  onBack?: () => void;
 }
 
 export function UserTransactionDetails({
   userId,
   userName,
   userEmail,
-  onBack,
 }: UserTransactionDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -185,7 +184,7 @@ export function UserTransactionDetails({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={onBack} variant="outline">
+          <Button onClick={() => router.back()} variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Overview
           </Button>
@@ -197,7 +196,7 @@ export function UserTransactionDetails({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button onClick={onBack} variant="outline" size="sm">
+        <Button onClick={() => router.back()} variant="outline" size="sm">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
@@ -369,6 +368,7 @@ export function UserTransactionDetails({
                   <TableHead className="text-right">Tokens</TableHead>
                   <TableHead className="text-right">Profit</TableHead>
                   <TableHead className="text-right">Total Spent</TableHead>
+                  <TableHead className="text-right">Total Paid</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
@@ -464,6 +464,16 @@ export function UserTransactionDetails({
                         </div>
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <div className="space-y-1">
+                        <div className="font-medium text-sm">
+                          {formatCurrency(transaction.runningTotalPaid)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          User paid
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         {transaction.spendPool ? (
@@ -485,13 +495,13 @@ export function UserTransactionDetails({
                     <TableCell>
                       <Badge
                         variant={
-                          transaction.status === 'completed'
+                          transaction.status === PaymentStatus.COMPLETED
                             ? 'default'
                             : 'secondary'
                         }
                         className="text-xs"
                       >
-                        {transaction.status || 'completed'}
+                        {transaction.status || PaymentStatus.COMPLETED}
                       </Badge>
                     </TableCell>
                   </TableRow>

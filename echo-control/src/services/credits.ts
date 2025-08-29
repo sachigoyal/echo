@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { db } from '@/lib/db';
-import { processPaymentUpdate } from '@/lib/payment-processing';
+import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 
 import type { Prisma } from '@/generated/prisma';
 import { logger } from '@/logger';
@@ -74,7 +74,7 @@ export const mintCreditsToUser = async (
       paymentId: paymentId,
       amount: amountInDollars,
       currency: 'usd',
-      status: 'completed',
+      status: PaymentStatus.COMPLETED,
       description,
       userId,
     },

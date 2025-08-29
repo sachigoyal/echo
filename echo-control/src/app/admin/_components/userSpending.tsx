@@ -45,7 +45,8 @@ type SortField =
   | 'totalTransactions'
   | 'userBalance'
   | 'totalSpendPoolUsage'
-  | 'totalDirectSpending';
+  | 'totalDirectSpending'
+  | 'totalPaid';
 type SortDirection = 'asc' | 'desc';
 
 interface UserSpendingTableProps {
@@ -135,6 +136,10 @@ export function UserSpendingTable({
         case 'totalDirectSpending':
           aValue = a.totalDirectSpending;
           bValue = b.totalDirectSpending;
+          break;
+        case 'totalPaid':
+          aValue = a.userTotalPaid;
+          bValue = b.userTotalPaid;
           break;
         default:
           aValue = 0;
@@ -382,33 +387,36 @@ export function UserSpendingTable({
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="table-fixed w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-8"></TableHead>
-                  <TableHead>
+                  <TableHead className="w-64 min-w-0">
                     <SortButton field="userName">User</SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-24">
                     <SortButton field="totalTransactions">
                       Transactions
                     </SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-28">
                     <SortButton field="totalSpent">Total Spent</SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-24">
                     <SortButton field="userBalance">Balance</SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-28">
                     <SortButton field="totalSpendPoolUsage">
                       Pool Usage
                     </SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
-                    <SortButton field="totalDirectSpending">Direct</SortButton>
+                  <TableHead className="text-right w-28">
+                    <SortButton field="totalDirectSpending">Personal Spend</SortButton>
                   </TableHead>
-                  <TableHead className="text-right">Apps</TableHead>
+                  <TableHead className="text-right w-28">
+                    <SortButton field="totalPaid">Total Paid</SortButton>
+                  </TableHead>
+                  <TableHead className="text-right w-16">Apps</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -432,38 +440,41 @@ export function UserSpendingTable({
                           )}
                         </Button>
                       </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            <Link href={`/admin/users/${user.userId}`} className="hover:underline">
+                      <TableCell className="min-w-0">
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">
+                            <Link href={`/admin/users/${user.userId}`} className="hover:underline" title={user.userName || 'No name'}>
                               {user.userName || 'No name'}
                             </Link>
                           </div>
-                          <div className="text-sm text-muted-foreground truncate max-w-48">
-                            <Link href={`/admin/users/${user.userId}`} className="hover:underline">
+                          <div className="text-sm text-muted-foreground truncate">
+                            <Link href={`/admin/users/${user.userId}`} className="hover:underline" title={user.userEmail}>
                               {user.userEmail}
                             </Link>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="text-right font-medium whitespace-nowrap">
                         {formatNumber(user.totalTransactions)}
                       </TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="text-right font-medium whitespace-nowrap">
                         {formatCurrency(user.totalSpent)}
                       </TableCell>
                       <TableCell
-                        className={`text-right font-medium ${user.userBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                        className={`text-right font-medium whitespace-nowrap ${user.userBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}
                       >
                         {formatCurrency(user.userBalance)}
                       </TableCell>
-                      <TableCell className="text-right font-medium text-blue-600">
+                      <TableCell className="text-right font-medium text-blue-600 whitespace-nowrap">
                         {formatCurrency(user.totalSpendPoolUsage)}
                       </TableCell>
-                      <TableCell className="text-right font-medium text-green-600">
+                      <TableCell className="text-right font-medium text-green-600 whitespace-nowrap">
                         {formatCurrency(user.totalDirectSpending)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right font-medium text-purple-600 whitespace-nowrap">
+                        {formatCurrency(user.userTotalPaid)}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
                         <Badge variant="secondary">
                           {user.appBreakdowns.length}
                         </Badge>
@@ -475,41 +486,45 @@ export function UserSpendingTable({
                       user.appBreakdowns.map(app => (
                         <TableRow
                           key={`${user.userId}-${app.appId}`}
-                          className="bg-muted/20"
+                          className="bg-muted/20 border-l-2 border-l-muted"
                         >
-                          <TableCell></TableCell>
-                          <TableCell>
-                            <div className="pl-6">
+                          <TableCell className="w-8"></TableCell>
+                          <TableCell className="min-w-0">
+                            <div className="pl-6 min-w-0">
                               <button
                                 onClick={() =>
                                   onAppClick?.(app.appId, app.appName)
                                 }
-                                className="font-medium text-sm hover:text-primary hover:underline cursor-pointer text-left"
+                                className="font-medium text-sm hover:text-primary hover:underline cursor-pointer text-left block truncate max-w-full"
                                 disabled={!onAppClick}
+                                title={app.appName}
                               >
                                 {app.appName}
                               </button>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-xs text-muted-foreground truncate max-w-full" title={app.appId}>
                                 {app.appId}
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-right text-sm">
+                          <TableCell className="text-right text-sm whitespace-nowrap">
                             {formatNumber(app.transactionCount)}
                           </TableCell>
-                          <TableCell className="text-right text-sm">
+                          <TableCell className="text-right text-sm whitespace-nowrap">
                             {formatCurrency(app.totalSpent)}
                           </TableCell>
-                          <TableCell className="text-right text-sm text-muted-foreground">
+                          <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
                             -
                           </TableCell>
-                          <TableCell className="text-right text-sm text-blue-600">
+                          <TableCell className="text-right text-sm text-blue-600 whitespace-nowrap">
                             {formatCurrency(app.spendPoolUsage)}
                           </TableCell>
-                          <TableCell className="text-right text-sm text-green-600">
+                          <TableCell className="text-right text-sm text-green-600 whitespace-nowrap">
                             {formatCurrency(app.directSpending)}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
+                            -
+                          </TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
                             <div className="text-xs text-muted-foreground">
                               {formatNumber(app.totalTokens)} tokens
                             </div>

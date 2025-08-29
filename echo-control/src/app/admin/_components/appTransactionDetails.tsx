@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/trpc/client';
+import { PaymentStatus } from '@/lib/payment-processing';
 import {
   Card,
   CardContent,
@@ -44,13 +45,11 @@ import { formatNumber } from '@/components/app-detail';
 interface AppTransactionDetailsProps {
   appId: string;
   appName?: string;
-  onBack?: () => void;
 }
 
 export function AppTransactionDetails({
   appId,
   appName,
-  onBack,
 }: AppTransactionDetailsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -191,7 +190,7 @@ export function AppTransactionDetails({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={onBack} variant="outline">
+          <Button onClick={() => router.back()} variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Overview
           </Button>
@@ -204,7 +203,7 @@ export function AppTransactionDetails({
     <div className="space-y-6">
       {/* Header with Back Button */}
       <div className="flex items-center gap-4">
-        <Button onClick={onBack} variant="outline" size="sm">
+        <Button onClick={() => router.back()} variant="outline" size="sm">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
@@ -487,13 +486,13 @@ export function AppTransactionDetails({
                     <TableCell>
                       <Badge
                         variant={
-                          transaction.status === 'completed'
+                          transaction.status === PaymentStatus.COMPLETED
                             ? 'default'
                             : 'secondary'
                         }
                         className="text-xs"
                       >
-                        {transaction.status || 'completed'}
+                        {transaction.status || PaymentStatus.COMPLETED}
                       </Badge>
                     </TableCell>
                   </TableRow>

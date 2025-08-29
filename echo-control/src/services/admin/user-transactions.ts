@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { PaymentStatus } from '@/lib/payment-processing';
 import type {
   Transaction,
   TransactionMetadata,
@@ -28,7 +29,8 @@ export interface UserTransactionDetail {
   status: string | null;
   createdAt: Date;
   // Running totals up to this transaction
-  runningTotalSpent: number; // Cumulative total spent by the user
+  runningTotalSpent: number; // Cumulative total spent by the user (direct payments only, excludes free tier)
+  runningTotalPaid: number; // Cumulative total paid by the user (from payments with spendPoolId null)
   // App information
   echoApp: {
     id: string;
@@ -180,17 +182,34 @@ export async function getUserTransactionsPaginated(
   const transactionDetails: UserTransactionDetail[] = [];
 
   for (const transaction of transactions) {
-    // Calculate running total spent by the user up to this transaction
+    // Calculate running total spent by the user up to this transaction (only direct payments, not free tier)
     const runningTotalSpent = await db.transaction.aggregate({
       where: {
         userId: userId,
         isArchived: false,
+        spendPoolId: null, // Only include direct payment transactions, exclude free tier
         createdAt: {
           lte: transaction.createdAt,
         },
       },
       _sum: {
         totalCost: true,
+      },
+    });
+
+    // Calculate running total paid by the user up to this transaction (only payments with spendPoolId null)
+    const runningTotalPaid = await db.payment.aggregate({
+      where: {
+        userId: userId,
+        spendPoolId: null, // Only count direct payments, not spend pool payments
+        status: PaymentStatus.COMPLETED,
+        isArchived: false,
+        createdAt: {
+          lte: transaction.createdAt,
+        },
+      },
+      _sum: {
+        amount: true,
       },
     });
 
@@ -204,6 +223,7 @@ export async function getUserTransactionsPaginated(
       status: transaction.status,
       createdAt: transaction.createdAt,
       runningTotalSpent: Number(runningTotalSpent._sum.totalCost || 0),
+      runningTotalPaid: Number(runningTotalPaid._sum.amount || 0),
       echoApp: transaction.echoApp,
       apiKey: transaction.apiKey,
       metadata: transaction.transactionMetadata

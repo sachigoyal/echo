@@ -48,9 +48,13 @@ type SortDirection = 'asc' | 'desc';
 
 interface UserEarningsTableProps {
   selectedUserId?: string;
+  onAppClick?: (appId: string, appName: string) => void;
 }
 
-export function UserEarningsTable({ selectedUserId }: UserEarningsTableProps) {
+export function UserEarningsTable({
+  selectedUserId,
+  onAppClick,
+}: UserEarningsTableProps) {
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('totalCost');
@@ -376,35 +380,35 @@ export function UserEarningsTable({ selectedUserId }: UserEarningsTableProps) {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="table-fixed w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-8"></TableHead>
-                  <TableHead>
+                  <TableHead className="w-64 min-w-0">
                     <SortButton field="userName">User</SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-24">
                     <SortButton field="totalTransactions">
                       Transactions
                     </SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-28">
                     <SortButton field="totalCost">Total Revenue</SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-24">
                     <SortButton field="totalAppProfit">App Profit</SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-28">
                     <SortButton field="totalMarkUpProfit">
                       Markup Profit
                     </SortButton>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right w-28">
                     <SortButton field="totalReferralProfit">
                       Referral Profit
                     </SortButton>
                   </TableHead>
-                  <TableHead className="text-right">Apps</TableHead>
+                  <TableHead className="text-right w-16">Apps</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -428,42 +432,44 @@ export function UserEarningsTable({ selectedUserId }: UserEarningsTableProps) {
                           )}
                         </Button>
                       </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
+                      <TableCell className="min-w-0">
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">
                             <Link
                               href={`/admin/users/${user.userId}`}
                               className="hover:underline"
+                              title={user.userName || 'No name'}
                             >
                               {user.userName || 'No name'}
                             </Link>
                           </div>
-                          <div className="text-sm text-muted-foreground truncate max-w-48">
+                          <div className="text-sm text-muted-foreground truncate">
                             <Link
                               href={`/admin/users/${user.userId}`}
                               className="hover:underline"
+                              title={user.userEmail}
                             >
                               {user.userEmail}
                             </Link>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="text-right font-medium whitespace-nowrap">
                         {formatNumber(user.totalTransactions)}
                       </TableCell>
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="text-right font-medium whitespace-nowrap">
                         {formatCurrency(user.totalCost)}
                       </TableCell>
-                      <TableCell className="text-right font-medium text-green-600">
+                      <TableCell className="text-right font-medium text-green-600 whitespace-nowrap">
                         {formatCurrency(user.totalAppProfit)}
                       </TableCell>
-                      <TableCell className="text-right font-medium text-blue-600">
+                      <TableCell className="text-right font-medium text-blue-600 whitespace-nowrap">
                         {formatCurrency(user.totalMarkUpProfit)}
                       </TableCell>
-                      <TableCell className="text-right font-medium text-purple-600">
+                      <TableCell className="text-right font-medium text-purple-600 whitespace-nowrap">
                         {formatCurrency(user.totalReferralProfit)}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right whitespace-nowrap">
                         <Badge variant="secondary">
                           {user.appBreakdowns.length}
                         </Badge>
@@ -475,35 +481,42 @@ export function UserEarningsTable({ selectedUserId }: UserEarningsTableProps) {
                       user.appBreakdowns.map(app => (
                         <TableRow
                           key={`${user.userId}-${app.appId}`}
-                          className="bg-muted/20"
+                          className="bg-muted/20 border-l-2 border-l-muted"
                         >
-                          <TableCell></TableCell>
-                          <TableCell>
-                            <div className="pl-6">
-                              <div className="font-medium text-sm">
+                          <TableCell className="w-8"></TableCell>
+                          <TableCell className="min-w-0">
+                            <div className="pl-6 min-w-0">
+                              <button
+                                onClick={() =>
+                                  onAppClick?.(app.appId, app.appName)
+                                }
+                                className="font-medium text-sm hover:text-primary hover:underline cursor-pointer text-left block truncate max-w-full"
+                                disabled={!onAppClick}
+                                title={app.appName}
+                              >
                                 {app.appName}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
+                              </button>
+                              <div className="text-xs text-muted-foreground truncate max-w-full" title={app.appId}>
                                 {app.appId}
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-right text-sm">
+                          <TableCell className="text-right text-sm whitespace-nowrap">
                             {formatNumber(app.transactionCount)}
                           </TableCell>
-                          <TableCell className="text-right text-sm">
+                          <TableCell className="text-right text-sm whitespace-nowrap">
                             {formatCurrency(app.totalCost)}
                           </TableCell>
-                          <TableCell className="text-right text-sm text-green-600">
+                          <TableCell className="text-right text-sm text-green-600 whitespace-nowrap">
                             {formatCurrency(app.appProfit)}
                           </TableCell>
-                          <TableCell className="text-right text-sm text-blue-600">
+                          <TableCell className="text-right text-sm text-blue-600 whitespace-nowrap">
                             {formatCurrency(app.markUpProfit)}
                           </TableCell>
-                          <TableCell className="text-right text-sm text-purple-600">
+                          <TableCell className="text-right text-sm text-purple-600 whitespace-nowrap">
                             {formatCurrency(app.referralProfit)}
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right whitespace-nowrap">
                             <div className="text-xs text-muted-foreground">
                               {formatNumber(app.totalTokens)} tokens
                             </div>

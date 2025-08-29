@@ -1,12 +1,12 @@
 import { UserTransactionDetails } from '@/app/admin/_components';
 
 interface PageProps {
-  params: { userId: string };
-  searchParams?: Record<string, string | string[] | undefined>;
+  params: Promise<{ userId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default function AdminUserTransactionsPage({ params }: PageProps) {
-  const { userId } = params;
+export default async function AdminUserTransactionsPage({ params }: PageProps) {
+  const { userId } = await params;
   return (
     <div className="container mx-auto py-8">
       <UserTransactionDetails userId={userId} />

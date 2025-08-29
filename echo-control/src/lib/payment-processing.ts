@@ -14,6 +14,11 @@ export interface PaymentProcessingData {
   echoAppId?: string;
 }
 
+export enum PaymentStatus {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
 /**
  * Process a payment by updating either free tier spend pools or user personal balance
  * @param tx - The database transaction
@@ -79,12 +84,12 @@ export async function handlePaymentSuccess(
       // Update payment in database
       const paymentRecord = await tx.payment.upsert({
         where: { paymentId: id },
-        update: { status: 'completed' },
+        update: { status: PaymentStatus.COMPLETED },
         create: {
           paymentId: id,
           amount,
           currency,
-          status: 'completed',
+          status: PaymentStatus.COMPLETED,
           description: 'Echo credits purchase',
           userId,
         },

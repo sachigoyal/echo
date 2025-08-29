@@ -1,6 +1,15 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { UserEarningsTable } from '@/app/admin/_components';
 
 export default function AdminEarningsDashboard() {
+  const router = useRouter();
+
+  const handleAppClick = (appId: string, appName: string) => {
+    router.push(`/admin/apps/${appId}`);
+  };
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
@@ -10,7 +19,9 @@ export default function AdminEarningsDashboard() {
           all apps
         </p>
       </div>
-      <UserEarningsTable />
+      <UserEarningsTable
+        onAppClick={handleAppClick}
+      />
     </div>
   );
 }
