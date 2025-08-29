@@ -26,16 +26,15 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
     endDate,
   });
 
-  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({
-    appId,
-  });
+  const [isOwner] = api.apps.app.isOwner.useSuspenseQuery(appId);
+  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
   const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
     appId,
   });
 
   const isInitialized = useMemo(() => {
-    return numTokens > 0 && numTransactions > 0;
-  }, [numTokens, numTransactions]);
+    return !isOwner || (numTokens > 0 && numTransactions > 0);
+  }, [isOwner, numTokens, numTransactions]);
 
   // Transform data for the chart
   const chartData: ChartData<Omit<(typeof activity)[number], 'timestamp'>>[] =

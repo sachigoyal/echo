@@ -9,6 +9,7 @@ import { Setup } from './_components/setup';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Overview } from './_components/overview';
+import { VisibilityButton } from './_components/visibility-button';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
@@ -16,8 +17,9 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const app = await api.apps.app.get({ appId: id });
   api.apps.app.get.prefetch({ appId: id });
   api.apps.app.githubLink.get.prefetch(id);
-  api.apps.app.getNumTokens.prefetch({ appId: id });
   api.apps.app.transactions.count.prefetch({ appId: id });
+  api.apps.app.getNumTokens.prefetch({ appId: id });
+  api.apps.app.isOwner.prefetch(id);
 
   if (!app) {
     return notFound();
@@ -35,6 +37,7 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
             fallback={<Code className="size-8" />}
           />
         }
+        actions={<VisibilityButton appId={id} />}
       />
       <Body className="gap-0">
         <ErrorBoundary fallback={null}>

@@ -1,3 +1,4 @@
+import { api } from '@/trpc/server';
 import { Nav } from '../../_components/layout/nav';
 
 export default async function AuthenticatedAppLayout({
@@ -5,6 +6,10 @@ export default async function AuthenticatedAppLayout({
   params,
 }: LayoutProps<'/app/[id]'>) {
   const { id } = await params;
+
+  const isOwner = await api.apps.app.isOwner(id);
+
+  console.log(isOwner);
 
   return (
     <div>
@@ -14,10 +19,14 @@ export default async function AuthenticatedAppLayout({
             label: 'Overview',
             href: `/app/${id}`,
           },
-          {
-            label: 'Free Tier',
-            href: `/app/${id}/free-tier`,
-          },
+          ...(isOwner
+            ? [
+                {
+                  label: 'Free Tier',
+                  href: `/app/${id}/free-tier` as const,
+                },
+              ]
+            : []),
           {
             label: 'Referrals',
             href: `/app/${id}/referrals`,
@@ -34,15 +43,19 @@ export default async function AuthenticatedAppLayout({
             label: 'Transactions',
             href: `/app/${id}/transactions`,
           },
-          {
-            label: 'Settings',
-            href: `/app/${id}/settings`,
-            subRoutes: [
-              `/app/${id}/settings/general`,
-              `/app/${id}/settings/monetization`,
-              `/app/${id}/settings/security`,
-            ],
-          },
+          ...(isOwner
+            ? [
+                {
+                  label: 'Settings',
+                  href: `/app/${id}/settings` as const,
+                  subRoutes: [
+                    `/app/${id}/settings/general`,
+                    `/app/${id}/settings/monetization`,
+                    `/app/${id}/settings/security`,
+                  ],
+                },
+              ]
+            : []),
         ]}
       />
       <div className="flex flex-col py-4 md:py-6">{children}</div>

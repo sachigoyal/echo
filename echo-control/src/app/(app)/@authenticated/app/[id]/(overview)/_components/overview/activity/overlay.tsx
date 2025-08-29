@@ -9,16 +9,15 @@ interface Props {
 }
 
 export const ActivityOverlay: React.FC<Props> = ({ appId }) => {
-  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({
-    appId,
-  });
+  const [isOwner] = api.apps.app.isOwner.useSuspenseQuery(appId);
+  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
   const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
     appId,
   });
 
   return (
     <AnimatePresence>
-      {(numTokens === 0 || numTransactions === 0) && (
+      {isOwner && (numTokens <= 1 || numTransactions === 0) && (
         <motion.div
           className="absolute inset-0 bg-card/60 z-50 flex flex-col gap-4 items-center justify-center backdrop-blur-xs"
           initial={{ opacity: 0 }}
@@ -28,7 +27,7 @@ export const ActivityOverlay: React.FC<Props> = ({ appId }) => {
         >
           <Lock className="size-16 text-primary" />
           <p className="text-lg font-medium text-center max-w-xs">
-            {numTokens === 0
+            {numTokens <= 1
               ? 'Connect to Echo from your app to view your app activity'
               : 'Generate text from your app to view your app activity'}
           </p>
