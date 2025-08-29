@@ -5,10 +5,7 @@ import { useRouter } from 'next/navigation';
 import { UserSearch } from './UserSearch';
 import { AppSearch } from './AppSearch';
 import { CreditMinter } from './CreditMinter';
-import {
-  UserEarningsTable,
-  UserSpendingTable,
-} from '@/app/admin/_components';
+import { UserEarningsTable, UserSpendingTable } from '@/app/admin/_components';
 import {
   Card,
   CardContent,
@@ -23,7 +20,7 @@ export function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedApp, setSelectedApp] = useState<EchoApp | null>(null);
 
-  const handleAppClick = (appId: string, appName: string) => {
+  const handleAppClick = (appId: string) => {
     router.push(`/admin/apps/${appId}`);
   };
 
@@ -81,16 +78,10 @@ export function AdminDashboard() {
       )}
 
       {/* User Earnings Section */}
-      <UserEarningsTable
-        selectedUserId={selectedUser?.id}
-        onAppClick={handleAppClick}
-      />
+      <UserEarningsTable onAppClick={handleAppClick} />
 
       {/* User Spending Section */}
-      <UserSpendingTable
-        selectedUserId={selectedUser?.id}
-        onAppClick={handleAppClick}
-      />
+      <UserSpendingTable onAppClick={handleAppClick} />
     </div>
   );
 }

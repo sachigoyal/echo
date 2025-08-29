@@ -1,5 +1,4 @@
 import { db } from '@/lib/db';
-import type { EchoApp, User } from '@/generated/prisma';
 
 /**
  * User Earnings Aggregation Service
@@ -235,7 +234,16 @@ export async function getAllUsersEarningsAggregates(): Promise<GlobalEarningsAgg
 export async function getAllUsersEarningsAggregatesPaginated(
   page: number = 0,
   pageSize: number = 10
-): Promise<GlobalEarningsAggregates & { pagination: { page: number; pageSize: number; total: number; hasMore: boolean } }> {
+): Promise<
+  GlobalEarningsAggregates & {
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      hasMore: boolean;
+    };
+  }
+> {
   // Get total count of users who own at least one app
   const totalUsers = await db.user.count({
     where: {
@@ -280,9 +288,8 @@ export async function getAllUsersEarningsAggregatesPaginated(
 async function processUsersEarningsAggregates(
   users: { id: string; name: string | null; email: string }[]
 ): Promise<GlobalEarningsAggregates> {
-
   const userBreakdowns: UserEarningsAggregates[] = [];
-  let totalUsers = users.length;
+  const totalUsers = users.length;
   let totalApps = 0;
   let totalTransactions = 0;
   let totalCost = 0;

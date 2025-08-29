@@ -6,7 +6,7 @@ import { UserEarningsTable } from '@/app/admin/_components';
 export default function AdminEarningsDashboard() {
   const router = useRouter();
 
-  const handleAppClick = (appId: string, appName: string) => {
+  const handleAppClick = (appId: string) => {
     router.push(`/admin/apps/${appId}`);
   };
 
@@ -19,9 +19,7 @@ export default function AdminEarningsDashboard() {
           all apps
         </p>
       </div>
-      <UserEarningsTable
-        onAppClick={handleAppClick}
-      />
+      <UserEarningsTable onAppClick={handleAppClick} />
     </div>
   );
 }

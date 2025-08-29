@@ -1,11 +1,5 @@
 import { db } from '@/lib/db';
 import { PaymentStatus } from '@/lib/payment-processing';
-import type {
-  Transaction,
-  TransactionMetadata,
-  EchoApp,
-  ApiKey,
-} from '@/generated/prisma';
 
 /**
  * User Transaction Details Service

@@ -41,8 +41,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Wallet,
-  PiggyBank,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { formatNumber } from '@/components/app-detail';
@@ -58,14 +56,10 @@ type SortField =
 type SortDirection = 'asc' | 'desc';
 
 interface UserSpendingTableProps {
-  selectedUserId?: string;
   onAppClick?: (appId: string, appName: string) => void;
 }
 
-export function UserSpendingTable({
-  selectedUserId,
-  onAppClick,
-}: UserSpendingTableProps) {
+export function UserSpendingTable({ onAppClick }: UserSpendingTableProps) {
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('totalSpent');
@@ -82,24 +76,26 @@ export function UserSpendingTable({
     page_size: pageSize,
   });
 
-  const globalData = paginatedData ? {
-    totalUsers: paginatedData.totalUsers,
-    totalApps: paginatedData.totalApps,
-    totalTransactions: paginatedData.totalTransactions,
-    totalSpent: paginatedData.totalSpent,
-    totalInputTokens: paginatedData.totalInputTokens,
-    totalOutputTokens: paginatedData.totalOutputTokens,
-    totalTokens: paginatedData.totalTokens,
-    totalToolCost: paginatedData.totalToolCost,
-    totalSpendPoolUsage: paginatedData.totalSpendPoolUsage,
-    totalDirectSpending: paginatedData.totalDirectSpending,
-  } : null;
-  
-  const users = paginatedData?.userBreakdowns || [];
+  const globalData = paginatedData
+    ? {
+        totalUsers: paginatedData.totalUsers,
+        totalApps: paginatedData.totalApps,
+        totalTransactions: paginatedData.totalTransactions,
+        totalSpent: paginatedData.totalSpent,
+        totalInputTokens: paginatedData.totalInputTokens,
+        totalOutputTokens: paginatedData.totalOutputTokens,
+        totalTokens: paginatedData.totalTokens,
+        totalToolCost: paginatedData.totalToolCost,
+        totalSpendPoolUsage: paginatedData.totalSpendPoolUsage,
+        totalDirectSpending: paginatedData.totalDirectSpending,
+      }
+    : null;
+
   const pagination = paginatedData?.pagination;
 
   // Filter and sort users
   const filteredAndSortedUsers = useMemo(() => {
+    const users = paginatedData?.userBreakdowns || [];
     let filtered = users;
 
     // Apply search filter
@@ -167,7 +163,7 @@ export function UserSpendingTable({
     });
 
     return sorted;
-  }, [users, searchTerm, sortField, sortDirection]);
+  }, [paginatedData?.userBreakdowns, searchTerm, sortField, sortDirection]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -398,7 +394,9 @@ export function UserSpendingTable({
                     </SortButton>
                   </TableHead>
                   <TableHead className="text-right w-28">
-                    <SortButton field="totalDirectSpending">Personal Spend</SortButton>
+                    <SortButton field="totalDirectSpending">
+                      Personal Spend
+                    </SortButton>
                   </TableHead>
                   <TableHead className="text-right w-28">
                     <SortButton field="totalPaid">Total Paid</SortButton>
@@ -430,12 +428,20 @@ export function UserSpendingTable({
                       <TableCell className="min-w-0">
                         <div className="min-w-0">
                           <div className="font-medium truncate">
-                            <Link href={`/admin/users/${user.userId}`} className="hover:underline" title={user.userName || 'No name'}>
+                            <Link
+                              href={`/admin/users/${user.userId}`}
+                              className="hover:underline"
+                              title={user.userName || 'No name'}
+                            >
                               {user.userName || 'No name'}
                             </Link>
                           </div>
                           <div className="text-sm text-muted-foreground truncate">
-                            <Link href={`/admin/users/${user.userId}`} className="hover:underline" title={user.userEmail}>
+                            <Link
+                              href={`/admin/users/${user.userId}`}
+                              className="hover:underline"
+                              title={user.userEmail}
+                            >
                               {user.userEmail}
                             </Link>
                           </div>
@@ -488,7 +494,10 @@ export function UserSpendingTable({
                               >
                                 {app.appName}
                               </button>
-                              <div className="text-xs text-muted-foreground truncate max-w-full" title={app.appId}>
+                              <div
+                                className="text-xs text-muted-foreground truncate max-w-full"
+                                title={app.appId}
+                              >
                                 {app.appId}
                               </div>
                             </div>
@@ -534,10 +543,12 @@ export function UserSpendingTable({
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Rows per page:</span>
+                  <span className="text-sm text-muted-foreground">
+                    Rows per page:
+                  </span>
                   <Select
                     value={pageSize.toString()}
-                    onValueChange={(value) => {
+                    onValueChange={value => {
                       setPageSize(parseInt(value));
                       setCurrentPage(0);
                     }}
@@ -563,7 +574,8 @@ export function UserSpendingTable({
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    Page {currentPage + 1} of {Math.ceil(pagination.total / pageSize)}
+                    Page {currentPage + 1} of{' '}
+                    {Math.ceil(pagination.total / pageSize)}
                   </span>
                   <Button
                     variant="outline"

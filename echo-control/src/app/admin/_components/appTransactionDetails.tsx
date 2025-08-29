@@ -31,7 +31,6 @@ import {
   ChevronsRight,
   Activity,
   DollarSign,
-  TrendingUp,
   Clock,
   User,
   Zap,
@@ -78,12 +77,11 @@ export function AppTransactionDetails({
   });
 
   const isLoading = totalsLoading || transactionsLoading;
-  const transactions = transactionData?.transactions || [];
   const pagination = transactionData?.pagination;
-  const runningTotals = transactionData?.runningTotals;
 
   // Filter transactions based on search
   const filteredTransactions = useMemo(() => {
+    const transactions = transactionData?.transactions || [];
     if (!searchTerm.trim()) return transactions;
 
     const term = searchTerm.toLowerCase();
@@ -97,7 +95,7 @@ export function AppTransactionDetails({
         transaction.apiKey?.name?.toLowerCase().includes(term) ||
         transaction.spendPool?.name.toLowerCase().includes(term)
     );
-  }, [transactions, searchTerm]);
+  }, [transactionData?.transactions, searchTerm]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -372,7 +370,7 @@ export function AppTransactionDetails({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransactions.map((transaction, index) => (
+                {filteredTransactions.map(transaction => (
                   <TableRow key={transaction.id}>
                     <TableCell>
                       <div className="space-y-1">

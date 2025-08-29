@@ -1,10 +1,5 @@
 import { db } from '@/lib/db';
-import type {
-  Transaction,
-  TransactionMetadata,
-  User,
-  ApiKey,
-} from '@/generated/prisma';
+import type {} from '@/generated/prisma';
 
 /**
  * App Transaction Details Service

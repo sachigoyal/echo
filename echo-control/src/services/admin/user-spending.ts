@@ -1,6 +1,4 @@
 import { db } from '@/lib/db';
-import type { EchoApp, User } from '@/generated/prisma';
-
 /**
  * User Spending Aggregation Service
  *
@@ -271,7 +269,16 @@ export async function getAllUsersSpendingAggregates(): Promise<GlobalSpendingAgg
 export async function getAllUsersSpendingAggregatesPaginated(
   page: number = 0,
   pageSize: number = 10
-): Promise<GlobalSpendingAggregates & { pagination: { page: number; pageSize: number; total: number; hasMore: boolean } }> {
+): Promise<
+  GlobalSpendingAggregates & {
+    pagination: {
+      page: number;
+      pageSize: number;
+      total: number;
+      hasMore: boolean;
+    };
+  }
+> {
   // Get total count of users who have made transactions
   const totalUsers = await db.user.count({
     where: {
@@ -299,7 +306,9 @@ export async function getAllUsersSpendingAggregatesPaginated(
     take: pageSize,
   });
 
-  const aggregates = await processUsersSpendingAggregates(usersWithTransactions);
+  const aggregates = await processUsersSpendingAggregates(
+    usersWithTransactions
+  );
 
   return {
     ...aggregates,
@@ -318,9 +327,8 @@ export async function getAllUsersSpendingAggregatesPaginated(
 async function processUsersSpendingAggregates(
   users: { id: string; name: string | null; email: string }[]
 ): Promise<GlobalSpendingAggregates> {
-
   const userBreakdowns: UserSpendingAggregates[] = [];
-  let totalUsers = users.length;
+  const totalUsers = users.length;
   let totalApps = 0;
   let totalTransactions = 0;
   let totalSpent = 0;

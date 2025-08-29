@@ -77,10 +77,10 @@ export function UserTransactionDetails({
   });
 
   const isLoading = totalsLoading || transactionsLoading;
-  const transactions = transactionData?.transactions || [];
   const pagination = transactionData?.pagination;
 
   const filteredTransactions = useMemo(() => {
+    const transactions = transactionData?.transactions || [];
     if (!searchTerm.trim()) return transactions;
     const term = searchTerm.toLowerCase();
     return transactions.filter(
@@ -92,7 +92,7 @@ export function UserTransactionDetails({
         transaction.apiKey?.name?.toLowerCase().includes(term) ||
         transaction.spendPool?.name.toLowerCase().includes(term)
     );
-  }, [transactions, searchTerm]);
+  }, [transactionData?.transactions, searchTerm]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
