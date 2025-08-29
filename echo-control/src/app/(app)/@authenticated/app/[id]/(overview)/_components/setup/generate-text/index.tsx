@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
@@ -43,6 +43,10 @@ export const GenerateText: React.FC<Props> = ({ appId }) => {
     }
   );
 
+  const isConnected = useMemo(() => {
+    return numTokens > 0;
+  }, [numTokens]);
+
   useEffect(() => {
     setShouldRefetch(numTransactions === 0);
   }, [numTransactions]);
@@ -51,7 +55,7 @@ export const GenerateText: React.FC<Props> = ({ appId }) => {
     <AccordionItem value="generate-text" className="border-none">
       <AccordionTrigger
         className="text-lg font-semibold pt-0"
-        disabled={numTokens === 0}
+        disabled={!isConnected}
       >
         <div
           className={cn(
@@ -59,7 +63,7 @@ export const GenerateText: React.FC<Props> = ({ appId }) => {
             numTransactions > 0 && 'text-primary'
           )}
         >
-          {numTokens === 0 ? (
+          {!isConnected ? (
             <Lock className="size-4" />
           ) : numTransactions > 0 ? (
             <Check className="size-4" />

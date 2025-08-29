@@ -75,7 +75,7 @@ export const listAppMemberships = async (
   };
 
   const [totalCount, memberships] = await Promise.all([
-    db.appMembership.count({ where }),
+    countAppMembershipsInternal(where),
     db.appMembership.findMany({
       where,
       skip: page * page_size,
@@ -115,4 +115,14 @@ export const listAppMemberships = async (
     page,
     page_size,
   });
+};
+
+export const countAppMemberships = async (appId: AppId) => {
+  return await countAppMembershipsInternal({ echoAppId: appId });
+};
+
+const countAppMembershipsInternal = async (
+  where: Prisma.AppMembershipWhereInput
+) => {
+  return await db.appMembership.count({ where });
 };
