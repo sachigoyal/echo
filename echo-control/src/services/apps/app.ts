@@ -84,6 +84,7 @@ export const updateAppSchema = z
     homepageUrl: z.url().optional(),
     profilePictureUrl: z.url().optional(),
     authorizedCallbackUrls: z.array(z.string()).optional(),
+    isPublic: z.boolean().optional(),
   })
   .refine(data => Object.values(data).some(value => value !== undefined), {
     message: 'At least one field must be provided',

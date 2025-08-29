@@ -22,8 +22,11 @@ import {
   publicAppProcedure,
 } from './procedures';
 import {
+  countAppMemberships,
   createAppMembership,
   getAppMembership,
+  listAppMemberships,
+  listAppMembershipsSchema,
 } from '@/services/apps/membership';
 import {
   listAppsSchema,
@@ -73,6 +76,11 @@ import {
   countPublicApps,
 } from '@/services/apps/count';
 import { appEarningsSchema, getAppEarnings } from '@/services/apps/earnings';
+import {
+  getAppReferralReward,
+  setAppReferralReward,
+  setAppReferralRewardSchema,
+} from '@/services/apps/referral-codes';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -97,15 +105,24 @@ export const appsRouter = createTRPCRouter({
       return owner;
     }),
 
+    isOwner: protectedProcedure
+      .input(appIdSchema)
+      .query(async ({ ctx, input }) => {
+        const owner = await getAppOwner(input);
+        return owner?.id === ctx.session.user.id;
+      }),
+
     update: appOwnerProcedure
       .input(updateAppSchema)
       .mutation(async ({ ctx, input }) => {
         return await updateApp(input.appId, ctx.session.user.id, input);
       }),
 
-    getNumTokens: appOwnerProcedure.query(async ({ input }) => {
-      return await countAppTokens(input.appId);
-    }),
+    getNumTokens: protectedProcedure
+      .input(z.object({ appId: appIdSchema }))
+      .query(async ({ input }) => {
+        return await countAppTokens(input.appId);
+      }),
 
     markup: {
       get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
@@ -165,6 +182,22 @@ export const appsRouter = createTRPCRouter({
         }),
     },
 
+    referralReward: {
+      get: publicProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await getAppReferralReward(input);
+      }),
+
+      set: appOwnerProcedure
+        .input(setAppReferralRewardSchema)
+        .mutation(async ({ ctx, input }) => {
+          return await setAppReferralReward(
+            input.appId,
+            ctx.session.user.id,
+            input
+          );
+        }),
+    },
+
     transactions: {
       list: paginatedProcedure
         .concat(protectedProcedure)
@@ -209,16 +242,27 @@ export const appsRouter = createTRPCRouter({
           return await getAppEarnings(input);
         }),
     },
-  },
 
-  membership: {
-    create: protectedAppProcedure.mutation(async ({ ctx }) => {
-      return await createAppMembership(ctx.session.user.id, ctx.app.id);
-    }),
+    memberships: {
+      create: protectedAppProcedure.mutation(async ({ ctx }) => {
+        return await createAppMembership(ctx.session.user.id, ctx.app.id);
+      }),
 
-    get: protectedAppProcedure.query(async ({ ctx }) => {
-      return await getAppMembership(ctx.session.user.id, ctx.app.id);
-    }),
+      get: protectedAppProcedure.query(async ({ ctx }) => {
+        return await getAppMembership(ctx.session.user.id, ctx.app.id);
+      }),
+
+      count: protectedProcedure.input(appIdSchema).query(async ({ input }) => {
+        return await countAppMemberships(input);
+      }),
+
+      list: paginatedProcedure
+        .concat(protectedProcedure)
+        .input(listAppMembershipsSchema)
+        .query(async ({ input, ctx }) => {
+          return await listAppMemberships(input, ctx.pagination);
+        }),
+    },
   },
 
   list: {

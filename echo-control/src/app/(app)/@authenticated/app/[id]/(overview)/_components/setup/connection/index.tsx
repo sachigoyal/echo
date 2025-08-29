@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 
@@ -43,9 +43,13 @@ export const Connection: React.FC<Props> = ({ appId }) => {
     }
   );
 
-  useEffect(() => {
-    setShouldRefetch(numTokens === 0);
+  const isConnected = useMemo(() => {
+    return numTokens > 0;
   }, [numTokens]);
+
+  useEffect(() => {
+    setShouldRefetch(!isConnected);
+  }, [isConnected]);
 
   return (
     <AccordionItem value="connection" className="border-none">
@@ -53,10 +57,10 @@ export const Connection: React.FC<Props> = ({ appId }) => {
         <div
           className={cn(
             'flex items-center gap-2',
-            numTokens > 0 && 'text-primary'
+            isConnected && 'text-primary'
           )}
         >
-          {numTokens > 0 ? (
+          {isConnected ? (
             <Check className="size-4" />
           ) : (
             <ChevronsLeftRightEllipsis className="size-4" />
