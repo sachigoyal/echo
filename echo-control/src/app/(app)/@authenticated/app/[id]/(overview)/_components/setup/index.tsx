@@ -49,7 +49,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
       app.description !== null,
       githubLink !== null,
     ],
-    [app.profilePictureUrl, app.description, githubLink]
+    [app.profilePictureUrl, app.description, githubLink, numTokens]
   );
 
   const connectionSteps = useMemo(() => [numTokens > 0], [numTokens]);
@@ -77,16 +77,27 @@ export const Setup: React.FC<Props> = ({ appId }) => {
   );
 
   useEffect(() => {
-    if (appDetailsSteps.every(Boolean) && !connectionSteps.every(Boolean)) {
-      setAccordionValue('connection');
+    // Compute completion states only once
+    const appDetailsCompleted = appDetailsSteps.every(Boolean);
+    const connectionCompleted = connectionSteps.every(Boolean);
+    const generateTextCompleted = generateTextSteps.every(Boolean);
+
+    let nextAccordionValue = accordionValue;
+
+    if (!appDetailsCompleted) {
+      nextAccordionValue = 'app-details';
+    } else if (!connectionCompleted) {
+      nextAccordionValue = 'connection';
+    } else if (!generateTextCompleted) {
+      nextAccordionValue = 'generate-text';
+    } else {
+      nextAccordionValue = '';
     }
-    if (connectionSteps.every(Boolean) && !generateTextSteps.every(Boolean)) {
-      setAccordionValue('generate-text');
+
+    if (accordionValue !== nextAccordionValue && nextAccordionValue !== '') {
+      setAccordionValue(nextAccordionValue);
     }
-    if (allStepsCompleted) {
-      setAccordionValue('');
-    }
-  }, [appDetailsSteps, connectionSteps, generateTextSteps, allStepsCompleted]);
+  }, [appDetailsSteps, connectionSteps, generateTextSteps, accordionValue]);
 
   return (
     <AnimatePresence mode="wait">
