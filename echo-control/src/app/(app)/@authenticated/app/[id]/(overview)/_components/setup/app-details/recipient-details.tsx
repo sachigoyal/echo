@@ -64,7 +64,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
-  
+
   const handleBlurFetchAvatar = async () => {
     const type = form.getValues('type');
     const url = form.getValues('url') ?? '';
