@@ -37,7 +37,7 @@ export const PublicReferralsPage: React.FC<Props> = async ({ appId }) => {
           title="Referral Bonus"
           description="This is the % of revenue that will be allocated to you when you refer new users to this app."
         />
-        <ReferralCode />
+        <ReferralCode appId={appId} />
         <Referrals
           appId={appId}
           referrerUserId={session.user.id}
