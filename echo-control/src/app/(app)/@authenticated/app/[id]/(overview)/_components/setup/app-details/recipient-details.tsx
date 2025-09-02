@@ -58,8 +58,6 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
 
   const [avatarLogin, setAvatarLogin] = useState<string | null>(null);
 
-  console.log(avatarLogin);
-
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
     resolver: zodResolver(updateGithubLinkSchema),
     defaultValues: {
