@@ -55,6 +55,8 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
 
   const [avatarLogin, setAvatarLogin] = useState<string | null>(null);
 
+  console.log(avatarLogin);
+
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
     resolver: zodResolver(updateGithubLinkSchema),
     defaultValues: {
@@ -81,6 +83,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
           onValueChange={value => {
             form.setValue('type', value as GithubEntityType);
             setAvatarLogin(null);
+            form.setValue('url', '');
           }}
           className="flex flex-col gap-2"
         >
@@ -125,7 +128,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
               render={({ field }) => (
                 <FormItem className="h-20 flex flex-col gap-2">
                   <FormControl className="h-full">
-                    <div className="h-full flex items-center gap-2">
+                    <div className="h-full relative">
                       <Input
                         placeholder="richardhendricks"
                         {...field}
@@ -142,7 +145,12 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                           );
                         }}
                       />
-                      <MinimalGithubAvatar login={field.value} />
+                      {avatarLogin && (
+                        <MinimalGithubAvatar
+                          login={avatarLogin}
+                          className="size-9  absolute right-2 top-1/2 -translate-y-1/2"
+                        />
+                      )}
                     </div>
                   </FormControl>
                   <FormDescription>
@@ -160,7 +168,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
               render={({ field }) => (
                 <FormItem className="h-20 flex flex-col gap-2">
                   <FormControl className="h-full">
-                    <div className="h-full flex items-center gap-2">
+                    <div className="h-full relative">
                       <Input
                         placeholder="facebook/react"
                         {...field}
@@ -196,11 +204,12 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                               .split('/')[0]
                           );
                         }}
+                        className="h-full"
                       />
                       {avatarLogin && (
                         <MinimalGithubAvatar
                           login={avatarLogin}
-                          className="size-9"
+                          className="size-9 absolute right-2 top-1/2 -translate-y-1/2"
                         />
                       )}
                     </div>
