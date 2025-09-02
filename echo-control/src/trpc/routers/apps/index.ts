@@ -80,7 +80,13 @@ import {
   getAppReferralReward,
   setAppReferralReward,
   setAppReferralRewardSchema,
-} from '@/services/apps/referral-codes';
+} from '@/services/apps/referral-reward';
+import {
+  createAppReferralCode,
+  createAppReferralCodeSchema,
+  getAppReferralCode,
+  getAppReferralCodeSchema,
+} from '@/services/apps/referral-code';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -195,6 +201,20 @@ export const appsRouter = createTRPCRouter({
             ctx.session.user.id,
             input
           );
+        }),
+    },
+
+    referralCode: {
+      get: protectedProcedure
+        .input(getAppReferralCodeSchema)
+        .query(async ({ input, ctx }) => {
+          return await getAppReferralCode(ctx.session.user.id, input);
+        }),
+
+      create: protectedProcedure
+        .input(createAppReferralCodeSchema)
+        .mutation(async ({ input, ctx }) => {
+          return await createAppReferralCode(ctx.session.user.id, input);
         }),
     },
 
