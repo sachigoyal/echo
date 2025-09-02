@@ -5,9 +5,9 @@ import { LoadingReferralBonus } from './_components/referral-amount';
 export default async function LoadingAppReferralsPage() {
   return (
     <div>
-      <Heading title="Referrals" description="" />
+      <Heading title="Referrals" description={'\u00A0'} />
       <Body>
-        <LoadingReferralBonus title="Referral Bonus" description="" />
+        <LoadingReferralBonus title="Referral Bonus" description={'\u00A0'} />
       </Body>
     </div>
   );
