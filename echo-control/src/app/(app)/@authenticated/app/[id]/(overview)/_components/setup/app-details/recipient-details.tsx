@@ -1,9 +1,15 @@
 'use client';
 
+import React, { useState } from 'react';
+
+import { Check, Loader2 } from 'lucide-react';
+
 import z from 'zod';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,12 +21,13 @@ import {
   FormField,
   FormItem,
 } from '@/components/ui/form';
+import { MinimalGithubAvatar } from '@/components/ui/github-avatar';
 
 import { updateGithubLinkSchema } from '@/services/apps/github-link';
+
 import { GithubType } from '@/generated/prisma';
-import { Check, Loader2 } from 'lucide-react';
+
 import { api } from '@/trpc/client';
-import { toast } from 'sonner';
 
 const tabsTriggerClassName =
   'shadow-none rounded-none data-[state=active]:bg-primary/10 rounded-sm data-[state=active]:shadow-none p-0 px-1 h-fit cursor-pointer text-sm leading-none data-[state=active]:text-primary data-[state=active]:font-bold hover:bg-primary/10 transition-colors';
@@ -49,6 +56,8 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
     },
   });
 
+  const [avatarLogin, setAvatarLogin] = useState<string | null>(null);
+
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
     resolver: zodResolver(updateGithubLinkSchema),
     defaultValues: {
@@ -72,9 +81,11 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
       >
         <Tabs
           value={form.watch('type')}
-          onValueChange={value =>
-            form.setValue('type', value as 'user' | 'repo')
-          }
+          onValueChange={value => {
+            form.setValue('type', value as GithubType);
+            setAvatarLogin(null);
+            form.setValue('url', '');
+          }}
           className="flex flex-col gap-2"
         >
           <FormField
@@ -118,15 +129,30 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
               render={({ field }) => (
                 <FormItem className="h-20 flex flex-col gap-2">
                   <FormControl className="h-full">
-                    <Input
-                      placeholder="richardhendricks"
-                      {...field}
-                      value={field.value.replace('https://github.com/', '')}
-                      onChange={e => {
-                        field.onChange(`https://github.com/${e.target.value}`);
-                      }}
-                      className="h-full"
-                    />
+                    <div className="h-full relative">
+                      <Input
+                        placeholder="richardhendricks"
+                        {...field}
+                        value={field.value.replace('https://github.com/', '')}
+                        onChange={e => {
+                          field.onChange(
+                            `https://github.com/${e.target.value}`
+                          );
+                        }}
+                        className="h-full flex-1"
+                        onBlur={() => {
+                          setAvatarLogin(
+                            field.value.replace('https://github.com/', '')
+                          );
+                        }}
+                      />
+                      {avatarLogin && (
+                        <MinimalGithubAvatar
+                          login={avatarLogin}
+                          className="size-9  absolute right-2 top-1/2 -translate-y-1/2"
+                        />
+                      )}
+                    </div>
                   </FormControl>
                   <FormDescription>
                     All profits will be claimable by this GitHub account on
@@ -143,23 +169,51 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
               render={({ field }) => (
                 <FormItem className="h-20 flex flex-col gap-2">
                   <FormControl className="h-full">
-                    <Input
-                      placeholder="facebook/react"
-                      {...field}
-                      value={field.value.replace('https://github.com/', '')}
-                      onChange={e => {
-                        field.onChange(`https://github.com/${e.target.value}`);
-                      }}
-                      onPaste={e => {
-                        e.preventDefault();
-                        const text = e.clipboardData.getData('text');
-                        if (text.includes('github.com/')) {
-                          field.onChange(text);
-                        } else {
-                          field.onChange(`https://github.com/${text}`);
-                        }
-                      }}
-                    />
+                    <div className="h-full relative">
+                      <Input
+                        placeholder="facebook/react"
+                        {...field}
+                        value={field.value.replace('https://github.com/', '')}
+                        onChange={e => {
+                          field.onChange(
+                            `https://github.com/${e.target.value}`
+                          );
+                        }}
+                        onPaste={e => {
+                          e.preventDefault();
+                          const text = e.clipboardData.getData('text');
+                          if (text.includes('github.com/')) {
+                            field.onChange(text);
+                            setAvatarLogin(
+                              text
+                                .replace('https://github.com/', '')
+                                .split('/')[0]
+                            );
+                          } else {
+                            field.onChange(`https://github.com/${text}`);
+                            setAvatarLogin(
+                              text
+                                .replace('https://github.com/', '')
+                                .split('/')[0]
+                            );
+                          }
+                        }}
+                        onBlur={() => {
+                          setAvatarLogin(
+                            field.value
+                              .replace('https://github.com/', '')
+                              .split('/')[0]
+                          );
+                        }}
+                        className="h-full"
+                      />
+                      {avatarLogin && (
+                        <MinimalGithubAvatar
+                          login={avatarLogin}
+                          className="size-9 absolute right-2 top-1/2 -translate-y-1/2"
+                        />
+                      )}
+                    </div>
                   </FormControl>
                   <FormDescription>
                     All profits will be sent to this repo&apos;s Merit Systems
