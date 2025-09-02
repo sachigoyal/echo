@@ -26,6 +26,8 @@ export default async function OAuthAuthorizePage({
 
   const parseResult = authorizeParamsSchema.safeParse(resolvedParams);
 
+  console.log('parseResult', parseResult);
+
   if (!parseResult.success) {
     return (
       <ErrorPage

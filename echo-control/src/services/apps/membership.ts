@@ -67,6 +67,7 @@ export const updateAppMembershipReferrer = async (
   userId: string,
   input: z.infer<typeof updateAppMembershipReferrerSchema>
 ) => {
+  console.log('updateAppMembershipReferrer', userId, input);
   return await db.appMembership.update({
     where: {
       userId_echoAppId: { userId, echoAppId: input.appId },
