@@ -21,9 +21,10 @@ import { GithubType } from '@/generated/prisma';
 import { Check, Loader2 } from 'lucide-react';
 import { api } from '@/trpc/client';
 import { toast } from 'sonner';
-import { useState } from 'react';
-import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
+import { useMemo, useState } from 'react';
+import { MinimalGithubAvatar } from '@/components/ui/github-avatar';
 import { useGithubAvatar, GithubEntityType } from '@/hooks/use-github-avatar';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const tabsTriggerClassName =
   'shadow-none rounded-none data-[state=active]:bg-primary/10 rounded-sm data-[state=active]:shadow-none p-0 px-1 h-fit cursor-pointer text-sm leading-none data-[state=active]:text-primary data-[state=active]:font-bold hover:bg-primary/10 transition-colors';
@@ -37,8 +38,6 @@ interface Props {
 }
 
 export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
-  const { fetchAvatar } = useGithubAvatar();
-
   const isComplete = githubLink !== null;
 
   const utils = api.useUtils();
@@ -54,6 +53,8 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
     },
   });
 
+  const [avatarLogin, setAvatarLogin] = useState<string | null>(null);
+
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
     resolver: zodResolver(updateGithubLinkSchema),
     defaultValues: {
@@ -61,18 +62,6 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
       url: githubLink?.githubUrl ?? '',
     },
   });
-
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [avatarLoading, setAvatarLoading] = useState(false);
-
-  const handleBlurFetchAvatar = async () => {
-    const type = form.getValues('type');
-    const url = form.getValues('url') ?? '';
-    setAvatarLoading(true);
-    const avatar = await fetchAvatar(type as GithubEntityType, url);
-    setAvatarUrl(avatar);
-    setAvatarLoading(false);
-  };
 
   const onSubmit = (data: z.infer<typeof updateGithubLinkSchema>) => {
     updateGithubLink({
@@ -91,7 +80,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
           value={form.watch('type')}
           onValueChange={value => {
             form.setValue('type', value as GithubEntityType);
-            setAvatarUrl(null);
+            setAvatarLogin(null);
           }}
           className="flex flex-col gap-2"
         >
@@ -142,22 +131,18 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                         {...field}
                         value={field.value.replace('https://github.com/', '')}
                         onChange={e => {
-                          setAvatarUrl(null);
                           field.onChange(
                             `https://github.com/${e.target.value}`
                           );
                         }}
-                        onBlur={handleBlurFetchAvatar}
                         className="h-full flex-1"
+                        onBlur={() => {
+                          setAvatarLogin(
+                            field.value.replace('https://github.com/', '')
+                          );
+                        }}
                       />
-                      {avatarLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : avatarUrl && (
-                        <MinimalGithubAvatar
-                          srcUrl={avatarUrl}
-                          alt="GitHub avatar"
-                        />
-                      )}
+                      <MinimalGithubAvatar login={field.value} />
                     </div>
                   </FormControl>
                   <FormDescription>
@@ -181,7 +166,6 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                         {...field}
                         value={field.value.replace('https://github.com/', '')}
                         onChange={e => {
-                          setAvatarUrl(null);
                           field.onChange(
                             `https://github.com/${e.target.value}`
                           );
@@ -191,19 +175,32 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                           const text = e.clipboardData.getData('text');
                           if (text.includes('github.com/')) {
                             field.onChange(text);
+                            setAvatarLogin(
+                              text
+                                .replace('https://github.com/', '')
+                                .split('/')[0]
+                            );
                           } else {
                             field.onChange(`https://github.com/${text}`);
+                            setAvatarLogin(
+                              text
+                                .replace('https://github.com/', '')
+                                .split('/')[0]
+                            );
                           }
-                          setAvatarUrl(null);
                         }}
-                        onBlur={handleBlurFetchAvatar}
+                        onBlur={() => {
+                          setAvatarLogin(
+                            field.value
+                              .replace('https://github.com/', '')
+                              .split('/')[0]
+                          );
+                        }}
                       />
-                      {avatarLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : avatarUrl && (
+                      {avatarLogin && (
                         <MinimalGithubAvatar
-                          srcUrl={avatarUrl}
-                          alt="GitHub avatar"
+                          login={avatarLogin}
+                          className="size-9"
                         />
                       )}
                     </div>
