@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Settings,
-  Key,
   BarChart,
   Shield,
   ChevronRight,
@@ -19,7 +18,6 @@ import {
 // Import individual settings components
 import GeneralSettings from '@/components/settings/GeneralSettings';
 import PersonalizationSettings from '@/components/settings/PersonalizationSettings';
-import ApiKeysSettings from '@/components/settings/ApiKeysSettings';
 import AnalyticsSettings from '@/components/settings/AnalyticsSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import UsersSettings from '@/components/settings/UsersSettings';
@@ -52,12 +50,6 @@ const sidebarItems: SidebarItem[] = [
     label: 'Personalization',
     icon: <Palette className="h-4 w-4" />,
     description: 'App name, images, and branding customization',
-  },
-  {
-    id: 'api-keys',
-    label: 'API Keys',
-    icon: <Key className="h-4 w-4" />,
-    description: 'View and manage API keys for your app',
   },
   {
     id: 'analytics',
@@ -134,8 +126,6 @@ export default function SettingsPage() {
         return (
           <PersonalizationSettings appId={appId} initialAppName={appName} />
         );
-      case 'api-keys':
-        return <ApiKeysSettings appId={appId} appName={appName} />;
       case 'analytics':
         return <AnalyticsSettings appId={appId} />;
       case 'earnings':

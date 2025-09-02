@@ -24,18 +24,6 @@ export interface AppCreateInput {
   isPublic?: boolean;
 }
 
-export interface AppUpdateInput {
-  name?: string;
-  description?: string;
-  isPublic?: boolean;
-  githubType?: 'user' | 'repo';
-  githubId?: string;
-  profilePictureUrl?: string;
-  bannerImageUrl?: string;
-  homepageUrl?: string;
-  authorizedCallbackUrls?: string[];
-}
-
 export type Owner = {
   id: string;
   email: string;

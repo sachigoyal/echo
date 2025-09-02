@@ -282,10 +282,5 @@ export {
   TabsContents,
   TabsContent,
   useTabs,
-  type TabsContextType,
   type TabsProps,
-  type TabsListProps,
-  type TabsTriggerProps,
-  type TabsContentsProps,
-  type TabsContentProps,
 };
