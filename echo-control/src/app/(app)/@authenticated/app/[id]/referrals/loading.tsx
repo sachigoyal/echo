@@ -12,7 +12,10 @@ export default async function LoadingAppReferralsPage() {
       />
       <Body>
         <LoadingReferralBonus />
-        <LoadingReferrals />
+        <LoadingReferrals
+          title="Referrals"
+          description="These users were referred to your app by other users."
+        />
       </Body>
     </div>
   );

@@ -40,14 +40,15 @@ interface Pagination {
 
 interface Props {
   appId: string;
+  referrerUserId: string;
 }
 
-export const ReferralsTable: React.FC<Props> = ({ appId }) => {
+export const ReferralsTable: React.FC<Props> = ({ appId, referrerUserId }) => {
   const [
     referralMemberships,
     { hasNextPage, fetchNextPage, isFetchingNextPage },
   ] = api.apps.app.memberships.list.useSuspenseInfiniteQuery(
-    { appId, referrerUserId: 'any' },
+    { appId, referrerUserId },
     {
       getNextPageParam: lastPage =>
         lastPage.has_next ? lastPage.page + 1 : undefined,

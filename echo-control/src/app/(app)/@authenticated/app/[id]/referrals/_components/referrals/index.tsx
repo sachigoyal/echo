@@ -9,38 +9,60 @@ import {
 
 import { ReferralsTable, LoadingReferralsTable } from './table';
 
-interface Props {
-  appId: string;
+import { api, HydrateClient } from '@/trpc/server';
+
+interface BaseProps {
+  title: string;
+  description: string;
 }
 
-const ReferralsContainer = ({ children }: { children: React.ReactNode }) => {
+interface Props extends BaseProps {
+  appId: string;
+  referrerUserId: string;
+}
+
+export const Referrals: React.FC<Props> = async ({
+  appId,
+  referrerUserId,
+  title,
+  description,
+}) => {
+  api.apps.app.memberships.list.prefetchInfinite({
+    appId,
+    referrerUserId,
+  });
+
+  return (
+    <HydrateClient>
+      <ReferralsContainer title={title} description={description}>
+        <Suspense fallback={<LoadingReferralsTable />}>
+          <ReferralsTable appId={appId} referrerUserId={referrerUserId} />
+        </Suspense>
+      </ReferralsContainer>
+    </HydrateClient>
+  );
+};
+
+export const LoadingReferrals = ({ title, description }: BaseProps) => {
+  return (
+    <ReferralsContainer title={title} description={description}>
+      <LoadingReferralsTable />
+    </ReferralsContainer>
+  );
+};
+
+const ReferralsContainer = ({
+  children,
+  title,
+  description,
+}: BaseProps & { children: React.ReactNode }) => {
   return (
     <Card className="bg-transparent">
       <CardHeader>
-        <CardTitle>Referrals</CardTitle>
-        <CardDescription>
-          These users were referred to your app by other users.
-        </CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       {children}
     </Card>
-  );
-};
-
-export const Referrals: React.FC<Props> = ({ appId }) => {
-  return (
-    <ReferralsContainer>
-      <Suspense fallback={<LoadingReferralsTable />}>
-        <ReferralsTable appId={appId} />
-      </Suspense>
-    </ReferralsContainer>
-  );
-};
-
-export const LoadingReferrals = () => {
-  return (
-    <ReferralsContainer>
-      <LoadingReferralsTable />
-    </ReferralsContainer>
   );
 };

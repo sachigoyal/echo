@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 
 import { ReferralBonusAmount, ReferralBonusAmountSkeleton } from './amount';
 
+import { api, HydrateClient } from '@/trpc/server';
+
 interface Props {
   appId: string;
 }
@@ -28,12 +30,16 @@ const ReferralBonusContainer = ({
 };
 
 export const ReferralBonus: React.FC<Props> = ({ appId }) => {
+  api.apps.app.referralReward.get.prefetch(appId);
+
   return (
-    <ReferralBonusContainer>
-      <Suspense fallback={<ReferralBonusAmountSkeleton />}>
-        <ReferralBonusAmount appId={appId} />
-      </Suspense>
-    </ReferralBonusContainer>
+    <HydrateClient>
+      <ReferralBonusContainer>
+        <Suspense fallback={<ReferralBonusAmountSkeleton />}>
+          <ReferralBonusAmount appId={appId} />
+        </Suspense>
+      </ReferralBonusContainer>
+    </HydrateClient>
   );
 };
 
