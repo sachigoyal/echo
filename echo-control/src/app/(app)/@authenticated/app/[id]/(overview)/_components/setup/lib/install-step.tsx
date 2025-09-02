@@ -1,6 +1,6 @@
 import React from 'react';
 
-export interface InstallStepProps {
+interface InstallStepProps {
   index: number;
   title: string;
   description: string;

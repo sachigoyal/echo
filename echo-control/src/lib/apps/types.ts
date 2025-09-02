@@ -4,26 +4,6 @@ import { UserSpendInfo } from '@/lib/spend-pools';
 
 export type { SerializedTransaction };
 
-export interface LlmTransactionMetadata {
-  providerId: string;
-  provider: string;
-  model: string;
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-  prompt?: string;
-  response?: string;
-}
-
-export interface AppCreateInput {
-  name: string;
-  description?: string;
-  githubType?: 'user' | 'repo';
-  githubId?: string;
-  authorizedCallbackUrls?: string[];
-  isPublic?: boolean;
-}
-
 export type Owner = {
   id: string;
   email: string;

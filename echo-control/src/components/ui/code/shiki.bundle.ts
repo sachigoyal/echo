@@ -52,4 +52,4 @@ const { codeToHast, getSingletonHighlighter } =
   );
 
 export { codeToHast, getSingletonHighlighter };
-export type { BundledLanguage, BundledTheme, Highlighter };
+export type { BundledLanguage, Highlighter };

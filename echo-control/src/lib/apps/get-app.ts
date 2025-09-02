@@ -46,41 +46,6 @@ export async function getApp(
 }
 
 /**
- * Get an app with permission check, throwing an error if the user doesn't have access.
- * This is useful when you want to ensure the user has at least read access to the app.
- *
- * @param appId - The ID of the app to fetch
- * @param userId - The ID of the user requesting the app
- * @param minimumRole - The minimum role required (defaults to PUBLIC for read access)
- * @returns The app data appropriate for the user's permission level
- * @throws Error if the user doesn't have the required permission level
- */
-export async function getAppWithPermissionCheck(
-  appId: string,
-  userId: string,
-  minimumRole: AppRole = AppRole.PUBLIC
-): Promise<OwnerEchoApp | CustomerEchoApp | PublicEchoApp> {
-  const role = await PermissionService.getUserAppRole(userId, appId);
-
-  // Check if user has sufficient permissions
-  const roleHierarchy = {
-    [AppRole.OWNER]: 3,
-    [AppRole.ADMIN]: 2,
-    [AppRole.CUSTOMER]: 1,
-    [AppRole.PUBLIC]: 0,
-  };
-
-  if (roleHierarchy[role] < roleHierarchy[minimumRole]) {
-    throw new Error(
-      `Insufficient permissions. Required role: ${minimumRole}, user role: ${role}`
-    );
-  }
-
-  // Return the appropriate app data based on actual role
-  return getApp(appId, userId);
-}
-
-/**
  * Type guard to check if the returned app is an OwnerEchoApp
  */
 export function isOwnerApp(

@@ -2,13 +2,7 @@
 export * from './types';
 
 // Export main permission-based getApp function
-export {
-  getApp,
-  getAppWithPermissionCheck,
-  isOwnerApp,
-  isCustomerApp,
-  isPublicApp,
-} from './get-app';
+export { getApp, isOwnerApp, isCustomerApp, isPublicApp } from './get-app';
 
 // Export public functions
 export { getPublicEchoApp, getAllPublicEchoApps } from './public';

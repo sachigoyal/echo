@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-export interface FeatureCardProps {
+interface FeatureCardProps {
   children: React.ReactNode;
 }
 

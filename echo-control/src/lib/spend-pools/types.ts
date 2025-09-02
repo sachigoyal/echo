@@ -1,11 +1,3 @@
-export interface CreateSpendPoolRequest {
-  name: string;
-  description?: string;
-  totalAmount: number;
-  echoAppId: string;
-  defaultSpendLimit?: number;
-}
-
 export interface SpendPoolData {
   id: string;
   name: string;

@@ -9,13 +9,13 @@ import { PermissionService } from '@/lib/permissions/service';
 
 import type { EchoApp } from '@/lib/types/apps';
 
-export interface UserPermissions {
+interface UserPermissions {
   isAuthenticated: boolean;
   userRole: AppRole | null;
   permissions: Permission[];
 }
 
-export interface UseEchoAppDetailReturn {
+interface UseEchoAppDetailReturn {
   app: EchoApp | null;
   loading: boolean;
   error: string | null;
