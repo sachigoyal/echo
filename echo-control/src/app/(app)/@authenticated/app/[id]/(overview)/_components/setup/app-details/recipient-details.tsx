@@ -137,14 +137,6 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                 <FormItem className="h-20 flex flex-col gap-2">
                   <FormControl className="h-full">
                     <div className="h-full flex items-center gap-2">
-                      {avatarLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : avatarUrl && (
-                        <MinimalGithubAvatar
-                          srcUrl={avatarUrl}
-                          alt="GitHub avatar"
-                        />
-                      )}
                       <Input
                         placeholder="richardhendricks"
                         {...field}
@@ -158,6 +150,14 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                         onBlur={handleBlurFetchAvatar}
                         className="h-full flex-1"
                       />
+                      {avatarLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : avatarUrl && (
+                        <MinimalGithubAvatar
+                          srcUrl={avatarUrl}
+                          alt="GitHub avatar"
+                        />
+                      )}
                     </div>
                   </FormControl>
                   <FormDescription>
