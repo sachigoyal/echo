@@ -23,7 +23,7 @@ import { api } from '@/trpc/client';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
-import { useGithubAvatar } from '@/hooks/use-github-avatar';
+import { useGithubAvatar, GithubEntityType } from '@/hooks/use-github-avatar';
 
 const tabsTriggerClassName =
   'shadow-none rounded-none data-[state=active]:bg-primary/10 rounded-sm data-[state=active]:shadow-none p-0 px-1 h-fit cursor-pointer text-sm leading-none data-[state=active]:text-primary data-[state=active]:font-bold hover:bg-primary/10 transition-colors';
@@ -69,7 +69,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
     const type = form.getValues('type');
     const url = form.getValues('url') ?? '';
     setAvatarLoading(true);
-    const avatar = await fetchAvatar(type as 'user' | 'repo', url);
+    const avatar = await fetchAvatar(type as GithubEntityType, url);
     setAvatarUrl(avatar);
     setAvatarLoading(false);
   };
@@ -90,7 +90,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
         <Tabs
           value={form.watch('type')}
           onValueChange={value => {
-            form.setValue('type', value as 'user' | 'repo');
+            form.setValue('type', value as GithubEntityType);
             setAvatarUrl(null);
           }}
           className="flex flex-col gap-2"

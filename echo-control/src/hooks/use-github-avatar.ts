@@ -1,8 +1,10 @@
 import { useCallback } from 'react';
 
+export type GithubEntityType = 'user' | 'repo';
+
 export const useGithubAvatar = () => {
   const fetchAvatar = useCallback(
-    async (type: 'user' | 'repo', githubUrl: string) => {
+    async (type: GithubEntityType, githubUrl: string) => {
       try {
         const path = githubUrl.replace('https://github.com/', '');
         if (!path) return null;
