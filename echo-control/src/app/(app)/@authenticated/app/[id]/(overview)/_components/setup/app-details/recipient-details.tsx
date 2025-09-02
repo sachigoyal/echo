@@ -139,12 +139,12 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                     <div className="h-full flex items-center gap-2">
                       {avatarLoading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : avatarUrl ? (
+                      ) : avatarUrl && (
                         <MinimalGithubAvatar
                           srcUrl={avatarUrl}
                           alt="GitHub avatar"
                         />
-                      ) : null}
+                      )}
                       <Input
                         placeholder="richardhendricks"
                         {...field}
@@ -200,12 +200,12 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                       />
                       {avatarLoading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : avatarUrl ? (
+                      ) : avatarUrl && (
                         <MinimalGithubAvatar
                           srcUrl={avatarUrl}
                           alt="GitHub avatar"
                         />
-                      ) : null}
+                      )}
                     </div>
                   </FormControl>
                   <FormDescription>
