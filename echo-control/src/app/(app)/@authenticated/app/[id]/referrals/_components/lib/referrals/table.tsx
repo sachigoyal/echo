@@ -41,9 +41,14 @@ interface Pagination {
 interface Props {
   appId: string;
   referrerUserId: string;
+  hideReferrer?: boolean;
 }
 
-export const ReferralsTable: React.FC<Props> = ({ appId, referrerUserId }) => {
+export const ReferralsTable: React.FC<Props> = ({
+  appId,
+  referrerUserId,
+  hideReferrer,
+}) => {
   const [
     referralMemberships,
     { hasNextPage, fetchNextPage, isFetchingNextPage },
@@ -61,6 +66,7 @@ export const ReferralsTable: React.FC<Props> = ({ appId, referrerUserId }) => {
 
   return (
     <BaseReferralsTable
+      hideReferrer={hideReferrer}
       pagination={
         hasNextPage
           ? {
@@ -80,6 +86,7 @@ export const ReferralsTable: React.FC<Props> = ({ appId, referrerUserId }) => {
               referrer: row.referrer!.user!,
               totalSpent: row.totalSpent,
             }))}
+          hideReferrer={hideReferrer}
         />
       ) : (
         <TableEmpty colSpan={3}>
@@ -92,22 +99,42 @@ export const ReferralsTable: React.FC<Props> = ({ appId, referrerUserId }) => {
   );
 };
 
-export const LoadingReferralsTable = () => {
+export const LoadingReferralsTable = ({
+  hideReferrer,
+}: {
+  hideReferrer?: boolean;
+}) => {
   return (
-    <BaseReferralsTable>
-      <LoadingUserRow />
-      <LoadingUserRow />
+    <BaseReferralsTable hideReferrer={hideReferrer}>
+      <LoadingUserRow hideReferrer={hideReferrer} />
+      <LoadingUserRow hideReferrer={hideReferrer} />
     </BaseReferralsTable>
   );
 };
 
-const ReferralRows = ({ referrals }: { referrals: Referral[] }) => {
+const ReferralRows = ({
+  referrals,
+  hideReferrer,
+}: {
+  referrals: Referral[];
+  hideReferrer?: boolean;
+}) => {
   return referrals.map(referral => (
-    <ReferralRow key={referral.user.id} referral={referral} />
+    <ReferralRow
+      key={referral.user.id}
+      referral={referral}
+      hideReferrer={hideReferrer}
+    />
   ));
 };
 
-const ReferralRow = ({ referral }: { referral: Referral }) => {
+const ReferralRow = ({
+  referral,
+  hideReferrer,
+}: {
+  referral: Referral;
+  hideReferrer?: boolean;
+}) => {
   return (
     <TableRow key={referral.user.id}>
       <TableCell className="pl-4">
@@ -116,18 +143,20 @@ const ReferralRow = ({ referral }: { referral: Referral }) => {
           <p className="text-sm font-medium">{referral.user.name}</p>
         </div>
       </TableCell>
-      <TableCell className="pl-4">
-        <div className="flex flex-row items-center gap-2">
-          <UserAvatar src={referral.referrer.image} className="size-6" />
-          <p className="text-sm font-medium">{referral.referrer.name}</p>
-        </div>
-      </TableCell>
+      {!hideReferrer && (
+        <TableCell className="pl-4">
+          <div className="flex flex-row items-center gap-2">
+            <UserAvatar src={referral.referrer.image} className="size-6" />
+            <p className="text-sm font-medium">{referral.referrer.name}</p>
+          </div>
+        </TableCell>
+      )}
       <TableCell>{formatCurrency(referral.totalSpent)}</TableCell>
     </TableRow>
   );
 };
 
-const LoadingUserRow = () => {
+const LoadingUserRow = ({ hideReferrer }: { hideReferrer?: boolean }) => {
   return (
     <TableRow>
       <TableCell className="pl-4">
@@ -136,12 +165,14 @@ const LoadingUserRow = () => {
           <Skeleton className="h-4 w-16" />
         </div>
       </TableCell>
-      <TableCell>
-        <div className="flex flex-row items-center gap-2">
-          <Skeleton className="size-6" />
-          <Skeleton className="h-4 w-16" />
-        </div>
-      </TableCell>
+      {!hideReferrer && (
+        <TableCell>
+          <div className="flex flex-row items-center gap-2">
+            <Skeleton className="size-6" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+        </TableCell>
+      )}
       <TableCell>
         <Skeleton className="h-4 w-24" />
       </TableCell>
@@ -151,11 +182,13 @@ const LoadingUserRow = () => {
 
 interface BaseReferralsTableProps {
   children: React.ReactNode;
+  hideReferrer?: boolean;
   pagination?: Pagination;
 }
 
 const BaseReferralsTable = ({
   children,
+  hideReferrer,
   pagination,
 }: BaseReferralsTableProps) => {
   return (
@@ -169,14 +202,16 @@ const BaseReferralsTable = ({
               </div>
               User
             </TableHead>
-            <TableHead className="text-center">
-              <div className="flex flex-row items-center gap-2">
-                <div className="size-6 flex items-center justify-center bg-muted rounded-md">
-                  <TicketPlus className="size-4" />
+            {!hideReferrer && (
+              <TableHead className="text-center">
+                <div className="flex flex-row items-center gap-2">
+                  <div className="size-6 flex items-center justify-center bg-muted rounded-md">
+                    <TicketPlus className="size-4" />
+                  </div>
+                  Referrer
                 </div>
-                Referrer
-              </div>
-            </TableHead>
+              </TableHead>
+            )}
             <TableHead className="text-center">Total Spent</TableHead>
           </TableRow>
         </TableHeader>

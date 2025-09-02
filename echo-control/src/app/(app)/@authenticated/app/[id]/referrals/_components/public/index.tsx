@@ -43,6 +43,7 @@ export const PublicReferralsPage: React.FC<Props> = async ({ appId }) => {
           referrerUserId={session.user.id}
           title="Referrals"
           description="You referred these users to this app."
+          hideReferrer
         />
       </Body>
     </div>

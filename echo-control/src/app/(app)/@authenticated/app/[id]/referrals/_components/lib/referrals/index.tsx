@@ -19,6 +19,7 @@ interface BaseProps {
 interface Props extends BaseProps {
   appId: string;
   referrerUserId: string;
+  hideReferrer?: boolean;
 }
 
 export const Referrals: React.FC<Props> = async ({
@@ -26,6 +27,7 @@ export const Referrals: React.FC<Props> = async ({
   referrerUserId,
   title,
   description,
+  hideReferrer,
 }) => {
   api.apps.app.memberships.list.prefetchInfinite({
     appId,
@@ -35,8 +37,14 @@ export const Referrals: React.FC<Props> = async ({
   return (
     <HydrateClient>
       <ReferralsContainer title={title} description={description}>
-        <Suspense fallback={<LoadingReferralsTable />}>
-          <ReferralsTable appId={appId} referrerUserId={referrerUserId} />
+        <Suspense
+          fallback={<LoadingReferralsTable hideReferrer={hideReferrer} />}
+        >
+          <ReferralsTable
+            appId={appId}
+            referrerUserId={referrerUserId}
+            hideReferrer={hideReferrer}
+          />
         </Suspense>
       </ReferralsContainer>
     </HydrateClient>
