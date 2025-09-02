@@ -23,6 +23,7 @@ import { api } from '@/trpc/client';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
+import { useGithubAvatar } from '@/hooks/use-github-avatar';
 
 const tabsTriggerClassName =
   'shadow-none rounded-none data-[state=active]:bg-primary/10 rounded-sm data-[state=active]:shadow-none p-0 px-1 h-fit cursor-pointer text-sm leading-none data-[state=active]:text-primary data-[state=active]:font-bold hover:bg-primary/10 transition-colors';
@@ -36,6 +37,8 @@ interface Props {
 }
 
 export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
+  const { fetchAvatar } = useGithubAvatar();
+
   const isComplete = githubLink !== null;
 
   const utils = api.useUtils();
@@ -61,36 +64,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
-
-  const fetchAvatar = async (type: 'user' | 'repo', rawUrl: string) => {
-    try {
-      const slug = (rawUrl || '')
-        .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
-        .replace(/^\/?|\/?$/g, '');
-      if (!slug) return null;
-
-      if (type === 'user') {
-        const username = slug.split('/')[0];
-        if (!username) return null;
-        const res = await fetch(`https://api.github.com/users/${username}`);
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data?.avatar_url ?? null;
-      } else {
-        const [owner, repo] = slug.split('/');
-        if (!owner || !repo) return null;
-        const res = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}`
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data?.owner?.avatar_url ?? data?.avatar_url ?? null;
-      }
-    } catch {
-      return null;
-    }
-  };
-
+  
   const handleBlurFetchAvatar = async () => {
     const type = form.getValues('type');
     const url = form.getValues('url') ?? '';
