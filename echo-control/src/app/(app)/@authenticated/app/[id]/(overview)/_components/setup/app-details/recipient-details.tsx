@@ -18,7 +18,7 @@ import {
 
 import { updateGithubLinkSchema } from '@/services/apps/github-link';
 import { GithubType } from '@/generated/prisma';
-import { Check, Github, Loader2 } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { api } from '@/trpc/client';
 import { toast } from 'sonner';
 
