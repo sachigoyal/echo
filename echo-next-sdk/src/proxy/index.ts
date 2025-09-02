@@ -24,11 +24,8 @@ export async function handleEchoClientProxy(
   headers.delete('if-modified-since');
 
   // Get valid token using existing function (handles refresh automatically)
-  let accessToken = await getEchoToken(config);
-  // Fallback: try reading from incoming request cookies
-  if (!accessToken) {
-    accessToken = req.cookies.get('echo_access_token')?.value || null;
-  }
+  const accessToken = await getEchoToken(config);
+
   if (!accessToken) {
     return NextResponse.json(
       { error: 'Authentication required' },
@@ -37,8 +34,6 @@ export async function handleEchoClientProxy(
   }
   // Inject the valid token
   headers.set('Authorization', `Bearer ${accessToken}`);
-
-  console.log('Target URL', targetUrl);
   try {
     const response = await fetch(targetUrl, {
       method: req.method,
