@@ -18,6 +18,11 @@ export function createEchoAnthropic(
     return createAnthropicBase({
       baseURL: baseRouterUrl,
       apiKey: token ?? '', // null will fail auth
+      headers: {
+        // this is safe in Echo because the token is an echo oauth jwt
+        // not a long lived anthropic api key
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
     });
   };
 

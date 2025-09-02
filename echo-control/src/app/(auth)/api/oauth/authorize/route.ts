@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
     const scope = qs.get('scope') || 'llm:invoke offline_access';
     const responseType = qs.get('response_type') || 'code';
     const prompt = qs.get('prompt');
+    const referralCode = qs.get('referral_code');
 
     if (!clientId || !redirectUri || !codeChallenge) {
       logger.emit({
@@ -265,6 +266,8 @@ export async function GET(req: NextRequest) {
     consentUrl.searchParams.set('scope', scope);
     consentUrl.searchParams.set('response_type', responseType);
     if (state) consentUrl.searchParams.set('state', state);
+    if (referralCode)
+      consentUrl.searchParams.set('referral_code', referralCode);
 
     return NextResponse.redirect(consentUrl.toString(), 302);
   } catch (error) {
