@@ -6,47 +6,55 @@ import { ReferralBonusAmount, ReferralBonusAmountSkeleton } from './amount';
 
 import { api, HydrateClient } from '@/trpc/server';
 
-interface Props {
-  appId: string;
+interface BaseProps {
+  title: string;
+  description: string;
 }
 
-const ReferralBonusContainer = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  return (
-    <Card className="border rounded-lg overflow-hidden flex flex-col gap-2 p-4">
-      <h1 className="text-lg font-semibold text-muted-foreground">
-        Referral Bonus
-      </h1>
-      <div className="w-full">{children}</div>
-      <p className="text-sm text-muted-foreground">
-        This is the % of revenue that will be allocated to users who refer new
-        users.
-      </p>
-    </Card>
-  );
-};
+interface Props extends BaseProps {
+  appId: string;
+  children?: React.ReactNode;
+}
 
-export const ReferralBonus: React.FC<Props> = ({ appId }) => {
+export const ReferralBonus: React.FC<Props> = ({
+  appId,
+  title,
+  description,
+  children,
+}) => {
   api.apps.app.referralReward.get.prefetch(appId);
 
   return (
     <HydrateClient>
-      <ReferralBonusContainer>
+      <ReferralBonusContainer title={title} description={description}>
         <Suspense fallback={<ReferralBonusAmountSkeleton />}>
-          <ReferralBonusAmount appId={appId} />
+          <ReferralBonusAmount appId={appId}>{children}</ReferralBonusAmount>
         </Suspense>
       </ReferralBonusContainer>
     </HydrateClient>
   );
 };
 
-export const LoadingReferralBonus = () => {
+export const LoadingReferralBonus = ({ title, description }: BaseProps) => {
   return (
-    <ReferralBonusContainer>
+    <ReferralBonusContainer title={title} description={description}>
       <ReferralBonusAmountSkeleton />
     </ReferralBonusContainer>
+  );
+};
+
+const ReferralBonusContainer = ({
+  children,
+  title,
+  description,
+}: BaseProps & {
+  children: React.ReactNode;
+}) => {
+  return (
+    <Card className="border rounded-lg overflow-hidden flex flex-col gap-2 p-4">
+      <h1 className="text-lg font-semibold text-muted-foreground">{title}</h1>
+      <div className="w-full">{children}</div>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </Card>
   );
 };
