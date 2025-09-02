@@ -21,6 +21,8 @@ import { GithubType } from '@/generated/prisma';
 import { Check, Loader2 } from 'lucide-react';
 import { api } from '@/trpc/client';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import { MinimalGithubAvatar } from '@/components/ui/minimalGithubAvatar';
 
 const tabsTriggerClassName =
   'shadow-none rounded-none data-[state=active]:bg-primary/10 rounded-sm data-[state=active]:shadow-none p-0 px-1 h-fit cursor-pointer text-sm leading-none data-[state=active]:text-primary data-[state=active]:font-bold hover:bg-primary/10 transition-colors';
@@ -57,6 +59,47 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
     },
   });
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+
+  const fetchAvatar = async (type: 'user' | 'repo', rawUrl: string) => {
+    try {
+      const slug = (rawUrl || '')
+        .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
+        .replace(/^\/?|\/?$/g, '');
+      if (!slug) return null;
+
+      if (type === 'user') {
+        const username = slug.split('/')[0];
+        if (!username) return null;
+        const res = await fetch(`https://api.github.com/users/${username}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data?.avatar_url ?? null;
+      } else {
+        const [owner, repo] = slug.split('/');
+        if (!owner || !repo) return null;
+        const res = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}`
+        );
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data?.owner?.avatar_url ?? data?.avatar_url ?? null;
+      }
+    } catch {
+      return null;
+    }
+  };
+
+  const handleBlurFetchAvatar = async () => {
+    const type = form.getValues('type');
+    const url = form.getValues('url') ?? '';
+    setAvatarLoading(true);
+    const avatar = await fetchAvatar(type as 'user' | 'repo', url);
+    setAvatarUrl(avatar);
+    setAvatarLoading(false);
+  };
+
   const onSubmit = (data: z.infer<typeof updateGithubLinkSchema>) => {
     updateGithubLink({
       appId,
@@ -72,9 +115,10 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
       >
         <Tabs
           value={form.watch('type')}
-          onValueChange={value =>
-            form.setValue('type', value as 'user' | 'repo')
-          }
+          onValueChange={value => {
+            form.setValue('type', value as 'user' | 'repo');
+            setAvatarUrl(null);
+          }}
           className="flex flex-col gap-2"
         >
           <FormField
@@ -118,15 +162,29 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
               render={({ field }) => (
                 <FormItem className="h-20 flex flex-col gap-2">
                   <FormControl className="h-full">
-                    <Input
-                      placeholder="richardhendricks"
-                      {...field}
-                      value={field.value.replace('https://github.com/', '')}
-                      onChange={e => {
-                        field.onChange(`https://github.com/${e.target.value}`);
-                      }}
-                      className="h-full"
-                    />
+                    <div className="h-full flex items-center gap-2">
+                      {avatarLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : avatarUrl ? (
+                        <MinimalGithubAvatar
+                          srcUrl={avatarUrl}
+                          alt="GitHub avatar"
+                        />
+                      ) : null}
+                      <Input
+                        placeholder="richardhendricks"
+                        {...field}
+                        value={field.value.replace('https://github.com/', '')}
+                        onChange={e => {
+                          setAvatarUrl(null);
+                          field.onChange(
+                            `https://github.com/${e.target.value}`
+                          );
+                        }}
+                        onBlur={handleBlurFetchAvatar}
+                        className="h-full flex-1"
+                      />
+                    </div>
                   </FormControl>
                   <FormDescription>
                     All profits will be claimable by this account on Merit
@@ -143,23 +201,38 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
               render={({ field }) => (
                 <FormItem className="h-20 flex flex-col gap-2">
                   <FormControl className="h-full">
-                    <Input
-                      placeholder="facebook/react"
-                      {...field}
-                      value={field.value.replace('https://github.com/', '')}
-                      onChange={e => {
-                        field.onChange(`https://github.com/${e.target.value}`);
-                      }}
-                      onPaste={e => {
-                        e.preventDefault();
-                        const text = e.clipboardData.getData('text');
-                        if (text.includes('github.com/')) {
-                          field.onChange(text);
-                        } else {
-                          field.onChange(`https://github.com/${text}`);
-                        }
-                      }}
-                    />
+                    <div className="h-full flex items-center gap-2">
+                      <Input
+                        placeholder="facebook/react"
+                        {...field}
+                        value={field.value.replace('https://github.com/', '')}
+                        onChange={e => {
+                          setAvatarUrl(null);
+                          field.onChange(
+                            `https://github.com/${e.target.value}`
+                          );
+                        }}
+                        onPaste={e => {
+                          e.preventDefault();
+                          const text = e.clipboardData.getData('text');
+                          if (text.includes('github.com/')) {
+                            field.onChange(text);
+                          } else {
+                            field.onChange(`https://github.com/${text}`);
+                          }
+                          setAvatarUrl(null);
+                        }}
+                        onBlur={handleBlurFetchAvatar}
+                      />
+                      {avatarLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : avatarUrl ? (
+                        <MinimalGithubAvatar
+                          srcUrl={avatarUrl}
+                          alt="GitHub avatar"
+                        />
+                      ) : null}
+                    </div>
                   </FormControl>
                   <FormDescription>
                     All profits will be sent to this repo&apos;s Merit Systems
