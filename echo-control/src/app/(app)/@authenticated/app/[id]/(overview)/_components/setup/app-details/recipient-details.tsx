@@ -58,7 +58,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
   const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
     resolver: zodResolver(updateGithubLinkSchema),
     defaultValues: {
-      type: githubLink?.type ?? 'repo',
+      type: githubLink?.type ?? 'user',
       url: githubLink?.githubUrl ?? '',
     },
   });
@@ -92,18 +92,6 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                 <FormControl>
                   <TabsList className="flex items-center gap-2 w-fit p-0 bg-transparent h-fit">
                     <TabsTrigger
-                      value="repo"
-                      onClick={() => {
-                        form.setValue('type', 'repo');
-                      }}
-                      className={tabsTriggerClassName}
-                    >
-                      Pay to Repo
-                    </TabsTrigger>
-                    <span className="text-xs text-muted-foreground leading-none">
-                      or
-                    </span>
-                    <TabsTrigger
                       value="user"
                       onClick={() => {
                         form.setValue('type', 'user');
@@ -111,6 +99,18 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                       className={tabsTriggerClassName}
                     >
                       Pay to User
+                    </TabsTrigger>
+                    <span className="text-xs text-muted-foreground leading-none">
+                      or
+                    </span>
+                    <TabsTrigger
+                      value="repo"
+                      onClick={() => {
+                        form.setValue('type', 'repo');
+                      }}
+                      className={tabsTriggerClassName}
+                    >
+                      Pay to Repo
                     </TabsTrigger>
                   </TabsList>
                 </FormControl>
@@ -146,8 +146,8 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                     </div>
                   </FormControl>
                   <FormDescription>
-                    All profits will be claimable by this account on Merit
-                    Systems.
+                    All profits will be claimable by this GitHub account on
+                    Merit Systems.
                   </FormDescription>
                 </FormItem>
               )}

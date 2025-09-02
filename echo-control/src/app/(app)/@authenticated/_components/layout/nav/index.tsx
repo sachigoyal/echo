@@ -6,11 +6,13 @@ import { MotionTab } from './motion-tab';
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useScroll, useTransform } from 'motion/react';
 import { Route } from 'next';
+import { ExternalLink } from 'lucide-react';
 
 interface Tab<T extends string> {
   label: string;
   href: Route<T>;
   subRoutes?: string[];
+  external?: boolean;
 }
 
 interface Props<T extends string = string> {
@@ -62,7 +64,10 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
                 }}
               >
                 <MotionTab href={tab.href} subRoutes={tab.subRoutes}>
-                  {tab.label}
+                  <span className="flex items-center gap-1">
+                    {tab.label}
+                    {tab.external && <ExternalLink className="size-4" />}
+                  </span>
                 </MotionTab>
               </Link>
             </div>
