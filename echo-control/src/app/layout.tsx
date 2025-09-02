@@ -1,6 +1,5 @@
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'sonner';
 import { RootProvider } from 'fumadocs-ui/provider';
 
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -8,6 +7,8 @@ import { Analytics } from '@vercel/analytics/next';
 
 import { TRPCReactProvider } from '@/trpc/client';
 import { PostHogProvider } from '@/components/PostHogProvider';
+
+import { Toaster } from '@/components/ui/sonner';
 
 import type { Metadata } from 'next';
 

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/{instrumentation,middleware}.{js,ts}",
+    "src/app/**/{error,layout,loading,not-found,page,template,default}.{js,jsx,ts,tsx}",
+    "src/app/**/route.{js,jsx,ts,tsx}",
+    "src/mdx-components.{js,jsx,ts,tsx}"
+  ],
+  "ignoreDependencies": [
+    "@faker-js/faker",
+    "eslint-config-next",
+    "husky",
+    "tsx",
+    "tw-animate-css"
+  ],
+  "ignore": ["/api/**", "/scripts/**"],
+  "ignoreBinaries": [],
+  "ignoreWorkspaces": []
+}

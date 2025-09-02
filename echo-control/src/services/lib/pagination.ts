@@ -1,7 +1,5 @@
 import z from 'zod';
 
-import { PaginatedResponse } from '@/types/paginated-response';
-
 interface Params<T> {
   items: T[];
   page: number;
@@ -15,6 +13,14 @@ export const paginationSchema = z.object({
 });
 
 export type PaginationParams = z.infer<typeof paginationSchema>;
+
+export type PaginatedResponse<T> = {
+  items: T[];
+  page_size: number;
+  page: number;
+  total_count: number;
+  has_next: boolean;
+};
 
 export const toPaginatedReponse = <T>({
   items,
