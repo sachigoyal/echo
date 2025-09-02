@@ -35,7 +35,7 @@ interface Props<FormType extends FieldValues> {
   description?: string;
 }
 
-export const FormField = <FormType extends FieldValues>({
+const FormField = <FormType extends FieldValues>({
   name,
   label,
   render,

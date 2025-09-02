@@ -14,7 +14,7 @@ export const paginationSchema = z.object({
 
 export type PaginationParams = z.infer<typeof paginationSchema>;
 
-export type PaginatedResponse<T> = {
+type PaginatedResponse<T> = {
   items: T[];
   page_size: number;
   page: number;

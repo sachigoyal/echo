@@ -3,7 +3,6 @@ export {
   AppBanner,
   AppProfile,
   GlobalActivityChart,
-  OverviewStats,
   formatNumber,
   formatCost,
   transformActivityData,

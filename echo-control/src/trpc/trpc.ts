@@ -8,7 +8,7 @@ import { db } from '@/lib/db';
 /**
  * Context that is passed to all TRPC procedures
  */
-export interface Context {
+interface Context {
   session: Session | null;
   headers: Headers;
 }
@@ -48,7 +48,6 @@ const t = initTRPC.context<Context>().create({
 
 export const createCallerFactory = t.createCallerFactory;
 export const createTRPCRouter = t.router;
-export const middleware = t.middleware;
 
 // ----------------------------
 // Middleware
