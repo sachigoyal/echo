@@ -15,7 +15,9 @@ export function CreateReferralCodeCard({ app }: CreateReferralCodeCardProps) {
   const [error, setError] = useState<string | null>(null);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
-  const { data: referralCode } = api.apps.app.referralCode.get.useQuery(app.id);
+  const { data: referralCode } = api.apps.app.referralCode.get.byUser.useQuery(
+    app.id
+  );
 
   const utils = api.useUtils();
 
@@ -26,7 +28,7 @@ export function CreateReferralCodeCard({ app }: CreateReferralCodeCardProps) {
   } = api.apps.app.referralCode.create.useMutation({
     onSuccess: () => {
       setError(null);
-      utils.apps.app.referralCode.get.invalidate(app.id);
+      utils.apps.app.referralCode.get.byUser.invalidate(app.id);
     },
     onError: error => {
       setError(error.message || 'Failed to create referral code');

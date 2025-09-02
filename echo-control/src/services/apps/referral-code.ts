@@ -9,7 +9,7 @@ import { ReferralCodeType } from '@/lib/referral-codes/types';
 
 export const getAppReferralCodeSchema = appIdSchema;
 
-export const getAppReferralCode = async (
+export const getUserAppReferralCode = async (
   userId: UserId,
   appId: z.infer<typeof appIdSchema>
 ) => {
@@ -41,6 +41,18 @@ export const getAppReferralCode = async (
     userId: referralCode.userId,
     echoAppId: referralCode.echoAppId,
   };
+};
+
+export const getReferralCodeByCodeSchema = z.uuid();
+
+export const getReferralCodeByCode = async (
+  code: z.infer<typeof getReferralCodeByCodeSchema>
+) => {
+  const referralCode = await db.referralCode.findFirst({
+    where: { code, grantType: ReferralCodeType.REFERRAL },
+  });
+
+  return referralCode;
 };
 
 export const createAppReferralCodeSchema = z.object({
@@ -99,5 +111,5 @@ const getReferralLinkUrl = ({
   echoAppId: string;
   code: string;
 }) => {
-  return `${homePage || `${process.env.ECHO_CONTROL_APP_BASE_URL}/app/${echoAppId}`}?referralCode=${code}`;
+  return `${homePage || `${process.env.ECHO_CONTROL_APP_BASE_URL}/app/${echoAppId}`}?referral_code=${code}`;
 };

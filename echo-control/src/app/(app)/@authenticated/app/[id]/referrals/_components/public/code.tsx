@@ -29,7 +29,7 @@ export const ReferralCode: React.FC<Props> = async ({ appId }) => {
 };
 
 const ReferralCodeContent = async ({ appId }: { appId: string }) => {
-  let referralCode = await api.apps.app.referralCode.get(appId);
+  let referralCode = await api.apps.app.referralCode.get.byUser(appId);
 
   if (!referralCode) {
     referralCode = await api.apps.app.referralCode.create({
