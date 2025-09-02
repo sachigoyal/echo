@@ -151,7 +151,9 @@ const ReferralRow = ({
           </div>
         </TableCell>
       )}
-      <TableCell>{formatCurrency(referral.totalSpent)}</TableCell>
+      <TableCell className="text-right">
+        {formatCurrency(referral.totalSpent)}
+      </TableCell>
     </TableRow>
   );
 };
@@ -212,7 +214,7 @@ const BaseReferralsTable = ({
                 </div>
               </TableHead>
             )}
-            <TableHead className="text-center">Total Spent</TableHead>
+            <TableHead className="text-right">Total Spent</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>{children}</TableBody>
