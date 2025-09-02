@@ -18,7 +18,7 @@ import {
 
 import { updateGithubLinkSchema } from '@/services/apps/github-link';
 import { GithubType } from '@/generated/prisma';
-import { Check, Loader2 } from 'lucide-react';
+import { Check, Github, Loader2 } from 'lucide-react';
 import { api } from '@/trpc/client';
 import { toast } from 'sonner';
 
@@ -129,8 +129,8 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
                     />
                   </FormControl>
                   <FormDescription>
-                    All profits will be claimable by this account on Merit
-                    Systems.
+                    All profits will be claimable by this GitHub account on
+                    Merit Systems.
                   </FormDescription>
                 </FormItem>
               )}
