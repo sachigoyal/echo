@@ -7,9 +7,18 @@ import {
 import { NextRequest } from 'next/server';
 
 export interface EchoConfig {
+  /**
+   *  Echo App ID.
+   */
   appId: string;
+  /** 
+   *  Base path of API URL.
+   *  @default /api/echo
+   */
   basePath?: string;
+  /** @internal */
   baseRouterUrl?: string;
+  /** @internal */
   baseEchoUrl?: string;
 }
 
