@@ -1,9 +1,15 @@
 'use client';
 
+import React, { useState } from 'react';
+
+import { Check, Loader2 } from 'lucide-react';
+
 import z from 'zod';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,16 +21,13 @@ import {
   FormField,
   FormItem,
 } from '@/components/ui/form';
+import { MinimalGithubAvatar } from '@/components/ui/github-avatar';
 
 import { updateGithubLinkSchema } from '@/services/apps/github-link';
+
 import { GithubType } from '@/generated/prisma';
-import { Check, Loader2 } from 'lucide-react';
+
 import { api } from '@/trpc/client';
-import { toast } from 'sonner';
-import { useMemo, useState } from 'react';
-import { MinimalGithubAvatar } from '@/components/ui/github-avatar';
-import { useGithubAvatar, GithubEntityType } from '@/hooks/use-github-avatar';
-import { useDebounce } from '@/hooks/use-debounce';
 
 const tabsTriggerClassName =
   'shadow-none rounded-none data-[state=active]:bg-primary/10 rounded-sm data-[state=active]:shadow-none p-0 px-1 h-fit cursor-pointer text-sm leading-none data-[state=active]:text-primary data-[state=active]:font-bold hover:bg-primary/10 transition-colors';
@@ -81,7 +84,7 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
         <Tabs
           value={form.watch('type')}
           onValueChange={value => {
-            form.setValue('type', value as GithubEntityType);
+            form.setValue('type', value as GithubType);
             setAvatarLogin(null);
             form.setValue('url', '');
           }}
