@@ -14,11 +14,22 @@ Echo standardizes AI billing like Clerk standardized auth. Drop in our SDK, set 
 
 Result: Your users get one universal balance that works across all Echo-powered apps, creating network effects that grow your user base while you focus on building.
 
-For example, here's how you can monetize LLM usage within your app:
+For example, here's how you can add complete user management and LLM billing to your app:
 
 ```tsx
-import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { EchoProvider, EchoTokens, useEchoModelProviders } from '@merit-systems/echo-react-sdk';
 import { generateText } from 'ai';
+
+function App() {
+  return (
+    <EchoProvider config={{ appId: 'your-app-id' }}>
+      {/* Complete user management - handles auth, billing, sign-out */}
+      <EchoTokens showAvatar={true} />
+      
+      <ChatComponent />
+    </EchoProvider>
+  );
+}
 
 function ChatComponent() {
   const { openai } = useEchoModelProviders();
