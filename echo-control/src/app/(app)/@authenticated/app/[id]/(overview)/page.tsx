@@ -10,6 +10,7 @@ import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Overview } from './_components/overview';
 import { VisibilityButton } from './_components/visibility-button';
+import { OverallAppStats } from './_components/stats';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
@@ -45,7 +46,10 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
             <Setup appId={id} />
           </Suspense>
         </ErrorBoundary>
-        <Overview appId={id} />
+        <div className="flex flex-col gap-8">
+          <OverallAppStats appId={id} />
+          <Overview appId={id} />
+        </div>
       </Body>
     </HydrateClient>
   );

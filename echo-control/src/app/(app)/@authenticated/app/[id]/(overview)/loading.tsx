@@ -3,6 +3,7 @@ import { Body, Heading } from '../../../_components/layout/page-utils';
 import { Code } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadingOverview } from './_components/overview';
+import { LoadingOverallAppStats } from './_components/stats';
 
 export default function LoadingAppPage() {
   return (
@@ -17,7 +18,8 @@ export default function LoadingAppPage() {
           />
         }
       />
-      <Body className="gap-0">
+      <Body>
+        <LoadingOverallAppStats />
         <LoadingOverview />
       </Body>
     </div>

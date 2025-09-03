@@ -20,11 +20,16 @@ interface Props {
 export const ActivityCharts: React.FC<Props> = ({ appId }) => {
   const { startDate, endDate } = useActivityContext();
 
-  const [activity] = api.apps.app.activity.get.useSuspenseQuery({
-    appId,
-    startDate,
-    endDate,
-  });
+  const [activity] = api.apps.app.stats.bucketed.useSuspenseQuery(
+    {
+      appId,
+      startDate,
+      endDate,
+    },
+    {
+      refetchInterval: 15000,
+    }
+  );
 
   const [isOwner] = api.apps.app.isOwner.useSuspenseQuery(appId);
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
