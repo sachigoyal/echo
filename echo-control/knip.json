@@ -13,7 +13,7 @@
     "tsx",
     "tw-animate-css"
   ],
-  "ignore": ["/api/**", "/scripts/**"],
+  "ignore": ["/api/**", "/scripts/**", "/source.config.ts"],
   "ignoreBinaries": [],
   "ignoreWorkspaces": []
 }
