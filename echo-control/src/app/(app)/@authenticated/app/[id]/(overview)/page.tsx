@@ -9,8 +9,9 @@ import { Setup } from './_components/setup';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Overview } from './_components/overview';
-import { VisibilityButton } from './_components/visibility-button';
+import { VisibilityButton } from './_components/header/visibility-button';
 import { OverallAppStats } from './_components/stats';
+import { HeaderCard, LoadingHeaderCard } from './_components/header';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
@@ -26,28 +27,20 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
     return notFound();
   }
 
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
   return (
     <HydrateClient>
-      <Heading
-        title={app.name}
-        description={app.description ?? undefined}
-        icon={
-          <UserAvatar
-            src={app.profilePictureUrl ?? undefined}
-            className="size-12 shrink-0"
-            fallback={<Code className="size-8" />}
-          />
-        }
-        actions={<VisibilityButton appId={id} />}
-      />
-      <Body className="gap-0">
+      <Body className="gap-0 pt-0">
+        <Suspense fallback={<LoadingHeaderCard />}>
+          <HeaderCard appId={id} />
+        </Suspense>
         <ErrorBoundary fallback={null}>
           <Suspense fallback={null}>
             <Setup appId={id} />
           </Suspense>
         </ErrorBoundary>
         <div className="flex flex-col gap-8">
-          <OverallAppStats appId={id} />
           <Overview appId={id} />
         </div>
       </Body>
