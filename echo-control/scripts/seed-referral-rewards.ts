@@ -6,11 +6,11 @@ import { addDays, subDays, format } from 'date-fns';
 
 interface SeedReferralRewardsOptions {
   referrerUserId?: string; // If not provided, create a new user
-  referrerEmail?: string;   // If not provided, default to a known email
-  appId?: string;          // If not provided, create a new app owned by referrer
-  referredUsers: number;   // Number of referred users to create
+  referrerEmail?: string; // If not provided, default to a known email
+  appId?: string; // If not provided, create a new app owned by referrer
+  referredUsers: number; // Number of referred users to create
   transactionsPerUser: number; // Transactions per referred user
-  days: number;            // Days back to spread transactions
+  days: number; // Days back to spread transactions
   quiet?: boolean;
 }
 
@@ -80,20 +80,36 @@ Examples:
   return options;
 }
 
-async function getOrCreateReferrerUser(providedUserId?: string, providedEmail?: string, quiet?: boolean) {
+async function getOrCreateReferrerUser(
+  providedUserId?: string,
+  providedEmail?: string,
+  quiet?: boolean
+) {
   if (providedUserId) {
-    const existing = await db.user.findUnique({ where: { id: providedUserId }, select: { id: true, email: true, name: true } });
+    const existing = await db.user.findUnique({
+      where: { id: providedUserId },
+      select: { id: true, email: true, name: true },
+    });
     if (!existing) {
       throw new Error(`Referrer user not found: ${providedUserId}`);
     }
-    if (!quiet) console.log(`✅ Using existing referrer user: ${existing.name ?? existing.email} (${existing.id})`);
+    if (!quiet)
+      console.log(
+        `✅ Using existing referrer user: ${existing.name ?? existing.email} (${existing.id})`
+      );
     return existing.id;
   }
 
   if (providedEmail) {
-    const existingByEmail = await db.user.findUnique({ where: { email: providedEmail }, select: { id: true, email: true, name: true } });
+    const existingByEmail = await db.user.findUnique({
+      where: { email: providedEmail },
+      select: { id: true, email: true, name: true },
+    });
     if (existingByEmail) {
-      if (!quiet) console.log(`✅ Using existing referrer by email: ${existingByEmail.email} (${existingByEmail.id})`);
+      if (!quiet)
+        console.log(
+          `✅ Using existing referrer by email: ${existingByEmail.email} (${existingByEmail.id})`
+        );
       return existingByEmail.id;
     }
 
@@ -107,7 +123,10 @@ async function getOrCreateReferrerUser(providedUserId?: string, providedEmail?: 
       },
       select: { id: true, email: true },
     });
-    if (!quiet) console.log(`👤 Created referrer user for email ${providedEmail}: ${created.id}`);
+    if (!quiet)
+      console.log(
+        `👤 Created referrer user for email ${providedEmail}: ${created.id}`
+      );
     return created.id;
   }
 
@@ -125,13 +144,21 @@ async function getOrCreateReferrerUser(providedUserId?: string, providedEmail?: 
   return user.id;
 }
 
-async function getOrCreateApp(referrerUserId: string, providedAppId?: string, quiet?: boolean): Promise<{ appId: string; ownerUserId?: string }> {
+async function getOrCreateApp(
+  referrerUserId: string,
+  providedAppId?: string,
+  quiet?: boolean
+): Promise<{ appId: string; ownerUserId?: string }> {
   if (providedAppId) {
-    const existing = await db.echoApp.findUnique({ where: { id: providedAppId }, select: { id: true, name: true } });
+    const existing = await db.echoApp.findUnique({
+      where: { id: providedAppId },
+      select: { id: true, name: true },
+    });
     if (!existing) {
       throw new Error(`Echo App not found: ${providedAppId}`);
     }
-    if (!quiet) console.log(`✅ Using existing app: ${existing.name} (${existing.id})`);
+    if (!quiet)
+      console.log(`✅ Using existing app: ${existing.name} (${existing.id})`);
     return { appId: existing.id };
   }
 
@@ -140,13 +167,17 @@ async function getOrCreateApp(referrerUserId: string, providedAppId?: string, qu
   const ownerLast = faker.person.lastName();
   const owner = await db.user.create({
     data: {
-      email: faker.internet.email({ firstName: ownerFirst, lastName: ownerLast }),
+      email: faker.internet.email({
+        firstName: ownerFirst,
+        lastName: ownerLast,
+      }),
       name: `${ownerFirst} ${ownerLast}`,
       image: faker.image.avatar(),
     },
     select: { id: true, email: true },
   });
-  if (!quiet) console.log(`👑 Created app owner user: ${owner.email} (${owner.id})`);
+  if (!quiet)
+    console.log(`👑 Created app owner user: ${owner.email} (${owner.id})`);
 
   const app = await db.echoApp.create({
     data: {
@@ -169,7 +200,11 @@ async function getOrCreateApp(referrerUserId: string, providedAppId?: string, qu
   return { appId: app.id, ownerUserId: owner.id };
 }
 
-async function createReferralCodeForUser(userId: string, appId: string, quiet?: boolean) {
+async function createReferralCodeForUser(
+  userId: string,
+  appId: string,
+  quiet?: boolean
+) {
   const code = faker.string.alphanumeric({ length: 8 }).toUpperCase();
   const referralCode = await db.referralCode.create({
     data: {
@@ -183,11 +218,18 @@ async function createReferralCodeForUser(userId: string, appId: string, quiet?: 
     },
     select: { id: true, code: true },
   });
-  if (!quiet) console.log(`🎟️ Created referral code ${referralCode.code} (${referralCode.id})`);
+  if (!quiet)
+    console.log(
+      `🎟️ Created referral code ${referralCode.code} (${referralCode.id})`
+    );
   return referralCode;
 }
 
-async function createReferredUser(appId: string, referralCodeId: string, quiet?: boolean) {
+async function createReferredUser(
+  appId: string,
+  referralCodeId: string,
+  quiet?: boolean
+) {
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
   const name = `${firstName} ${lastName}`;
@@ -238,18 +280,37 @@ function generateTransactionMetadata() {
   };
 }
 
-async function createReferralTransaction(userId: string, appId: string, referralCodeId: string, referralRewardId: string | null, date: Date, quiet?: boolean) {
+async function createReferralTransaction(
+  userId: string,
+  appId: string,
+  referralCodeId: string,
+  referralRewardId: string | null,
+  date: Date,
+  quiet?: boolean
+) {
   const metadata = generateTransactionMetadata();
 
-  const transactionMetadata = await db.transactionMetadata.create({ data: metadata, select: { id: true } });
+  const transactionMetadata = await db.transactionMetadata.create({
+    data: metadata,
+    select: { id: true },
+  });
 
   const baseCostPerToken = 0.00001;
-  const rawCost = metadata.totalTokens * baseCostPerToken + Number(metadata.toolCost);
-  const markupMultiplier = faker.number.float({ min: 1.2, max: 2.0, fractionDigits: 1 });
+  const rawCost =
+    metadata.totalTokens * baseCostPerToken + Number(metadata.toolCost);
+  const markupMultiplier = faker.number.float({
+    min: 1.2,
+    max: 2.0,
+    fractionDigits: 1,
+  });
   const totalCost = rawCost * markupMultiplier;
   const markupProfit = totalCost - rawCost;
   // Allocate a healthy referral share so it's clearly claimable
-  const appShare = faker.number.float({ min: 0.4, max: 0.7, fractionDigits: 2 });
+  const appShare = faker.number.float({
+    min: 0.4,
+    max: 0.7,
+    fractionDigits: 2,
+  });
   const appProfit = markupProfit * appShare;
   const referralProfit = Math.max(0.01, markupProfit - appProfit);
 
@@ -271,17 +332,26 @@ async function createReferralTransaction(userId: string, appId: string, referral
     select: { id: true },
   });
 
-  if (!quiet) console.log(`💸 Referral transaction created for user ${userId} on ${format(date, 'yyyy-MM-dd HH:mm')}`);
+  if (!quiet)
+    console.log(
+      `💸 Referral transaction created for user ${userId} on ${format(date, 'yyyy-MM-dd HH:mm')}`
+    );
 }
 
-async function ensureReferralReward(appId: string, quiet?: boolean): Promise<string> {
+async function ensureReferralReward(
+  appId: string,
+  quiet?: boolean
+): Promise<string> {
   // Create a referral reward and set as current for the app if none exists
   const current = await db.echoApp.findUnique({
     where: { id: appId },
     select: { currentReferralRewardId: true },
   });
   if (current?.currentReferralRewardId) {
-    if (!quiet) console.log(`🏷️ Using existing referral reward: ${current.currentReferralRewardId}`);
+    if (!quiet)
+      console.log(
+        `🏷️ Using existing referral reward: ${current.currentReferralRewardId}`
+      );
     return current.currentReferralRewardId;
   }
 
@@ -294,8 +364,12 @@ async function ensureReferralReward(appId: string, quiet?: boolean): Promise<str
     select: { id: true },
   });
 
-  await db.echoApp.update({ where: { id: appId }, data: { currentReferralRewardId: reward.id } });
-  if (!quiet) console.log(`🏷️ Created referral reward ${reward.id} and set as current`);
+  await db.echoApp.update({
+    where: { id: appId },
+    data: { currentReferralRewardId: reward.id },
+  });
+  if (!quiet)
+    console.log(`🏷️ Created referral reward ${reward.id} and set as current`);
   return reward.id;
 }
 
@@ -307,9 +381,21 @@ async function main() {
   }
 
   try {
-    const referrerUserId = await getOrCreateReferrerUser(options.referrerUserId, options.referrerEmail, options.quiet);
-    const { appId, ownerUserId } = await getOrCreateApp(referrerUserId, options.appId, options.quiet);
-    const referralCode = await createReferralCodeForUser(referrerUserId, appId, options.quiet);
+    const referrerUserId = await getOrCreateReferrerUser(
+      options.referrerUserId,
+      options.referrerEmail,
+      options.quiet
+    );
+    const { appId, ownerUserId } = await getOrCreateApp(
+      referrerUserId,
+      options.appId,
+      options.quiet
+    );
+    const referralCode = await createReferralCodeForUser(
+      referrerUserId,
+      appId,
+      options.quiet
+    );
     const referralRewardId = await ensureReferralReward(appId, options.quiet);
 
     const endDate = new Date();
@@ -317,7 +403,11 @@ async function main() {
 
     const referredUserIds: string[] = [];
     for (let i = 0; i < options.referredUsers; i++) {
-      const referredUserId = await createReferredUser(appId, referralCode.id, options.quiet);
+      const referredUserId = await createReferredUser(
+        appId,
+        referralCode.id,
+        options.quiet
+      );
       referredUserIds.push(referredUserId);
     }
 
@@ -328,20 +418,37 @@ async function main() {
         const dayOffset = faker.number.int({ min: 0, max: options.days - 1 });
         const txDateBase = addDays(startDate, dayOffset);
         const txDate = new Date(txDateBase);
-        txDate.setHours(faker.number.int({ min: 8, max: 22 }), faker.number.int({ min: 0, max: 59 }), 0, 0);
-        await createReferralTransaction(referredUserId, appId, referralCode.id, referralRewardId, txDate, options.quiet);
+        txDate.setHours(
+          faker.number.int({ min: 8, max: 22 }),
+          faker.number.int({ min: 0, max: 59 }),
+          0,
+          0
+        );
+        await createReferralTransaction(
+          referredUserId,
+          appId,
+          referralCode.id,
+          referralRewardId,
+          txDate,
+          options.quiet
+        );
         totalTransactions++;
       }
     }
 
     // Summary: compute totals for claimable
-    const referralTotals = await db.$queryRaw<Array<{ appId: string; totalReferralReward: string }>>`
+    const referralTotals = await db.$queryRaw<
+      Array<{ appId: string; totalReferralReward: string }>
+    >`
       SELECT t."echoAppId" as "appId", COALESCE(SUM(t."referralProfit"), 0)::text as "totalReferralReward"
       FROM transactions t
       WHERE t."referralCodeId" = ${referralCode.id}::uuid AND t."isArchived" = false
       GROUP BY t."echoAppId"`;
 
-    const totalEarned = referralTotals.reduce((sum, r) => sum + Number(r.totalReferralReward), 0);
+    const totalEarned = referralTotals.reduce(
+      (sum, r) => sum + Number(r.totalReferralReward),
+      0
+    );
 
     if (!options.quiet) {
       console.log('\n✅ Referral rewards seeding complete');
@@ -352,7 +459,9 @@ async function main() {
       console.log(`Referred Users: ${referredUserIds.length}`);
       console.log(`Transactions Created: ${totalTransactions}`);
       console.log(`Total Referral Earned: $${totalEarned.toFixed(2)}`);
-      console.log('\nUse the UI to view Referral Earnings and verify a claimable balance.');
+      console.log(
+        '\nUse the UI to view Referral Earnings and verify a claimable balance.'
+      );
     }
   } catch (error) {
     console.error('❌ Error seeding referral rewards:', error);
@@ -362,7 +471,7 @@ async function main() {
 
 main()
   .then(() => process.exit(0))
-  .catch((err) => {
+  .catch(err => {
     console.error('❌ Unexpected error:', err);
     process.exit(1);
   });

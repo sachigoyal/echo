@@ -7,6 +7,7 @@ export enum PayoutType {
 
 export enum PayoutStatus {
   PENDING = 'pending',
+  COMPLETED = 'completed',
 }
 
 export interface UserReferralEarnings {
@@ -27,7 +28,7 @@ export async function calculateUserReferralEarnings(
     return { byApp: {}, total: 0 };
   }
 
-  const referralCodeIds = userReferralCodes.map((c) => c.id);
+  const referralCodeIds = userReferralCodes.map(c => c.id);
 
   // 2) Find all transactions linked to those codes and
   // 3) Aggregate by app while computing the total
@@ -71,7 +72,6 @@ export async function calculateUserReferralEarnings(
   return { byApp, total };
 }
 
-
 export async function calculateUserReferralEarningsForApp(
   userId: string,
   echoAppId: string
@@ -85,7 +85,7 @@ export async function calculateUserReferralEarningsForApp(
     return 0;
   }
 
-  const referralCodeIds = userReferralCodes.map((c) => c.id);
+  const referralCodeIds = userReferralCodes.map(c => c.id);
 
   const result = await db.transaction.aggregate({
     where: {
@@ -96,7 +96,9 @@ export async function calculateUserReferralEarningsForApp(
     _sum: { referralProfit: true },
   });
 
-  const gross = result._sum.referralProfit ? Number(result._sum.referralProfit) : 0;
+  const gross = result._sum.referralProfit
+    ? Number(result._sum.referralProfit)
+    : 0;
 
   const claimed = await db.payout.aggregate({
     where: {
@@ -111,8 +113,10 @@ export async function calculateUserReferralEarningsForApp(
   return Math.max(0, gross - claimedAmount);
 }
 
-
-export async function claimReferralRewardForApp(userId: string, echoAppId: string) {
+export async function claimReferralRewardForApp(
+  userId: string,
+  echoAppId: string
+) {
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user) {
     throw new Error('User not found');
@@ -130,7 +134,10 @@ export async function claimReferralRewardForApp(userId: string, echoAppId: strin
     throw new Error('Github link not found');
   }
 
-  const amountToClaim = await calculateUserReferralEarningsForApp(userId, echoAppId);
+  const amountToClaim = await calculateUserReferralEarningsForApp(
+    userId,
+    echoAppId
+  );
   if (amountToClaim <= 0) {
     throw new Error('No referral earnings available to claim');
   }
@@ -150,9 +157,9 @@ export async function claimReferralRewardForApp(userId: string, echoAppId: strin
   return payout;
 }
 
-export async function claimAllReferralRewards(userId: string): Promise<
-  { id: string; echoAppId: string; amount: number }[]
-> {
+export async function claimAllReferralRewards(
+  userId: string
+): Promise<{ id: string; echoAppId: string; amount: number }[]> {
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user) {
     throw new Error('User not found');
@@ -170,7 +177,9 @@ export async function claimAllReferralRewards(userId: string): Promise<
   }
 
   const earnings = await calculateUserReferralEarnings(userId);
-  const entries = Object.entries(earnings.byApp).filter(([, amount]) => amount > 0);
+  const entries = Object.entries(earnings.byApp).filter(
+    ([, amount]) => amount > 0
+  );
 
   if (entries.length === 0) {
     return [];

@@ -6,10 +6,10 @@ import { addDays, subDays, format } from 'date-fns';
 
 interface SeedMarkupRewardsOptions {
   ownerUserId?: string; // If not provided, use/find/create by email
-  ownerEmail?: string;  // Default to known email
-  appId?: string;       // If not provided, create a new app owned by owner
+  ownerEmail?: string; // Default to known email
+  appId?: string; // If not provided, create a new app owned by owner
   transactions: number; // Total transactions to create across the date window
-  days: number;         // Days back to spread transactions
+  days: number; // Days back to spread transactions
   quiet?: boolean;
 }
 
@@ -76,20 +76,36 @@ Examples:
   return options;
 }
 
-async function getOrCreateOwnerUser(providedUserId?: string, providedEmail?: string, quiet?: boolean) {
+async function getOrCreateOwnerUser(
+  providedUserId?: string,
+  providedEmail?: string,
+  quiet?: boolean
+) {
   if (providedUserId) {
-    const existing = await db.user.findUnique({ where: { id: providedUserId }, select: { id: true, email: true, name: true } });
+    const existing = await db.user.findUnique({
+      where: { id: providedUserId },
+      select: { id: true, email: true, name: true },
+    });
     if (!existing) {
       throw new Error(`Owner user not found: ${providedUserId}`);
     }
-    if (!quiet) console.log(`✅ Using existing owner user: ${existing.name ?? existing.email} (${existing.id})`);
+    if (!quiet)
+      console.log(
+        `✅ Using existing owner user: ${existing.name ?? existing.email} (${existing.id})`
+      );
     return existing.id;
   }
 
   if (providedEmail) {
-    const existingByEmail = await db.user.findUnique({ where: { email: providedEmail }, select: { id: true, email: true, name: true } });
+    const existingByEmail = await db.user.findUnique({
+      where: { email: providedEmail },
+      select: { id: true, email: true, name: true },
+    });
     if (existingByEmail) {
-      if (!quiet) console.log(`✅ Using existing owner by email: ${existingByEmail.email} (${existingByEmail.id})`);
+      if (!quiet)
+        console.log(
+          `✅ Using existing owner by email: ${existingByEmail.email} (${existingByEmail.id})`
+        );
       return existingByEmail.id;
     }
 
@@ -103,7 +119,10 @@ async function getOrCreateOwnerUser(providedUserId?: string, providedEmail?: str
       },
       select: { id: true, email: true },
     });
-    if (!quiet) console.log(`👤 Created owner user for email ${providedEmail}: ${created.id}`);
+    if (!quiet)
+      console.log(
+        `👤 Created owner user for email ${providedEmail}: ${created.id}`
+      );
     return created.id;
   }
 
@@ -121,13 +140,21 @@ async function getOrCreateOwnerUser(providedUserId?: string, providedEmail?: str
   return user.id;
 }
 
-async function getOrCreateApp(ownerUserId: string, providedAppId?: string, quiet?: boolean): Promise<{ appId: string }> {
+async function getOrCreateApp(
+  ownerUserId: string,
+  providedAppId?: string,
+  quiet?: boolean
+): Promise<{ appId: string }> {
   if (providedAppId) {
-    const existing = await db.echoApp.findUnique({ where: { id: providedAppId }, select: { id: true, name: true } });
+    const existing = await db.echoApp.findUnique({
+      where: { id: providedAppId },
+      select: { id: true, name: true },
+    });
     if (!existing) {
       throw new Error(`Echo App not found: ${providedAppId}`);
     }
-    if (!quiet) console.log(`✅ Using existing app: ${existing.name} (${existing.id})`);
+    if (!quiet)
+      console.log(`✅ Using existing app: ${existing.name} (${existing.id})`);
     return { appId: existing.id };
   }
 
@@ -153,9 +180,15 @@ async function getOrCreateApp(ownerUserId: string, providedAppId?: string, quiet
 }
 
 async function ensureMarkUp(appId: string, quiet?: boolean) {
-  const existing = await db.markUp.findUnique({ where: { echoAppId: appId }, select: { id: true, amount: true } });
+  const existing = await db.markUp.findUnique({
+    where: { echoAppId: appId },
+    select: { id: true, amount: true },
+  });
   if (existing) {
-    if (!quiet) console.log(`🏷️ Using existing MarkUp ${existing.id} amount ${existing.amount}`);
+    if (!quiet)
+      console.log(
+        `🏷️ Using existing MarkUp ${existing.id} amount ${existing.amount}`
+      );
     return existing.id;
   }
 
@@ -178,7 +211,10 @@ async function ensureGithubLinkForApp(appId: string, quiet?: boolean) {
     select: { id: true, githubId: true, githubUrl: true },
   });
   if (existing) {
-    if (!quiet) console.log(`🔗 Using existing GitHub link for app ${appId}: ${existing.githubId} (${existing.id})`);
+    if (!quiet)
+      console.log(
+        `🔗 Using existing GitHub link for app ${appId}: ${existing.githubId} (${existing.id})`
+      );
     return existing.id;
   }
 
@@ -196,7 +232,10 @@ async function ensureGithubLinkForApp(appId: string, quiet?: boolean) {
     },
     select: { id: true },
   });
-  if (!quiet) console.log(`🔗 Created GitHub link ${githubId} (${created.id}) for app ${appId}`);
+  if (!quiet)
+    console.log(
+      `🔗 Created GitHub link ${githubId} (${created.id}) for app ${appId}`
+    );
   return created.id;
 }
 
@@ -224,17 +263,36 @@ function generateTransactionMetadata() {
   };
 }
 
-async function createMarkupTransaction(userId: string, appId: string, githubLinkId: string, markUpId: string | null, date: Date, quiet?: boolean) {
+async function createMarkupTransaction(
+  userId: string,
+  appId: string,
+  githubLinkId: string,
+  markUpId: string | null,
+  date: Date,
+  quiet?: boolean
+) {
   const metadata = generateTransactionMetadata();
 
-  const transactionMetadata = await db.transactionMetadata.create({ data: metadata, select: { id: true } });
+  const transactionMetadata = await db.transactionMetadata.create({
+    data: metadata,
+    select: { id: true },
+  });
 
   const baseCostPerToken = 0.00001;
-  const rawCost = metadata.totalTokens * baseCostPerToken + Number(metadata.toolCost);
-  const markupMultiplier = faker.number.float({ min: 1.2, max: 2.0, fractionDigits: 1 });
+  const rawCost =
+    metadata.totalTokens * baseCostPerToken + Number(metadata.toolCost);
+  const markupMultiplier = faker.number.float({
+    min: 1.2,
+    max: 2.0,
+    fractionDigits: 1,
+  });
   const totalCost = rawCost * markupMultiplier;
   const markupProfit = totalCost - rawCost;
-  const appShare = faker.number.float({ min: 0.4, max: 0.7, fractionDigits: 2 });
+  const appShare = faker.number.float({
+    min: 0.4,
+    max: 0.7,
+    fractionDigits: 2,
+  });
   const appProfit = markupProfit * appShare;
 
   await db.transaction.create({
@@ -249,17 +307,22 @@ async function createMarkupTransaction(userId: string, appId: string, githubLink
       rawTransactionCost: rawCost,
       status: 'completed',
       createdAt: date,
-      githubLinkId,
       markUpId: markUpId ?? undefined,
     },
     select: { id: true },
   });
 
-  if (!quiet) console.log(`💸 Markup transaction created for user ${userId} on ${format(date, 'yyyy-MM-dd HH:mm')}`);
+  if (!quiet)
+    console.log(
+      `💸 Markup transaction created for user ${userId} on ${format(date, 'yyyy-MM-dd HH:mm')}`
+    );
 }
 
 async function ensureUserIsMember(userId: string, appId: string) {
-  const membership = await db.appMembership.findFirst({ where: { userId, echoAppId: appId }, select: { id: true } });
+  const membership = await db.appMembership.findFirst({
+    where: { userId, echoAppId: appId },
+    select: { id: true },
+  });
   if (membership) return membership.id;
   const created = await db.appMembership.create({
     data: {
@@ -282,8 +345,16 @@ async function main() {
   }
 
   try {
-    const ownerUserId = await getOrCreateOwnerUser(options.ownerUserId, options.ownerEmail, options.quiet);
-    const { appId } = await getOrCreateApp(ownerUserId, options.appId, options.quiet);
+    const ownerUserId = await getOrCreateOwnerUser(
+      options.ownerUserId,
+      options.ownerEmail,
+      options.quiet
+    );
+    const { appId } = await getOrCreateApp(
+      ownerUserId,
+      options.appId,
+      options.quiet
+    );
     const markUpId = await ensureMarkUp(appId, options.quiet);
     const githubLinkId = await ensureGithubLinkForApp(appId, options.quiet);
 
@@ -298,19 +369,36 @@ async function main() {
       const dayOffset = faker.number.int({ min: 0, max: options.days - 1 });
       const txDateBase = addDays(startDate, dayOffset);
       const txDate = new Date(txDateBase);
-      txDate.setHours(faker.number.int({ min: 8, max: 22 }), faker.number.int({ min: 0, max: 59 }), 0, 0);
-      await createMarkupTransaction(ownerUserId, appId, githubLinkId, markUpId, txDate, options.quiet);
+      txDate.setHours(
+        faker.number.int({ min: 8, max: 22 }),
+        faker.number.int({ min: 0, max: 59 }),
+        0,
+        0
+      );
+      await createMarkupTransaction(
+        ownerUserId,
+        appId,
+        githubLinkId,
+        markUpId,
+        txDate,
+        options.quiet
+      );
       totalTransactions++;
     }
 
     // Summary: compute totals for claimable
-    const markupTotals = await db.$queryRaw<Array<{ appId: string; totalMarkupProfit: string }>>`
+    const markupTotals = await db.$queryRaw<
+      Array<{ appId: string; totalMarkupProfit: string }>
+    >`
       SELECT t."echoAppId" as "appId", COALESCE(SUM(t."markUpProfit"), 0)::text as "totalMarkupProfit"
       FROM transactions t
-      WHERE t."githubLinkId" = ${githubLinkId}::uuid AND t."isArchived" = false
+      WHERE t."isArchived" = false
       GROUP BY t."echoAppId"`;
 
-    const totalEarned = markupTotals.reduce((sum, r) => sum + Number(r.totalMarkupProfit), 0);
+    const totalEarned = markupTotals.reduce(
+      (sum, r) => sum + Number(r.totalMarkupProfit),
+      0
+    );
 
     if (!options.quiet) {
       console.log('\n✅ Markup rewards seeding complete');
@@ -320,7 +408,9 @@ async function main() {
       console.log(`App GitHub Link ID: ${githubLinkId}`);
       console.log(`Transactions Created: ${totalTransactions}`);
       console.log(`Total Markup Earned: $${totalEarned.toFixed(2)}`);
-      console.log('\nUse the UI to view Markup Earnings and verify a claimable balance by GitHub link.');
+      console.log(
+        '\nUse the UI to view Markup Earnings and verify a claimable balance by GitHub link.'
+      );
     }
   } catch (error) {
     console.error('❌ Error seeding markup rewards:', error);
@@ -330,9 +420,7 @@ async function main() {
 
 main()
   .then(() => process.exit(0))
-  .catch((err) => {
+  .catch(err => {
     console.error('❌ Unexpected error:', err);
     process.exit(1);
   });
-
-

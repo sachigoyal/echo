@@ -164,6 +164,7 @@ export async function claimMarkupRewardForApp(
       type: PayoutType.MARKUP,
       description: 'Markup payout claim',
       recipientGithubLinkId: githubLink.id,
+      userId,
       echoAppId,
     },
   });
@@ -203,7 +204,9 @@ export async function claimAllMarkupRewards(
   }
 
   const earnings = await calculateUserMarkupEarnings(userId);
-  const entries = Object.entries(earnings.byApp).filter(([, amount]) => amount > 0);
+  const entries = Object.entries(earnings.byApp).filter(
+    ([, amount]) => amount > 0
+  );
 
   if (entries.length === 0) {
     return [];
@@ -222,6 +225,7 @@ export async function claimAllMarkupRewards(
           type: PayoutType.MARKUP,
           description: 'Markup payout claim (bulk)',
           recipientGithubLinkId: linkId,
+          userId,
           echoAppId: appId,
         },
         select: { id: true, echoAppId: true, amount: true },
@@ -235,5 +239,3 @@ export async function claimAllMarkupRewards(
     amount: Number(p.amount),
   }));
 }
-
-

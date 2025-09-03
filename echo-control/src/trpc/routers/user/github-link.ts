@@ -1,5 +1,9 @@
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { getGithubLinkForUser, updateGithubLinkForUser, updateUserGithubLinkSchema } from '@/services/user/github-link';
+import {
+  getGithubLinkForUser,
+  updateGithubLinkForUser,
+  updateUserGithubLinkSchema,
+} from '@/services/user/github-link';
 
 export const userGithubLinkRouter = createTRPCRouter({
   get: protectedProcedure.query(async ({ ctx }) => {

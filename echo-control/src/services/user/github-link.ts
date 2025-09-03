@@ -17,10 +17,13 @@ export const updateUserGithubLinkSchema = z.discriminatedUnion('type', [
     url: z
       .string()
       .url()
-      .refine(val => /^https:\/\/github\.com\/[A-Za-z0-9_.-]+(\/)?$/.test(val), {
-        message:
-          'Must be a valid GitHub user URL (e.g. https://github.com/owner)',
-      }),
+      .refine(
+        val => /^https:\/\/github\.com\/[A-Za-z0-9_.-]+(\/)?$/.test(val),
+        {
+          message:
+            'Must be a valid GitHub user URL (e.g. https://github.com/owner)',
+        }
+      ),
   }),
   z.object({
     type: z.literal('repo'),

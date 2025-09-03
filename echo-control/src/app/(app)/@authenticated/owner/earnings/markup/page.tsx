@@ -14,12 +14,18 @@ import { ProfileAvatar } from '@/components/ui/profile-avatar';
 
 export default function MarkupEarningsPage() {
   const utils = api.useUtils();
-  const { data: earnings, isLoading: earningsLoading, error: earningsError, refetch } =
-    api.user.payout.markup.get.useQuery();
+  const {
+    data: earnings,
+    isLoading: earningsLoading,
+    error: earningsError,
+    refetch,
+  } = api.user.payout.markup.get.useQuery();
 
   const claimAll = api.user.payout.markup.claimAll.useMutation({
     onSuccess: res => {
-      toast.success(`Created ${res.payouts.length} markup payout${res.payouts.length === 1 ? '' : 's'}.`);
+      toast.success(
+        `Created ${res.payouts.length} markup payout${res.payouts.length === 1 ? '' : 's'}.`
+      );
       utils.user.payout.markup.get.invalidate();
       utils.user.payout.markup.pending.invalidate();
     },
@@ -28,8 +34,11 @@ export default function MarkupEarningsPage() {
     },
   });
 
-  const { data: pending, isLoading: pendingLoading, error: pendingError } =
-    api.user.payout.markup.pending.useQuery();
+  const {
+    data: pending,
+    isLoading: pendingLoading,
+    error: pendingError,
+  } = api.user.payout.markup.pending.useQuery();
 
   const hasClaimable = useMemo(
     () => earnings && Object.values(earnings.byApp).some(v => v > 0),
@@ -73,7 +82,9 @@ export default function MarkupEarningsPage() {
           <div className="space-y-2">
             <h3 className="text-sm font-semibold">By App</h3>
             {earningsError ? (
-              <div className="text-sm text-red-500">{earningsError.message}</div>
+              <div className="text-sm text-red-500">
+                {earningsError.message}
+              </div>
             ) : earningsLoading ? (
               <Skeleton className="h-24 w-full" />
             ) : earnings ? (
@@ -90,10 +101,18 @@ export default function MarkupEarningsPage() {
                       className="flex items-center justify-between rounded-lg border border-border p-3"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <ProfileAvatar name={appName} src={avatarUrl} size="sm" />
+                        <ProfileAvatar
+                          name={appName}
+                          src={avatarUrl}
+                          size="sm"
+                        />
                         <div className="flex flex-col min-w-0">
-                          <span className="font-medium truncate">{appName}</span>
-                          <span className="text-xs text-muted-foreground truncate">{appId}</span>
+                          <span className="font-medium truncate">
+                            {appName}
+                          </span>
+                          <span className="text-xs text-muted-foreground truncate">
+                            {appId}
+                          </span>
                         </div>
                         {githubUrl ? (
                           <a
@@ -108,7 +127,9 @@ export default function MarkupEarningsPage() {
                         ) : null}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-semibold">{formatCurrency(amount)}</span>
+                        <span className="font-semibold">
+                          {formatCurrency(amount)}
+                        </span>
                         <ClaimButton
                           appId={appId}
                           disabled={amount <= 0}
@@ -142,11 +163,15 @@ export default function MarkupEarningsPage() {
                 className="flex items-center justify-between text-sm"
               >
                 <span className="text-muted-foreground">{p.echoAppId}</span>
-                <span className="font-medium">{formatCurrency(Number(p.amount))}</span>
+                <span className="font-medium">
+                  {formatCurrency(Number(p.amount))}
+                </span>
               </div>
             ))
           ) : (
-            <div className="text-sm text-muted-foreground">No pending payouts</div>
+            <div className="text-sm text-muted-foreground">
+              No pending payouts
+            </div>
           )}
         </CardContent>
       </Card>
@@ -166,7 +191,9 @@ function ClaimButton({
   const utils = api.useUtils();
   const claim = api.user.payout.markup.claimForApp.useMutation({
     onSuccess: res => {
-      toast.success(`Created markup payout for app. Remaining: ${formatCurrency(res.remaining)}`);
+      toast.success(
+        `Created markup payout for app. Remaining: ${formatCurrency(res.remaining)}`
+      );
       utils.user.payout.markup.get.invalidate();
       utils.user.payout.markup.pending.invalidate();
       onClaim();
@@ -187,5 +214,3 @@ function ClaimButton({
     </Button>
   );
 }
-
-

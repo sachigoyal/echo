@@ -81,7 +81,7 @@ export const userPayoutRouter = createTRPCRouter({
 
       if (ownedApps.length === 0) return [];
 
-      const appIds = ownedApps.map((a) => a.echoAppId);
+      const appIds = ownedApps.map(a => a.echoAppId);
 
       return await db.payout.findMany({
         where: {
@@ -120,5 +120,3 @@ export const userPayoutRouter = createTRPCRouter({
     }),
   },
 });
-
-

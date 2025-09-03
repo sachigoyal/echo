@@ -11,7 +11,7 @@ export interface EchoConfig {
    *  Echo App ID.
    */
   appId: string;
-  /** 
+  /**
    *  Base path of API URL.
    *  @default /api/echo
    */

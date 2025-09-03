@@ -13,10 +13,15 @@ import { toast } from 'sonner';
 
 export default function ReferralEarningsPage() {
   const utils = api.useUtils();
-  const { data: earnings, isLoading: earningsLoading, error: earningsError, refetch } =
-    api.user.payout.referral.get.useQuery();
+  const {
+    data: earnings,
+    isLoading: earningsLoading,
+    error: earningsError,
+    refetch,
+  } = api.user.payout.referral.get.useQuery();
 
-  const { data: recipient, isLoading: recipientLoading } = api.user.githubLink.get.useQuery();
+  const { data: recipient, isLoading: recipientLoading } =
+    api.user.githubLink.get.useQuery();
   const [username, setUsername] = useState<string>('');
 
   const setRecipient = api.user.githubLink.update.useMutation({
@@ -29,7 +34,9 @@ export default function ReferralEarningsPage() {
 
   const claimAll = api.user.payout.referral.claimAll.useMutation({
     onSuccess: res => {
-      toast.success(`Created ${res.payouts.length} referral payout${res.payouts.length === 1 ? '' : 's'}.`);
+      toast.success(
+        `Created ${res.payouts.length} referral payout${res.payouts.length === 1 ? '' : 's'}.`
+      );
       utils.user.payout.referral.get.invalidate();
       utils.user.payout.referral.pending.invalidate();
     },
@@ -38,8 +45,11 @@ export default function ReferralEarningsPage() {
     },
   });
 
-  const { data: pending, isLoading: pendingLoading, error: pendingError } =
-    api.user.payout.referral.pending.useQuery();
+  const {
+    data: pending,
+    isLoading: pendingLoading,
+    error: pendingError,
+  } = api.user.payout.referral.pending.useQuery();
 
   const hasClaimable = useMemo(
     () => earnings && Object.values(earnings.byApp).some(v => v > 0),
@@ -68,7 +78,9 @@ export default function ReferralEarningsPage() {
             <Skeleton className="h-8 w-40" />
           ) : (
             <div className="flex flex-col gap-3">
-              <div className="text-sm text-muted-foreground">Current: {currentRecipientDisplay}</div>
+              <div className="text-sm text-muted-foreground">
+                Current: {currentRecipientDisplay}
+              </div>
               <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                 <Input
                   placeholder="github username (e.g. richardhendricks)"
@@ -79,7 +91,10 @@ export default function ReferralEarningsPage() {
                 <Button
                   disabled={!username || setRecipient.isPending}
                   onClick={() =>
-                    setRecipient.mutate({ type: 'user', url: `https://github.com/${username}` })
+                    setRecipient.mutate({
+                      type: 'user',
+                      url: `https://github.com/${username}`,
+                    })
                   }
                 >
                   {setRecipient.isPending ? 'Saving…' : 'Save Recipient'}
@@ -118,16 +133,25 @@ export default function ReferralEarningsPage() {
           <div className="space-y-2">
             <h3 className="text-sm font-semibold">By App</h3>
             {earningsError ? (
-              <div className="text-sm text-red-500">{earningsError.message}</div>
+              <div className="text-sm text-red-500">
+                {earningsError.message}
+              </div>
             ) : earningsLoading ? (
               <Skeleton className="h-24 w-full" />
             ) : earnings ? (
               <div className="space-y-2">
                 {Object.entries(earnings.byApp).map(([appId, amount]) => (
-                  <div key={appId} className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{appId}</span>
+                  <div
+                    key={appId}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-muted-foreground">
+                      {appId}
+                    </span>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{formatCurrency(amount)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(amount)}
+                      </span>
                       <ClaimButton
                         appId={appId}
                         disabled={amount <= 0}
@@ -160,11 +184,15 @@ export default function ReferralEarningsPage() {
                 className="flex items-center justify-between text-sm"
               >
                 <span className="text-muted-foreground">{p.echoAppId}</span>
-                <span className="font-medium">{formatCurrency(Number(p.amount))}</span>
+                <span className="font-medium">
+                  {formatCurrency(Number(p.amount))}
+                </span>
               </div>
             ))
           ) : (
-            <div className="text-sm text-muted-foreground">No pending payouts</div>
+            <div className="text-sm text-muted-foreground">
+              No pending payouts
+            </div>
           )}
         </CardContent>
       </Card>
@@ -184,7 +212,9 @@ function ClaimButton({
   const utils = api.useUtils();
   const claim = api.user.payout.referral.claimForApp.useMutation({
     onSuccess: res => {
-      toast.success(`Created referral payout for app. Remaining: ${formatCurrency(res.remaining)}`);
+      toast.success(
+        `Created referral payout for app. Remaining: ${formatCurrency(res.remaining)}`
+      );
       utils.user.payout.referral.get.invalidate();
       utils.user.payout.referral.pending.invalidate();
       onClaim();
@@ -205,5 +235,3 @@ function ClaimButton({
     </Button>
   );
 }
-
-

@@ -221,7 +221,7 @@ model Payout {
   createdAt             DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt             DateTime    @updatedAt @db.Timestamptz(6)
   description           String?
-  transactionId         String?     @db.Uuid
+  transactionId         String?
   senderAddress         String?
   recipientGithubLinkId String?     @db.Uuid
   recipientAddress      String?
