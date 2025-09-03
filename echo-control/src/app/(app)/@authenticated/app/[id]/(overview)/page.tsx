@@ -1,17 +1,16 @@
+import { Suspense } from 'react';
+
+import { ErrorBoundary } from 'react-error-boundary';
+
 import { notFound } from 'next/navigation';
 
-import { Body, Heading } from '../../../_components/layout/page-utils';
+import { Body } from '../../../_components/layout/page-utils';
 
 import { api, HydrateClient } from '@/trpc/server';
-import { UserAvatar } from '@/components/utils/user-avatar';
-import { Code } from 'lucide-react';
-import { Setup } from './_components/setup';
-import { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-import { Overview } from './_components/overview';
-import { VisibilityButton } from './_components/header/visibility-button';
-import { OverallAppStats } from './_components/stats';
+
 import { HeaderCard, LoadingHeaderCard } from './_components/header';
+import { Setup } from './_components/setup';
+import { Overview } from './_components/overview';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;

@@ -14,7 +14,7 @@ export const formatCurrency = (
   value: number,
   options?: Intl.NumberFormatOptions
 ): string => {
-  if (value < 0.01) {
+  if (value < 0.01 && value > 0) {
     return '< $0.01';
   }
 
