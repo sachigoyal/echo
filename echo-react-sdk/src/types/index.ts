@@ -23,10 +23,15 @@ export interface EchoSignInProps {
   children?: React.ReactNode;
 }
 
-export interface EchoTokenPurchaseProps {
+export interface EchoTokensProps {
   amount?: number;
   onPurchaseComplete?: (balance: EchoBalance) => void;
   onError?: (error: Error) => void;
   className?: string;
   children?: React.ReactNode;
 }
+
+/**
+ * @deprecated Use EchoTokensProps instead. EchoTokenPurchaseProps will be removed in a future version.
+ */
+export type EchoTokenPurchaseProps = EchoTokensProps;

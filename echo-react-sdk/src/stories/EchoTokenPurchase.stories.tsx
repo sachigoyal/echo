@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
-import { EchoTokenPurchase } from '../components/EchoTokenPurchase';
+import { EchoTokens } from '../components/EchoTokens';
 import { MockEchoProvider, mockStates } from './MockEchoProvider';
 
-const meta: Meta<typeof EchoTokenPurchase> = {
-  title: 'Echo SDK/EchoTokenPurchase',
-  component: EchoTokenPurchase,
+const meta: Meta<typeof EchoTokens> = {
+  title: 'Echo SDK/EchoTokens',
+  component: EchoTokens,
   parameters: {
     docs: {
       description: {
         component:
-          "The EchoTokenPurchase component allows users to purchase tokens through Stripe. It opens a payment popup and automatically refreshes the user's balance after successful payment.",
+          "The EchoTokens component allows users to purchase tokens through Stripe. It opens a payment popup and automatically refreshes the user's balance after successful payment.",
       },
     },
   },

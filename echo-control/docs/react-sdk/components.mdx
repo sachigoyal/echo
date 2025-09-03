@@ -40,14 +40,14 @@ import type { EchoSignInProps } from '@merit-systems/echo-react-sdk';
 />
 
 
-## EchoTokenPurchase
+## EchoTokens
 
-Pre-built component for purchasing additional credits/tokens.
+Pre-built component for viewing a user's balance, checking free tier balance, and purchasing additional credits/tokens.
 
 ```tsx
-import { EchoTokenPurchase } from '@merit-systems/echo-react-sdk';
+import { EchoTokens } from '@merit-systems/echo-react-sdk';
 
-<EchoTokenPurchase 
+<EchoTokens 
   amount={10} // $10 worth of credits
   onPurchaseComplete={(balance) => console.log('New balance:', balance)}
   onError={(error) => console.error('Purchase failed:', error)}
@@ -57,14 +57,14 @@ import { EchoTokenPurchase } from '@merit-systems/echo-react-sdk';
 ### Props
 
 ```typescript
-import type { EchoTokenPurchaseProps } from '@merit-systems/echo-react-sdk';
+import type { EchoTokensProps } from '@merit-systems/echo-react-sdk';
 ```
 
-#### EchoTokenPurchaseProps
+#### EchoTokensProps
 
 <AutoTypeTable 
   path="../echo-react-sdk/src/types/index.ts" 
-  name="EchoTokenPurchaseProps" 
+  name="EchoTokensProps" 
 />
 
 
