@@ -222,7 +222,7 @@ export const WithAvatar: Story = {
 
 export const AvatarComparison: Story = {
   decorators: [
-    Story => (
+    () => (
       <MockEchoProvider mockState={mockStates.authenticated}>
         <div style={{ padding: '20px', minHeight: '100px', height: '100px' }}>
           <div

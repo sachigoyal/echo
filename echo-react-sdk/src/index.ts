@@ -4,12 +4,6 @@ export { EchoSignOut } from './components/EchoSignOut';
 export { EchoTokens } from './components/EchoTokens';
 export { Logo } from './components/Logo';
 
-// Deprecated exports - for backwards compatibility
-/**
- * @deprecated Use EchoTokens instead. EchoTokenPurchase will be removed in a future version.
- */
-export { EchoTokenPurchase } from './components/EchoTokenPurchase';
-
 export { useEcho } from './hooks/useEcho';
 // useEchoRefresh is kept internal - most apps don't need refresh state
 export { useEchoClient } from './hooks/useEchoClient';
@@ -28,8 +22,6 @@ export type {
   EchoSignOutProps,
   EchoTokensProps,
   EchoUser,
-  // Deprecated types - for backwards compatibility
-  EchoTokenPurchaseProps,
 } from './types';
 
 export type { EchoContextValue } from './components/EchoProvider';

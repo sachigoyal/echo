@@ -340,7 +340,7 @@ export const ErrorState: Story = {
 
 export const WithCustomButtonStates: Story = {
   decorators: [
-    Story => (
+    () => (
       <div style={{ padding: '20px' }}>
         <h3 style={{ margin: '0 0 20px 0', color: '#374151' }}>
           Custom Button in Different States

@@ -38,8 +38,3 @@ export interface EchoTokensProps {
   children?: React.ReactNode;
   showAvatar?: boolean;
 }
-
-/**
- * @deprecated Use EchoTokensProps instead. EchoTokenPurchaseProps will be removed in a future version.
- */
-export type EchoTokenPurchaseProps = EchoTokensProps;
