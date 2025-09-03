@@ -78,52 +78,6 @@ export async function getCurrentUser(): Promise<User> {
   return user;
 }
 
-export async function getOrCreateUser(userId: string): Promise<User> {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    logger.emit({
-      severityText: 'WARN',
-      body: 'Unauthenticated session in getOrCreateUser',
-      attributes: {
-        function: 'getOrCreateUser',
-        targetUserId: userId,
-        hasSession: !!session,
-        hasUser: !!session?.user,
-      },
-    });
-    throw new Error('Not authenticated');
-  }
-
-  // Try to find existing user in our database
-  let user = await db.user.findUnique({
-    where: { id: session.user.id },
-  });
-
-  // If user doesn't exist, create them
-  if (!user) {
-    user = await db.user.create({
-      data: {
-        id: userId,
-        email: session.user.email || '',
-        name: session.user.name || null,
-        image: session.user.image || null,
-      },
-    });
-  } else {
-    if (user.image !== session.user.image) {
-      user = await db.user.update({
-        where: { id: user.id },
-        data: {
-          image: session.user.image || null,
-        },
-      });
-    }
-  }
-
-  return user;
-}
-
 /**
  * Get the current user from an Echo API key or Echo Access JWT
  * Should be used for API requests on the /v1 endpoint

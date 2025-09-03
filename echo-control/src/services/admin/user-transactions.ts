@@ -13,7 +13,7 @@ import { PaymentStatus } from '@/lib/payment-processing';
  */
 
 // Interface for a single transaction with related data
-export interface UserTransactionDetail {
+interface UserTransactionDetail {
   id: string;
   totalCost: number;
   appProfit: number;
@@ -54,7 +54,7 @@ export interface UserTransactionDetail {
 }
 
 // Interface for paginated transaction results
-export interface UserTransactionsPaginated {
+interface UserTransactionsPaginated {
   transactions: UserTransactionDetail[];
   pagination: {
     page: number;
@@ -74,7 +74,7 @@ export interface UserTransactionsPaginated {
 }
 
 // Interface for user transaction totals
-export interface UserTransactionTotals {
+interface UserTransactionTotals {
   userId: string;
   userName: string | null;
   userEmail: string;

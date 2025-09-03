@@ -17,7 +17,7 @@ import { db } from '@/lib/db';
  */
 
 // Interface for aggregated transaction data by app
-export interface AppTransactionAggregates {
+interface AppTransactionAggregates {
   appId: string;
   appName: string;
   transactionCount: number;
@@ -34,7 +34,7 @@ export interface AppTransactionAggregates {
 }
 
 // Interface for user earnings summary across all apps
-export interface UserEarningsAggregates {
+interface UserEarningsAggregates {
   userId: string;
   userName: string | null;
   userEmail: string;
@@ -52,7 +52,7 @@ export interface UserEarningsAggregates {
 }
 
 // Interface for global aggregates across all users and apps
-export interface GlobalEarningsAggregates {
+interface GlobalEarningsAggregates {
   totalUsers: number;
   totalApps: number;
   totalTransactions: number;
