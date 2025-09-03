@@ -47,7 +47,7 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
         onPointerLeave={() => setHoveredTabIndex(null)}
       >
         <motion.ul
-          className="list-none p-0 m-0 font-medium text-sm flex w-full h-full"
+          className="list-none p-0 m-0 font-medium text-sm flex w-full h-full flex-nowrap md:flex-wrap"
           style={{ paddingLeft: paddingLeft }}
         >
           {tabs.map((tab, index) => (
@@ -64,7 +64,7 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
                 }}
               >
                 <MotionTab href={tab.href} subRoutes={tab.subRoutes}>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 whitespace-nowrap">
                     {tab.label}
                     {tab.external && <ExternalLink className="size-4" />}
                   </span>
