@@ -4,6 +4,15 @@ import { PayoutStatus, PayoutType } from '@/services/payouts/referrals';
 export interface AppMarkupEarnings {
   byApp: Record<string, number>;
   total: number;
+  appMeta: Record<
+    string,
+    {
+      appId: string;
+      name: string;
+      profilePictureUrl: string | null;
+      githubUrl: string | null;
+    }
+  >;
 }
 
 export async function calculateAppMarkupEarnings(
@@ -50,7 +59,7 @@ export async function calculateUserMarkupEarnings(
   });
 
   if (ownedApps.length === 0) {
-    return { byApp: {}, total: 0 };
+    return { byApp: {}, total: 0, appMeta: {} };
   }
 
   const appIds = ownedApps.map(a => a.echoAppId);
@@ -92,7 +101,28 @@ export async function calculateUserMarkupEarnings(
 
   const total = Object.values(byApp).reduce((sum, v) => sum + v, 0);
 
-  return { byApp, total };
+  // Load app metadata (name, profile picture, github link) for display
+  const apps = await db.echoApp.findMany({
+    where: { id: { in: appIds } },
+    select: {
+      id: true,
+      name: true,
+      profilePictureUrl: true,
+      githubLink: { select: { githubUrl: true } },
+    },
+  });
+
+  const appMeta: AppMarkupEarnings['appMeta'] = {};
+  for (const app of apps) {
+    appMeta[app.id] = {
+      appId: app.id,
+      name: app.name,
+      profilePictureUrl: app.profilePictureUrl,
+      githubUrl: app.githubLink?.githubUrl ?? null,
+    };
+  }
+
+  return { byApp, total, appMeta };
 }
 
 export async function claimMarkupRewardForApp(

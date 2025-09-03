@@ -9,6 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/balance';
 import { toast } from 'sonner';
+import { Github } from 'lucide-react';
+import { ProfileAvatar } from '@/components/ui/profile-avatar';
 
 export default function MarkupEarningsPage() {
   const utils = api.useUtils();
@@ -76,21 +78,48 @@ export default function MarkupEarningsPage() {
               <Skeleton className="h-24 w-full" />
             ) : earnings ? (
               <div className="space-y-2">
-                {Object.entries(earnings.byApp).map(([appId, amount]) => (
-                  <div key={appId} className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{appId}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{formatCurrency(amount)}</span>
-                      <ClaimButton
-                        appId={appId}
-                        disabled={amount <= 0}
-                        onClaim={async () => {
-                          await refetch();
-                        }}
-                      />
+                {Object.entries(earnings.byApp).map(([appId, amount]) => {
+                  const meta = earnings.appMeta?.[appId];
+                  const appName = meta?.name || 'Unnamed App';
+                  const avatarUrl = meta?.profilePictureUrl || null;
+                  const githubUrl = meta?.githubUrl || null;
+
+                  return (
+                    <div
+                      key={appId}
+                      className="flex items-center justify-between rounded-lg border border-border p-3"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <ProfileAvatar name={appName} src={avatarUrl} size="sm" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-medium truncate">{appName}</span>
+                          <span className="text-xs text-muted-foreground truncate">{appId}</span>
+                        </div>
+                        {githubUrl ? (
+                          <a
+                            href={githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-1 inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label="Open GitHub"
+                          >
+                            <Github className="size-4" />
+                          </a>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold">{formatCurrency(amount)}</span>
+                        <ClaimButton
+                          appId={appId}
+                          disabled={amount <= 0}
+                          onClaim={async () => {
+                            await refetch();
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : null}
           </div>
