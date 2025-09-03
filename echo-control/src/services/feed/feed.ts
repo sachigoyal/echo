@@ -1,26 +1,38 @@
 import { db } from '@/lib/db';
-import { UserId } from './lib/schemas';
+import { UserId } from '../lib/schemas';
+import { FeedActivity } from './types';
+import z from 'zod';
+import {
+  TimeBasedPaginationParams,
+  toTimeBasedPaginatedReponse,
+} from '../lib/pagination';
 
-export const getUserFeed = async (userId: UserId) => {
-  const result = await db.$queryRaw`
+export const userFeedSchema = z.object({});
+
+export const getUserFeed = async (
+  userId: UserId,
+  { cursor, limit }: TimeBasedPaginationParams
+) => {
+  const items = await db.$queryRaw<FeedActivity[]>`
     SELECT 
-      activity_hour,
+      timestamp,
       app,
       activity_type,
-      total_count,
-      total_profit,
+      event_data,
       users
     FROM (
       SELECT 
-        DATE_TRUNC('hour', t."createdAt") as activity_hour,
+        DATE_TRUNC('hour', t."createdAt") as timestamp,
         JSON_BUILD_OBJECT(
           'id', t."echoAppId",
           'name', app.name,
           'profilePictureUrl', app."profilePictureUrl"
         ) as app,
         'transaction' as activity_type,
-        COUNT(*) as total_count,
-        SUM(t."markUpProfit") as total_profit,
+        JSON_BUILD_OBJECT(
+          'total_transactions', COUNT(*),
+          'total_profit', SUM(t."markUpProfit")
+        ) as event_data,
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'userId', t."userId",
@@ -36,20 +48,22 @@ export const getUserFeed = async (userId: UserId) => {
       INNER JOIN users u ON t."userId" = u.id
       INNER JOIN echo_apps app ON t."echoAppId" = app.id
       WHERE t."isArchived" = false
+        AND DATE_TRUNC('hour', t."createdAt") < ${cursor}
       GROUP BY DATE_TRUNC('hour', t."createdAt"), t."echoAppId", app.name, app."profilePictureUrl"
       
       UNION ALL
       
       SELECT 
-        activity_hour,
+        timestamp,
         JSON_BUILD_OBJECT(
           'id', "echoAppId",
           'name', app_name,
           'profilePictureUrl', app_profile_picture
         ) as app,
         'signin' as activity_type,
-        COUNT(*) as total_count,
-        0 as total_profit,
+        JSON_BUILD_OBJECT(
+          'total_users', COUNT(*)
+        ) as event_data,
         JSON_AGG(
           JSON_BUILD_OBJECT(
             'userId', "userId",
@@ -59,7 +73,7 @@ export const getUserFeed = async (userId: UserId) => {
         ) as users
       FROM (
         SELECT DISTINCT
-          DATE_TRUNC('hour', rt."createdAt") as activity_hour,
+          DATE_TRUNC('hour', rt."createdAt") as timestamp,
           rt."echoAppId",
           app.name as app_name,
           app."profilePictureUrl" as app_profile_picture,
@@ -74,12 +88,17 @@ export const getUserFeed = async (userId: UserId) => {
         INNER JOIN users u ON rt."userId" = u.id
         INNER JOIN echo_apps app ON rt."echoAppId" = app.id
         WHERE rt."isArchived" = false
+          AND DATE_TRUNC('hour', rt."createdAt") < ${cursor}
       ) distinct_signins
-      GROUP BY activity_hour, "echoAppId", app_name, app_profile_picture
+      GROUP BY timestamp, "echoAppId", app_name, app_profile_picture
     ) combined_activity
-    ORDER BY activity_hour DESC, app->>'id'
-    LIMIT 10
+    ORDER BY timestamp DESC, app->>'id'
+    LIMIT ${limit + 1}
   `;
 
-  return result;
+  return toTimeBasedPaginatedReponse({
+    items,
+    cursor,
+    limit,
+  });
 };
