@@ -23,11 +23,11 @@ export const authorizeParamsSchema = z.object({
   code_challenge_method: z.literal('S256', {
     error: 'Only S256 code challenge method is supported',
   }),
-  scope: z.string('missing scope').min(1, 'scope is required'),
+  scope: z.string('missing scope').default('llm:invoke offline_access'),
   response_type: z.literal('code', {
     error: 'Only authorization code flow (response_type=code) is supported',
   }),
-  state: z.string().optional(),
+  state: z.string().default(nanoid()),
   referral_code: z.uuid().optional(),
 });
 
