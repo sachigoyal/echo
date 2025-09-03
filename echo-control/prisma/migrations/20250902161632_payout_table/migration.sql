@@ -25,3 +25,8 @@ ALTER TABLE "payouts" ADD CONSTRAINT "payouts_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "payouts" ADD CONSTRAINT "payouts_echoAppId_fkey" FOREIGN KEY ("echoAppId") REFERENCES "echo_apps"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+-- Add referralGithubUserId to users and set FK to github_links(id)
+ALTER TABLE "users" ADD COLUMN "referralGithubUserId" UUID;
+ALTER TABLE "users" ADD CONSTRAINT "users_referralGithubUserId_fkey" FOREIGN KEY ("referralGithubUserId") REFERENCES "github_links"("id") ON DELETE SET NULL ON UPDATE CASCADE;
