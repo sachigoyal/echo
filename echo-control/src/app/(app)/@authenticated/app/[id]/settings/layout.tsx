@@ -26,6 +26,9 @@ export default async function AppSettingsLayout({
     <div>
       <Heading title="App Settings" />
       <Body>
+        <div className="lg:hidden mb-4">
+          <SettingsNav appId={id} />
+        </div>
         <div className="flex gap-4">
           <div className="hidden lg:block w-[240px] sticky top-0">
             <SettingsNav appId={id} />
