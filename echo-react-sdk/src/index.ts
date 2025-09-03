@@ -1,5 +1,6 @@
 export { EchoProvider } from './components/EchoProvider';
 export { EchoSignIn } from './components/EchoSignIn';
+export { EchoSignOut } from './components/EchoSignOut';
 export { EchoTokens } from './components/EchoTokens';
 export { Logo } from './components/Logo';
 
@@ -24,6 +25,7 @@ export type {
   EchoBalance,
   EchoAuthConfig as EchoConfig,
   EchoSignInProps,
+  EchoSignOutProps,
   EchoTokensProps,
   EchoUser,
   // Deprecated types - for backwards compatibility
