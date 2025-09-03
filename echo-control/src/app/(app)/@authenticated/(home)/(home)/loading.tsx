@@ -18,7 +18,7 @@ export default async function LoadingDashboardPage() {
     <div>
       <Heading
         title={`Welcome Back${session?.user.name ? `, ${session.user.name.split(' ')[0]}!` : '!'}`}
-        description="Build apps and make money risk free"
+        description="Build AI apps and earn profit on every token your users generate"
       />
       <Body>
         <div className="flex flex-col md:flex-row gap-8 md:gap-4 max-w-full w-full">
