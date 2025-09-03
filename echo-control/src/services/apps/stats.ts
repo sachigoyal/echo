@@ -2,21 +2,24 @@ import z from 'zod';
 
 import { db } from '@/lib/db';
 
-export const getAppActivitySchema = z.object({
-  appId: z.uuid(),
+import { userIdSchema } from '../lib/schemas';
+import { appIdSchema } from './lib/schemas';
+
+export const getBucketedAppStatsSchema = z.object({
+  appId: appIdSchema,
   startDate: z.date(),
   endDate: z.date(),
   numBuckets: z.number().optional().default(48),
-  userId: z.uuid().optional(),
+  userId: userIdSchema.optional(),
 });
 
-export const getAppActivity = async ({
+export const getBucketedAppStats = async ({
   appId,
   startDate,
   endDate,
   numBuckets,
   userId,
-}: z.infer<typeof getAppActivitySchema>) => {
+}: z.infer<typeof getBucketedAppStatsSchema>) => {
   // Get all transactions for the time period
   const transactions = await db.transaction.findMany({
     where: {
@@ -83,4 +86,69 @@ export const getAppActivity = async ({
   }
 
   return buckets;
+};
+
+export const getOverallAppStatsSchema = z.object({
+  appId: appIdSchema,
+  userId: userIdSchema.optional(),
+});
+
+export const getOverallAppStats = async ({
+  appId,
+  userId,
+}: z.infer<typeof getOverallAppStatsSchema>) => {
+  const [transactionStats, metadataStats, numUsers] = await Promise.all([
+    db.transaction.aggregate({
+      where: {
+        echoAppId: appId,
+        ...(userId && { userId }),
+      },
+      _sum: {
+        totalCost: true,
+        markUpProfit: true,
+      },
+      _count: {
+        id: true,
+        userId: true,
+      },
+    }),
+    db.transactionMetadata.aggregate({
+      where: {
+        transactions: {
+          every: {
+            echoAppId: appId,
+          },
+        },
+        ...(userId && { userId }),
+      },
+      _sum: {
+        inputTokens: true,
+        outputTokens: true,
+        totalTokens: true,
+      },
+    }),
+    userId
+      ? Promise.resolve(1)
+      : db.transaction
+          .groupBy({
+            by: ['userId'],
+            where: {
+              echoAppId: appId,
+            },
+            _count: {
+              userId: true,
+            },
+          })
+          .then(groups => groups.length),
+  ]);
+
+  return {
+    totalCost: Number(transactionStats._sum.totalCost),
+    totalProfit: Number(transactionStats._sum.markUpProfit),
+    transactionCount: Number(transactionStats._count.id),
+    totalInputTokens: Number(metadataStats._sum.inputTokens),
+    totalOutputTokens: Number(metadataStats._sum.outputTokens),
+    totalTokens: Number(metadataStats._sum.totalTokens),
+    numUsers: Number(numUsers),
+  };
 };

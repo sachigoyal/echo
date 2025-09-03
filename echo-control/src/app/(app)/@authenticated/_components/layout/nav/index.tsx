@@ -40,7 +40,7 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
     buttonRefs[hoveredTabIndex ?? -1]?.getBoundingClientRect();
 
   return (
-    <div className="w-full border-b px-2 md:px-6 pt-2.5 sticky top-0 z-10 bg-card overflow-x-auto md:overflow-x-visible">
+    <div className="w-full max-w-full overflow-x-auto border-b px-2 md:px-6 pt-2.5 sticky top-0 z-10 bg-card">
       <nav
         className="bg-card w-full relative h-full"
         ref={navRef}
@@ -51,7 +51,7 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
           style={{ paddingLeft: paddingLeft }}
         >
           {tabs.map((tab, index) => (
-            <div className="relative z-11 pb-1" key={tab.label}>
+            <div className="relative z-11 pb-1 shrink-0" key={tab.label}>
               <Link
                 href={tab.href}
                 className="z-11"
