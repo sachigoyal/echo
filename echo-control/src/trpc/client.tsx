@@ -12,7 +12,6 @@ import {
   splitLink,
 } from '@trpc/client';
 import { createTRPCReact } from '@trpc/react-query';
-import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server';
 
 import SuperJSON from 'superjson';
 

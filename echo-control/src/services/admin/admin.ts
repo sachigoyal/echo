@@ -14,9 +14,6 @@ import {
   getAllUsersEarningsAggregates,
   getAllUsersEarningsAggregatesPaginated,
   getAppEarningsAcrossAllUsers,
-  type UserEarningsAggregates,
-  type AppTransactionAggregates,
-  type GlobalEarningsAggregates,
 } from './user-earnings';
 
 import {
@@ -25,25 +22,16 @@ import {
   getAllUsersSpendingAggregates,
   getAllUsersSpendingAggregatesPaginated,
   getAppSpendingAcrossAllUsers,
-  type UserSpendingAggregates,
-  type AppSpendingAggregates,
-  type GlobalSpendingAggregates,
 } from './user-spending';
 
 import {
   getAppTransactionsPaginated,
   getAppTransactionTotals,
-  type AppTransactionDetail,
-  type AppTransactionsPaginated,
-  type AppTransactionTotals,
 } from './app-transactions';
 
 import {
   getUserTransactionsPaginated,
   getUserTransactionTotals,
-  type UserTransactionDetail,
-  type UserTransactionsPaginated,
-  type UserTransactionTotals,
 } from './user-transactions';
 
 export async function adminGetUsers(): Promise<User[]> {

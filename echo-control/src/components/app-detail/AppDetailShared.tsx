@@ -1,5 +1,4 @@
 import {
-  Activity,
   ArrowLeft,
   CheckCircle,
   X,
@@ -12,7 +11,6 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { ReactNode } from 'react';
-import { formatCurrency } from '@/lib/balance';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';

@@ -1,7 +1,4 @@
-import { Settings } from 'lucide-react';
-import Link from 'next/link';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { AppRole, Permission } from '@/lib/permissions/types';
 import { OwnerEchoApp } from '@/lib/apps/types';
 import { formatCurrency } from '@/lib/balance';

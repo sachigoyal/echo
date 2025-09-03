@@ -1,5 +1,3 @@
-import z from 'zod';
-
 interface Params<T> {
   items: T[];
   page: number;
@@ -7,12 +5,10 @@ interface Params<T> {
   total_count: number;
 }
 
-const paginationSchema = z.object({
-  page: z.number().optional().default(0),
-  page_size: z.number().optional().default(10),
-});
-
-export type PaginationParams = z.infer<typeof paginationSchema>;
+export type PaginationParams = {
+  page: number;
+  page_size: number;
+};
 
 type PaginatedResponse<T> = {
   items: T[];

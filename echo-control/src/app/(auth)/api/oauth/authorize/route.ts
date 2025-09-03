@@ -4,7 +4,6 @@ import {
 } from '@/app/(auth)/_lib/authorize';
 import { auth } from '@/auth';
 import { EchoApp } from '@/generated/prisma';
-import { getOrCreateUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { SignJWT } from 'jose';
 import { nanoid } from 'nanoid';
