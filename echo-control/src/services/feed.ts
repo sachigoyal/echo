@@ -4,14 +4,21 @@ import { UserId } from './lib/schemas';
 export const getUserFeed = async (userId: UserId) => {
   const result = await db.$queryRaw`
     SELECT 
-      t."userId",
-      u.name as user_name,
-      u.image as profile_picture,
-      t."echoAppId",
-      app.name as app_name,
-      app."profilePictureUrl" as app_profile_picture,
-      DATE_TRUNC('day', t."createdAt") as transaction_date,
-      COUNT(*) as transaction_count
+      DATE_TRUNC('hour', t."createdAt") as transaction_hour,
+      JSON_BUILD_OBJECT(
+        'id', t."echoAppId",
+        'name', app.name,
+        'profilePictureUrl', app."profilePictureUrl"
+      ) as app,
+      COUNT(*) as total_transaction_count,
+      SUM(t."markUpProfit") as total_profit,
+      JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'userId', t."userId",
+          'userName', u.name,
+          'userProfilePicture', u.image
+        )
+      ) as users
     FROM transactions t
     INNER JOIN app_memberships am ON t."echoAppId" = am."echoAppId" 
       AND am."userId" = ${userId}::uuid
@@ -20,8 +27,8 @@ export const getUserFeed = async (userId: UserId) => {
     INNER JOIN users u ON t."userId" = u.id
     INNER JOIN echo_apps app ON t."echoAppId" = app.id
     WHERE t."isArchived" = false
-    GROUP BY t."userId", u.name, u.image, t."echoAppId", app.name, app."profilePictureUrl", DATE_TRUNC('day', t."createdAt")
-    ORDER BY transaction_date DESC, t."userId"
+    GROUP BY DATE_TRUNC('hour', t."createdAt"), t."echoAppId", app.name, app."profilePictureUrl"
+    ORDER BY transaction_hour DESC, t."echoAppId"
     LIMIT 10
   `;
 
