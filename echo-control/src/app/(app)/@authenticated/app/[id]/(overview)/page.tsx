@@ -27,8 +27,6 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
     return notFound();
   }
 
-  await new Promise(resolve => setTimeout(resolve, 5000));
-
   return (
     <HydrateClient>
       <Body className="gap-0 pt-0">

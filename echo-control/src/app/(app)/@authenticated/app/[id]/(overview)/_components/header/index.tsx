@@ -43,14 +43,16 @@ export const HeaderCard: React.FC<Props> = ({ appId }) => {
           <div className="flex items-center gap-2">
             {app.homepageUrl ? (
               <a href={app.homepageUrl} target="_blank">
-                <ArrowUpRight className="size-4" />
-                Use App
+                <Button variant="turbo">
+                  <ArrowUpRight className="size-4" />
+                  Use App
+                </Button>
               </a>
             ) : isOwner ? (
               <Link href={`/app/${appId}/settings/general`}>
-                <Button>
+                <Button variant="turbo">
                   <Plus className="size-4" />
-                  Add Homepage
+                  Add Homepage URL
                 </Button>
               </Link>
             ) : (
