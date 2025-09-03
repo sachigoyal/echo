@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { UserEarningsTable } from '@/app/admin/_components';
+import { UserEarningsTable } from '@/app/(app)/@authenticated/admin/_components';
 
 export default function AdminEarningsDashboard() {
   const router = useRouter();

@@ -1,7 +1,6 @@
 import { db } from '@/lib/db';
 import { MeritSDK, OutgoingPayment } from '@merit-systems/sdk';
 import { PayoutStatus } from '../referrals';
-import { logger } from '@/logger';
 
 const sdk = new MeritSDK({
   apiKey: process.env.MERIT_API_KEY!,
@@ -60,32 +59,16 @@ export async function pollForCompletedPayoutTransaction(
   senderGithubId: number,
   payOutEchoId: string
 ): Promise<OutgoingPayment[] | null> {
-  try {
-    console.log('senderGithubId', senderGithubId);
-    console.log('payOutEchoId', payOutEchoId);
-    const payout = await sdk.payments.getPaymentsBySender(senderGithubId, {
-      group_id: payOutEchoId,
-    });
-    console.log('payout', payout);
-    if (payout.items.length > 0) {
-      return payout.items;
-    }
-    return null;
-  } catch (err: any) {
-    console.log('err', err);
-    // Merit SDK returns 404 when no payments found; treat as no results
-    if (err && (err.status === 404 || err?.message?.includes('Not Found'))) {
-      logger.emit({
-        severityText: 'INFO',
-        body: `No payments found for sender ${senderGithubId} and group ${payOutEchoId}`,
-        attributes: {
-          function: 'pollForCompletedPayoutTransaction',
-        },
-      });
-      return null;
-    }
-    return null;
+  console.log('senderGithubId', senderGithubId);
+  console.log('payOutEchoId', payOutEchoId);
+  const payout = await sdk.payments.getPaymentsBySender(senderGithubId, {
+    group_id: payOutEchoId,
+  });
+  console.log('payout', payout);
+  if (payout.items.length > 0) {
+    return payout.items;
   }
+  return null;
 }
 
 export async function logCompletedPayoutTransaction(payout: OutgoingPayment) {

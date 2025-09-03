@@ -1,4 +1,4 @@
-import { AppTransactionDetails } from '@/app/admin/_components';
+import { AppTransactionDetails } from '@/app/(app)/@authenticated/admin/_components';
 
 interface PageProps {
   params: Promise<{ appId: string }>;

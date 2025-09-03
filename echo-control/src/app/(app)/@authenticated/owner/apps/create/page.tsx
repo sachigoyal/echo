@@ -2,17 +2,17 @@
 
 import { Suspense, useCallback } from 'react';
 
-import Step from '../../../../components/creation-flow/Step';
-import CreateApplicationStep from '../../../../components/creation-flow/CreateApplicationStep';
-import CallbackUrlStep from '../../../../components/creation-flow/CallbackUrlStep';
-import GitHubStep from '../../../../components/creation-flow/GitHubStep';
-import ConfigurationStep from '../../../../components/creation-flow/ConfigurationStep';
-import TestIntegrationStep from '../../../../components/creation-flow/TestIntegrationStep';
-import { useCreationFlowNavigation } from '../../../../components/creation-flow/hooks/useCreationFlowNavigation';
-import { useCreateAppComponent } from '../../../../components/creation-flow/hooks/useCreateAppComponent';
-import { useCallbackUrlComponent } from '../../../../components/creation-flow/hooks/useCallbackUrlComponent';
-import { useGitHubComponent } from '../../../../components/creation-flow/hooks/useGitHubComponent';
-import { useTestIntegrationComponent } from '../../../../components/creation-flow/hooks/useTestIntegrationComponent';
+import Step from '@/components/creation-flow/Step';
+import CreateApplicationStep from '@/components/creation-flow/CreateApplicationStep';
+import CallbackUrlStep from '@/components/creation-flow/CallbackUrlStep';
+import GitHubStep from '@/components/creation-flow/GitHubStep';
+import ConfigurationStep from '@/components/creation-flow/ConfigurationStep';
+import TestIntegrationStep from '@/components/creation-flow/TestIntegrationStep';
+import { useCreationFlowNavigation } from '@/components/creation-flow/hooks/useCreationFlowNavigation';
+import { useCreateAppComponent } from '@/components/creation-flow/hooks/useCreateAppComponent';
+import { useCallbackUrlComponent } from '@/components/creation-flow/hooks/useCallbackUrlComponent';
+import { useGitHubComponent } from '@/components/creation-flow/hooks/useGitHubComponent';
+import { useTestIntegrationComponent } from '@/components/creation-flow/hooks/useTestIntegrationComponent';
 
 export interface StepConfig {
   key: string;
