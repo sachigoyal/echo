@@ -7,7 +7,7 @@ CREATE TABLE "payouts" (
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
     "description" TEXT,
-    "transactionId" UUID,
+    "transactionId" TEXT,
     "senderAddress" TEXT,
     "recipientGithubLinkId" UUID,
     "recipientAddress" TEXT,
