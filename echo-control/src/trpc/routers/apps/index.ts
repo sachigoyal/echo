@@ -8,12 +8,10 @@ import {
 } from '@/trpc/trpc';
 import { TRPCError } from '@trpc/server';
 
-import {
-  getApp,
-  getAllPublicEchoApps,
-  getAllCustomerEchoApps,
-  getAllOwnerEchoApps,
-} from '@/lib/apps';
+import { getApp } from '@/lib/apps/get-app';
+import { getAllPublicEchoApps } from '@/lib/apps/public';
+import { getAllCustomerEchoApps } from '@/lib/apps/customer';
+import { getAllOwnerEchoApps } from '@/lib/apps/owner';
 
 import { createApp, createAppSchema } from '@/services/apps/create';
 import {
@@ -37,8 +35,8 @@ import {
   listMemberApps,
   listOwnerApps,
 } from '@/services/apps/list';
-import { updateApp, updateAppSchema } from '@/services/apps/app';
-import { getAppOwner } from '@/services/apps/app';
+import { updateApp, updateAppSchema } from '@/services/apps/update';
+import { getAppOwner } from '@/services/apps/get';
 import { appIdSchema } from '@/services/apps/lib/schemas';
 import {
   getAppMarkup,

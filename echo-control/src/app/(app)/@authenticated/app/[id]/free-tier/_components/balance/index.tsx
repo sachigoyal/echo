@@ -74,7 +74,7 @@ export const LoadingBalance = () => {
   );
 };
 
-export const BalanceAmount = ({ appId }: Props) => {
+const BalanceAmount = ({ appId }: Props) => {
   const [freeTier] = api.apps.app.freeTier.get.useSuspenseQuery({
     appId,
   });

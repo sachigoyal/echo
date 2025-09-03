@@ -109,9 +109,6 @@ export {
   getAllUsersEarningsAggregates,
   getAllUsersEarningsAggregatesPaginated,
   getAppEarningsAcrossAllUsers,
-  type UserEarningsAggregates,
-  type AppTransactionAggregates,
-  type GlobalEarningsAggregates,
 };
 
 // Export user spending aggregation functions
@@ -121,25 +118,10 @@ export {
   getAllUsersSpendingAggregates,
   getAllUsersSpendingAggregatesPaginated,
   getAppSpendingAcrossAllUsers,
-  type UserSpendingAggregates,
-  type AppSpendingAggregates,
-  type GlobalSpendingAggregates,
 };
 
 // Export app transaction detail functions
-export {
-  getAppTransactionsPaginated,
-  getAppTransactionTotals,
-  type AppTransactionDetail,
-  type AppTransactionsPaginated,
-  type AppTransactionTotals,
-};
+export { getAppTransactionsPaginated, getAppTransactionTotals };
 
 // Export user transaction detail functions
-export {
-  getUserTransactionsPaginated,
-  getUserTransactionTotals,
-  type UserTransactionDetail,
-  type UserTransactionsPaginated,
-  type UserTransactionTotals,
-};
+export { getUserTransactionsPaginated, getUserTransactionTotals };

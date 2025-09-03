@@ -209,25 +209,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(signInUrl.toString(), 302);
     }
 
-    // Create a new user in the database if they do not exist
-    try {
-      await getOrCreateUser(userId!);
-    } catch (error) {
-      logger.emit({
-        severityText: 'ERROR',
-        body: 'Error creating user during OAuth authorization',
-        attributes: {
-          error: error instanceof Error ? error.message : String(error),
-          userId,
-          clientId,
-        },
-      });
-      return NextResponse.json(
-        { error: 'server_error', error_description: 'Error creating user' },
-        { status: 500 }
-      );
-    }
-
     /* 3️⃣ Handle prompt=none for authenticated users - skip consent page */
     if (prompt === 'none') {
       // Generate authorization code immediately (same logic as POST handler)

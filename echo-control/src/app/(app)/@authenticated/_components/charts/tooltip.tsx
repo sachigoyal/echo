@@ -39,10 +39,7 @@ export const TooltipContent = <T extends Record<string, number>>({
   );
 };
 
-export const TooltipRow = <
-  T extends Record<string, number>,
-  K extends keyof T,
->({
+const TooltipRow = <T extends Record<string, number>, K extends keyof T>({
   label,
   value,
   labelClassName,

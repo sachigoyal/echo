@@ -4,20 +4,15 @@ import type { PrismaClient } from '@/generated/prisma';
 import { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo } from './types';
 
 // Export types
-export type { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo };
+export type { UserSpendInfo };
 
 // Export functions from fetch-user-spend.ts
-export {
-  getGlobalUserSpendInfoForApp,
-  getGlobalUserSpendInfoForAppBatch,
-  getCustomerSpendInfoForApp,
-  getCustomerSpendInfoForAppBatch,
-} from './fetch-user-spend';
+export { getCustomerSpendInfoForApp } from './fetch-user-spend';
 
 /**
  * Internal function to fund a spend pool within an existing transaction
  */
-export async function fundSpendPoolInternal(
+async function fundSpendPoolInternal(
   tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   spendPoolId: string,
   paymentId: string,
@@ -131,7 +126,7 @@ export async function getAppSpendPools(
 /**
  * Internal function to get or create a free tier spend pool within an existing transaction
  */
-export async function getOrCreateFreeTierSpendPoolInternal(
+async function getOrCreateFreeTierSpendPoolInternal(
   tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   appId: string,
   poolName?: string

@@ -55,7 +55,7 @@ export function createEchoRefreshTokenExpiry(): Date {
   return expiry;
 }
 
-export function getEchoAccessTokenExpirySeconds(): number {
+function getEchoAccessTokenExpirySeconds(): number {
   const secondsEnv = process.env.OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS;
   logger.emit({
     severityText: 'DEBUG',

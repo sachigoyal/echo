@@ -130,9 +130,7 @@ export async function getOrCreateUser(userId: string): Promise<User> {
  * @param request - The request object
  * @returns The current user, apiKey, and echoApp
  */
-export async function getCurrentUserByApiKeyOrEchoJwt(
-  request: NextRequest
-): Promise<{
+async function getCurrentUserByApiKeyOrEchoJwt(request: NextRequest): Promise<{
   user: User;
   echoApp: EchoApp;
 }> {
@@ -259,10 +257,7 @@ export async function getCurrentUserByApiKeyOrEchoJwt(
   }
 }
 
-export async function updateApiKeyUsage(
-  apiKeyId: string,
-  request: NextRequest
-) {
+async function updateApiKeyUsage(apiKeyId: string, request: NextRequest) {
   try {
     const metadata = {
       lastIp:

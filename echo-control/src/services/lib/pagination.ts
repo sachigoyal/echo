@@ -7,7 +7,7 @@ interface Params<T> {
   total_count: number;
 }
 
-export const paginationSchema = z.object({
+const paginationSchema = z.object({
   page: z.number().optional().default(0),
   page_size: z.number().optional().default(10),
 });

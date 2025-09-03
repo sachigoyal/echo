@@ -11,7 +11,7 @@ export type SerializedTransaction = Omit<PrismaTransaction, 'totalCost'> & {
  * Convert a Prisma Transaction to a serializable format
  * Converts Decimal values to numbers for Client Component compatibility
  */
-export function serializeTransaction(
+function serializeTransaction(
   transaction: PrismaTransaction
 ): SerializedTransaction {
   return {

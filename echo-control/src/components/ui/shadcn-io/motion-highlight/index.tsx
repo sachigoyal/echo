@@ -583,4 +583,4 @@ function MotionHighlightItem({
   );
 }
 
-export { MotionHighlight, MotionHighlightItem, useMotionHighlight };
+export { MotionHighlight, MotionHighlightItem };

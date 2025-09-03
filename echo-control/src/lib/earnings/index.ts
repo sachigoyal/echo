@@ -1,9 +1,7 @@
 import { db } from '@/lib/db';
-import { getAllOwnerEchoApps } from '@/lib/apps';
+import { getAllOwnerEchoApps } from '@/lib/apps/owner';
 
-export async function calculateGrossEarningsForApp(
-  appId: string
-): Promise<number> {
+async function calculateGrossEarningsForApp(appId: string): Promise<number> {
   const result = await db.transaction.aggregate({
     where: {
       echoAppId: appId,
@@ -18,9 +16,7 @@ export async function calculateGrossEarningsForApp(
   return result._sum.totalCost ? Number(result._sum.totalCost) : 0;
 }
 
-export async function calculateMarkupEarningsForApp(
-  appId: string
-): Promise<number> {
+async function calculateMarkupEarningsForApp(appId: string): Promise<number> {
   const result = await db.transaction.aggregate({
     where: {
       echoAppId: appId,
@@ -35,7 +31,7 @@ export async function calculateMarkupEarningsForApp(
   return result._sum.markUpProfit ? Number(result._sum.markUpProfit) : 0;
 }
 
-export async function calculateReferralEarningsForApp(
+async function calculateReferralEarningsForApp(
   appId: string
 ): Promise<Record<string, number>> {
   const transactions = await db.transaction.findMany({
@@ -75,7 +71,7 @@ export async function calculateReferralEarningsForApp(
 }
 
 // Types for the earnings breakdown
-export interface AppEarningsBreakdown {
+interface AppEarningsBreakdown {
   appId: string;
   appName: string;
   grossEarnings: number;
@@ -84,7 +80,7 @@ export interface AppEarningsBreakdown {
   totalReferralEarnings: number;
 }
 
-export interface UserEarningsSummary {
+interface UserEarningsSummary {
   totalGrossEarnings: number;
   totalMarkupEarnings: number;
   totalReferralEarnings: number;

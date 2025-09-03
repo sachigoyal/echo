@@ -44,30 +44,3 @@ export async function getApp(
       return getPublicEchoApp(appId);
   }
 }
-
-/**
- * Type guard to check if the returned app is an OwnerEchoApp
- */
-export function isOwnerApp(
-  app: OwnerEchoApp | CustomerEchoApp | PublicEchoApp
-): app is OwnerEchoApp {
-  return 'type' in app && app.type === 'owner';
-}
-
-/**
- * Type guard to check if the returned app is a CustomerEchoApp
- */
-export function isCustomerApp(
-  app: OwnerEchoApp | CustomerEchoApp | PublicEchoApp
-): app is CustomerEchoApp {
-  return 'type' in app && app.type === 'customer';
-}
-
-/**
- * Type guard to check if the returned app is a PublicEchoApp
- */
-export function isPublicApp(
-  app: OwnerEchoApp | CustomerEchoApp | PublicEchoApp
-): app is PublicEchoApp {
-  return 'type' in app && app.type === 'public';
-}

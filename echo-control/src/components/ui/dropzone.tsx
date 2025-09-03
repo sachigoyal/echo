@@ -1,8 +1,6 @@
 'use client';
 
-import { createContext, useContext } from 'react';
-
-import { UploadIcon } from 'lucide-react';
+import { createContext } from 'react';
 
 import { useDropzone } from 'react-dropzone';
 
@@ -93,90 +91,5 @@ export const Dropzone = ({
         {children}
       </Button>
     </DropzoneContext.Provider>
-  );
-};
-const useDropzoneContext = () => {
-  const context = useContext(DropzoneContext);
-  if (!context) {
-    throw new Error('useDropzoneContext must be used within a Dropzone');
-  }
-  return context;
-};
-type DropzoneContentProps = {
-  children?: ReactNode;
-  className?: string;
-};
-const maxLabelItems = 3;
-export const DropzoneContent = ({
-  children,
-  className,
-}: DropzoneContentProps) => {
-  const { src } = useDropzoneContext();
-  if (!src) {
-    return null;
-  }
-  if (children) {
-    return children;
-  }
-  return (
-    <div className={cn('flex flex-col items-center justify-center', className)}>
-      <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        <UploadIcon size={16} />
-      </div>
-      <p className="my-2 w-full truncate font-medium text-sm">
-        {src.length > maxLabelItems
-          ? `${new Intl.ListFormat('en').format(
-              src.slice(0, maxLabelItems).map(file => file.name)
-            )} and ${src.length - maxLabelItems} more`
-          : new Intl.ListFormat('en').format(src.map(file => file.name))}
-      </p>
-      <p className="w-full text-wrap text-muted-foreground text-xs">
-        Drag and drop or click to replace
-      </p>
-    </div>
-  );
-};
-type DropzoneEmptyStateProps = {
-  children?: ReactNode;
-  className?: string;
-};
-export const DropzoneEmptyState = ({
-  children,
-  className,
-}: DropzoneEmptyStateProps) => {
-  const { src, accept, maxSize, minSize, maxFiles } = useDropzoneContext();
-  if (src) {
-    return null;
-  }
-  if (children) {
-    return children;
-  }
-  let caption = '';
-  if (accept) {
-    caption += 'Accepts ';
-    caption += new Intl.ListFormat('en').format(Object.keys(accept));
-  }
-  if (minSize && maxSize) {
-    caption += ` between ${renderBytes(minSize)} and ${renderBytes(maxSize)}`;
-  } else if (minSize) {
-    caption += ` at least ${renderBytes(minSize)}`;
-  } else if (maxSize) {
-    caption += ` less than ${renderBytes(maxSize)}`;
-  }
-  return (
-    <div className={cn('flex flex-col items-center justify-center', className)}>
-      <div className="flex size-8 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        <UploadIcon size={16} />
-      </div>
-      <p className="my-2 w-full truncate text-wrap font-medium text-sm">
-        Upload {maxFiles === 1 ? 'a file' : 'files'}
-      </p>
-      <p className="w-full truncate text-wrap text-muted-foreground text-xs">
-        Drag and drop or click to upload
-      </p>
-      {caption && (
-        <p className="text-wrap text-muted-foreground text-xs">{caption}.</p>
-      )}
-    </div>
   );
 };

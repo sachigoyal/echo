@@ -8,17 +8,7 @@ import type {
   OwnerEchoApp,
 } from '@/lib/apps/types';
 
-export {
-  type PublicEchoApp,
-  type CustomerEchoApp,
-  type OwnerEchoApp,
-  type AppActivity,
-  type ModelUsage,
-  type GlobalStatistics,
-  type CustomerStatistics,
-  type OwnerStatistics,
-  type Owner,
-} from '@/lib/apps/types';
+export { type CustomerEchoApp, type OwnerEchoApp } from '@/lib/apps/types';
 
 /**
  * Union type for any app - components should use this

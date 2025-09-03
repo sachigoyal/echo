@@ -17,10 +17,7 @@ export type ModelUsage = {
   totalModelCost: number; // Total cost incurred by the model for this app.
 };
 
-export type UserSpendStatistics = Omit<
-  UserSpendInfo,
-  'echoAppId' | 'spendPoolId'
->;
+type UserSpendStatistics = Omit<UserSpendInfo, 'echoAppId' | 'spendPoolId'>;
 
 export type GlobalStatistics = {
   globalTotalTransactions: number;
@@ -34,7 +31,7 @@ export type GlobalStatistics = {
   globalFreetierSpendPoolPerUserLimit: number | null;
 };
 
-export type AppGithubLink = Omit<
+type AppGithubLink = Omit<
   GithubLink,
   'id' | 'echoAppId' | 'createdAt' | 'updatedAt' | 'archivedAt' | 'Transactions'
 >;
@@ -179,26 +176,4 @@ export interface AppActivity {
   totalTokens: number;
   totalInputTokens: number;
   totalOutputTokens: number;
-}
-
-// Types for better type safety
-export interface AppCreateInput {
-  name: string;
-  description?: string;
-  githubType?: 'user' | 'repo';
-  githubId?: string;
-  authorizedCallbackUrls?: string[];
-  isPublic?: boolean;
-}
-
-export interface AppUpdateInput {
-  name?: string;
-  description?: string;
-  isPublic?: boolean;
-  githubType?: 'user' | 'repo';
-  githubId?: string;
-  profilePictureUrl?: string;
-  bannerImageUrl?: string;
-  homepageUrl?: string;
-  authorizedCallbackUrls?: string[];
 }

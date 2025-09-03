@@ -21,7 +21,7 @@ export interface GitHubRepo {
   private: boolean;
 }
 
-export interface GitHubSearchResult {
+interface GitHubSearchResult {
   type: 'user' | 'repo';
   data: GitHubUser | GitHubRepo;
 }

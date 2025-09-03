@@ -1,6 +1,6 @@
 import { getAuthenticatedUser } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllOwnerEchoApps } from '@/lib/apps';
+import { getAllOwnerEchoApps } from '@/lib/apps/owner';
 import { User } from '@/generated/prisma';
 import { logger } from '@/logger';
 

@@ -119,4 +119,4 @@ function CopyButton({
   );
 }
 
-export { CopyButton, buttonVariants };
+export { CopyButton };

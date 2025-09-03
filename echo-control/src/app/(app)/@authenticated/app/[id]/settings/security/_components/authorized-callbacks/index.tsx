@@ -52,7 +52,7 @@ export const AuthorizedCallbacksForm = async ({ appId }: { appId: string }) => {
   );
 };
 
-export const LoadingMarkupForm = () => {
+const LoadingMarkupForm = () => {
   return (
     <AuthorizedCallbacksFormCard isLoading={true}>
       <Skeleton className="w-full h-[238px]" />

@@ -19,7 +19,7 @@ export const Users: React.FC<Props> = ({ appId }) => {
   );
 };
 
-export const UsersCount = async ({ appId }: Props) => {
+const UsersCount = async ({ appId }: Props) => {
   const users = await api.apps.app.users.count({ appId });
   return <span className="text-sm">{users}</span>;
 };

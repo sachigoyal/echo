@@ -1,12 +1,7 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { ReactNode, useState, forwardRef } from 'react';
-import { twMerge } from 'tailwind-merge';
-import clsx, { ClassValue } from 'clsx';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 interface GlassButtonProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode;

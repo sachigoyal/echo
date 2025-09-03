@@ -96,16 +96,6 @@ export async function getAppActivity(
 }
 
 /**
- * Transform AppActivity array to the number[] format expected by UI components
- * where index equals position in array and count equals totalTokens
- */
-export const transformActivityToChartData = (
-  activity: AppActivity[]
-): number[] => {
-  return activity.map(day => day.totalTokens);
-};
-
-/**
  * Batch fetch app activity data for multiple echo apps
  * This is optimized to fetch all transactions in a single query
  * @param echoAppIds - Array of echo app IDs

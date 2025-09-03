@@ -43,7 +43,7 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { formatNumber } from '@/components/app-detail';
+import { formatNumber } from '@/components/app-detail/AppDetailShared';
 
 type SortField =
   | 'userName'

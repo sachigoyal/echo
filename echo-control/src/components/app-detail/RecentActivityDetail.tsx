@@ -5,4 +5,3 @@
 
 export { CustomerRecentActivityCard } from './CustomerRecentActivityCard';
 export { OwnerRecentActivityCard } from './OwnerRecentActivityCard';
-export { PublicRecentActivityCard } from './PublicRecentActivityCard';
