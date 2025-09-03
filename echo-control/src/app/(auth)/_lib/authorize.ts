@@ -15,7 +15,7 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export const authorizeParamsSchema = z.object({
-  client_id: z.string('missing client_id').min(1, 'client_id is required'),
+  client_id: z.uuid('missing client_id').min(1, 'client_id is required'),
   redirect_uri: z.url('redirect_uri must be a valid URL'),
   code_challenge: z
     .string('missing code_challenge')
@@ -28,6 +28,7 @@ export const authorizeParamsSchema = z.object({
     error: 'Only authorization code flow (response_type=code) is supported',
   }),
   state: z.string().optional(),
+  referral_code: z.uuid().optional(),
 });
 
 export type AuthorizeParams = z.infer<typeof authorizeParamsSchema>;
