@@ -88,6 +88,12 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
               Earnings
             </DropdownMenuItem>
           </Link>
+          <Link href={`/owner/earnings/referral`}>
+            <DropdownMenuItem>
+              <DollarSign className="size-4" />
+              Referral Earnings
+            </DropdownMenuItem>
+          </Link>
           <Link href={'/docs' as Route<'/docs'>}>
             <DropdownMenuItem>
               <Book className="size-4" />

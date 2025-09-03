@@ -18,7 +18,9 @@
     "prisma:migrate-deploy": "pnpx prisma migrate deploy",
     "check-types": "next typegen && tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "postinstall": "fumadocs-mdx"
+    "postinstall": "fumadocs-mdx",
+    "seed-referral-rewards": "tsx scripts/seed-referral-rewards.ts",
+    "seed-markup-rewards": "tsx scripts/seed-markup-rewards.ts  --transactions 50 --days 14"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
