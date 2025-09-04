@@ -2,10 +2,16 @@
 
 import { api } from '@/trpc/client';
 import { FeedItem, LoadingFeedItem } from './item';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { use } from 'react';
 
-export const FeedItems = () => {
+interface Props {
+  numAppsPromise: Promise<number>;
+}
+
+export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
+  const numApps = use(numAppsPromise);
+
   const [feed, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
     api.user.feed.list.useSuspenseInfiniteQuery(
       {
@@ -23,10 +29,18 @@ export const FeedItems = () => {
 
   if (rows.length === 0) {
     return (
-      <div className="w-full flex flex-col gap-2 md:gap-3 p-2">
-        <p className="text-xs text-muted-foreground/60">
-          No activity on your apps yet
-        </p>
+      <div className="w-full flex gap-2 p-4 items-center">
+        <Info className="size-5 text-muted-foreground" />
+        <div>
+          <h4 className="text-sm font-medium text-muted-foreground">
+            {numApps === 0 ? 'No Apps' : 'No Activity'}
+          </h4>
+          <p className="text-xs text-muted-foreground/60">
+            {numApps === 0
+              ? 'Your app activity will appear here when you create your first app'
+              : 'No activity on your apps yet'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -39,7 +53,7 @@ export const FeedItems = () => {
           activity={item}
         />
       ))}
-      {hasNextPage && (
+      {/* {hasNextPage && (
         <Button
           onClick={() => fetchNextPage()}
           variant="ghost"
@@ -52,7 +66,7 @@ export const FeedItems = () => {
             'Load more'
           )}
         </Button>
-      )}
+      )} */}
     </>
   );
 };

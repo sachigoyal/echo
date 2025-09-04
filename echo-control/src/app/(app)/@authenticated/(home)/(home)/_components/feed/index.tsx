@@ -3,7 +3,11 @@ import { FeedItems, LoadingFeedItems } from './items';
 import { Suspense } from 'react';
 import { Card } from '@/components/ui/card';
 
-export const Feed = async () => {
+interface Props {
+  numAppsPromise: Promise<number>;
+}
+
+export const Feed: React.FC<Props> = ({ numAppsPromise }) => {
   api.user.feed.list.prefetchInfinite({
     cursor: new Date(),
     limit: 5,
@@ -13,7 +17,7 @@ export const Feed = async () => {
     <HydrateClient>
       <FeedContainer>
         <Suspense fallback={<LoadingFeedItems />}>
-          <FeedItems />
+          <FeedItems numAppsPromise={numAppsPromise} />
         </Suspense>
       </FeedContainer>
     </HydrateClient>

@@ -11,6 +11,7 @@ import { PopularApps } from './_components/popular';
 import { Feed } from './_components/feed';
 
 import { auth } from '@/auth';
+import { api } from '@/trpc/server';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -18,6 +19,8 @@ export default async function DashboardPage() {
   if (!session?.user) {
     return null;
   }
+
+  const userApps = api.apps.list.owner({});
 
   return (
     <div>
@@ -35,8 +38,8 @@ export default async function DashboardPage() {
       <Body>
         <div className="flex flex-col md:flex-row gap-8 max-w-full w-full">
           <div className="flex flex-col gap-6 w-full md:w-80 lg:w-96 max-w-full overflow-hidden shrink-0 pt-2">
-            <Apps />
-            <Feed />
+            <Apps userApps={userApps} />
+            <Feed numAppsPromise={userApps.then(apps => apps.total_count)} />
           </div>
           <div className="flex flex-col gap-6 flex-1 overflow-hidden py-2">
             <Activity />

@@ -8,12 +8,16 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-import { api } from '@/trpc/server';
+import { RouterOutputs } from '@/trpc/client';
 
 import { AppRow, LoadingAppRow } from './item';
 
-export const AppRows = async () => {
-  const apps = await api.apps.list.owner({});
+interface Props {
+  appsPromise: Promise<RouterOutputs['apps']['list']['owner']>;
+}
+
+export const AppRows: React.FC<Props> = async ({ appsPromise }) => {
+  const apps = await appsPromise;
 
   const rows = apps.items;
 
@@ -21,9 +25,11 @@ export const AppRows = async () => {
     return (
       <>
         <CardHeader>
-          <CardTitle>Create your First App</CardTitle>
-          <CardDescription>
-            Get started by creating an app and setting a markup on LLM credits.
+          <CardTitle className="text-sm font-semibold">
+            Create your First App
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Ready to get started? This will take you less than 2 minutes.
           </CardDescription>
         </CardHeader>
         <CardContent>
