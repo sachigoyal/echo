@@ -15,7 +15,7 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export const authorizeParamsSchema = z.object({
-  client_id: z.uuid('missing client_id').min(1, 'client_id is required'),
+  client_id: z.uuid('client_id must be a valid UUID'),
   redirect_uri: z.url('redirect_uri must be a valid URL'),
   code_challenge: z
     .string('missing code_challenge')
@@ -24,9 +24,11 @@ export const authorizeParamsSchema = z.object({
     error: 'Only S256 code challenge method is supported',
   }),
   scope: z.string('missing scope').default('llm:invoke offline_access'),
-  response_type: z.literal('code', {
-    error: 'Only authorization code flow (response_type=code) is supported',
-  }),
+  response_type: z
+    .literal('code', {
+      error: 'Only authorization code flow (response_type=code) is supported',
+    })
+    .default('code'),
   state: z.string().default(nanoid),
   referral_code: z.uuid().optional(),
 });
