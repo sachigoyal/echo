@@ -1,6 +1,7 @@
 import {
   authorizeParamsSchema,
   getAuthorizationRedirect,
+  isValidRedirectUri,
 } from '@/app/(auth)/_lib/authorize';
 import { createZodRoute } from '@/app/api/_utils/create-route';
 import { getApp } from '@/services/apps/app';
@@ -14,20 +15,33 @@ const querySchema = authorizeParamsSchema.extend({
 export const GET = createZodRoute()
   .query(querySchema)
   .handler(async (request, { query }) => {
+    const app = await getApp(query.client_id);
+
+    if (!app) {
+      return NextResponse.json(
+        { error: 'not_found', error_description: 'Echo app not found' },
+        { status: 404 }
+      );
+    }
+
     if (query.prompt === 'none') {
       if (process.env.INTEGRATION_TEST_MODE !== 'true') {
         return NextResponse.json(
-          { error: 'invalid_request', error_description: 'Invalid request' },
+          {
+            error: 'invalid_request',
+            message: 'Prompt none is not supported',
+          },
           { status: 400 }
         );
       }
 
-      const app = await getApp(query.client_id);
-
-      if (!app) {
+      if (!isValidRedirectUri(query.redirect_uri, app.authorizedCallbackUrls)) {
         return NextResponse.json(
-          { error: 'invalid_client', error_description: 'Echo app not found' },
-          { status: 404 }
+          {
+            error: 'invalid_request',
+            message: 'Invalid redirect URI',
+          },
+          { status: 400 }
         );
       }
 
