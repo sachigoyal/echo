@@ -36,6 +36,7 @@ export type AppRouteHandlers = Record<
 
 export type EchoResult = {
   handlers: AppRouteHandlers;
+
   getUser: () => Promise<User | null>;
   isSignedIn: () => Promise<boolean>;
 
