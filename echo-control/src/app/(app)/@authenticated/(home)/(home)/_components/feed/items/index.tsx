@@ -8,7 +8,9 @@ import { Loader2 } from 'lucide-react';
 export const FeedItems = () => {
   const [feed, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
     api.user.feed.list.useSuspenseInfiniteQuery(
-      {},
+      {
+        limit: 5,
+      },
       {
         getNextPageParam: lastPage =>
           lastPage.has_next

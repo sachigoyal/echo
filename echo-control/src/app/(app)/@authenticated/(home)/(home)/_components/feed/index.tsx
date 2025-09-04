@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 export const Feed = async () => {
   api.user.feed.list.prefetchInfinite({
     cursor: new Date(),
+    limit: 5,
   });
 
   return (
