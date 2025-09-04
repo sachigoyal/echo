@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/balance';
 import { toast } from 'sonner';
+import { GithubAvatar } from '@/components/ui/github-avatar';
 
 export default function ReferralEarningsPage() {
   const utils = api.useUtils();
@@ -71,16 +73,21 @@ export default function ReferralEarningsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Payout Recipient</CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle>Payout Recipient</CardTitle>
+            <div className="mb-3 flex items-center justify-center">
+              <GithubAvatar
+                pageUrl={recipient?.githubUrl || undefined}
+                className="size-6"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {recipientLoading ? (
             <Skeleton className="h-8 w-40" />
           ) : (
             <div className="flex flex-col gap-3">
-              <div className="text-sm text-muted-foreground">
-                Current: {currentRecipientDisplay}
-              </div>
               <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                 <Input
                   placeholder="github username (e.g. richardhendricks)"
@@ -140,28 +147,47 @@ export default function ReferralEarningsPage() {
               <Skeleton className="h-24 w-full" />
             ) : earnings ? (
               <div className="space-y-2">
-                {Object.entries(earnings.byApp).map(([appId, amount]) => (
-                  <div
-                    key={appId}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="text-sm text-muted-foreground">
-                      {appId}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        {formatCurrency(amount)}
-                      </span>
-                      <ClaimButton
-                        appId={appId}
-                        disabled={amount <= 0}
-                        onClaim={async () => {
-                          await refetch();
-                        }}
-                      />
+                {Object.entries(earnings.byApp).map(([appId, amount]) => {
+                  const app = earnings.apps?.[appId];
+                  const displayName = app?.name ?? appId;
+                  const profileUrl = app?.profilePictureUrl ?? null;
+                  const fallback = displayName
+                    .split(' ')
+                    .map(s => s[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase();
+                  return (
+                    <div
+                      key={appId}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar className="h-8 w-8">
+                          {profileUrl ? (
+                            <AvatarImage src={profileUrl} alt={displayName} />
+                          ) : null}
+                          <AvatarFallback>{fallback}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm text-muted-foreground truncate">
+                          {displayName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {formatCurrency(amount)}
+                        </span>
+                        <ClaimButton
+                          appId={appId}
+                          disabled={amount <= 0}
+                          onClaim={async () => {
+                            await refetch();
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : null}
           </div>
@@ -178,17 +204,38 @@ export default function ReferralEarningsPage() {
           ) : pendingLoading ? (
             <Skeleton className="h-24 w-full" />
           ) : pending && pending.length > 0 ? (
-            pending.map(p => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="text-muted-foreground">{p.echoAppId}</span>
-                <span className="font-medium">
-                  {formatCurrency(Number(p.amount))}
-                </span>
-              </div>
-            ))
+            pending.map(p => {
+              const app = p.echoAppId ? earnings?.apps?.[p.echoAppId] : undefined;
+              const displayName = app?.name ?? p.echoAppId ?? 'Unknown app';
+              const profileUrl = app?.profilePictureUrl ?? null;
+              const fallback = displayName
+                .split(' ')
+                .map(s => s[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase();
+              return (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="h-6 w-6">
+                      {profileUrl ? (
+                        <AvatarImage src={profileUrl} alt={displayName} />
+                      ) : null}
+                      <AvatarFallback className="text-[10px]">
+                        {fallback}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-muted-foreground truncate">{displayName}</span>
+                  </div>
+                  <span className="font-medium">
+                    {formatCurrency(Number(p.amount))}
+                  </span>
+                </div>
+              );
+            })
           ) : (
             <div className="text-sm text-muted-foreground">
               No pending payouts

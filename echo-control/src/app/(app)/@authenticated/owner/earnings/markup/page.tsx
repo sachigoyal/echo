@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/balance';
 import { toast } from 'sonner';
 import { Github } from 'lucide-react';
+import { GithubAvatar } from '@/components/ui/github-avatar';
+import { githubApi } from '@/lib/github-api';
 import { ProfileAvatar } from '@/components/ui/profile-avatar';
 
 export default function MarkupEarningsPage() {
@@ -93,7 +95,8 @@ export default function MarkupEarningsPage() {
                   const meta = earnings.appMeta?.[appId];
                   const appName = meta?.name || 'Unnamed App';
                   const avatarUrl = meta?.profilePictureUrl || null;
-                  const githubUrl = meta?.githubUrl || null;
+                  const githubLink = meta?.githubLink || null;
+                  const githubUrl = githubLink?.githubUrl || null;
 
                   return (
                     <div
@@ -114,17 +117,12 @@ export default function MarkupEarningsPage() {
                             {appId}
                           </span>
                         </div>
-                        {githubUrl ? (
-                          <a
-                            href={githubUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-1 inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-                            aria-label="Open GitHub"
-                          >
-                            <Github className="size-4" />
-                          </a>
-                        ) : null}
+                        <div className="ml-3 mb-2 flex items-center justify-center">
+                          <GithubAvatar
+                            pageUrl={githubUrl || undefined}
+                            className="size-6"
+                          />
+                        </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="font-semibold">

@@ -10,7 +10,12 @@ export interface AppMarkupEarnings {
       appId: string;
       name: string;
       profilePictureUrl: string | null;
-      githubUrl: string | null;
+      githubLink: {
+        id: string;
+        githubId: number;
+        githubType: 'user' | 'repo';
+        githubUrl: string;
+      } | null;
     }
   >;
 }
@@ -108,7 +113,9 @@ export async function calculateUserMarkupEarnings(
       id: true,
       name: true,
       profilePictureUrl: true,
-      githubLink: { select: { githubUrl: true } },
+      githubLink: {
+        select: { id: true, githubId: true, githubType: true, githubUrl: true },
+      },
     },
   });
 
@@ -118,7 +125,14 @@ export async function calculateUserMarkupEarnings(
       appId: app.id,
       name: app.name,
       profilePictureUrl: app.profilePictureUrl,
-      githubUrl: app.githubLink?.githubUrl ?? null,
+      githubLink: app.githubLink
+        ? {
+            id: app.githubLink.id,
+            githubId: app.githubLink.githubId,
+            githubType: app.githubLink.githubType as 'user' | 'repo',
+            githubUrl: app.githubLink.githubUrl,
+          }
+        : null,
     };
   }
 

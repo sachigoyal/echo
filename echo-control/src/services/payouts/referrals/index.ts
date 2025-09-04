@@ -13,6 +13,14 @@ export enum PayoutStatus {
 export interface UserReferralEarnings {
   byApp: Record<string, number>;
   total: number;
+  apps?: Record<
+    string,
+    {
+      id: string;
+      name: string;
+      profilePictureUrl: string | null;
+    }
+  >;
 }
 
 export async function calculateUserReferralEarnings(
@@ -25,7 +33,7 @@ export async function calculateUserReferralEarnings(
   });
 
   if (userReferralCodes.length === 0) {
-    return { byApp: {}, total: 0 };
+    return { byApp: {}, total: 0, apps: {} };
   }
 
   const referralCodeIds = userReferralCodes.map(c => c.id);
@@ -69,7 +77,25 @@ export async function calculateUserReferralEarnings(
 
   const total = Object.values(byApp).reduce((sum, v) => sum + v, 0);
 
-  return { byApp, total };
+  // Fetch app details for the apps present in byApp mapping
+  const appIds = Object.keys(byApp);
+  const appsList = appIds.length
+    ? await db.echoApp.findMany({
+        where: { id: { in: appIds } },
+        select: { id: true, name: true, profilePictureUrl: true },
+      })
+    : [];
+
+  const apps: NonNullable<UserReferralEarnings['apps']> = {};
+  for (const app of appsList) {
+    apps[app.id] = {
+      id: app.id,
+      name: app.name,
+      profilePictureUrl: app.profilePictureUrl ?? null,
+    };
+  }
+
+  return { byApp, total, apps };
 }
 
 export async function calculateUserReferralEarningsForApp(
