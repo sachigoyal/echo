@@ -106,6 +106,9 @@ importers:
       '@merit-systems/echo-typescript-sdk':
         specifier: 1.0.6
         version: 1.0.6(zod@4.0.17)
+      '@merit-systems/sdk':
+        specifier: ^0.0.7
+        version: 0.0.7
       '@number-flow/react':
         specifier: ^0.5.10
         version: 0.5.10(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -1958,6 +1961,10 @@ packages:
 
   '@merit-systems/echo-typescript-sdk@1.0.8':
     resolution: {integrity: sha512-97AgOYiP7mmlPz0lUOHBn8mza/PGLGixIEBcE9XI+xi0PJshbhtOANVNKx1EPK2zuo0kUl3vII36RaZyHWmhEA==}
+
+  '@merit-systems/sdk@0.0.7':
+    resolution: {integrity: sha512-gUfuAGyhfrg/LxwmOcs3VDELk/1uUPz9xEU3act18+g+ZIdH48S66keCC4cUnCLGo5iRSaGICcYYrIQJEpWoBg==}
+    engines: {node: '>=18'}
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     resolution: {integrity: sha512-whiUMPlAOrVGmX8aKYVPvlKyG4CpQXiNNyt74vE1xb5sPvmx5oA7B/kOi/JdBvhGQq97U1/AVdXEdk2zkP8qyA==}
@@ -9573,6 +9580,10 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
+  uuid@10.0.0:
+    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    hasBin: true
+
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
@@ -11015,6 +11026,10 @@ snapshots:
       ai: 5.0.22(zod@4.0.17)
     transitivePeerDependencies:
       - zod
+
+  '@merit-systems/sdk@0.0.7':
+    dependencies:
+      uuid: 10.0.0
 
   '@metamask/eth-json-rpc-provider@1.0.1':
     dependencies:
@@ -20726,6 +20741,8 @@ snapshots:
       which-typed-array: 1.1.19
 
   utils-merge@1.0.1: {}
+
+  uuid@10.0.0: {}
 
   uuid@8.3.2: {}
 

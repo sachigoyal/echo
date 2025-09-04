@@ -11,6 +11,8 @@ import { userRedeemCodeRouter } from './redeem';
 import { userEarningsRouter } from './earnings';
 import { userReferralRouter } from './referral';
 import { userPublicRouter } from './public';
+import { userPayoutRouter } from './payout';
+import { userGithubLinkRouter } from './github-link';
 import { getUserFeed } from '@/services/feed/feed';
 
 export const userRouter = createTRPCRouter({
@@ -21,6 +23,8 @@ export const userRouter = createTRPCRouter({
   earnings: userEarningsRouter,
   referral: userReferralRouter,
   public: userPublicRouter,
+  payout: userPayoutRouter,
+  githubLink: userGithubLinkRouter,
 
   feed: {
     list: timeBasedPaginatedProcedure
