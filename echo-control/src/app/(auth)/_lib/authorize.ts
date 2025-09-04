@@ -27,7 +27,7 @@ export const authorizeParamsSchema = z.object({
   response_type: z.literal('code', {
     error: 'Only authorization code flow (response_type=code) is supported',
   }),
-  state: z.string().default(nanoid()),
+  state: z.string().default(nanoid),
   referral_code: z.uuid().optional(),
 });
 
