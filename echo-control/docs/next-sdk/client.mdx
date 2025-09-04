@@ -6,11 +6,9 @@ description: Echo's Next.js SDK client-side functionality.
 Echo maintains authentication using HTTP Cookies. The browser does not have access
 to these so login state needs to be handled by server components.
 
-
-
 # Client-Side Sign In
-In your application you can use the `signIn` method to initiate server-side Echo sign-in.
 
+In your application you can use the `signIn` method to initiate server-side Echo sign-in.
 
 ```typescript
 "use client"
@@ -21,3 +19,56 @@ export default SignInButton() {
   return <button onClick={() => signIn()}>Sign In</button>
 }
 ```
+
+# Fetching information from the Echo API
+
+The client side Echo API allows you to serve all the Echo API endpoints with the
+echo client directly through your routes. This means that all token handling is
+directly supported.
+
+## Handlers
+
+```typescript
+import handlers from '@/echo';
+
+export { GET, POST } = handlers;
+```
+
+Exporting these routes will expose the echo client proxy route:
+
+- `api/echo/proxy/:path*`
+
+On the client side, you can use the `useEcho` hook to get the echo client.
+
+```typescript
+import { useEcho } from '@merit-systems/echo-next-sdk/client';
+
+const echoClient = useEcho();
+```
+
+Then you can invoke the echo client directly in a `useEffect`
+or whatever external data fetching strategy you are using.
+
+```typescript
+import { useEffect } from 'react';
+
+// get balance
+useEffect(() => {
+  const balance = echoClient.balance.getBalance();
+}, [echoClient]);
+
+// create a payment link
+useEffect(() => {
+  const paymentLink = echoClient.payments.createPaymentLink({
+    amount: 10,
+    description: 'Credits',
+  });
+}, [echoClient]);
+
+// get user info
+useEffect(() => {
+  const user = echoClient.users.getUserInfo();
+}, [echoClient]);
+```
+
+The rest of the supported methods are documented in the [TypeScript SDK](../typescript-sdk).

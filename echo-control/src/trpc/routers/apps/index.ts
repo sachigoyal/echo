@@ -67,7 +67,12 @@ import {
   listAppTransactions,
   listAppTransactionsSchema,
 } from '@/services/apps/transactions';
-import { getAppActivity, getAppActivitySchema } from '@/services/apps/activity';
+import {
+  getBucketedAppStats,
+  getBucketedAppStatsSchema,
+  getOverallAppStats,
+  getOverallAppStatsSchema,
+} from '@/services/apps/stats';
 import {
   listAppUsers,
   countAppUsers,
@@ -259,11 +264,17 @@ export const appsRouter = createTRPCRouter({
         }),
     },
 
-    activity: {
-      get: protectedProcedure
-        .input(getAppActivitySchema)
+    stats: {
+      bucketed: protectedProcedure
+        .input(getBucketedAppStatsSchema)
         .query(async ({ input }) => {
-          return await getAppActivity(input);
+          return await getBucketedAppStats(input);
+        }),
+
+      overall: protectedProcedure
+        .input(getOverallAppStatsSchema)
+        .query(async ({ input }) => {
+          return await getOverallAppStats(input);
         }),
     },
 
