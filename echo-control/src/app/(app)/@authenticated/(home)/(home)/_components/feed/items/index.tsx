@@ -2,8 +2,9 @@
 
 import { api } from '@/trpc/client';
 import { FeedItem, LoadingFeedItem } from './item';
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import { use } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   numAppsPromise: Promise<number>;
@@ -24,6 +25,8 @@ export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
             : undefined,
       }
     );
+
+  console.log(feed.pages);
 
   const rows = feed.pages.flatMap(page => page.items);
 
@@ -53,7 +56,7 @@ export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
           activity={item}
         />
       ))}
-      {/* {hasNextPage && (
+      {hasNextPage && (
         <Button
           onClick={() => fetchNextPage()}
           variant="ghost"
@@ -66,7 +69,7 @@ export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
             'Load more'
           )}
         </Button>
-      )} */}
+      )}
     </>
   );
 };
