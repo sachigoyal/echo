@@ -1,16 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React from 'react';
-import { EchoTokenPurchase } from '../components/EchoTokenPurchase';
+import { EchoTokens } from '../components/EchoTokens';
 import { MockEchoProvider, mockStates } from './MockEchoProvider';
 
-const meta: Meta<typeof EchoTokenPurchase> = {
-  title: 'Echo SDK/EchoTokenPurchase',
-  component: EchoTokenPurchase,
+const meta: Meta<typeof EchoTokens> = {
+  title: 'Echo SDK/EchoTokens',
+  component: EchoTokens,
   parameters: {
     docs: {
       description: {
         component:
-          "The EchoTokenPurchase component allows users to purchase tokens through Stripe. It opens a payment popup and automatically refreshes the user's balance after successful payment.",
+          "The EchoTokens component allows users to purchase tokens through Stripe. It opens a payment popup and automatically refreshes the user's balance after successful payment.",
       },
     },
   },
@@ -75,7 +74,7 @@ export const WithCustomButton: Story = {
           gap: '8px',
         }}
       >
-        💎 Buy 250 Premium Tokens
+        💎 Buy $25 Credits
       </button>
     ),
   },
@@ -173,15 +172,147 @@ export const ZeroFreeTierWithRealBalance: Story = {
   },
 };
 
+export const FreeTierOnly: Story = {
+  decorators: [
+    Story => (
+      <MockEchoProvider mockState={mockStates.freeTierOnly}>
+        <div style={{ padding: '20px', minHeight: '100px', height: '100px' }}>
+          <div
+            style={{
+              marginBottom: '16px',
+              padding: '12px',
+              backgroundColor: '#f0f9ff',
+              borderRadius: '8px',
+            }}
+          >
+            <p
+              style={{
+                margin: '0 0 8px 0',
+                fontWeight: 'bold',
+                color: '#0369a1',
+              }}
+            >
+              User State: Free tier only (no paid balance)
+            </p>
+            <p style={{ margin: '0', color: '#0284c7', fontSize: '14px' }}>
+              Free tier balance: $25.00 remaining of $50.00 | Paid balance:
+              $0.00
+            </p>
+          </div>
+          <Story />
+        </div>
+      </MockEchoProvider>
+    ),
+  ],
+  args: {
+    amount: 100,
+    onPurchaseComplete: balance => console.log('Purchase complete:', balance),
+    onError: error => console.error('Purchase error:', error),
+  },
+};
+
+export const WithAvatar: Story = {
+  args: {
+    amount: 100,
+    showAvatar: true,
+    onPurchaseComplete: balance => console.log('Purchase complete:', balance),
+    onError: error => console.error('Purchase error:', error),
+  },
+};
+
+export const AvatarComparison: Story = {
+  decorators: [
+    () => (
+      <MockEchoProvider mockState={mockStates.authenticated}>
+        <div style={{ padding: '20px', minHeight: '100px', height: '100px' }}>
+          <div
+            style={{
+              marginBottom: '16px',
+              padding: '12px',
+              backgroundColor: '#f0f9ff',
+              borderRadius: '8px',
+            }}
+          >
+            <p
+              style={{
+                margin: '0 0 8px 0',
+                fontWeight: 'bold',
+                color: '#0369a1',
+              }}
+            >
+              Avatar Feature Demo
+            </p>
+            <p style={{ margin: '0', color: '#0284c7', fontSize: '14px' }}>
+              Compare buttons with and without user avatar display
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '16px',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                }}
+              >
+                Default (Logo):
+              </p>
+              <EchoTokens
+                amount={100}
+                showAvatar={false}
+                onPurchaseComplete={balance =>
+                  console.log('Purchase complete:', balance)
+                }
+                onError={error => console.error('Purchase error:', error)}
+              />
+            </div>
+
+            <div>
+              <p
+                style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                }}
+              >
+                With Avatar:
+              </p>
+              <EchoTokens
+                amount={100}
+                showAvatar={true}
+                onPurchaseComplete={balance =>
+                  console.log('Purchase complete:', balance)
+                }
+                onError={error => console.error('Purchase error:', error)}
+              />
+            </div>
+          </div>
+        </div>
+      </MockEchoProvider>
+    ),
+  ],
+  args: {},
+};
+
 export const UnauthenticatedState: Story = {
   decorators: [
     Story => (
-      <div style={{ padding: '20px', minHeight: '600px', height: '100vh' }}>
-        <p style={{ marginBottom: '16px', color: '#666' }}>
-          This shows how the component appears when the user is not signed in:
-        </p>
-        <Story />
-      </div>
+      <MockEchoProvider mockState={mockStates.unauthenticated}>
+        <div style={{ padding: '20px', minHeight: '600px', height: '100vh' }}>
+          <p style={{ marginBottom: '16px', color: '#666' }}>
+            This shows how the component appears when the user is not signed in:
+          </p>
+          <Story />
+        </div>
+      </MockEchoProvider>
     ),
   ],
   args: {

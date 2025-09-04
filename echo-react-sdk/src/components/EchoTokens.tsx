@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useEcho } from '../hooks/useEcho';
-import { EchoTokenPurchaseProps } from '../types';
+import { EchoTokensProps } from '../types';
 import { openPaymentFlow } from '../utils/security';
+import { EchoSignIn } from './EchoSignIn';
+import { EchoSignOut } from './EchoSignOut';
 import { Logo } from './Logo';
 
 // Separate component for custom amount input to prevent parent re-renders
@@ -128,12 +130,13 @@ const CustomAmountInput = ({
   );
 };
 
-export function EchoTokenPurchase({
+export function EchoTokens({
   onPurchaseComplete,
   onError,
   className = '',
   children,
-}: EchoTokenPurchaseProps) {
+  showAvatar = false,
+}: EchoTokensProps) {
   const { createPaymentLink, user, balance, freeTierBalance, refreshBalance } =
     useEcho();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -219,18 +222,26 @@ export function EchoTokenPurchase({
   if (!user) {
     return (
       <div className={`echo-token-purchase ${className}`}>
-        <div
-          className="echo-token-purchase-unauthorized"
-          style={{
-            padding: '12px',
-            backgroundColor: '#fef3c7',
-            color: '#92400e',
-            borderRadius: '8px',
-            fontSize: '14px',
-          }}
-        >
-          Please sign in to purchase tokens
-        </div>
+        {children ? (
+          <div
+            className="echo-token-purchase-unauthorized"
+            style={{
+              padding: '12px',
+              backgroundColor: '#fef3c7',
+              color: '#92400e',
+              borderRadius: '8px',
+              fontSize: '14px',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ margin: '0 0 12px 0' }}>
+              Please sign in to purchase tokens
+            </p>
+            <EchoSignIn />
+          </div>
+        ) : (
+          <EchoSignIn />
+        )}
       </div>
     );
   }
@@ -264,8 +275,26 @@ export function EchoTokenPurchase({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Logo */}
-        <Logo width={16} height={16} variant="light" />
+        {/* Avatar or Logo */}
+        {showAvatar && user?.picture ? (
+          <img
+            src={user.picture}
+            alt={user.name || user.email || 'User avatar'}
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              flexShrink: 0,
+            }}
+            onError={e => {
+              // Fallback to logo if image fails to load
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <Logo width={20} height={20} variant="light" />
+        )}
         <span>{formatCurrency(calculateAvailableSpend())}</span>
         {/* Arrow Up Right Icon - matching lucide-react ArrowUpRight */}
         <svg
@@ -332,17 +361,26 @@ export function EchoTokenPurchase({
         >
           {/* Header */}
           <div style={{ padding: '16px 16px 0 16px', marginBottom: '12px' }}>
-            <h2
+            <div
               style={{
-                fontSize: '18px',
-                fontWeight: '500',
-                color: '#111827',
-                margin: 0,
-                fontFamily: 'HelveticaNowDisplay, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              Credits
-            </h2>
+              <Logo width={20} height={20} variant="light" />
+              <h2
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '500',
+                  color: '#111827',
+                  margin: 0,
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                }}
+              >
+                Credits
+              </h2>
+            </div>
           </div>
 
           {/* Current Balance Section */}
@@ -473,9 +511,9 @@ export function EchoTokenPurchase({
                     ></div>
                     <span>
                       {formatCurrency(balance.balance)} Paid Credits
-                      {balance.totalSpent && (
+                      {balance.totalPaid > 0 && (
                         <span style={{ color: '#9ca3af', marginLeft: '8px' }}>
-                          ({formatCurrency(balance.totalSpent)} /{' '}
+                          ({formatCurrency(balance.totalSpent)} of{' '}
                           {formatCurrency(balance.totalPaid)} spent)
                         </span>
                       )}
@@ -611,15 +649,52 @@ export function EchoTokenPurchase({
             </div>
           )}
 
-          {/* Close Button */}
+          {/* Footer with Sign Out and Close buttons */}
           <div
             style={{
               padding: '12px 16px',
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               borderTop: '1px solid #f3f4f6',
             }}
           >
+            {/* Sign Out Button */}
+            <EchoSignOut
+              onSuccess={() => {
+                console.log('Signed out from credits modal');
+                closeModal();
+              }}
+              onError={error => {
+                console.error('Sign out error from credits modal:', error);
+              }}
+            >
+              <button
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'transparent',
+                  color: '#dc2626',
+                  border: '1px solid #dc2626',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  fontFamily: 'HelveticaNowDisplay, sans-serif',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#fef2f2';
+                  e.currentTarget.style.borderColor = '#b91c1c';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.borderColor = '#dc2626';
+                }}
+              >
+                Sign Out
+              </button>
+            </EchoSignOut>
+
+            {/* Close Button */}
             <button
               onClick={closeModal}
               style={{
