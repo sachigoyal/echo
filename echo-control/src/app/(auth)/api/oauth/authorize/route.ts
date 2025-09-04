@@ -4,6 +4,7 @@ import {
   isValidRedirectUri,
 } from '@/app/(auth)/_lib/authorize';
 import { createZodRoute } from '@/app/api/_utils/create-route';
+import { auth } from '@/auth';
 import { getApp } from '@/services/apps/app';
 import { NextResponse } from 'next/server';
 import z from 'zod';
@@ -24,22 +25,29 @@ export const GET = createZodRoute()
       );
     }
 
+    if (!isValidRedirectUri(query.redirect_uri, app.authorizedCallbackUrls)) {
+      return NextResponse.json(
+        {
+          error: 'invalid_request',
+          message: 'redirect_uri is not authorized for this app',
+        },
+        { status: 400 }
+      );
+    }
+
+    const session = await auth();
+    if (!session?.user) {
+      const signInUrl = new URL('/login', request.nextUrl.origin);
+      signInUrl.searchParams.set('redirect_url', request.url);
+      return NextResponse.redirect(signInUrl.toString(), 302);
+    }
+
     if (query.prompt === 'none') {
       if (process.env.INTEGRATION_TEST_MODE !== 'true') {
         return NextResponse.json(
           {
             error: 'invalid_request',
-            message: 'Prompt none is not supported',
-          },
-          { status: 400 }
-        );
-      }
-
-      if (!isValidRedirectUri(query.redirect_uri, app.authorizedCallbackUrls)) {
-        return NextResponse.json(
-          {
-            error: 'invalid_request',
-            message: 'Invalid redirect URI',
+            message: 'prompt=none is not supported',
           },
           { status: 400 }
         );

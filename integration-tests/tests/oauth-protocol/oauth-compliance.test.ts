@@ -38,9 +38,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           code_challenge: codeChallenge,
           code_challenge_method: 'S256',
         })
-      ).rejects.toThrow(
-        /invalid_request.*redirect_uri|Missing required parameters/i
-      );
+      ).rejects.toThrow(/redirect_uri must be a valid URL/i);
 
       // Missing code_challenge
       await expect(
@@ -51,9 +49,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           code_challenge: '',
           code_challenge_method: 'S256',
         })
-      ).rejects.toThrow(
-        /invalid_request.*code_challenge|Missing required parameters/i
-      );
+      ).rejects.toThrow(/code_challenge must be a string/i);
     });
 
     test('validates client_id against database', async () => {

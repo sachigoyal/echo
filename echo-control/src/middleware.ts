@@ -60,8 +60,7 @@ const isPublicRoute = createPathMatcher([
   // public routes
   '/api/auth/(.*)',
   '/api/v1/(.*)',
-  '/api/oauth/token',
-  '/api/oauth/userinfo',
+  '/api/oauth(.*)',
   '/api/validate-jwt-token(.*)',
   '/api/apps/public',
   '/api/stripe/webhook',
