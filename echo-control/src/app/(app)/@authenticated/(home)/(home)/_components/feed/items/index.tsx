@@ -5,10 +5,13 @@ import { FeedItem, LoadingFeedItem } from './item';
 import { Info, Loader2 } from 'lucide-react';
 import { use } from 'react';
 import { Button } from '@/components/ui/button';
+import { addHours } from 'date-fns';
 
 interface Props {
   numAppsPromise: Promise<number>;
 }
+
+const numHours = 4;
 
 export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
   const numApps = use(numAppsPromise);
@@ -17,6 +20,7 @@ export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
     api.user.feed.list.useSuspenseInfiniteQuery(
       {
         limit: 5,
+        numHours,
       },
       {
         getNextPageParam: lastPage =>
@@ -26,9 +30,13 @@ export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
       }
     );
 
-  console.log(feed.pages);
-
-  const rows = feed.pages.flatMap(page => page.items);
+  const rows = feed.pages.flatMap(page =>
+    page.items.map(item => ({
+      ...item,
+      // show the activity at the en of the period, database returns the start of the period
+      timestamp: addHours(item.timestamp, numHours),
+    }))
+  );
 
   if (rows.length === 0) {
     return (

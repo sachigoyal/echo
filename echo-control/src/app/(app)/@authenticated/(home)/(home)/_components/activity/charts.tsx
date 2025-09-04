@@ -11,16 +11,21 @@ import { api } from '@/trpc/client';
 import { useActivityContext } from '@/app/(app)/@authenticated/_components/time-range-selector/context';
 
 import { formatCurrency } from '@/lib/utils';
-import { useMemo } from 'react';
+import { use, useMemo } from 'react';
 
-export const ActivityCharts: React.FC = () => {
+interface Props {
+  numAppsPromise: Promise<number>;
+}
+
+export const ActivityCharts: React.FC<Props> = ({ numAppsPromise }) => {
+  const numApps = use(numAppsPromise);
+
   const { startDate, endDate } = useActivityContext();
 
   const [activity] = api.activity.creator.getCurrent.useSuspenseQuery({
     startDate,
     endDate,
   });
-  const [numApps] = api.apps.count.owner.useSuspenseQuery();
 
   const hasApps = useMemo(() => {
     return numApps > 0;

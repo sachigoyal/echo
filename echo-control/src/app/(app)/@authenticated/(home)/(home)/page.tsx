@@ -22,6 +22,8 @@ export default async function DashboardPage() {
 
   const userApps = api.apps.list.owner({});
 
+  const numAppsPromise = userApps.then(apps => apps.total_count);
+
   return (
     <div>
       <Heading
@@ -39,10 +41,10 @@ export default async function DashboardPage() {
         <div className="flex flex-col md:flex-row gap-8 max-w-full w-full">
           <div className="flex flex-col gap-6 w-full md:w-80 lg:w-96 max-w-full overflow-hidden shrink-0 pt-2">
             <Apps userApps={userApps} />
-            <Feed numAppsPromise={userApps.then(apps => apps.total_count)} />
+            <Feed numAppsPromise={numAppsPromise} />
           </div>
           <div className="flex flex-col gap-6 flex-1 overflow-hidden py-2">
-            <Activity />
+            <Activity numAppsPromise={numAppsPromise} />
             <PopularApps />
           </div>
         </div>

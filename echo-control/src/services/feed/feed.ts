@@ -7,12 +7,23 @@ import {
   toTimeBasedPaginatedReponse,
 } from '../lib/pagination';
 
-export const userFeedSchema = z.object({});
+export const userFeedSchema = z.object({
+  numHours: z.number().default(1),
+});
 
 export const getUserFeed = async (
   userId: UserId,
+  { numHours }: z.infer<typeof userFeedSchema>,
   { cursor, limit }: TimeBasedPaginationParams
 ) => {
+  console.log(
+    'Feed query - numHours:',
+    numHours,
+    'cursor:',
+    cursor,
+    'limit:',
+    limit
+  );
   const items = await db.$queryRaw<FeedActivity[]>`
     SELECT 
       timestamp,
@@ -21,6 +32,7 @@ export const getUserFeed = async (
       event_data,
       users
     FROM (
+      -- Transaction events (simplified)
       SELECT 
         timestamp,
         JSON_BUILD_OBJECT(
@@ -30,8 +42,8 @@ export const getUserFeed = async (
         ) as app,
         'transaction' as activity_type,
         JSON_BUILD_OBJECT(
-          'total_transactions', total_transactions,
-          'total_profit', total_profit
+          'total_transactions', SUM(transaction_count),
+          'total_profit', SUM(total_profit)
         ) as event_data,
         JSON_AGG(
           JSON_BUILD_OBJECT(
@@ -41,46 +53,45 @@ export const getUserFeed = async (
           )
         ) as users
       FROM (
-        SELECT DISTINCT
-          DATE_TRUNC('hour', t."createdAt") as timestamp,
-          t."echoAppId",
-          app.name as app_name,
-          app."profilePictureUrl" as app_profile_picture,
-          t."userId",
-          u.name as user_name,
-          u.image as user_image,
-          transaction_stats.total_transactions,
-          transaction_stats.total_profit
-        FROM transactions t
-        INNER JOIN app_memberships am ON t."echoAppId" = am."echoAppId" 
-          AND am."userId" = ${userId}::uuid
-          AND am.role = 'owner'
-          AND am."isArchived" = false
-        INNER JOIN users u ON t."userId" = u.id
-        INNER JOIN echo_apps app ON t."echoAppId" = app.id
-        INNER JOIN (
+        SELECT 
+          timestamp,
+          "echoAppId",
+          app_name,
+          app_profile_picture,
+          "userId",
+          user_name,
+          user_image,
+          COUNT(*) as transaction_count,
+          SUM("markUpProfit") as total_profit
+        FROM (
           SELECT 
-            DATE_TRUNC('hour', t2."createdAt") as timestamp,
-            t2."echoAppId",
-            COUNT(*) as total_transactions,
-            SUM(t2."markUpProfit") as total_profit
-          FROM transactions t2
-          INNER JOIN app_memberships am2 ON t2."echoAppId" = am2."echoAppId" 
-            AND am2."userId" = ${userId}::uuid
-            AND am2.role = 'owner'
-            AND am2."isArchived" = false
-          WHERE t2."isArchived" = false
-            AND DATE_TRUNC('hour', t2."createdAt") < ${cursor}
-          GROUP BY DATE_TRUNC('hour', t2."createdAt"), t2."echoAppId"
-        ) transaction_stats ON DATE_TRUNC('hour', t."createdAt") = transaction_stats.timestamp 
-          AND t."echoAppId" = transaction_stats."echoAppId"
-        WHERE t."isArchived" = false
-          AND DATE_TRUNC('hour', t."createdAt") < ${cursor}
-      ) distinct_transactions
-      GROUP BY timestamp, "echoAppId", app_name, app_profile_picture, total_transactions, total_profit
+            DATE_TRUNC('day', t."createdAt") + 
+              (FLOOR(EXTRACT(HOUR FROM t."createdAt") / ${numHours}) * interval '${numHours} hours') AS timestamp,
+            t."echoAppId",
+            app.name as app_name,
+            app."profilePictureUrl" as app_profile_picture,
+            t."userId",
+            u.name as user_name,
+            u.image as user_image,
+            t."markUpProfit"
+          FROM transactions t
+          INNER JOIN app_memberships am ON t."echoAppId" = am."echoAppId" 
+            AND am."userId" = ${userId}::uuid
+            AND am.role = 'owner'
+            AND am."isArchived" = false
+          INNER JOIN users u ON t."userId" = u.id
+          INNER JOIN echo_apps app ON t."echoAppId" = app.id
+          WHERE t."isArchived" = false
+            AND DATE_TRUNC('day', t."createdAt") + 
+                (FLOOR(EXTRACT(HOUR FROM t."createdAt") / ${numHours}) * interval '${numHours} hours') < ${cursor}
+        ) all_transactions
+        GROUP BY timestamp, "echoAppId", app_name, app_profile_picture, "userId", user_name, user_image
+      ) user_aggregated_transactions
+      GROUP BY timestamp, "echoAppId", app_name, app_profile_picture
       
       UNION ALL
       
+      -- Signin events
       SELECT 
         timestamp,
         JSON_BUILD_OBJECT(
@@ -101,7 +112,8 @@ export const getUserFeed = async (
         ) as users
       FROM (
         SELECT DISTINCT
-          DATE_TRUNC('hour', rt."createdAt") as timestamp,
+          DATE_TRUNC('day', rt."createdAt") + 
+            (FLOOR(EXTRACT(HOUR FROM rt."createdAt") / ${numHours}) * interval '${numHours} hours') AS timestamp,
           rt."echoAppId",
           app.name as app_name,
           app."profilePictureUrl" as app_profile_picture,
@@ -115,14 +127,19 @@ export const getUserFeed = async (
           AND am."isArchived" = false
         INNER JOIN users u ON rt."userId" = u.id
         INNER JOIN echo_apps app ON rt."echoAppId" = app.id
-        WHERE rt."isArchived" = false
-          AND DATE_TRUNC('hour', rt."createdAt") < ${cursor}
+        WHERE DATE_TRUNC('day', rt."createdAt") + 
+              (FLOOR(EXTRACT(HOUR FROM rt."createdAt") / ${numHours}) * interval '${numHours} hours') < ${cursor}
       ) distinct_signins
       GROUP BY timestamp, "echoAppId", app_name, app_profile_picture
     ) combined_activity
-    ORDER BY timestamp DESC, app->>'id'
+    ORDER BY timestamp DESC, app->>'id', activity_type
     LIMIT ${limit + 1}
   `;
+
+  console.log(
+    'Feed results:',
+    items.map(i => ({ timestamp: i.timestamp, activity_type: i.activity_type }))
+  );
 
   return toTimeBasedPaginatedReponse({
     items,

@@ -11,6 +11,7 @@ export const Feed: React.FC<Props> = ({ numAppsPromise }) => {
   api.user.feed.list.prefetchInfinite({
     cursor: new Date(),
     limit: 5,
+    numHours: 4,
   });
 
   return (

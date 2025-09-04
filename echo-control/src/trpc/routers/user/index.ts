@@ -11,7 +11,7 @@ import { userRedeemCodeRouter } from './redeem';
 import { userEarningsRouter } from './earnings';
 import { userReferralRouter } from './referral';
 import { userPublicRouter } from './public';
-import { getUserFeed } from '@/services/feed/feed';
+import { getUserFeed, userFeedSchema } from '@/services/feed/feed';
 
 export const userRouter = createTRPCRouter({
   balance: userBalanceRouter,
@@ -25,8 +25,9 @@ export const userRouter = createTRPCRouter({
   feed: {
     list: timeBasedPaginatedProcedure
       .concat(protectedProcedure)
-      .query(async ({ ctx }) => {
-        return getUserFeed(ctx.session.user.id, ctx.pagination);
+      .input(userFeedSchema)
+      .query(async ({ ctx, input }) => {
+        return getUserFeed(ctx.session.user.id, input, ctx.pagination);
       }),
   },
 });

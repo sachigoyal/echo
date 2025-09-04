@@ -14,19 +14,11 @@ import { ActivityContextProvider } from '@/app/(app)/@authenticated/_components/
 import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityOverlay } from './overlay';
 
-const ActivityContainer = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">Your Earnings</h3>
-        <RangeSelector />
-      </div>
-      <Card className="p-0 overflow-hidden relative">{children}</Card>
-    </div>
-  );
-};
+interface Props {
+  numAppsPromise: Promise<number>;
+}
 
-export const Activity: React.FC = () => {
+export const Activity: React.FC<Props> = ({ numAppsPromise }) => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
@@ -34,7 +26,6 @@ export const Activity: React.FC = () => {
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });
-  api.apps.count.owner.prefetch();
 
   return (
     <HydrateClient>
@@ -47,12 +38,12 @@ export const Activity: React.FC = () => {
             fallback={<p>There was an error loading the activity data</p>}
           >
             <Suspense fallback={<LoadingActivityCharts />}>
-              <ActivityCharts />
+              <ActivityCharts numAppsPromise={numAppsPromise} />
             </Suspense>
           </ErrorBoundary>
           <Suspense fallback={null}>
             <ErrorBoundary fallback={null}>
-              <ActivityOverlay />
+              <ActivityOverlay numAppsPromise={numAppsPromise} />
             </ErrorBoundary>
           </Suspense>
         </ActivityContainer>
@@ -66,5 +57,17 @@ export const LoadingActivity = () => {
     <ActivityContainer>
       <LoadingActivityCharts />
     </ActivityContainer>
+  );
+};
+
+const ActivityContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
+      <div className="flex justify-between items-center">
+        <h3 className="font-bold">Your Earnings</h3>
+        <RangeSelector />
+      </div>
+      <Card className="p-0 overflow-hidden relative">{children}</Card>
+    </div>
   );
 };
