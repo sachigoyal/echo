@@ -18,8 +18,12 @@ export const authorizeParamsSchema = z.object({
   client_id: z.uuid('client_id must be a valid UUID'),
   redirect_uri: z.url('redirect_uri must be a valid URL'),
   code_challenge: z
-    .string('missing code_challenge')
-    .min(1, 'code_challenge is required'),
+    .string('code_challenge must be a string')
+    .min(43, 'code_challenge must be at least 43 characters')
+    .max(128, 'code_challenge must be at most 128 characters')
+    .regex(/^[A-Za-z0-9_-]+$/, {
+      message: 'code_challenge must be base64url encoded',
+    }),
   code_challenge_method: z.literal('S256', {
     error: 'Only S256 code challenge method is supported',
   }),
