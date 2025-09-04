@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 
 import Link from 'next/link';
 
-import { ArrowUpRight, Code, Plus, Lock } from 'lucide-react';
+import { Code, Plus, Lock, Zap } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,7 +76,7 @@ export const HeaderCard: React.FC<Props> = ({ appId }) => {
               {app.homepageUrl ? (
                 <a href={app.homepageUrl} target="_blank">
                   <Button variant="turbo">
-                    <ArrowUpRight className="size-4" />
+                    <Zap className="size-4" />
                     Use App
                   </Button>
                 </a>
