@@ -18,7 +18,7 @@ interface TabProps<T extends Record<string, number>> {
 interface Props<T extends Record<string, number>> {
   chartData: ChartData<T>[];
   tabs: TabProps<T>[];
-  height?: number;
+  height?: number | string;
 }
 
 export const Charts = <T extends Record<string, number>>({
@@ -27,14 +27,18 @@ export const Charts = <T extends Record<string, number>>({
   height,
 }: Props<T>) => {
   return (
-    <Tabs defaultValue={tabs[0].trigger.value}>
+    <Tabs defaultValue={tabs[0].trigger.value} className="h-full">
       <TabsList>
         {tabs.map(tab => (
           <TabsTrigger key={tab.trigger.label} {...tab.trigger} />
         ))}
       </TabsList>
       {tabs.map(({ trigger, bars, tooltipRows }) => (
-        <TabsContent key={trigger.label} value={trigger.value}>
+        <TabsContent
+          key={trigger.label}
+          value={trigger.value}
+          className="flex-1 h-0"
+        >
           <BaseChart
             data={chartData}
             bars={bars}

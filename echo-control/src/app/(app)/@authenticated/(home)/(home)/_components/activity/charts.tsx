@@ -183,6 +183,7 @@ export const ActivityCharts: React.FC<Props> = ({ numAppsPromise }) => {
         },
       ]}
       chartData={chartData}
+      height={'100%'}
     />
   );
 };

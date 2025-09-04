@@ -26,7 +26,7 @@ export interface ChartProps<T extends Record<string, number>> {
   >;
   children?: React.ReactNode;
   tooltipRows?: Array<TooltipRowProps<T>>;
-  height?: number;
+  height?: number | string;
 }
 
 export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({

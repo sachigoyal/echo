@@ -8,13 +8,13 @@ interface Props {
 
 export const TransactionContent: React.FC<Props> = ({ numUsers, activity }) => {
   return (
-    <p>
-      {numUsers} user{numUsers > 1 ? 's' : ''} made{' '}
-      {activity.total_transactions} request
-      {activity.total_transactions > 1 ? 's' : ''} for a profit of{' '}
+    <p className="truncate">
       <span className="font-bold text-primary">
         {formatCurrency(activity.total_profit)}
       </span>{' '}
+      earned from {numUsers} user{numUsers > 1 ? 's' : ''} on{' '}
+      {activity.total_transactions} request
+      {activity.total_transactions > 1 ? 's' : ''}
     </p>
   );
 };

@@ -15,14 +15,14 @@ interface Props {
 
 export const FeedItem: React.FC<Props> = ({ activity }) => {
   return (
-    <div className="border-b last:border-b-0 p-2 flex justify-between items-center">
-      <div className="flex items-center gap-2">
+    <div className="border-b last:border-b-0 p-2 flex justify-between items-center gap-2">
+      <div className="flex items-center gap-2 flex-1 overflow-hidden">
         <UserAvatar
           src={activity.app.profilePictureUrl}
           fallback={<Code className="size-4" />}
           className="size-6"
         />
-        <div>
+        <div className="flex-1 overflow-hidden">
           <p className="text-[10px] font-medium text-muted-foreground">
             {activity.app.name}{' '}
             <span className="text-muted-foreground/60">
@@ -30,7 +30,7 @@ export const FeedItem: React.FC<Props> = ({ activity }) => {
               {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
             </span>
           </p>
-          <div className="text-xs font-medium">
+          <div className="text-xs font-medium w-full min-w-0">
             <ItemContent activity={activity} />
           </div>
           <p className="text-[10px] text-muted-foreground/60"></p>
@@ -38,9 +38,9 @@ export const FeedItem: React.FC<Props> = ({ activity }) => {
       </div>
       <AvatarCircles
         avatarUrls={activity.users
-          .slice(0, 4)
+          .slice(0, 3)
           .map(user => user.userProfilePicture ?? undefined)}
-        numPeople={Math.min(activity.users.length - 4, 0)}
+        numPeople={Math.max(activity.users.length - 3, 0)}
         size={24}
       />
     </div>

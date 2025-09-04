@@ -1,42 +1,27 @@
 'use client';
 
-import { api } from '@/trpc/client';
+import { RouterOutputs } from '@/trpc/client';
 import { FeedItem, LoadingFeedItem } from './item';
-import { Info, Loader2 } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { use } from 'react';
-import { Button } from '@/components/ui/button';
 import { addHours } from 'date-fns';
 
 interface Props {
+  feedPromise: Promise<RouterOutputs['user']['feed']['list']>;
   numAppsPromise: Promise<number>;
 }
 
 const numHours = 4;
 
-export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
+export const FeedItems: React.FC<Props> = ({ numAppsPromise, feedPromise }) => {
+  const feedItems = use(feedPromise);
   const numApps = use(numAppsPromise);
 
-  const [feed, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
-    api.user.feed.list.useSuspenseInfiniteQuery(
-      {
-        limit: 5,
-        numHours,
-      },
-      {
-        getNextPageParam: lastPage =>
-          lastPage.has_next
-            ? lastPage.items[lastPage.items.length - 1].timestamp
-            : undefined,
-      }
-    );
-
-  const rows = feed.pages.flatMap(page =>
-    page.items.map(item => ({
-      ...item,
-      // show the activity at the en of the period, database returns the start of the period
-      timestamp: addHours(item.timestamp, numHours),
-    }))
-  );
+  const rows = feedItems.items.map(item => ({
+    ...item,
+    // show the activity at the en of the period, database returns the start of the period
+    timestamp: addHours(item.timestamp, numHours),
+  }));
 
   if (rows.length === 0) {
     return (
@@ -56,38 +41,13 @@ export const FeedItems: React.FC<Props> = ({ numAppsPromise }) => {
     );
   }
 
-  return (
-    <>
-      {rows.map((item, index) => (
-        <FeedItem
-          key={`${item.timestamp.toString()}-${index}`}
-          activity={item}
-        />
-      ))}
-      {hasNextPage && (
-        <Button
-          onClick={() => fetchNextPage()}
-          variant="ghost"
-          disabled={isFetchingNextPage}
-          className="w-full h-fit py-1 text-xs text-muted-foreground/60 rounded-none"
-        >
-          {isFetchingNextPage ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            'Load more'
-          )}
-        </Button>
-      )}
-    </>
-  );
+  return rows.map((item, index) => (
+    <FeedItem key={`${item.timestamp.toString()}-${index}`} activity={item} />
+  ));
 };
 
 export const LoadingFeedItems = () => {
-  return (
-    <>
-      {Array.from({ length: 4 }).map((_, index) => (
-        <LoadingFeedItem key={index} />
-      ))}
-    </>
-  );
+  return Array.from({ length: 4 }).map((_, index) => (
+    <LoadingFeedItem key={index} />
+  ));
 };

@@ -1,24 +1,23 @@
-import { api, HydrateClient } from '@/trpc/server';
+import { HydrateClient } from '@/trpc/server';
 import { FeedItems, LoadingFeedItems } from './items';
 import { Suspense } from 'react';
 import { Card } from '@/components/ui/card';
+import { RouterOutputs } from '@/trpc/client';
 
 interface Props {
   numAppsPromise: Promise<number>;
+  feedPromise: Promise<RouterOutputs['user']['feed']['list']>;
 }
 
-export const Feed: React.FC<Props> = ({ numAppsPromise }) => {
-  api.user.feed.list.prefetchInfinite({
-    cursor: new Date(),
-    limit: 5,
-    numHours: 4,
-  });
-
+export const Feed: React.FC<Props> = ({ numAppsPromise, feedPromise }) => {
   return (
     <HydrateClient>
       <FeedContainer>
         <Suspense fallback={<LoadingFeedItems />}>
-          <FeedItems numAppsPromise={numAppsPromise} />
+          <FeedItems
+            numAppsPromise={numAppsPromise}
+            feedPromise={feedPromise}
+          />
         </Suspense>
       </FeedContainer>
     </HydrateClient>

@@ -20,9 +20,16 @@ export default async function DashboardPage() {
     return null;
   }
 
-  const userApps = api.apps.list.owner({});
-
+  const userApps = api.apps.list.owner({
+    page_size: 3,
+  });
   const numAppsPromise = userApps.then(apps => apps.total_count);
+
+  const feedPromise = api.user.feed.list({
+    cursor: new Date(),
+    limit: 5,
+    numHours: 4,
+  });
 
   return (
     <div>
@@ -38,16 +45,16 @@ export default async function DashboardPage() {
         }
       />
       <Body>
-        <div className="flex flex-col md:flex-row gap-8 max-w-full w-full">
-          <div className="flex flex-col gap-6 w-full md:w-80 lg:w-96 max-w-full overflow-hidden shrink-0 pt-2">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 max-w-full w-full">
+          <div className="flex flex-col gap-6 w-full md:col-span-5 lg:col-span-4 max-w-full overflow-hidden shrink-0 pt-2">
             <Apps userApps={userApps} />
-            <Feed numAppsPromise={numAppsPromise} />
+            <Feed numAppsPromise={numAppsPromise} feedPromise={feedPromise} />
           </div>
-          <div className="flex flex-col gap-6 flex-1 overflow-hidden py-2">
+          <div className="flex flex-col gap-6 flex-1 overflow-hidden py-2 md:col-span-7 lg:col-span-8">
             <Activity numAppsPromise={numAppsPromise} />
-            <PopularApps />
           </div>
         </div>
+        <PopularApps />
       </Body>
     </div>
   );

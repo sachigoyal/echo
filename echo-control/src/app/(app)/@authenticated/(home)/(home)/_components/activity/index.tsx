@@ -62,12 +62,12 @@ export const LoadingActivity = () => {
 
 const ActivityContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
+    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full h-full">
       <div className="flex justify-between items-center">
         <h3 className="font-bold">Your Earnings</h3>
         <RangeSelector />
       </div>
-      <Card className="p-0 overflow-hidden relative">{children}</Card>
+      <Card className="p-0 overflow-hidden relative flex-1">{children}</Card>
     </div>
   );
 };
