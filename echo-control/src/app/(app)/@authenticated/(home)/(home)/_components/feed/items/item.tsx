@@ -23,17 +23,17 @@ export const FeedItem: React.FC<Props> = ({ activity }) => {
           className="size-6"
         />
         <div>
-          <p className="text-xs font-medium text-muted-foreground">
-            {activity.app.name}
+          <p className="text-[10px] font-medium text-muted-foreground">
+            {activity.app.name}{' '}
+            <span className="text-muted-foreground/60">
+              &middot;{' '}
+              {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+            </span>
           </p>
-          <div className="text-sm">
+          <div className="text-xs font-medium">
             <ItemContent activity={activity} />
           </div>
-          <p className="text-[10px] text-muted-foreground/60">
-            {formatDistanceToNow(activity.timestamp, {
-              addSuffix: true,
-            })}
-          </p>
+          <p className="text-[10px] text-muted-foreground/60"></p>
         </div>
       </div>
       <AvatarCircles
@@ -53,9 +53,12 @@ export const LoadingFeedItem = () => {
       <div className="flex items-center gap-2">
         <Skeleton className="size-6" />
         <div>
-          <Skeleton className="w-16 h-3 my-0.5" />
+          <div className="flex items-center gap-1">
+            <Skeleton className="w-16 h-[10px] my-[2.5px]" />
+            &middot;
+            <Skeleton className="w-20 h-[10px] my-[2.5px]" />
+          </div>
           <Skeleton className="w-48 h-[14px] my-[3px]" />
-          <Skeleton className="w-20 h-[10px] my-[2.5px]" />
         </div>
       </div>
       <AvatarCirclesSkeleton numAvatars={2} size={24} />
