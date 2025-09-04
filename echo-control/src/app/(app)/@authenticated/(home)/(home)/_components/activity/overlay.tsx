@@ -21,7 +21,7 @@ export const ActivityOverlay: React.FC = () => {
         >
           <Lock className="size-16 text-primary" />
           <p className="text-lg font-medium text-center max-w-xs">
-            Create your first app to start earning money.
+            Create your first app to start earning
           </p>
           <Link href="/new">
             <Button variant="turbo">Create App</Button>

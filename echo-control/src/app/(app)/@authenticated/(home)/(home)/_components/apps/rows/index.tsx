@@ -1,4 +1,15 @@
+import Link from 'next/link';
+
+import {
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
 import { api } from '@/trpc/server';
+
 import { AppRow, LoadingAppRow } from './item';
 
 export const AppRows = async () => {
@@ -8,11 +19,21 @@ export const AppRows = async () => {
 
   if (rows.length === 0) {
     return (
-      <div className="w-full flex flex-col gap-2 md:gap-3 p-2">
-        <p className="text-xs text-muted-foreground/60">
-          No activity on your apps yet
-        </p>
-      </div>
+      <>
+        <CardHeader>
+          <CardTitle>Create your First App</CardTitle>
+          <CardDescription>
+            Get started by creating an app and setting a markup on LLM credits.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/new" className="w-full">
+            <Button variant="turbo" className="w-full">
+              Create App
+            </Button>
+          </Link>
+        </CardContent>
+      </>
     );
   }
 
