@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       updatedAt: user.updatedAt.toISOString(),
       totalPaid: Number(user.totalPaid),
       totalSpent: Number(user.totalSpent),
+      picture: user.image,
     };
 
     logger.emit({

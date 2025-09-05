@@ -12,6 +12,10 @@ export interface EchoUser {
   email: string;
   name?: string;
   picture?: string;
+  totalPaid?: number;
+  totalSpent?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type EchoBalance = Balance;
@@ -23,10 +27,18 @@ export interface EchoSignInProps {
   children?: React.ReactNode;
 }
 
-export interface EchoTokenPurchaseProps {
+export interface EchoSignOutProps {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export interface EchoTokensProps {
   amount?: number;
   onPurchaseComplete?: (balance: EchoBalance) => void;
   onError?: (error: Error) => void;
   className?: string;
   children?: React.ReactNode;
+  showAvatar?: boolean;
 }

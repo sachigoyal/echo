@@ -11,6 +11,9 @@ import { userRedeemCodeRouter } from './redeem';
 import { userEarningsRouter } from './earnings';
 import { userReferralRouter } from './referral';
 import { userPublicRouter } from './public';
+import { userPayoutRouter } from './payout';
+import { userGithubLinkRouter } from './github-link';
+
 import { getUserFeed, userFeedSchema } from '@/services/feed/feed';
 import { getUser } from '@/services/user';
 
@@ -22,6 +25,8 @@ export const userRouter = createTRPCRouter({
   earnings: userEarningsRouter,
   referral: userReferralRouter,
   public: userPublicRouter,
+  payout: userPayoutRouter,
+  githubLink: userGithubLinkRouter,
 
   current: {
     get: protectedProcedure.query(async ({ ctx }) => {

@@ -4,14 +4,15 @@ import {
   createAnthropic as createAnthropicBase,
 } from '@ai-sdk/anthropic';
 import { ROUTER_BASE_URL } from '../config';
-// import { getEchoToken } from '../auth/token-manager';
+import { fetchWith402Interceptor } from './index';
 import { AsyncProvider, EchoConfig } from '../types';
 
 export type EchoAnthropicProvider = AsyncProvider<AnthropicProvider>;
 
 export function createEchoAnthropic(
   { appId, baseRouterUrl = ROUTER_BASE_URL }: EchoConfig,
-  getTokenFn: (appId: string) => Promise<string | null>
+  getTokenFn: (appId: string) => Promise<string | null>,
+  onInsufficientFunds?: () => void
 ): EchoAnthropicProvider {
   const getProvider = async () => {
     const token = await getTokenFn(appId);
@@ -23,6 +24,9 @@ export function createEchoAnthropic(
         // not a long lived anthropic api key
         'anthropic-dangerous-direct-browser-access': 'true',
       },
+      ...(onInsufficientFunds && {
+        fetch: fetchWith402Interceptor(fetch, onInsufficientFunds),
+      }),
     });
   };
 
