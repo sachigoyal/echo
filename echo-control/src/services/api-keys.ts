@@ -3,11 +3,7 @@ import { z } from 'zod';
 import { ApiKey, Prisma } from '@/generated/prisma';
 
 import { db } from '../lib/db';
-import {
-  AppRole,
-  MembershipStatus,
-  Permission,
-} from '../lib/permissions/types';
+import { AppRole, MembershipStatus } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
 import { PaginationParams, toPaginatedReponse } from './lib/pagination';

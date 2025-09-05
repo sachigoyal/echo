@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useActivityContext } from './context';
+import { useFiltersContext } from '../../contexts/filters-context';
 import {
   Select,
   SelectContent,
@@ -20,10 +20,11 @@ import {
 } from '@/components/ui/select';
 
 import { ActivityTimeframe } from '@/types/timeframes';
+import { cn } from '@/lib/utils';
 
 export const RangeSelector = () => {
   const { startDate, endDate, setDateRange, timeframe, setTimeframe } =
-    useActivityContext();
+    useFiltersContext();
 
   // Get only the numeric enum values
   const timeframeValues = Object.values(ActivityTimeframe).filter(
@@ -47,19 +48,20 @@ export const RangeSelector = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 h-6">
+    <div className="flex items-center h-6">
       <Popover>
         <PopoverTrigger asChild>
           <Button
             size={timeframe === ActivityTimeframe.Custom ? 'default' : 'icon'}
-            variant="ghost"
-            className="p-1 size-fit md:size-fit hover:bg-accent/30"
+            variant="outline"
+            className={cn(
+              'rounded-r-none shadow-none border-r-[0.5px]',
+              timeframe !== ActivityTimeframe.Custom && 'text-muted-foreground'
+            )}
           >
-            <CalendarDays className="size-4 text-foreground/50" />
+            <CalendarDays className="size-4" />
             {timeframe === ActivityTimeframe.Custom && (
-              <span className="text-xs font-normal">
-                {formatRange(startDate, endDate)}
-              </span>
+              <span>{formatRange(startDate!, endDate!)}</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -79,14 +81,18 @@ export const RangeSelector = () => {
           />
         </PopoverContent>
       </Popover>
-      <div className="h-4 w-[1px] bg-border" />
       <Select
         value={timeframe.toString()}
         onValueChange={value => {
           setTimeframe(Number(value));
         }}
       >
-        <SelectTrigger className="border-none shadow-none text-xs p-1 size-fit!">
+        <SelectTrigger
+          className={cn(
+            'rounded-l-none border-border shadow-none border-l-[0.5px]',
+            timeframe === ActivityTimeframe.AllTime && 'text-muted-foreground'
+          )}
+        >
           {timeframe !== ActivityTimeframe.Custom && (
             <span>
               {timeframe === ActivityTimeframe.AllTime

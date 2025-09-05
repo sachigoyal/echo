@@ -58,10 +58,6 @@ export default function ReferralEarningsPage() {
     [earnings]
   );
 
-  const currentRecipientDisplay = recipient?.githubUrl
-    ? recipient.githubUrl.split('/').slice(3).join('/')
-    : 'Not set';
-
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="space-y-2">

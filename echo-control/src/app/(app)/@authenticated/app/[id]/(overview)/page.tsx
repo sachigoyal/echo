@@ -11,11 +11,12 @@ import { api, HydrateClient } from '@/trpc/server';
 import { HeaderCard, LoadingHeaderCard } from './_components/header';
 import { Setup } from './_components/setup';
 import { Overview } from './_components/overview';
+import { getApp } from '../_lib/fetch';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
 
-  const app = await api.apps.app.get({ appId: id });
+  const app = await getApp(id);
   api.apps.app.get.prefetch({ appId: id });
   api.apps.app.githubLink.get.prefetch(id);
   api.apps.app.transactions.count.prefetch({ appId: id });

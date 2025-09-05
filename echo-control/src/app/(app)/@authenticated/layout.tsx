@@ -5,6 +5,10 @@ import { Logo } from '@/components/ui/logo';
 import { BalanceButton } from './_components/layout/header/balance';
 import { UserDropdown } from './_components/layout/header/user-dropdown';
 import { LogoContainer } from './_components/layout/logo';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Route } from 'next';
+import { Book } from 'lucide-react';
 
 export default async function AppLayout({
   children,
@@ -26,8 +30,14 @@ export default async function AppLayout({
           <div className="pl-10 md:pl-12 flex items-center gap-2 md:gap-3">
             {breadcrumbs}
           </div>
-          <div className="flex items-center gap-1 md:gap-3">
+          <div className="flex items-center gap-1 md:gap-2">
             <BalanceButton />
+            <Link href={'/docs' as Route<'/docs'>}>
+              <Button variant="outline" size="navbar">
+                <Book className="size-4" />
+                <span className="hidden md:block">Docs</span>
+              </Button>
+            </Link>
             <UserDropdown user={session.user} />
           </div>
         </div>

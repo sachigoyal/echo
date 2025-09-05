@@ -20,7 +20,7 @@ interface Props {
   numAppsPromise: Promise<number>;
 }
 
-export const Earnings: React.FC<Props> = ({ numAppsPromise }) => {
+export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
@@ -29,11 +29,17 @@ export const Earnings: React.FC<Props> = ({ numAppsPromise }) => {
     endDate: defaultEndDate,
   });
 
+  const user = await api.user.current.get();
+  if (!user) {
+    throw new Error('User not found');
+  }
+
   return (
     <HydrateClient>
       <ActivityContextProvider
         initialStartDate={defaultStartDate}
         initialEndDate={defaultEndDate}
+        creationDate={user.createdAt}
       >
         <ActivityContainer>
           <ErrorBoundary
