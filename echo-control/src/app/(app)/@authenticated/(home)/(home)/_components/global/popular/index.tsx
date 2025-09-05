@@ -6,15 +6,15 @@ import {
 } from '@/app/(app)/@authenticated/_components/apps/card';
 
 import { api } from '@/trpc/server';
+import { SubSection } from '../../utils';
 
 const PopularAppsContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
-      <h1 className="font-bold">Popular Apps</h1>
+    <SubSection title="Popular Apps">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-3">
         {children}
       </div>
-    </div>
+    </SubSection>
   );
 };
 

@@ -26,6 +26,7 @@ export interface ChartProps<T extends Record<string, number>> {
   >;
   children?: React.ReactNode;
   tooltipRows?: Array<TooltipRowProps<T>>;
+  height?: number | string;
 }
 
 export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
@@ -33,9 +34,10 @@ export const BaseChart = <T extends Omit<Record<string, number>, 'timestamp'>>({
   children,
   tooltipRows,
   bars,
+  height = 350,
 }: ChartProps<T>) => {
   return (
-    <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 4, right: 6, left: 6, bottom: 0 }}>
         <defs>
           {bars.map(({ dataKey, color }) => (
@@ -125,7 +127,11 @@ const simulateChartData = () => {
   return data;
 };
 
-export const LoadingChart = () => {
+export const LoadingChart = ({
+  height = 350,
+}: {
+  height?: number | string;
+}) => {
   const simulatedData = useMemo(simulateChartData, []);
 
   return (
@@ -140,6 +146,7 @@ export const LoadingChart = () => {
             isAnimationActive: false,
           },
         ]}
+        height={height}
       />
     </div>
   );

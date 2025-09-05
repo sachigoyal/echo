@@ -1,14 +1,10 @@
 import { auth } from '@/auth';
 
-import Link from 'next/link';
-
-import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 
 import { BalanceButton } from './_components/layout/header/balance';
 import { UserDropdown } from './_components/layout/header/user-dropdown';
 import { LogoContainer } from './_components/layout/logo';
-import { Plus } from 'lucide-react';
 
 export default async function AppLayout({
   children,
@@ -31,12 +27,6 @@ export default async function AppLayout({
             {breadcrumbs}
           </div>
           <div className="flex items-center gap-1 md:gap-3">
-            <Button variant="outline" size="navbar" asChild>
-              <Link href="/new">
-                <Plus className="size-4" />
-                <span className="hidden md:block">Create App</span>
-              </Link>
-            </Button>
             <BalanceButton />
             <UserDropdown user={session.user} />
           </div>

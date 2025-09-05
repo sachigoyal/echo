@@ -11,22 +11,16 @@ import { api, HydrateClient } from '@/trpc/server';
 import { RangeSelector } from '@/app/(app)/@authenticated/_components/time-range-selector/range-selector';
 import { ActivityContextProvider } from '@/app/(app)/@authenticated/_components/time-range-selector/context';
 
-import { ActivityCharts, LoadingActivityCharts } from './charts';
+import { EarningsCharts, LoadingEarningsCharts } from './charts';
 import { ActivityOverlay } from './overlay';
 
-const ActivityContainer = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">Your Earnings</h3>
-        <RangeSelector />
-      </div>
-      <Card className="p-0 overflow-hidden relative">{children}</Card>
-    </div>
-  );
-};
+import { SubSection } from '../../utils';
 
-export const Activity: React.FC = () => {
+interface Props {
+  numAppsPromise: Promise<number>;
+}
+
+export const Earnings: React.FC<Props> = ({ numAppsPromise }) => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
@@ -34,7 +28,6 @@ export const Activity: React.FC = () => {
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });
-  api.apps.count.owner.prefetch();
 
   return (
     <HydrateClient>
@@ -46,13 +39,13 @@ export const Activity: React.FC = () => {
           <ErrorBoundary
             fallback={<p>There was an error loading the activity data</p>}
           >
-            <Suspense fallback={<LoadingActivityCharts />}>
-              <ActivityCharts />
+            <Suspense fallback={<LoadingEarningsCharts />}>
+              <EarningsCharts numAppsPromise={numAppsPromise} />
             </Suspense>
           </ErrorBoundary>
           <Suspense fallback={null}>
             <ErrorBoundary fallback={null}>
-              <ActivityOverlay />
+              <ActivityOverlay numAppsPromise={numAppsPromise} />
             </ErrorBoundary>
           </Suspense>
         </ActivityContainer>
@@ -61,10 +54,18 @@ export const Activity: React.FC = () => {
   );
 };
 
-export const LoadingActivity = () => {
+export const LoadingEarnings = () => {
   return (
     <ActivityContainer>
-      <LoadingActivityCharts />
+      <LoadingEarningsCharts />
     </ActivityContainer>
+  );
+};
+
+const ActivityContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <SubSection title="Earnings" actions={<RangeSelector />}>
+      <Card className="p-0 overflow-hidden relative flex-1">{children}</Card>
+    </SubSection>
   );
 };

@@ -17,7 +17,10 @@ import { auth } from '@/auth';
 
 import { api } from '@/trpc/server';
 
-import { authorizeParamsSchema } from '../../_lib/authorize';
+import {
+  authorizeParamsSchema,
+  isValidRedirectUri,
+} from '../../_lib/authorize';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { UnauthorizedRedirect } from './_components/unauthorized-redirect';
@@ -86,18 +89,12 @@ export default async function OAuthAuthorizePage({
     return notFound();
   }
 
-  const isLocalRedirect =
-    authParams.redirect_uri.startsWith('http://localhost:');
-  const redirectWithoutTrailingSlash = authParams.redirect_uri.replace(
-    /\/$/,
-    ''
-  );
-  const isAuthorizedUrl =
-    isLocalRedirect ||
-    appDetails.authorizedCallbackUrls.includes(authParams.redirect_uri) ||
-    appDetails.authorizedCallbackUrls.includes(redirectWithoutTrailingSlash);
-
-  if (!isAuthorizedUrl) {
+  if (
+    !isValidRedirectUri(
+      authParams.redirect_uri,
+      appDetails.authorizedCallbackUrls
+    )
+  ) {
     return (
       <UnauthorizedRedirect
         redirectUri={authParams.redirect_uri}
