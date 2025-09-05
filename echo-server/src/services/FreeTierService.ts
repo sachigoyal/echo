@@ -87,7 +87,8 @@ class FreeTierService {
       return null;
     }
 
-    const { valid, effectiveBalance } = this.checkValidFreeTierSpendPool(spendPool);
+    const { valid, effectiveBalance } =
+      this.checkValidFreeTierSpendPool(spendPool);
 
     return valid ? { spendPool, effectiveBalance } : null;
   }
