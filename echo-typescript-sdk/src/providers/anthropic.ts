@@ -5,7 +5,6 @@ import {
 } from '@ai-sdk/anthropic';
 import { ROUTER_BASE_URL } from '../config';
 import { fetchWith402Interceptor } from './index';
-// import { getEchoToken } from '../auth/token-manager';
 import { AsyncProvider, EchoConfig } from '../types';
 
 export type EchoAnthropicProvider = AsyncProvider<AnthropicProvider>;
