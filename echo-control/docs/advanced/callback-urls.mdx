@@ -1,0 +1,29 @@
+---
+title: Authorized Callback Urls
+description: How to authorize callback URLs for your app correctly
+---
+
+# Authorized Callback URLs
+
+Authorized callback URLs specify where users can be redirected after authentication. This is a critical security feature that prevents unauthorized redirects.
+
+## Configuration
+
+**Set your callback URL to your application's homepage URL.** This should be the deployed URL where your application is hosted in production.
+
+Examples:
+- `https://myapp.com`
+- `https://myapp.vercel.app`
+- `https://subdomain.mycompany.com`
+
+## Development
+
+**Localhost URLs are always allowed** for development purposes. You don't need to explicitly add localhost URLs to your authorized callback list.
+
+## Next SDK Caveat
+
+**Very important** - When productionizing your application with the Next SDK, you will need to append `/api/echo/callback` to your app's homepage route when inputting the correct authorized callback URL.
+
+For example:
+- If your app is hosted at `https://myapp.com`
+- Set your authorized callback URL to `https://myapp.com/api/echo/callback`
