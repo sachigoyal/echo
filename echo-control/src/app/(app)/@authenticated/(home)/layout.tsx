@@ -1,5 +1,4 @@
 import { Nav } from '../_components/layout/nav';
-import { Route } from 'next';
 
 export default function AuthenticatedHomeLayout({
   children,
@@ -23,8 +22,8 @@ export default function AuthenticatedHomeLayout({
             href: '/my-apps',
           },
           {
-            label: 'For You',
-            href: '/for-you',
+            label: 'Activity',
+            href: '/activity',
           },
           {
             label: 'API Keys',

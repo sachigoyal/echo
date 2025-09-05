@@ -15,7 +15,7 @@ export default function ActivityPage() {
   return (
     <HydrateClient>
       <Heading
-        title="For You"
+        title="Activity"
         description="Here's what's been happening with your apps"
       />
       <Body className="gap-4">
