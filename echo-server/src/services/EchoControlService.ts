@@ -168,10 +168,17 @@ export class EchoControlService {
   async getOrNoneFreeTierSpendPool(
     userId: string,
     appId: string
-  ): Promise<SpendPool | null> {
-    this.freeTierSpendPool =
+  ): Promise<{ spendPool: SpendPool; effectiveBalance: number } | null> {
+    const fetchSpendPoolInfo =
       await this.freeTierService.getOrNoneFreeTierSpendPool(appId, userId);
-    return this.freeTierSpendPool;
+    if (fetchSpendPoolInfo) {
+      this.freeTierSpendPool = fetchSpendPoolInfo.spendPool;
+      return {
+        spendPool: fetchSpendPoolInfo.spendPool,
+        effectiveBalance: fetchSpendPoolInfo.effectiveBalance,
+      };
+    }
+    return null;
   }
 
   async computeTransactionCosts(

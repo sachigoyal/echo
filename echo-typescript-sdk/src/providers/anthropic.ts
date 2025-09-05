@@ -3,7 +3,7 @@ import {
   AnthropicProvider,
   createAnthropic as createAnthropicBase,
 } from '@ai-sdk/anthropic';
-import { fetchWith402Interceptor } from 'providers';
+import { fetchWith402Interceptor } from './index';
 import { ROUTER_BASE_URL } from '../config';
 // import { getEchoToken } from '../auth/token-manager';
 import { AsyncProvider, EchoConfig } from '../types';
