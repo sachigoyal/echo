@@ -2,17 +2,18 @@
 
 import { useMemo } from 'react';
 
-import { api } from '@/trpc/client';
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrency } from '@/lib/balance';
-import { toast } from 'sonner';
-import { Github } from 'lucide-react';
 import { GithubAvatar } from '@/components/ui/github-avatar';
-import { githubApi } from '@/lib/github-api';
 import { ProfileAvatar } from '@/components/ui/profile-avatar';
+
+import { api } from '@/trpc/client';
+
+import { formatCurrency } from '@/lib/balance';
 
 export default function MarkupEarningsPage() {
   const utils = api.useUtils();

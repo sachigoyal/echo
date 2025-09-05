@@ -21,14 +21,14 @@ export const Heading: React.FC<HeadingProps> = ({
       <div className="flex items-center justify-between max-w-full md:max-w-6xl w-full px-2 pb-4 md:pb-6 mx-auto gap-4">
         <div className="flex items-center gap-4 shrink-0 flex-1">
           {icon}
-          <div className="flex flex-col gap-2 text-left">
+          <div className="flex flex-col gap-3 text-left">
             {typeof title === 'string' ? (
               <h1 className="text-2xl md:text-4xl font-bold">{title}</h1>
             ) : (
               title
             )}
             {description && (
-              <p className="text-muted-foreground/80 text-sm">{description}</p>
+              <p className="text-muted-foreground/80">{description}</p>
             )}
           </div>
         </div>

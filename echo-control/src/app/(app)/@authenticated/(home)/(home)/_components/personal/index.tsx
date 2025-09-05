@@ -1,7 +1,5 @@
 import { Section } from '../utils';
 
-import { NewAppButton } from './new-app';
-
 import { Apps, LoadingAppsSection } from './apps';
 import { Feed, LoadingFeed } from './feed';
 import { Earnings, LoadingEarnings } from './earnings';
@@ -22,7 +20,7 @@ export const PersonalSection = () => {
   });
 
   return (
-    <PersonalSectionContainer actions={<NewAppButton />}>
+    <PersonalSectionContainer>
       <ItemsColumnContainer>
         <Apps userApps={userApps} />
         <Feed numAppsPromise={numAppsPromise} feedPromise={feedPromise} />
@@ -50,13 +48,11 @@ export const LoadingPersonalSection = () => {
 
 const PersonalSectionContainer = ({
   children,
-  actions,
 }: {
   children: React.ReactNode;
-  actions?: React.ReactNode;
 }) => {
   return (
-    <Section title="Your Overview" actions={actions}>
+    <Section title="Your Overview">
       <div className="flex flex-col-reverse md:grid md:grid-cols-12 gap-8 max-w-full w-full">
         {children}
       </div>

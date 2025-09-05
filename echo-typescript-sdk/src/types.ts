@@ -49,6 +49,7 @@ export interface User {
   totalSpent?: number;
   createdAt: string;
   updatedAt: string;
+  picture?: string;
 }
 
 export interface LlmTransaction {

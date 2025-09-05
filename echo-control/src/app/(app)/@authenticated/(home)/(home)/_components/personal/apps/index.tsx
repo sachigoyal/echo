@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { AppRows, LoadingAppRows } from './rows';
 import { RouterOutputs } from '@/trpc/client';
 import { SubSection } from '../../utils';
+import { NewAppButton } from './new-app';
 
 interface Props {
   userApps: Promise<RouterOutputs['apps']['list']['owner']>;
@@ -36,7 +37,7 @@ export const LoadingAppsSection = () => {
 
 const AppsContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SubSection title="Apps">
+    <SubSection title="Apps" href="/my-apps" actions={<NewAppButton />}>
       <Card className="overflow-hidden relative">{children}</Card>
     </SubSection>
   );

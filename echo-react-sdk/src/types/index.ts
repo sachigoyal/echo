@@ -12,6 +12,10 @@ export interface EchoUser {
   email: string;
   name?: string;
   picture?: string;
+  totalPaid?: number;
+  totalSpent?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type EchoBalance = Balance;

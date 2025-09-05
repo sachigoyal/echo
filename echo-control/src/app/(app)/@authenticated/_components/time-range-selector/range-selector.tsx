@@ -19,7 +19,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
-import { ActivityTimeframe } from './types';
+import { ActivityTimeframe } from '@/types/timeframes';
 
 export const RangeSelector = () => {
   const { startDate, endDate, setDateRange, timeframe, setTimeframe } =
@@ -89,18 +89,24 @@ export const RangeSelector = () => {
         <SelectTrigger className="border-none shadow-none text-xs p-1 size-fit!">
           {timeframe !== ActivityTimeframe.Custom && (
             <span>
-              {timeframe === 1 ? 'Past 24 Hours' : `Past ${timeframe} Days`}
+              {timeframe === ActivityTimeframe.AllTime
+                ? 'All Time'
+                : timeframe === ActivityTimeframe.OneDay
+                  ? 'Past 24 Hours'
+                  : `Past ${timeframe} Days`}
             </span>
           )}
         </SelectTrigger>
         <SelectContent align="end">
           {timeframeValues.map(value => (
             <SelectItem key={value} value={value.toString()}>
-              {value === 0
+              {value === ActivityTimeframe.Custom
                 ? 'Custom'
-                : value === 1
-                  ? 'Past 24 Hours'
-                  : `Past ${value} Days`}
+                : value === ActivityTimeframe.AllTime
+                  ? 'All Time'
+                  : value === ActivityTimeframe.OneDay
+                    ? 'Past 24 Hours'
+                    : `Past ${value} Days`}
             </SelectItem>
           ))}
         </SelectContent>
