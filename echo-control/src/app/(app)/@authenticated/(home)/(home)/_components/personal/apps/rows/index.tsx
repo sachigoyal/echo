@@ -43,27 +43,7 @@ export const AppRows: React.FC<Props> = async ({ appsPromise }) => {
     );
   }
 
-  return (
-    <>
-      {rows.map(item => (
-        <AppRow key={item.id} app={item} />
-      ))}
-      {/* {apps.has_next && (
-        <Button
-          onClick={() => apps.next()}
-          variant="ghost"
-          disabled={apps.is_fetching_next}
-          className="w-full h-fit py-1 text-xs text-muted-foreground/60 rounded-none"
-        >
-          {isFetchingNextPage ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            'Load more'
-          )}
-        </Button>
-      )} */}
-    </>
-  );
+  return rows.map(item => <AppRow key={item.id} app={item} />);
 };
 
 export const LoadingAppRows = () => {

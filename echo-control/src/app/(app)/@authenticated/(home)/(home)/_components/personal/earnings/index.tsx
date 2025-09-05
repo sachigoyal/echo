@@ -11,14 +11,16 @@ import { api, HydrateClient } from '@/trpc/server';
 import { RangeSelector } from '@/app/(app)/@authenticated/_components/time-range-selector/range-selector';
 import { ActivityContextProvider } from '@/app/(app)/@authenticated/_components/time-range-selector/context';
 
-import { ActivityCharts, LoadingActivityCharts } from './charts';
+import { EarningsCharts, LoadingEarningsCharts } from './charts';
 import { ActivityOverlay } from './overlay';
+
+import { SubSection } from '../../utils';
 
 interface Props {
   numAppsPromise: Promise<number>;
 }
 
-export const Activity: React.FC<Props> = ({ numAppsPromise }) => {
+export const Earnings: React.FC<Props> = ({ numAppsPromise }) => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
@@ -37,8 +39,8 @@ export const Activity: React.FC<Props> = ({ numAppsPromise }) => {
           <ErrorBoundary
             fallback={<p>There was an error loading the activity data</p>}
           >
-            <Suspense fallback={<LoadingActivityCharts />}>
-              <ActivityCharts numAppsPromise={numAppsPromise} />
+            <Suspense fallback={<LoadingEarningsCharts />}>
+              <EarningsCharts numAppsPromise={numAppsPromise} />
             </Suspense>
           </ErrorBoundary>
           <Suspense fallback={null}>
@@ -52,22 +54,18 @@ export const Activity: React.FC<Props> = ({ numAppsPromise }) => {
   );
 };
 
-export const LoadingActivity = () => {
+export const LoadingEarnings = () => {
   return (
     <ActivityContainer>
-      <LoadingActivityCharts />
+      <LoadingEarningsCharts />
     </ActivityContainer>
   );
 };
 
 const ActivityContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full flex flex-col gap-2 md:gap-3 max-w-full h-full">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">Your Earnings</h3>
-        <RangeSelector />
-      </div>
+    <SubSection title="Earnings" actions={<RangeSelector />}>
       <Card className="p-0 overflow-hidden relative flex-1">{children}</Card>
-    </div>
+    </SubSection>
   );
 };

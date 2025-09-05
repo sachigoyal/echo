@@ -53,9 +53,13 @@ export const Charts = <T extends Record<string, number>>({
 
 interface LoadingChartsProps {
   tabs: string[];
+  height?: number | string;
 }
 
-export const LoadingCharts: React.FC<LoadingChartsProps> = ({ tabs }) => {
+export const LoadingCharts: React.FC<LoadingChartsProps> = ({
+  tabs,
+  height,
+}) => {
   return (
     <div className="animate-pulse">
       <Tabs defaultValue={tabs[0]}>
@@ -66,7 +70,7 @@ export const LoadingCharts: React.FC<LoadingChartsProps> = ({ tabs }) => {
         </TabsList>
         {tabs.map(tab => (
           <TabsContent key={tab} value={tab}>
-            <LoadingChart />
+            <LoadingChart height={height} />
           </TabsContent>
         ))}
       </Tabs>

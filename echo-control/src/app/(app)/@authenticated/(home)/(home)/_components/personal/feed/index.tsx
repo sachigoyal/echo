@@ -3,6 +3,7 @@ import { FeedItems, LoadingFeedItems } from './items';
 import { Suspense } from 'react';
 import { Card } from '@/components/ui/card';
 import { RouterOutputs } from '@/trpc/client';
+import { SubSection } from '../../utils';
 
 interface Props {
   numAppsPromise: Promise<number>;
@@ -34,11 +35,8 @@ export const LoadingFeed = () => {
 
 const FeedContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="w-full flex flex-col gap-2 md:gap-3 pb-2">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">Activity Feed</h3>
-      </div>
+    <SubSection title="Recent Activity">
       <Card className="p-0 overflow-hidden relative">{children}</Card>
-    </div>
+    </SubSection>
   );
 };

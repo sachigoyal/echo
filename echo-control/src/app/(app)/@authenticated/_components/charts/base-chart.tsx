@@ -127,7 +127,11 @@ const simulateChartData = () => {
   return data;
 };
 
-export const LoadingChart = () => {
+export const LoadingChart = ({
+  height = 350,
+}: {
+  height?: number | string;
+}) => {
   const simulatedData = useMemo(simulateChartData, []);
 
   return (
@@ -142,6 +146,7 @@ export const LoadingChart = () => {
             isAnimationActive: false,
           },
         ]}
+        height={height}
       />
     </div>
   );

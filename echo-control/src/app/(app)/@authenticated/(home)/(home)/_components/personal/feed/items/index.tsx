@@ -47,7 +47,7 @@ export const FeedItems: React.FC<Props> = ({ numAppsPromise, feedPromise }) => {
 };
 
 export const LoadingFeedItems = () => {
-  return Array.from({ length: 4 }).map((_, index) => (
+  return Array.from({ length: 5 }).map((_, index) => (
     <LoadingFeedItem key={index} />
   ));
 };

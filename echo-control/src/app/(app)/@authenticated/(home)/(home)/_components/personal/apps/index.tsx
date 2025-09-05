@@ -6,17 +6,7 @@ import { Card } from '@/components/ui/card';
 
 import { AppRows, LoadingAppRows } from './rows';
 import { RouterOutputs } from '@/trpc/client';
-
-const AppsContainer = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="w-full flex flex-col gap-2 md:gap-3">
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold">Your Apps</h3>
-      </div>
-      <Card className="overflow-hidden relative">{children}</Card>
-    </div>
-  );
-};
+import { SubSection } from '../../utils';
 
 interface Props {
   userApps: Promise<RouterOutputs['apps']['list']['owner']>;
@@ -41,5 +31,13 @@ export const LoadingAppsSection = () => {
     <AppsContainer>
       <LoadingAppRows />
     </AppsContainer>
+  );
+};
+
+const AppsContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <SubSection title="Apps">
+      <Card className="overflow-hidden relative">{children}</Card>
+    </SubSection>
   );
 };

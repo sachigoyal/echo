@@ -17,7 +17,7 @@ interface Props {
   numAppsPromise: Promise<number>;
 }
 
-export const ActivityCharts: React.FC<Props> = ({ numAppsPromise }) => {
+export const EarningsCharts: React.FC<Props> = ({ numAppsPromise }) => {
   const numApps = use(numAppsPromise);
 
   const { startDate, endDate } = useActivityContext();
@@ -188,6 +188,8 @@ export const ActivityCharts: React.FC<Props> = ({ numAppsPromise }) => {
   );
 };
 
-export const LoadingActivityCharts = () => {
-  return <LoadingCharts tabs={['Profit', 'Tokens', 'Transactions']} />;
+export const LoadingEarningsCharts = () => {
+  return (
+    <LoadingCharts tabs={['Profit', 'Tokens', 'Transactions']} height="100%" />
+  );
 };
