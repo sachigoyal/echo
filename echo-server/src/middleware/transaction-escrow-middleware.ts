@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '../generated/prisma';
 import { MaxInFlightRequestsError, PaymentRequiredError } from '../errors/http';
-import logger from '../logger';
+import logger, { logMetric } from '../logger';
 import { getRequestId } from '../utils/trace';
 import { EchoControlService } from '../services/EchoControlService';
 
@@ -100,9 +100,19 @@ export class TransactionEscrowMiddleware {
         currentInFlightRequest &&
         currentInFlightRequest.numberInFlight >= MAX_IN_FLIGHT_REQUESTS
       ) {
-        throw new MaxInFlightRequestsError(
-          'Maximum concurrent requests exceeded'
-        );
+     
+        logMetric('max_in_flight_requests_hit', 1, {
+          userId,
+          echoAppId,
+          currentInFlightRequest: currentInFlightRequest.numberInFlight,
+        });
+        
+        logger.warn('Max in-flight requests limit reached', {
+          userId,
+          echoAppId,
+          currentInFlightRequest: currentInFlightRequest.numberInFlight,
+          event: 'max_in_flight_requests_hit',
+        });
       }
 
       // // Check balance constraints
