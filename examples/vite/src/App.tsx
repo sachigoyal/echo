@@ -68,19 +68,19 @@ function Dashboard() {
   }
 
   // Signed in but no balance - show token purchase
-  // if (balance?.balance === 0) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-  //       <div className="text-center">
-  //         <h1 className="text-3xl font-bold text-gray-800 mb-4">
-  //           Hi {user?.name}!
-  //         </h1>
-  //         <p className="text-gray-600 mb-6">You need tokens to get started.</p>
-  //         <EchoTokens amount={100} />
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (balance?.balance === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">
+            Hi {user?.name}!
+          </h1>
+          <p className="text-gray-600 mb-6">You need tokens to get started.</p>
+          <EchoTokens amount={100} />
+        </div>
+      </div>
+    );
+  }
 
   // Main dashboard
   return (
