@@ -23,7 +23,7 @@ export class PaymentRequiredError extends HttpError {
 
 export class MaxInFlightRequestsError extends HttpError {
   constructor(message: string = 'Max In Flight Requests') {
-    super(403, message);
+    super(429, message);
   }
 }
 

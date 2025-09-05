@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { PrismaClient } from '../generated/prisma';
 import { MaxInFlightRequestsError, PaymentRequiredError } from '../errors/http';
 import logger from '../logger';
