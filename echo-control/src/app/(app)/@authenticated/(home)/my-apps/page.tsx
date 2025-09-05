@@ -7,7 +7,7 @@ import { api, HydrateClient } from '@/trpc/server';
 
 export default function MyAppsPage() {
   api.apps.list.owner.prefetchInfinite({
-    page_size: 6,
+    page_size: 10,
   });
 
   return (

@@ -7,6 +7,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { AppCard, LoadingAppCard } from './card';
 
 import { api } from '@/trpc/client';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export const MyApps = () => {
   return (
@@ -29,15 +31,16 @@ export const LoadingApps = () => {
 };
 
 const Apps = () => {
-  const [apps] = api.apps.list.owner.useSuspenseInfiniteQuery(
-    {
-      page_size: 6,
-    },
-    {
-      getNextPageParam: lastPage =>
-        lastPage.has_next ? lastPage.page + 1 : undefined,
-    }
-  );
+  const [apps, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
+    api.apps.list.owner.useSuspenseInfiniteQuery(
+      {
+        page_size: 10,
+      },
+      {
+        getNextPageParam: lastPage =>
+          lastPage.has_next ? lastPage.page + 1 : undefined,
+      }
+    );
 
   return (
     <AppsContainer>
@@ -46,6 +49,19 @@ const Apps = () => {
         .map(app => (
           <AppCard key={app.id} {...app} />
         ))}
+      {hasNextPage && (
+        <Button
+          onClick={() => fetchNextPage()}
+          variant="outline"
+          disabled={isFetchingNextPage}
+        >
+          {isFetchingNextPage ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            'Load more'
+          )}
+        </Button>
+      )}
     </AppsContainer>
   );
 };
