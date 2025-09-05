@@ -170,6 +170,7 @@ export class TransactionEscrowMiddleware {
             userId,
             echoAppId,
           },
+          numberInFlight: { gt: 0 }, // Only update if numberInFlight > 0
         },
         data: {
           numberInFlight: { decrement: 1 },
