@@ -24,14 +24,14 @@
  * - API spam through rapid function calls
  */
 
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
-  sanitizeText,
-  sanitizeUserProfile,
-  sanitizeEmail,
-  sanitizeUrl,
   debounce,
   openPaymentFlow,
+  sanitizeEmail,
+  sanitizeText,
+  sanitizeUrl,
+  sanitizeUserProfile,
 } from '../../utils/security';
 
 describe('Client-Side Security Protection', () => {
@@ -291,117 +291,38 @@ describe('Client-Side Security Protection', () => {
      *
      * ATTACK SCENARIO: Enterprise deployment has strict CSP policy:
      * Content-Security-Policy: script-src 'self'; object-src 'none';
-     * This blocks window.open() calls, breaking popup-based payment flows.
+     * This blocks popup-based payment flows.
      *
-     * VULNERABILITY: Direct window.open() usage violates CSP
+     * SOLUTION: Direct redirect approach that works with any CSP policy
      *
-     * PROTECTION: openPaymentFlow() provides CSP-compatible alternatives
+     * PROTECTION: openPaymentFlow() uses simple redirect, no popup dependencies
      */
     let mockWindow: {
-      open: ReturnType<typeof vi.fn>;
       location: { href: string };
-      addEventListener: ReturnType<typeof vi.fn>;
-      removeEventListener: ReturnType<typeof vi.fn>;
-      confirm: ReturnType<typeof vi.fn>;
-    };
-
-    let mockSessionStorage: {
-      setItem: ReturnType<typeof vi.fn>;
-      getItem: ReturnType<typeof vi.fn>;
-      removeItem: ReturnType<typeof vi.fn>;
     };
 
     beforeEach(() => {
       // Mock window object
       mockWindow = {
-        open: vi.fn(),
         location: { href: '' },
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        confirm: vi.fn(),
-      };
-
-      mockSessionStorage = {
-        setItem: vi.fn(),
-        getItem: vi.fn(),
-        removeItem: vi.fn(),
       };
 
       // Replace global objects
       vi.stubGlobal('window', mockWindow);
-      vi.stubGlobal('sessionStorage', mockSessionStorage);
-      vi.stubGlobal('confirm', mockWindow.confirm);
     });
 
-    test('attempts popup first, falls back to redirect if blocked', async () => {
-      // Mock popup blocked scenario (CSP violation)
-      mockWindow.open.mockReturnValue(null);
-      mockWindow.confirm.mockReturnValue(true);
-
-      const onComplete = vi.fn();
-      const onCancel = vi.fn();
-
-      // Start the payment flow (this will create a promise that resolves later)
-      openPaymentFlow('https://stripe.com/payment-link/123', {
-        onComplete,
-        onCancel,
-      });
-
-      // Give it a moment to execute the synchronous parts
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      // Should try popup first
-      expect(mockWindow.open).toHaveBeenCalledWith(
-        'https://stripe.com/payment-link/123',
-        'echo-payment',
-        'width=600,height=700,scrollbars=yes,resizable=yes'
-      );
-
-      // Should show confirmation for redirect
-      expect(mockWindow.confirm).toHaveBeenCalledWith(
-        'Payment will open in a new tab. Click OK to continue, or Cancel to abort.'
-      );
-
-      // Should set session storage for payment tracking
-      expect(mockSessionStorage.setItem).toHaveBeenCalledWith(
-        'echo_payment_flow',
-        'true'
-      );
-
-      // Should redirect to payment URL
-      expect(mockWindow.location.href).toBe(
-        'https://stripe.com/payment-link/123'
-      );
-
-      // Don't await the full promise since it would wait for focus events
-    }, 1000);
-
-    test('works with successful popup (non-CSP environment)', async () => {
-      // Mock successful popup
-      const mockPopup = {
-        closed: false,
-        close: vi.fn(),
-      };
-
-      mockWindow.open.mockReturnValue(mockPopup as unknown as Window);
-
+    test('redirects directly to payment URL', async () => {
       const onComplete = vi.fn();
 
       // Start the payment flow
-      const paymentPromise = openPaymentFlow(
-        'https://stripe.com/payment-link/123',
-        {
-          onComplete,
-        }
+      await openPaymentFlow('https://stripe.com/payment-link/123', {
+        onComplete,
+      });
+
+      // Should redirect directly to payment URL
+      expect(mockWindow.location.href).toBe(
+        'https://stripe.com/payment-link/123'
       );
-
-      // Simulate popup closing after a short delay (payment complete)
-      setTimeout(() => {
-        mockPopup.closed = true;
-      }, 50);
-
-      await paymentPromise;
-      expect(onComplete).toHaveBeenCalled();
     });
 
     test('rejects dangerous payment URLs', async () => {
@@ -423,20 +344,6 @@ describe('Client-Side Security Protection', () => {
           expect((error as Error).message).toBe('Invalid payment URL provided');
         }
       }
-    });
-
-    test('handles user cancellation gracefully', async () => {
-      mockWindow.open.mockReturnValue(null);
-      mockWindow.confirm.mockReturnValue(false); // User cancels
-
-      const onCancel = vi.fn();
-
-      await openPaymentFlow('https://stripe.com/payment-link/123', {
-        onCancel,
-      });
-
-      expect(onCancel).toHaveBeenCalled();
-      expect(mockWindow.location.href).toBe(''); // No redirect
     });
   });
 
@@ -481,24 +388,12 @@ describe('Client-Side Security Protection', () => {
       // Simulate enterprise environment with strict security
       const mockCSPViolation = vi.fn();
 
-      // Mock CSP-blocked environment
+      // Mock enterprise environment
       const enterpriseWindow = {
-        open: vi.fn().mockReturnValue(null), // Blocked by CSP
-        confirm: vi.fn().mockReturnValue(true),
         location: { href: '' },
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      };
-
-      const enterpriseSessionStorage = {
-        setItem: vi.fn(),
-        getItem: vi.fn(),
-        removeItem: vi.fn(),
       };
 
       vi.stubGlobal('window', enterpriseWindow);
-      vi.stubGlobal('sessionStorage', enterpriseSessionStorage);
-      vi.stubGlobal('confirm', enterpriseWindow.confirm);
 
       // Test 1: User profile from compromised OAuth provider
       const suspiciousProfile = {
@@ -511,21 +406,20 @@ describe('Client-Side Security Protection', () => {
       expect(sanitized.name).toBe('John Doe');
       expect(sanitized.picture).toBe(''); // Dangerous URL removed
 
-      // Test 2: CSP-compatible payment flow
+      // Test 2: CSP-compatible payment flow (direct redirect)
       const onComplete = vi.fn();
-      openPaymentFlow('https://stripe.com/payment-link/123', { onComplete });
+      await openPaymentFlow('https://stripe.com/payment-link/123', {
+        onComplete,
+      });
 
-      // Give it a moment to execute synchronous parts
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      // Should handle CSP-blocked popup gracefully
-      expect(enterpriseWindow.open).toHaveBeenCalled();
-      expect(enterpriseWindow.confirm).toHaveBeenCalled(); // Fallback confirmation
-      expect(enterpriseSessionStorage.setItem).toHaveBeenCalled(); // Payment tracking
+      // Should redirect directly without any popup attempts
+      expect(enterpriseWindow.location.href).toBe(
+        'https://stripe.com/payment-link/123'
+      );
 
       // Test 3: No CSP violations occurred
       expect(mockCSPViolation).not.toHaveBeenCalled();
-    }, 1000);
+    });
 
     test('maintains security under stress conditions', () => {
       // Test with many concurrent operations
