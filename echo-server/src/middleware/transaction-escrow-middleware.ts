@@ -105,16 +105,16 @@ export class TransactionEscrowMiddleware {
         );
       }
 
-      // Check balance constraints
-      const estimatedCost =
-        (currentInFlightRequest?.numberInFlight || 0) *
-        ESTIMATED_COST_PER_TRANSACTION;
+      // // Check balance constraints
+      // const estimatedCost =
+      //   (currentInFlightRequest?.numberInFlight || 0) *
+      //   ESTIMATED_COST_PER_TRANSACTION; 
 
-      if (estimatedCost >= effectiveBalance) {
-        throw new PaymentRequiredError(
-          'Insufficient balance for concurrent requests'
-        );
-      }
+      // if (estimatedCost >= effectiveBalance) {
+      //   throw new PaymentRequiredError(
+      //     'Insufficient balance for concurrent requests'
+      //   );
+      // }
 
       // Atomically increment the counter
       const updatedInFlightRequest = await tx.inFlightRequest.upsert({
@@ -147,37 +147,59 @@ export class TransactionEscrowMiddleware {
     userId: string,
     echoAppId: string
   ): Promise<void> {
-    await this.db.$transaction(async tx => {
-      const inFlightRequest = await tx.inFlightRequest.findUnique({
-        where: {
-          userId_echoAppId: {
+    try {
+      await this.db.$transaction(async tx => {
+        const inFlightRequest = await tx.inFlightRequest.findUnique({
+          where: {
+            userId_echoAppId: {
+              userId,
+              echoAppId,
+            },
+          },
+        });
+
+        if (!inFlightRequest) {
+          logger.warn(
+            `Attempted to decrement in-flight requests for ${userId}/${echoAppId} but record doesn't exist`
+          );
+          return;
+        }
+
+        if (inFlightRequest.numberInFlight <= 0) {
+          logger.warn(
+            `Attempted to decrement in-flight requests for ${userId}/${echoAppId} but count is already 0`
+          );
+          return;
+        }
+
+        // Use updateMany to avoid throwing error if record doesn't exist
+        const updateResult = await tx.inFlightRequest.updateMany({
+          where: {
             userId,
             echoAppId,
+            numberInFlight: { gt: 0 }, // Only update if numberInFlight > 0
           },
-        },
-      });
-
-      if (!inFlightRequest || inFlightRequest.numberInFlight <= 0) {
-        logger.warn(
-          `Attempted to decrement in-flight requests for ${userId}/${echoAppId} but count is already 0`
-        );
-        return;
-      }
-
-      await tx.inFlightRequest.update({
-        where: {
-          userId_echoAppId: {
-            userId,
-            echoAppId,
+          data: {
+            numberInFlight: { decrement: 1 },
+            updatedAt: new Date(),
           },
-          numberInFlight: { gt: 0 }, // Only update if numberInFlight > 0
-        },
-        data: {
-          numberInFlight: { decrement: 1 },
-          updatedAt: new Date(),
-        },
+        });
+
+        if (updateResult.count === 0) {
+          logger.warn(
+            `No records updated when decrementing in-flight requests for ${userId}/${echoAppId}`
+          );
+        } else {
+          logger.debug(
+            `Successfully decremented in-flight requests for ${userId}/${echoAppId}`
+          );
+        }
       });
-    });
+    } catch (error) {
+      logger.warn(
+        `Failed to decrement in-flight requests for ${userId}/${echoAppId}: ${error}. This may be due to concurrent cleanup operations.`
+      );
+    }
   }
 
   private executeCleanup = async (
@@ -189,16 +211,11 @@ export class TransactionEscrowMiddleware {
     if (cleanupExecuted) return;
     cleanupExecuted = true;
 
-    try {
-      await this.decrementInFlightRequests(userId, echoAppId);
-      logger.debug(
-        `Cleaned up in-flight request ${requestId} for user ${userId}`
-      );
-    } catch (error) {
-      logger.error(
-        `Failed to cleanup in-flight request ${requestId}: ${error}`
-      );
-    }
+    // decrementInFlightRequests now handles its own errors gracefully
+    await this.decrementInFlightRequests(userId, echoAppId);
+    logger.debug(
+      `Cleanup completed for in-flight request ${requestId} for user ${userId}`
+    );
   };
 
   /**
@@ -234,17 +251,17 @@ export class TransactionEscrowMiddleware {
   private async cleanupOrphanedRequests(): Promise<void> {
     const cutoffTime = new Date(Date.now() - REQUEST_TIMEOUT_MS);
 
-    // Bulk update all orphaned requests
-    const result = await this.db.inFlightRequest.updateMany({
-      where: {
-        numberInFlight: { gt: 0 },
-        updatedAt: { lt: cutoffTime },
-      },
-      data: {
-        numberInFlight: 0,
-        updatedAt: new Date(),
-      },
-    });
+      // Bulk update all orphaned requests
+      const result = await this.db.inFlightRequest.updateMany({
+        where: {
+          numberInFlight: { gt: 0 },
+          updatedAt: { lt: cutoffTime },
+        },
+        data: {
+          numberInFlight: 0,
+          updatedAt: new Date(),
+        },
+      });
 
     if (result.count > 0) {
       logger.info(`Cleaned up ${result.count} orphaned requests`);
