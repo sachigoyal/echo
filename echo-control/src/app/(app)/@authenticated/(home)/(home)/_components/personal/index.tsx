@@ -52,7 +52,7 @@ const PersonalSectionContainer = ({
   children: React.ReactNode;
 }) => {
   return (
-    <Section title="Your Personal Overview">
+    <Section title="Your Overview">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 max-w-full w-full">
         {children}
       </div>

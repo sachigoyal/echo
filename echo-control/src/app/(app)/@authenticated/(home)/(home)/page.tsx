@@ -9,6 +9,7 @@ import { GlobalSection } from './_components/global';
 import { PersonalSection } from './_components/personal';
 
 import { auth } from '@/auth';
+import { Separator } from '@/components/ui/separator';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -32,6 +33,9 @@ export default async function DashboardPage() {
       />
       <Body>
         <PersonalSection />
+      </Body>
+      <Separator />
+      <Body>
         <GlobalSection />
       </Body>
     </div>
