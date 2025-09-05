@@ -8,6 +8,10 @@ import logger, { logMetric } from './logger';
 import { HttpError } from './errors/http';
 import { PrismaClient } from './generated/prisma';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
+import {
+  TransactionEscrowMiddleware,
+  EscrowRequest,
+} from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
@@ -33,6 +37,9 @@ const prisma = new PrismaClient({
   log: ['warn', 'error'],
 });
 
+// Initialize the transaction escrow middleware
+const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
+
 app.use(traceEnrichmentMiddleware);
 // Add middleware
 app.use(
@@ -53,16 +60,29 @@ app.use(compression());
 // Use common router for utility routes
 app.use(standardRouter);
 
-// Main route handler - only for API paths that need authentication
-app.all('*', async (req: Request, res: Response, next: NextFunction) => {
+// Main route handler - handles authentication, escrow, and business logic
+app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
+    // Step 1: Authentication
     const { processedHeaders, echoControlService } = await authenticateRequest(
       req.headers as Record<string, string>,
       prisma
     );
 
-    await checkBalance(echoControlService);
+    const balanceCheckResult = await checkBalance(echoControlService);
 
+    // Step 2: Set up escrow context and apply escrow middleware logic
+    transactionEscrowMiddleware.setupEscrowContext(
+      req,
+      echoControlService.getUserId()!,
+      echoControlService.getEchoAppId()!,
+      balanceCheckResult.effectiveBalance ?? 0
+    );
+
+    // Apply escrow middleware logic inline
+    await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
+
+    // Step 3: Execute business logic
     const { transaction, isStream, data } =
       await modelRequestService.executeModelRequest(
         req,
@@ -72,7 +92,6 @@ app.all('*', async (req: Request, res: Response, next: NextFunction) => {
       );
 
     await echoControlService.createTransaction(transaction);
-
     modelRequestService.handleResolveResponse(res, isStream, data);
   } catch (error) {
     return next(error);
@@ -113,6 +132,30 @@ app.use((error: Error, req: Request, res: Response) => {
     });
   }
 });
+
+// Graceful shutdown handler
+const gracefulShutdown = (signal: string) => {
+  logger.info(`Received ${signal}, starting graceful shutdown...`);
+
+  // Stop the escrow cleanup process
+  transactionEscrowMiddleware.stopCleanupProcess();
+
+  // Close database connections
+  prisma
+    .$disconnect()
+    .then(() => {
+      logger.info('Database connections closed');
+      process.exit(0);
+    })
+    .catch(error => {
+      logger.error('Error during graceful shutdown:', error);
+      process.exit(1);
+    });
+};
+
+// Register shutdown handlers
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Only start the server if this file is being run directly
 if (require.main === module) {

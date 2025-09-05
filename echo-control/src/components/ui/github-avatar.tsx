@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { memo, useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
@@ -85,7 +85,10 @@ export const GithubAvatar = memo(function GithubAvatar({
     <Avatar className="size-10 rounded-full overflow-hidden border border-border/50 shadow-sm">
       {owner ? (
         <AvatarImage
-          src={(user?.avatar_url as string | undefined) ?? `https://github.com/${owner}.png`}
+          src={
+            (user?.avatar_url as string | undefined) ??
+            `https://github.com/${owner}.png`
+          }
           alt={user?.name ?? owner}
           className="object-cover transition-opacity duration-200"
         />
@@ -108,11 +111,19 @@ export const GithubAvatar = memo(function GithubAvatar({
   );
 
   const connector = (
-    <div className="h-0.5 w-4 bg-gradient-to-r from-border to-border/50 rounded-full" aria-hidden="true" />
+    <div
+      className="h-0.5 w-4 bg-gradient-to-r from-border to-border/50 rounded-full"
+      aria-hidden="true"
+    />
   );
 
   const badge = (
-    <div className={cn('inline-flex items-center gap-1.5 transition-opacity duration-200', !pageUrl && 'opacity-60')}>
+    <div
+      className={cn(
+        'inline-flex items-center gap-1.5 transition-opacity duration-200',
+        !pageUrl && 'opacity-60'
+      )}
+    >
       {leftGithubIcon}
       {connector}
       <div className="relative">
@@ -129,11 +140,14 @@ export const GithubAvatar = memo(function GithubAvatar({
   if (!showName) {
     if (linkToProfile && pageUrl) {
       return (
-        <a 
-          href={pageUrl} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className={cn('inline-block transition-transform duration-200 hover:scale-105', className)} 
+        <a
+          href={pageUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            'inline-block transition-transform duration-200 hover:scale-105',
+            className
+          )}
           style={style}
         >
           {badge}
@@ -156,28 +170,35 @@ export const GithubAvatar = memo(function GithubAvatar({
   const profileUrl = pageUrl;
 
   return (
-    <div className={cn('inline-flex items-center gap-3', className)} style={style}>
+    <div
+      className={cn('inline-flex items-center gap-3', className)}
+      style={style}
+    >
       {linkToProfile && profileUrl ? (
-        <a 
-          href={profileUrl} 
-          target="_blank" 
+        <a
+          href={profileUrl}
+          target="_blank"
           rel="noopener noreferrer"
           className="transition-transform duration-200 hover:scale-105"
         >
           {badge}
         </a>
       ) : (
-        <div 
-          title={!profileUrl ? feedbackMessage : undefined} 
-          aria-label={!profileUrl ? feedbackMessage : undefined} 
+        <div
+          title={!profileUrl ? feedbackMessage : undefined}
+          aria-label={!profileUrl ? feedbackMessage : undefined}
           className={!profileUrl ? 'cursor-not-allowed' : undefined}
         >
           {badge}
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium truncate text-foreground/90">{displayName}</div>
-        <div className="text-xs text-muted-foreground/80 truncate">@{owner}</div>
+        <div className="text-sm font-medium truncate text-foreground/90">
+          {displayName}
+        </div>
+        <div className="text-xs text-muted-foreground/80 truncate">
+          @{owner}
+        </div>
       </div>
     </div>
   );

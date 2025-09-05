@@ -205,7 +205,9 @@ export default function ReferralEarningsPage() {
             <Skeleton className="h-24 w-full" />
           ) : pending && pending.length > 0 ? (
             pending.map(p => {
-              const app = p.echoAppId ? earnings?.apps?.[p.echoAppId] : undefined;
+              const app = p.echoAppId
+                ? earnings?.apps?.[p.echoAppId]
+                : undefined;
               const displayName = app?.name ?? p.echoAppId ?? 'Unknown app';
               const profileUrl = app?.profilePictureUrl ?? null;
               const fallback = displayName
@@ -228,7 +230,9 @@ export default function ReferralEarningsPage() {
                         {fallback}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-muted-foreground truncate">{displayName}</span>
+                    <span className="text-muted-foreground truncate">
+                      {displayName}
+                    </span>
                   </div>
                   <span className="font-medium">
                     {formatCurrency(Number(p.amount))}

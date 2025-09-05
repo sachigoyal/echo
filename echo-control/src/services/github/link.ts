@@ -57,5 +57,3 @@ export const resolveGithubId = async (data: GithubLinkInput) => {
   }
   return repo.id;
 };
-
-

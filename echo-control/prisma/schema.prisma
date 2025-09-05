@@ -403,3 +403,19 @@ model ReferralReward {
 
   @@map("referral_rewards")
 }
+
+
+
+
+model InFlightRequest {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  echoAppId String @db.Uuid
+  numberInFlight Int @default(0)
+  totalEscrowed Decimal @default(0.0) @db.Decimal(65, 14)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([userId, echoAppId])
+  @@map("in_flight_requests")
+}
