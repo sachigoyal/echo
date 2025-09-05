@@ -57,7 +57,7 @@ export const RangeSelector = () => {
           >
             <CalendarDays className="size-4" />
             {timeframe === ActivityTimeframe.Custom && (
-              <span>{formatRange(startDate, endDate)}</span>
+              <span>{formatRange(startDate!, endDate!)}</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -86,18 +86,24 @@ export const RangeSelector = () => {
         <SelectTrigger className="rounded-l-none border-border shadow-none border-l-[0.5px] text-xs">
           {timeframe !== ActivityTimeframe.Custom && (
             <span>
-              {timeframe === 1 ? 'Past 24 Hours' : `Past ${timeframe} Days`}
+              {timeframe === ActivityTimeframe.AllTime
+                ? 'All Time'
+                : timeframe === ActivityTimeframe.OneDay
+                  ? 'Past 24 Hours'
+                  : `Past ${timeframe} Days`}
             </span>
           )}
         </SelectTrigger>
         <SelectContent align="end">
           {timeframeValues.map(value => (
             <SelectItem key={value} value={value.toString()}>
-              {value === 0
+              {value === ActivityTimeframe.Custom
                 ? 'Custom'
-                : value === 1
-                  ? 'Past 24 Hours'
-                  : `Past ${value} Days`}
+                : value === ActivityTimeframe.AllTime
+                  ? 'All Time'
+                  : value === ActivityTimeframe.OneDay
+                    ? 'Past 24 Hours'
+                    : `Past ${value} Days`}
             </SelectItem>
           ))}
         </SelectContent>

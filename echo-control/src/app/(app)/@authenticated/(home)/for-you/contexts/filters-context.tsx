@@ -9,8 +9,8 @@ import { ActivityTimeframe } from '@/types/timeframes';
 interface FiltersContextType {
   appId: string | undefined;
   setAppId: (appId: string | undefined) => void;
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
   setDateRange: (startDate: Date, endDate: Date) => void;
   timeframe: ActivityTimeframe;
   setTimeframe: (timeframe: ActivityTimeframe) => void;
@@ -22,7 +22,7 @@ const FiltersContext = createContext<FiltersContextType>({
   startDate: new Date(),
   endDate: new Date(),
   setDateRange: () => {},
-  timeframe: ActivityTimeframe.SevenDays,
+  timeframe: ActivityTimeframe.AllTime,
   setTimeframe: () => {},
 });
 
@@ -32,10 +32,10 @@ export const FiltersContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [appId, setAppId] = useState<string | undefined>(undefined);
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [timeframe, setTimeframe] = useState<ActivityTimeframe>(
-    ActivityTimeframe.SevenDays
+    ActivityTimeframe.AllTime
   );
 
   useEffect(() => {
