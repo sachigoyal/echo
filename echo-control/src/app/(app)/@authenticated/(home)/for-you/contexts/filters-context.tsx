@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { subDays } from 'date-fns';
 
 import { ActivityTimeframe } from '@/types/timeframes';
+import { FeedActivityType } from '@/services/feed/types';
 
 interface FiltersContextType {
   appId: string | undefined;
@@ -14,6 +15,8 @@ interface FiltersContextType {
   setDateRange: (startDate: Date, endDate: Date) => void;
   timeframe: ActivityTimeframe;
   setTimeframe: (timeframe: ActivityTimeframe) => void;
+  eventType: FeedActivityType | undefined;
+  setEventType: (eventType: FeedActivityType | undefined) => void;
 }
 
 const FiltersContext = createContext<FiltersContextType>({
@@ -24,6 +27,8 @@ const FiltersContext = createContext<FiltersContextType>({
   setDateRange: () => {},
   timeframe: ActivityTimeframe.AllTime,
   setTimeframe: () => {},
+  eventType: undefined,
+  setEventType: () => {},
 });
 
 export const FiltersContextProvider = ({
@@ -36,6 +41,10 @@ export const FiltersContextProvider = ({
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [timeframe, setTimeframe] = useState<ActivityTimeframe>(
     ActivityTimeframe.AllTime
+  );
+
+  const [eventType, setEventType] = useState<FeedActivityType | undefined>(
+    undefined
   );
 
   useEffect(() => {
@@ -66,6 +75,8 @@ export const FiltersContextProvider = ({
         setDateRange,
         timeframe,
         setTimeframe,
+        eventType,
+        setEventType,
       }}
     >
       {children}

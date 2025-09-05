@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { UserId } from '../lib/schemas';
-import { FeedActivity } from './types';
+import { FeedActivity, FeedActivityType } from './types';
 import z from 'zod';
 import {
   TimeBasedPaginationParams,
@@ -13,11 +13,20 @@ export const userFeedSchema = z.object({
   appIds: appIdSchema.array().default([]),
   startDate: z.date().default(new Date(0)),
   endDate: z.date().default(new Date()),
+  eventTypes: z
+    .array(z.enum(FeedActivityType))
+    .default(Object.values(FeedActivityType)),
 });
 
 export const getUserFeed = async (
   userId: UserId,
-  { numHours, appIds, startDate, endDate }: z.infer<typeof userFeedSchema>,
+  {
+    numHours,
+    appIds,
+    startDate,
+    endDate,
+    eventTypes,
+  }: z.infer<typeof userFeedSchema>,
   { cursor, limit }: TimeBasedPaginationParams
 ) => {
   const items = await db.$queryRaw<FeedActivity[]>`
@@ -83,6 +92,7 @@ export const getUserFeed = async (
             AND (t."echoAppId" = ANY(STRING_TO_ARRAY(${appIds.join(',')}::text, ',')::uuid[]) OR ${appIds.length === 0})
             AND t."createdAt" >= ${startDate}
             AND t."createdAt" <= ${endDate}
+            AND ${eventTypes.includes(FeedActivityType.TRANSACTION)}
         ) all_transactions
         GROUP BY timestamp, "echoAppId", app_name, app_profile_picture, "userId", user_name, user_image
       ) user_aggregated_transactions
@@ -131,6 +141,7 @@ export const getUserFeed = async (
           AND (rt."echoAppId" = ANY(STRING_TO_ARRAY(${appIds.join(',')}::text, ',')::uuid[]) OR ${appIds.length === 0})
           AND rt."createdAt" >= ${startDate}
           AND rt."createdAt" <= ${endDate}
+          AND ${eventTypes.includes(FeedActivityType.SIGNIN)}
       ) distinct_signins
       GROUP BY timestamp, "echoAppId", app_name, app_profile_picture
     ) combined_activity

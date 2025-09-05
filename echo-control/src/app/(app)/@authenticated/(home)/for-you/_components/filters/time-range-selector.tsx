@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 
 import { ActivityTimeframe } from '@/types/timeframes';
+import { cn } from '@/lib/utils';
 
 export const RangeSelector = () => {
   const { startDate, endDate, setDateRange, timeframe, setTimeframe } =
@@ -53,7 +54,10 @@ export const RangeSelector = () => {
           <Button
             size={timeframe === ActivityTimeframe.Custom ? 'default' : 'icon'}
             variant="outline"
-            className="rounded-r-none shadow-none border-r-[0.5px]"
+            className={cn(
+              'rounded-r-none shadow-none border-r-[0.5px]',
+              timeframe !== ActivityTimeframe.Custom && 'text-muted-foreground'
+            )}
           >
             <CalendarDays className="size-4" />
             {timeframe === ActivityTimeframe.Custom && (
@@ -83,7 +87,12 @@ export const RangeSelector = () => {
           setTimeframe(Number(value));
         }}
       >
-        <SelectTrigger className="rounded-l-none border-border shadow-none border-l-[0.5px] text-xs">
+        <SelectTrigger
+          className={cn(
+            'rounded-l-none border-border shadow-none border-l-[0.5px]',
+            timeframe === ActivityTimeframe.AllTime && 'text-muted-foreground'
+          )}
+        >
           {timeframe !== ActivityTimeframe.Custom && (
             <span>
               {timeframe === ActivityTimeframe.AllTime

@@ -31,7 +31,7 @@ export const ActivityList = () => {
 const ActivityItems = () => {
   const numHours = 4;
 
-  const { appId, startDate, endDate } = useFiltersContext();
+  const { appId, startDate, endDate, eventType } = useFiltersContext();
 
   const [{ pages }, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
     api.user.feed.list.useSuspenseInfiniteQuery(
@@ -41,6 +41,7 @@ const ActivityItems = () => {
         appIds: appId ? [appId] : undefined,
         startDate,
         endDate,
+        eventTypes: eventType ? [eventType] : undefined,
       },
       {
         getNextPageParam: lastPage =>

@@ -46,7 +46,7 @@ export const AppSelect: React.FC<Props> = ({
     );
 
   return (
-    <div className="flex gap-2">
+    <div className="flex">
       <Select
         value={selectedAppId}
         onValueChange={setSelectedAppId}
@@ -88,7 +88,7 @@ export const AppSelect: React.FC<Props> = ({
       </Select>
       {clearable && selectedAppId && (
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           onClick={() => setSelectedAppId(undefined)}
         >
