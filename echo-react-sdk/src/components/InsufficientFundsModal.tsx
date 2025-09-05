@@ -128,7 +128,6 @@ export function InsufficientFundsModal({
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [showCustomAmount, setShowCustomAmount] = useState(false);
 
-  console.log('isOpen', isOpen);
   const handlePurchase = async (amount: number) => {
     if (!user) {
       const error = new Error('Please sign in to purchase tokens');
