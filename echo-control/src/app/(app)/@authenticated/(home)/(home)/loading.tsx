@@ -1,9 +1,9 @@
 import { Body, Heading } from '../../_components/layout/page-utils';
 
-import { LoadingPopularApps } from './_components/popular';
+import { LoadingPersonalSection } from './_components/personal';
+import { LoadingGlobalSection } from './_components/global';
 
 import { auth } from '@/auth';
-import { LoadingPersonalOverview } from './_components/personal';
 
 export default async function LoadingDashboardPage() {
   const session = await auth();
@@ -19,8 +19,8 @@ export default async function LoadingDashboardPage() {
         description="Build AI apps and earn profit on every token your users generate"
       />
       <Body>
-        <LoadingPersonalOverview />
-        <LoadingPopularApps />
+        <LoadingPersonalSection />
+        <LoadingGlobalSection />
       </Body>
     </div>
   );

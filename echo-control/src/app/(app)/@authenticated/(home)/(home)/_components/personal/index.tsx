@@ -7,7 +7,7 @@ import { Earnings, LoadingEarnings } from './earnings';
 import { api } from '@/trpc/server';
 import { cn } from '@/lib/utils';
 
-export const PersonalOverview = () => {
+export const PersonalSection = () => {
   const userApps = api.apps.list.owner({
     page_size: 3,
   });
@@ -20,23 +20,21 @@ export const PersonalOverview = () => {
   });
 
   return (
-    <Section title="Your Personal Overview">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 max-w-full w-full">
-        <ColumnContainer className="md:col-span-5 lg:col-span-4">
-          <Apps userApps={userApps} />
-          <Feed numAppsPromise={numAppsPromise} feedPromise={feedPromise} />
-        </ColumnContainer>
-        <ColumnContainer className="md:col-span-7 lg:col-span-8">
-          <Earnings numAppsPromise={numAppsPromise} />
-        </ColumnContainer>
-      </div>
-    </Section>
+    <PersonalSectionContainer>
+      <ColumnContainer className="md:col-span-5 lg:col-span-4">
+        <Apps userApps={userApps} />
+        <Feed numAppsPromise={numAppsPromise} feedPromise={feedPromise} />
+      </ColumnContainer>
+      <ColumnContainer className="md:col-span-7 lg:col-span-8">
+        <Earnings numAppsPromise={numAppsPromise} />
+      </ColumnContainer>
+    </PersonalSectionContainer>
   );
 };
 
-export const LoadingPersonalOverview = () => {
+export const LoadingPersonalSection = () => {
   return (
-    <PersonalOverviewContainer>
+    <PersonalSectionContainer>
       <ColumnContainer className="md:col-span-5 lg:col-span-4">
         <LoadingAppsSection />
         <LoadingFeed />
@@ -44,11 +42,11 @@ export const LoadingPersonalOverview = () => {
       <ColumnContainer className="md:col-span-7 lg:col-span-8">
         <LoadingEarnings />
       </ColumnContainer>
-    </PersonalOverviewContainer>
+    </PersonalSectionContainer>
   );
 };
 
-const PersonalOverviewContainer = ({
+const PersonalSectionContainer = ({
   children,
 }: {
   children: React.ReactNode;

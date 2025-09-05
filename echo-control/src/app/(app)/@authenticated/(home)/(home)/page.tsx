@@ -5,12 +5,10 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Body, Heading } from '../../_components/layout/page-utils';
 
 import { NewAppButton } from './_components/new-app';
-import { PopularApps } from './_components/popular';
-import { PersonalOverview } from './_components/personal';
+import { GlobalSection } from './_components/global';
+import { PersonalSection } from './_components/personal';
 
 import { auth } from '@/auth';
-
-import { api } from '@/trpc/server';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -18,17 +16,6 @@ export default async function DashboardPage() {
   if (!session?.user) {
     return null;
   }
-
-  const userApps = api.apps.list.owner({
-    page_size: 3,
-  });
-  const numAppsPromise = userApps.then(apps => apps.total_count);
-
-  const feedPromise = api.user.feed.list({
-    cursor: new Date(),
-    limit: 5,
-    numHours: 4,
-  });
 
   return (
     <div>
@@ -44,8 +31,8 @@ export default async function DashboardPage() {
         }
       />
       <Body>
-        <PersonalOverview />
-        <PopularApps />
+        <PersonalSection />
+        <GlobalSection />
       </Body>
     </div>
   );
