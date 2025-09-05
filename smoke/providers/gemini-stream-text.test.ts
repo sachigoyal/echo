@@ -24,7 +24,7 @@ describe.concurrent('Gemini streamText per model', () => {
     it(`Gemini streamText ${model_id}`, async () => {
       try {
         const { textStream } = streamText({
-          model: await gemini(model_id),
+          model: gemini(model_id),
           prompt: 'One-word greeting.',
         });
         let streamed = '';

@@ -24,7 +24,7 @@ describe.concurrent('Anthropic generateText per model', () => {
     it(`Anthropic ${model_id}`, async () => {
       try {
         const { text } = await generateText({
-          model: await anthropic(model_id),
+          model: anthropic(model_id),
           prompt: 'One-word greeting.',
         });
         expect(text).toBeDefined();

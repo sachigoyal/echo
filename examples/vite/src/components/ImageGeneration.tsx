@@ -20,7 +20,7 @@ export function ImageGeneration() {
 
     try {
       const result = await generateImage({
-        model: await openai.image('gpt-image-1'),
+        model: openai.image('gpt-image-1'),
         prompt: prompt.trim(),
         size: '1024x1024',
       });

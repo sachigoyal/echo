@@ -145,8 +145,7 @@ import { File, Folder, Files } from 'fumadocs-ui/components/files';
             const { messages } = await req.json();
 
             const result = streamText({
-                // [!code highlight:1]
-                model: await openai("gpt-5"), 
+                model: openai("gpt-5"), 
                 messages: convertToModelMessages(messages),
             });
 

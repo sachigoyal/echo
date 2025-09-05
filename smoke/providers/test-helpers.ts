@@ -24,7 +24,7 @@ export function getApiErrorDetails(err: unknown): string {
 }
 
 export function getOpenAITools(
-  openai: EchoOpenAIProvider,
+  openai: any, // TODO: fix this,
   modelId: string
 ): Record<string, unknown> | undefined {
   return modelId.includes('deep-research')
