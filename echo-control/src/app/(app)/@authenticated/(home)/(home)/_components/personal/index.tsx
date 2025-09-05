@@ -1,7 +1,5 @@
 import { Section } from '../utils';
 
-import { NewAppButton } from './apps/new-app';
-
 import { Apps, LoadingAppsSection } from './apps';
 import { Feed, LoadingFeed } from './feed';
 import { Earnings, LoadingEarnings } from './earnings';

@@ -88,6 +88,11 @@ export const listMemberApps = async (
           },
         },
       },
+      orderBy: {
+        Transactions: {
+          _count: 'desc',
+        },
+      },
     }),
     countApps(where),
   ]);
@@ -130,6 +135,11 @@ export const listOwnerApps = async (
             role: true,
             status: true,
           },
+        },
+      },
+      orderBy: {
+        Transactions: {
+          _count: 'desc',
         },
       },
     }),

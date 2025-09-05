@@ -2,16 +2,16 @@ import Link from 'next/link';
 
 import { Code } from 'lucide-react';
 
-import { Card, CardDescription, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { UserAvatar } from '@/components/utils/user-avatar';
 
 import { Users, LoadingUsers } from './users';
 import { Earnings, LoadingEarningsAmount } from './earnings';
+import { Transactions } from './transactions';
 
 import { cn } from '@/lib/utils';
-import { Transactions } from './transactions';
 
 interface Props {
   id: string;

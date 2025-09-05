@@ -22,16 +22,6 @@ export const MyApps = () => {
   );
 };
 
-export const LoadingApps = () => {
-  return (
-    <AppsContainer>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <LoadingAppCard key={i} />
-      ))}
-    </AppsContainer>
-  );
-};
-
 const Apps = () => {
   const [apps, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
     api.apps.list.owner.useSuspenseInfiniteQuery(
@@ -44,15 +34,15 @@ const Apps = () => {
       }
     );
 
-  const aaa = true;
+  const items = apps.pages.flatMap(page => page.items);
 
-  if (aaa) {
+  if (items.length === 0) {
     return (
       <Card className="flex flex-col items-center gap-4 p-8">
         <Info className="size-10" />
         <div className="flex flex-col items-center gap-1">
           <h2 className="text-lg font-semibold">
-            You haven't created any apps yet
+            You haven&apos;t created any apps yet
           </h2>
           <p className="text-sm text-muted-foreground">
             Ready to get started? Creating an app will take you less than 2
@@ -66,11 +56,9 @@ const Apps = () => {
 
   return (
     <AppsContainer>
-      {apps.pages
-        .flatMap(page => page.items)
-        .map(app => (
-          <AppCard key={app.id} {...app} />
-        ))}
+      {items.map(app => (
+        <AppCard key={app.id} {...app} />
+      ))}
       {hasNextPage && (
         <Button
           onClick={() => fetchNextPage()}
@@ -88,4 +76,16 @@ const Apps = () => {
   );
 };
 
-const AppsContainer = ({ children }: { children: React.ReactNode }) => {};
+export const LoadingApps = () => {
+  return (
+    <AppsContainer>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <LoadingAppCard key={i} />
+      ))}
+    </AppsContainer>
+  );
+};
+
+const AppsContainer = ({ children }: { children: React.ReactNode }) => {
+  return <div className="flex flex-col gap-4">{children}</div>;
+};

@@ -23,6 +23,10 @@ export default function AuthenticatedHomeLayout({
             href: '/my-apps',
           },
           {
+            label: 'Your App Activity',
+            href: '/activity',
+          },
+          {
             label: 'API Keys',
             href: '/keys',
           },
