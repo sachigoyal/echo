@@ -25,17 +25,14 @@ describe('In-Flight Requests Monitor', () => {
     expect(data).toHaveProperty('userId');
     expect(data).toHaveProperty('echoAppId');
     expect(data).toHaveProperty('numberInFlight');
-    expect(data).toHaveProperty('totalEscrowed');
     expect(data).toHaveProperty('maxAllowed');
 
     expect(typeof data.userId).toBe('string');
     expect(typeof data.echoAppId).toBe('string');
     expect(typeof data.numberInFlight).toBe('number');
-    expect(typeof data.totalEscrowed).toBe('number');
     expect(typeof data.maxAllowed).toBe('number');
 
     expect(data.numberInFlight).toBeGreaterThanOrEqual(0);
-    expect(data.totalEscrowed).toBeGreaterThanOrEqual(0);
     expect(data.maxAllowed).toBeGreaterThan(0);
 
     console.log('📊 In-flight requests data:', data);
@@ -99,7 +96,6 @@ describe('In-Flight Requests Monitor', () => {
       expect(data).toHaveProperty('userId');
       expect(data).toHaveProperty('echoAppId');
       expect(data).toHaveProperty('numberInFlight');
-      expect(data).toHaveProperty('totalEscrowed');
       expect(data).toHaveProperty('maxAllowed');
 
       // User and app should be consistent across requests

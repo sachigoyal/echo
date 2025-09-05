@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../server';
 import { authenticateRequest } from '../auth';
 import logger from '../logger';
-import { HttpError } from '../errors/http';
+import { UnauthorizedError } from '../errors/http';
 
 const inFlightMonitorRouter: Router = Router();
 
@@ -38,7 +38,7 @@ inFlightMonitorRouter.get(
       const echoAppId = echoControlService.getEchoAppId();
 
       if (!userId || !echoAppId) {
-        throw new HttpError(401, 'Unauthorized Access');
+        throw new UnauthorizedError('Unauthorized Access');
       }
 
       // Fetch the current in-flight request count
