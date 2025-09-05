@@ -59,7 +59,7 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        'flex flex-col gap-2 p-4 transition-all duration-200 md:min-w-56 group',
+        'flex flex-col gap-2 p-3 md:p-4 transition-all duration-200 min-w-28 md:min-w-56 group',
         'border-r border-r-border',
         'data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-card',
         'cursor-pointer hover:bg-card/50',
@@ -72,9 +72,9 @@ function TabsTrigger({
       <div className="flex flex-col gap-1 text-left">
         <p className="text-sm font-semibold text-muted-foreground">{label}</p>
         {isLoading === true ? (
-          <Skeleton className="w-24 h-[30px] my-[3px]" />
+          <Skeleton className="w-16 md:w-24 h-[20px] my-[4px] md:h-[30px] md:my-[3px]" />
         ) : (
-          <p className="text-3xl font-bold text-muted-foreground group-data-[state=active]:text-foreground">
+          <p className="text-xl md:text-3xl font-bold text-muted-foreground group-data-[state=active]:text-foreground">
             {amount}
           </p>
         )}

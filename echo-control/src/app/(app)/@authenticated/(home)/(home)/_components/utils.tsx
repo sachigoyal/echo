@@ -1,12 +1,16 @@
 interface Props {
   title: string;
   children: React.ReactNode;
+  actions?: React.ReactNode;
 }
 
-export const Section: React.FC<Props> = ({ children, title }) => {
+export const Section: React.FC<Props> = ({ children, title, actions }) => {
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="font-bold text-2xl">{title}</h1>
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-center">
+        <h1 className="font-bold text-2xl">{title}</h1>
+        {actions}
+      </div>
       {children}
     </div>
   );

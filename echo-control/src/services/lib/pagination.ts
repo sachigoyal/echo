@@ -58,7 +58,7 @@ export const toTimeBasedPaginatedReponse = <T>({
   limit,
 }: ToTimeBasedPaginatedReponseParams<T>): TimeBasedPaginatedResponse<T> => {
   return {
-    items,
+    items: items.slice(0, limit),
     cursor,
     limit,
     has_next: items.length > limit,

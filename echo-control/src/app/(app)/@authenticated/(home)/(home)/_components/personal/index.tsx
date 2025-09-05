@@ -1,5 +1,7 @@
 import { Section } from '../utils';
 
+import { NewAppButton } from './new-app';
+
 import { Apps, LoadingAppsSection } from './apps';
 import { Feed, LoadingFeed } from './feed';
 import { Earnings, LoadingEarnings } from './earnings';
@@ -20,14 +22,14 @@ export const PersonalSection = () => {
   });
 
   return (
-    <PersonalSectionContainer>
-      <ColumnContainer className="md:col-span-5 lg:col-span-4">
+    <PersonalSectionContainer actions={<NewAppButton />}>
+      <ItemsColumnContainer>
         <Apps userApps={userApps} />
         <Feed numAppsPromise={numAppsPromise} feedPromise={feedPromise} />
-      </ColumnContainer>
-      <ColumnContainer className="md:col-span-7 lg:col-span-8">
+      </ItemsColumnContainer>
+      <ChartColumnContainer>
         <Earnings numAppsPromise={numAppsPromise} />
-      </ColumnContainer>
+      </ChartColumnContainer>
     </PersonalSectionContainer>
   );
 };
@@ -35,25 +37,27 @@ export const PersonalSection = () => {
 export const LoadingPersonalSection = () => {
   return (
     <PersonalSectionContainer>
-      <ColumnContainer className="md:col-span-5 lg:col-span-4">
+      <ItemsColumnContainer>
         <LoadingAppsSection />
         <LoadingFeed />
-      </ColumnContainer>
-      <ColumnContainer className="md:col-span-7 lg:col-span-8">
+      </ItemsColumnContainer>
+      <ChartColumnContainer>
         <LoadingEarnings />
-      </ColumnContainer>
+      </ChartColumnContainer>
     </PersonalSectionContainer>
   );
 };
 
 const PersonalSectionContainer = ({
   children,
+  actions,
 }: {
   children: React.ReactNode;
+  actions?: React.ReactNode;
 }) => {
   return (
-    <Section title="Your Overview">
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 max-w-full w-full">
+    <Section title="Your Overview" actions={actions}>
+      <div className="flex flex-col-reverse md:grid md:grid-cols-12 gap-8 max-w-full w-full">
         {children}
       </div>
     </Section>
@@ -76,5 +80,21 @@ const ColumnContainer = ({
     >
       {children}
     </div>
+  );
+};
+
+const ChartColumnContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <ColumnContainer className="md:col-span-7 lg:col-span-8 h-[300px] md:h-auto">
+      {children}
+    </ColumnContainer>
+  );
+};
+
+const ItemsColumnContainer = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <ColumnContainer className="md:col-span-5 lg:col-span-4">
+      {children}
+    </ColumnContainer>
   );
 };

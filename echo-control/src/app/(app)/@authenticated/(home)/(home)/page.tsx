@@ -1,10 +1,5 @@
-import { Suspense } from 'react';
-
-import { ErrorBoundary } from 'react-error-boundary';
-
 import { Body, Heading } from '../../_components/layout/page-utils';
 
-import { NewAppButton } from './_components/new-app';
 import { GlobalSection } from './_components/global';
 import { PersonalSection } from './_components/personal';
 
@@ -23,13 +18,6 @@ export default async function DashboardPage() {
       <Heading
         title={`Welcome Back${session?.user.name ? `, ${session.user.name.split(' ')[0]}!` : '!'}`}
         description="Build AI apps and earn profit on every token your users generate"
-        actions={
-          <ErrorBoundary fallback={null}>
-            <Suspense fallback={null}>
-              <NewAppButton />
-            </Suspense>
-          </ErrorBoundary>
-        }
       />
       <Body>
         <PersonalSection />
