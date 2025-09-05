@@ -6,7 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 import { addHours } from 'date-fns';
 
-import { Loader2 } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/card';
 import { FeedItem, LoadingFeedItem } from './item';
 
 import { api } from '@/trpc/client';
+import { useFiltersContext } from '../../contexts/filters-context';
 
 export const ActivityList = () => {
   return (
@@ -30,9 +31,17 @@ export const ActivityList = () => {
 const ActivityItems = () => {
   const numHours = 4;
 
+  const { appId, startDate, endDate } = useFiltersContext();
+
   const [{ pages }, { fetchNextPage, hasNextPage, isFetchingNextPage }] =
     api.user.feed.list.useSuspenseInfiniteQuery(
-      { limit: 10, numHours },
+      {
+        limit: 10,
+        numHours,
+        appIds: appId ? [appId] : undefined,
+        startDate,
+        endDate,
+      },
       {
         getNextPageParam: lastPage =>
           lastPage.has_next
@@ -51,12 +60,22 @@ const ActivityItems = () => {
   return (
     <div className="flex flex-col gap-4">
       <ActivityListContainer>
-        {items.map((item, index) => (
-          <FeedItem
-            key={`${item.timestamp.toString()}-${index}`}
-            activity={item}
-          />
-        ))}
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center gap-4 p-8">
+            <Info className="size-10" />
+            <div className="flex flex-col items-center gap-1">
+              <h2 className="text-lg font-semibold">No Activity Found</h2>
+              <p>There is no activity for the selected filters.</p>
+            </div>
+          </div>
+        ) : (
+          items.map((item, index) => (
+            <FeedItem
+              key={`${item.timestamp.toString()}-${index}`}
+              activity={item}
+            />
+          ))
+        )}
       </ActivityListContainer>
       {hasNextPage && (
         <Button
