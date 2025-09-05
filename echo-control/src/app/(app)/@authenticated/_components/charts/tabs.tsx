@@ -59,9 +59,9 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        'flex flex-col gap-2 p-3 md:p-4 transition-all duration-200 min-w-28 md:min-w-56 group',
+        'flex flex-col gap-2 p-3 md:p-4 transition-all duration-200 min-w-28 md:min-w-56 group border-b-2 border-b-transparent',
         'border-r border-r-border',
-        'data-[state=active]:border-b-2 data-[state=active]:border-b-primary data-[state=active]:bg-card',
+        'data-[state=active]:border-b-primary data-[state=active]:bg-card',
         'cursor-pointer hover:bg-card/50',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className

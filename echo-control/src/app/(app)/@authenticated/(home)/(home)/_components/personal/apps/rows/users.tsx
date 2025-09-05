@@ -42,7 +42,7 @@ const UsersSkeleton = () => {
 
 const UsersContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex items-center gap-1 font-medium text-muted-foreground">
+    <div className="flex items-center gap-1 font-medium text-muted-foreground/60">
       <UsersIcon className="size-3" />
       {children}
     </div>
