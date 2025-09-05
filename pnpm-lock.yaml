@@ -417,8 +417,8 @@ importers:
   echo-next-sdk:
     dependencies:
       '@merit-systems/echo-typescript-sdk':
-        specifier: workspace:*
-        version: link:../echo-typescript-sdk
+        specifier: 1.0.11
+        version: 1.0.11(zod@4.0.17)
       ai:
         specifier: ^5.0.17
         version: 5.0.22(zod@4.0.17)
@@ -457,8 +457,8 @@ importers:
         specifier: ^2.0.17
         version: 2.0.19(react@19.1.1)(zod@4.0.17)
       '@merit-systems/echo-typescript-sdk':
-        specifier: workspace:*
-        version: link:../echo-typescript-sdk
+        specifier: 1.0.11
+        version: 1.0.11(zod@4.0.17)
       ai:
         specifier: ^5.0.19
         version: 5.0.22(zod@4.0.17)
@@ -1955,6 +1955,9 @@ packages:
     peerDependencies:
       '@types/react': 19.1.10
       react: '>=16'
+
+  '@merit-systems/echo-typescript-sdk@1.0.11':
+    resolution: {integrity: sha512-G4wmeiybjE0256jdY5LMrcj19XAS+O8P+evyQwUyhDEjdYgGD9iKNDBiEdyIuE5/TD6PrfhuX/WxcBW3FnNmHA==}
 
   '@merit-systems/echo-typescript-sdk@1.0.6':
     resolution: {integrity: sha512-ueT+1krc+mQSU72dSSn5T/ZYQDytAhM1YXXLmRy/qAToQGKgmimGCooAzX3aBZHHgeGRixJf7Iy2vHepXGqcCA==}
@@ -11003,6 +11006,15 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.1.10
       react: 19.1.1
+
+  '@merit-systems/echo-typescript-sdk@1.0.11(zod@4.0.17)':
+    dependencies:
+      '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
+      '@ai-sdk/google': 2.0.8(zod@4.0.17)
+      '@ai-sdk/openai': 2.0.19(zod@4.0.17)
+      ai: 5.0.22(zod@4.0.17)
+    transitivePeerDependencies:
+      - zod
 
   '@merit-systems/echo-typescript-sdk@1.0.6(zod@4.0.17)':
     dependencies:
