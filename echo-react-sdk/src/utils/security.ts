@@ -250,37 +250,6 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   };
 }
 
-/**
- * Creates a CSP-compatible payment flow that doesn't rely on popups
- *
- * SECURITY PURPOSE: Provides payment functionality that works with strict
- * Content Security Policy headers required in enterprise environments.
- *
- * PROBLEM SOLVED: window.open() is blocked by CSP 'script-src' directive,
- * preventing payment flows from working in secure enterprise deployments.
- *
- * ENTERPRISE SECURITY REQUIREMENT:
- * Many organizations require CSP headers like:
- * Content-Security-Policy: script-src 'self'; object-src 'none';
- *
- * This blocks window.open() calls, breaking popup-based payment flows.
- *
- * @param paymentUrl - Stripe payment link URL
- * @param options - Configuration options for payment flow
- * @returns Promise that resolves when payment is complete or cancelled
- *
- * @example
- * ```typescript
- * // Non-CSP compatible (blocked by strict CSP):
- * window.open(paymentUrl, '_blank'); // ❌ Blocked by CSP
- *
- * // CSP compatible:
- * await openPaymentFlow(paymentUrl, {
- *   onComplete: () => refreshBalance(),
- *   onCancel: () => console.log('Payment cancelled')
- * }); // ✅ Works with CSP
- * ```
- */
 export async function openPaymentFlow(
   paymentUrl: string,
   options: {
@@ -289,7 +258,7 @@ export async function openPaymentFlow(
     onError?: (error: Error) => void;
   } = {}
 ): Promise<void> {
-  const { onComplete, onCancel, onError } = options;
+  const { onComplete, onError } = options;
 
   // Sanitize the payment URL to prevent injection
   const safeUrl = sanitizeUrl(paymentUrl);
@@ -300,80 +269,8 @@ export async function openPaymentFlow(
   }
 
   try {
-    // Try popup first (for environments that allow it)
-    const popup = window.open(
-      safeUrl,
-      'echo-payment',
-      'width=600,height=700,scrollbars=yes,resizable=yes'
-    );
-
-    if (popup && !popup.closed) {
-      // Popup opened successfully - monitor for completion
-      return new Promise<void>(resolve => {
-        const checkComplete = () => {
-          try {
-            if (popup.closed) {
-              // Payment window closed - assume completion
-              onComplete?.();
-              resolve();
-              return;
-            }
-            setTimeout(checkComplete, 1000);
-          } catch {
-            // Cross-origin error means payment completed
-            onComplete?.();
-            resolve();
-          }
-        };
-
-        checkComplete();
-
-        // Timeout after 10 minutes
-        setTimeout(() => {
-          popup.close();
-          onCancel?.();
-          resolve();
-        }, 600000);
-      });
-    } else {
-      // Popup blocked - fall back to redirect flow (CSP compatible)
-      const confirmed = confirm(
-        'Payment will open in a new tab. Click OK to continue, or Cancel to abort.'
-      );
-
-      if (confirmed) {
-        // Store callback info for when user returns
-        sessionStorage.setItem('echo_payment_flow', 'true');
-
-        // Redirect to payment page
-        window.location.href = safeUrl;
-
-        return new Promise<void>(resolve => {
-          // This will resolve when the user returns to the app
-          const handleFocus = () => {
-            if (sessionStorage.getItem('echo_payment_flow') === 'completed') {
-              sessionStorage.removeItem('echo_payment_flow');
-              onComplete?.();
-              window.removeEventListener('focus', handleFocus);
-              resolve();
-            }
-          };
-
-          window.addEventListener('focus', handleFocus);
-
-          // Cleanup after 30 minutes
-          setTimeout(() => {
-            window.removeEventListener('focus', handleFocus);
-            sessionStorage.removeItem('echo_payment_flow');
-            onCancel?.();
-            resolve();
-          }, 1800000);
-        });
-      } else {
-        onCancel?.();
-        return Promise.resolve();
-      }
-    }
+    // Direct redirect - no popups, much simpler
+    window.location.href = safeUrl;
   } catch (err) {
     const error = err instanceof Error ? err : new Error('Payment flow failed');
     onError?.(error);

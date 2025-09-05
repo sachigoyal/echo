@@ -12,8 +12,8 @@
     "prebuild": "pnpm run copy-schema && pnpm run prisma:generate",
     "predev": "pnpm run copy-prisma",
     "prestart": "pnpm run copy-prisma",
-    "dev": "npx tsx src/server.ts",
-    "start": "node dist/server.js",
+    "dev": "NODE_OPTIONS=\"--require @opentelemetry/auto-instrumentations-node/register\" npx tsx src/server.ts",
+    "start": "NODE_OPTIONS=\"--require @opentelemetry/auto-instrumentations-node/register\" node dist/server.js",
     "prisma:migrate-deploy": "pnpx prisma migrate deploy",
     "anthropic-client": "npx tsx src/clients/anthropic-client.ts",
     "anthropic-gpt-client": "npx tsx src/clients/anthropic-gpt-client.ts",
@@ -70,6 +70,7 @@
     "register": "link:@opentelemetry/auto-instrumentations-node/register",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
+    "uuid": "^11.1.0",
     "viem": "^2.33.3",
     "winston": "^3.17.0"
   },
