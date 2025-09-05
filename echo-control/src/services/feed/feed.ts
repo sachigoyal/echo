@@ -6,16 +6,21 @@ import {
   TimeBasedPaginationParams,
   toTimeBasedPaginatedReponse,
 } from '../lib/pagination';
+import { appIdSchema } from '../apps/lib/schemas';
 
 export const userFeedSchema = z.object({
   numHours: z.number().default(1),
+  appIds: appIdSchema.array().default([]),
+  startDate: z.date().default(new Date(0)),
+  endDate: z.date().default(new Date()),
 });
 
 export const getUserFeed = async (
   userId: UserId,
-  { numHours }: z.infer<typeof userFeedSchema>,
+  { numHours, appIds, startDate, endDate }: z.infer<typeof userFeedSchema>,
   { cursor, limit }: TimeBasedPaginationParams
 ) => {
+  console.log('appIds', appIds);
   const items = await db.$queryRaw<FeedActivity[]>`
     SELECT 
       timestamp,
@@ -45,7 +50,7 @@ export const getUserFeed = async (
           )
         ) as users
       FROM (
-        SELECT 
+        SELECT
           timestamp,
           "echoAppId",
           app_name,
@@ -75,7 +80,10 @@ export const getUserFeed = async (
           INNER JOIN echo_apps app ON t."echoAppId" = app.id
           WHERE t."isArchived" = false
             AND DATE_TRUNC('day', t."createdAt") + 
-                (FLOOR(EXTRACT(HOUR FROM t."createdAt") / ${numHours}) * interval '${numHours} hours') < ${cursor}
+              (FLOOR(EXTRACT(HOUR FROM t."createdAt") / ${numHours}) * interval '${numHours} hours') < ${cursor}
+            AND (t."echoAppId" = ANY(STRING_TO_ARRAY(${appIds.join(',')}::text, ',')::uuid[]) OR ${appIds.length === 0})
+            AND t."createdAt" >= ${startDate}
+            AND t."createdAt" <= ${endDate}
         ) all_transactions
         GROUP BY timestamp, "echoAppId", app_name, app_profile_picture, "userId", user_name, user_image
       ) user_aggregated_transactions
@@ -120,7 +128,10 @@ export const getUserFeed = async (
         INNER JOIN users u ON rt."userId" = u.id
         INNER JOIN echo_apps app ON rt."echoAppId" = app.id
         WHERE DATE_TRUNC('day', rt."createdAt") + 
-              (FLOOR(EXTRACT(HOUR FROM rt."createdAt") / ${numHours}) * interval '${numHours} hours') < ${cursor}
+          (FLOOR(EXTRACT(HOUR FROM rt."createdAt") / ${numHours}) * interval '${numHours} hours') < ${cursor}
+          AND (rt."echoAppId" = ANY(STRING_TO_ARRAY(${appIds.join(',')}::text, ',')::uuid[]) OR ${appIds.length === 0})
+          AND rt."createdAt" >= ${startDate}
+          AND rt."createdAt" <= ${endDate}
       ) distinct_signins
       GROUP BY timestamp, "echoAppId", app_name, app_profile_picture
     ) combined_activity

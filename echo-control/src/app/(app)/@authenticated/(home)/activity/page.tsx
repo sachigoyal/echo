@@ -2,6 +2,8 @@ import { Body, Heading } from '../../_components/layout/page-utils';
 
 import { api, HydrateClient } from '@/trpc/server';
 import { ActivityList } from './_components/list';
+import { FiltersContextProvider } from './contexts/filters-context';
+import { ActivityFilters } from './_components/filters';
 
 export default function ActivityPage() {
   api.user.feed.list.prefetchInfinite({
@@ -15,8 +17,11 @@ export default function ActivityPage() {
         title="Activity"
         description="Here's what's been happening with your apps"
       />
-      <Body>
-        <ActivityList />
+      <Body className="gap-4">
+        <FiltersContextProvider>
+          <ActivityFilters />
+          <ActivityList />
+        </FiltersContextProvider>
       </Body>
     </HydrateClient>
   );

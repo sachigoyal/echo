@@ -7,6 +7,7 @@ export const getUser = async (userId: string) => {
       id: true,
       name: true,
       image: true,
+      createdAt: true,
     },
   });
   return user;

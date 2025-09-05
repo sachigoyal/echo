@@ -12,6 +12,7 @@ import { userEarningsRouter } from './earnings';
 import { userReferralRouter } from './referral';
 import { userPublicRouter } from './public';
 import { getUserFeed, userFeedSchema } from '@/services/feed/feed';
+import { getUser } from '@/services/user';
 
 export const userRouter = createTRPCRouter({
   balance: userBalanceRouter,
@@ -21,6 +22,12 @@ export const userRouter = createTRPCRouter({
   earnings: userEarningsRouter,
   referral: userReferralRouter,
   public: userPublicRouter,
+
+  current: {
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return getUser(ctx.session.user.id);
+    }),
+  },
 
   feed: {
     list: timeBasedPaginatedProcedure

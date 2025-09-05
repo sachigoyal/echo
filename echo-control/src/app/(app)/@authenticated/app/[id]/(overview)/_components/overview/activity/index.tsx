@@ -13,6 +13,7 @@ import { ActivityCharts, LoadingActivityCharts } from './charts';
 import { ActivityContextProvider } from '../../../../../../_components/time-range-selector/context';
 import { ActivityOverlay } from './overlay';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getApp } from '../../../../_lib/fetch';
 
 interface Props {
   appId: string;
@@ -36,7 +37,12 @@ const ActivityContainer = ({
   );
 };
 
-export const Activity: React.FC<Props> = ({ appId }) => {
+export const Activity: React.FC<Props> = async ({ appId }) => {
+  const app = await getApp(appId);
+  if (!app) {
+    throw new Error('App not found');
+  }
+
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
@@ -51,6 +57,7 @@ export const Activity: React.FC<Props> = ({ appId }) => {
       <ActivityContextProvider
         initialStartDate={defaultStartDate}
         initialEndDate={defaultEndDate}
+        creationDate={app.createdAt}
       >
         <ActivityContainer>
           <ErrorBoundary

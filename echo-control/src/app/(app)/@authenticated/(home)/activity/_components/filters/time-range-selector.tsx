@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useActivityContext } from './context';
+import { useFiltersContext } from '../../contexts/filters-context';
 import {
   Select,
   SelectContent,
@@ -23,7 +23,7 @@ import { ActivityTimeframe } from '@/types/timeframes';
 
 export const RangeSelector = () => {
   const { startDate, endDate, setDateRange, timeframe, setTimeframe } =
-    useActivityContext();
+    useFiltersContext();
 
   // Get only the numeric enum values
   const timeframeValues = Object.values(ActivityTimeframe).filter(
@@ -47,19 +47,17 @@ export const RangeSelector = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 h-6">
+    <div className="flex items-center h-6">
       <Popover>
         <PopoverTrigger asChild>
           <Button
             size={timeframe === ActivityTimeframe.Custom ? 'default' : 'icon'}
-            variant="ghost"
-            className="p-1 size-fit md:size-fit hover:bg-accent/30"
+            variant="outline"
+            className="rounded-r-none shadow-none border-r-[0.5px]"
           >
-            <CalendarDays className="size-4 text-foreground/50" />
+            <CalendarDays className="size-4" />
             {timeframe === ActivityTimeframe.Custom && (
-              <span className="text-xs font-normal">
-                {formatRange(startDate, endDate)}
-              </span>
+              <span>{formatRange(startDate, endDate)}</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -79,34 +77,27 @@ export const RangeSelector = () => {
           />
         </PopoverContent>
       </Popover>
-      <div className="h-4 w-[1px] bg-border" />
       <Select
         value={timeframe.toString()}
         onValueChange={value => {
           setTimeframe(Number(value));
         }}
       >
-        <SelectTrigger className="border-none shadow-none text-xs p-1 size-fit!">
+        <SelectTrigger className="rounded-l-none border-border shadow-none border-l-[0.5px] text-xs">
           {timeframe !== ActivityTimeframe.Custom && (
             <span>
-              {timeframe === ActivityTimeframe.AllTime
-                ? 'All Time'
-                : timeframe === ActivityTimeframe.OneDay
-                  ? 'Past 24 Hours'
-                  : `Past ${timeframe} Days`}
+              {timeframe === 1 ? 'Past 24 Hours' : `Past ${timeframe} Days`}
             </span>
           )}
         </SelectTrigger>
         <SelectContent align="end">
           {timeframeValues.map(value => (
             <SelectItem key={value} value={value.toString()}>
-              {value === ActivityTimeframe.Custom
+              {value === 0
                 ? 'Custom'
-                : value === ActivityTimeframe.AllTime
-                  ? 'All Time'
-                  : value === ActivityTimeframe.OneDay
-                    ? 'Past 24 Hours'
-                    : `Past ${value} Days`}
+                : value === 1
+                  ? 'Past 24 Hours'
+                  : `Past ${value} Days`}
             </SelectItem>
           ))}
         </SelectContent>
