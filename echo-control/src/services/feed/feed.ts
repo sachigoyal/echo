@@ -16,14 +16,6 @@ export const getUserFeed = async (
   { numHours }: z.infer<typeof userFeedSchema>,
   { cursor, limit }: TimeBasedPaginationParams
 ) => {
-  console.log(
-    'Feed query - numHours:',
-    numHours,
-    'cursor:',
-    cursor,
-    'limit:',
-    limit
-  );
   const items = await db.$queryRaw<FeedActivity[]>`
     SELECT 
       timestamp,
@@ -135,11 +127,6 @@ export const getUserFeed = async (
     ORDER BY timestamp DESC, app->>'id', activity_type
     LIMIT ${limit + 1}
   `;
-
-  console.log(
-    'Feed results:',
-    items.map(i => ({ timestamp: i.timestamp, activity_type: i.activity_type }))
-  );
 
   return toTimeBasedPaginatedReponse({
     items,
