@@ -20,7 +20,6 @@ export const getUserFeed = async (
   { numHours, appIds, startDate, endDate }: z.infer<typeof userFeedSchema>,
   { cursor, limit }: TimeBasedPaginationParams
 ) => {
-  console.log('appIds', appIds);
   const items = await db.$queryRaw<FeedActivity[]>`
     SELECT 
       timestamp,

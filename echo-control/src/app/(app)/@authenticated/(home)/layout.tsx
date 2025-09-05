@@ -34,11 +34,6 @@ export default function AuthenticatedHomeLayout({
             label: 'Create',
             href: '/new',
           },
-          {
-            label: 'Docs',
-            href: '/docs' as Route<'/docs'>,
-            external: true,
-          },
         ]}
       />
       <div className="flex flex-col py-4 md:py-6">{children}</div>

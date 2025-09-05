@@ -40,7 +40,7 @@ const buttonVariants = cva(
         lg: 'h-10 rounded-md px-8',
         icon: 'size-8 md:size-9',
         xs: 'h-6 rounded-md px-1 text-xs gap-1',
-        navbar: 'h-9 w-9 md:w-auto md:px-4 md:py-2',
+        navbar: 'size-8 md:h-9 md:w-auto md:px-4 md:py-2',
       },
     },
     defaultVariants: {
