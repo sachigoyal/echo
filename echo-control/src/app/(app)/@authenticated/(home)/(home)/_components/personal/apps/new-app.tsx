@@ -5,6 +5,7 @@ import { Button as ButtonComponent } from '@/components/ui/button';
 import { api } from '@/trpc/server';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Suspense } from 'react';
+import { Plus } from 'lucide-react';
 
 export const NewAppButton = () => {
   return (
@@ -25,7 +26,10 @@ export const Button = async () => {
 
   return (
     <Link href="/new">
-      <ButtonComponent variant="turbo">New App</ButtonComponent>
+      <ButtonComponent variant="primaryGhost" size="xs">
+        Create
+        <Plus className="size-3" />
+      </ButtonComponent>
     </Link>
   );
 };

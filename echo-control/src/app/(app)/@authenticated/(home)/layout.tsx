@@ -19,6 +19,10 @@ export default function AuthenticatedHomeLayout({
             href: '/credits',
           },
           {
+            label: 'Your Apps',
+            href: '/my-apps',
+          },
+          {
             label: 'API Keys',
             href: '/keys',
           },
