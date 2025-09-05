@@ -7,8 +7,8 @@ import { subDays } from 'date-fns';
 import { ActivityTimeframe } from '@/types/timeframes';
 
 interface FiltersContextType {
-  appIds: string[];
-  setAppIds: (appIds: string[]) => void;
+  appId: string | undefined;
+  setAppId: (appId: string | undefined) => void;
   startDate: Date;
   endDate: Date;
   setDateRange: (startDate: Date, endDate: Date) => void;
@@ -17,8 +17,8 @@ interface FiltersContextType {
 }
 
 const FiltersContext = createContext<FiltersContextType>({
-  appIds: [],
-  setAppIds: () => {},
+  appId: undefined,
+  setAppId: () => {},
   startDate: new Date(),
   endDate: new Date(),
   setDateRange: () => {},
@@ -31,7 +31,7 @@ export const FiltersContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [appIds, setAppIds] = useState<string[]>([]);
+  const [appId, setAppId] = useState<string | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [timeframe, setTimeframe] = useState<ActivityTimeframe>(
@@ -59,8 +59,8 @@ export const FiltersContextProvider = ({
   return (
     <FiltersContext.Provider
       value={{
-        appIds,
-        setAppIds,
+        appId,
+        setAppId,
         startDate,
         endDate,
         setDateRange,

@@ -1,9 +1,11 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { RangeSelector } from './time-range-selector';
+import { AppsFilter } from './apps-filter';
 
 export const ActivityFilters = () => {
   return (
     <FiltersContainer>
+      <AppsFilter />
       <RangeSelector />
     </FiltersContainer>
   );
@@ -12,6 +14,7 @@ export const ActivityFilters = () => {
 export const LoadingActivityFilters = () => {
   return (
     <FiltersContainer>
+      <Skeleton className="w-24 h-9" />
       <Skeleton className="w-24 h-9" />
     </FiltersContainer>
   );

@@ -6,6 +6,7 @@ import { FiltersContextProvider } from './contexts/filters-context';
 import { ActivityFilters } from './_components/filters';
 
 export default function ActivityPage() {
+  api.apps.list.owner.prefetchInfinite({});
   api.user.feed.list.prefetchInfinite({
     limit: 10,
     numHours: 4,
