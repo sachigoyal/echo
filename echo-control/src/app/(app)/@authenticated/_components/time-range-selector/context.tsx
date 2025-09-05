@@ -52,7 +52,7 @@ export const ActivityContextProvider = ({
     }
     setStartDate(subDays(new Date(), timeframe));
     setEndDate(new Date());
-  }, [timeframe]);
+  }, [timeframe, creationDate]);
 
   const setDateRange = (startDate: Date, endDate: Date) => {
     setStartDate(startDate);

@@ -35,7 +35,7 @@ export const LoadingFeed = () => {
 
 const FeedContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SubSection title="Recent Activity" href="/activity">
+    <SubSection title="Recent Activity" href="/for-you">
       <Card className="p-0 overflow-hidden relative">{children}</Card>
     </SubSection>
   );

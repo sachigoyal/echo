@@ -7,7 +7,7 @@ export default function ActivityLoadingPage() {
   return (
     <div>
       <Heading
-        title="Activity"
+        title="For You"
         description="Here's what's been happening with your apps"
       />
       <Body className="gap-4">
