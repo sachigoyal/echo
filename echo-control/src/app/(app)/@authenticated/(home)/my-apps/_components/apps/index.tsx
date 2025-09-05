@@ -8,7 +8,9 @@ import { AppCard, LoadingAppCard } from './card';
 
 import { api } from '@/trpc/client';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { NewAppButton } from '../new-app-button';
 
 export const MyApps = () => {
   return (
@@ -42,6 +44,26 @@ const Apps = () => {
       }
     );
 
+  const aaa = true;
+
+  if (aaa) {
+    return (
+      <Card className="flex flex-col items-center gap-4 p-8">
+        <Info className="size-10" />
+        <div className="flex flex-col items-center gap-1">
+          <h2 className="text-lg font-semibold">
+            You haven't created any apps yet
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Ready to get started? Creating an app will take you less than 2
+            minutes.
+          </p>
+        </div>
+        <NewAppButton />
+      </Card>
+    );
+  }
+
   return (
     <AppsContainer>
       {apps.pages
@@ -66,6 +88,4 @@ const Apps = () => {
   );
 };
 
-const AppsContainer = ({ children }: { children: React.ReactNode }) => {
-  return <div className="flex flex-col gap-4">{children}</div>;
-};
+const AppsContainer = ({ children }: { children: React.ReactNode }) => {};
