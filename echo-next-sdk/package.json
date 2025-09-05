@@ -37,7 +37,7 @@
   "author": "Merit Systems",
   "license": "MIT",
   "dependencies": {
-    "@merit-systems/echo-typescript-sdk": "1.0.7",
+    "@merit-systems/echo-typescript-sdk": "1.0.10",
     "ai": "^5.0.17",
     "jwt-decode": "^4.0.0"
   },

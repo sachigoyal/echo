@@ -4,8 +4,8 @@ import {
   OpenAIProvider,
 } from '@ai-sdk/openai';
 import { ROUTER_BASE_URL } from 'config';
-import { fetchWith402Interceptor } from './index';
 import { AsyncProvider, EchoConfig } from '../types';
+import { fetchWith402Interceptor } from './index';
 
 export type EchoOpenAIProvider = AsyncProvider<OpenAIProvider>;
 

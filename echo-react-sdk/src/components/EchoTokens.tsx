@@ -4,6 +4,7 @@ import { EchoTokensProps } from '../types';
 import { openPaymentFlow } from '../utils/security';
 import { EchoSignIn } from './EchoSignIn';
 import { EchoSignOut } from './EchoSignOut';
+import { InsufficientFundsModal } from './InsufficientFundsModal';
 import { Logo } from './Logo';
 
 // Separate component for custom amount input to prevent parent re-renders
@@ -137,8 +138,15 @@ export function EchoTokens({
   children,
   showAvatar = false,
 }: EchoTokensProps) {
-  const { createPaymentLink, user, balance, freeTierBalance, refreshBalance } =
-    useEcho();
+  const {
+    createPaymentLink,
+    user,
+    balance,
+    freeTierBalance,
+    refreshBalance,
+    isInsufficientFunds,
+    setIsInsufficientFunds,
+  } = useEcho();
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -738,6 +746,16 @@ export function EchoTokens({
       )}
 
       {isModalOpen && <Modal />}
+
+      <InsufficientFundsModal
+        isOpen={isInsufficientFunds}
+        onClose={() => setIsInsufficientFunds(false)}
+        onPurchaseComplete={() => {
+          onPurchaseComplete?.(balance!);
+          setIsInsufficientFunds(false);
+        }}
+        onError={onError}
+      />
     </>
   );
 }

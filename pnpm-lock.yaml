@@ -417,8 +417,8 @@ importers:
   echo-next-sdk:
     dependencies:
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.7
-        version: 1.0.7(zod@4.0.17)
+        specifier: 1.0.10
+        version: 1.0.10(zod@4.0.17)
       ai:
         specifier: ^5.0.17
         version: 5.0.22(zod@4.0.17)
@@ -457,8 +457,8 @@ importers:
         specifier: ^2.0.17
         version: 2.0.19(react@19.1.1)(zod@4.0.17)
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.8
-        version: 1.0.8(zod@4.0.17)
+        specifier: 1.0.10
+        version: 1.0.10(zod@4.0.17)
       ai:
         specifier: ^5.0.19
         version: 5.0.22(zod@4.0.17)
@@ -1956,11 +1956,11 @@ packages:
       '@types/react': 19.1.10
       react: '>=16'
 
+  '@merit-systems/echo-typescript-sdk@1.0.10':
+    resolution: {integrity: sha512-rsBXG1QSbdnilgHjxaWzdy86oC0G1gPO3uAERRH9GhvtKsGDSdV1+TNDJescCVXVWBpSej0cdVpklSod46D3tA==}
+
   '@merit-systems/echo-typescript-sdk@1.0.6':
     resolution: {integrity: sha512-ueT+1krc+mQSU72dSSn5T/ZYQDytAhM1YXXLmRy/qAToQGKgmimGCooAzX3aBZHHgeGRixJf7Iy2vHepXGqcCA==}
-
-  '@merit-systems/echo-typescript-sdk@1.0.7':
-    resolution: {integrity: sha512-7QlJOgv0clajCdbWQMv+Z79WAYHngyAFaPMITnXxFQncECdA3wOsSGgC7K23+qNiSCCJqG6p3cazuPHAdKACBA==}
 
   '@merit-systems/echo-typescript-sdk@1.0.8':
     resolution: {integrity: sha512-97AgOYiP7mmlPz0lUOHBn8mza/PGLGixIEBcE9XI+xi0PJshbhtOANVNKx1EPK2zuo0kUl3vII36RaZyHWmhEA==}
@@ -11039,7 +11039,7 @@ snapshots:
       '@types/react': 19.1.10
       react: 19.1.1
 
-  '@merit-systems/echo-typescript-sdk@1.0.6(zod@4.0.17)':
+  '@merit-systems/echo-typescript-sdk@1.0.10(zod@4.0.17)':
     dependencies:
       '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
       '@ai-sdk/google': 2.0.8(zod@4.0.17)
@@ -11048,7 +11048,7 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
-  '@merit-systems/echo-typescript-sdk@1.0.7(zod@4.0.17)':
+  '@merit-systems/echo-typescript-sdk@1.0.6(zod@4.0.17)':
     dependencies:
       '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
       '@ai-sdk/google': 2.0.8(zod@4.0.17)
