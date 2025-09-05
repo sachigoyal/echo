@@ -13,6 +13,7 @@ import {
   EscrowRequest,
 } from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
+import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
 
@@ -28,7 +29,7 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB
   },
 });
-const prisma = new PrismaClient({
+export const prisma = new PrismaClient({
   datasources: {
     db: {
       url: process.env.DATABASE_URL ?? 'postgresql://localhost:5469/echo',
@@ -59,6 +60,9 @@ app.use(compression());
 
 // Use common router for utility routes
 app.use(standardRouter);
+
+// Use in-flight monitor router for monitoring endpoints
+app.use(inFlightMonitorRouter);
 
 // Main route handler - handles authentication, escrow, and business logic
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
