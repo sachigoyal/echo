@@ -77,6 +77,11 @@ const createMockContext = (
   clearAuth: async () => {
     console.log('Mock clear auth called');
   },
+
+  isInsufficientFunds: false,
+  setIsInsufficientFunds: () => {
+    console.log('Mock set is insufficient funds called');
+  },
   ...overrides,
 });
 
