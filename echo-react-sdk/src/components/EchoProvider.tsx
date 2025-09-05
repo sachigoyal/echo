@@ -45,6 +45,9 @@ export interface EchoContextValue {
   getToken: () => Promise<string | null>;
   clearAuth: () => Promise<void>;
   config: EchoConfig;
+  // Insufficient funds state
+  isInsufficientFunds: boolean;
+  setIsInsufficientFunds: (value: boolean) => void;
 }
 
 // Separate context for refresh state to prevent unnecessary re-renders
@@ -71,6 +74,9 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   const token = auth.user?.access_token || null;
 
   const echoClient = useEchoClient({ apiUrl });
+
+  // Insufficient funds state - shared across all components
+  const [isInsufficientFunds, setIsInsufficientFunds] = useState(false);
 
   const {
     balance,
@@ -134,6 +140,8 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
       getToken,
       clearAuth,
       config,
+      isInsufficientFunds,
+      setIsInsufficientFunds,
     }),
     [
       echoUser,
@@ -151,6 +159,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
       createPaymentLink,
       getToken,
       config,
+      isInsufficientFunds,
     ]
   );
 

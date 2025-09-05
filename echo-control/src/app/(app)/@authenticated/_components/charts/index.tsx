@@ -18,22 +18,33 @@ interface TabProps<T extends Record<string, number>> {
 interface Props<T extends Record<string, number>> {
   chartData: ChartData<T>[];
   tabs: TabProps<T>[];
+  height?: number | string;
 }
 
 export const Charts = <T extends Record<string, number>>({
   tabs,
   chartData,
+  height,
 }: Props<T>) => {
   return (
-    <Tabs defaultValue={tabs[0].trigger.value}>
+    <Tabs defaultValue={tabs[0].trigger.value} className="h-full">
       <TabsList>
         {tabs.map(tab => (
           <TabsTrigger key={tab.trigger.label} {...tab.trigger} />
         ))}
       </TabsList>
       {tabs.map(({ trigger, bars, tooltipRows }) => (
-        <TabsContent key={trigger.label} value={trigger.value}>
-          <BaseChart data={chartData} bars={bars} tooltipRows={tooltipRows} />
+        <TabsContent
+          key={trigger.label}
+          value={trigger.value}
+          className="flex-1 h-0"
+        >
+          <BaseChart
+            data={chartData}
+            bars={bars}
+            tooltipRows={tooltipRows}
+            height={height}
+          />
         </TabsContent>
       ))}
     </Tabs>
@@ -42,9 +53,13 @@ export const Charts = <T extends Record<string, number>>({
 
 interface LoadingChartsProps {
   tabs: string[];
+  height?: number | string;
 }
 
-export const LoadingCharts: React.FC<LoadingChartsProps> = ({ tabs }) => {
+export const LoadingCharts: React.FC<LoadingChartsProps> = ({
+  tabs,
+  height,
+}) => {
   return (
     <div className="animate-pulse">
       <Tabs defaultValue={tabs[0]}>
@@ -55,7 +70,7 @@ export const LoadingCharts: React.FC<LoadingChartsProps> = ({ tabs }) => {
         </TabsList>
         {tabs.map(tab => (
           <TabsContent key={tab} value={tab}>
-            <LoadingChart />
+            <LoadingChart height={height} />
           </TabsContent>
         ))}
       </Tabs>

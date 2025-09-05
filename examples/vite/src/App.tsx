@@ -1,7 +1,7 @@
 import {
   EchoProvider,
   EchoSignIn,
-  EchoTokenPurchase,
+  EchoTokens,
   useEcho,
 } from '@merit-systems/echo-react-sdk';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ import UseChatInterface from './components/UseChatInterface';
 type Tab = 'chat' | 'images' | 'use-chat';
 
 function Dashboard() {
-  const { user, balance, error, isLoading, signOut } = useEcho();
+  const { user, balance, error, isLoading } = useEcho();
   const [activeTab, setActiveTab] = useState<Tab>('chat');
 
   // Show loading state
@@ -76,7 +76,7 @@ function Dashboard() {
             Hi {user?.name}!
           </h1>
           <p className="text-gray-600 mb-6">You need tokens to get started.</p>
-          <EchoTokenPurchase amount={100} />
+          <EchoTokens amount={100} />
         </div>
       </div>
     );
@@ -97,20 +97,7 @@ function Dashboard() {
 
             {/* User info */}
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                <span className="font-medium">{user?.name}</span>
-                {balance && (
-                  <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                    ${balance.balance.toFixed(2)}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={signOut}
-                className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Sign Out
-              </button>
+              <EchoTokens amount={100} />
             </div>
           </div>
         </div>
@@ -174,7 +161,7 @@ function Dashboard() {
                   adding more credits.
                 </p>
               </div>
-              <EchoTokenPurchase amount={100} />
+              <EchoTokens amount={100} />
             </div>
           </div>
         )}

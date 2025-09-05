@@ -7,7 +7,9 @@ import { useMemo } from 'react';
 import { useEcho } from './useEcho';
 
 export const useEchoModelProviders = () => {
-  const { token, config } = useEcho();
+  const { token, config, setIsInsufficientFunds } = useEcho();
+
+  const onInsufficientFunds = () => setIsInsufficientFunds(true);
 
   return useMemo(() => {
     const baseConfig = {
@@ -17,9 +19,9 @@ export const useEchoModelProviders = () => {
     const getToken = async () => token;
 
     return {
-      openai: createEchoOpenAI(baseConfig, getToken),
-      anthropic: createEchoAnthropic(baseConfig, getToken),
-      google: createEchoGoogle(baseConfig, getToken),
+      openai: createEchoOpenAI(baseConfig, getToken, onInsufficientFunds),
+      anthropic: createEchoAnthropic(baseConfig, getToken, onInsufficientFunds),
+      google: createEchoGoogle(baseConfig, getToken, onInsufficientFunds),
     };
-  }, [token, config.appId, config.baseRouterUrl]);
+  }, [token, config.appId, config.baseRouterUrl, setIsInsufficientFunds]);
 };

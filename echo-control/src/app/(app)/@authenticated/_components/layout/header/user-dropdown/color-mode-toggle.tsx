@@ -11,7 +11,7 @@ export const ColorModeToggle = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex items-center  gap-2 text-left text-sm">
+    <div className="flex items-center gap-2 text-left text-sm">
       {[
         { theme: 'light' as const, Icon: Sun },
         { theme: 'dark' as const, Icon: Moon },
@@ -22,7 +22,7 @@ export const ColorModeToggle = () => {
           variant="ghost"
           onClick={() => setTheme(themeOption)}
           className={cn(
-            'size-fit p-1 hover:bg-foreground/10',
+            'size-fit md:size-fit p-1 hover:bg-foreground/10 shrink-0',
             theme === themeOption && 'bg-foreground/10 hover:bg-foreground/20'
           )}
         >
