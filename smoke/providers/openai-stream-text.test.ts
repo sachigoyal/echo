@@ -26,7 +26,7 @@ describe.concurrent('OpenAI streamText per model', () => {
       try {
         const tools = getOpenAITools(openai, model_id);
         const { textStream } = streamText({
-          model: await openai(model_id),
+          model: openai(model_id),
           prompt: 'One-word greeting.',
           tools: tools as ToolSet,
         });

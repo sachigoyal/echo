@@ -24,7 +24,7 @@ describe.concurrent('Gemini generateText per model', () => {
     it(`Gemini ${model_id}`, async () => {
       try {
         const { text } = await generateText({
-          model: await gemini(model_id),
+          model: gemini(model_id),
           prompt: 'One-word greeting.',
         });
         expect(text).toBeDefined();
