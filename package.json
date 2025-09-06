@@ -5,7 +5,7 @@
   "private": true,
   "packageManager": "pnpm@10.11.0",
   "scripts": {
-    "dev": "pnpm run --filter=echo-control --filter=echo-server --parallel dev",
+    "dev": "turbo run dev --filter=echo-control --filter=echo-server",
     "build": "pnpm run --recursive build",
     "build:server": "cd echo-server && pnpm run build && cd ..",
     "start:server": "cd echo-server && pnpm run start",
