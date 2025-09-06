@@ -2,7 +2,7 @@ import {
   OpenRouterModels,
   createEchoOpenRouter,
 } from '@merit-systems/echo-typescript-sdk';
-import { ToolSet, streamText } from 'ai';
+import { streamText } from 'ai';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   ECHO_APP_ID,
