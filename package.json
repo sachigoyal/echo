@@ -6,10 +6,6 @@
   "packageManager": "pnpm@10.11.0",
   "scripts": {
     "dev": "turbo run dev --filter=echo-control --filter=echo-server",
-    "build": "pnpm run --recursive build",
-    "build:server": "cd echo-server && pnpm run build && cd ..",
-    "start:server": "cd echo-server && pnpm run start",
-    "test": "pnpm run --recursive test",
     "test:unit": "cd echo-typescript-sdk && pnpm run build && cd .. && pnpm run --recursive --filter=!echo-server test:unit",
     "test:integration": "cd integration-tests && pnpm test",
     "test:all": "pnpm run test:unit && pnpm run test:integration",
@@ -17,10 +13,7 @@
     "lint:fix": "pnpm run --recursive lint:fix",
     "type-check": "pnpm run --recursive type-check",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "example:vite": "cd examples/vite && pnpm run dev",
-    "example:storybook": "cd echo-react-sdk && pnpm run storybook",
-    "prepare": "husky install"
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.34.1",
@@ -30,37 +23,9 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-unused-imports": "^4.1.4",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.2",
     "prettier": "^3.5.3",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
-  },
-  "lint-staged": {
-    "echo-control/**/*.{ts,tsx,js,jsx}": [
-      "cd echo-control && pnpm run lint"
-    ],
-    "echo-server/**/*.{ts,js}": [
-      "cd echo-server && pnpm run lint"
-    ],
-    "echo-typescript-sdk/**/*.{ts,js}": [
-      "cd echo-typescript-sdk && pnpm run lint"
-    ],
-    "create-echo-app/**/*.{ts,tsx,js,jsx}": [
-      "cd create-echo-app && pnpm run lint"
-    ],
-    "echo-react-sdk/**/*.{ts}": [
-      "cd echo-react-sdk && pnpm run lint"
-    ],
-    "echo-authjs-provider/**/*.{ts,tsx,js,jsx}": [
-      "cd echo-authjs-provider && pnpm run lint"
-    ],
-    "integration-tests/**/*.{ts,tsx,js,jsx}": [
-      "cd integration-tests && pnpm run lint"
-    ],
-    "**/*.{ts,tsx,js,jsx,json,md}": [
-      "pnpm run format:check"
-    ]
   },
   "dependencies": {
     "vitest": "^3.2.3"
