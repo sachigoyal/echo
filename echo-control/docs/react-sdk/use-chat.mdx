@@ -31,7 +31,7 @@ function App() {
 		abortSignal: AbortSignal | undefined;
 	}) => {
 		const result = streamText({
-			model: await openai("gpt-4o"),
+			model: openai("gpt-4o"),
 			messages: modelMessages,
 			abortSignal,
 			tools: {

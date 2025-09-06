@@ -115,7 +115,7 @@ function AIComponent() {
   
   const handleGenerate = async () => {
     const { text } = await generateText({
-      model: await openai('gpt-4'),
+      model: openai('gpt-4'),
       prompt: 'Hello world'
     });
     

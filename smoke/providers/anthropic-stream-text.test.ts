@@ -24,7 +24,7 @@ describe.concurrent('Anthropic streamText per model', () => {
     it(`Anthropic stream ${model_id}`, async () => {
       try {
         const { textStream } = streamText({
-          model: await anthropic(model_id),
+          model: anthropic(model_id),
           prompt: 'One-word greeting.',
         });
         let streamed = '';

@@ -1,7 +1,7 @@
 import {
-  EchoAnthropicProvider,
-  EchoGoogleProvider,
-  EchoOpenAIProvider,
+  AnthropicProvider,
+  GoogleGenerativeAIProvider,
+  OpenAIProvider,
   User,
 } from '@merit-systems/echo-typescript-sdk';
 import { NextRequest } from 'next/server';
@@ -40,7 +40,7 @@ export type EchoResult = {
   getUser: () => Promise<User | null>;
   isSignedIn: () => Promise<boolean>;
 
-  openai: EchoOpenAIProvider;
-  anthropic: EchoAnthropicProvider;
-  google: EchoGoogleProvider;
+  openai: OpenAIProvider;
+  anthropic: AnthropicProvider;
+  google: GoogleGenerativeAIProvider;
 };

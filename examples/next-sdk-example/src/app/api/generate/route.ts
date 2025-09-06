@@ -5,7 +5,7 @@ export async function POST(req: Request) {
   const { prompt } = await req.json();
 
   const result = await generateImage({
-    model: await openai.image('gpt-image-1'),
+    model: openai.image('gpt-image-1'),
     prompt,
   });
 
