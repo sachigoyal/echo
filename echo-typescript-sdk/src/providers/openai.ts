@@ -3,7 +3,7 @@ import {
   OpenAIProvider,
 } from '@ai-sdk/openai';
 import { ROUTER_BASE_URL } from 'config';
-import { echoFetch } from 'index';
+import { echoFetch } from './index';
 import { EchoConfig } from '../types';
 
 export function createEchoOpenAI(
