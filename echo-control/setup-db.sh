@@ -25,10 +25,10 @@ fi
 
 # Start PostgreSQL container
 echo "🐳 Starting PostgreSQL container..."
-docker-compose up -d postgres
+docker-compose -f docker-local-db.yml up -d postgres
 
 # Wait for PostgreSQL to be ready
-# No need for manual health check since docker-compose.yml already has healthcheck configured
+# No need for manual health check since docker-local-db.yml already has healthcheck configured
 
 echo "✅ PostgreSQL is ready!"
 
