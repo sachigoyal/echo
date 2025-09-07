@@ -6,6 +6,7 @@
   "packageManager": "pnpm@10.11.0",
   "scripts": {
     "dev": "turbo run dev --filter=echo-control --filter=echo-server",
+    "build": "pnpm run --recursive build",
     "test:unit": "cd echo-typescript-sdk && pnpm run build && cd .. && pnpm run --recursive --filter=!echo-server test:unit",
     "test:integration": "cd integration-tests && pnpm test",
     "test:all": "pnpm run test:unit && pnpm run test:integration",
