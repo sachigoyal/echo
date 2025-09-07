@@ -411,8 +411,8 @@ importers:
   echo-next-sdk:
     dependencies:
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.12
-        version: 1.0.12(zod@4.0.17)
+        specifier: 1.0.13
+        version: 1.0.13(zod@4.0.17)
       ai:
         specifier: ^5.0.17
         version: 5.0.22(zod@4.0.17)
@@ -451,8 +451,8 @@ importers:
         specifier: ^2.0.17
         version: 2.0.19(react@19.1.1)(zod@4.0.17)
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.12
-        version: 1.0.12(zod@4.0.17)
+        specifier: 1.0.13
+        version: 1.0.13(zod@4.0.17)
       ai:
         specifier: ^5.0.19
         version: 5.0.22(zod@4.0.17)
@@ -566,8 +566,8 @@ importers:
         specifier: ^1.34.0
         version: 1.34.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.12
-        version: 1.0.12(zod@4.0.17)
+        specifier: 1.0.13
+        version: 1.0.13(zod@4.0.17)
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -1953,8 +1953,8 @@ packages:
       '@types/react': 19.1.10
       react: '>=16'
 
-  '@merit-systems/echo-typescript-sdk@1.0.12':
-    resolution: {integrity: sha512-dSV1rVkTJJzTM/2G+iyf1Na6omUGeJlU/PYaDzJy06KeUgMWVPdYcQ3yJyg76dEnmfuCR6twKkU8QWasAFqCaQ==}
+  '@merit-systems/echo-typescript-sdk@1.0.13':
+    resolution: {integrity: sha512-JB7hG2Ov+ReTX58J8eAwUqCSD+5//Eow5Eo2YsDu5jsNjsCujXMWzCFwmNPPO4/95FQ4i4EZc/EHW1B7CI8fqw==}
 
   '@merit-systems/echo-typescript-sdk@1.0.6':
     resolution: {integrity: sha512-ueT+1krc+mQSU72dSSn5T/ZYQDytAhM1YXXLmRy/qAToQGKgmimGCooAzX3aBZHHgeGRixJf7Iy2vHepXGqcCA==}
@@ -10907,7 +10907,7 @@ snapshots:
       '@types/react': 19.1.10
       react: 19.1.1
 
-  '@merit-systems/echo-typescript-sdk@1.0.12(zod@4.0.17)':
+  '@merit-systems/echo-typescript-sdk@1.0.13(zod@4.0.17)':
     dependencies:
       '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
       '@ai-sdk/google': 2.0.8(zod@4.0.17)
