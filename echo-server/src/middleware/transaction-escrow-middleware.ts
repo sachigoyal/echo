@@ -99,13 +99,12 @@ export class TransactionEscrowMiddleware {
         currentInFlightRequest &&
         currentInFlightRequest.numberInFlight >= MAX_IN_FLIGHT_REQUESTS
       ) {
-     
         logMetric('max_in_flight_requests_hit', 1, {
           userId,
           echoAppId,
           currentInFlightRequest: currentInFlightRequest.numberInFlight,
         });
-        
+
         logger.warn('Max in-flight requests limit reached', {
           userId,
           echoAppId,
@@ -117,7 +116,7 @@ export class TransactionEscrowMiddleware {
       // // Check balance constraints
       // const estimatedCost =
       //   (currentInFlightRequest?.numberInFlight || 0) *
-      //   ESTIMATED_COST_PER_TRANSACTION; 
+      //   ESTIMATED_COST_PER_TRANSACTION;
 
       // if (estimatedCost >= effectiveBalance) {
       //   throw new PaymentRequiredError(
@@ -260,17 +259,17 @@ export class TransactionEscrowMiddleware {
   private async cleanupOrphanedRequests(): Promise<void> {
     const cutoffTime = new Date(Date.now() - REQUEST_TIMEOUT_MS);
 
-      // Bulk update all orphaned requests
-      const result = await this.db.inFlightRequest.updateMany({
-        where: {
-          numberInFlight: { gt: 0 },
-          updatedAt: { lt: cutoffTime },
-        },
-        data: {
-          numberInFlight: 0,
-          updatedAt: new Date(),
-        },
-      });
+    // Bulk update all orphaned requests
+    const result = await this.db.inFlightRequest.updateMany({
+      where: {
+        numberInFlight: { gt: 0 },
+        updatedAt: { lt: cutoffTime },
+      },
+      data: {
+        numberInFlight: 0,
+        updatedAt: new Date(),
+      },
+    });
 
     if (result.count > 0) {
       logger.info(`Cleaned up ${result.count} orphaned requests`);
