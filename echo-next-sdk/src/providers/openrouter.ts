@@ -5,6 +5,6 @@ import {
   OpenAIProvider,
 } from '@merit-systems/echo-typescript-sdk';
 
-export function createEchoOpenAI(config: EchoConfig): OpenAIProvider {
+export function createEchoOpenRouter(config: EchoConfig): OpenAIProvider {
   return createEchoOpenAIBase(config, async () => getEchoToken(config));
 }

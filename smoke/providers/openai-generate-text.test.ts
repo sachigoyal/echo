@@ -26,7 +26,7 @@ describe.concurrent('OpenAI generateText per model', () => {
       try {
         const tools = getOpenAITools(openai, model_id);
         const { text } = await generateText({
-          model: await openai(model_id),
+          model: openai(model_id),
           prompt: 'One-word greeting.',
           tools: tools as ToolSet,
         });

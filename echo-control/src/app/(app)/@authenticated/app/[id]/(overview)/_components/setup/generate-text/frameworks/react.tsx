@@ -45,7 +45,7 @@ export default function Chat() {
 
   const handleGen = async () => {
       const { text } = await generateText({
-          model: await openai('gpt-5-nano'),
+          model: openai('gpt-5-nano'),
           prompt: 'Two sentences. What is the cleanest way to make $1M?'
       });
       setResult(text);

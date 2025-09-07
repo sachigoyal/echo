@@ -1,10 +1,10 @@
-import { getEchoToken } from '../auth/token-manager';
 import {
+  AnthropicProvider,
   createEchoAnthropic as createEchoAnthropicBase,
-  EchoAnthropicProvider,
   EchoConfig,
 } from '@merit-systems/echo-typescript-sdk';
+import { getEchoToken } from '../auth/token-manager';
 
-export function createEchoAnthropic(config: EchoConfig): EchoAnthropicProvider {
+export function createEchoAnthropic(config: EchoConfig): AnthropicProvider {
   return createEchoAnthropicBase(config, async () => getEchoToken(config));
 }

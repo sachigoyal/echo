@@ -28,7 +28,7 @@ All Gemini models are supported via the `GeminiModel` type:
 
 ```typescript
   const result = streamText({
-  model: await openai.chat('gemini-2.0-flash'),
+  model: openai.chat('gemini-2.0-flash'),
     messages: convertToModelMessages(messages),
   });
 

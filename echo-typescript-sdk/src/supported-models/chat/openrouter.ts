@@ -315,6 +315,7 @@ export type OpenRouterModel =
   | 'x-ai/grok-3-mini'
   | 'x-ai/grok-3-mini-beta'
   | 'x-ai/grok-4'
+  | 'x-ai/grok-code-fast-1'
   | 'x-ai/grok-vision-beta'
   | 'z-ai/glm-4-32b'
   | 'z-ai/glm-4.5'
@@ -2199,6 +2200,12 @@ export const OpenRouterModels: SupportedModel[] = [
     model_id: 'x-ai/grok-4',
     input_cost_per_token: 0.000003,
     output_cost_per_token: 0.000015,
+    provider: 'OpenRouter',
+  },
+  {
+    model_id: 'x-ai/grok-code-fast-1',
+    input_cost_per_token: 0.0000002,
+    output_cost_per_token: 0.0000015,
     provider: 'OpenRouter',
   },
   {

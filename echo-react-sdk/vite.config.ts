@@ -78,4 +78,8 @@ export default defineConfig({
     // Ensure JSX runtime is preserved as external
     jsx: 'preserve',
   },
+
+  optimizeDeps: {
+    exclude: ['@merit-systems/echo-typescript-sdk'],
+  },
 });

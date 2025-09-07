@@ -1,14 +1,13 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 import { EchoConfig, EchoResult } from './types';
 
 import { createEchoAnthropic } from 'providers/anthropic';
 import { createEchoGoogle } from 'providers/google';
 import { createEchoOpenAI } from 'providers/openai';
 
-import { resolveEchoBaseUrl } from 'config';
+import { RefreshTokenResponse } from 'auth/token-manager';
 import { handleEchoClientProxy } from 'proxy';
 import {
   handleCallback,
@@ -56,13 +55,11 @@ export default function Echo(config: EchoConfig): EchoResult {
   const getUser = async () => {
     // read only access token, if expired we are fucked
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get('echo_access_token')?.value;
-    if (!accessToken) {
+    const userInfo = cookieStore.get('echo_user_info')?.value;
+    if (!userInfo) {
       return null;
     }
-    const baseUrl = resolveEchoBaseUrl(config);
-    const echo = new EchoClient({ apiKey: accessToken, baseUrl });
-    const user = await echo.users.getUserInfo();
+    const user = JSON.parse(userInfo) as RefreshTokenResponse['user'];
     return user;
   };
 
