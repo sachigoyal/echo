@@ -411,8 +411,8 @@ importers:
   echo-next-sdk:
     dependencies:
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.11
-        version: 1.0.11(zod@4.0.17)
+        specifier: 1.0.13
+        version: 1.0.13(zod@4.0.17)
       ai:
         specifier: ^5.0.17
         version: 5.0.22(zod@4.0.17)
@@ -451,8 +451,8 @@ importers:
         specifier: ^2.0.17
         version: 2.0.19(react@19.1.1)(zod@4.0.17)
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.11
-        version: 1.0.11(zod@4.0.17)
+        specifier: 1.0.13
+        version: 1.0.13(zod@4.0.17)
       ai:
         specifier: ^5.0.19
         version: 5.0.22(zod@4.0.17)
@@ -566,8 +566,8 @@ importers:
         specifier: ^1.34.0
         version: 1.34.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.8
-        version: 1.0.8(zod@4.0.17)
+        specifier: 1.0.13
+        version: 1.0.13(zod@4.0.17)
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -704,6 +704,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^2.0.16
         version: 2.0.19(zod@4.0.17)
+      '@openrouter/ai-sdk-provider':
+        specifier: ^1.2.0
+        version: 1.2.0(ai@5.0.22(zod@4.0.17))(zod@4.0.17)
       ai:
         specifier: ^5.0.18
         version: 5.0.22(zod@4.0.17)
@@ -1950,14 +1953,11 @@ packages:
       '@types/react': 19.1.10
       react: '>=16'
 
-  '@merit-systems/echo-typescript-sdk@1.0.11':
-    resolution: {integrity: sha512-G4wmeiybjE0256jdY5LMrcj19XAS+O8P+evyQwUyhDEjdYgGD9iKNDBiEdyIuE5/TD6PrfhuX/WxcBW3FnNmHA==}
+  '@merit-systems/echo-typescript-sdk@1.0.13':
+    resolution: {integrity: sha512-JB7hG2Ov+ReTX58J8eAwUqCSD+5//Eow5Eo2YsDu5jsNjsCujXMWzCFwmNPPO4/95FQ4i4EZc/EHW1B7CI8fqw==}
 
   '@merit-systems/echo-typescript-sdk@1.0.6':
     resolution: {integrity: sha512-ueT+1krc+mQSU72dSSn5T/ZYQDytAhM1YXXLmRy/qAToQGKgmimGCooAzX3aBZHHgeGRixJf7Iy2vHepXGqcCA==}
-
-  '@merit-systems/echo-typescript-sdk@1.0.8':
-    resolution: {integrity: sha512-97AgOYiP7mmlPz0lUOHBn8mza/PGLGixIEBcE9XI+xi0PJshbhtOANVNKx1EPK2zuo0kUl3vII36RaZyHWmhEA==}
 
   '@merit-systems/sdk@0.0.7':
     resolution: {integrity: sha512-gUfuAGyhfrg/LxwmOcs3VDELk/1uUPz9xEU3act18+g+ZIdH48S66keCC4cUnCLGo5iRSaGICcYYrIQJEpWoBg==}
@@ -2340,6 +2340,13 @@ packages:
 
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
+
+  '@openrouter/ai-sdk-provider@1.2.0':
+    resolution: {integrity: sha512-stuIwq7Yb7DNmk3GuCtz+oS3nZOY4TXEV3V5KsknDGQN7Fpu3KRMQVWRc1J073xKdf0FC9EHOctSyzsACmp5Ag==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      ai: ^5.0.0
+      zod: ^3.24.1 || ^v4
 
   '@opentelemetry/api-logs@0.200.0':
     resolution: {integrity: sha512-IKJBQxh91qJ+3ssRly5hYEJ8NDHu9oY/B1PXVSCWf7zytmYO9RNLB0Ox9XQ/fJ8m6gY6Q6NtBWlmXfaXt5Uc4Q==}
@@ -10900,25 +10907,17 @@ snapshots:
       '@types/react': 19.1.10
       react: 19.1.1
 
-  '@merit-systems/echo-typescript-sdk@1.0.11(zod@4.0.17)':
+  '@merit-systems/echo-typescript-sdk@1.0.13(zod@4.0.17)':
     dependencies:
       '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
       '@ai-sdk/google': 2.0.8(zod@4.0.17)
       '@ai-sdk/openai': 2.0.19(zod@4.0.17)
+      '@openrouter/ai-sdk-provider': 1.2.0(ai@5.0.22(zod@4.0.17))(zod@4.0.17)
       ai: 5.0.22(zod@4.0.17)
     transitivePeerDependencies:
       - zod
 
   '@merit-systems/echo-typescript-sdk@1.0.6(zod@4.0.17)':
-    dependencies:
-      '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
-      '@ai-sdk/google': 2.0.8(zod@4.0.17)
-      '@ai-sdk/openai': 2.0.19(zod@4.0.17)
-      ai: 5.0.22(zod@4.0.17)
-    transitivePeerDependencies:
-      - zod
-
-  '@merit-systems/echo-typescript-sdk@1.0.8(zod@4.0.17)':
     dependencies:
       '@ai-sdk/anthropic': 2.0.6(zod@4.0.17)
       '@ai-sdk/google': 2.0.8(zod@4.0.17)
@@ -11406,6 +11405,11 @@ snapshots:
       outvariant: 1.4.3
 
   '@open-draft/until@2.1.0': {}
+
+  '@openrouter/ai-sdk-provider@1.2.0(ai@5.0.22(zod@4.0.17))(zod@4.0.17)':
+    dependencies:
+      ai: 5.0.22(zod@4.0.17)
+      zod: 4.0.17
 
   '@opentelemetry/api-logs@0.200.0':
     dependencies:
@@ -14455,14 +14459,14 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.3(msw@2.10.2(@types/node@20.19.1)(typescript@5.8.3))(vite@6.3.5(@types/node@20.19.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0))':
+  '@vitest/mocker@3.2.3(msw@2.10.2(@types/node@20.19.1)(typescript@5.8.3))(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0))':
     dependencies:
       '@vitest/spy': 3.2.3
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
       msw: 2.10.2(@types/node@20.19.1)(typescript@5.8.3)
-      vite: 6.3.5(@types/node@20.19.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0)
+      vite: 6.3.5(@types/node@24.0.3)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0)
 
   '@vitest/mocker@3.2.3(msw@2.10.2(@types/node@24.0.3)(typescript@5.8.3))(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0))':
     dependencies:
@@ -20741,7 +20745,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.3
-      '@vitest/mocker': 3.2.3(msw@2.10.2(@types/node@20.19.1)(typescript@5.8.3))(vite@6.3.5(@types/node@20.19.1)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0))
+      '@vitest/mocker': 3.2.3(msw@2.10.2(@types/node@20.19.1)(typescript@5.8.3))(vite@6.3.5(@types/node@24.0.3)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0))
       '@vitest/pretty-format': 3.2.3
       '@vitest/runner': 3.2.3
       '@vitest/snapshot': 3.2.3

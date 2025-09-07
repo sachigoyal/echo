@@ -1,6 +1,7 @@
 export * from './anthropic';
 export * from './google';
 export * from './openai';
+export * from './openrouter';
 
 export function echoFetch(
   originalFetch: typeof fetch,
@@ -32,3 +33,4 @@ export function echoFetch(
 export { type AnthropicProvider } from '@ai-sdk/anthropic';
 export { type GoogleGenerativeAIProvider } from '@ai-sdk/google';
 export { type OpenAIProvider } from '@ai-sdk/openai';
+export { type OpenRouterProvider } from '@openrouter/ai-sdk-provider';
