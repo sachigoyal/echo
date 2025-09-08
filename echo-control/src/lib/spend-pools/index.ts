@@ -1,7 +1,6 @@
-import { db } from '../db';
 import type { SpendPool, Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
-import { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo } from './types';
+import { UserSpendInfo } from './types';
 
 // Export types
 export type { UserSpendInfo };

@@ -1,11 +1,7 @@
 import { db } from '@/lib/db';
 import { CustomerEchoApp } from './types';
-import { getOwnerDetails, getOwnerDetailsBatch } from './owner';
-import {
-  getCustomerStatistics,
-  getCustomerStatisticsBatch,
-} from './customer-statistics';
-import { AppRole } from '../permissions';
+import { getOwnerDetails } from './owner';
+import { getCustomerStatistics } from './customer-statistics';
 
 /**
  * Get customer echo app with personal and global statistics

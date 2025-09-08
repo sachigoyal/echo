@@ -8,7 +8,6 @@ import { userBalanceRouter } from './balance';
 import { userApiKeysRouter } from './api-keys';
 import { userPaymentsRouter } from './payments';
 import { userRedeemCodeRouter } from './redeem';
-import { userReferralRouter } from './referral';
 import { userPublicRouter } from './public';
 import { userPayoutRouter } from './payout';
 import { userGithubLinkRouter } from './github-link';
@@ -21,7 +20,6 @@ export const userRouter = createTRPCRouter({
   apiKeys: userApiKeysRouter,
   payments: userPaymentsRouter,
   redeem: userRedeemCodeRouter,
-  referral: userReferralRouter,
   public: userPublicRouter,
   payout: userPayoutRouter,
   githubLink: userGithubLinkRouter,
