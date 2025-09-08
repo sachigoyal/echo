@@ -39,7 +39,7 @@ import {
   Hash,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { formatNumber } from '@/components/app-detail/AppDetailShared';
+import { formatNumber } from '@/lib/utils';
 
 interface AppTransactionDetailsProps {
   appId: string;

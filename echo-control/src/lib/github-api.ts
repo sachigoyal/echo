@@ -7,7 +7,7 @@ export interface GitHubUser {
   type: 'User' | 'Organization';
 }
 
-export interface GitHubRepo {
+interface GitHubRepo {
   id: number;
   name: string;
   full_name: string;
