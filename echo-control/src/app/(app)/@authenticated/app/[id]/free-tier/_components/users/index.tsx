@@ -39,6 +39,9 @@ interface Props {
 }
 
 export const FreeTierUsersTable: React.FC<Props> = ({ appId }) => {
+  const [freeTier] = api.apps.app.freeTier.get.useSuspenseQuery({
+    appId,
+  });
   const [users, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
     api.apps.app.freeTier.users.list.useSuspenseInfiniteQuery(
       { appId },
@@ -74,7 +77,11 @@ export const FreeTierUsersTable: React.FC<Props> = ({ appId }) => {
           }))}
         />
       ) : (
-        <TableEmpty colSpan={4}>No users found</TableEmpty>
+        <TableEmpty colSpan={4}>
+          {freeTier
+            ? 'No free tier created yet'
+            : 'No users have used the free tier yet'}
+        </TableEmpty>
       )}
     </BaseUsersTable>
   );
