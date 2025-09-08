@@ -18,13 +18,6 @@ import '@/styles/globals.css';
 export const metadata: Metadata = {
   title: 'Echo',
   description: 'Monetize AI Apps in Minutes',
-  icons: {
-    icon: [
-      { url: '/logo/dark.svg', media: '(prefers-color-scheme: dark)' },
-      { url: '/logo/light.svg', media: '(prefers-color-scheme: light)' },
-    ],
-    shortcut: '/logo/dark.svg',
-  },
   appleWebApp: {
     title: 'Echo',
     statusBarStyle: 'black-translucent',
