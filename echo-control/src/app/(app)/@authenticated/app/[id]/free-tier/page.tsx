@@ -12,6 +12,12 @@ import {
   LoadingFreeTierUsersTable,
 } from './_components/users';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Free Tier',
+};
+
 export default async function FreeTierPage({
   params,
 }: PageProps<'/app/[id]/free-tier'>) {
