@@ -14,6 +14,7 @@ import { auth, signIn } from '@/auth';
 import { oauthProviders } from '@/auth/providers';
 
 import { cn } from '@/lib/utils';
+import { Route } from 'next';
 
 export default async function SignInPage({
   searchParams,
@@ -26,7 +27,7 @@ export default async function SignInPage({
   const session = await auth();
 
   if (session) {
-    return redirect(redirectTo);
+    return redirect(redirectTo as Route);
   }
 
   return (

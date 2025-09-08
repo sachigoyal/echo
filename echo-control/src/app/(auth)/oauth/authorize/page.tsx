@@ -74,10 +74,7 @@ export default async function OAuthAuthorizePage({
       redirectUrl.searchParams.set(key, value);
     }
 
-    const loginUrl = new URL('/login', process.env.ECHO_CONTROL_APP_BASE_URL);
-    loginUrl.searchParams.set('redirect_uri', redirectUrl.toString());
-
-    return redirect(loginUrl.toString());
+    return redirect(`/login?redirect_uri=${redirectUrl.toString()}`);
   }
 
   const [appDetails, owner] = await Promise.all([

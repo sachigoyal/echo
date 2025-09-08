@@ -5,6 +5,7 @@ import {
   getAuthorizationRedirect,
 } from '@/app/(auth)/_lib/authorize';
 import { api } from '@/trpc/server';
+import { Route } from 'next';
 import { redirect } from 'next/navigation';
 
 export const authorize = async (params: AuthorizeParams) => {
@@ -38,5 +39,5 @@ export const authorize = async (params: AuthorizeParams) => {
     return { error: 'unauthorized', error_description: 'Invalid redirect URL' };
   }
 
-  return redirect(redirect_url);
+  return redirect(redirect_url as Route);
 };
