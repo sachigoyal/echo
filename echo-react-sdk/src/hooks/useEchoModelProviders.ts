@@ -23,7 +23,11 @@ export const useEchoModelProviders = () => {
       openai: createEchoOpenAI(baseConfig, getToken, onInsufficientFunds),
       anthropic: createEchoAnthropic(baseConfig, getToken, onInsufficientFunds),
       google: createEchoGoogle(baseConfig, getToken, onInsufficientFunds),
-      openrouter: createEchoOpenRouter(baseConfig, getToken, onInsufficientFunds),
+      openrouter: createEchoOpenRouter(
+        baseConfig,
+        getToken,
+        onInsufficientFunds
+      ),
     };
   }, [token, config.appId, config.baseRouterUrl, setIsInsufficientFunds]);
 };

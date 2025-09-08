@@ -72,9 +72,47 @@ export async function handleSignIn(
 }
 
 /**
+ * Handle OAuth signout request - redirect to home page and clear cookies
+ * @param req - The incoming Next.js request
+ * @param config - Echo configuration
+ * @returns NextResponse with redirect to home page and cookies cleared
+ */
+export async function handleSignOut(
+  req: NextRequest,
+  config: EchoConfig
+): Promise<NextResponse> {
+  const { origin } = req.nextUrl;
+  const response = NextResponse.redirect(`${origin}`);
+
+  // Clear all authentication cookies to properly sign out the user
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    maxAge: 0,
+    path: '/',
+  };
+
+  response.cookies.set('echo_access_token', '', cookieOptions);
+  response.cookies.set('echo_refresh_token', '', cookieOptions);
+  response.cookies.set('echo_user_info', '', cookieOptions);
+  response.cookies.set('echo_refresh_token_expires', '', cookieOptions);
+
+  return response;
+}
+
+/**
  * Handle OAuth callback - exchange authorization code for tokens
  * @param req - The incoming Next.js request
  * @param config - Echo configuration
+
+  response.cookies.set('echo_access_token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  });
  * @returns NextResponse with redirect to home page and tokens set as cookies
  */
 export async function handleCallback(

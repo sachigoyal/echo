@@ -13,6 +13,7 @@ import {
   handleCallback,
   handleRefresh,
   handleSignIn,
+  handleSignOut,
 } from './auth/oauth-handlers';
 
 /**
@@ -36,6 +37,9 @@ export default function Echo(config: EchoConfig): EchoResult {
       // all the auth stuff
       case '/signin':
         return handleSignIn(req, config);
+
+      case '/signout':
+        return handleSignOut(req, config);
 
       case '/callback':
         return handleCallback(req, config);
