@@ -11,12 +11,13 @@ import { PostHogProvider } from '@/components/PostHogProvider';
 import { Toaster } from '@/components/ui/sonner';
 
 import type { Metadata } from 'next';
+import type { Viewport } from 'next';
 
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Echo',
-  description: 'Control plane for Echo applications',
+  description: 'Monetize AI Apps in Minutes',
   icons: {
     icon: [
       { url: '/logo/dark.svg', media: '(prefers-color-scheme: dark)' },
@@ -24,6 +25,23 @@ export const metadata: Metadata = {
     ],
     shortcut: '/logo/dark.svg',
   },
+  appleWebApp: {
+    title: 'Echo',
+    statusBarStyle: 'black-translucent',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  height: 'device-height',
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#090909' },
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+  ],
 };
 
 export default function RootLayout({
