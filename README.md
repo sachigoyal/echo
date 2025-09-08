@@ -17,13 +17,14 @@ Charge usage-based billing for your product to start generating revenue risk-fre
 - [Echo Next.js SDK](./echo-next-sdk) SDK for simple Next.js 15+ App Router integration.
 - [Echo React SDK](./echo-react-sdk) SDK for simple React client side SPA integration.
 
-
 ## Examples
 
 - [Echo Next.js Example](./examples/next-sdk-example)
 - [Echo React SDK](./examples/vite)
 
 # Development
+
 Fill out `echo-control/.env` and `echo-server/.env`. Then...
+
 - `pnpm i`
 - `pnpm dev`
