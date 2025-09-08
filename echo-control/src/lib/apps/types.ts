@@ -2,6 +2,8 @@ import { EchoApp, ApiKey, GithubLink } from '@/generated/prisma';
 import { SerializedTransaction } from '@/lib/utils/serialization';
 import { UserSpendInfo } from '@/lib/spend-pools';
 
+export type { SerializedTransaction };
+
 export type Owner = {
   id: string;
   email: string;

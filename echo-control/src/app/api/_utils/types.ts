@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodType } from 'zod';
 
 /**
  * Function that is called when the route handler is executed and all the middleware has been executed
