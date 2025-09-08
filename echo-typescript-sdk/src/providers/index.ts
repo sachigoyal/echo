@@ -14,15 +14,24 @@ export function echoFetch(
       init.headers = { ...init.headers, Authorization: `Bearer ${token}` };
 
     // Do the actual fetch
-    const response = await originalFetch(input, init);
+    let response = await originalFetch(input, init);
+    if (response.status === 401) {
+      // Hard Refresh of the token, and do a request once more with the new token
+      const token = await getTokenFn();
+
+      if (init)
+        init.headers = {
+          ...init.headers,
+          ...(token && { Authorization: `Bearer ${token}` }),
+        };
+
+      const newResponse = await originalFetch(input, init);
+      response = newResponse;
+    }
 
     // post processing
     if (response.status === 402) {
       onInsufficientFunds?.();
-    }
-
-    if (response.status === 401) {
-      // TODO: retry with a new token (do a refresh)
     }
 
     return response;

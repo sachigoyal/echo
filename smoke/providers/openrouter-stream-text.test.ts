@@ -20,10 +20,10 @@ describe.concurrent('OpenAI streamText per model', () => {
     getToken
   );
 
-    for (const { model_id } of OpenRouterModels) {
+  for (const { model_id } of OpenRouterModels) {
     it(`OpenRouter stream ${model_id}`, async () => {
       try {
-          const { textStream } = streamText({
+        const { textStream } = streamText({
           model: openrouter(model_id),
           prompt: 'One-word greeting.',
         });
@@ -34,7 +34,9 @@ describe.concurrent('OpenAI streamText per model', () => {
         expect(streamed).not.toBe('');
       } catch (err) {
         const details = getApiErrorDetails(err);
-        throw new Error(`[streamText] OpenRouter ${model_id} failed: ${details}`);
+        throw new Error(
+          `[streamText] OpenRouter ${model_id} failed: ${details}`
+        );
       }
     });
   }
