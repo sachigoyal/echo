@@ -2,6 +2,7 @@
 title: TypeScript CLI
 description: Build AI CLI apps with Echo's billing infrastructure
 ---
+
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # TypeScript CLI with Echo
@@ -39,7 +40,7 @@ Create CLI tools that generate revenue from AI usage. Echo handles user authenti
 
     <Step>
         ### Create Echo App
-        Go to [echo.merit.systems/owner/apps/create](https://echo.merit.systems/owner/apps/create) to get your `app_id`.
+        Go to [echo.merit.systems/new](https://echo.merit.systems/new) to get your `app_id`.
     </Step>
 
     <Step>
@@ -55,7 +56,7 @@ Create CLI tools that generate revenue from AI usage. Echo handles user authenti
         // Get API key from user
         console.log('Opening Echo to create your API key...');
         await open(`https://echo.merit.systems/app/${APP_ID}/keys`);
-        
+
         const { apiKey } = await prompt({
           type: 'input',
           name: 'apiKey',
@@ -103,7 +104,7 @@ Create CLI tools that generate revenue from AI usage. Echo handles user authenti
           const payment = await echo.payments.createPaymentLink({
             amount: 10,
           });
-          
+
           console.log('Low balance. Opening payment link...');
           await open(payment.url);
         }

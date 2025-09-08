@@ -84,46 +84,6 @@ export async function updateSpendPoolFromPayment(
 }
 
 /**
- * Get all spend pools for an app
- */
-export async function getAppSpendPools(
-  appId: string
-): Promise<SpendPoolData[]> {
-  const spendPools = await db.spendPool.findMany({
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      totalPaid: true,
-      totalSpent: true,
-      perUserSpendLimit: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  return spendPools.map(spendPool => {
-    return {
-      id: spendPool.id,
-      name: spendPool.name,
-      description: spendPool.description || undefined,
-      totalPaid: Number(spendPool.totalPaid),
-      spentAmount: Number(spendPool.totalSpent),
-      remainingAmount:
-        Number(spendPool.totalPaid) - Number(spendPool.totalSpent),
-      defaultSpendLimit: spendPool.perUserSpendLimit
-        ? Number(spendPool.perUserSpendLimit)
-        : undefined,
-      createdAt: spendPool.createdAt,
-      updatedAt: spendPool.updatedAt,
-    };
-  });
-}
-/**
  * Internal function to get or create a free tier spend pool within an existing transaction
  */
 async function getOrCreateFreeTierSpendPoolInternal(
@@ -157,23 +117,4 @@ async function getOrCreateFreeTierSpendPoolInternal(
   }
 
   return spendPool;
-}
-
-/**
- * Update a spend pool
- */
-export async function updateSpendPool(
-  spendPoolId: string,
-  request: UpdateSpendPoolRequest
-): Promise<SpendPool> {
-  // Check if the spend pool exists
-  // Update the spend pool
-  const updatedSpendPool = await db.spendPool.update({
-    where: { id: spendPoolId },
-    data: {
-      perUserSpendLimit: request.defaultSpendLimit,
-    },
-  });
-
-  return updatedSpendPool;
 }
