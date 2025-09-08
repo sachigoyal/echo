@@ -187,6 +187,22 @@ export const appsRouter = createTRPCRouter({
         return await getFreeTierSpendPool(input.appId, ctx.session.user.id);
       }),
 
+      users: {
+        list: paginatedProcedure
+          .concat(appOwnerProcedure)
+          .input(appUsersSchema.omit({ spendPoolId: true }))
+          .query(async ({ input, ctx }) => {
+            const freeTier = await getFreeTierSpendPool(
+              input.appId,
+              ctx.session.user.id
+            );
+            return await listAppUsers(
+              { ...input, spendPoolId: freeTier?.id },
+              ctx.pagination
+            );
+          }),
+      },
+
       update: appOwnerProcedure
         .input(updateFreeTierSpendPoolSchema)
         .mutation(async ({ ctx, input }) => {

@@ -18,13 +18,19 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 import { formatCurrency } from '@/lib/balance';
 import { api } from '@/trpc/client';
 import { InfinitePaginationProps } from '@/types/infinite-pagination';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 interface User {
   id: string;
   name: string | null;
   image: string | null;
   totalTransactions: number;
-  rawCost: number;
+  totalCost: number;
   totalProfit: number;
 }
 
@@ -32,9 +38,9 @@ interface Props {
   appId: string;
 }
 
-export const UsersTable: React.FC<Props> = ({ appId }) => {
+export const FreeTierUsersTable: React.FC<Props> = ({ appId }) => {
   const [users, { hasNextPage, fetchNextPage, isFetchingNextPage }] =
-    api.apps.app.users.list.useSuspenseInfiniteQuery(
+    api.apps.app.freeTier.users.list.useSuspenseInfiniteQuery(
       { appId },
       {
         getNextPageParam: lastPage =>
@@ -63,7 +69,7 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
             name: row.name,
             image: row.image,
             totalTransactions: row.usage.totalTransactions,
-            rawCost: row.usage.rawCost,
+            totalCost: row.usage.totalCost,
             totalProfit: row.usage.markupProfit,
           }))}
         />
@@ -74,7 +80,7 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
   );
 };
 
-export const LoadingUsersTable = () => {
+export const LoadingFreeTierUsersTable = () => {
   return (
     <BaseUsersTable>
       <LoadingUserRow />
@@ -98,7 +104,7 @@ const UserRow = ({ user }: { user: User }) => {
       </TableCell>
       <TableCell className="text-center">{user.totalTransactions}</TableCell>
       <TableCell className="text-center">
-        {formatCurrency(user.rawCost)}
+        {formatCurrency(user.totalCost)}
       </TableCell>
       <TableCell className="text-right pr-4 text-primary font-bold">
         {formatCurrency(user.totalProfit)}
@@ -136,7 +142,11 @@ interface BaseUsersTableProps {
 
 const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
   return (
-    <>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Free Tier Users</CardTitle>
+        <CardDescription>Users who have used the free tier. </CardDescription>
+      </CardHeader>
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent text-xs">
@@ -147,7 +157,7 @@ const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
               Name
             </TableHead>
             <TableHead className="text-center">Transactions</TableHead>
-            <TableHead className="text-center">Cost</TableHead>
+            <TableHead className="text-center">Total Spent</TableHead>
             <TableHead className="text-right pr-4">Profit</TableHead>
           </TableRow>
         </TableHeader>
@@ -170,6 +180,6 @@ const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
           </Button>
         </div>
       )}
-    </>
+    </Card>
   );
 };
