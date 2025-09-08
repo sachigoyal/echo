@@ -31,7 +31,9 @@ describe.concurrent('OpenRouter generateText per model', () => {
         expect(text).not.toBe('');
       } catch (err) {
         const details = getApiErrorDetails(err);
-        throw new Error(`[generateText] OpenRouter ${model_id} failed: ${details}`);
+        throw new Error(
+          `[generateText] OpenRouter ${model_id} failed: ${details}`
+        );
       }
     });
   }

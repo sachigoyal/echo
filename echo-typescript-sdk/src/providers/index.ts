@@ -22,7 +22,17 @@ export function echoFetch(
     }
 
     if (response.status === 401) {
-      // TODO: retry with a new token (do a refresh)
+      // Hard Refresh of the token, and do a request once more with the new token
+      const token = await getTokenFn();
+
+      if (init)
+        init.headers = {
+          ...init.headers,
+          ...(token && { Authorization: `Bearer ${token}` }),
+        };
+
+      const newResponse = await originalFetch(input, init);
+      return newResponse;
     }
 
     return response;
