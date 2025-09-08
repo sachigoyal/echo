@@ -17,6 +17,15 @@ export function signIn(config?: EchoClientConfig) {
   window.location.href = `${window.location.origin}${basePath}/signin`;
 }
 
+export function signOut(config?: EchoClientConfig) {
+  if (typeof window === 'undefined') {
+    console.warn('signOut() can only be called in client components');
+    return;
+  }
+  const basePath = config?.basePath || '/api/echo';
+  window.location.href = `${window.location.origin}${basePath}/signout`;
+}
+
 /**
  * Create an Echo client for client-side usage (React components, hooks)
  * Uses relative URLs that work in the browser

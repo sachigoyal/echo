@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getEchoToken } from '../auth/token-manager';
 import { EchoConfig } from '../types';
-
 /**
  * Proxy requests to Echo service with automatic authentication
  */
@@ -38,7 +37,11 @@ export async function handleEchoClientProxy(
     const response = await fetch(targetUrl, {
       method: req.method,
       headers,
-      ...(req.method !== 'GET' && req.method !== 'HEAD' && { body: req.body }),
+      ...(req.method !== 'GET' &&
+        req.method !== 'HEAD' && {
+          body: req.body,
+          duplex: 'half',
+        }),
     });
 
     return response;
