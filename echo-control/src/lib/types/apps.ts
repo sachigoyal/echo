@@ -8,8 +8,6 @@ import type {
   OwnerEchoApp,
 } from '@/lib/apps/types';
 
-export { type CustomerEchoApp, type OwnerEchoApp } from '@/lib/apps/types';
-
 /**
  * Union type for any app - components should use this
  * and check the 'type' discriminator when needed
