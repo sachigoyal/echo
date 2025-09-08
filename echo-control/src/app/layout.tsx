@@ -25,7 +25,6 @@ export const metadata: Metadata = {
     title: 'Echo',
     statusBarStyle: 'black-translucent',
   },
-  metadataBase: new URL(process.env.ECHO_CONTROL_APP_BASE_URL as string),
 };
 
 export const viewport: Viewport = {

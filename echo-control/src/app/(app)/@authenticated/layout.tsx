@@ -10,8 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Route } from 'next';
 import { Book } from 'lucide-react';
 
-import { Metadata } from 'next';
-
 export default async function AppLayout({
   children,
   breadcrumbs,

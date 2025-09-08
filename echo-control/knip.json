@@ -10,7 +10,8 @@
     "eslint-config-next",
     "husky",
     "tw-animate-css",
-    "@merit-systems/echo-typescript-sdk"
+    "@merit-systems/echo-typescript-sdk",
+    "ts-morph"
   ],
   "ignore": [
     "/scripts/**",
