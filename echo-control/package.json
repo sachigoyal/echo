@@ -74,7 +74,6 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
-    "framer-motion": "^12.23.0",
     "fumadocs-core": "^15.7.1",
     "fumadocs-mdx": "^11.8.0",
     "fumadocs-typescript": "^4.0.6",
