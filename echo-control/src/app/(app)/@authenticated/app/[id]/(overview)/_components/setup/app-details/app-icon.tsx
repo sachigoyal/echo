@@ -101,7 +101,7 @@ export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
                     uploadImage(files[0]);
                   }}
                   disabled={isUploading || isCompleted}
-                  className="h-20 w-full flex flex-col items-center justify-center gap-1"
+                  className="h-20 md:h-20 w-full flex flex-col items-center justify-center gap-1"
                 >
                   {field.value ? (
                     <Image

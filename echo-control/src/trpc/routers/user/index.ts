@@ -1,4 +1,8 @@
-import { createTRPCRouter } from '../../trpc';
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  timeBasedPaginatedProcedure,
+} from '../../trpc';
 
 import { userBalanceRouter } from './balance';
 import { userApiKeysRouter } from './api-keys';
@@ -7,6 +11,11 @@ import { userRedeemCodeRouter } from './redeem';
 import { userEarningsRouter } from './earnings';
 import { userReferralRouter } from './referral';
 import { userPublicRouter } from './public';
+import { userPayoutRouter } from './payout';
+import { userGithubLinkRouter } from './github-link';
+
+import { getUserFeed, userFeedSchema } from '@/services/feed/feed';
+import { getUser } from '@/services/user';
 
 export const userRouter = createTRPCRouter({
   balance: userBalanceRouter,
@@ -16,4 +25,21 @@ export const userRouter = createTRPCRouter({
   earnings: userEarningsRouter,
   referral: userReferralRouter,
   public: userPublicRouter,
+  payout: userPayoutRouter,
+  githubLink: userGithubLinkRouter,
+
+  current: {
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return getUser(ctx.session.user.id);
+    }),
+  },
+
+  feed: {
+    list: timeBasedPaginatedProcedure
+      .concat(protectedProcedure)
+      .input(userFeedSchema)
+      .query(async ({ ctx, input }) => {
+        return getUserFeed(ctx.session.user.id, input, ctx.pagination);
+      }),
+  },
 });

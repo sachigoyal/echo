@@ -17,7 +17,7 @@ const AuthorizedCallbacksFormCard = ({
     <FormCard
       title="Authorized Callbacks"
       description="The URLs that are authorized to receive OAuth callbacks."
-      docsUrl="/docs/security"
+      docsUrl="/docs/advanced/callback-urls"
       isLoading={isLoading}
     >
       {children}

@@ -11,23 +11,12 @@ import {
 import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
 
-/**
- * Type of the middleware function passed to a safe action client.
- */
-export type MiddlewareFn<TContext, TReturnType, TMetadata = unknown> = {
-  (opts: {
-    context: TContext;
-    request: Request;
-    metadata?: TMetadata;
-  }): Promise<TReturnType>;
-};
-
 type InternalErrorBody = {
   message: string;
   errors?: z.core.$ZodIssue[];
 };
 
-export class InternalRouteHandlerError extends Error {
+class InternalRouteHandlerError extends Error {
   readonly body: InternalErrorBody;
   constructor(body: InternalErrorBody) {
     super(body.message);
@@ -295,7 +284,7 @@ export class RouteHandlerBuilder<
         ): Promise<NextResponse> => {
           if (index >= this.middlewares.length) {
             try {
-              const result = handler(request, {
+              const result = await handler(request, {
                 params: params as z.infer<TParams>,
                 query: query as z.infer<TQuery>,
                 body: body as z.infer<TBody>,

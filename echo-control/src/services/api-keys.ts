@@ -3,11 +3,7 @@ import { z } from 'zod';
 import { ApiKey, Prisma } from '@/generated/prisma';
 
 import { db } from '../lib/db';
-import {
-  AppRole,
-  MembershipStatus,
-  Permission,
-} from '../lib/permissions/types';
+import { AppRole, MembershipStatus } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
 import { generateApiKey, hashApiKey } from '../lib/crypto';
 import { PaginationParams, toPaginatedReponse } from './lib/pagination';
@@ -53,9 +49,7 @@ export const listApiKeys = async (
   };
 
   const [totalCount, apiKeys] = await Promise.all([
-    db.apiKey.count({
-      where,
-    }),
+    countApiKeysInternal(where),
     db.apiKey.findMany({
       where,
       skip,
@@ -88,6 +82,23 @@ export const listApiKeys = async (
   });
 };
 
+export const countApiKeys = async (
+  userId: string,
+  { appId }: z.infer<typeof listApiKeysSchema>
+) => {
+  return countApiKeysInternal({
+    userId,
+    isArchived: false,
+    echoApp: { id: appId },
+  });
+};
+
+const countApiKeysInternal = async (where: Prisma.ApiKeyWhereInput) => {
+  return db.apiKey.count({
+    where,
+  });
+};
+
 export const createApiKeySchema = z.object({
   echoAppId: z.string(),
   name: z.string().optional(),
@@ -98,19 +109,6 @@ export async function createApiKey(
   { echoAppId, name }: z.infer<typeof createApiKeySchema>
 ) {
   const userRole = await PermissionService.getUserAppRole(userId, echoAppId);
-
-  if (
-    !PermissionService.roleHasPermission(
-      userRole,
-      Permission.CREATE_API_KEYS
-    ) &&
-    !PermissionService.roleHasPermission(
-      userRole,
-      Permission.MANAGE_ALL_API_KEYS
-    )
-  ) {
-    throw new Error('Permission denied');
-  }
 
   const scope = [AppRole.OWNER, AppRole.ADMIN].includes(userRole)
     ? 'owner'

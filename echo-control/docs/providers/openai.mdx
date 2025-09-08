@@ -24,7 +24,7 @@ The OpenAI Responses API is fully supported through Echo's OpenAI provider.
 
 ```typescript
   const result = streamText({
-    model: await openai.responses('gpt-4o'),
+    model: openai.responses('gpt-4o'),
     messages: convertToModelMessages(messages),
   });
 
@@ -36,7 +36,7 @@ Echo also supports OpenAI's image generation capabilities through the GPT-image-
 
 ```typescript
   const result = await generateImage({
-    model: await openai.image('gpt-image-1'),
+    model: openai.image('gpt-image-1'),
     prompt,
   });
 ```

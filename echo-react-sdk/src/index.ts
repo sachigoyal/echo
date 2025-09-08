@@ -1,6 +1,8 @@
 export { EchoProvider } from './components/EchoProvider';
 export { EchoSignIn } from './components/EchoSignIn';
-export { EchoTokenPurchase } from './components/EchoTokenPurchase';
+export { EchoSignOut } from './components/EchoSignOut';
+export { EchoTokens } from './components/EchoTokens';
+export { InsufficientFundsModal } from './components/InsufficientFundsModal';
 export { Logo } from './components/Logo';
 
 export { useEcho } from './hooks/useEcho';
@@ -18,7 +20,8 @@ export type {
   EchoBalance,
   EchoAuthConfig as EchoConfig,
   EchoSignInProps,
-  EchoTokenPurchaseProps,
+  EchoSignOutProps,
+  EchoTokensProps,
   EchoUser,
 } from './types';
 

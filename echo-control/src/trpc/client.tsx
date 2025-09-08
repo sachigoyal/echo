@@ -12,6 +12,7 @@ import {
   splitLink,
 } from '@trpc/client';
 import { createTRPCReact } from '@trpc/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 
 import SuperJSON from 'superjson';
 
@@ -82,3 +83,5 @@ function getBaseUrl() {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
+
+export type RouterOutputs = inferRouterOutputs<AppRouter>;

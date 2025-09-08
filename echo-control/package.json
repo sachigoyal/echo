@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "docker-compose -f docker-local-db.yml up -d && sleep 3 && prisma generate",
     "dev": "next dev --turbopack",
     "prebuild": "prisma generate",
     "build": "next build",
@@ -18,7 +19,9 @@
     "prisma:migrate-deploy": "pnpx prisma migrate deploy",
     "check-types": "next typegen && tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "postinstall": "fumadocs-mdx"
+    "postinstall": "fumadocs-mdx",
+    "seed-referral-rewards": "tsx scripts/seed-referral-rewards.ts",
+    "seed-markup-rewards": "tsx scripts/seed-markup-rewards.ts  --transactions 50 --days 14"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
@@ -26,6 +29,8 @@
     "@coinbase/x402": "^0.5.0",
     "@hookform/resolvers": "^5.2.1",
     "@icons-pack/react-simple-icons": "^13.7.0",
+    "@merit-systems/echo-typescript-sdk": "1.0.14",
+    "@merit-systems/sdk": "^0.0.7",
     "@number-flow/react": "^0.5.10",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "0.57.2",

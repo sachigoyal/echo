@@ -11,7 +11,7 @@ export default function UseChatInterface() {
 
   async function doChat({ modelMessages }: { modelMessages: ModelMessage[] }) {
     const result = streamText({
-      model: await anthropic('claude-sonnet-4-20250514'),
+      model: anthropic('claude-sonnet-4-20250514'),
       messages: modelMessages,
     });
     return result.toUIMessageStream(); // in-memory UI chunk stream

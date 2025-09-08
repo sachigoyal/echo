@@ -47,7 +47,7 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
               user.name?.charAt(0).toUpperCase() ||
               user.email?.charAt(0).toUpperCase()
             }
-            className="size-9 rounded-md cursor-pointer border-none"
+            className="size-full rounded-md cursor-pointer border-none bg-transparent"
           />
         </Button>
       </DropdownMenuTrigger>
@@ -88,6 +88,18 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
               Earnings
             </DropdownMenuItem>
           </Link>
+          <Link href={`/owner/earnings/referral`}>
+            <DropdownMenuItem>
+              <DollarSign className="size-4" />
+              Referral Earnings
+            </DropdownMenuItem>
+          </Link>
+          <Link href={`/owner/earnings/markup`}>
+            <DropdownMenuItem>
+              <DollarSign className="size-4" />
+              Markup Earnings
+            </DropdownMenuItem>
+          </Link>
           <Link href={'/docs' as Route<'/docs'>}>
             <DropdownMenuItem>
               <Book className="size-4" />
@@ -97,7 +109,7 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
           </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <DropdownMenuLabel className="font-normal">Theme</DropdownMenuLabel>
           <ColorModeToggle />
         </div>

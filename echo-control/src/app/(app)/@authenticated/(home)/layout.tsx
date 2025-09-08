@@ -1,5 +1,4 @@
 import { Nav } from '../_components/layout/nav';
-import { Route } from 'next';
 
 export default function AuthenticatedHomeLayout({
   children,
@@ -19,6 +18,14 @@ export default function AuthenticatedHomeLayout({
             href: '/credits',
           },
           {
+            label: 'Your Apps',
+            href: '/my-apps',
+          },
+          {
+            label: 'Activity',
+            href: '/activity',
+          },
+          {
             label: 'API Keys',
             href: '/keys',
           },
@@ -26,14 +33,9 @@ export default function AuthenticatedHomeLayout({
             label: 'Create',
             href: '/new',
           },
-          {
-            label: 'Docs',
-            href: '/docs' as Route<'/docs'>,
-            external: true,
-          },
         ]}
       />
-      <div className="flex flex-col py-4 md:py-6">{children}</div>
+      <div className="flex flex-col py-6 md:py-8">{children}</div>
     </div>
   );
 }

@@ -49,7 +49,7 @@ export const AuthorizedCallbackUrlsInput = () => {
               <Input
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="https://example.com/api/auth/callback"
+                placeholder="https://example.com/api/echo/callback"
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
                     e.preventDefault();

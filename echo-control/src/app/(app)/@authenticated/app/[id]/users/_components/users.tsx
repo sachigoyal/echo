@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { formatCurrency } from '@/lib/balance';
 import { api } from '@/trpc/client';
+import { InfinitePaginationProps } from '@/types/infinite-pagination';
 
 interface User {
   id: string;
@@ -25,12 +26,6 @@ interface User {
   totalTransactions: number;
   rawCost: number;
   totalProfit: number;
-}
-
-interface Pagination {
-  hasNext: boolean;
-  fetchNextPage: () => void;
-  isFetchingNextPage: boolean;
 }
 
 interface Props {
@@ -136,7 +131,7 @@ const LoadingUserRow = () => {
 
 interface BaseUsersTableProps {
   children: React.ReactNode;
-  pagination?: Pagination;
+  pagination?: InfinitePaginationProps;
 }
 
 const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {

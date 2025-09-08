@@ -40,18 +40,18 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
     buttonRefs[hoveredTabIndex ?? -1]?.getBoundingClientRect();
 
   return (
-    <div className="w-full border-b px-2 md:px-6 pt-2.5 sticky top-0 z-10 bg-card">
+    <div className="w-full max-w-full overflow-x-auto overflow-y-hidden border-b px-2 md:px-6 pt-2.5 sticky top-0 z-10 bg-card no-scrollbar">
       <nav
         className="bg-card w-full relative h-full"
         ref={navRef}
         onPointerLeave={() => setHoveredTabIndex(null)}
       >
         <motion.ul
-          className="list-none p-0 m-0 font-medium text-sm flex w-full h-full"
+          className="list-none p-0 m-0 font-medium text-sm flex w-full h-full flex-nowrap md:flex-wrap"
           style={{ paddingLeft: paddingLeft }}
         >
           {tabs.map((tab, index) => (
-            <div className="relative z-11 pb-1" key={tab.label}>
+            <div className="relative z-11 pb-1 shrink-0" key={tab.label}>
               <Link
                 href={tab.href}
                 className="z-11"
@@ -64,7 +64,7 @@ export const Nav = <T extends string>({ tabs }: Props<T>) => {
                 }}
               >
                 <MotionTab href={tab.href} subRoutes={tab.subRoutes}>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 whitespace-nowrap">
                     {tab.label}
                     {tab.external && <ExternalLink className="size-4" />}
                   </span>

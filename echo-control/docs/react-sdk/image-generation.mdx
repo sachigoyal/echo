@@ -20,7 +20,7 @@ function ImageGenerator() {
     setIsGenerating(true);
     
     const result = await generateImage({
-      model: await openai.image('dall-e-3'),
+      model: openai.image('dall-e-3'),
       prompt: 'A futuristic cityscape at sunset',
       size: '1024x1024',
     });

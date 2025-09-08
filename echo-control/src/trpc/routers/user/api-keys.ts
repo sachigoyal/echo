@@ -1,4 +1,5 @@
 import {
+  countApiKeys,
   createApiKey,
   createApiKeySchema,
   deleteApiKey,
@@ -17,6 +18,12 @@ import {
 } from '../../trpc';
 
 export const userApiKeysRouter = createTRPCRouter({
+  count: protectedProcedure
+    .input(listApiKeysSchema)
+    .query(async ({ ctx, input }) => {
+      return countApiKeys(ctx.session.user.id, input);
+    }),
+
   list: paginatedProcedure
     .concat(protectedProcedure)
     .input(listApiKeysSchema)

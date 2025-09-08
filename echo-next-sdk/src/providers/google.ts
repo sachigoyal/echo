@@ -1,10 +1,12 @@
 import {
   createEchoGoogle as createEchoGoogleBase,
   EchoConfig,
-  EchoGoogleProvider,
+  GoogleGenerativeAIProvider,
 } from '@merit-systems/echo-typescript-sdk';
 import { getEchoToken } from '../auth/token-manager';
 
-export function createEchoGoogle(config: EchoConfig): EchoGoogleProvider {
+export function createEchoGoogle(
+  config: EchoConfig
+): GoogleGenerativeAIProvider {
   return createEchoGoogleBase(config, async () => getEchoToken(config));
 }

@@ -1,25 +1,28 @@
+import { Suspense } from 'react';
+
+import { ErrorBoundary } from 'react-error-boundary';
+
 import { notFound } from 'next/navigation';
 
-import { Body, Heading } from '../../../_components/layout/page-utils';
+import { Body } from '../../../_components/layout/page-utils';
 
 import { api, HydrateClient } from '@/trpc/server';
-import { UserAvatar } from '@/components/utils/user-avatar';
-import { Code } from 'lucide-react';
+
+import { HeaderCard, LoadingHeaderCard } from './_components/header';
 import { Setup } from './_components/setup';
-import { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
 import { Overview } from './_components/overview';
-import { VisibilityButton } from './_components/visibility-button';
+import { getApp } from '../_lib/fetch';
 
 export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;
 
-  const app = await api.apps.app.get({ appId: id });
+  const app = await getApp(id);
   api.apps.app.get.prefetch({ appId: id });
   api.apps.app.githubLink.get.prefetch(id);
   api.apps.app.transactions.count.prefetch({ appId: id });
   api.apps.app.getNumTokens.prefetch({ appId: id });
   api.apps.app.isOwner.prefetch(id);
+  api.user.apiKeys.count.prefetch({ appId: id });
 
   if (!app) {
     return notFound();
@@ -27,25 +30,18 @@ export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
 
   return (
     <HydrateClient>
-      <Heading
-        title={app.name}
-        description={app.description ?? undefined}
-        icon={
-          <UserAvatar
-            src={app.profilePictureUrl ?? undefined}
-            className="size-12 shrink-0"
-            fallback={<Code className="size-8" />}
-          />
-        }
-        actions={<VisibilityButton appId={id} />}
-      />
-      <Body className="gap-0">
+      <Body className="gap-0 pt-0">
+        <Suspense fallback={<LoadingHeaderCard />}>
+          <HeaderCard appId={id} />
+        </Suspense>
         <ErrorBoundary fallback={null}>
           <Suspense fallback={null}>
             <Setup appId={id} />
           </Suspense>
         </ErrorBoundary>
-        <Overview appId={id} />
+        <div className="flex flex-col gap-8">
+          <Overview appId={id} />
+        </div>
       </Body>
     </HydrateClient>
   );

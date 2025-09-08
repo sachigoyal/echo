@@ -161,6 +161,14 @@ export async function handleCallback(
     path: '/',
   });
 
+  response.cookies.set('echo_user_info', JSON.stringify(tokenData.user), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: tokenData.refresh_token_expires_in,
+    path: '/',
+  });
+
   // Store refresh token expiry time for checking
   response.cookies.set(
     'echo_refresh_token_expires',

@@ -22,12 +22,7 @@ export type HandlerFunction<
     ctx: TContext;
     metadata?: TMetadata;
   }
-) => NextResponse;
-
-/**
- * Represents the merged context type between the existing context and new context added by middleware
- */
-export type MiddlewareContext<TContext, TNewContext> = TContext & TNewContext;
+) => NextResponse | Promise<NextResponse>;
 
 /**
  * Function signature for the next() function in middleware
@@ -71,19 +66,6 @@ export type MiddlewareFunction<
 // But in order to infer the context, we extends the response with the context
 // This context is not really used and not really needed
 export type MiddlewareResult<TContext> = NextResponse & { ctx?: TContext };
-
-/**
- * Configuration object for the RouteHandlerBuilder
- * @param paramsSchema - Schema for the route parameters
- * @param querySchema - Schema for the route query parameters
- * @param bodySchema - Schema for the route body
- */
-export interface RouteHandlerBuilderConfig {
-  paramsSchema: ZodType;
-  querySchema: ZodType;
-  bodySchema: ZodType;
-}
-
 /**
  * Original Next.js route handler type for reference
  * This is the type that Next.js uses internally before our library wraps it

@@ -24,7 +24,7 @@ export function ChatInterface() {
 
     try {
       const result = await generateText({
-        model: await openai('gpt-5'),
+        model: openai('gpt-5'),
         messages: newMessages,
       });
 

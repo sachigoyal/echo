@@ -19,7 +19,9 @@ const mockUser: EchoUser = {
   id: 'mock-user-123',
   email: 'demo@echo-systems.com',
   name: 'Demo User',
-  picture: 'https://example.com/avatar.png',
+  picture: 'https://avatars.githubusercontent.com/u/11855252?v=4',
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
 };
 
 const mockBalance: EchoBalance = {
@@ -77,6 +79,11 @@ const createMockContext = (
   clearAuth: async () => {
     console.log('Mock clear auth called');
   },
+
+  isInsufficientFunds: false,
+  setIsInsufficientFunds: () => {
+    console.log('Mock set is insufficient funds called');
+  },
   ...overrides,
 });
 
@@ -131,6 +138,24 @@ export const mockStates = {
     isAuthenticated: true,
     user: mockUser as EchoUser,
     balance: { totalPaid: 5, totalSpent: 0, balance: 5 },
+    isLoading: false,
+  }),
+
+  freeTierOnly: createMockContext({
+    isAuthenticated: true,
+    user: mockUser as EchoUser,
+    balance: { totalPaid: 0, totalSpent: 0, balance: 0 },
+    freeTierBalance: {
+      spendPoolBalance: 50,
+      userSpendInfo: {
+        userId: 'mock-user-123',
+        echoAppId: 'mock-app-123',
+        spendPoolId: 'mock-spend-pool-123',
+        amountSpent: 25,
+        spendLimit: 50,
+        amountLeft: 25,
+      },
+    },
     isLoading: false,
   }),
 };

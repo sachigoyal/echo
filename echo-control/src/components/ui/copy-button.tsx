@@ -34,7 +34,7 @@ export const CopyButton: React.FC<Props> = ({
     <Button
       onClick={() => copyToClipboard(text)}
       variant="outline"
-      className={cn('shrink-0 size-fit p-2', className)}
+      className={cn('shrink-0 size-fit md:size-fit p-2', className)}
       size="icon"
       disabled={isLoading}
       {...props}

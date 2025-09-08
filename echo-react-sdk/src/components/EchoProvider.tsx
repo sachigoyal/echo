@@ -20,6 +20,7 @@ import {
 import { useEchoBalance } from '../hooks/useEchoBalance';
 import { useEchoClient } from '../hooks/useEchoClient';
 import { useEchoPayments } from '../hooks/useEchoPayments';
+import { useEchoUser } from '../hooks/useEchoUser';
 import { EchoAuthConfig, EchoBalance, EchoUser } from '../types';
 
 export interface EchoContextValue {
@@ -44,6 +45,9 @@ export interface EchoContextValue {
   getToken: () => Promise<string | null>;
   clearAuth: () => Promise<void>;
   config: EchoConfig;
+  // Insufficient funds state
+  isInsufficientFunds: boolean;
+  setIsInsufficientFunds: (value: boolean) => void;
 }
 
 // Separate context for refresh state to prevent unnecessary re-renders
@@ -66,11 +70,13 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   const auth = useAuth();
 
   const user = auth.user;
-  const echoUser: EchoUser | null = user ? parseEchoUser(user) : null;
   const apiUrl = config.baseEchoUrl || 'https://echo.merit.systems';
   const token = auth.user?.access_token || null;
 
   const echoClient = useEchoClient({ apiUrl });
+
+  // Insufficient funds state - shared across all components
+  const [isInsufficientFunds, setIsInsufficientFunds] = useState(false);
 
   const {
     balance,
@@ -79,6 +85,12 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     error: balanceError,
     isLoading: balanceLoading,
   } = useEchoBalance(echoClient, config.appId);
+
+  const {
+    user: echoUser,
+    error: userError,
+    isLoading: userLoading,
+  } = useEchoUser(echoClient);
 
   const {
     createPaymentLink,
@@ -95,24 +107,27 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   }, [auth.removeUser]);
 
   const getToken = useCallback(async (): Promise<string | null> => {
+    if (auth.user?.expired) {
+      return (await auth.signinSilent())?.access_token || null;
+    }
     return auth.user?.access_token || null;
-  }, [auth.user?.access_token]);
+  }, [auth.user?.access_token, auth.signinSilent]);
 
   // Combine errors from different sources
   const combinedError =
-    auth.error?.message || balanceError || paymentError || null;
+    auth.error?.message || balanceError || paymentError || userError || null;
 
   // Only include auth.isLoading for initial authentication, not token refresh
   // Token refresh should be transparent to downstream components
   const isInitialAuthLoading = auth.isLoading && !auth.isAuthenticated;
   const isTokenRefreshing = auth.isLoading && auth.isAuthenticated;
   const combinedLoading =
-    isInitialAuthLoading || balanceLoading || paymentLoading;
+    isInitialAuthLoading || balanceLoading || paymentLoading || userLoading;
 
   // Main context - stable during token refresh
   const contextValue: EchoContextValue = useMemo(
     () => ({
-      user: echoUser || null,
+      user: echoUser,
       rawUser: user,
       balance,
       freeTierBalance,
@@ -128,6 +143,8 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
       getToken,
       clearAuth,
       config,
+      isInsufficientFunds,
+      setIsInsufficientFunds,
     }),
     [
       echoUser,
@@ -145,6 +162,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
       createPaymentLink,
       getToken,
       config,
+      isInsufficientFunds,
     ]
   );
 
@@ -231,13 +249,4 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
       <EchoProviderInternal config={config}>{children}</EchoProviderInternal>
     </AuthProvider>
   );
-}
-
-function parseEchoUser(user: User): EchoUser {
-  return {
-    id: user.profile.sub || '',
-    email: user.profile.email || '',
-    name: user.profile.name || user.profile.preferred_username || '',
-    picture: user.profile.picture || '',
-  };
 }

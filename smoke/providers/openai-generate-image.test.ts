@@ -27,7 +27,7 @@ describe.concurrent('OpenAI generateImage per model', () => {
     it(`OpenAI image ${model_id}`, async () => {
       try {
         const { image } = await generateImage({
-          model: await openai.image(model_id),
+          model: openai.image(model_id),
           prompt: 'An incredibly fat cat',
           size: '1024x1024',
           providerOptions: { openai: { quality: 'low' } },

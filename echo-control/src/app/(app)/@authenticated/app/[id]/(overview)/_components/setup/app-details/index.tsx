@@ -160,7 +160,7 @@ const StepCard: React.FC<StepCardProps> = ({
   component,
 }: StepCardProps) => {
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col h-full">
       <CardHeader className="border-b">
         <div className="flex items-center gap-2">
           <div

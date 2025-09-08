@@ -7,13 +7,12 @@
     "src/mdx-components.{js,jsx,ts,tsx}"
   ],
   "ignoreDependencies": [
-    "@faker-js/faker",
     "eslint-config-next",
     "husky",
-    "tsx",
-    "tw-animate-css"
+    "tw-animate-css",
+    "@merit-systems/echo-typescript-sdk"
   ],
   "ignore": ["/api/**", "/scripts/**", "/source.config.ts"],
-  "ignoreBinaries": [],
+  "ignoreBinaries": ["docker-compose", "sleep"],
   "ignoreWorkspaces": []
 }

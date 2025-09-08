@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { subDays } from 'date-fns';
 
-import { ActivityTimeframe } from './types';
+import { ActivityTimeframe } from '@/types/timeframes';
 
 interface ActivityContextType {
   startDate: Date;
@@ -26,12 +26,14 @@ interface Props {
   children: React.ReactNode;
   initialStartDate: Date;
   initialEndDate: Date;
+  creationDate: Date;
 }
 
 export const ActivityContextProvider = ({
   children,
   initialStartDate,
   initialEndDate,
+  creationDate,
 }: Props) => {
   const [timeframe, setTimeframe] = useState<ActivityTimeframe>(
     ActivityTimeframe.SevenDays
@@ -43,9 +45,14 @@ export const ActivityContextProvider = ({
     if (timeframe === ActivityTimeframe.Custom) {
       return;
     }
+    if (timeframe === ActivityTimeframe.AllTime) {
+      setStartDate(creationDate);
+      setEndDate(new Date());
+      return;
+    }
     setStartDate(subDays(new Date(), timeframe));
     setEndDate(new Date());
-  }, [timeframe]);
+  }, [timeframe, creationDate]);
 
   const setDateRange = (startDate: Date, endDate: Date) => {
     setStartDate(startDate);

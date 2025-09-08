@@ -17,7 +17,13 @@ import { auth } from '@/auth';
 
 import { api } from '@/trpc/server';
 
-import { authorizeParamsSchema } from '../../_lib/authorize';
+import {
+  authorizeParamsSchema,
+  isValidRedirectUri,
+} from '../../_lib/authorize';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { UnauthorizedRedirect } from './_components/unauthorized-redirect';
 
 export default async function OAuthAuthorizePage({
   searchParams,
@@ -36,10 +42,20 @@ export default async function OAuthAuthorizePage({
             ))}
           </ul>
         }
-        redirectUrl={
-          typeof resolvedParams.redirect_uri === 'string'
-            ? resolvedParams.redirect_uri
-            : undefined
+        actions={
+          typeof resolvedParams.redirect_uri === 'string' ? (
+            <a href={resolvedParams.redirect_uri} className="flex-1">
+              <Button variant="outline" className="w-full">
+                Back to App
+              </Button>
+            </a>
+          ) : (
+            <Link href="/" className="flex-1">
+              <Button variant="outline" className="w-full">
+                Back to Home
+              </Button>
+            </Link>
+          )
         }
       />
     );
@@ -48,18 +64,19 @@ export default async function OAuthAuthorizePage({
   const authParams = parseResult.data;
 
   const session = await auth();
-  const redirectUrl = new URL(
-    '/oauth/authorize',
-    process.env.ECHO_CONTROL_APP_BASE_URL
-  );
-  for (const [key, value] of Object.entries(authParams)) {
-    redirectUrl.searchParams.set(key, value);
-  }
-
-  const loginUrl = new URL('/login', process.env.ECHO_CONTROL_APP_BASE_URL);
-  loginUrl.searchParams.set('redirect_uri', redirectUrl.toString());
 
   if (!session?.user) {
+    const redirectUrl = new URL(
+      '/oauth/authorize',
+      process.env.ECHO_CONTROL_APP_BASE_URL
+    );
+    for (const [key, value] of Object.entries(authParams)) {
+      redirectUrl.searchParams.set(key, value);
+    }
+
+    const loginUrl = new URL('/login', process.env.ECHO_CONTROL_APP_BASE_URL);
+    loginUrl.searchParams.set('redirect_uri', redirectUrl.toString());
+
     return redirect(loginUrl.toString());
   }
 
@@ -70,6 +87,21 @@ export default async function OAuthAuthorizePage({
 
   if (!appDetails) {
     return notFound();
+  }
+
+  if (
+    !isValidRedirectUri(
+      authParams.redirect_uri,
+      appDetails.authorizedCallbackUrls
+    )
+  ) {
+    return (
+      <UnauthorizedRedirect
+        redirectUri={authParams.redirect_uri}
+        appId={appDetails.id}
+        authorizedCallbackUrls={appDetails.authorizedCallbackUrls}
+      />
+    );
   }
 
   const { name, profilePictureUrl } = appDetails;

@@ -5,32 +5,39 @@ import {
   type PaginationParams,
   toPaginatedReponse,
 } from '@/services/lib/pagination';
+import { Prisma } from '@/generated/prisma';
 
 export const appUsersSchema = z.object({
   appId: z.uuid(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  spendPoolId: z.uuid().optional(),
 });
 
 export const listAppUsers = async (
-  { appId, startDate, endDate }: z.infer<typeof appUsersSchema>,
+  { appId, startDate, endDate, spendPoolId }: z.infer<typeof appUsersSchema>,
   { page, page_size }: PaginationParams
 ) => {
+  const where: Prisma.TransactionWhereInput = {
+    echoAppId: appId,
+    isArchived: false,
+    ...((startDate || endDate) && {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    }),
+    ...(spendPoolId && {
+      spendPoolId: spendPoolId,
+    }),
+  };
+
   const [count, users] = await Promise.all([
-    countAppUsers({ appId, startDate, endDate }),
+    countAppUsersInternal(where),
     (async () => {
       const topUsersWithStats = await db.transaction.groupBy({
         by: ['userId'],
-        where: {
-          echoAppId: appId,
-          isArchived: false,
-          ...((startDate || endDate) && {
-            createdAt: {
-              gte: startDate,
-              lte: endDate,
-            },
-          }),
-        },
+        where: where,
         _sum: {
           totalCost: true,
           rawTransactionCost: true,
@@ -101,19 +108,23 @@ export const countAppUsers = async ({
   startDate,
   endDate,
 }: z.infer<typeof appUsersSchema>) => {
+  return await countAppUsersInternal({
+    echoAppId: appId,
+    isArchived: false,
+    ...((startDate || endDate) && {
+      createdAt: {
+        gte: startDate,
+        lte: endDate,
+      },
+    }),
+  });
+};
+
+const countAppUsersInternal = async (where: Prisma.TransactionWhereInput) => {
   return await db.transaction
     .groupBy({
       by: ['userId'],
-      where: {
-        echoAppId: appId,
-        isArchived: false,
-        ...((startDate || endDate) && {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-        }),
-      },
+      where: where,
       _count: {
         userId: true,
       },

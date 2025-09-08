@@ -1,9 +1,10 @@
 import {
-  EchoAnthropicProvider,
-  EchoGoogleProvider,
-  EchoOpenAIProvider,
+  AnthropicProvider,
+  GoogleGenerativeAIProvider,
+  OpenAIProvider,
   User,
 } from '@merit-systems/echo-typescript-sdk';
+import { RefreshTokenResponse } from 'auth/token-manager';
 import { NextRequest } from 'next/server';
 
 export interface EchoConfig {
@@ -11,7 +12,7 @@ export interface EchoConfig {
    *  Echo App ID.
    */
   appId: string;
-  /** 
+  /**
    *  Base path of API URL.
    *  @default /api/echo
    */
@@ -36,10 +37,11 @@ export type AppRouteHandlers = Record<
 
 export type EchoResult = {
   handlers: AppRouteHandlers;
-  getUser: () => Promise<User | null>;
+
+  getUser: () => Promise<RefreshTokenResponse['user'] | null>;
   isSignedIn: () => Promise<boolean>;
 
-  openai: EchoOpenAIProvider;
-  anthropic: EchoAnthropicProvider;
-  google: EchoGoogleProvider;
+  openai: OpenAIProvider;
+  anthropic: AnthropicProvider;
+  google: GoogleGenerativeAIProvider;
 };
