@@ -6,7 +6,11 @@ import { Balance } from './_components/balance';
 import { Payments } from './_components/payments';
 import { Details, LoadingFreeTierDetails } from './_components/details';
 
-import { api } from '@/trpc/server';
+import { api, HydrateClient } from '@/trpc/server';
+import {
+  FreeTierUsersTable,
+  LoadingFreeTierUsersTable,
+} from './_components/users';
 
 export default async function FreeTierPage({
   params,
@@ -14,16 +18,17 @@ export default async function FreeTierPage({
   const { id } = await params;
 
   api.apps.app.freeTier.payments.list.prefetchInfinite({
-    cursor: 0,
     appId: id,
   });
-
   api.apps.app.freeTier.get.prefetch({
+    appId: id,
+  });
+  api.apps.app.freeTier.users.list.prefetchInfinite({
     appId: id,
   });
 
   return (
-    <div>
+    <HydrateClient>
       <Heading
         title="Free Tier"
         description="Allow your users to test out your app for free before they have to buy credits and spend their echo balance."
@@ -35,8 +40,11 @@ export default async function FreeTierPage({
             <Details appId={id} />
           </Suspense>
         </div>
+        <Suspense fallback={<LoadingFreeTierUsersTable />}>
+          <FreeTierUsersTable appId={id} />
+        </Suspense>
         <Payments appId={id} />
       </Body>
-    </div>
+    </HydrateClient>
   );
 }
