@@ -8,6 +8,15 @@ import { UsersTable, LoadingUsersTable } from './_components/users';
 
 import { api, HydrateClient } from '@/trpc/server';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Users',
+    template: 'Users | %s',
+  },
+};
+
 export default async function UsersPage({
   params,
 }: PageProps<'/app/[id]/users'>) {

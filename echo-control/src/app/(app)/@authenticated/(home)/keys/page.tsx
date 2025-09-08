@@ -6,6 +6,12 @@ import { Keys } from './_components/keys';
 
 import { GenerateKey } from './_components/generate-key';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Keys',
+};
+
 export default async function KeysPage() {
   api.user.apiKeys.list.prefetchInfinite({});
   api.apps.list.member.prefetchInfinite({});

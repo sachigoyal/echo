@@ -5,6 +5,12 @@ import { Keys } from './_components/keys';
 
 import { api, HydrateClient } from '@/trpc/server';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Keys',
+};
+
 export default async function AppKeysPage({
   params,
   searchParams,

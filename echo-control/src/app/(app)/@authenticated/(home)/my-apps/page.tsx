@@ -5,6 +5,12 @@ import { NewAppButton } from './_components/new-app-button';
 
 import { api, HydrateClient } from '@/trpc/server';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Your Apps',
+};
+
 export default function MyAppsPage() {
   api.apps.list.owner.prefetchInfinite({
     page_size: 10,

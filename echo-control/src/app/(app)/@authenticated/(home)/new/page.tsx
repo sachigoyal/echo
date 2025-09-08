@@ -2,6 +2,12 @@ import { Logo } from '@/components/ui/logo';
 
 import { CreateAppForm } from './_components/form';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'New App',
+};
+
 export default function CreateAppPage() {
   return (
     <div className="pt-4 relative size-full flex flex-col items-center px-2">

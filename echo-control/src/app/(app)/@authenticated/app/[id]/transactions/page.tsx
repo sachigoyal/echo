@@ -11,6 +11,15 @@ import {
 
 import { api, HydrateClient } from '@/trpc/server';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Transactions',
+    template: 'Transactions | %s',
+  },
+};
+
 export default async function TransactionsPage({
   params,
 }: PageProps<'/app/[id]/transactions'>) {

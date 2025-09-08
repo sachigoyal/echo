@@ -16,12 +16,16 @@ import type { Viewport } from 'next';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'Echo',
+  title: {
+    default: 'Echo',
+    template: '%s | Echo',
+  },
   description: 'Monetize AI Apps in Minutes',
   appleWebApp: {
     title: 'Echo',
     statusBarStyle: 'black-translucent',
   },
+  metadataBase: new URL(process.env.ECHO_CONTROL_APP_BASE_URL as string),
 };
 
 export const viewport: Viewport = {
