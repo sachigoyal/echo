@@ -35,7 +35,7 @@ export default function AuthenticatedHomeLayout({
           },
         ]}
       />
-      <div className="flex flex-col py-4 md:py-6">{children}</div>
+      <div className="flex flex-col py-6 md:py-8">{children}</div>
     </div>
   );
 }

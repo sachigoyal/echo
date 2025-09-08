@@ -42,10 +42,11 @@ export const Connection: React.FC<Props> = ({ appId }) => {
       refetchInterval: shouldRefetch ? 2500 : undefined,
     }
   );
+  const [numApiKeys] = api.user.apiKeys.count.useSuspenseQuery({ appId });
 
   const isConnected = useMemo(() => {
-    return numTokens > 0;
-  }, [numTokens]);
+    return numTokens > 0 || numApiKeys > 0;
+  }, [numTokens, numApiKeys]);
 
   useEffect(() => {
     setShouldRefetch(!isConnected);

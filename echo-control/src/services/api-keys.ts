@@ -49,9 +49,7 @@ export const listApiKeys = async (
   };
 
   const [totalCount, apiKeys] = await Promise.all([
-    db.apiKey.count({
-      where,
-    }),
+    countApiKeysInternal(where),
     db.apiKey.findMany({
       where,
       skip,
@@ -81,6 +79,23 @@ export const listApiKeys = async (
     total_count: totalCount,
     page,
     page_size,
+  });
+};
+
+export const countApiKeys = async (
+  userId: string,
+  { appId }: z.infer<typeof listApiKeysSchema>
+) => {
+  return countApiKeysInternal({
+    userId,
+    isArchived: false,
+    echoApp: { id: appId },
+  });
+};
+
+const countApiKeysInternal = async (where: Prisma.ApiKeyWhereInput) => {
+  return db.apiKey.count({
+    where,
   });
 };
 
