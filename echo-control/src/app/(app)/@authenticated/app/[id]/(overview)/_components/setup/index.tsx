@@ -32,6 +32,8 @@ export const Setup: React.FC<Props> = ({ appId }) => {
   const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
     appId,
   });
+  const [numApiKeys] = api.user.apiKeys.count.useSuspenseQuery({ appId });
+  const [isOwner] = api.apps.app.isOwner.useSuspenseQuery(appId);
 
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
 
@@ -52,7 +54,10 @@ export const Setup: React.FC<Props> = ({ appId }) => {
     [app.profilePictureUrl, app.description, githubLink]
   );
 
-  const connectionSteps = useMemo(() => [numTokens > 0], [numTokens]);
+  const connectionSteps = useMemo(
+    () => [numTokens > 0 || numApiKeys > 0],
+    [numTokens, numApiKeys]
+  );
 
   const generateTextSteps = useMemo(
     () => [numTransactions > 0],
@@ -101,7 +106,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
 
   return (
     <AnimatePresence mode="wait">
-      {!isComplete && highlighter && (
+      {!isComplete && highlighter && isOwner && (
         <HighlighterProvider highlighter={highlighter}>
           <motion.div
             initial={{ opacity: 0, height: 0 }}

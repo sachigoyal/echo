@@ -101,7 +101,11 @@ export const HeaderCard: React.FC<Props> = ({ appId }) => {
           {!isSetupComplete && (
             <div className="absolute inset-0 top-[1px] md:top-0 md:left-[1px] backdrop-blur-xs flex md:flex-col items-center justify-center text-muted-foreground gap-2">
               <Lock className="size-4 md:size-8" />
-              <p className="text-sm">Complete setup to unlock</p>
+              <p className="text-sm max-w-[200px] text-center">
+                {isOwner
+                  ? 'Complete setup to unlock'
+                  : 'The owner of this app has not completed setup'}
+              </p>
             </div>
           )}
         </div>
