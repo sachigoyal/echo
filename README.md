@@ -7,11 +7,6 @@
 </div>
 
 <div align="center">
-  <div>
-    <a href="https://echo.merit.systems/docs/getting-started/react"><strong>Quick Start</strong></a> | 
-    <a href="https://echo.merit.systems/docs"><strong>Docs</strong></a> | 
-    <a href="https://echo.merit.systems/new"><strong>Create App</strong></a>
-  </div>
 
   <div align="center">
     <a href="https://discord.gg/JuKt7tPnNc">
