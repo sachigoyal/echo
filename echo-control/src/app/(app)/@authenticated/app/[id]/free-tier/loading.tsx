@@ -3,6 +3,7 @@ import { Body, Heading } from '../../../_components/layout/page-utils';
 import { LoadingBalance } from './_components/balance';
 import { LoadingFreeTierDetails } from './_components/details';
 import { LoadingPayments } from './_components/payments';
+import { LoadingFreeTierUsersTable } from './_components/users';
 
 export default function FreeTierLoading() {
   return (
@@ -15,6 +16,7 @@ export default function FreeTierLoading() {
         <div className="flex flex-col gap-2">
           <LoadingBalance />
           <LoadingFreeTierDetails />
+          <LoadingFreeTierUsersTable />
         </div>
         <LoadingPayments />
       </Body>

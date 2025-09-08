@@ -41,7 +41,11 @@ export const SpendLimit: React.FC<Props> = ({ appId, spendLimit }) => {
       )}
       {spendLimit !== null && (
         <SpendLimitDialog appId={appId} spendLimit={spendLimit}>
-          <Button variant="ghost" size="icon" className="size-fit p-1.5 mt-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-fit md:size-fit p-1.5 mt-1"
+          >
             <Pencil className="size-3.5" />
           </Button>
         </SpendLimitDialog>
