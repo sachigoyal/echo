@@ -107,8 +107,11 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   }, [auth.removeUser]);
 
   const getToken = useCallback(async (): Promise<string | null> => {
+    if (auth.user?.expired) {
+      return (await auth.signinSilent())?.access_token || null;
+    }
     return auth.user?.access_token || null;
-  }, [auth.user?.access_token]);
+  }, [auth.user?.access_token, auth.signinSilent]);
 
   // Combine errors from different sources
   const combinedError =
