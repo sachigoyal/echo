@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ZodType } from 'zod';
 
 /**
  * Function that is called when the route handler is executed and all the middleware has been executed
@@ -23,11 +22,6 @@ export type HandlerFunction<
     metadata?: TMetadata;
   }
 ) => NextResponse | Promise<NextResponse>;
-
-/**
- * Represents the merged context type between the existing context and new context added by middleware
- */
-export type MiddlewareContext<TContext, TNewContext> = TContext & TNewContext;
 
 /**
  * Function signature for the next() function in middleware
@@ -71,19 +65,6 @@ export type MiddlewareFunction<
 // But in order to infer the context, we extends the response with the context
 // This context is not really used and not really needed
 export type MiddlewareResult<TContext> = NextResponse & { ctx?: TContext };
-
-/**
- * Configuration object for the RouteHandlerBuilder
- * @param paramsSchema - Schema for the route parameters
- * @param querySchema - Schema for the route query parameters
- * @param bodySchema - Schema for the route body
- */
-export interface RouteHandlerBuilderConfig {
-  paramsSchema: ZodType;
-  querySchema: ZodType;
-  bodySchema: ZodType;
-}
-
 /**
  * Original Next.js route handler type for reference
  * This is the type that Next.js uses internally before our library wraps it

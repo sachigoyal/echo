@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import { PayoutStatus, PayoutType } from '@/services/payouts/referrals';
 
-export interface AppMarkupEarnings {
+interface AppMarkupEarnings {
   byApp: Record<string, number>;
   total: number;
   appMeta: Record<

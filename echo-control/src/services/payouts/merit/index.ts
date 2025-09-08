@@ -10,7 +10,7 @@ const sdk = new MeritSDK({
 
 const SENDER_GITHUB_ID = Number(process.env.MERIT_SENDER_GITHUB_ID!);
 
-export function generateCheckoutUrl(
+function generateCheckoutUrl(
   payeeGithubId: number,
   amount: number,
   senderGithubId: number,
@@ -55,7 +55,7 @@ export async function generateCheckoutUrlForPayout(payoutId: string) {
   return { url: checkoutUrl };
 }
 
-export async function pollForCompletedPayoutTransaction(
+async function pollForCompletedPayoutTransaction(
   senderGithubId: number,
   payOutEchoId: string
 ): Promise<OutgoingPayment[] | null> {
@@ -71,7 +71,7 @@ export async function pollForCompletedPayoutTransaction(
   return null;
 }
 
-export async function logCompletedPayoutTransaction(payout: OutgoingPayment) {
+async function logCompletedPayoutTransaction(payout: OutgoingPayment) {
   const existing = await db.payout.findUnique({
     where: { id: payout.group_id },
     select: { status: true },

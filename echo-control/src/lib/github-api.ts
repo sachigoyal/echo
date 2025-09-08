@@ -7,7 +7,7 @@ export interface GitHubUser {
   type: 'User' | 'Organization';
 }
 
-export interface GitHubRepo {
+interface GitHubRepo {
   id: number;
   name: string;
   full_name: string;
@@ -21,7 +21,7 @@ export interface GitHubRepo {
   private: boolean;
 }
 
-export interface GitHubSearchResult {
+interface GitHubSearchResult {
   type: 'user' | 'repo';
   data: GitHubUser | GitHubRepo;
 }

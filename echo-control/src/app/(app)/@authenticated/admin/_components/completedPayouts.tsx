@@ -136,4 +136,3 @@ export function CompletedPayoutsTable({ pageSize = 10 }: Props) {
     </div>
   );
 }
-export default CompletedPayoutsTable;

@@ -1,23 +1,17 @@
-import { db } from '../db';
 import type { SpendPool, Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
-import { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo } from './types';
+import { UserSpendInfo } from './types';
 
 // Export types
-export type { SpendPoolData, UpdateSpendPoolRequest, UserSpendInfo };
+export type { UserSpendInfo };
 
 // Export functions from fetch-user-spend.ts
-export {
-  getGlobalUserSpendInfoForApp,
-  getGlobalUserSpendInfoForAppBatch,
-  getCustomerSpendInfoForApp,
-  getCustomerSpendInfoForAppBatch,
-} from './fetch-user-spend';
+export { getCustomerSpendInfoForApp } from './fetch-user-spend';
 
 /**
  * Internal function to fund a spend pool within an existing transaction
  */
-export async function fundSpendPoolInternal(
+async function fundSpendPoolInternal(
   tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   spendPoolId: string,
   paymentId: string,
@@ -89,49 +83,9 @@ export async function updateSpendPoolFromPayment(
 }
 
 /**
- * Get all spend pools for an app
- */
-export async function getAppSpendPools(
-  appId: string
-): Promise<SpendPoolData[]> {
-  const spendPools = await db.spendPool.findMany({
-    where: {
-      echoAppId: appId,
-      isArchived: false,
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      totalPaid: true,
-      totalSpent: true,
-      perUserSpendLimit: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  return spendPools.map(spendPool => {
-    return {
-      id: spendPool.id,
-      name: spendPool.name,
-      description: spendPool.description || undefined,
-      totalPaid: Number(spendPool.totalPaid),
-      spentAmount: Number(spendPool.totalSpent),
-      remainingAmount:
-        Number(spendPool.totalPaid) - Number(spendPool.totalSpent),
-      defaultSpendLimit: spendPool.perUserSpendLimit
-        ? Number(spendPool.perUserSpendLimit)
-        : undefined,
-      createdAt: spendPool.createdAt,
-      updatedAt: spendPool.updatedAt,
-    };
-  });
-}
-/**
  * Internal function to get or create a free tier spend pool within an existing transaction
  */
-export async function getOrCreateFreeTierSpendPoolInternal(
+async function getOrCreateFreeTierSpendPoolInternal(
   tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0],
   appId: string,
   poolName?: string
@@ -162,23 +116,4 @@ export async function getOrCreateFreeTierSpendPoolInternal(
   }
 
   return spendPool;
-}
-
-/**
- * Update a spend pool
- */
-export async function updateSpendPool(
-  spendPoolId: string,
-  request: UpdateSpendPoolRequest
-): Promise<SpendPool> {
-  // Check if the spend pool exists
-  // Update the spend pool
-  const updatedSpendPool = await db.spendPool.update({
-    where: { id: spendPoolId },
-    data: {
-      perUserSpendLimit: request.defaultSpendLimit,
-    },
-  });
-
-  return updatedSpendPool;
 }

@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import type { RefObject } from 'react';
 import { Card } from '../ui/card';
 
-export interface AnimatedBeamProps {
+interface AnimatedBeamProps {
   className?: string;
   containerRef: RefObject<HTMLElement | null>; // Container ref
   fromRef: RefObject<HTMLElement | null>;

@@ -1,9 +1,5 @@
 import { cn } from '@/lib/utils';
 
-export interface FeatureCardProps {
-  children: React.ReactNode;
-}
-
 export const FeatureCard = ({ children }: { children: React.ReactNode }) => {
   return (
     <div

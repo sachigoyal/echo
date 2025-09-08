@@ -10,7 +10,7 @@ export enum PayoutStatus {
   COMPLETED = 'completed',
 }
 
-export interface UserReferralEarnings {
+interface UserReferralEarnings {
   byApp: Record<string, number>;
   total: number;
   apps?: Record<

@@ -17,7 +17,7 @@ export const NewAppButton = () => {
   );
 };
 
-export const Button = async () => {
+const Button = async () => {
   const numApps = await api.apps.count.owner();
 
   if (numApps === 0) {

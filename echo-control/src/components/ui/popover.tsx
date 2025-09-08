@@ -39,10 +39,9 @@ function PopoverContent({
   );
 }
 
-function PopoverAnchor({
-  ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
-  return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
-}
-
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+// function PopoverAnchor({
+//   ...props
+// }: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
+//   return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
+// }
+export { Popover, PopoverTrigger, PopoverContent };

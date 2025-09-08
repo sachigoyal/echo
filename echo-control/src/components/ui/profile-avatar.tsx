@@ -78,5 +78,3 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
     </div>
   );
 };
-
-export default ProfileAvatar;

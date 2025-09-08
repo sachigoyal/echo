@@ -8,7 +8,7 @@ import { logger } from '@/logger';
  * Checks OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS first, then OAUTH_REFRESH_TOKEN_EXPIRY_DAYS
  * Defaults to 30 days (2592000 seconds) if neither is set
  */
-export function getEchoRefreshTokenExpirySeconds(): number {
+function getEchoRefreshTokenExpirySeconds(): number {
   // Check for seconds first (more granular control, useful for testing)
   const secondsEnv = process.env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS;
   logger.emit({
@@ -55,7 +55,7 @@ export function createEchoRefreshTokenExpiry(): Date {
   return expiry;
 }
 
-export function getEchoAccessTokenExpirySeconds(): number {
+function getEchoAccessTokenExpirySeconds(): number {
   const secondsEnv = process.env.OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS;
   logger.emit({
     severityText: 'DEBUG',

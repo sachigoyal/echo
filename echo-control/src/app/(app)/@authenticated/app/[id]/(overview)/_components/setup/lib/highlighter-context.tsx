@@ -1,7 +1,7 @@
 import { Highlighter } from '@/components/ui/code/shiki.bundle';
 import { createContext, useContext } from 'react';
 
-export const HighlighterContext = createContext<Highlighter | null>(null);
+const HighlighterContext = createContext<Highlighter | null>(null);
 
 export const HighlighterProvider = ({
   children,

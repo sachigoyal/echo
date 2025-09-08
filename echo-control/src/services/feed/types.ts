@@ -3,13 +3,13 @@ export enum FeedActivityType {
   SIGNIN = 'signin',
 }
 
-export type FeedUser = {
+type FeedUser = {
   userId: string;
   userName: string | null;
   userProfilePicture: string | null;
 };
 
-export type FeedApp = {
+type FeedApp = {
   id: string;
   name: string;
   profilePictureUrl: string | null;

@@ -2,8 +2,8 @@
 title: React
 description: Integrate Echo into your React application
 ---
-import { Step, Steps } from 'fumadocs-ui/components/steps';
 
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # Getting Started with Echo in React
 
@@ -82,7 +82,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
     <Step>
         ### Setup your Echo App
-        1. In the Echo dashboard navigate to [**Create App**](https://echo.merit.systems/owner/apps/create). 
+        1. In the Echo dashboard navigate to [**Create App**](https://echo.merit.systems/new).
         2. Copy your `app_id` and paste it into your `.env` file.
 
         The final result should resemble the following:
@@ -94,7 +94,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
     <Step>
         ### Import your Echo App ID
-        In your `main.tsx` file, import your app id. 
+        In your `main.tsx` file, import your app id.
         Include your App ID from the prior step.
         ```tsx title="main.tsx" lineNumbers
         import { StrictMode } from 'react'
@@ -109,7 +109,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         if (!APP_ID) {
             throw new Error('Add your Echo App ID to .env');
         }
-    
+
         createRoot(document.getElementById('root')!).render(
             <StrictMode>
                 <App />
@@ -121,7 +121,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
     <Step>
         ### `<EchoProvider>` component
-        The `<EchoProvider>` component provides session and user context to Echo's hooks and components. It's recommended to wrap 
+        The `<EchoProvider>` component provides session and user context to Echo's hooks and components. It's recommended to wrap
         your entire app at the entry point with `<EchoProvider>` to make Echo globally available.
 
         Pass your Echo App ID as a prop to `<EchoProvider>`.
@@ -139,7 +139,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         if (!APP_ID) {
             throw new Error('Add your Echo App ID to .env');
         }
-    
+
         createRoot(document.getElementById('root')!).render(
             <StrictMode>
                 // [!code ++:1]
@@ -157,7 +157,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         `<EchoSignIn>` is a React component that can be placed anywhere in your app. When a user clicks
         it will redirect to authenticate with [echo.merit.systems](echo.merit.systems). After authentication,
         Echo can manage all LLM calls.
-        
+
         ```tsx title="src/App.tsx" lineNumbers
         // [!code ++:1]
         import { EchoSignIn } from '@merit-systems/echo-react-sdk';
@@ -191,7 +191,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
         function App() {
 
-        // [!code ++:1] 
+        // [!code ++:1]
         const { isAuthenticated, user, balance, signOut } = useEcho();
 
         return (
@@ -199,7 +199,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
                 <header>
                     <EchoSignIn />
 
-                // [!code ++:9] 
+                // [!code ++:9]
                 {!isAuthenticated && "Sign in to continue"}
                 {isAuthenticated && (
                     <div>
@@ -271,7 +271,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         import { generateText } from 'ai';
         import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
 
-        export default function AIComponent() { 
+        export default function AIComponent() {
             const [result, setResult] = useState("");
             const { openai } = useEchoModelProviders();
 
@@ -283,7 +283,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
                     ]
                 });
                 setResult(text);
-            };  
+            };
 
 
             return (
@@ -301,7 +301,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
     <Step>
         ### Switch to `streamText()`
         The AI SDK [`streamText()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) function is used to incrementally show the response from the model.
-        
+
         ```tsx title="src/AIComponent.tsx" lineNumbers
         import { useState } from 'react';
         // [!code --:1]
@@ -310,7 +310,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
         import { streamText } from 'ai';
         import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
 
-        export default function AIComponent() { 
+        export default function AIComponent() {
             const [result, setResult] = useState("");
             const { openai } = useEchoModelProviders();
 
@@ -330,7 +330,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
                 for await (const chunk of textStream) {
                     setResult(prev => prev + chunk);
                 }
-            };  
+            };
 
 
             return (

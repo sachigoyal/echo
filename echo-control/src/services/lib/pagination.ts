@@ -1,13 +1,9 @@
 import z from 'zod';
 
-import { PaginatedResponse } from '@/types/paginated-response';
-
-export const paginationSchema = z.object({
-  page: z.number().optional().default(0),
-  page_size: z.number().optional().default(10),
-});
-
-export type PaginationParams = z.infer<typeof paginationSchema>;
+export type PaginationParams = {
+  page: number;
+  page_size: number;
+};
 
 interface ToPaginatedResponseParams<T> {
   items: T[];
@@ -15,6 +11,14 @@ interface ToPaginatedResponseParams<T> {
   page_size: number;
   total_count: number;
 }
+
+type PaginatedResponse<T> = {
+  items: T[];
+  page_size: number;
+  page: number;
+  total_count: number;
+  has_next: boolean;
+};
 
 export const toPaginatedReponse = <T>({
   items,
@@ -41,16 +45,15 @@ export type TimeBasedPaginationParams = z.infer<
   typeof timeBasedPaginationSchema
 >;
 
-export interface ToTimeBasedPaginatedReponseParams<T> {
+interface ToTimeBasedPaginatedReponseParams<T> {
   items: T[];
   cursor: Date;
   limit: number;
 }
 
-export type TimeBasedPaginatedResponse<T> =
-  ToTimeBasedPaginatedReponseParams<T> & {
-    has_next: boolean;
-  };
+type TimeBasedPaginatedResponse<T> = ToTimeBasedPaginatedReponseParams<T> & {
+  has_next: boolean;
+};
 
 export const toTimeBasedPaginatedReponse = <T>({
   items,

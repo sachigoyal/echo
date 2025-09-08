@@ -158,30 +158,3 @@ export function setupLoggerProvider() {
 }
 
 export const logger = setupLoggerProvider();
-
-// Performance logging utility
-export function createPerformanceLogger(
-  operation: string,
-  context?: Record<string, string | number | boolean>
-) {
-  const startTime = performance.now();
-
-  return {
-    finish: (additionalContext?: Record<string, string | number | boolean>) => {
-      const duration = performance.now() - startTime;
-
-      logger.emit({
-        severityText: duration > 1000 ? 'WARN' : 'DEBUG',
-        body: `Performance: ${operation}`,
-        attributes: {
-          operation,
-          durationMs: Math.round(duration),
-          durationSeconds: (duration / 1000).toFixed(3),
-          ...context,
-          ...additionalContext,
-          type: 'performance',
-        },
-      });
-    },
-  };
-}

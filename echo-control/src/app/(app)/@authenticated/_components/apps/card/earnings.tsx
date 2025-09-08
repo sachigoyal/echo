@@ -22,7 +22,7 @@ export const Earnings: React.FC<Props> = ({ appId }) => {
   );
 };
 
-export const EarningsAmount: React.FC<Props> = async ({ appId }) => {
+const EarningsAmount: React.FC<Props> = async ({ appId }) => {
   const earnings = await api.apps.app.earnings.get({ appId });
   return (
     <span className="text-sm font-bold text-primary">

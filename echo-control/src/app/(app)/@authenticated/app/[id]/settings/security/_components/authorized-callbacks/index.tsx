@@ -1,5 +1,3 @@
-import { Skeleton } from '@/components/ui/skeleton';
-
 import { FormCard } from '../../../_components/form/card';
 
 import { AppDetailsFormProvider } from '../../../_components/app-details-form-provider';
@@ -49,13 +47,5 @@ export const AuthorizedCallbacksForm = async ({ appId }: { appId: string }) => {
         <AuthorizedCallbackUrlsInput />
       </AuthorizedCallbacksFormCard>
     </AppDetailsFormProvider>
-  );
-};
-
-export const LoadingMarkupForm = () => {
-  return (
-    <AuthorizedCallbacksFormCard isLoading={true}>
-      <Skeleton className="w-full h-[238px]" />
-    </AuthorizedCallbacksFormCard>
   );
 };

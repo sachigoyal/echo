@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { EchoApp, User } from '@/generated/prisma';
-import { getApp } from '@/lib/apps';
+import { getApp } from '@/lib/apps/get-app';
 import { logger } from '@/logger';
 
 // GET /api/v1/apps/[id] - Get detailed app information

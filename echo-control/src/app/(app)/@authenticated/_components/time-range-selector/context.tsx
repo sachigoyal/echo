@@ -14,7 +14,7 @@ interface ActivityContextType {
   setDateRange: (startDate: Date, endDate: Date) => void;
 }
 
-export const ActivityContext = createContext<ActivityContextType>({
+const ActivityContext = createContext<ActivityContextType>({
   startDate: new Date(),
   endDate: new Date(),
   timeframe: ActivityTimeframe.SevenDays,

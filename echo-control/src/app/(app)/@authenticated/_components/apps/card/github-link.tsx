@@ -21,7 +21,7 @@ export const GithubLink: React.FC<Props> = ({ appId }) => {
   );
 };
 
-export const Url = async ({ appId }: Props) => {
+const Url = async ({ appId }: Props) => {
   const githubUrl = await api.apps.app.githubLink.get(appId);
   return (
     <span className="max-w-full text-ellipsis whitespace-nowrap">

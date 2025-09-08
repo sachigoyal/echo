@@ -9,7 +9,7 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 
 import { Users, LoadingUsers } from './users';
 import { Earnings, LoadingEarningsAmount } from './earnings';
-import { Transactions } from './transactions';
+import { LoadingTransactions, Transactions } from './transactions';
 
 import { cn } from '@/lib/utils';
 
@@ -77,8 +77,8 @@ export const AppCard = ({
 
 export const LoadingAppCard = () => {
   return (
-    <Card className="p-4 grid grid-cols-12 gap-4">
-      <div className="flex flex-col gap-2 col-span-8">
+    <Card className="p-4 grid grid-cols-6 gap-4">
+      <div className="flex flex-col gap-2 col-span-3">
         <div className="flex items-center gap-2">
           <UserAvatar
             className="size-10 shrink-0"
@@ -92,10 +92,13 @@ export const LoadingAppCard = () => {
         </div>
         <Skeleton className="w-3/4 h-4 my-[2px]" />
       </div>
-      <div className="flex items-center gap-2 justify-center col-span-2">
+      <div className="flex items-center gap-2 justify-center col-span-1">
         <LoadingUsers />
       </div>
-      <div className="shrink-0 flex items-center justify-end col-span-2">
+      <div className="shrink-0 flex items-center justify-center col-span-1">
+        <LoadingTransactions />
+      </div>
+      <div className="shrink-0 flex items-center justify-end col-span-1">
         <LoadingEarningsAmount />
       </div>
     </Card>

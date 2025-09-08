@@ -14,7 +14,7 @@ import { AppDescription } from './description';
 import { AppProfilePicture } from './profile-picture';
 import { AppHomepage } from './homepage';
 
-import { updateAppSchema } from '@/services/apps/app';
+import { updateAppSchema } from '@/services/apps/update';
 
 import { api } from '@/trpc/server';
 import { CopyButton } from '@/components/ui/copy-button';

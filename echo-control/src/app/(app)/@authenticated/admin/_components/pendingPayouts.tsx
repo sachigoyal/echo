@@ -156,4 +156,3 @@ export function PendingPayoutsTable({ pageSize = 10 }: Props) {
     </div>
   );
 }
-export default PendingPayoutsTable;

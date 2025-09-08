@@ -7,8 +7,6 @@ export enum AppRole {
 
 export enum MembershipStatus {
   ACTIVE = 'active',
-  PENDING = 'pending',
-  REVOKED = 'revoked',
 }
 
 export enum Permission {
