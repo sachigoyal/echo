@@ -3,6 +3,7 @@ import { Nav } from '../../_components/layout/nav';
 import { getApp } from '@/lib/apps/get-app';
 
 import type { Metadata } from 'next';
+import { auth } from '@/auth';
 
 export async function generateMetadata({
   params,
@@ -24,7 +25,9 @@ export default async function AuthenticatedAppLayout({
 }: LayoutProps<'/app/[id]'>) {
   const { id } = await params;
 
-  const isOwner = await api.apps.app.isOwner(id);
+  const session = await auth();
+
+  const isOwner = session?.user ? await api.apps.app.isOwner(id) : false;
 
   return (
     <div>
