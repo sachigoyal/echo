@@ -23,9 +23,12 @@ export class GeminiVeoProvider extends BaseProvider {
   }
 
   getBaseUrl(reqPath?: string): string {
-    // Veo3 uses the Google Generative AI API endpoint
-    // Based on the client example, it uses the standard Gemini base URL
-    return this.GEMINI_BASE_URL;
+    // For Gemini native API, we use the Google AI API endpoint
+    if (reqPath && reqPath.startsWith('/v1beta')) {
+      return 'https://generativelanguage.googleapis.com';
+    } else {
+      return 'https://generativelanguage.googleapis.com/v1beta';
+    }
   }
 
   getApiKey(): string | undefined {

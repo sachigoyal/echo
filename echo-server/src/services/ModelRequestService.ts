@@ -8,6 +8,8 @@ import { EchoControlService } from './EchoControlService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { handleStreamService } from './HandleStreamService';
 import { extractIsStream, extractModelName } from './RequestDataService';
+import { Decimal } from 'generated/prisma/runtime/library';
+import { pipeline, Readable } from 'stream';
 
 export class ModelRequestService {
   /**
@@ -71,6 +73,43 @@ export class ModelRequestService {
       headers: formattedHeaders,
       ...(requestBody && { body: requestBody }),
     });
+
+
+    console.log('response', response.body, response.headers);
+
+    if (response.headers.get('content-type') === 'video/mp4') {
+       // Forward important headers
+        const contentType = response.headers.get("content-type");
+        const contentLength = response.headers.get("content-length");
+
+        if (contentType) res.setHeader("Content-Type", contentType);
+        if (contentLength) res.setHeader("Content-Length", contentLength);
+
+        // Pipe the body
+        if (response.body) {
+          const reader = response.body.getReader();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            res.write(value);
+          }
+          res.end();
+        } else {
+          res.status(500).send("No body in upstream response");
+        }
+        return { transaction: {
+        metadata: {
+          model: model,
+          providerId: 'null',
+          provider: provider.getType(),
+          inputTokens: 0,
+          outputTokens: 0,
+          totalTokens: 0,
+        },
+        rawTransactionCost: new Decimal(0),
+        status: 'success',
+      }, isStream: false, data: null };
+    }
 
     // Handle non-200 responses
     if (response.status !== 200) {

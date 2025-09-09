@@ -8,6 +8,13 @@ export function extractGeminiModelName(req: Request): string | undefined {
   const expectedPrefixes = ['/v1beta/models/', '/models/'];
   const expectedSuffixes = [':streamGenerateContent', ':generateContent', ':predictLongRunning'];
 
+  const passThroughPrefixes = ['/v1beta/files'];
+
+
+  if (passThroughPrefixes.find(prefix => path.startsWith(prefix))) {
+    return "veo-3.0-generate-001";
+  }
+
   // Check if path matches any of the expected prefixes
   const matchingPrefix = expectedPrefixes.find(prefix =>
     path.startsWith(prefix)
