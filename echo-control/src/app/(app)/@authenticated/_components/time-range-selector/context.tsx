@@ -36,7 +36,7 @@ export const ActivityContextProvider = ({
   creationDate,
 }: Props) => {
   const [timeframe, setTimeframe] = useState<ActivityTimeframe>(
-    ActivityTimeframe.SevenDays
+    ActivityTimeframe.AllTime
   );
   const [endDate, setEndDate] = useState<Date>(initialEndDate);
   const [startDate, setStartDate] = useState<Date>(initialStartDate);
