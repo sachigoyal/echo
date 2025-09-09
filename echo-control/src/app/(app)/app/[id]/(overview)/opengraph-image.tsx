@@ -1,4 +1,4 @@
-import { getOverallStats } from './_lib/fetch';
+import { getOverallStats } from '../_lib/fetch';
 
 import { Users, DollarSign, Brain } from '@/app/_og/icons';
 
