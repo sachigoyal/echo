@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 export const backgroundColor = '#fcfcfc';
-export const borderColor = '#d4d4d4';
-export const dashWidth = '1px';
+export const borderColor = '#a1a1a180';
+export const dashWidth = '1.5px';
 export const strokeDasharray = '1 4';
 export const xPadding = 16;
 const yPadding = 16;

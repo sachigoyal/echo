@@ -36,28 +36,39 @@ export default async function Image() {
             marginLeft: `-${xPadding * 4}`,
           }}
         />
-        <div
-          tw="flex flex-col p-8 rounded-full relative"
-          style={{
-            background: backgroundColor,
-            border: `${dashWidth} dashed ${borderColor}`,
-            marginTop: '-16px',
-            marginBottom: '-16px',
-          }}
-        >
+        <div tw="flex flex-col relative justify-center items-center">
           <div
-            tw="rounded-full p-4 bg-white flex"
+            tw="flex flex-col relative justify-center items-center"
             style={{
+              position: 'absolute',
+              background: '#009dc8',
+              marginTop: '-16px',
+              marginBottom: '-16px',
+              clipPath: ' polygon(-50% 50%,50% 100%,150% 50%,50% 0)',
+              height: '240px',
+              width: '208px',
+              boxShadow: '0 0 24px 12px rgba(0,157,200,0.5)',
+            }}
+          />
+
+          <div
+            tw="flex flex-col relative justify-center items-center"
+            style={{
+              background: 'white',
+              marginTop: '-16px',
+              marginBottom: '-16px',
+              clipPath: 'polygon(-50% 50%,50% 100%,150% 50%,50% 0)',
+              height: '220px',
+              width: '190px',
               boxShadow: '0 0 16px 8px rgba(0,157,200,0.5)',
-              border: `1px solid ${borderColor}`,
-              marginTop: '-1px',
+              zIndex: 10,
             }}
           >
             <img
               src={`${baseUrl}/logo/light.svg`}
               alt="Echo"
-              height={128}
-              width={128}
+              height={180}
+              width={180}
             />
           </div>
         </div>
@@ -65,13 +76,14 @@ export default async function Image() {
           tw="flex-1"
           style={{
             borderTop: `${dashWidth} dashed ${borderColor}`,
+            marginLeft: '10px',
             marginRight: `-${xPadding * 4}`,
           }}
         />
       </div>
       <div tw="flex flex-col justify-center items-center flex-1">
         <h1
-          tw="text-8xl font-extrabold m-0 mb-2"
+          tw="text-8xl font-extrabold m-0 mb-3"
           style={{
             background:
               'linear-gradient(to bottom, #009dc8 0%, rgba(0,157,200,0.6) 100%)',
@@ -84,9 +96,9 @@ export default async function Image() {
           Echo
         </h1>
         <h2
-          tw="m-0 text-4xl font-bold mb-12"
+          tw="m-0 text-5xl font-bold mb-12"
           style={{
-            opacity: 0.8,
+            opacity: 0.7,
           }}
         >
           Monetize AI Apps in Minutes
