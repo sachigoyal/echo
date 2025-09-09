@@ -66,6 +66,8 @@ const isPublicRoute = createPathMatcher([
   '/api/stripe/webhook',
   '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
   '/api/health(.*)', // Health check endpoint - no auth needed
+  // OpenGraph image routes
+  '(.*)/opengraph-image(.*)',
 ]);
 
 const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
