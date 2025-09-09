@@ -1,10 +1,4 @@
-import {
-  backgroundColor,
-  baseOgImage,
-  borderColor,
-  dashWidth,
-  xPadding,
-} from './_og/base';
+import { baseOgImage, borderColor, dashWidth, xPadding } from './_og/base';
 import { baseUrl } from './_og/base-url';
 
 // Image metadata

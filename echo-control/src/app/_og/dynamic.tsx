@@ -8,6 +8,7 @@ export const dynamicOgImage = (component: React.ReactNode) => {
         {component}
       </div>
       <div tw="flex flex-col w-full py-6 px-12 border-t-4 border-neutral-600">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`${baseUrl}/logo/dark_horizontal.svg`}
           alt="Echo Logo"
