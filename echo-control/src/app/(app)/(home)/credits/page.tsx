@@ -7,12 +7,15 @@ import { Balance } from './_components/balance';
 import { api, HydrateClient } from '@/trpc/server';
 
 import type { Metadata } from 'next';
+import { userOrRedirect } from '@/auth/user-or-redirect';
 
 export const metadata: Metadata = {
   title: 'Credits',
 };
 
-export default async function CreditsPage() {
+export default async function CreditsPage(props: PageProps<'/credits'>) {
+  await userOrRedirect('/credits', props);
+
   api.user.payments.list.prefetchInfinite({
     cursor: 0,
   });

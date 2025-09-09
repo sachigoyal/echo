@@ -2,13 +2,17 @@ import { Logo } from '@/components/ui/logo';
 
 import { CreateAppForm } from './_components/form';
 
+import { userOrRedirect } from '@/auth/user-or-redirect';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'New App',
 };
 
-export default function CreateAppPage() {
+export default async function CreateAppPage(props: PageProps<'/new'>) {
+  await userOrRedirect('/new', props);
+
   return (
     <div className="pt-4 relative size-full flex flex-col items-center px-2">
       <div className="w-full max-w-md flex flex-col items-center justify-center gap-4 md:gap-8">

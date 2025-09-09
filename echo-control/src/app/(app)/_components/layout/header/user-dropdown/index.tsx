@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import {
   DollarSign,
@@ -25,16 +25,28 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 
 import { ColorModeToggle } from './color-mode-toggle';
 
-import type { User as NextAuthUser } from 'next-auth';
-import { signOut } from '@/auth';
+import { auth, signOut } from '@/auth';
 import { Button } from '@/components/ui/button';
 import { Route } from 'next';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface Props {
-  user: NextAuthUser;
-}
+export const UserDropdown = async () => {
+  return (
+    <Suspense fallback={<Skeleton className="size-8 md:size-9" />}>
+      <UserDropdownComponent />
+    </Suspense>
+  );
+};
 
-export const UserDropdown: React.FC<Props> = ({ user }) => {
+const UserDropdownComponent = async () => {
+  const session = await auth();
+
+  if (!session?.user) {
+    return null;
+  }
+
+  const user = session.user;
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>

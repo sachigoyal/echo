@@ -14,12 +14,6 @@ export default async function AppLayout({
   children,
   breadcrumbs,
 }: LayoutProps<'/'>) {
-  const session = await auth();
-
-  if (!session?.user) {
-    return <p>Unauthenticated</p>;
-  }
-
   return (
     <div className="min-h-screen flex flex-col relative">
       <LogoContainer>
@@ -38,7 +32,7 @@ export default async function AppLayout({
                 <span className="hidden md:block">Docs</span>
               </Button>
             </Link>
-            <UserDropdown user={session.user} />
+            <UserDropdown />
           </div>
         </div>
       </header>

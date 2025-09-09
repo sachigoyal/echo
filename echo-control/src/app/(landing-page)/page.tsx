@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 export default async function LandingPage() {
   if (await auth()) {
-    return redirect('/');
+    return redirect('/dashboard');
   }
 
   return (

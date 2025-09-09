@@ -6,13 +6,17 @@ import { Keys } from './_components/keys';
 
 import { GenerateKey } from './_components/generate-key';
 
+import { userOrRedirect } from '@/auth/user-or-redirect';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Keys',
 };
 
-export default async function KeysPage() {
+export default async function KeysPage(props: PageProps<'/keys'>) {
+  await userOrRedirect('/keys', props);
+
   api.user.apiKeys.list.prefetchInfinite({});
   api.apps.list.member.prefetchInfinite({});
 

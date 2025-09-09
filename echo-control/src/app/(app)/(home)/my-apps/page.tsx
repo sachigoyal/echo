@@ -3,6 +3,8 @@ import { MyApps } from './_components/apps';
 
 import { NewAppButton } from './_components/new-app-button';
 
+import { userOrRedirect } from '@/auth/user-or-redirect';
+
 import { api, HydrateClient } from '@/trpc/server';
 
 import type { Metadata } from 'next';
@@ -11,7 +13,9 @@ export const metadata: Metadata = {
   title: 'Your Apps',
 };
 
-export default function MyAppsPage() {
+export default async function MyAppsPage(props: PageProps<'/my-apps'>) {
+  await userOrRedirect('/my-apps', props);
+
   api.apps.list.owner.prefetchInfinite({
     page_size: 10,
   });

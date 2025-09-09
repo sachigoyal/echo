@@ -4,6 +4,8 @@ import { ActivityList } from './_components/list';
 import { FiltersContextProvider } from './contexts/filters-context';
 import { ActivityFilters } from './_components/filters';
 
+import { userOrRedirect } from '@/auth/user-or-redirect';
+
 import { api, HydrateClient } from '@/trpc/server';
 
 import type { Metadata } from 'next';
@@ -12,7 +14,9 @@ export const metadata: Metadata = {
   title: 'Activity',
 };
 
-export default function ActivityPage() {
+export default async function ActivityPage(props: PageProps<'/activity'>) {
+  await userOrRedirect('/activity', props);
+
   api.apps.list.owner.prefetchInfinite({});
   api.user.feed.list.prefetchInfinite({
     limit: 10,

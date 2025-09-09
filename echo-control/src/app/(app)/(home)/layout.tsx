@@ -11,7 +11,7 @@ export default function AuthenticatedHomeLayout({
         tabs={[
           {
             label: 'Overview',
-            href: '/',
+            href: '/dashboard',
           },
           {
             label: 'Credits',
