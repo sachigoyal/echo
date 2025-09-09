@@ -6,10 +6,10 @@ import { userOrRedirect } from '@/auth/user-or-redirect';
 import { unauthorized } from 'next/navigation';
 import { Body, Heading } from '@/app/(app)/_components/layout/page-utils';
 
-export default async function MarkupEarningsPage(
-  props: PageProps<'/owner/earnings/markup'>
+export default async function CreatorEarningsPage(
+  props: PageProps<'/earnings/creator'>
 ) {
-  const user = await userOrRedirect('/owner/earnings/markup', props);
+  const user = await userOrRedirect('/earnings/creator', props);
 
   if (!user) {
     return unauthorized();
