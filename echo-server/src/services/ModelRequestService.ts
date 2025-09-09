@@ -3,7 +3,7 @@ import { HttpError, UnknownModelError } from '../errors/http';
 import logger from '../logger';
 import { getProvider } from '../providers/ProviderFactory';
 import { Transaction } from '../types';
-import { isValidImageModel, isValidModel } from './AccountingService';
+import { isValidImageModel, isValidModel, isValidVideoModel } from './AccountingService';
 import { EchoControlService } from './EchoControlService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { handleStreamService } from './HandleStreamService';
@@ -25,9 +25,13 @@ export class ModelRequestService {
     processedHeaders: Record<string, string>,
     echoControlService: EchoControlService
   ): Promise<{ transaction: Transaction; isStream: boolean; data: unknown }> {
+    console.log('req', req.path);
+    console.log('req.body', req.body);
     const model = extractModelName(req);
 
-    if (!model || (!isValidModel(model) && !isValidImageModel(model))) {
+    console.log('model', model);
+
+    if (!model || (!isValidModel(model) && !isValidImageModel(model) && !isValidVideoModel(model))) {
       logger.error(`Invalid model: ${model}`);
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
