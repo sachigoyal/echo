@@ -48,26 +48,6 @@ export const x402MiddlewareGenerator = (req: NextRequest) => {
   );
 };
 
-const isPublicRoute = createPathMatcher([
-  // public pages
-  '/',
-  '/popular',
-  '/login',
-  '/docs(.*)',
-  '/llms.mdx(.*)',
-  '/verify-email',
-  '/auth/signin(.*)',
-  // public routes
-  '/api/auth/(.*)',
-  '/api/v1/(.*)',
-  '/api/oauth(.*)',
-  '/api/validate-jwt-token(.*)',
-  '/api/apps/public',
-  '/api/stripe/webhook',
-  '/api/validate-jwt-token(.*)', // Fast JWT validation endpoint - no auth needed
-  '/api/health(.*)', // Health check endpoint - no auth needed
-]);
-
 const isX402Route = createPathMatcher(['/api/v1/base/(.*)']);
 
 export default middleware(req => {
@@ -81,23 +61,5 @@ export default middleware(req => {
     return paymentMiddleware(req);
   }
 
-  if (isPublicRoute(req)) {
-    return NextResponse.next();
-  }
-
-  if (!req.auth) {
-    // If the route does not exist (404), do not redirect to sign-in
-    if (
-      req.nextUrl.pathname.startsWith('/api/') ||
-      req.nextUrl.pathname === '/404' ||
-      req.nextUrl.pathname === '/_error'
-    ) {
-      // Let the request continue so the API or 404 handler can respond
-      return NextResponse.next();
-    }
-    const newUrl = new URL('/login', req.nextUrl.origin);
-    const redirectUrl = `${req.nextUrl.pathname}${req.nextUrl.search}`;
-    newUrl.searchParams.set('redirect_url', redirectUrl);
-    return Response.redirect(newUrl);
-  }
+  return NextResponse.next();
 });
