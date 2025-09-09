@@ -28,12 +28,10 @@ export default async function UsersPage(props: PageProps<'/app/[id]/users'>) {
   return (
     <HydrateClient>
       <Heading title="Users" />
-      <Body className="gap-0">
-        <Card className="overflow-hidden">
-          <Suspense fallback={<LoadingUsersTable />}>
-            <UsersTable appId={id} />
-          </Suspense>
-        </Card>
+      <Body className="gap-4">
+        <Suspense fallback={<LoadingUsersTable />}>
+          <UsersTable appId={id} />
+        </Suspense>
       </Body>
     </HydrateClient>
   );
