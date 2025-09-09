@@ -19,22 +19,23 @@
       }
 
       .ring {
+        stroke: #262626;
         fill: transparent;
       }
 
       .first-ring {
         stroke-width: 16;
-        stroke: #919191
+        stroke-opacity: 0.5;
       }
 
       .second-ring {
         stroke-width: 12;
-        stroke: #bcbcbc
+        stroke-opacity: 0.4;
       }
 
       .third-ring {
         stroke-width: 8;
-        stroke: #a6a6a6
+        stroke-opacity: 0.3;
       }
 
       .cls-8 {
