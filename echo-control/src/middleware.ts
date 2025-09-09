@@ -53,6 +53,7 @@ const isPublicRoute = createPathMatcher([
   '/',
   '/popular',
   '/login',
+  '/terms',
   '/docs(.*)',
   '/llms.mdx(.*)',
   '/verify-email',
