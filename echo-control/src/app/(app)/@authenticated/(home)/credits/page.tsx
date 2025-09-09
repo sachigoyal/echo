@@ -6,6 +6,12 @@ import { Balance } from './_components/balance';
 
 import { api, HydrateClient } from '@/trpc/server';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Credits',
+};
+
 export default async function CreditsPage() {
   api.user.payments.list.prefetchInfinite({
     cursor: 0,

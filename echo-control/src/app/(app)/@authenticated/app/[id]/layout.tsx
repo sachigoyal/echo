@@ -1,5 +1,22 @@
 import { api } from '@/trpc/server';
 import { Nav } from '../../_components/layout/nav';
+import { getApp } from '@/lib/apps/get-app';
+
+import type { Metadata } from 'next';
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/app/[id]'>): Promise<Metadata> {
+  const { id } = await params;
+  const app = await getApp(id);
+  return {
+    title: {
+      default: app.name,
+      template: `${app.name} | %s | Echo`,
+    },
+    description: app.description || undefined,
+  };
+}
 
 export default async function AuthenticatedAppLayout({
   children,

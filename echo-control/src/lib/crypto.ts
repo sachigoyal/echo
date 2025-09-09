@@ -23,16 +23,6 @@ export function hashApiKey(apiKey: string): string {
   return createHmac('sha256', API_KEY_HASH_SECRET).update(apiKey).digest('hex');
 }
 
-/**
- * Verify an API key by hashing it and checking if the hash exists
- * This is now just an alias for hashApiKey since verification is done via direct lookup
- * @param apiKey - The plaintext API key to verify
- * @returns string - The hash to lookup in the database
- */
-export function getApiKeyHash(apiKey: string): string {
-  return hashApiKey(apiKey);
-}
-
 // Generate a secure API key using UUID v4 and additional entropy
 export function generateApiKey(): string {
   const prefix = process.env.API_KEY_PREFIX || 'echo_';

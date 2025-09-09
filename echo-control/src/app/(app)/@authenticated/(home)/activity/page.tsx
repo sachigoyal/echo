@@ -1,9 +1,16 @@
 import { Body, Heading } from '../../_components/layout/page-utils';
 
-import { api, HydrateClient } from '@/trpc/server';
 import { ActivityList } from './_components/list';
 import { FiltersContextProvider } from './contexts/filters-context';
 import { ActivityFilters } from './_components/filters';
+
+import { api, HydrateClient } from '@/trpc/server';
+
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Activity',
+};
 
 export default function ActivityPage() {
   api.apps.list.owner.prefetchInfinite({});

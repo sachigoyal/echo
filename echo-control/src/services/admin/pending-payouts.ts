@@ -5,7 +5,7 @@ import {
   toPaginatedReponse,
 } from '@/services/lib/pagination';
 
-export type PendingPayoutListItem = {
+type PendingPayoutListItem = {
   id: string;
   amount: number;
   status: string;

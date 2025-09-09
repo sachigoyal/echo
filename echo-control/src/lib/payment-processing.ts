@@ -6,7 +6,7 @@ import { db } from './db';
 import type Stripe from 'stripe';
 import { logger } from '@/logger';
 
-export interface PaymentProcessingData {
+interface PaymentProcessingData {
   userId: string;
   amountInCents: number;
   paymentRecord: Payment;

@@ -51,14 +51,6 @@ export const Referrals: React.FC<Props> = async ({
   );
 };
 
-export const LoadingReferrals = ({ title, description }: BaseProps) => {
-  return (
-    <ReferralsContainer title={title} description={description}>
-      <LoadingReferralsTable />
-    </ReferralsContainer>
-  );
-};
-
 const ReferralsContainer = ({
   children,
   title,

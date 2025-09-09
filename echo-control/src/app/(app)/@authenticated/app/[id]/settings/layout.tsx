@@ -4,6 +4,12 @@ import { SettingsNav } from './_components/nav';
 import { notFound, unauthorized } from 'next/navigation';
 import { auth } from '@/auth';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Settings',
+};
+
 export default async function AppSettingsLayout({
   children,
   params,

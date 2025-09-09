@@ -77,6 +77,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           state: generateState(),
           code_challenge: codeChallenge,
           code_challenge_method: 'S256',
+          prompt: 'none',
         })
       ).rejects.toThrow(
         /invalid_request.*redirect_uri.*is not authorized for this app/i

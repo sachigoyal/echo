@@ -3,6 +3,12 @@ import { OwnerReferralsPage } from './_components/owner';
 
 import { getIsOwner } from '../_lib/fetch';
 
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Referrals',
+};
+
 export default async function AppReferralsPage({
   params,
 }: PageProps<'/app/[id]/referrals'>) {

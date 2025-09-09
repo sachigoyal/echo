@@ -35,9 +35,9 @@ export const githubLinkSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-export type GithubLinkInput = z.infer<typeof githubLinkSchema>;
-
-export const resolveGithubId = async (data: GithubLinkInput) => {
+export const resolveGithubId = async (
+  data: z.infer<typeof githubLinkSchema>
+) => {
   if (data.type === 'user') {
     const username = data.url.split('/').pop();
     if (!username) {

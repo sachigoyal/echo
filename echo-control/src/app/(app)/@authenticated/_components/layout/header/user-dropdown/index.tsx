@@ -4,9 +4,7 @@ import {
   DollarSign,
   FileText,
   LogOut,
-  User,
   UserLock,
-  Users,
   Book,
   ExternalLink,
 } from 'lucide-react';
@@ -70,24 +68,6 @@ export const UserDropdown: React.FC<Props> = ({ user }) => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href={`/apps/my-apps`}>
-            <DropdownMenuItem>
-              <User className="size-4" />
-              My Apps
-            </DropdownMenuItem>
-          </Link>
-          <Link href={`/apps/member-apps`}>
-            <DropdownMenuItem>
-              <Users className="size-4" />
-              Apps I&apos;m Using
-            </DropdownMenuItem>
-          </Link>
-          <Link href={`/owner/earnings`}>
-            <DropdownMenuItem>
-              <DollarSign className="size-4" />
-              Earnings
-            </DropdownMenuItem>
-          </Link>
           <Link href={`/owner/earnings/referral`}>
             <DropdownMenuItem>
               <DollarSign className="size-4" />

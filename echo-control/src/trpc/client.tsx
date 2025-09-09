@@ -12,7 +12,7 @@ import {
   splitLink,
 } from '@trpc/client';
 import { createTRPCReact } from '@trpc/react-query';
-import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server';
+import type { inferRouterOutputs } from '@trpc/server';
 
 import SuperJSON from 'superjson';
 
@@ -32,20 +32,6 @@ const getQueryClient = () => {
 };
 
 export const api = createTRPCReact<AppRouter>();
-
-/**
- * Inference helper for inputs.
- *
- * @example type HelloInput = RouterInputs['example']['hello']
- */
-export type RouterInputs = inferRouterInputs<AppRouter>;
-
-/**
- * Inference helper for outputs.
- *
- * @example type HelloOutput = RouterOutputs['example']['hello']
- */
-export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
@@ -97,3 +83,5 @@ function getBaseUrl() {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
+
+export type RouterOutputs = inferRouterOutputs<AppRouter>;

@@ -85,7 +85,7 @@ function CodeTabsContent({
   );
 }
 
-function CodeTabs({
+export const CodeTabs = ({
   codes,
   lang = 'shell',
   className,
@@ -95,7 +95,7 @@ function CodeTabs({
   copyButton = true,
   onCopy,
   ...props
-}: CodeTabsProps) {
+}: CodeTabsProps) => {
   const firstKey = React.useMemo(() => Object.keys(codes)[0] ?? '', [codes]);
 
   // Handle controlled vs uncontrolled properly
@@ -122,6 +122,4 @@ function CodeTabs({
       />
     </Tabs>
   );
-}
-
-export { CodeTabs, type CodeTabsProps };
+};

@@ -23,7 +23,7 @@ const JWT_SECRET = new TextEncoder().encode(
     'your-secret-key-change-in-production'
 );
 
-export interface ApiTokenPayload {
+interface ApiTokenPayload {
   user_id: string;
   app_id: string;
   scope: string;
@@ -37,7 +37,7 @@ export interface ApiTokenPayload {
   jti: string; // unique token ID
 }
 
-export interface AuthCodePayload {
+interface AuthCodePayload {
   clientId: string;
   redirectUri: string;
   codeChallenge: string;
@@ -51,7 +51,7 @@ export interface AuthCodePayload {
 /**
  * Create a JWT-based Echo Access Token for fast validation
  */
-export async function createEchoAccessJwtToken(params: {
+async function createEchoAccessJwtToken(params: {
   userId: string;
   appId: string;
   scope: string;
@@ -89,7 +89,7 @@ export async function createEchoAccessJwtToken(params: {
  *
  * This should not include a Bearer prefix
  */
-export async function verifyEchoAccessJwtToken(
+async function verifyEchoAccessJwtToken(
   token: string
 ): Promise<ApiTokenPayload | null> {
   try {
@@ -110,32 +110,6 @@ export async function verifyEchoAccessJwtToken(
     console.error('JWT verification failed:', error);
     return null;
   }
-}
-
-/**
- * Extract user/app info from JWT without DB lookup
- */
-export function extractTokenInfo(payload: ApiTokenPayload) {
-  return {
-    userId: payload.user_id,
-    appId: payload.app_id,
-    scope: payload.scope,
-    keyVersion: payload.key_version,
-    tokenId: payload.jti,
-    issuedAt: new Date(payload.iat * 1000),
-    expiresAt: new Date(payload.exp * 1000),
-  };
-}
-
-/**
- * Check if token needs refresh (within 2 hours of expiry)
- */
-export function shouldRefreshEchoAccessJwtToken(
-  payload: ApiTokenPayload
-): boolean {
-  const now = Math.floor(Date.now() / 1000);
-  const timeUntilExpiry = payload.exp - now;
-  return timeUntilExpiry < 2 * 60 * 60; // 2 hours
 }
 
 export async function authenticateEchoAccessJwtToken(
@@ -165,7 +139,7 @@ export async function authenticateEchoAccessJwtToken(
 /**
  * Refresh token response type
  */
-export interface RefreshTokenResponse {
+interface RefreshTokenResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
@@ -187,7 +161,7 @@ export interface RefreshTokenResponse {
 /**
  * Refresh token error type
  */
-export interface RefreshTokenError {
+interface RefreshTokenError {
   error: string;
   error_description: string;
 }
@@ -351,7 +325,7 @@ export async function handleRefreshToken(
 /**
  * Authorization code token request parameters
  */
-export interface AuthCodeTokenRequest {
+interface AuthCodeTokenRequest {
   code: string;
   redirect_uri: string;
   client_id: string;
@@ -364,12 +338,12 @@ export interface AuthCodeTokenRequest {
 /**
  * Initial token issuance response type (same as refresh response)
  */
-export type InitialTokenResponse = RefreshTokenResponse;
+type InitialTokenResponse = RefreshTokenResponse;
 
 /**
  * Initial token issuance error type (same as refresh error)
  */
-export type InitialTokenError = RefreshTokenError;
+type InitialTokenError = RefreshTokenError;
 
 /**
  * Handle initial token issuance from authorization code
@@ -608,5 +582,3 @@ export async function handleInitialTokenIssuance(
     },
   };
 }
-
-export const getRedirectWithAuthCode = {};

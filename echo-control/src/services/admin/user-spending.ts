@@ -19,7 +19,7 @@ import { db } from '@/lib/db';
  */
 
 // Interface for aggregated spending data by app from user perspective
-export interface AppSpendingAggregates {
+interface AppSpendingAggregates {
   appId: string;
   appName: string;
   transactionCount: number;
@@ -34,7 +34,7 @@ export interface AppSpendingAggregates {
 }
 
 // Interface for user spending summary across all apps they use
-export interface UserSpendingAggregates {
+interface UserSpendingAggregates {
   userId: string;
   userName: string | null;
   userEmail: string;
@@ -54,7 +54,7 @@ export interface UserSpendingAggregates {
 }
 
 // Interface for global spending aggregates across all users and apps
-export interface GlobalSpendingAggregates {
+interface GlobalSpendingAggregates {
   totalUsers: number;
   totalApps: number;
   totalTransactions: number;

@@ -55,7 +55,7 @@ export async function getOwnerDetails(
  * @param tx - Optional Prisma transaction client
  * @returns Map of echo app ID to owner details
  */
-export async function getOwnerDetailsBatch(
+async function getOwnerDetailsBatch(
   echoAppIds: string[],
   tx?: Prisma.TransactionClient
 ): Promise<Map<string, Owner>> {

@@ -46,28 +46,10 @@ const createHighlighter = /* @__PURE__ */ createdBundledHighlighter<
   engine: () => createJavaScriptRegexEngine(),
 });
 
-const {
-  codeToHtml,
-  codeToHast,
-  codeToTokensBase,
-  codeToTokens,
-  codeToTokensWithThemes,
-  getSingletonHighlighter,
-  getLastGrammarState,
-} = /* @__PURE__ */ createSingletonShorthands<BundledLanguage, BundledTheme>(
-  createHighlighter
-);
+const { codeToHast, getSingletonHighlighter } =
+  /* @__PURE__ */ createSingletonShorthands<BundledLanguage, BundledTheme>(
+    createHighlighter
+  );
 
-export {
-  bundledLanguages,
-  bundledThemes,
-  codeToHast,
-  codeToHtml,
-  codeToTokens,
-  codeToTokensBase,
-  codeToTokensWithThemes,
-  createHighlighter,
-  getLastGrammarState,
-  getSingletonHighlighter,
-};
-export type { BundledLanguage, BundledTheme, Highlighter };
+export { codeToHast, getSingletonHighlighter };
+export type { BundledLanguage, Highlighter };

@@ -14,7 +14,7 @@ interface ActivityContextType {
   setDateRange: (startDate: Date, endDate: Date) => void;
 }
 
-export const ActivityContext = createContext<ActivityContextType>({
+const ActivityContext = createContext<ActivityContextType>({
   startDate: new Date(),
   endDate: new Date(),
   timeframe: ActivityTimeframe.SevenDays,
@@ -36,7 +36,7 @@ export const ActivityContextProvider = ({
   creationDate,
 }: Props) => {
   const [timeframe, setTimeframe] = useState<ActivityTimeframe>(
-    ActivityTimeframe.SevenDays
+    ActivityTimeframe.AllTime
   );
   const [endDate, setEndDate] = useState<Date>(initialEndDate);
   const [startDate, setStartDate] = useState<Date>(initialStartDate);

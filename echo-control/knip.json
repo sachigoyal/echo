@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/{instrumentation,middleware}.{js,ts}",
+    "src/app/**/{error,layout,loading,not-found,page,template,default}.{js,jsx,ts,tsx}",
+    "src/app/**/route.{js,jsx,ts,tsx}",
+    "src/mdx-components.{js,jsx,ts,tsx}"
+  ],
+  "ignoreDependencies": [
+    "eslint-config-next",
+    "husky",
+    "tw-animate-css",
+    "@merit-systems/echo-typescript-sdk",
+    "ts-morph"
+  ],
+  "ignore": [
+    "/scripts/**",
+    "/source.config.ts",
+    "src/app/api/v1/(auth)/middleware.ts"
+  ],
+  "ignoreBinaries": ["docker-compose", "sleep"],
+  "ignoreWorkspaces": []
+}

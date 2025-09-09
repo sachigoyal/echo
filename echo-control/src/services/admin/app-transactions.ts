@@ -13,7 +13,7 @@ import type {} from '@/generated/prisma';
  */
 
 // Interface for a single transaction with related data
-export interface AppTransactionDetail {
+interface AppTransactionDetail {
   id: string;
   totalCost: number;
   appProfit: number;
@@ -54,7 +54,7 @@ export interface AppTransactionDetail {
 }
 
 // Interface for paginated transaction results
-export interface AppTransactionsPaginated {
+interface AppTransactionsPaginated {
   transactions: AppTransactionDetail[];
   pagination: {
     page: number;
@@ -74,7 +74,7 @@ export interface AppTransactionsPaginated {
 }
 
 // Interface for app transaction totals
-export interface AppTransactionTotals {
+interface AppTransactionTotals {
   appId: string;
   appName: string;
   totalTransactions: number;
