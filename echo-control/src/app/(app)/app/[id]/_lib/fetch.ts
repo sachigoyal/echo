@@ -9,3 +9,7 @@ export const getIsOwner = cache(async (appId: string) => {
 export const getApp = cache(async (appId: string) => {
   return await api.apps.app.get({ appId });
 });
+
+export const getOverallStats = cache(async (appId: string) => {
+  return await api.apps.app.stats.overall({ appId });
+});

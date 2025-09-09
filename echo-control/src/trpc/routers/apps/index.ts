@@ -280,7 +280,7 @@ export const appsRouter = createTRPCRouter({
           return await getBucketedAppStats(input);
         }),
 
-      overall: protectedProcedure
+      overall: publicProcedure
         .input(getOverallAppStatsSchema)
         .query(async ({ input }) => {
           return await getOverallAppStats(input);
