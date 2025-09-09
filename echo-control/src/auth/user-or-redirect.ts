@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation';
 import { auth } from '.';
+import { Route } from 'next';
 import { AppRoutes } from '../../.next/types/routes';
 
-export const userOrRedirect = async <T extends AppRoutes>(
-  route: T,
-  props: PageProps<T>
+export const userOrRedirect = async <T extends string>(
+  route: Route<T>,
+  props: PageProps<AppRoutes>
 ) => {
   const session = await auth();
   if (!session?.user) {

@@ -1,6 +1,14 @@
 import { CreditCodeMinter } from '@/components/admin/CreditCodeMinter';
+import { userOrRedirect } from '@/auth/user-or-redirect';
+import { unauthorized } from 'next/navigation';
 
-export default function AdminCodesPage() {
+export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
+  const user = await userOrRedirect('/admin/codes', props);
+
+  if (!user) {
+    return unauthorized();
+  }
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">

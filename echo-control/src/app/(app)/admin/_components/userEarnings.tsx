@@ -54,11 +54,7 @@ type SortField =
   | 'totalReferralProfit';
 type SortDirection = 'asc' | 'desc';
 
-interface UserEarningsTableProps {
-  onAppClick?: (appId: string, appName: string) => void;
-}
-
-export function UserEarningsTable({ onAppClick }: UserEarningsTableProps) {
+export function UserEarningsTable() {
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<SortField>('totalCost');
@@ -473,16 +469,14 @@ export function UserEarningsTable({ onAppClick }: UserEarningsTableProps) {
                           <TableCell className="w-8"></TableCell>
                           <TableCell className="min-w-0">
                             <div className="pl-6 min-w-0">
-                              <button
-                                onClick={() =>
-                                  onAppClick?.(app.appId, app.appName)
-                                }
-                                className="font-medium text-sm hover:text-primary hover:underline cursor-pointer text-left block truncate max-w-full"
-                                disabled={!onAppClick}
-                                title={app.appName}
-                              >
-                                {app.appName}
-                              </button>
+                              <Link href={`/admin/apps/${app.appId}`}>
+                                <button
+                                  className="font-medium text-sm hover:text-primary hover:underline cursor-pointer text-left block truncate max-w-full"
+                                  title={app.appName}
+                                >
+                                  {app.appName}
+                                </button>
+                              </Link>
                               <div
                                 className="text-xs text-muted-foreground truncate max-w-full"
                                 title={app.appId}

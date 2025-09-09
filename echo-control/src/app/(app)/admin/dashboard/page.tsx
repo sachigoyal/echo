@@ -1,14 +1,15 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
 import { UserEarningsTable } from '@/app/(app)/admin/_components';
+import { userOrRedirect } from '@/auth/user-or-redirect';
+import { unauthorized } from 'next/navigation';
 
-export default function AdminEarningsDashboard() {
-  const router = useRouter();
+export default async function AdminEarningsDashboard(
+  props: PageProps<'/admin/dashboard'>
+) {
+  const user = await userOrRedirect('/admin/dashboard', props);
 
-  const handleAppClick = (appId: string) => {
-    router.push(`/admin/apps/${appId}`);
-  };
+  if (!user) {
+    return unauthorized();
+  }
 
   return (
     <div className="container mx-auto py-8">
@@ -19,7 +20,7 @@ export default function AdminEarningsDashboard() {
           all apps
         </p>
       </div>
-      <UserEarningsTable onAppClick={handleAppClick} />
+      <UserEarningsTable />
     </div>
   );
 }

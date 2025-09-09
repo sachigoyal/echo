@@ -1,14 +1,15 @@
-import { auth } from '@/auth';
+import Link from 'next/link';
 
+import { Book } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 
 import { BalanceButton } from './_components/layout/header/balance';
 import { UserDropdown } from './_components/layout/header/user-dropdown';
 import { LogoContainer } from './_components/layout/logo';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+
 import { Route } from 'next';
-import { Book } from 'lucide-react';
 
 export default async function AppLayout({
   children,

@@ -1,12 +1,17 @@
 import { UserTransactionDetails } from '@/app/(app)/admin/_components';
+import { userOrRedirect } from '@/auth/user-or-redirect';
+import { unauthorized } from 'next/navigation';
 
-interface PageProps {
-  params: Promise<{ userId: string }>;
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}
+export default async function AdminUserTransactionsPage(
+  props: PageProps<'/admin/users/[userId]'>
+) {
+  const { userId } = await props.params;
+  const user = await userOrRedirect(`/admin/users/${userId}`, props);
 
-export default async function AdminUserTransactionsPage({ params }: PageProps) {
-  const { userId } = await params;
+  if (!user) {
+    return unauthorized();
+  }
+
   return (
     <div className="container mx-auto py-8">
       <UserTransactionDetails userId={userId} />

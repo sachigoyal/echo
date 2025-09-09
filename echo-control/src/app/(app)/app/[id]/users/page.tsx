@@ -9,6 +9,7 @@ import { UsersTable, LoadingUsersTable } from './_components/users';
 import { api, HydrateClient } from '@/trpc/server';
 
 import type { Metadata } from 'next';
+import { userOrRedirect } from '@/auth/user-or-redirect';
 
 export const metadata: Metadata = {
   title: {
@@ -17,10 +18,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function UsersPage({
-  params,
-}: PageProps<'/app/[id]/users'>) {
-  const { id } = await params;
+export default async function UsersPage(props: PageProps<'/app/[id]/users'>) {
+  const { id } = await props.params;
+
+  await userOrRedirect(`/app/${id}/users` as const, props);
 
   api.apps.app.users.list.prefetchInfinite({ appId: id });
 
