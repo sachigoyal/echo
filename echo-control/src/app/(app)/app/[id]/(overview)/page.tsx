@@ -12,9 +12,12 @@ import { HeaderCard, LoadingHeaderCard } from './_components/header';
 import { Setup } from './_components/setup';
 import { Overview } from './_components/overview';
 import { getApp } from '../_lib/fetch';
+import { userOrRedirect } from '@/auth/user-or-redirect';
 
-export default async function AppPage({ params }: PageProps<'/app/[id]'>) {
-  const { id } = await params;
+export default async function AppPage(props: PageProps<'/app/[id]'>) {
+  const { id } = await props.params;
+
+  await userOrRedirect(`/app/${id}` as const, props);
 
   const app = await getApp(id);
   api.apps.app.get.prefetch({ appId: id });

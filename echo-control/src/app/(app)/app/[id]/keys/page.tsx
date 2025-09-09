@@ -1,3 +1,4 @@
+import { userOrRedirect } from '@/auth/user-or-redirect';
 import { Heading, Body } from '../../../_components/layout/page-utils';
 
 import { GenerateKey } from './_components/generate-key';
@@ -11,12 +12,12 @@ export const metadata: Metadata = {
   title: 'Keys',
 };
 
-export default async function AppKeysPage({
-  params,
-  searchParams,
-}: PageProps<'/app/[id]/keys'>) {
-  const { id } = await params;
-  const { generate } = await searchParams;
+export default async function AppKeysPage(props: PageProps<'/app/[id]/keys'>) {
+  const { id } = await props.params;
+
+  await userOrRedirect(`/app/${id}/keys`, props);
+
+  const { generate } = await props.searchParams;
 
   api.user.apiKeys.list.prefetchInfinite({ appId: id });
 

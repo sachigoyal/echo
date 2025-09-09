@@ -51,13 +51,15 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
     const headers = ['Name', 'Email', 'Transactions', 'Cost', 'Profit'];
     const csvData = [
       headers.join(','),
-      ...rows.map(row => [
-        `"${row.name || ''}"`,
-        `"${row.email || ''}"`,
-        row.usage.totalTransactions,
-        row.usage.rawCost,
-        row.usage.markupProfit
-      ].join(','))
+      ...rows.map(row =>
+        [
+          `"${row.name || ''}"`,
+          `"${row.email || ''}"`,
+          row.usage.totalTransactions,
+          row.usage.rawCost,
+          row.usage.markupProfit,
+        ].join(',')
+      ),
     ].join('\n');
 
     const blob = new Blob([csvData], { type: 'text/csv' });
@@ -76,7 +78,7 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
       .map(row => row.email)
       .filter(email => email)
       .join(', ');
-    
+
     await navigator.clipboard.writeText(emails);
   };
 
@@ -85,64 +87,59 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
       {/* Export Actions */}
       {rows.length > 0 && (
         <div className="flex justify-end gap-2">
-          <Button
-            onClick={exportToCSV}
-            variant="outline"
-            size="sm"
-          >
+          <Button onClick={exportToCSV} variant="outline" size="sm">
             <Download className="size-4 mr-2" />
             Export CSV
           </Button>
           <CopyEmailsButton onCopyEmails={copyEmails} />
         </div>
       )}
-      
-      {/* Table */}
-      <Card className="overflow-hidden">
-        <BaseUsersTable
-          pagination={
-            hasNextPage
-              ? {
-                  hasNext: hasNextPage,
-                  fetchNextPage,
-                  isFetchingNextPage,
-                }
-              : undefined
-          }
-        >
-          {rows.length > 0 ? (
-            <UserRows
-              users={rows.map(row => ({
-                id: row.id,
-                name: row.name,
-                email: row.email,
-                image: row.image,
-                totalTransactions: row.usage.totalTransactions,
-                rawCost: row.usage.rawCost,
-                totalProfit: row.usage.markupProfit,
-              }))}
-            />
-          ) : (
-            <TableEmpty colSpan={5}>No users found</TableEmpty>
-          )}
-        </BaseUsersTable>
-      </Card>
+
+      <BaseUsersTable
+        pagination={
+          hasNextPage
+            ? {
+                hasNext: hasNextPage,
+                fetchNextPage,
+                isFetchingNextPage,
+              }
+            : undefined
+        }
+      >
+        {rows.length > 0 ? (
+          <UserRows
+            users={rows.map(row => ({
+              id: row.id,
+              name: row.name,
+              email: row.email,
+              image: row.image,
+              totalTransactions: row.usage.totalTransactions,
+              rawCost: row.usage.rawCost,
+              totalProfit: row.usage.markupProfit,
+            }))}
+          />
+        ) : (
+          <TableEmpty colSpan={5}>No users found</TableEmpty>
+        )}
+      </BaseUsersTable>
     </>
   );
 };
 
 export const LoadingUsersTable = () => {
   return (
-    <Card className="overflow-hidden">
-      <BaseUsersTable>
-        <LoadingUserRow />
-        <LoadingUserRow />
-      </BaseUsersTable>
-    </Card>
+    <BaseUsersTable>
+      <LoadingUserRow />
+      <LoadingUserRow />
+    </BaseUsersTable>
   );
 };
 
-const CopyEmailsButton = ({ onCopyEmails }: { onCopyEmails: () => Promise<void> }) => {
+const CopyEmailsButton = ({
+  onCopyEmails,
+}: {
+  onCopyEmails: () => Promise<void>;
+}) => {
   const [copySuccess, setCopySuccess] = useState(false);
 
   const handleCopyEmails = async () => {
@@ -152,11 +149,7 @@ const CopyEmailsButton = ({ onCopyEmails }: { onCopyEmails: () => Promise<void> 
   };
 
   return (
-    <Button
-      onClick={handleCopyEmails}
-      variant="outline"
-      size="sm"
-    >
+    <Button onClick={handleCopyEmails} variant="outline" size="sm">
       {copySuccess ? (
         <>
           <Check className="size-4 mr-2" />
@@ -186,7 +179,9 @@ const UserRow = ({ user }: { user: User }) => {
         </div>
       </TableCell>
       <TableCell className="text-left">
-        <p className="text-sm text-muted-foreground">{user.email || 'No email'}</p>
+        <p className="text-sm text-muted-foreground">
+          {user.email || 'No email'}
+        </p>
       </TableCell>
       <TableCell className="text-center">{user.totalTransactions}</TableCell>
       <TableCell className="text-center">
@@ -232,23 +227,25 @@ interface BaseUsersTableProps {
 const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent text-xs">
-            <TableHead className="pl-4 flex items-center gap-2">
-              <div className="size-6 flex items-center justify-center bg-muted rounded-md">
-                <User className="size-4" />
-              </div>
-              Name
-            </TableHead>
-            <TableHead className="text-left">Email</TableHead>
-            <TableHead className="text-center">Transactions</TableHead>
-            <TableHead className="text-center">Cost</TableHead>
-            <TableHead className="text-right pr-4">Profit</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>{children}</TableBody>
-      </Table>
+      <Card className="overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent text-xs">
+              <TableHead className="pl-4 flex items-center gap-2">
+                <div className="size-6 flex items-center justify-center bg-muted rounded-md">
+                  <User className="size-4" />
+                </div>
+                Name
+              </TableHead>
+              <TableHead className="text-left">Email</TableHead>
+              <TableHead className="text-center">Transactions</TableHead>
+              <TableHead className="text-center">Cost</TableHead>
+              <TableHead className="text-right pr-4">Profit</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>{children}</TableBody>
+        </Table>
+      </Card>
       {pagination?.hasNext && (
         <div className="flex justify-center p-4">
           <Button

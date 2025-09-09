@@ -1,7 +1,5 @@
 import { Suspense } from 'react';
 
-import { Card } from '@/components/ui/card';
-
 import { Body, Heading } from '../../../_components/layout/page-utils';
 
 import { UsersTable, LoadingUsersTable } from './_components/users';
