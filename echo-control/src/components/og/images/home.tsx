@@ -1,4 +1,4 @@
-import { dynamicOgImage } from './dynamic';
+import { dynamicOgImage } from './standard';
 
 interface StaticPageProps {
   title: string;

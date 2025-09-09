@@ -1,8 +1,8 @@
 import { getOverallStats } from '../_lib/fetch';
 
-import { Users, DollarSign, Brain } from '@/app/_og/icons';
+import { Users, DollarSign, Brain } from '@/components/og/icons';
 
-import { appOgImage } from '@/app/_og/app';
+import { appOgImage } from '@/components/og/images/app';
 
 export default async function Image({ params }: PageProps<'/app/[id]'>) {
   const { id } = await params;

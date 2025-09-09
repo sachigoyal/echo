@@ -1,7 +1,11 @@
-import { baseOgImage, dashWidth, Path, xPaddingPx } from './_og/base';
-import { baseUrl } from './_og/base-url';
-import { ogExports } from './_og/exports';
-import { Logo } from './_og/logo';
+import {
+  baseOgImage,
+  dashWidth,
+  Path,
+  xPaddingPx,
+} from '../components/og/images/base';
+import { ogExports } from '../components/og/exports';
+import { Logo } from '../components/og/logo';
 
 export const { alt, size, contentType } = ogExports();
 
@@ -52,7 +56,6 @@ export default async function Image() {
                 height: `${innerHexHeight}px`,
                 width: `${innerHexWidth}px`,
                 boxShadow: '0 0 16px 8px rgba(0,157,200,0.5)',
-                zIndex: 10,
               }}
             >
               <Logo height={180} width={180} />

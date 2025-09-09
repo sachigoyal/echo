@@ -1,4 +1,4 @@
-import { dynamicOgImage } from '@/app/_og/dynamic';
+import { dynamicOgImage } from '@/components/og/images/standard';
 import { getApp } from '@/app/(app)/app/[id]/_lib/fetch';
 
 export const appOgImage = async (id: string, component: React.ReactNode) => {

@@ -1,5 +1,5 @@
 import { baseOgImage, dashWidth, Path, xPaddingPx } from './base';
-import { baseUrl } from './base-url';
+import { baseUrl } from '../base-url';
 
 export const dynamicOgImage = (component: React.ReactNode) => {
   return baseOgImage(

@@ -1,5 +1,5 @@
-import { ogExports } from '@/app/_og/exports';
-import { staticPage } from '@/app/_og/static-page';
+import { ogExports } from '@/components/og/exports';
+import { staticPage } from '@/components/og/images/home';
 
 export const { alt, size, contentType } = ogExports('Credits');
 

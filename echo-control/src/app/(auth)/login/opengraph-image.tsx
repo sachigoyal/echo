@@ -1,4 +1,4 @@
-import { dynamicOgImage } from '@/app/_og/dynamic';
+import { dynamicOgImage } from '@/components/og/images/standard';
 
 // Image metadata
 export const alt = 'About Acme';
