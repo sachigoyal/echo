@@ -7,19 +7,33 @@ import { Suspense } from 'react';
 
 import { Balance } from './balance-display';
 import { api, HydrateClient } from '@/trpc/server';
+import { auth } from '@/auth';
 
 export const BalanceButton = async () => {
-  void api.user.balance.get.prefetch();
+  const session = await auth();
 
+  if (!session?.user) {
+    return <BalanceSkeleton />;
+  }
+
+  return <BalanceButtonContent />;
+};
+
+const BalanceButtonContent = () => {
+  void api.user.balance.get.prefetch();
   return (
     <HydrateClient>
       <Button variant="outline" asChild>
         <Link href="/credits">
-          <Suspense fallback={<Skeleton className="h-5 w-10" />}>
+          <Suspense fallback={<BalanceSkeleton />}>
             <Balance />
           </Suspense>
         </Link>
       </Button>
     </HydrateClient>
   );
+};
+
+const BalanceSkeleton = () => {
+  return <Skeleton className="h-5 w-10" />;
 };
