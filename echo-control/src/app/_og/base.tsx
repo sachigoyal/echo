@@ -7,8 +7,8 @@ export const borderColor = '#a1a1a180';
 export const dashWidth = '1px';
 export const strokeDasharray = '2 10';
 export const xPadding = 16;
+export const xPaddingPx = `${xPadding * 4}px`;
 const yPadding = 16;
-const xPaddingPx = `${xPadding * 4}px`;
 const yPaddingPx = `${yPadding * 4}px`;
 const circleSize = 16;
 
@@ -54,7 +54,7 @@ export const baseOgImage = async (component: React.ReactNode) => {
           <Path orientation="vertical" height={yPaddingPx} width={dashWidth} />
           <Path orientation="vertical" height={yPaddingPx} width={dashWidth} />
         </div>
-        <Path orientation="horizontal" height={dashWidth} width="100%" />
+        <Path orientation="horizontal" height={dashWidth} width={'1200px'} />
         <div
           tw="top-0 left-0 right-0 h-4 absolute"
           style={{
@@ -73,43 +73,34 @@ export const baseOgImage = async (component: React.ReactNode) => {
         </div>
 
         {/* Content */}
-        <div tw="flex-1 w-full flex">
-          <div tw={`w-${xPadding} h-full`} />
+        <div tw={`flex-1 flex px-${xPadding}`}>
+          <Path
+            orientation="vertical"
+            height={`${630 - yPadding * 4 * 2}px`}
+            width={dashWidth}
+          />
           <div
-            tw="flex-1 flex"
+            tw="flex-1 w-full flex flex-col"
             style={{
-              borderLeft: `${dashWidth} dashed ${borderColor}`,
-              borderRight: `${dashWidth} dashed ${borderColor}`,
+              background: backgroundColor,
             }}
           >
-            <Path orientation="vertical" height={'100%'} width={dashWidth} />
-            <div
-              tw="flex-1 w-full flex flex-col"
-              style={{
-                background: backgroundColor,
-              }}
-            >
-              {component}
-            </div>
-            <Path orientation="vertical" height={'100%'} width={dashWidth} />
+            {component}
           </div>
-          <div tw={`w-${xPadding} h-full`} />
+          <Path
+            orientation="vertical"
+            height={`${630 - yPadding * 4 * 2}px`}
+            width={dashWidth}
+          />
         </div>
+        <Path orientation="horizontal" height={dashWidth} width={`1200px`} />
 
         {/* Bottom border */}
         <div
-          tw={`h-${yPadding} w-full px-${xPadding} flex items-center`}
-          style={{
-            borderTop: `${dashWidth} dashed ${borderColor}`,
-          }}
+          tw={`h-${yPadding} w-full px-${xPadding} flex items-center justify-between`}
         >
-          <div
-            tw="flex-1 h-full"
-            style={{
-              borderLeft: `${dashWidth} dashed ${borderColor}`,
-              borderRight: `${dashWidth} dashed ${borderColor}`,
-            }}
-          />
+          <Path orientation="vertical" height={yPaddingPx} width={dashWidth} />
+          <Path orientation="vertical" height={yPaddingPx} width={dashWidth} />
         </div>
 
         {/* Side gradients */}
@@ -170,9 +161,10 @@ interface PathProps {
   orientation: 'horizontal' | 'vertical';
   height: string;
   width: string;
+  style?: React.CSSProperties;
 }
 
-const Path = ({ orientation, height, width }: PathProps) => {
+export const Path = ({ orientation, height, width, style }: PathProps) => {
   // Calculate actual pixel dimensions for consistent dash sizing
   const getPixelValue = (value: string) => {
     return parseInt(value.replace('px', ''));
@@ -184,7 +176,7 @@ const Path = ({ orientation, height, width }: PathProps) => {
 
   // Calculate the actual length of the path in pixels
   const pathLengthPx =
-    orientation === 'horizontal' ? 1200 : getPixelValue(height);
+    orientation === 'horizontal' ? getPixelValue(width) : getPixelValue(height);
 
   // Create dash array that maintains consistent absolute sizing
   const normalizedDashArray = `${(dashSize / pathLengthPx) * 100} ${(gapSize / pathLengthPx) * 100}`;
@@ -194,6 +186,7 @@ const Path = ({ orientation, height, width }: PathProps) => {
       style={{
         height,
         width,
+        ...style,
       }}
     >
       <line
