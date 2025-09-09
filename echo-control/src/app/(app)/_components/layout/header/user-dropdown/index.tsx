@@ -80,18 +80,21 @@ const UserDropdownComponent = async () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href={`/owner/earnings/referral`}>
+          <Link href={`/earnings/creator`}>
+            <DropdownMenuItem>
+              <DollarSign className="size-4" />
+              Creator Earnings
+            </DropdownMenuItem>
+          </Link>
+          <Link href={`/earnings/referral`}>
             <DropdownMenuItem>
               <DollarSign className="size-4" />
               Referral Earnings
             </DropdownMenuItem>
           </Link>
-          <Link href={`/owner/earnings/markup`}>
-            <DropdownMenuItem>
-              <DollarSign className="size-4" />
-              Markup Earnings
-            </DropdownMenuItem>
-          </Link>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
           <Link href={'/docs' as Route<'/docs'>}>
             <DropdownMenuItem>
               <Book className="size-4" />
