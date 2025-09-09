@@ -14,6 +14,8 @@ import type { Metadata } from 'next';
 import type { Viewport } from 'next';
 
 import '@/styles/globals.css';
+import FreeTier from '@/components/new-user/FreeTier';
+import TermsAgreement from '@/components/new-user/TermsAgreement';
 
 export const metadata: Metadata = {
   title: {
@@ -65,6 +67,8 @@ export default function RootLayout({
                 <PostHogProvider>
                   <Toaster />
                   <main>{children}</main>
+                  <FreeTier />
+                  <TermsAgreement />
                 </PostHogProvider>
               </ThemeProvider>
             </TRPCReactProvider>

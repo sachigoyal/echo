@@ -35,6 +35,9 @@ model User {
   appSessions          AppSession[]
   Payout               Payout[]
   githubLink           GithubLink?
+  latestTosVersion     Decimal?
+  latestPrivacyVersion Decimal?
+  latestFreeCreditsVersion Decimal?
 
   @@map("users")
 }
