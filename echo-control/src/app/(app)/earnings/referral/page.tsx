@@ -8,9 +8,9 @@ import { ClaimablePayouts } from './_components/claimable-payouts';
 import { Body, Heading } from '@/app/(app)/_components/layout/page-utils';
 
 export default async function ReferralEarningsPage(
-  props: PageProps<'/owner/earnings/referral'>
+  props: PageProps<'/earnings/referral'>
 ) {
-  const user = await userOrRedirect('/owner/earnings/referral', props);
+  const user = await userOrRedirect('/earnings/referral', props);
 
   if (!user) {
     return unauthorized();
