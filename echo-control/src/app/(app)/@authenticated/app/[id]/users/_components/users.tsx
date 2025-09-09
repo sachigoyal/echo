@@ -1,8 +1,9 @@
 'use client';
 
-import { Loader2, User } from 'lucide-react';
+import { Loader2, User, Download, Copy, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Table,
   TableRow,
@@ -18,10 +19,12 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 import { formatCurrency } from '@/lib/balance';
 import { api } from '@/trpc/client';
 import { InfinitePaginationProps } from '@/types/infinite-pagination';
+import { useState } from 'react';
 
 interface User {
   id: string;
   name: string | null;
+  email: string | null;
   image: string | null;
   totalTransactions: number;
   rawCost: number;
@@ -44,42 +47,128 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
 
   const rows = users.pages.flatMap(page => page.items);
 
+  const exportToCSV = () => {
+    const headers = ['Name', 'Email', 'Transactions', 'Cost', 'Profit'];
+    const csvData = [
+      headers.join(','),
+      ...rows.map(row => [
+        `"${row.name || ''}"`,
+        `"${row.email || ''}"`,
+        row.usage.totalTransactions,
+        row.usage.rawCost,
+        row.usage.markupProfit
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `users-${appId}-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const copyEmails = async () => {
+    const emails = rows
+      .map(row => row.email)
+      .filter(email => email)
+      .join(', ');
+    
+    await navigator.clipboard.writeText(emails);
+  };
+
   return (
-    <BaseUsersTable
-      pagination={
-        hasNextPage
-          ? {
-              hasNext: hasNextPage,
-              fetchNextPage,
-              isFetchingNextPage,
-            }
-          : undefined
-      }
-    >
-      {rows.length > 0 ? (
-        <UserRows
-          users={rows.map(row => ({
-            id: row.id,
-            name: row.name,
-            image: row.image,
-            totalTransactions: row.usage.totalTransactions,
-            rawCost: row.usage.rawCost,
-            totalProfit: row.usage.markupProfit,
-          }))}
-        />
-      ) : (
-        <TableEmpty colSpan={4}>No users found</TableEmpty>
+    <>
+      {/* Export Actions */}
+      {rows.length > 0 && (
+        <div className="flex justify-end gap-2">
+          <Button
+            onClick={exportToCSV}
+            variant="outline"
+            size="sm"
+          >
+            <Download className="size-4 mr-2" />
+            Export CSV
+          </Button>
+          <CopyEmailsButton onCopyEmails={copyEmails} />
+        </div>
       )}
-    </BaseUsersTable>
+      
+      {/* Table */}
+      <Card className="overflow-hidden">
+        <BaseUsersTable
+          pagination={
+            hasNextPage
+              ? {
+                  hasNext: hasNextPage,
+                  fetchNextPage,
+                  isFetchingNextPage,
+                }
+              : undefined
+          }
+        >
+          {rows.length > 0 ? (
+            <UserRows
+              users={rows.map(row => ({
+                id: row.id,
+                name: row.name,
+                email: row.email,
+                image: row.image,
+                totalTransactions: row.usage.totalTransactions,
+                rawCost: row.usage.rawCost,
+                totalProfit: row.usage.markupProfit,
+              }))}
+            />
+          ) : (
+            <TableEmpty colSpan={5}>No users found</TableEmpty>
+          )}
+        </BaseUsersTable>
+      </Card>
+    </>
   );
 };
 
 export const LoadingUsersTable = () => {
   return (
-    <BaseUsersTable>
-      <LoadingUserRow />
-      <LoadingUserRow />
-    </BaseUsersTable>
+    <Card className="overflow-hidden">
+      <BaseUsersTable>
+        <LoadingUserRow />
+        <LoadingUserRow />
+      </BaseUsersTable>
+    </Card>
+  );
+};
+
+const CopyEmailsButton = ({ onCopyEmails }: { onCopyEmails: () => Promise<void> }) => {
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const handleCopyEmails = async () => {
+    await onCopyEmails();
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
+
+  return (
+    <Button
+      onClick={handleCopyEmails}
+      variant="outline"
+      size="sm"
+    >
+      {copySuccess ? (
+        <>
+          <Check className="size-4 mr-2" />
+          Copied!
+        </>
+      ) : (
+        <>
+          <Copy className="size-4 mr-2" />
+          Copy Emails
+        </>
+      )}
+    </Button>
   );
 };
 
@@ -95,6 +184,9 @@ const UserRow = ({ user }: { user: User }) => {
           <UserAvatar src={user.image} className="size-6" />
           <p className="text-sm font-medium">{user.name}</p>
         </div>
+      </TableCell>
+      <TableCell className="text-left">
+        <p className="text-sm text-muted-foreground">{user.email || 'No email'}</p>
       </TableCell>
       <TableCell className="text-center">{user.totalTransactions}</TableCell>
       <TableCell className="text-center">
@@ -115,6 +207,9 @@ const LoadingUserRow = () => {
           <Skeleton className="size-6" />
           <Skeleton className="h-4 w-16" />
         </div>
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
       </TableCell>
       <TableCell>
         <Skeleton className="h-4 w-8 mx-auto" />
@@ -146,6 +241,7 @@ const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
               </div>
               Name
             </TableHead>
+            <TableHead className="text-left">Email</TableHead>
             <TableHead className="text-center">Transactions</TableHead>
             <TableHead className="text-center">Cost</TableHead>
             <TableHead className="text-right pr-4">Profit</TableHead>
@@ -154,7 +250,7 @@ const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
         <TableBody>{children}</TableBody>
       </Table>
       {pagination?.hasNext && (
-        <div className="flex justify-center">
+        <div className="flex justify-center p-4">
           <Button
             onClick={pagination.fetchNextPage}
             className="w-full"
