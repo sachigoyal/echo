@@ -8,7 +8,7 @@ import { CreditMinter } from './CreditMinter';
 import {
   UserEarningsTable,
   UserSpendingTable,
-} from '@/app/(app)/@authenticated/admin/_components';
+} from '@/app/(app)/admin/_components';
 import {
   Card,
   CardContent,
