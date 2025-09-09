@@ -2,7 +2,11 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import Link from 'next/link';
 
-export default function LandingPageLayout({ children }: LayoutProps<'/'>) {
+export default function LandingPageLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen flex flex-col relative">
       <header className="border-b border-border/50 bg-background sticky top-0 left-0 right-0 z-50 p-2 md:p-4">
