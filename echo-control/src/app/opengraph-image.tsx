@@ -1,11 +1,8 @@
-import {
-  baseOgImage,
-  borderColor,
-  dashWidth,
-  Path,
-  xPaddingPx,
-} from './_og/base';
+import { baseOgImage, dashWidth, Path, xPaddingPx } from './_og/base';
 import { baseUrl } from './_og/base-url';
+import { ogExports } from './_og/exports';
+
+export const { alt, size, contentType } = ogExports();
 
 const cos30 = Math.cos((30 * Math.PI) / 180);
 
@@ -15,16 +12,6 @@ const hexPadding = 8;
 const outerHexWidth = innerHexWidth + hexPadding * 2;
 const outerHexHeight = outerHexWidth / cos30;
 
-// Image metadata
-export const alt = 'About Acme';
-export const size = {
-  width: 1200,
-  height: 630,
-};
-
-export const contentType = 'image/png';
-
-// Image generation
 export default async function Image() {
   return baseOgImage(
     <div tw="flex flex-col flex-1">

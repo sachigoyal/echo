@@ -2,11 +2,10 @@ import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-export const backgroundColor = '#fcfcfc';
-export const borderColor = '#a1a1a180';
+const backgroundColor = '#fcfcfc';
+const borderColor = '#a1a1a180';
 export const dashWidth = '1px';
-export const strokeDasharray = '2 10';
-export const xPadding = 16;
+const xPadding = 16;
 export const xPaddingPx = `${xPadding * 4}px`;
 const yPadding = 16;
 const yPaddingPx = `${yPadding * 4}px`;

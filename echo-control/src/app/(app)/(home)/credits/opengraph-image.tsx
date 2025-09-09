@@ -1,15 +1,12 @@
-import { dynamicOgImage } from '@/app/_og/dynamic';
+import { ogExports } from '@/app/_og/exports';
+import { staticPage } from '@/app/_og/static-page';
 
-// Image metadata
-export const alt = 'About Acme';
-export const size = {
-  width: 1200,
-  height: 630,
-};
+export const { alt, size, contentType } = ogExports('Credits');
 
-export const contentType = 'image/png';
-
-// Image generation
 export default async function Image() {
-  return dynamicOgImage(<p>Hello World</p>);
+  return staticPage({
+    title: 'Credits',
+    description:
+      'Echo credits can be used to make LLM requests on any Echo app',
+  });
 }
