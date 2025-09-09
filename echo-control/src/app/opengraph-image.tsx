@@ -1,6 +1,7 @@
 import { baseOgImage, dashWidth, Path, xPaddingPx } from './_og/base';
 import { baseUrl } from './_og/base-url';
 import { ogExports } from './_og/exports';
+import { Logo } from './_og/logo';
 
 export const { alt, size, contentType } = ogExports();
 
@@ -54,12 +55,7 @@ export default async function Image() {
                 zIndex: 10,
               }}
             >
-              <img
-                src={`${baseUrl}/logo/light.svg`}
-                alt="Echo"
-                height={180}
-                width={180}
-              />
+              <Logo height={180} width={180} />
             </div>
           </div>
           <Path
