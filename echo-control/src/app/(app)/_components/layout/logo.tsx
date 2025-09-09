@@ -1,7 +1,6 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'motion/react';
-import Link from 'next/dist/client/link';
 import { useEffect, useState } from 'react';
 
 export const LogoContainer = ({ children }: { children: React.ReactNode }) => {
@@ -29,7 +28,7 @@ export const LogoContainer = ({ children }: { children: React.ReactNode }) => {
         top: top,
       }}
     >
-      <Link href="/">{children}</Link>
+      {children}
     </motion.div>
   );
 };

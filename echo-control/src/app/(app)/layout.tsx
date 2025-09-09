@@ -11,6 +11,8 @@ import { LogoContainer } from './_components/layout/logo';
 
 import { Route } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AppLayout({
   children,
   breadcrumbs,
@@ -18,7 +20,9 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen flex flex-col relative">
       <LogoContainer>
-        <Logo className="size-auto h-full aspect-square" />
+        <Link href="/dashboard">
+          <Logo className="size-auto h-full aspect-square" />
+        </Link>
       </LogoContainer>
       <header className="w-full flex flex-col pt-4 justify-center">
         <div className="flex items-center justify-between w-full px-2 md:px-6 pb-0 md:pb-0 h-10">
