@@ -1,6 +1,6 @@
 import { api } from '@/trpc/server';
 import { Nav } from '../../_components/layout/nav';
-import { getApp } from '@/lib/apps/get-app';
+import { getApp } from './_lib/fetch';
 
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
@@ -25,11 +25,9 @@ export default async function AuthenticatedAppLayout({
 }: LayoutProps<'/app/[id]'>) {
   const { id } = await params;
 
-  // const session = await auth();
+  const session = await auth();
 
-  // const isOwner = session?.user ? await api.apps.app.isOwner(id) : false;
-
-  const isOwner = true;
+  const isOwner = session?.user ? await api.apps.app.isOwner(id) : false;
 
   return (
     <div>
