@@ -1,0 +1,40 @@
+import { Suspense } from 'react';
+
+import { Card } from '@/components/ui/card';
+
+import { Body, Heading } from '../../../_components/layout/page-utils';
+
+import { UsersTable, LoadingUsersTable } from './_components/users';
+
+import { api, HydrateClient } from '@/trpc/server';
+
+import type { Metadata } from 'next';
+import { userOrRedirect } from '@/auth/user-or-redirect';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Users',
+    template: 'Users | %s',
+  },
+};
+
+export default async function UsersPage(props: PageProps<'/app/[id]/users'>) {
+  const { id } = await props.params;
+
+  await userOrRedirect(`/app/${id}/users` as const, props);
+
+  api.apps.app.users.list.prefetchInfinite({ appId: id });
+
+  return (
+    <HydrateClient>
+      <Heading title="Users" />
+      <Body className="gap-0">
+        <Card className="overflow-hidden">
+          <Suspense fallback={<LoadingUsersTable />}>
+            <UsersTable appId={id} />
+          </Suspense>
+        </Card>
+      </Body>
+    </HydrateClient>
+  );
+}
