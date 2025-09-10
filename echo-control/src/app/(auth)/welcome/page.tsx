@@ -22,6 +22,8 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
     searchParams.callbackUrl && typeof searchParams.callbackUrl === 'string'
       ? searchParams.callbackUrl
       : '/';
+
+  console.log('callbackUrl', callbackUrl);
   const isAppAuthorize = callbackUrl.includes('/oauth/authorize');
 
   if (isAppAuthorize) {

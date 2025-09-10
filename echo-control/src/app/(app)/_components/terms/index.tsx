@@ -13,10 +13,17 @@ import {
 import Link from 'next/link';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 export default function TermsAgreement() {
-  const { data: needsTerms } =
-    api.user.termsAgreement.needs.terms.useQuery(undefined);
+  const session = useSession();
+
+  const { data: needsTerms } = api.user.termsAgreement.needs.terms.useQuery(
+    undefined,
+    {
+      enabled: !!session.data?.user,
+    }
+  );
 
   const utils = api.useUtils();
 
