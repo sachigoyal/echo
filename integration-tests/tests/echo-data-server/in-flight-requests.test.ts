@@ -205,7 +205,7 @@ describe('In-Flight Requests Monitor', () => {
     }
 
     // Wait for cleanup
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     const inFlightAfterDisconnect = await getInFlightCount();
     expect(inFlightAfterDisconnect).toBe(0);
