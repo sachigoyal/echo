@@ -12,7 +12,6 @@ import { Code } from '@/components/ui/code';
 import { Book, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Route } from 'next';
 
 export const IntegrationSection = () => {
   return (

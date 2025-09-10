@@ -10,7 +10,7 @@ export default function LandingPageLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col relative">
-      <header className="border-b border-border/50 bg-background sticky top-0 left-0 right-0 z-50 p-2 md:p-4">
+      <header className="border-b bg-background border-dashed sticky top-0 left-0 right-0 z-50 p-2 md:p-4">
         <div className="w-full flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Logo className="size-8" />
