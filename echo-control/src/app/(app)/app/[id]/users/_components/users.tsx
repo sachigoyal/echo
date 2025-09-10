@@ -45,6 +45,8 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
       }
     );
 
+  const [isOwner] = api.apps.app.isOwner.useSuspenseQuery(appId);
+
   const rows = users.pages.flatMap(page => page.items);
 
   const exportToCSV = () => {
@@ -85,7 +87,7 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
   return (
     <>
       {/* Export Actions */}
-      {rows.length > 0 && (
+      {rows.length > 0 && isOwner && (
         <div className="flex justify-end gap-2">
           <Button onClick={exportToCSV} variant="outline" size="sm">
             <Download className="size-4 mr-2" />
@@ -96,6 +98,7 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
       )}
 
       <BaseUsersTable
+        showEmail={isOwner}
         pagination={
           hasNextPage
             ? {
@@ -117,9 +120,10 @@ export const UsersTable: React.FC<Props> = ({ appId }) => {
               rawCost: row.usage.rawCost,
               totalProfit: row.usage.markupProfit,
             }))}
+            showEmail={isOwner}
           />
         ) : (
-          <TableEmpty colSpan={5}>No users found</TableEmpty>
+          <TableEmpty colSpan={isOwner ? 5 : 4}>No users found</TableEmpty>
         )}
       </BaseUsersTable>
     </>
@@ -165,11 +169,11 @@ const CopyEmailsButton = ({
   );
 };
 
-const UserRows = ({ users }: { users: User[] }) => {
-  return users.map(user => <UserRow key={user.id} user={user} />);
+const UserRows = ({ users, showEmail }: { users: User[]; showEmail: boolean }) => {
+  return users.map(user => <UserRow key={user.id} user={user} showEmail={showEmail} />);
 };
 
-const UserRow = ({ user }: { user: User }) => {
+const UserRow = ({ user, showEmail }: { user: User; showEmail: boolean }) => {
   return (
     <TableRow key={user.id}>
       <TableCell className="pl-4">
@@ -178,11 +182,13 @@ const UserRow = ({ user }: { user: User }) => {
           <p className="text-sm font-medium">{user.name}</p>
         </div>
       </TableCell>
-      <TableCell className="text-left">
-        <p className="text-sm text-muted-foreground">
-          {user.email || 'No email'}
-        </p>
-      </TableCell>
+      {showEmail && (
+        <TableCell className="text-left">
+          <p className="text-sm text-muted-foreground">
+            {user.email || 'No email'}
+          </p>
+        </TableCell>
+      )}
       <TableCell className="text-center">{user.totalTransactions}</TableCell>
       <TableCell className="text-center">
         {formatCurrency(user.rawCost)}
@@ -222,9 +228,10 @@ const LoadingUserRow = () => {
 interface BaseUsersTableProps {
   children: React.ReactNode;
   pagination?: InfinitePaginationProps;
+  showEmail?: boolean;
 }
 
-const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
+const BaseUsersTable = ({ children, pagination, showEmail = true }: BaseUsersTableProps) => {
   return (
     <>
       <Card className="overflow-hidden">
@@ -237,7 +244,7 @@ const BaseUsersTable = ({ children, pagination }: BaseUsersTableProps) => {
                 </div>
                 Name
               </TableHead>
-              <TableHead className="text-left">Email</TableHead>
+              {showEmail && <TableHead className="text-left">Email</TableHead>}
               <TableHead className="text-center">Transactions</TableHead>
               <TableHead className="text-center">Cost</TableHead>
               <TableHead className="text-right pr-4">Profit</TableHead>
