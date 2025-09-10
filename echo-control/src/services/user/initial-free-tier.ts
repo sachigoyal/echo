@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { mintCreditsToUser } from '@/services/credits';
-import { User } from '@/generated/prisma';
+import { EnumPaymentSource, User } from '@/generated/prisma';
 
 export const issueInitialFreeTierCredits = async (
   userId: string
@@ -57,6 +57,7 @@ export const issueInitialFreeTierCredits = async (
             issuanceSource: 'initial-free-tier',
           },
           description: 'Initial Free-Tier Credits Issuance',
+          source: EnumPaymentSource.signUpGift,
         },
       },
       tx
