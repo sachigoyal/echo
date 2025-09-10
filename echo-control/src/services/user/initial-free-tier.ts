@@ -5,7 +5,6 @@ import { User } from '@/generated/prisma';
 export const issueInitialFreeTierCredits = async (
   userId: string
 ): Promise<{ minted: boolean; amountInDollars: number; user: User }> => {
-  console.log('issueInitialFreeTierCredits');
   const version = process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION;
   const amountStr = process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_AMOUNT;
 

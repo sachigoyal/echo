@@ -18,7 +18,6 @@ export const MarkupInput = () => {
           <MarkupInputComponent
             markup={field.value}
             onMarkupChange={value => {
-              console.log(value);
               field.onChange(value);
             }}
           />
