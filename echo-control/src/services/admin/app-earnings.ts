@@ -29,7 +29,7 @@ export async function getAppsEarningsPaginatedWithCampaigns(
     hasMore: boolean;
   };
 }> {
-  const where: any = { isArchived: false };
+  const where: { isArchived: boolean; NOT?: { OutboundEmailSent: { some: { emailCampaignId: string } } } } = { isArchived: false };
   if (filterCampaignKey && onlyNotReceived) {
     where.NOT = {
       OutboundEmailSent: {
