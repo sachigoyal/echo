@@ -107,7 +107,9 @@ export default async function OAuthAuthorizePage({
 
   return (
     <div className="w-full flex flex-col items-center justify-center gap-8">
-      <h1 className="text-3xl font-bold text-foreground">Connect to {name}</h1>
+      <h1 className="text-3xl font-bold text-foreground text-center">
+        Connect to {name}
+      </h1>
       <ConnectionBeam
         appImage={profilePictureUrl}
         userImage={session.user.image}

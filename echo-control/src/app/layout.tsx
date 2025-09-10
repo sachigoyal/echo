@@ -67,8 +67,6 @@ export default function RootLayout({
                 <PostHogProvider>
                   <Toaster />
                   <main>{children}</main>
-                  <FreeTier />
-                  <TermsAgreement />
                 </PostHogProvider>
               </ThemeProvider>
             </TRPCReactProvider>
