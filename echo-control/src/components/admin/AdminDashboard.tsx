@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UserSearch } from './UserSearch';
 import { AppSearch } from './AppSearch';
 import { CreditMinter } from './CreditMinter';
+import { UsersCsvDownload } from './UsersCsvDownload';
 import {
   UserEarningsTable,
   UserSpendingTable,
@@ -73,6 +74,19 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* Users CSV Download Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Export Users</CardTitle>
+          <CardDescription>
+            Download a CSV file of users created after a specific date
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UsersCsvDownload />
+        </CardContent>
+      </Card>
 
       {/* User Earnings Section */}
       <UserEarningsTable />
