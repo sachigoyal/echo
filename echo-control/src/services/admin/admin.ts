@@ -34,6 +34,14 @@ import {
   getUserTransactionTotals,
 } from './user-transactions';
 
+export const isAdmin = async (userId: string) => {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  });
+
+  return user?.admin;
+};
+
 export async function adminGetUsers(): Promise<User[]> {
   return await db.user.findMany();
 }

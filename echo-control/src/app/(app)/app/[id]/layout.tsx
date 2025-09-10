@@ -1,9 +1,10 @@
 import { Nav } from '../../_components/layout/nav';
+
 import { getApp, getIsOwner } from './_lib/fetch';
 
-import type { Metadata } from 'next';
 import { auth } from '@/auth';
-import { notFound } from 'next/navigation';
+
+import type { Metadata } from 'next';
 
 export async function generateMetadata({
   params,
@@ -19,7 +20,7 @@ export async function generateMetadata({
       },
       description: app.description || undefined,
     };
-  } catch (error) {
+  } catch {
     return {
       title: {
         default: 'App Not Found',
@@ -38,7 +39,7 @@ export default async function AuthenticatedAppLayout({
 
   try {
     await getApp(id);
-  } catch (error) {
+  } catch {
     return children;
   }
 

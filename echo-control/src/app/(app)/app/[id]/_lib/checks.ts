@@ -4,8 +4,7 @@ import { getApp, getIsOwner } from './fetch';
 export const checkAppExists = async (id: string) => {
   try {
     return await getApp(id);
-  } catch (error) {
-    console.error('App not found', error);
+  } catch {
     return notFound();
   }
 };
@@ -16,7 +15,7 @@ export const checkIsAppOwner = async (id: string) => {
     if (!isOwner) {
       return forbidden();
     }
-  } catch (error) {
+  } catch {
     return forbidden();
   }
 };

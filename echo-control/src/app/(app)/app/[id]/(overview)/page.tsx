@@ -2,8 +2,6 @@ import { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { notFound } from 'next/navigation';
-
 import { Body } from '../../../_components/layout/page-utils';
 
 import { api, HydrateClient } from '@/trpc/server';

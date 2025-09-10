@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { AlertCircle, Code, User } from 'lucide-react';
+import { Code, User } from 'lucide-react';
 
 import { Breadcrumb, LoadingBreadcrumb } from '../../_components/breadcrumb';
 import { Separator } from '../../_components/separator';

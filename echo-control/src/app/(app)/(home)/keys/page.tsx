@@ -1,5 +1,3 @@
-import { unauthorized } from 'next/navigation';
-
 import { Heading, Body } from '../../_components/layout/page-utils';
 
 import { api, HydrateClient } from '@/trpc/server';
