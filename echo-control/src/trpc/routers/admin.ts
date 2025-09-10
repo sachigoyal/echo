@@ -8,6 +8,8 @@ import {
   adminMintCreditsToUser,
   adminMintCreditReferralCode,
   adminMintCreditReferralCodeSchema,
+  downloadUsersCsv,
+  downloadUsersCsvSchema,
   getUserEarningsAggregates,
   getAppTransactionAggregates,
   getAllUsersEarningsAggregates,
@@ -56,6 +58,12 @@ export const adminRouter = createTRPCRouter({
     .input(z.object({ userId: z.string() }))
     .query(async ({ input }) => {
       return await adminGetAppsForUser(input.userId);
+    }),
+
+  downloadUsersCsv: adminProcedure
+    .input(downloadUsersCsvSchema)
+    .mutation(async ({ input }) => {
+      return await downloadUsersCsv(input);
     }),
 
   mintCreditReferralCode: adminProcedure
