@@ -90,7 +90,7 @@ const getVideoModelPrice = (model: string) => {
       provider: videoModel.provider,
       model: videoModel.model_id,
     };
-  } 
+  }
   return null;
 };
 

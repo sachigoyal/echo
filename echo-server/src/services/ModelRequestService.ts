@@ -3,13 +3,22 @@ import { HttpError, UnknownModelError } from '../errors/http';
 import logger from '../logger';
 import { getProvider } from '../providers/ProviderFactory';
 import { Transaction } from '../types';
-import { isValidImageModel, isValidModel, isValidVideoModel } from './AccountingService';
+import {
+  isValidImageModel,
+  isValidModel,
+  isValidVideoModel,
+} from './AccountingService';
 import { EchoControlService } from './EchoControlService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { handleStreamService } from './HandleStreamService';
-import { extractIsStream, extractModelName } from './RequestDataService';
+import {
+  extractIsStream,
+  extractModelName,
+  formatUpstreamUrl,
+} from './RequestDataService';
 import { Decimal } from 'generated/prisma/runtime/library';
 import { pipeline, Readable } from 'stream';
+import { checkProxyVideoDownload } from './videoProxyService';
 
 export class ModelRequestService {
   /**
@@ -26,14 +35,19 @@ export class ModelRequestService {
     res: Response,
     processedHeaders: Record<string, string>,
     echoControlService: EchoControlService
-  ): Promise<{ transaction: Transaction; isStream: boolean; data: unknown }> {
-    console.log('req', req.path);
-    console.log('req.body', req.body);
+  ): Promise<{ transaction: Transaction; isStream: boolean; data: unknown, requiresResolution: boolean }> {
+    const isVideoProxy = await checkProxyVideoDownload(req, res, echoControlService, processedHeaders, this.formatRequestBody);
+    if (isVideoProxy) {
+      return { ...isVideoProxy, requiresResolution: false };
+    }
     const model = extractModelName(req);
 
-    console.log('model', model);
-
-    if (!model || (!isValidModel(model) && !isValidImageModel(model) && !isValidVideoModel(model))) {
+    if (
+      !model ||
+      (!isValidModel(model) &&
+        !isValidImageModel(model) &&
+        !isValidVideoModel(model))
+    ) {
       logger.error(`Invalid model: ${model}`);
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
@@ -64,52 +78,14 @@ export class ModelRequestService {
     );
 
     // this rewrites the base url to the provider's base url and retains the rest
-    const upstreamUrl = `${provider.getBaseUrl(req.path)}${req.path}${
-      req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''
-    }`;
+    const upstreamUrl = formatUpstreamUrl(provider, req);
+
     // Forward the request to the provider's API
     const response = await fetch(upstreamUrl, {
       method: req.method,
       headers: formattedHeaders,
       ...(requestBody && { body: requestBody }),
     });
-
-
-    console.log('response', response.body, response.headers);
-
-    if (response.headers.get('content-type') === 'video/mp4') {
-       // Forward important headers
-        const contentType = response.headers.get("content-type");
-        const contentLength = response.headers.get("content-length");
-
-        if (contentType) res.setHeader("Content-Type", contentType);
-        if (contentLength) res.setHeader("Content-Length", contentLength);
-
-        // Pipe the body
-        if (response.body) {
-          const reader = response.body.getReader();
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            res.write(value);
-          }
-          res.end();
-        } else {
-          res.status(500).send("No body in upstream response");
-        }
-        return { transaction: {
-        metadata: {
-          model: model,
-          providerId: 'null',
-          provider: provider.getType(),
-          inputTokens: 0,
-          outputTokens: 0,
-          totalTokens: 0,
-        },
-        rawTransactionCost: new Decimal(0),
-        status: 'success',
-      }, isStream: false, data: null };
-    }
 
     // Handle non-200 responses
     if (response.status !== 200) {
@@ -131,7 +107,7 @@ export class ModelRequestService {
         provider,
         res
       );
-      return { transaction, isStream: true, data: null };
+      return { transaction, isStream: true, data: null, requiresResolution: true };
     } else {
       const { transaction, data } =
         await handleNonStreamingService.handleNonStreaming(
@@ -139,11 +115,15 @@ export class ModelRequestService {
           provider,
           res
         );
-      return { transaction, isStream: false, data };
+      return { transaction, isStream: false, data, requiresResolution: true };
     }
   }
 
-  handleResolveResponse(res: Response, isStream: boolean, data: unknown): void {
+  handleResolveResponse(res: Response, isStream: boolean, data: unknown, requiresResolution: boolean): void {
+
+    if (!requiresResolution) {
+      return;
+    }
     if (isStream) {
       res.end();
     } else {

@@ -1,9 +1,7 @@
-
 import { Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { Decimal } from '@prisma/client/runtime/library';
-
 
 export interface VeoUsage {
   promptTokens: number;
@@ -47,7 +45,7 @@ export class GeminiVeoProvider extends BaseProvider {
     if (apiKey === undefined || apiKey.length === 0) {
       throw new Error('No Gemini API key found for Veo3');
     }
-    
+
     // Veo3 uses Google's API key format, not Bearer token
     return {
       ...headers,
@@ -56,7 +54,6 @@ export class GeminiVeoProvider extends BaseProvider {
   }
 
   async handleBody(data: string): Promise<Transaction> {
-    console.log("Data:", data);
     // Left unimplemented as requested
     return {
       metadata: {
@@ -67,7 +64,7 @@ export class GeminiVeoProvider extends BaseProvider {
         providerId: 'null',
         provider: this.getType(),
       },
-      rawTransactionCost: new Decimal(0),   
+      rawTransactionCost: new Decimal(0),
       status: 'success',
     };
   }
