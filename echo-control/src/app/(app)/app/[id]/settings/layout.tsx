@@ -1,10 +1,9 @@
-import { api } from '@/trpc/server';
 import { Body, Heading } from '../../../_components/layout/page-utils';
 import { SettingsNav } from './_components/nav';
-import { notFound, unauthorized } from 'next/navigation';
-import { auth } from '@/auth';
 
 import type { Metadata } from 'next';
+import { checkAppExists, checkIsAppOwner } from '../_lib/checks';
+import { userOrRedirectLayout } from '@/auth/user-or-redirect';
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -16,17 +15,9 @@ export default async function AppSettingsLayout({
 }: LayoutProps<'/app/[id]/settings'>) {
   const { id } = await params;
 
-  const session = await auth();
-
-  const owner = await api.apps.app.getOwner(id);
-
-  if (!owner) {
-    return notFound();
-  }
-
-  if (session?.user.id !== owner.id) {
-    return unauthorized();
-  }
+  await userOrRedirectLayout(`/app/${id}/settings`);
+  await checkAppExists(id);
+  await checkIsAppOwner(id);
 
   return (
     <div>

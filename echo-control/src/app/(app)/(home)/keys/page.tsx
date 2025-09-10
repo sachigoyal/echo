@@ -1,5 +1,3 @@
-import { unauthorized } from 'next/navigation';
-
 import { Heading, Body } from '../../_components/layout/page-utils';
 
 import { api, HydrateClient } from '@/trpc/server';
@@ -16,11 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function KeysPage(props: PageProps<'/keys'>) {
-  const user = await userOrRedirect('/keys', props);
-
-  if (!user) {
-    return unauthorized();
-  }
+  await userOrRedirect('/keys', props);
 
   api.user.apiKeys.list.prefetchInfinite({});
   api.apps.list.member.prefetchInfinite({});

@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import { redirect } from 'next/navigation';
 
 import { Input } from '@/components/ui/input';

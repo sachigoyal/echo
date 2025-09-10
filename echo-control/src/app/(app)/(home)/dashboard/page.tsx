@@ -9,10 +9,13 @@ import { userOrRedirect } from '@/auth/user-or-redirect';
 export default async function DashboardPage(props: PageProps<'/dashboard'>) {
   const user = await userOrRedirect('/dashboard', props);
 
+  const searchParams = await props.searchParams;
+  const newUser = searchParams.new_user === 'true';
+
   return (
     <div>
       <Heading
-        title={`Welcome Back${user.name ? `, ${user.name.split(' ')[0]}!` : '!'}`}
+        title={`Welcome${!newUser ? ' Back' : ''}${user.name ? `, ${user.name.split(' ')[0]}!` : '!'}`}
         description="Build AI apps and earn profit on every token your users generate"
       />
       <Body>

@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/knip@latest/schema.json",
   "entry": [
     "src/{instrumentation,middleware}.{js,ts}",
-    "src/app/**/{error,layout,loading,not-found,page,template,default}.{js,jsx,ts,tsx}",
+    "src/app/**/{error,layout,loading,not-found,page,template,default,forbidden,global-not-found,global-error}.{js,jsx,ts,tsx}",
     "src/app/**/route.{js,jsx,ts,tsx}",
     "src/mdx-components.{js,jsx,ts,tsx}"
   ],

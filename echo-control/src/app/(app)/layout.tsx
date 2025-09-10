@@ -44,7 +44,7 @@ export default async function AppLayout({
             </div>
           </div>
         </header>
-        <div className="bg-background flex-1">{children}</div>
+        <div className="bg-background flex-1 flex flex-col">{children}</div>
       </div>
     </>
   );

@@ -17,7 +17,7 @@ export const mintCreditsToUserSchema = z.object({
       poolName: z.string().optional(),
       defaultSpendLimit: z.number().positive().optional(),
       description: z.string().optional(),
-      source: z.nativeEnum(EnumPaymentSource)
+      source: z.nativeEnum(EnumPaymentSource),
     })
     .refine(
       data => {

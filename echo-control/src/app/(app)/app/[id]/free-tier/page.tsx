@@ -11,11 +11,11 @@ import {
   FreeTierUsersTable,
   LoadingFreeTierUsersTable,
 } from './_components/users';
-import { getIsOwner } from '../_lib/fetch';
+
+import { userOrRedirect } from '@/auth/user-or-redirect';
 
 import type { Metadata } from 'next';
-import { userOrRedirect } from '@/auth/user-or-redirect';
-import { unauthorized } from 'next/navigation';
+import { checkAppExists, checkIsAppOwner } from '../_lib/checks';
 
 export const metadata: Metadata = {
   title: 'Free Tier',
@@ -27,12 +27,8 @@ export default async function FreeTierPage(
   const { id } = await props.params;
 
   await userOrRedirect(`/app/${id}/free-tier`, props);
-
-  const isOwner = await getIsOwner(id);
-
-  if (!isOwner) {
-    return unauthorized();
-  }
+  await checkAppExists(id);
+  await checkIsAppOwner(id);
 
   api.apps.app.freeTier.payments.list.prefetchInfinite({
     appId: id,
