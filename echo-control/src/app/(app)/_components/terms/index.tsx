@@ -24,6 +24,12 @@ export default function TermsAgreement() {
       enabled: !!session.data?.user,
     }
   );
+  const { data: needsPrivacy } = api.user.termsAgreement.needs.privacy.useQuery(
+    undefined,
+    {
+      enabled: !!session.data?.user,
+    }
+  );
 
   const utils = api.useUtils();
 
@@ -33,24 +39,67 @@ export default function TermsAgreement() {
     isSuccess: isAcceptedTerms,
   } = api.user.termsAgreement.accept.terms.useMutation({
     onSuccess: () => {
-      toast.success('Terms of Service accepted');
       utils.user.termsAgreement.needs.terms.invalidate();
     },
   });
 
+  const {
+    mutate: acceptPrivacy,
+    isPending: isAcceptingPrivacy,
+    isSuccess: isAcceptedPrivacy,
+  } = api.user.termsAgreement.accept.privacy.useMutation({
+    onSuccess: () => {
+      utils.user.termsAgreement.needs.privacy.invalidate();
+    },
+  });
+
+  const handleAccept = () => {
+    acceptTerms(void 0, {
+      onSuccess: () => {
+        acceptPrivacy(void 0, {
+          onSuccess: () => {
+            toast.success('Terms of Service and Privacy Policy accepted');
+          },
+          onError: () => {
+            toast.error('Failed to accept privacy policy');
+          },
+        });
+      },
+      onError: () => {
+        toast.error('Failed to accept terms');
+      },
+    });
+  };
+
   return (
-    <AlertDialog open={needsTerms?.needs}>
+    <AlertDialog open={needsTerms?.needs || needsPrivacy?.needs}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Terms of Service</AlertDialogTitle>
+          <AlertDialogTitle>
+            Terms of Service and Privacy Policy
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            {needsTerms?.currentVersion ? (
-              'Our Terms of Service have changed. Please confirm you accept the latest version.'
+            {needsTerms?.currentVersion && needsPrivacy?.currentVersion ? (
+              <>
+                Our{' '}
+                <Link href="/terms" target="_blank" className="underline">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" target="_blank" className="underline">
+                  Privacy Policy
+                </Link>{' '}
+                have changed. Please accept the latest versions to continue.
+              </>
             ) : (
               <>
                 Please accept our{' '}
                 <Link href="/terms" target="_blank" className="underline">
                   Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" target="_blank" className="underline">
+                  Privacy Policy
                 </Link>{' '}
                 to continue.
               </>
@@ -59,16 +108,21 @@ export default function TermsAgreement() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction
-            onClick={() => acceptTerms()}
+            onClick={() => handleAccept()}
             className="flex-1"
-            disabled={isAcceptingTerms || isAcceptedTerms}
+            disabled={
+              isAcceptingTerms ||
+              isAcceptedTerms ||
+              isAcceptingPrivacy ||
+              isAcceptedPrivacy
+            }
           >
-            {isAcceptingTerms ? (
+            {isAcceptingTerms || isAcceptingPrivacy ? (
               <Loader2 className="size-4 animate-spin" />
-            ) : isAcceptedTerms ? (
+            ) : isAcceptedTerms && isAcceptedPrivacy ? (
               <Check className="size-4" />
             ) : (
-              'Accept Terms'
+              'Accept Terms and Privacy Policy'
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
