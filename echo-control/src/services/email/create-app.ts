@@ -1,14 +1,16 @@
 import { Resend } from 'resend';
 import { logger } from '@/logger';
 import { db } from '@/lib/db';
- 
 
 // When user performs action, schedule email for 1 hour later
-export async function scheduleCreateAppFollowUpEmail(userId: string, appName: string) {
+export async function scheduleCreateAppFollowUpEmail(
+  userId: string,
+  appName: string
+) {
   const resend = new Resend(process.env.AUTH_RESEND_KEY!);
   const fromEmail = process.env.AUTH_RESEND_FROM_EMAIL!;
   const user = await db.user.findUnique({
-    where: { id: userId, },
+    where: { id: userId },
   });
 
   // Get count of apps the user has created (where they are the owner)
@@ -50,7 +52,7 @@ export async function scheduleCreateAppFollowUpEmail(userId: string, appName: st
     `,
     scheduledAt: 'in 1 hour', // Natural language scheduling
   });
-  
+
   if (error) {
     logger.emit({
       severityText: 'ERROR',
