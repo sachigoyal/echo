@@ -38,16 +38,15 @@ export const Coupon: React.FC<CouponProps> = ({
         'relative mx-auto overflow-hidden w-full',
         'bg-gradient-to-br from-primary via-primary/80 to-primary',
         'rounded-2xl',
-        'shadow-2xl',
         'after:content-[""] after:absolute after:inset-0 after:rounded-2xl after:shadow-[inset_0_8px_32px_0_rgba(0,0,0,0.18)] after:pointer-events-none',
         className
       )}
     >
-      <div className="p-6 flex flex-col gap-2">
+      <div className="p-6 flex flex-col gap-2 text-white">
         <div className="flex justify-between items-center">
-          <p className="text-5xl font-bold">${value.toFixed(2)}</p>
+          <p className="text-5xl font-bold text-white">${value.toFixed(2)}</p>
           <div className="flex items-center gap-2 h-fit">
-            <p className="font-semibold">Free Credits</p>
+            <p className="font-semibold text-white">Free Credits</p>
             <Gift className="size-5" />
           </div>
         </div>

@@ -3,7 +3,11 @@
 import React, { useRef } from 'react';
 
 import { Plus } from 'lucide-react';
-import { SiAnthropic, SiOpenai, SiX } from '@icons-pack/react-simple-icons';
+import {
+  SiAnthropic,
+  SiOpenai,
+  SiGooglegemini,
+} from '@icons-pack/react-simple-icons';
 
 import { Logo } from '@/components/ui/logo';
 
@@ -37,7 +41,7 @@ export const AnyModel: React.FC = () => {
           <SiAnthropic {...iconProps} />
         </Circle>
         <Circle ref={target3Ref}>
-          <SiX {...iconProps} />
+          <SiGooglegemini {...iconProps} />
         </Circle>
         <Circle ref={target4Ref}>
           <Plus {...iconProps} />

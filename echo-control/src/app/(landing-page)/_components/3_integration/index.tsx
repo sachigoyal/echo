@@ -1,9 +1,17 @@
 import { Section } from '../lib/section';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Tabs,
+  TabsTrigger,
+  TabsList,
+  TabsContent,
+  TabsContents,
+} from '@/components/ui/shadcn-io/tabs';
 import { integrations } from './data';
 import { Card } from '@/components/ui/card';
 import { Code } from '@/components/ui/code';
-import { Check } from 'lucide-react';
+import { Book, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export const IntegrationSection = () => {
   return (
@@ -14,30 +22,30 @@ export const IntegrationSection = () => {
             Start Earning in Seconds
           </h1>
           <p className="text-sm text-muted-foreground text-center">
-            Integrate Echo in your app in seconds
+            Our SDKs are designed to minimize the time from idea to revenue
           </p>
         </div>
         <Tabs
           className="flex flex-col items-center gap-4 justify-center w-full"
           defaultValue="Next.js"
         >
-          <TabsList>
+          <TabsList className="flex items-center gap-2">
             {integrations.map(integration => (
-              <TabsTrigger key={integration.name} value={integration.name}>
-                {integration.name}
+              <TabsTrigger
+                key={integration.name}
+                value={integration.name}
+                className="flex items-center gap-2"
+              >
+                {integration.icon} {integration.name}
               </TabsTrigger>
             ))}
           </TabsList>
-          <div className="flex flex-col items-center justify-center gap-4 w-full">
+          <TabsContents className="w-full">
             {integrations.map(integration => (
-              <TabsContent
-                key={integration.name}
-                value={integration.name}
-                className="w-full"
-              >
+              <TabsContent key={integration.name} value={integration.name}>
                 <Card
                   key={integration.name}
-                  className="flex w-full overflow-hidden"
+                  className="flex flex-col md:flex-row w-full overflow-hidden"
                 >
                   <div className="flex flex-col justify-center p-4 gap-4 bg-muted/50 border-r flex-1">
                     <div className="flex flex-col justify-center">
@@ -63,6 +71,15 @@ export const IntegrationSection = () => {
                         </div>
                       ))}
                     </div>
+                    <Link href={integration.href}>
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2 bg-transparent"
+                      >
+                        <Book className="size-4" />
+                        Learn More
+                      </Button>
+                    </Link>
                   </div>
                   <div className="overflow-hidden flex-1">
                     <Code value={integration.content} lang="tsx" />
@@ -70,7 +87,7 @@ export const IntegrationSection = () => {
                 </Card>
               </TabsContent>
             ))}
-          </div>
+          </TabsContents>
         </Tabs>
       </div>
     </Section>
