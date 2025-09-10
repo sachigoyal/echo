@@ -15,6 +15,7 @@ interface Props {
   state: 'idle' | 'processing' | 'success';
   disabled?: boolean;
   className?: string;
+  states?: STATES;
 }
 
 export const MultiStateCouponButton: React.FC<Props> = ({
@@ -22,6 +23,7 @@ export const MultiStateCouponButton: React.FC<Props> = ({
   state,
   disabled = false,
   className = '',
+  states,
 }) => {
   return (
     <motion.button
@@ -32,14 +34,16 @@ export const MultiStateCouponButton: React.FC<Props> = ({
       disabled={disabled || state === 'processing' || state === 'success'}
       transition={SPRING_CONFIG}
     >
-      <ButtonContent state={state} />
+      <ButtonContent state={state} states={states} />
     </motion.button>
   );
 };
 
 const ButtonContent = ({
   state,
+  states,
 }: {
+  states?: STATES;
   state: 'idle' | 'processing' | 'success';
 }) => {
   const buttonRef = useRef(null);
@@ -72,7 +76,7 @@ const ButtonContent = ({
       }}
     >
       <Icon state={state} />
-      <Label state={state} />
+      <Label state={state} states={states} />
     </motion.div>
   );
 };
@@ -191,7 +195,13 @@ function Loader() {
   );
 }
 
-const Label = ({ state }: { state: 'idle' | 'processing' | 'success' }) => {
+const Label = ({
+  state,
+  states = STATES,
+}: {
+  state: 'idle' | 'processing' | 'success';
+  states?: STATES;
+}) => {
   const [labelWidth, setLabelWidth] = useState(0);
   const measureRef = useRef<HTMLDivElement>(null);
 
@@ -206,7 +216,7 @@ const Label = ({ state }: { state: 'idle' | 'processing' | 'success' }) => {
     <>
       {/* Hidden copy of label to measure width */}
       <div ref={measureRef} className="absolute invisible whitespace-nowrap">
-        {STATES[state]}
+        {states[state]}
       </div>
 
       <motion.span
@@ -243,7 +253,7 @@ const Label = ({ state }: { state: 'idle' | 'processing' | 'success' }) => {
               ease: 'easeInOut',
             }}
           >
-            {STATES[state]}
+            {states[state]}
           </motion.div>
         </AnimatePresence>
       </motion.span>
@@ -251,10 +261,16 @@ const Label = ({ state }: { state: 'idle' | 'processing' | 'success' }) => {
   );
 };
 
+export interface STATES {
+  idle: string;
+  processing: string;
+  success: string;
+}
+
 /**
  * ==============   Utils   ================
  */
-const STATES = {
+const STATES: STATES = {
   idle: 'Claim and Continue',
   processing: 'Claiming...',
   success: 'Claimed',

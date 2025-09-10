@@ -3,22 +3,34 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Gift } from 'lucide-react';
-import { MultiStateCouponButton } from './multi-state-button';
+import { MultiStateCouponButton, STATES } from './multi-state-button';
 
 interface CouponProps {
   value: number;
   onClaim: () => void;
   isClaiming: boolean;
   isClaimed: boolean;
+  subText?: React.ReactNode;
   className?: string;
+  states?: STATES;
 }
+
+const defaultSubText = (
+  <p className="text-sm">
+    You can use these credits to make LLM requests on
+    <br />
+    <strong>any Echo app</strong>.
+  </p>
+);
 
 export const Coupon: React.FC<CouponProps> = ({
   value,
   onClaim,
   isClaiming,
   isClaimed,
+  subText = defaultSubText,
   className,
+  states,
 }) => {
   return (
     <div
@@ -39,11 +51,7 @@ export const Coupon: React.FC<CouponProps> = ({
             <Gift className="size-5" />
           </div>
         </div>
-        <p className="text-sm">
-          You can use these credits to make LLM requests on
-          <br />
-          <strong>any Echo app</strong>.
-        </p>
+        {subText}
       </div>
       <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)] py-2">
         <div className="rounded-full size-4 bg-background" />
@@ -66,6 +74,7 @@ export const Coupon: React.FC<CouponProps> = ({
           onClaim={onClaim}
           state={isClaiming ? 'processing' : isClaimed ? 'success' : 'idle'}
           disabled={isClaiming || isClaimed}
+          states={states}
         />
       </div>
 

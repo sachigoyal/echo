@@ -11,6 +11,7 @@ import z from 'zod';
 
 const querySchema = authorizeParamsSchema.extend({
   prompt: z.literal('none').optional(),
+  new_user: z.literal('true').optional(),
 });
 
 export const GET = createZodRoute()
@@ -79,6 +80,7 @@ export const GET = createZodRoute()
         'response_type',
         'state',
         'referral_code',
+        'new_user',
       ] as const
     ).forEach(param => {
       if (query[param]) {

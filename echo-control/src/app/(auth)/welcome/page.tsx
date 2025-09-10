@@ -6,7 +6,7 @@ import { api } from '@/trpc/server';
 import { Metadata, Route } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { WelcomeCoupon } from './_components/coupon';
+import { WelcomePageCoupon } from './_components/coupon';
 
 export const metadata: Metadata = {
   title: 'Welcome',
@@ -23,7 +23,6 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
       ? searchParams.callbackUrl
       : '/';
 
-  console.log('callbackUrl', callbackUrl);
   const isAppAuthorize = callbackUrl.includes('/oauth/authorize');
 
   if (isAppAuthorize) {
@@ -69,7 +68,7 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
       </div>
       <Separator />
       <div className="flex flex-col items-center gap-4 w-full">
-        <WelcomeCoupon
+        <WelcomePageCoupon
           amount={couponAmount}
           callbackUrl={callbackUrl as Route}
         />

@@ -4,7 +4,7 @@ import React, { useActionState } from 'react';
 
 import { AuthorizeParams } from '@/app/(auth)/_lib/authorize';
 
-import { authorize } from '../_actions/authorize';
+import { authorize } from '../../_actions/authorize';
 import { Button } from '@/components/ui/button';
 
 interface Props {

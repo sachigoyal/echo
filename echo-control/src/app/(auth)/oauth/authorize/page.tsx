@@ -1,17 +1,16 @@
+import Link from 'next/link';
+
 import { notFound, redirect } from 'next/navigation';
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
+import { z } from 'zod';
 
-import { ConnectionBeam } from './_components/connection-beam';
-import { Scopes } from './_components/scopes';
-import { AuthorizeButtons } from './_components/buttons';
+import { Button } from '@/components/ui/button';
+
+import { UnauthorizedRedirect } from './_components/unauthorized-redirect';
 
 import { ErrorPage } from './_components/error-page';
+import { ExistingUserAuthorize } from './_components/existing-user';
+import { NewUserAuthorize } from './_components/new-user';
 
 import { auth } from '@/auth';
 
@@ -21,16 +20,17 @@ import {
   authorizeParamsSchema,
   isValidRedirectUri,
 } from '../../_lib/authorize';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { UnauthorizedRedirect } from './_components/unauthorized-redirect';
+
+const paramsSchema = authorizeParamsSchema.extend({
+  new_user: z.literal('true').optional(),
+});
 
 export default async function OAuthAuthorizePage({
   searchParams,
 }: PageProps<'/oauth/authorize'>) {
   const resolvedParams = await searchParams;
 
-  const parseResult = authorizeParamsSchema.safeParse(resolvedParams);
+  const parseResult = paramsSchema.safeParse(resolvedParams);
 
   if (!parseResult.success) {
     return (
@@ -105,37 +105,27 @@ export default async function OAuthAuthorizePage({
 
   const scopes = authParams.scope.split(' ');
 
-  return (
-    <div className="w-full flex flex-col items-center justify-center gap-8">
-      <h1 className="text-3xl font-bold text-foreground text-center">
-        Connect to {name}
-      </h1>
-      <ConnectionBeam
-        appImage={profilePictureUrl}
-        userImage={session.user.image}
+  const hasClaimed = await api.user.initialFreeTier.hasClaimed();
+
+  if (authParams.new_user && !hasClaimed) {
+    return (
+      <NewUserAuthorize
+        name={name}
+        profilePictureUrl={profilePictureUrl}
+        userImage={session.user.image || null}
+        authParams={authParams}
       />
-      <div className="flex flex-col items-center gap-4 w-full">
-        <Card className="bg-card rounded-lg border border-border shadow-lg w-full">
-          {/* App Information */}
-          <CardHeader className="p-4 border-b">
-            <h2 className="text-lg text-foreground font-light">
-              <span className="font-bold">{name}</span> by{' '}
-              <span className="font-bold">{owner.name}</span> wants to:
-            </h2>
-          </CardHeader>
-          <CardContent className="p-4 border-b">
-            <Scopes scopes={scopes} />
-          </CardContent>
-          <CardFooter className="w-full flex justify-center p-4">
-            <AuthorizeButtons params={authParams} />
-          </CardFooter>
-        </Card>
-        <p className="text-xs text-muted-foreground/60 text-center">
-          Connecting your account will redirect you to:
-          <br />
-          <span className="font-semibold">{authParams.redirect_uri}</span>
-        </p>
-      </div>
-    </div>
+    );
+  }
+
+  return (
+    <ExistingUserAuthorize
+      name={name}
+      profilePictureUrl={profilePictureUrl}
+      userImage={session.user.image || null}
+      ownerName={owner.name ?? ''}
+      scopes={scopes}
+      authParams={authParams}
+    />
   );
 }

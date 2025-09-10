@@ -10,7 +10,6 @@ import { UserDropdown } from './_components/layout/header/user-dropdown';
 import { LogoContainer } from './_components/layout/logo';
 
 import { Route } from 'next';
-import FreeTier from '@/components/new-user/FreeTier';
 import TermsAgreement from '@/app/(app)/_components/terms';
 
 export const dynamic = 'force-dynamic';
