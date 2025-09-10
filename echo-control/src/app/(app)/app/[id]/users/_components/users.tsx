@@ -169,8 +169,16 @@ const CopyEmailsButton = ({
   );
 };
 
-const UserRows = ({ users, showEmail }: { users: User[]; showEmail: boolean }) => {
-  return users.map(user => <UserRow key={user.id} user={user} showEmail={showEmail} />);
+const UserRows = ({
+  users,
+  showEmail,
+}: {
+  users: User[];
+  showEmail: boolean;
+}) => {
+  return users.map(user => (
+    <UserRow key={user.id} user={user} showEmail={showEmail} />
+  ));
 };
 
 const UserRow = ({ user, showEmail }: { user: User; showEmail: boolean }) => {
@@ -231,7 +239,11 @@ interface BaseUsersTableProps {
   showEmail?: boolean;
 }
 
-const BaseUsersTable = ({ children, pagination, showEmail = true }: BaseUsersTableProps) => {
+const BaseUsersTable = ({
+  children,
+  pagination,
+  showEmail = true,
+}: BaseUsersTableProps) => {
   return (
     <>
       <Card className="overflow-hidden">
