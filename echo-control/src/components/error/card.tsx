@@ -12,8 +12,8 @@ import { Button } from '../ui/button';
 import type { ErrorComponentProps } from './types';
 
 export const ErrorCard: React.FC<ErrorComponentProps> = ({
-  title,
-  description,
+  title = 'An Error Has Occurred!',
+  description = "We've reported this to our team and will investigate it shortly.",
   errorProps,
   Icon = AlertCircle,
 }) => {
