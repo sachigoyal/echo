@@ -52,7 +52,7 @@ export const Coupon: React.FC<CouponProps> = ({
         </div>
         {subText}
       </div>
-      <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)] py-2">
+      <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)] py-2 z-10">
         <div className="rounded-full size-4 bg-background" />
         <svg className="flex-1 h-[2px]">
           <line

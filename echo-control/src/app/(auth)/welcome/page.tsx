@@ -82,7 +82,7 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
           >
             Terms of Service
           </Link>{' '}
-          and
+          and{' '}
           <Link
             href="/privacy"
             target="_blank"
