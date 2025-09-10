@@ -2,7 +2,7 @@
 
 import { Route } from 'next';
 import { WelcomeCoupon } from '../../_components/welcome-coupon';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   amount: number;
