@@ -24,11 +24,15 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
       ? searchParams.callbackUrl
       : '/';
 
+  const redirectUrl = new URL(callbackUrl);
+  if (redirectUrl.pathname === '/') {
+    redirectUrl.pathname = '/dashboard';
+  }
+  redirectUrl.searchParams.set('new_user', 'true');
+
   const isAppAuthorize = callbackUrl.includes('/oauth/authorize');
 
   if (isAppAuthorize) {
-    const redirectUrl = new URL(callbackUrl);
-    redirectUrl.searchParams.set('new_user', 'true');
     return redirect(redirectUrl.toString() as Route);
   }
 
@@ -79,7 +83,7 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
         </p>
         <WelcomePageCoupon
           amount={couponAmount}
-          callbackUrl={callbackUrl as Route}
+          callbackUrl={redirectUrl.toString() as Route}
         />
         <p className="text-sm text-muted-foreground text-center">
           By claiming these credits, you agree to the
