@@ -81,6 +81,14 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
             className="underline font-semibold"
           >
             Terms of Service
+          </Link>{' '}
+          and
+          <Link
+            href="/privacy"
+            target="_blank"
+            className="underline font-semibold"
+          >
+            Privacy Policy
           </Link>
           .
         </p>
