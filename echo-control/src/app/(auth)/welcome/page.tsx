@@ -48,10 +48,21 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
       </div>
       <Separator />
       <Coupon />
-      <p>
-        By claiming these credits, you agree to the{' '}
-        <Link href="/terms">Terms of Service</Link> and{' '}
-        <Link href="/privacy">Privacy Policy</Link>.
+      <p className="text-sm text-muted-foreground text-center">
+        By claiming these credits, you agree to the
+        <br />
+        <Link href="/terms" target="_blank" className="underline font-semibold">
+          Terms of Service
+        </Link>{' '}
+        and{' '}
+        <Link
+          href="/privacy"
+          target="_blank"
+          className="underline font-semibold"
+        >
+          Privacy Policy
+        </Link>
+        .
       </p>
     </div>
   );

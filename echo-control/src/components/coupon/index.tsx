@@ -1,8 +1,9 @@
+'use client';
+
 import React from 'react';
-import { Logo } from '@/components/ui/logo';
 import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
 import { Gift } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface CouponProps {
   value?: number;
@@ -21,19 +22,21 @@ export const Coupon: React.FC<CouponProps> = ({ value = 5.0, className }) => {
         className
       )}
     >
-      <div className="p-4 pb-2 flex justify-between items-center">
-        <p className="text-5xl font-bold">${value.toFixed(2)}</p>
-        <div className="flex items-center gap-2 h-fit">
-          <p className="text-lg font-bold">Free Credits</p>
-          <Gift className="size-5" />
+      <div className="p-6 flex flex-col gap-2">
+        <div className="flex justify-between items-center">
+          <p className="text-5xl font-bold">${value.toFixed(2)}</p>
+          <div className="flex items-center gap-2 h-fit">
+            <p className="font-semibold">Free Credits</p>
+            <Gift className="size-5" />
+          </div>
         </div>
+        <p className="text-sm">
+          You can use these credits to make LLM requests on
+          <br />
+          <strong>any Echo app</strong>.
+        </p>
       </div>
-      <p className="text-sm p-4 pt-2">
-        You can use these credits to make LLM requests on
-        <br />
-        <strong>any Echo app</strong>.
-      </p>
-      <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)]">
+      <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)] py-2">
         <div className="rounded-full size-4 bg-background" />
         <svg className="flex-1 h-[2px]">
           <line
@@ -50,9 +53,13 @@ export const Coupon: React.FC<CouponProps> = ({ value = 5.0, className }) => {
         <div className="rounded-full size-4 bg-background" />
       </div>
       <div className="p-4">
-        <Button className="bg-white text-black w-full hover:scale-101 hover:bg-white font-bold">
+        <motion.button
+          className="bg-white text-black w-full hover:scale-101 hover:bg-white font-bold h-fit md:h-fit py-3 rounded-xl cursor-pointer shadow-[0_4px_24px_0_rgba(30,64,175,0.18),0_1.5px_6px_0_rgba(0,0,0,0.10)]"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+        >
           Claim and Continue
-        </Button>
+        </motion.button>
       </div>
 
       {/* Animated shimmer overlay */}
@@ -82,7 +89,7 @@ export const Coupon: React.FC<CouponProps> = ({ value = 5.0, className }) => {
           }
         `}
       </style>
-      <div className="absolute top-[-100%] bottom-[-100%] w-[25%] bg-gradient-to-r from-transparent via-white/5 to-transparent animate-coupon-shimmer rounded-3xl rotate-30" />
+      <div className="absolute top-[-100%] bottom-[-100%] w-[25%] bg-gradient-to-r from-transparent via-white/5 to-transparent animate-coupon-shimmer rounded-3xl rotate-30 pointer-events-none" />
     </div>
   );
 };
