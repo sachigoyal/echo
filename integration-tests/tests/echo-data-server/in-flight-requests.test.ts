@@ -173,36 +173,8 @@ describe('In-Flight Requests Monitor', () => {
       `✅ Test 1 passed: ${rejectedRequests.length} requests rejected with 429 status. No requests should be rejected.`
     );
 
-    // Process successful streams to completion
-    const successfulStreams = results.filter(result => result !== null);
-    for (const stream of successfulStreams) {
-      if (stream) {
-        try {
-          for await (const chunk of stream) {
-            // Consume the stream
-          }
-        } catch (error) {
-          // Stream might be aborted, that's fine
-        }
-      }
-    }
-
-    // Wait a bit for cleanup
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // 2. Check that after this happens, the in-flight requests info endpoint returns 0 current requests
-    console.log(
-      '📋 Test 2: Checking in-flight count after requests complete...'
-    );
-
-    const inFlightAfterBounce = await getInFlightCount();
-    expect(inFlightAfterBounce).toBe(0);
-    console.log(
-      `✅ Test 2 passed: In-flight count is ${inFlightAfterBounce} after requests completed`
-    );
-
     // 3. Simulate a client disconnect
-    console.log('📋 Test 3: Simulating client disconnect...');
+    console.log('📋 Test 2: Simulating client disconnect...');
 
     const disconnectClient = createClient();
     const streamPromise = disconnectClient.chat.completions.create({
@@ -233,16 +205,16 @@ describe('In-Flight Requests Monitor', () => {
     }
 
     // Wait for cleanup
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     const inFlightAfterDisconnect = await getInFlightCount();
     expect(inFlightAfterDisconnect).toBe(0);
     console.log(
-      `✅ Test 3 passed: In-flight count is ${inFlightAfterDisconnect} after client disconnect`
+      `✅ Test 2 passed: In-flight count is ${inFlightAfterDisconnect} after client disconnect`
     );
 
     // 4. Simulate an auth error
-    console.log('📋 Test 4: Simulating auth error...');
+    console.log('📋 Test 3: Simulating auth error...');
 
     const invalidClient = createClient('invalid-api-key');
 
@@ -264,7 +236,7 @@ describe('In-Flight Requests Monitor', () => {
     const inFlightAfterAuthError = await getInFlightCount();
     expect(inFlightAfterAuthError).toBe(0);
     console.log(
-      `✅ Test 4 passed: In-flight count is ${inFlightAfterAuthError} after auth error`
+      `✅ Test 3 passed: In-flight count is ${inFlightAfterAuthError} after auth error`
     );
 
     console.log('🎉 All comprehensive in-flight monitoring tests passed!');

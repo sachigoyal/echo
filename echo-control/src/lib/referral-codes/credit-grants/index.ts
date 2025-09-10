@@ -58,7 +58,11 @@ export async function redeemCreditReferralCode(
       {
         userId,
         amountInDollars: Number(referralCode.grantAmount),
-        options: { isFreeTier: freeTier, echoAppId, source: EnumPaymentSource.admin },
+        options: {
+          isFreeTier: freeTier,
+          echoAppId,
+          source: EnumPaymentSource.admin,
+        },
       },
       tx
     );
