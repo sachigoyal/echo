@@ -15,7 +15,7 @@ import { getIsOwner } from '../_lib/fetch';
 
 import type { Metadata } from 'next';
 import { userOrRedirect } from '@/auth/user-or-redirect';
-import { unauthorized } from 'next/navigation';
+import { forbidden } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Free Tier',
@@ -31,7 +31,7 @@ export default async function FreeTierPage(
   const isOwner = await getIsOwner(id);
 
   if (!isOwner) {
-    return unauthorized();
+    return forbidden();
   }
 
   api.apps.app.freeTier.payments.list.prefetchInfinite({

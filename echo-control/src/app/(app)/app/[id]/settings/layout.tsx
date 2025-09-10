@@ -1,10 +1,11 @@
 import { api } from '@/trpc/server';
 import { Body, Heading } from '../../../_components/layout/page-utils';
 import { SettingsNav } from './_components/nav';
-import { notFound, unauthorized } from 'next/navigation';
+import { forbidden, notFound, unauthorized } from 'next/navigation';
 import { auth } from '@/auth';
 
 import type { Metadata } from 'next';
+import { getIsOwner } from '../_lib/fetch';
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -18,14 +19,10 @@ export default async function AppSettingsLayout({
 
   const session = await auth();
 
-  const owner = await api.apps.app.getOwner(id);
+  const isOwner = await getIsOwner(id);
 
-  if (!owner) {
-    return notFound();
-  }
-
-  if (session?.user.id !== owner.id) {
-    return unauthorized();
+  if (!isOwner) {
+    return forbidden();
   }
 
   return (

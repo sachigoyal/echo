@@ -1,13 +1,8 @@
 import { userOrRedirect } from '@/auth/user-or-redirect';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import { unauthorized } from 'next/navigation';
 
 export default async function AdminDashboardPage(props: PageProps<'/admin'>) {
-  const user = await userOrRedirect('/admin', props);
-
-  if (!user) {
-    return unauthorized();
-  }
+  await userOrRedirect('/admin', props);
 
   return (
     <div className="container mx-auto py-8">

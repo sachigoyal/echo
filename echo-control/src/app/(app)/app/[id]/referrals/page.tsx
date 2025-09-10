@@ -15,7 +15,7 @@ export default async function AppReferralsPage(
 ) {
   const { id } = await props.params;
 
-  await userOrRedirect(`/app/${id}/referrals`, props);
+  const user = await userOrRedirect(`/app/${id}/referrals`, props);
 
   const isOwner = await getIsOwner(id);
 
@@ -23,5 +23,5 @@ export default async function AppReferralsPage(
     return <OwnerReferralsPage appId={id} />;
   }
 
-  return <PublicReferralsPage appId={id} />;
+  return <PublicReferralsPage appId={id} userId={user.id} />;
 }

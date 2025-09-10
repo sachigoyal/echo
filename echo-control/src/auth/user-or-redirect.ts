@@ -20,3 +20,12 @@ export const userOrRedirect = async <T extends string>(
   }
   return session.user;
 };
+
+export const userOrRedirectLayout = async <T extends string>(
+  route: Route<T>
+) => {
+  const session = await auth();
+  if (!session?.user) {
+    return redirect(`/login?redirect_url=${route}`);
+  }
+};
