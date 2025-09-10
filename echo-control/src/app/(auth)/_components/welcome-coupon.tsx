@@ -21,17 +21,6 @@ export const WelcomeCoupon: React.FC<Props> = ({
   const utils = api.useUtils();
 
   const {
-    mutate: signTerms,
-    isPending: isSigningTerms,
-    isSuccess: isSignedTerms,
-  } = api.user.termsAgreement.accept.terms.useMutation({
-    onError: () => {
-      toast.error('Failed to accept terms');
-      utils.user.termsAgreement.needs.terms.invalidate();
-    },
-  });
-
-  const {
     mutate: claimCoupon,
     isPending: isClaimingCoupon,
     isSuccess: isClaimedCoupon,
@@ -39,12 +28,38 @@ export const WelcomeCoupon: React.FC<Props> = ({
     onSuccess: () => {
       utils.user.initialFreeTier.hasClaimed.invalidate();
       setTimeout(() => {
-        toast.success('Credits claimed');
+        toast.success('Credits Claimed!');
         onSuccess();
       }, 500);
     },
     onError: () => {
       toast.error('Failed to claim credits');
+    },
+  });
+
+  const {
+    mutate: signPrivacy,
+    isPending: isSigningPrivacy,
+    isSuccess: isSignedPrivacy,
+  } = api.user.termsAgreement.accept.privacy.useMutation({
+    onSuccess: () => {
+      utils.user.termsAgreement.needs.privacy.invalidate();
+    },
+    onError: () => {
+      toast.error('Failed to accept privacy policy');
+    },
+  });
+
+  const {
+    mutate: signTerms,
+    isPending: isSigningTerms,
+    isSuccess: isSignedTerms,
+  } = api.user.termsAgreement.accept.terms.useMutation({
+    onSuccess: () => {
+      utils.user.termsAgreement.needs.terms.invalidate();
+    },
+    onError: () => {
+      toast.error('Failed to accept terms');
     },
   });
 
@@ -54,12 +69,12 @@ export const WelcomeCoupon: React.FC<Props> = ({
       onClaim={() =>
         signTerms(void 0, {
           onSuccess: () => {
-            claimCoupon();
+            signPrivacy(void 0, { onSuccess: () => claimCoupon() });
           },
         })
       }
-      isClaiming={isClaimingCoupon || isSigningTerms}
-      isClaimed={isClaimedCoupon && isSignedTerms}
+      isClaiming={isClaimingCoupon || isSigningTerms || isSigningPrivacy}
+      isClaimed={isClaimedCoupon && isSignedTerms && isSignedPrivacy}
       states={states}
       subText={subText}
     />

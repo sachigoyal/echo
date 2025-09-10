@@ -122,25 +122,6 @@ export default async function SignInPage({
           </Button>
         </div>
       </form>
-      <p className="text-xs text-muted-foreground/60">
-        By signing in, you agree to our{' '}
-        <Link
-          href="https://merit.systems/terms"
-          target="_blank"
-          className="underline"
-        >
-          Terms
-        </Link>{' '}
-        and{' '}
-        <Link
-          href="https://merit.systems/privacy"
-          target="_blank"
-          className="underline"
-        >
-          Privacy Policy
-        </Link>
-        .
-      </p>
     </div>
   );
 }

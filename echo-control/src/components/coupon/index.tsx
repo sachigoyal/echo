@@ -52,9 +52,9 @@ export const Coupon: React.FC<CouponProps> = ({
         </div>
         {subText}
       </div>
-      <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)] py-2">
-        <div className="rounded-full size-4 bg-background" />
-        <svg className="flex-1 h-[2px]">
+      <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)] py-2 z-10">
+        <div className="rounded-full size-4 bg-background z-20" />
+        <svg className="flex-1 h-[2px] z-20">
           <line
             x1="0"
             y1="0"
@@ -66,7 +66,7 @@ export const Coupon: React.FC<CouponProps> = ({
             strokeDasharray="2 1.5"
           />
         </svg>
-        <div className="rounded-full size-4 bg-background" />
+        <div className="rounded-full size-4 bg-background z-20" />
       </div>
       <div className="p-4">
         <MultiStateCouponButton
