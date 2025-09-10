@@ -3,7 +3,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import degit from 'degit';
 import ora from 'ora';
@@ -17,12 +17,14 @@ const TEMPLATES = {
     title: 'Next.js',
     description: 'Full-stack Next.js application with Echo',
     devCommand: 'pnpm dev',
+    envVarName: 'NEXT_PUBLIC_ECHO_APP_ID',
   },
   vite: {
     repo: 'Merit-Systems/echo/examples/vite', 
     title: 'Vite',
     description: 'Fast Vite React application with Echo',
     devCommand: 'pnpm dev',
+    envVarName: 'VITE_ECHO_APP_ID',
   },
 } as const;
 
@@ -30,10 +32,11 @@ type TemplateName = keyof typeof TEMPLATES;
 
 interface CreateAppOptions {
   template?: TemplateName;
+  appId?: string;
 }
 
 async function createApp(projectDir: string, options: CreateAppOptions) {
-  let { template } = options;
+  let { template, appId } = options;
 
   // If no template specified, prompt for it
   if (!template) {
@@ -51,6 +54,28 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
 
     if (response.template) {
       template = response.template as TemplateName;
+    } else {
+      console.log(chalk.red('Aborted.'));
+      process.exit(1);
+    }
+  }
+
+  // If no app ID specified, prompt for it
+  if (!appId) {
+    const response = await prompts({
+      type: 'text',
+      name: 'appId',
+      message: 'What is your Echo App ID?',
+      validate: (value: string) => {
+        if (!value.trim()) {
+          return 'Please enter an App ID';
+        }
+        return true;
+      },
+    });
+
+    if (response.appId) {
+      appId = response.appId;
     } else {
       console.log(chalk.red('Aborted.'));
       process.exit(1);
@@ -108,6 +133,26 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
       throw new Error(`Template download failed - no files found in ${absoluteProjectPath}`);
     }
 
+    // Update .env.local with the provided app ID
+    const envPath = path.join(absoluteProjectPath, '.env.local');
+    if (existsSync(envPath)) {
+      try {
+        const envContent = readFileSync(envPath, 'utf-8');
+        const envVarName = TEMPLATES[template].envVarName;
+        
+        // Replace the environment variable value
+        const updatedContent = envContent.replace(
+          new RegExp(`^${envVarName}=.*$`, 'm'),
+          `${envVarName}="${appId}"`
+        );
+        
+        writeFileSync(envPath, updatedContent);
+        console.log(chalk.green(`✓ Updated ${envVarName} in .env.local`));
+      } catch (error) {
+        console.log(chalk.yellow(`Warning: Could not update .env.local file`));
+      }
+    }
+
     console.log();
     console.log(chalk.blue.bold('✓ Initialization completed'));
     console.log();
@@ -157,6 +202,7 @@ async function main() {
     .version('0.1.0')
     .argument('[directory]', 'Directory to create the app in')
     .option('-t, --template <template>', `Template to use (${Object.keys(TEMPLATES).join(', ')})`)
+    .option('-a, --app-id <appId>', 'Echo App ID to use in the project')
     .action(async (directory: string | undefined, options: CreateAppOptions) => {
       let projectDir = directory;
 
