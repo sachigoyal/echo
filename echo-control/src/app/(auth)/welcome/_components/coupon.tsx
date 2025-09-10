@@ -14,6 +14,8 @@ interface Props {
 export const WelcomeCoupon = ({ amount, callbackUrl }: Props) => {
   const router = useRouter();
 
+  const utils = api.useUtils();
+
   const {
     mutate: signTerms,
     isPending: isSigningTerms,
@@ -21,6 +23,7 @@ export const WelcomeCoupon = ({ amount, callbackUrl }: Props) => {
   } = api.user.termsAgreement.accept.terms.useMutation({
     onError: () => {
       toast.error('Failed to accept terms');
+      utils.user.termsAgreement.needs.terms.invalidate();
     },
   });
 
@@ -30,6 +33,7 @@ export const WelcomeCoupon = ({ amount, callbackUrl }: Props) => {
     isSuccess: isClaimedCoupon,
   } = api.user.initialFreeTier.issue.useMutation({
     onSuccess: () => {
+      utils.user.initialFreeTier.hasClaimed.invalidate();
       setTimeout(() => {
         toast.success('Credits claimed');
         router.push(callbackUrl);

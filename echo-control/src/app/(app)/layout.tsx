@@ -11,7 +11,7 @@ import { LogoContainer } from './_components/layout/logo';
 
 import { Route } from 'next';
 import FreeTier from '@/components/new-user/FreeTier';
-import TermsAgreement from '@/components/new-user/TermsAgreement';
+import TermsAgreement from '@/app/(app)/_components/terms';
 
 export const dynamic = 'force-dynamic';
 

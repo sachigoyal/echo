@@ -15,7 +15,7 @@ import type { Viewport } from 'next';
 
 import '@/styles/globals.css';
 import FreeTier from '@/components/new-user/FreeTier';
-import TermsAgreement from '@/components/new-user/TermsAgreement';
+import TermsAgreement from '@/app/(app)/_components/terms';
 
 export const metadata: Metadata = {
   title: {
