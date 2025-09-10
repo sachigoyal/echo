@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     theme_color: '#ffffff',
     background_color: '#ffffff',
-    categories: ["micro-saas", "payments", "billing", "ai", "developers"],
+    categories: ['micro-saas', 'payments', 'billing', 'ai', 'developers'],
     icons: [
       {
         src: '/manifest/192x192.png',

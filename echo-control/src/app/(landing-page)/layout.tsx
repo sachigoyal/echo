@@ -2,6 +2,7 @@ import { AnimatedThemeToggler } from '@/components/magicui/animated-theme-toggle
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import Link from 'next/link';
+import { SiGithub } from '@icons-pack/react-simple-icons';
 
 export default function LandingPageLayout({
   children,
@@ -22,6 +23,11 @@ export default function LandingPageLayout({
             </div>
           </Link>
           <div className="flex items-center space-x-3">
+            <Link href="https://github.com/Merit-Systems/echo" target="_blank">
+              <Button variant="outline" className="h-8 md:h-9">
+                <SiGithub className="size-4" />
+              </Button>
+            </Link>
             <Link href="/login">
               <Button variant="outline" className="h-8 md:h-9">
                 <span>Sign In</span>

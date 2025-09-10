@@ -81,7 +81,11 @@ export const acceptLatestPrivacyPolicy = async (
 
 export const needsLatestTermsAndServices = async (
   userId: string
-): Promise<{ needs: boolean; currentVersion: string | null; latestVersion: string }> => {
+): Promise<{
+  needs: boolean;
+  currentVersion: string | null;
+  latestVersion: string;
+}> => {
   const version = process.env.LATEST_TERMS_AND_SERVICES_VERSION;
 
   if (!version) {
@@ -107,7 +111,11 @@ export const needsLatestTermsAndServices = async (
 
 export const needsLatestPrivacyPolicy = async (
   userId: string
-): Promise<{ needs: boolean; currentVersion: string | null; latestVersion: string }> => {
+): Promise<{
+  needs: boolean;
+  currentVersion: string | null;
+  latestVersion: string;
+}> => {
   const version = process.env.LATEST_PRIVACY_POLICY_VERSION;
 
   if (!version) {
@@ -130,5 +138,3 @@ export const needsLatestPrivacyPolicy = async (
     latestVersion: version,
   };
 };
-
-
