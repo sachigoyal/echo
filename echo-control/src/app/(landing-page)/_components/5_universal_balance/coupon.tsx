@@ -7,18 +7,6 @@ import Image from 'next/image';
 import { Logo } from '@/components/ui/logo';
 import { Marquee } from '@/components/magicui/marquee';
 
-import {
-  Anthropic,
-  OpenAI,
-  Google,
-  Meta,
-  NousResearch,
-  XAI,
-  Microsoft,
-  DeepSeek,
-  Qwen,
-} from '@lobehub/icons';
-
 import { Users } from 'lucide-react';
 
 import { cn, formatCurrency } from '@/lib/utils';
@@ -33,7 +21,8 @@ export const Coupon: React.FC = () => {
   const target2Ref = useRef<HTMLDivElement>(null);
   const target3Ref = useRef<HTMLDivElement>(null);
   const target4Ref = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(false);
+
   return (
     <div
       ref={containerRef}
@@ -115,17 +104,25 @@ export const Coupon: React.FC = () => {
 
         <Marquee className="pb-4 pt-2">
           {[
-            Anthropic,
-            OpenAI,
-            Google,
-            Meta,
-            NousResearch,
-            XAI,
-            Microsoft,
-            DeepSeek,
-            Qwen,
-          ].map((Icon, index) => (
-            <Icon key={Icon.toString() + index} className="size-6 text-white" />
+            'anthropic',
+            'openai',
+            'google',
+            'meta',
+            'nous',
+            'xai',
+            'microsoft',
+            'deepseek',
+            'qwen',
+          ].map((icon, index) => (
+            <Image
+              key={icon.toString() + index}
+              className="size-6 text-white"
+              src={`/icons/${icon}.svg`}
+              alt={`${icon} logo`}
+              width={24}
+              height={24}
+              style={{ filter: 'invert(1) brightness(2)' }}
+            />
           ))}
         </Marquee>
 
