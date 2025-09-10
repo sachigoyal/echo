@@ -66,8 +66,10 @@ import type { TokenProvider } from '@merit-systems/echo-typescript-sdk';
 
 ### TokenProvider
 
-<AutoTypeTable
-  type={`export interface TokenProvider {
+The `TokenProvider` interface defines the contract for providing access tokens:
+
+```typescript
+interface TokenProvider {
   /**
    * Get the current access token
    * @returns Promise that resolves to the access token or null if not available
@@ -85,9 +87,8 @@ import type { TokenProvider } from '@merit-systems/echo-typescript-sdk';
    * @param error The error that occurred during refresh
    */
   onRefreshError?(error: Error): void;
-}`}
-  name="TokenProvider" 
-/>
+}
+```
 
 ## Creating Custom Token Providers
 
