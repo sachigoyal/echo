@@ -1,11 +1,12 @@
 import { PublicReferralsPage } from './_components/public';
 import { OwnerReferralsPage } from './_components/owner';
 
-import { getApp, getIsOwner } from '../_lib/fetch';
+import { getIsOwner } from '../_lib/fetch';
+import { checkAppExists } from '../_lib/checks';
+
+import { userOrRedirect } from '@/auth/user-or-redirect';
 
 import type { Metadata } from 'next';
-import { userOrRedirect } from '@/auth/user-or-redirect';
-import { notFound } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Referrals',
@@ -18,11 +19,7 @@ export default async function AppReferralsPage(
 
   const user = await userOrRedirect(`/app/${id}/referrals`, props);
 
-  try {
-    await getApp(id);
-  } catch (error) {
-    return notFound();
-  }
+  await checkAppExists(id);
 
   const isOwner = await getIsOwner(id);
 

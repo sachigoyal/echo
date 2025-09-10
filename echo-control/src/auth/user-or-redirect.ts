@@ -28,4 +28,5 @@ export const userOrRedirectLayout = async <T extends string>(
   if (!session?.user) {
     return redirect(`/login?redirect_url=${route}`);
   }
+  return session.user;
 };

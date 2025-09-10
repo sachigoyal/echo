@@ -11,19 +11,14 @@ import { api, HydrateClient } from '@/trpc/server';
 import { HeaderCard, LoadingHeaderCard } from './_components/header';
 import { Setup } from './_components/setup';
 import { Overview } from './_components/overview';
-import { getApp } from '../_lib/fetch';
 import { userOrRedirect } from '@/auth/user-or-redirect';
+import { checkAppExists } from '../_lib/checks';
 
 export default async function AppPage(props: PageProps<'/app/[id]'>) {
   const { id } = await props.params;
 
   await userOrRedirect(`/app/${id}` as const, props);
-
-  try {
-    await getApp(id);
-  } catch (error) {
-    return notFound();
-  }
+  await checkAppExists(id);
 
   api.apps.app.get.prefetch({ appId: id });
   api.apps.app.githubLink.get.prefetch(id);

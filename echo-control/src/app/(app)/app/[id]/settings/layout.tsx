@@ -1,9 +1,9 @@
 import { Body, Heading } from '../../../_components/layout/page-utils';
 import { SettingsNav } from './_components/nav';
-import { forbidden, notFound } from 'next/navigation';
 
 import type { Metadata } from 'next';
-import { getApp, getIsOwner } from '../_lib/fetch';
+import { checkAppExists, checkIsAppOwner } from '../_lib/checks';
+import { userOrRedirectLayout } from '@/auth/user-or-redirect';
 
 export const metadata: Metadata = {
   title: 'Settings',
@@ -15,17 +15,9 @@ export default async function AppSettingsLayout({
 }: LayoutProps<'/app/[id]/settings'>) {
   const { id } = await params;
 
-  try {
-    await getApp(id);
-  } catch (error) {
-    return notFound();
-  }
-
-  const isOwner = await getIsOwner(id);
-
-  if (!isOwner) {
-    return forbidden();
-  }
+  await userOrRedirectLayout(`/app/${id}/settings`);
+  await checkAppExists(id);
+  await checkIsAppOwner(id);
 
   return (
     <div>

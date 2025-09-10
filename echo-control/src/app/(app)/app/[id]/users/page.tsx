@@ -6,10 +6,11 @@ import { UsersTable, LoadingUsersTable } from './_components/users';
 
 import { api, HydrateClient } from '@/trpc/server';
 
-import type { Metadata } from 'next';
 import { userOrRedirect } from '@/auth/user-or-redirect';
-import { getApp } from '../_lib/fetch';
-import { notFound } from 'next/navigation';
+
+import { checkAppExists } from '../_lib/checks';
+
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: {
@@ -23,11 +24,7 @@ export default async function UsersPage(props: PageProps<'/app/[id]/users'>) {
 
   await userOrRedirect(`/app/${id}/users` as const, props);
 
-  try {
-    await getApp(id);
-  } catch (error) {
-    return notFound();
-  }
+  await checkAppExists(id);
 
   api.apps.app.users.list.prefetchInfinite({ appId: id });
 

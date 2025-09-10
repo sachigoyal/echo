@@ -1,4 +1,4 @@
-import { ErrorCard, NotFoundCard } from './card';
+import { ErrorCard, ForbiddenCard, NotFoundCard } from './card';
 
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,14 @@ export const NotFoundScreen: React.FC<Props> = ({ className, ...props }) => {
   return (
     <ErrorScreenContainer className={className}>
       <NotFoundCard {...props} />
+    </ErrorScreenContainer>
+  );
+};
+
+export const ForbiddenScreen: React.FC<Props> = ({ className, ...props }) => {
+  return (
+    <ErrorScreenContainer className={className}>
+      <ForbiddenCard {...props} />
     </ErrorScreenContainer>
   );
 };

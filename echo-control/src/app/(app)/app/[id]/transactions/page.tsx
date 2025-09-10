@@ -11,10 +11,10 @@ import {
 
 import { api, HydrateClient } from '@/trpc/server';
 
-import type { Metadata } from 'next';
 import { userOrRedirect } from '@/auth/user-or-redirect';
-import { getApp } from '../_lib/fetch';
-import { notFound } from 'next/navigation';
+import { checkAppExists } from '../_lib/checks';
+
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: {
@@ -28,11 +28,7 @@ export default async function TransactionsPage(
 ) {
   const { id } = await props.params;
 
-  try {
-    await getApp(id);
-  } catch (error) {
-    return notFound();
-  }
+  await checkAppExists(id);
 
   await userOrRedirect(`/app/${id}/transactions`, props);
 

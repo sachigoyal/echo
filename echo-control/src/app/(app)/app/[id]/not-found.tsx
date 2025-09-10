@@ -1,13 +1,8 @@
 'use client';
 
-import { ErrorScreen } from '@/components/error/screen';
-import { Button } from '@/components/ui/button';
-
-import type { NextErrorProps } from '@/types/next-error';
-import Link from 'next/link';
 import { AppGroupNotFound } from '../../_components/not-found';
 
-export default function AppNotFound(props: NextErrorProps) {
+export default function AppNotFound() {
   return (
     <AppGroupNotFound
       title="App Not Found"

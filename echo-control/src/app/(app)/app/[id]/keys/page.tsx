@@ -5,8 +5,8 @@ import { GenerateKey } from './_components/generate-key';
 import { Keys } from './_components/keys';
 
 import { api, HydrateClient } from '@/trpc/server';
-import { getApp } from '../_lib/fetch';
-import { notFound } from 'next/navigation';
+
+import { checkAppExists } from '../_lib/checks';
 
 import type { Metadata } from 'next';
 
@@ -18,12 +18,7 @@ export default async function AppKeysPage(props: PageProps<'/app/[id]/keys'>) {
   const { id } = await props.params;
 
   await userOrRedirect(`/app/${id}/keys`, props);
-
-  try {
-    await getApp(id);
-  } catch (error) {
-    return notFound();
-  }
+  await checkAppExists(id);
 
   const { generate } = await props.searchParams;
 
