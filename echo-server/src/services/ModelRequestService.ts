@@ -35,8 +35,19 @@ export class ModelRequestService {
     res: Response,
     processedHeaders: Record<string, string>,
     echoControlService: EchoControlService
-  ): Promise<{ transaction: Transaction; isStream: boolean; data: unknown, requiresResolution: boolean }> {
-    const isVideoProxy = await checkProxyVideoDownload(req, res, echoControlService, processedHeaders, this.formatRequestBody);
+  ): Promise<{
+    transaction: Transaction;
+    isStream: boolean;
+    data: unknown;
+    requiresResolution: boolean;
+  }> {
+    const isVideoProxy = await checkProxyVideoDownload(
+      req,
+      res,
+      echoControlService,
+      processedHeaders,
+      this.formatRequestBody
+    );
     if (isVideoProxy) {
       return { ...isVideoProxy, requiresResolution: false };
     }
@@ -107,7 +118,12 @@ export class ModelRequestService {
         provider,
         res
       );
-      return { transaction, isStream: true, data: null, requiresResolution: true };
+      return {
+        transaction,
+        isStream: true,
+        data: null,
+        requiresResolution: true,
+      };
     } else {
       const { transaction, data } =
         await handleNonStreamingService.handleNonStreaming(
@@ -119,8 +135,12 @@ export class ModelRequestService {
     }
   }
 
-  handleResolveResponse(res: Response, isStream: boolean, data: unknown, requiresResolution: boolean): void {
-
+  handleResolveResponse(
+    res: Response,
+    isStream: boolean,
+    data: unknown,
+    requiresResolution: boolean
+  ): void {
     if (!requiresResolution) {
       return;
     }

@@ -96,7 +96,12 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       );
 
     await echoControlService.createTransaction(transaction);
-    modelRequestService.handleResolveResponse(res, isStream, data, requiresResolution);
+    modelRequestService.handleResolveResponse(
+      res,
+      isStream,
+      data,
+      requiresResolution
+    );
   } catch (error) {
     return next(error);
   }

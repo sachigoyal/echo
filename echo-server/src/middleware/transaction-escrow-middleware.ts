@@ -257,7 +257,6 @@ export class TransactionEscrowMiddleware {
     this.cleanupInterval = setInterval(async () => {
       await this.cleanupOrphanedRequests();
     }, CLEANUP_INTERVAL_MS);
-
   }
 
   /**

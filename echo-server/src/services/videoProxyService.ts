@@ -19,7 +19,9 @@ export async function checkProxyVideoDownload(
     requestBody: string | FormData | undefined;
     headers: Record<string, string>;
   }
-): Promise<false | { transaction: Transaction; isStream: boolean; data: unknown }> {
+): Promise<
+  false | { transaction: Transaction; isStream: boolean; data: unknown }
+> {
   const passThroughPrefixes = ['/v1beta/files'];
 
   if (!passThroughPrefixes.find(prefix => req.path.startsWith(prefix))) {
@@ -30,7 +32,7 @@ export async function checkProxyVideoDownload(
   if (!requestId) {
     return false;
   }
-  
+
   // This will always be veo-3.0-generate-001 because we only support veo-3.0-generate-001 for video generation
   const model = 'veo-3.0-generate-001';
 
