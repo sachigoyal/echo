@@ -1,6 +1,7 @@
 import { AnimatedThemeToggler } from '@/components/magicui/animated-theme-toggler';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
+import { SiGithub } from '@icons-pack/react-simple-icons';
 import Link from 'next/link';
 
 export const Navbar = () => {
@@ -20,6 +21,11 @@ export const Navbar = () => {
           <Link href="/login">
             <Button variant="outline" className="h-8 md:h-9">
               <span>Sign In</span>
+            </Button>
+          </Link>
+          <Link href="https://github.com/Merit-Systems/echo" target="_blank">
+            <Button variant="outline" className="h-8 md:h-9">
+              <SiGithub className="size-4" />
             </Button>
           </Link>
           <AnimatedThemeToggler />
