@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { ReferralCodeType } from '../types';
 import { mintCreditsToUser } from '@/services/credits';
+import { EnumPaymentSource } from '@/generated/prisma';
 
 export async function redeemCreditReferralCode(
   userId: string,
@@ -57,7 +58,7 @@ export async function redeemCreditReferralCode(
       {
         userId,
         amountInDollars: Number(referralCode.grantAmount),
-        options: { isFreeTier: freeTier, echoAppId },
+        options: { isFreeTier: freeTier, echoAppId, source: EnumPaymentSource.admin },
       },
       tx
     );

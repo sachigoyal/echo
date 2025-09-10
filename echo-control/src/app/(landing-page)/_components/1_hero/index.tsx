@@ -35,7 +35,7 @@ export const Hero = () => {
           markup, we handle the rest.
         </p>
         <div className={cn('flex justify-center gap-2')}>
-          <Link href="/new">
+          <Link href="/login?redirect_url=/new">
             <Button size="lg" variant="turbo">
               Create an App
             </Button>

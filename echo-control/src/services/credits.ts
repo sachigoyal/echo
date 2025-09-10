@@ -3,7 +3,7 @@ import z from 'zod';
 import { db } from '@/lib/db';
 import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 
-import type { Prisma } from '@/generated/prisma';
+import { EnumPaymentSource, type Prisma } from '@/generated/prisma';
 import { logger } from '@/logger';
 
 export const mintCreditsToUserSchema = z.object({
@@ -17,6 +17,7 @@ export const mintCreditsToUserSchema = z.object({
       poolName: z.string().optional(),
       defaultSpendLimit: z.number().positive().optional(),
       description: z.string().optional(),
+      source: z.nativeEnum(EnumPaymentSource)
     })
     .refine(
       data => {
@@ -60,6 +61,7 @@ export const mintCreditsToUser = async (
     description = options.isFreeTier
       ? 'Free-Tier Credit Redemption Payment'
       : 'Personal Balance Credit Redemption Payment',
+    source,
   } = options;
 
   // Convert dollars to cents for storage
@@ -75,6 +77,7 @@ export const mintCreditsToUser = async (
       amount: amountInDollars,
       currency: 'usd',
       status: PaymentStatus.COMPLETED,
+      source: source,
       description,
       userId,
     },
