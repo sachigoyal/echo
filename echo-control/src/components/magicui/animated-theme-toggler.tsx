@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, SunDim } from 'lucide-react';
+import { Moon, Sun, SunDim } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { cn } from '@/lib/utils';
@@ -55,11 +55,8 @@ export const AnimatedThemeToggler = ({ className }: props) => {
       size="icon"
       variant="outline"
     >
-      {theme === 'dark' ? (
-        <SunDim className="size-4" />
-      ) : (
-        <Moon className="size-4" />
-      )}
+      <Sun className="absolute size-4 rotate-0 opacity-100 transition-all duration-300 dark:-rotate-90 dark:opacity-0" />
+      <Moon className="absolute size-4 rotate-90 opacity-0 transition-all duration-300 dark:rotate-0 dark:opacity-100" />
     </Button>
   );
 };

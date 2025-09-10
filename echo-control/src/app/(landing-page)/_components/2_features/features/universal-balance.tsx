@@ -39,12 +39,12 @@ const cards: CardProps[] = [
     users: 123,
   },
   {
-    image: '/images/calbot.png',
-    title: 'Calbot',
-    description: 'Manage your Google Calendar from your terminal',
-    author: 'Ben Reilly',
+    image: '/images/vibes.png',
+    title: 'EchoVibes',
+    description: "An improved fork of Vercel's OSS vibe coding app.",
+    author: 'Sam Ragsdale',
     earnings: 348.63,
-    users: 6969,
+    users: 488,
   },
 ];
 
