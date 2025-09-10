@@ -3,8 +3,8 @@ import superjson from 'superjson';
 import z, { ZodError } from 'zod';
 import { auth } from '@/auth';
 import { Session } from 'next-auth';
-import { db } from '@/lib/db';
 import { timeBasedPaginationSchema } from '@/services/lib/pagination';
+import { isAdmin as getIsAdmin } from '@/services/admin/admin';
 
 /**
  * Context that is passed to all TRPC procedures
@@ -96,11 +96,9 @@ export const protectedProcedure = publicProcedure.use(async ({ ctx, next }) => {
 });
 
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  const user = await db.user.findUnique({
-    where: { id: ctx.session.user.id },
-  });
+  const isAdmin = await getIsAdmin(ctx.session.user.id);
 
-  if (!user?.admin) {
+  if (!isAdmin) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 

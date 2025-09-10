@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { adminProcedure, createTRPCRouter, paginatedProcedure } from '../trpc';
+import {
+  adminProcedure,
+  createTRPCRouter,
+  paginatedProcedure,
+  protectedProcedure,
+} from '../trpc';
 
 import {
   adminGetUsers,
@@ -24,6 +29,7 @@ import {
   getAppTransactionTotals,
   getUserTransactionsPaginated,
   getUserTransactionTotals,
+  isAdmin,
 } from '@/services/admin/admin';
 import { mintCreditsToUserSchema } from '@/services/credits';
 import { adminListPendingPayouts } from '@/services/admin/pending-payouts';
@@ -35,8 +41,8 @@ import {
 } from '@/services/payouts/merit';
 
 export const adminRouter = createTRPCRouter({
-  isAdmin: adminProcedure.query(async () => {
-    return true;
+  isAdmin: protectedProcedure.query(async ({ ctx }) => {
+    return await isAdmin(ctx.session.user.id);
   }),
 
   mintCredits: adminProcedure
