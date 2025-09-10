@@ -1,5 +1,5 @@
 import { TEST_CONFIG } from '@/config/test-config';
-import { describe, test, expect } from 'vitest'; 
+import { describe, test, expect } from 'vitest';
 import { TEST_CLIENT_IDS, TEST_USER_API_KEYS } from '@/config/test-data';
 import { echoControlApi } from '@/utils/api-client';
 import OpenAI from 'openai';

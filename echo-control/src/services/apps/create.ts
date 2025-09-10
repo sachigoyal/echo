@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { AppRole, MembershipStatus } from '@/lib/permissions';
 import { logger } from '@/logger';
+import { scheduleCreateAppFollowUpEmail } from '../email/create-app';
 
 export const createAppSchema = z.object({
   name: z
@@ -67,6 +68,8 @@ export const createApp = async (
         function: 'createApp',
       },
     });
+
+    await scheduleCreateAppFollowUpEmail(userId, data.name);
 
     return app;
   } catch (error) {
