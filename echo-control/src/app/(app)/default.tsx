@@ -1,3 +1,3 @@
-export default function DefaultAppSlot() {
+export default function AuthenticatedSlot() {
   return null;
 }
