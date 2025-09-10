@@ -8,6 +8,8 @@ import { api, HydrateClient } from '@/trpc/server';
 
 import type { Metadata } from 'next';
 import { userOrRedirect } from '@/auth/user-or-redirect';
+import { getApp } from '../_lib/fetch';
+import { notFound } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: {
@@ -20,6 +22,12 @@ export default async function UsersPage(props: PageProps<'/app/[id]/users'>) {
   const { id } = await props.params;
 
   await userOrRedirect(`/app/${id}/users` as const, props);
+
+  try {
+    await getApp(id);
+  } catch (error) {
+    return notFound();
+  }
 
   api.apps.app.users.list.prefetchInfinite({ appId: id });
 

@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   experimental: {
     authInterrupts: true,
+    globalNotFound: true,
   },
   typedRoutes: true,
   images: {

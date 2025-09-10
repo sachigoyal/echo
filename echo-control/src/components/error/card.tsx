@@ -10,12 +10,14 @@ import {
 import { Button } from '../ui/button';
 
 import type { ErrorComponentProps } from './types';
+import Link from 'next/link';
 
 export const ErrorCard: React.FC<ErrorComponentProps> = ({
   title = 'An Error Has Occurred!',
   description = "We've reported this to our team and will investigate it shortly.",
   errorProps,
   Icon = AlertCircle,
+  actions,
 }) => {
   return (
     <Card className="gap-4 flex flex-col">
@@ -25,10 +27,28 @@ export const ErrorCard: React.FC<ErrorComponentProps> = ({
         <CardDescription className="text-base">{description}</CardDescription>
       </CardHeader>
       <CardFooter>
-        <Button onClick={errorProps.reset} className="w-full">
-          Reset
-        </Button>
+        {actions ? (
+          actions
+        ) : errorProps ? (
+          <Button onClick={errorProps.reset} className="w-full">
+            Reset
+          </Button>
+        ) : (
+          <Link href="/dashboard" className="flex-1">
+            <Button variant="outline" className="w-full">
+              Back to Home
+            </Button>
+          </Link>
+        )}
       </CardFooter>
     </Card>
   );
+};
+
+export const NotFoundCard: React.FC<ErrorComponentProps> = ({
+  title = 'Not Found',
+  description = 'The page you are looking for does not exist.',
+  ...rest
+}) => {
+  return <ErrorCard title={title} description={description} {...rest} />;
 };

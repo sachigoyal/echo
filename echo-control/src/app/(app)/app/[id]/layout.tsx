@@ -3,19 +3,31 @@ import { getApp, getIsOwner } from './_lib/fetch';
 
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
+import { notFound } from 'next/navigation';
 
 export async function generateMetadata({
   params,
 }: PageProps<'/app/[id]'>): Promise<Metadata> {
   const { id } = await params;
-  const app = await getApp(id);
-  return {
-    title: {
-      default: app.name,
-      template: `${app.name} | %s | Echo`,
-    },
-    description: app.description || undefined,
-  };
+
+  try {
+    const app = await getApp(id);
+    return {
+      title: {
+        default: app.name,
+        template: `${app.name} | %s | Echo`,
+      },
+      description: app.description || undefined,
+    };
+  } catch (error) {
+    return {
+      title: {
+        default: 'App Not Found',
+        template: 'App Not Found | %s | Echo',
+      },
+      description: 'The app you are looking for does not exist.',
+    };
+  }
 }
 
 export default async function AuthenticatedAppLayout({
@@ -23,6 +35,12 @@ export default async function AuthenticatedAppLayout({
   params,
 }: LayoutProps<'/app/[id]'>) {
   const { id } = await params;
+
+  try {
+    await getApp(id);
+  } catch (error) {
+    return children;
+  }
 
   const session = await auth();
 

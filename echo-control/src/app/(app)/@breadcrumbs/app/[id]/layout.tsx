@@ -2,12 +2,13 @@ import { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { Code, User } from 'lucide-react';
+import { AlertCircle, Code, User } from 'lucide-react';
 
 import { Breadcrumb, LoadingBreadcrumb } from '../../_components/breadcrumb';
 import { Separator } from '../../_components/separator';
 
 import { api } from '@/trpc/server';
+import { getApp } from '@/app/(app)/app/[id]/_lib/fetch';
 
 export default async function AppBreadcrumbsLayout({
   children,
@@ -71,7 +72,7 @@ const UserBreadcrumb = async ({ id }: { id: string }) => {
 };
 
 const AppBreadcrumb = async ({ id }: { id: string }) => {
-  const app = await api.apps.app.get({ appId: id });
+  const app = await getApp(id);
   return (
     <Breadcrumb
       href={`/app/${id}`}
