@@ -7,16 +7,13 @@ This document provides step-by-step instructions to validate that the comprehens
 The comprehensive test suite includes:
 
 1. **Unit Tests**: Test individual SDK functions in isolation
-
    - `auth.test.ts` - Authentication and API key management
    - `client.test.ts` - EchoClient SDK functionality
 
 2. **CLI Tests**: Test CLI commands with mocked dependencies
-
    - `cli.test.ts` - All CLI commands and their behaviors
 
 3. **Integration Tests**: Test against real server
-
    - `integration.test.ts` - End-to-end workflows
 
 4. **Infrastructure**: Test setup and utilities
