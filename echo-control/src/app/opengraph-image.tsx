@@ -29,6 +29,7 @@ export default async function Image() {
             width={`${(1200 - outerHexWidth) / 2}px`}
             style={{
               marginLeft: `-${xPaddingPx}`,
+              marginRight: `${hexPadding}px`,
             }}
           />
           <div tw="flex flex-col relative justify-center items-center">
@@ -66,6 +67,7 @@ export default async function Image() {
             height={dashWidth}
             width={`${(1200 - outerHexWidth) / 2}px`}
             style={{
+              marginLeft: `${hexPadding}px`,
               marginRight: `-${xPaddingPx}`,
             }}
           />
