@@ -10,34 +10,35 @@ datasource db {
 }
 
 model User {
-  id                   String               @id @default(uuid()) @db.Uuid
-  email                String               @unique
-  name                 String?
-  emailVerified        DateTime?
-  image                String?
-  isArchived           Boolean              @default(false)
-  archivedAt           DateTime?            @db.Timestamptz(6)
-  createdAt            DateTime             @default(now()) @db.Timestamptz(6)
-  updatedAt            DateTime             @updatedAt @db.Timestamptz(6)
-  totalPaid            Decimal              @default(0) @db.Decimal(65, 14)
-  totalSpent           Decimal              @default(0) @db.Decimal(65, 14)
-  admin                Boolean              @default(false)
-  referralGithubUserId String?              @db.Uuid
-  accounts             Account[]
-  sessions             Session[]
-  apiKeys              ApiKey[]
-  appMemberships       AppMembership[]
-  payments             Payment[]
-  refreshTokens        RefreshToken[]
-  transactions         Transaction[]
-  spendPoolUsage       UserSpendPoolUsage[]
-  ReferralCode         ReferralCode[]
-  appSessions          AppSession[]
-  Payout               Payout[]
-  githubLink           GithubLink?
-  latestTosVersion     Decimal?
-  latestPrivacyVersion Decimal?
+  id                       String               @id @default(uuid()) @db.Uuid
+  email                    String               @unique
+  name                     String?
+  emailVerified            DateTime?
+  image                    String?
+  isArchived               Boolean              @default(false)
+  archivedAt               DateTime?            @db.Timestamptz(6)
+  createdAt                DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime             @updatedAt @db.Timestamptz(6)
+  totalPaid                Decimal              @default(0) @db.Decimal(65, 14)
+  totalSpent               Decimal              @default(0) @db.Decimal(65, 14)
+  admin                    Boolean              @default(false)
+  referralGithubUserId     String?              @db.Uuid
+  accounts                 Account[]
+  sessions                 Session[]
+  apiKeys                  ApiKey[]
+  appMemberships           AppMembership[]
+  payments                 Payment[]
+  refreshTokens            RefreshToken[]
+  transactions             Transaction[]
+  spendPoolUsage           UserSpendPoolUsage[]
+  ReferralCode             ReferralCode[]
+  appSessions              AppSession[]
+  Payout                   Payout[]
+  githubLink               GithubLink?
+  latestTosVersion         Decimal?
+  latestPrivacyVersion     Decimal?
   latestFreeCreditsVersion Decimal?
+  OutboundEmailSent        OutboundEmailSent[]
 
   @@map("users")
 }
@@ -100,11 +101,12 @@ model EchoApp {
   githubLink              GithubLink? // The GitHub link for this app (one-to-one)
   spendPools              SpendPool[] // Spend pools associated with this app
   ReferralCode            ReferralCode[]
-  currentReferralRewardId String?          @db.Uuid // Reference to current active referral reward
-  currentReferralReward   ReferralReward?  @relation("CurrentReferralReward", fields: [currentReferralRewardId], references: [id])
-  ReferralRewards         ReferralReward[] @relation("AppReferralRewards") // All referral rewards for this app
+  currentReferralRewardId String?             @db.Uuid // Reference to current active referral reward
+  currentReferralReward   ReferralReward?     @relation("CurrentReferralReward", fields: [currentReferralRewardId], references: [id])
+  ReferralRewards         ReferralReward[]    @relation("AppReferralRewards") // All referral rewards for this app
   appSessions             AppSession[]
   payouts                 Payout[]
+  OutboundEmailSent       OutboundEmailSent[]
 
   @@map("echo_apps")
 }
@@ -198,21 +200,21 @@ model AppSession {
 }
 
 model Payment {
-  id          String     @id @default(uuid()) @db.Uuid
-  paymentId   String     @unique
-  amount      Decimal    @db.Decimal(65, 14)
-  currency    String     @default("usd")
+  id          String            @id @default(uuid()) @db.Uuid
+  paymentId   String            @unique
+  amount      Decimal           @db.Decimal(65, 14)
+  currency    String            @default("usd")
   status      String
   source      EnumPaymentSource @default(stripe)
   description String?
-  isArchived  Boolean    @default(false)
-  archivedAt  DateTime?  @db.Timestamptz(6)
-  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
-  userId      String     @db.Uuid
-  spendPoolId String?    @db.Uuid
-  spendPool   SpendPool? @relation(fields: [spendPoolId], references: [id])
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isArchived  Boolean           @default(false)
+  archivedAt  DateTime?         @db.Timestamptz(6)
+  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @db.Timestamptz(6)
+  userId      String            @db.Uuid
+  spendPoolId String?           @db.Uuid
+  spendPool   SpendPool?        @relation(fields: [spendPoolId], references: [id])
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("payments")
 }
@@ -254,20 +256,20 @@ model MarkUp {
 }
 
 model GithubLink {
-  id           String        @id @default(uuid()) @db.Uuid
-  githubId     Int
-  githubType   GithubType
-  githubUrl    String
-  description  String?
-  isArchived   Boolean       @default(false)
-  archivedAt   DateTime?     @db.Timestamptz(6)
-  createdAt    DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime      @updatedAt @db.Timestamptz(6)
-  echoAppId    String?       @unique @db.Uuid
-  userId       String?       @unique @db.Uuid
-  echoApp      EchoApp?      @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
-  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Payout       Payout[]
+  id          String     @id @default(uuid()) @db.Uuid
+  githubId    Int
+  githubType  GithubType
+  githubUrl   String
+  description String?
+  isArchived  Boolean    @default(false)
+  archivedAt  DateTime?  @db.Timestamptz(6)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
+  echoAppId   String?    @unique @db.Uuid
+  userId      String?    @unique @db.Uuid
+  echoApp     EchoApp?   @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+  user        User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Payout      Payout[]
 
   @@map("github_links")
 }
@@ -414,18 +416,29 @@ model ReferralReward {
   @@map("referral_rewards")
 }
 
-
-
-
 model InFlightRequest {
-  id String @id @default(uuid()) @db.Uuid
-  userId String @db.Uuid
-  echoAppId String @db.Uuid
-  numberInFlight Int @default(0)
-  totalEscrowed Decimal @default(0.0) @db.Decimal(65, 14)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  echoAppId      String   @db.Uuid
+  numberInFlight Int      @default(0)
+  totalEscrowed  Decimal  @default(0.0) @db.Decimal(65, 14)
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([userId, echoAppId])
   @@map("in_flight_requests")
+}
+
+model OutboundEmailSent {
+  id        String   @id @default(uuid()) @db.Uuid
+  emailCampaignId   String
+  userId    String   @db.Uuid
+  echoAppId String?  @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  echoApp EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
+
+  @@index([emailCampaignId])
+  @@map("outbound_emails_sent")
 }

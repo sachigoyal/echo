@@ -31,6 +31,12 @@ import {
   pollMeritCheckout,
   syncPendingPayoutsOnce,
 } from '@/services/payouts/merit';
+import {
+  listAvailableEmailCampaigns,
+  getSentCampaignsForApps,
+  scheduleCampaignForApps,
+} from '@/services/admin/email-campaigns';
+import { getAppsEarningsPaginatedWithCampaigns } from '@/services/admin/app-earnings';
 
 export const adminRouter = createTRPCRouter({
   isAdmin: adminProcedure.query(async () => {
@@ -99,6 +105,28 @@ export const adminRouter = createTRPCRouter({
         return await getAllUsersEarningsAggregatesPaginated(
           ctx.pagination.page,
           ctx.pagination.page_size
+        );
+      }),
+
+    /**
+     * App-centric earnings list with outbound campaign info and filters
+     */
+    getAppsWithCampaignsPaginated: paginatedProcedure
+      .input(
+        z.object({
+          cursor: z.number().optional().default(0),
+          page_size: z.number().optional().default(10),
+          filterCampaignKey: z.string().optional(),
+          onlyNotReceived: z.boolean().optional().default(false),
+        })
+      )
+      .concat(adminProcedure)
+      .query(async ({ input }) => {
+        return await getAppsEarningsPaginatedWithCampaigns(
+          input.cursor ?? 0,
+          input.page_size ?? 10,
+          input.filterCampaignKey,
+          input.onlyNotReceived
         );
       }),
 
@@ -252,5 +280,26 @@ export const adminRouter = createTRPCRouter({
     syncPending: adminProcedure.mutation(async () => {
       return await syncPendingPayoutsOnce();
     }),
+  },
+
+  emailCampaigns: {
+    list: adminProcedure.query(async () => {
+      return listAvailableEmailCampaigns();
+    }),
+    getSentForApps: adminProcedure
+      .input(z.object({ appIds: z.array(z.string()) }))
+      .query(async ({ input }) => {
+        return await getSentCampaignsForApps(input.appIds);
+      }),
+    scheduleForApps: adminProcedure
+      .input(
+        z.object({
+          campaignKey: z.string(),
+          appIds: z.array(z.string()),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return await scheduleCampaignForApps(input);
+      }),
   },
 });
