@@ -66,11 +66,10 @@ import type { TokenProvider } from '@merit-systems/echo-typescript-sdk';
 
 ### TokenProvider
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `getAccessToken()` | `Promise<string \| null>` | Get the current access token |
-| `refreshToken()` | `Promise<string \| void>` | Refresh the access token when it expires or becomes invalid |
-| `onRefreshError?()` | `(error: Error) => void` | Optional callback to be called when a token refresh fails |
+<AutoTypeTable 
+  path="../echo-typescript-sdk/src/index.ts" 
+  name="TokenProvider" 
+/>
 
 ## Creating Custom Token Providers
 
