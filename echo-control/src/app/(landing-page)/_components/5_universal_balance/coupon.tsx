@@ -62,15 +62,14 @@ export const Coupon: React.FC = () => {
         className={cn(
           'relative mx-auto max-w-md overflow-hidden w-full',
           'bg-gradient-to-br from-primary via-primary/80 to-primary',
-          'rounded-2xl',
-          'after:content-[""] after:absolute after:inset-0 after:rounded-2xl after:shadow-[inset_0_8px_32px_0_rgba(0,0,0,0.18)] after:pointer-events-none',
-          'z-20'
+          'rounded-2xl'
         )}
       >
+        <div className="absolute inset-0 rounded-2xl shadow-[inset_0_8px_32px_0_rgba(0,0,0,0.18)] pointer-events-none z-19" />
         <div className="p-6 flex flex-col gap-2 text-white">
           <div className="flex justify-between items-center">
             <p className="text-5xl font-bold text-white">
-              ${(1812.67).toFixed(2)}
+              {formatCurrency(1812.67, { notation: 'standard' })}
             </p>
             <Logo className="size-12" />
           </div>
@@ -79,8 +78,8 @@ export const Coupon: React.FC = () => {
           </p>
         </div>
         <div className="-mx-2 flex items-center justify-center w-[calc(100%+1rem)] py-2">
-          <div className="rounded-full size-4 bg-background" />
-          <svg className="flex-1 h-[2px]">
+          <div className="rounded-full size-4 bg-background z-20" />
+          <svg className="flex-1 h-[2px] z-20">
             <line
               x1="0"
               y1="0"
@@ -92,7 +91,7 @@ export const Coupon: React.FC = () => {
               strokeDasharray="2 1.5"
             />
           </svg>
-          <div className="rounded-full size-4 bg-background" />
+          <div className="rounded-full size-4 bg-background z-20" />
         </div>
 
         <Marquee className="pb-4 pt-2">
