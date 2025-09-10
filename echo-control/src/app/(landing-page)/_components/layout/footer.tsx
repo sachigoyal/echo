@@ -3,9 +3,11 @@ import React from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
 import { Route } from 'next';
+import { SiDiscord, SiGithub } from '@icons-pack/react-simple-icons';
 
 type Link = {
   title: string;
+  icon?: React.ReactNode;
 } & (
   | {
       external: true;
@@ -21,6 +23,13 @@ const links: Link[] = [
   {
     title: 'Github',
     href: 'https://github.com/Merit-Systems/echo',
+    icon: <SiGithub className="size-4" />,
+    external: true,
+  },
+  {
+    title: 'Discord',
+    href: 'https://discord.com/invite/JuKt7tPnNc',
+    icon: <SiDiscord className="size-4" />,
     external: true,
   },
   {
@@ -53,7 +62,7 @@ export const Footer: React.FC = () => {
           </div>
         </Link>
       </div>
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-wrap justify-center">
         {links.map(link =>
           link.external ? (
             <a
@@ -62,10 +71,12 @@ export const Footer: React.FC = () => {
               target="_blank"
               className={linkClassName}
             >
+              {link.icon}
               {link.title}
             </a>
           ) : (
             <Link key={link.title} href={link.href} className={linkClassName}>
+              {link.icon}
               {link.title}
             </Link>
           )
@@ -76,4 +87,4 @@ export const Footer: React.FC = () => {
 };
 
 const linkClassName =
-  'text-muted-foreground hover:text-foreground hover:underline cursor-pointer font-medium';
+  'text-muted-foreground hover:text-foreground hover:underline cursor-pointer font-medium flex items-center gap-2';

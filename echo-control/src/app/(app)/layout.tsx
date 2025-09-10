@@ -20,7 +20,6 @@ export default async function AppLayout({
 }: LayoutProps<'/'>) {
   return (
     <>
-      {/* <FreeTier /> */}
       <TermsAgreement />
       <div className="min-h-screen flex flex-col relative">
         <LogoContainer>
