@@ -6,25 +6,14 @@
 
 </div>
 
-<div align="center">
-
   <div align="center">
-    <a href="https://discord.gg/JuKt7tPnNc">
-      <img alt="Discord" src="https://img.shields.io/discord/1382120201713352836?color=7289da&logo=discord&logoColor=white">
-    </a> 
-    <a href="https://x.com/merit_systems">
-      <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/merit_systems?style=social">
-    </a> 
-    <a href="https://github.com/Merit-Systems/echo">
-      <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Merit-Systems/echo?style=social">
-    </a> 
-    <a href="https://opensource.org/licenses/Apache-2.0">
-      <img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg">
-    </a>
+    
+  [![Discord](https://img.shields.io/discord/1382120201713352836?style=flat&logo=discord&logoColor=white&label=Discord)](https://discord.gg/JuKt7tPnNc) 
+  ![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/merit_systems) 
+  [![GitHub Repo stars](https://img.shields.io/github/stars/Merit-Systems/echo?style=social)](https://github.com/Merit-Systems/echo) 
+  [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
   </div>
-</div>
-
-
 
 From Vercel AI SDK to Revenue in 5 Lines
 

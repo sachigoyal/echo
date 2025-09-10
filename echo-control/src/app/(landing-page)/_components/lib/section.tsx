@@ -16,7 +16,12 @@ export const Section: React.FC<Props> = ({ children, id, className }) => {
     >
       <div className="flex w-full max-w-full overflow-hidden">
         <div className={cn('w-4 md:w-8 border-t shrink-0', dashedBorder)} />
-        <div className={cn('flex-1 border-x border-t', dashedBorder)}>
+        <div
+          className={cn(
+            'flex-1 border-x border-t overflow-hidden',
+            dashedBorder
+          )}
+        >
           {children}
         </div>
         <div className={cn('w-4 md:w-8 border-t shrink-0', dashedBorder)} />
