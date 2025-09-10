@@ -58,7 +58,7 @@ export default function RootLayout({
             <TRPCReactProvider>
               <ThemeProvider
                 attribute="class"
-                defaultTheme="dark"
+                defaultTheme="light"
                 storageKey="echo-theme"
                 enableSystem={true}
               >

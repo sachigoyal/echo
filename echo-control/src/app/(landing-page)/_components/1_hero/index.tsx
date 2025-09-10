@@ -31,8 +31,8 @@ export const Hero = () => {
         </div>
         <p className={cn('text-center max-w-sm', dashedBorder)}>
           Charge usage-based billing for your product to{' '}
-          <strong>start generating revenue risk-free</strong>. You set the
-          markup, we handle the rest.
+          <strong>start generating revenue risk-free</strong>.{' '}
+          <br className="my-1" /> You set the markup, we handle the rest.
         </p>
         <div className={cn('flex justify-center gap-2')}>
           <Link href="/login?redirect_url=/new">
