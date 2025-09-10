@@ -1,6 +1,6 @@
 'use client';
 
-import { ErrorCard } from '@/components/error-screen';
+import { ErrorCard } from '@/components/error/card';
 import { NextErrorProps } from '@/types/next-error';
 
 export default function LandingPageError(props: NextErrorProps) {

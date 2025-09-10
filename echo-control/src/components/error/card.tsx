@@ -1,22 +1,17 @@
-import { NextErrorProps } from '@/types/next-error';
+import { AlertCircle } from 'lucide-react';
+
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from './ui/card';
-import { Button } from './ui/button';
-import { AlertCircle, LucideIcon } from 'lucide-react';
+} from '../ui/card';
+import { Button } from '../ui/button';
 
-interface Props {
-  title: string;
-  description: string;
-  errorProps: NextErrorProps;
-  Icon?: LucideIcon;
-}
+import type { ErrorComponentProps } from './types';
 
-export const ErrorCard: React.FC<Props> = ({
+export const ErrorCard: React.FC<ErrorComponentProps> = ({
   title,
   description,
   errorProps,
