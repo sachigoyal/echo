@@ -6,6 +6,7 @@ packages:
   - echo-react-sdk
   - echo-authjs-provider
   - integration-tests
+  - examples/*
   - smoke/**
 allowBuiltDependencies:
   - '@prisma/client'
