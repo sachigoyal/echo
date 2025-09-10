@@ -203,6 +203,7 @@ model Payment {
   amount      Decimal    @db.Decimal(65, 14)
   currency    String     @default("usd")
   status      String
+  source      EnumPaymentSource @default(stripe)
   description String?
   isArchived  Boolean    @default(false)
   archivedAt  DateTime?  @db.Timestamptz(6)
@@ -274,6 +275,12 @@ model GithubLink {
 enum GithubType {
   user
   repo
+}
+
+enum EnumPaymentSource {
+  stripe
+  admin
+  signUpGift
 }
 
 model Transaction {

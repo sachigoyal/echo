@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/trpc/client';
-import { User, EchoApp } from '@/generated/prisma';
+import { User, EchoApp, EnumPaymentSource } from '@/generated/prisma';
 import { DollarSign, Coins, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface CreditMinterProps {
@@ -86,6 +86,7 @@ export function CreditMinter({ user, selectedApp }: CreditMinterProps) {
             Object.keys(parsedMetadata).length > 0 ? parsedMetadata : undefined,
           poolName: poolName.trim() || undefined,
           defaultSpendLimit: defaultSpendLimit || undefined,
+          source: EnumPaymentSource.admin,
         },
       });
 
