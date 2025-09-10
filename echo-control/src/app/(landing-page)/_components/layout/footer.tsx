@@ -19,6 +19,11 @@ type Link = {
 
 const links: Link[] = [
   {
+    title: 'Github',
+    href: 'https://github.com/Merit-Systems/echo',
+    external: true,
+  },
+  {
     title: 'About Merit',
     href: 'https://merit.systems',
     external: true,
@@ -37,7 +42,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="w-full border-t bg-card border-dashed p-2 md:p-4 text-sm flex flex-col md:flex-row items-center gap-4">
       <div className="flex min-w-[200px] flex-1 flex-col">
-        <Link href="/" className="">
+        <Link href="/" className="cursor-pointer">
           <div className="flex h-full cursor-pointer items-center gap-2">
             <Logo className="size-8" />
             <h1 className="text-base font-bold">
@@ -51,11 +56,16 @@ export const Footer: React.FC = () => {
       <div className="flex gap-4">
         {links.map(link =>
           link.external ? (
-            <a key={link.title} href={link.href} target="_blank">
+            <a
+              key={link.title}
+              href={link.href}
+              target="_blank"
+              className={linkClassName}
+            >
               {link.title}
             </a>
           ) : (
-            <Link key={link.title} href={link.href}>
+            <Link key={link.title} href={link.href} className={linkClassName}>
               {link.title}
             </Link>
           )
@@ -66,4 +76,4 @@ export const Footer: React.FC = () => {
 };
 
 const linkClassName =
-  'text-muted-foreground hover:text-foreground hover:underline cursor-pointer';
+  'text-muted-foreground hover:text-foreground hover:underline cursor-pointer font-medium';

@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import { Section } from '../lib/section';
 import { BillingSectionCharts } from './charts';
+import { Button } from '@/components/ui/button';
 
 export const BillingSection = () => {
   return (
@@ -13,6 +15,11 @@ export const BillingSection = () => {
             When once you set a markup, every token your users consume on your
             app is instant revenue.
           </p>
+          <Link href="/login?redirect_url=/new">
+            <Button variant="turbo" className="mt-2">
+              Create an App
+            </Button>
+          </Link>
         </div>
         <BillingSectionCharts />
       </div>

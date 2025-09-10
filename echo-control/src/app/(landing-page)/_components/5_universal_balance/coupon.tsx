@@ -49,13 +49,6 @@ export const Coupon: React.FC = () => {
         duration={6}
         isVertical
       />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={sourceRef}
-        toRef={target4Ref}
-        duration={6}
-        isVertical
-      />
       {isMobile && (
         <AnimatedBeam
           containerRef={containerRef}
