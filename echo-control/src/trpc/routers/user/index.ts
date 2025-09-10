@@ -11,6 +11,8 @@ import { userRedeemCodeRouter } from './redeem';
 import { userPublicRouter } from './public';
 import { userPayoutRouter } from './payout';
 import { userGithubLinkRouter } from './github-link';
+import { userInitialFreeTierRouter } from './inital-free-tier';
+import { userTermsAgreementRouter } from './terms-agreement';
 
 import { getUserFeed, userFeedSchema } from '@/services/feed/feed';
 import { getUser } from '@/services/user';
@@ -23,6 +25,8 @@ export const userRouter = createTRPCRouter({
   public: userPublicRouter,
   payout: userPayoutRouter,
   githubLink: userGithubLinkRouter,
+  initialFreeTier: userInitialFreeTierRouter,
+  termsAgreement: userTermsAgreementRouter,
 
   current: {
     get: protectedProcedure.query(async ({ ctx }) => {

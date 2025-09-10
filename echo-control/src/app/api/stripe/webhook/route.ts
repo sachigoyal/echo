@@ -8,11 +8,11 @@ import {
 import Stripe from 'stripe';
 import { logger } from '@/logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'test_secret_stripe_key', {
   apiVersion: '2025-05-28.basil',
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'test_webhook_secret';
 
 // POST /api/stripe/webhook - Handle Stripe webhooks
 export async function POST(request: NextRequest) {

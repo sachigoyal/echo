@@ -34,6 +34,7 @@ export const authConfig = {
     signIn: '/login',
     signOut: '/logout',
     verifyRequest: '/verify-email',
+    newUser: '/welcome',
   },
   callbacks: {
     jwt: ({ token, user }) => {

@@ -240,7 +240,6 @@ export const adminRouter = createTRPCRouter({
         if (!checkoutUrl) {
           throw new Error('Checkout URL not found');
         }
-        console.log('checkoutUrl', checkoutUrl);
         return { url: checkoutUrl.url };
       }),
 

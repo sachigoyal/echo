@@ -9,7 +9,7 @@ export const ProviderButton = ({ provider }: { provider: OAuthProvider }) => {
       type="submit"
       name="provider"
       value={provider.id}
-      className="border-2 border-border rounded-xl size-fit px-5 py-3 font-bold flex-1 w-full"
+      className="border-2 border-border rounded-xl size-fit md:size-fit px-5 py-3 font-bold flex-1 w-full"
       variant="secondary"
     >
       <ProviderIcon provider={provider} />
