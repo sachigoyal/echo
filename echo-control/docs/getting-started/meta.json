@@ -1,4 +1,5 @@
 {
   "title": "Getting Started",
-  "pages": ["react", "next-js", "cli", "markup-and-referrals"]
+  "pages": ["react", "next-js", "cli", "markup-and-referrals"],
+  "icon": "Rocket"
 }

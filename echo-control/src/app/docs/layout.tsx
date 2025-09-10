@@ -12,11 +12,6 @@ const baseOptions: BaseLayoutProps = {
   },
   links: [
     {
-      text: 'Terminal',
-      url: 'https://terminal.merit.systems',
-      external: true,
-    },
-    {
       text: 'GitHub',
       icon: <SiGithub className="size-4" />,
       url: 'https://github.com/Merit-Systems/echo',
@@ -26,6 +21,11 @@ const baseOptions: BaseLayoutProps = {
       text: 'Discord',
       icon: <SiDiscord className="size-4" />,
       url: 'https://discord.gg/JuKt7tPnNc',
+      external: true,
+    },
+    {
+      text: 'Terminal',
+      url: 'https://terminal.merit.systems',
       external: true,
     },
     {

@@ -1,4 +1,5 @@
 {
+  "title": "Echo Documentation",
   "pages": [
     "index",
     "getting-started",
@@ -8,5 +9,6 @@
     "providers",
     "advanced",
     "cookbook"
-  ]
+  ],
+  "root": true
 }

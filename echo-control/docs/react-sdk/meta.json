@@ -8,5 +8,6 @@
     "llm-integration",
     "image-generation",
     "use-chat"
-  ]
+  ],
+  "icon": "React"
 }
