@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import { z } from 'zod';
 
@@ -12,23 +12,24 @@ import { ErrorPage } from './_components/error-page';
 import { ExistingUserAuthorize } from './_components/existing-user';
 import { NewUserAuthorize } from './_components/new-user';
 
-import { auth } from '@/auth';
-
 import { api } from '@/trpc/server';
 
 import {
   authorizeParamsSchema,
   isValidRedirectUri,
 } from '../../_lib/authorize';
+import { userOrRedirect } from '@/auth/user-or-redirect';
 
 const paramsSchema = authorizeParamsSchema.extend({
   new_user: z.literal('true').optional(),
 });
 
-export default async function OAuthAuthorizePage({
-  searchParams,
-}: PageProps<'/oauth/authorize'>) {
-  const resolvedParams = await searchParams;
+export default async function OAuthAuthorizePage(
+  props: PageProps<'/oauth/authorize'>
+) {
+  const user = await userOrRedirect('/oauth/authorize', props);
+
+  const resolvedParams = await props.searchParams;
 
   const parseResult = paramsSchema.safeParse(resolvedParams);
 
@@ -62,20 +63,6 @@ export default async function OAuthAuthorizePage({
   }
 
   const authParams = parseResult.data;
-
-  const session = await auth();
-
-  if (!session?.user) {
-    const redirectUrl = new URL(
-      '/oauth/authorize',
-      process.env.ECHO_CONTROL_APP_BASE_URL
-    );
-    for (const [key, value] of Object.entries(authParams)) {
-      redirectUrl.searchParams.set(key, value);
-    }
-
-    return redirect(`/login?redirect_uri=${redirectUrl.toString()}`);
-  }
 
   const [appDetails, owner] = await Promise.all([
     api.apps.app.get({ appId: authParams.client_id }),
@@ -112,7 +99,7 @@ export default async function OAuthAuthorizePage({
       <NewUserAuthorize
         name={name}
         profilePictureUrl={profilePictureUrl}
-        userImage={session.user.image || null}
+        userImage={user.image || null}
         authParams={authParams}
       />
     );
@@ -122,7 +109,7 @@ export default async function OAuthAuthorizePage({
     <ExistingUserAuthorize
       name={name}
       profilePictureUrl={profilePictureUrl}
-      userImage={session.user.image || null}
+      userImage={user.image || null}
       ownerName={owner.name ?? ''}
       scopes={scopes}
       authParams={authParams}

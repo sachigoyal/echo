@@ -34,6 +34,14 @@ import {
   getUserTransactionTotals,
 } from './user-transactions';
 
+export const isAdmin = async (userId: string) => {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  });
+
+  return user?.admin;
+};
+
 export async function adminGetUsers(): Promise<User[]> {
   return await db.user.findMany();
 }
@@ -87,6 +95,45 @@ export async function adminMintCreditReferralCode(
     code: referralCode.code,
     grantAmount: referralCode.grantAmount,
     expiresAt: referralCode.expiresAt,
+  };
+}
+
+export const downloadUsersCsvSchema = z.object({
+  createdAfter: z.date(),
+});
+
+export async function downloadUsersCsv(
+  input: z.infer<typeof downloadUsersCsvSchema>
+) {
+  const users = await db.user.findMany({
+    where: {
+      createdAt: {
+        gte: input.createdAfter,
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  const csvData = [
+    ['ID', 'Name', 'Email', 'Created At'],
+    ...users.map(user => [
+      user.id,
+      user.name || '',
+      user.email,
+      user.createdAt.toISOString(),
+    ]),
+  ];
+
+  const csvString = csvData
+    .map(row => row.map(field => `"${field}"`).join(','))
+    .join('\n');
+
+  return {
+    csvString,
+    filename: `users-created-after-${input.createdAfter.toISOString().split('T')[0]}.csv`,
+    userCount: users.length,
   };
 }
 

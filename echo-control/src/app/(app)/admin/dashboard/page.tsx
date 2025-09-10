@@ -1,15 +1,10 @@
 import { UserEarningsTable } from '@/app/(app)/admin/_components';
 import { userOrRedirect } from '@/auth/user-or-redirect';
-import { unauthorized } from 'next/navigation';
 
 export default async function AdminEarningsDashboard(
   props: PageProps<'/admin/dashboard'>
 ) {
-  const user = await userOrRedirect('/admin/dashboard', props);
-
-  if (!user) {
-    return unauthorized();
-  }
+  await userOrRedirect('/admin/dashboard', props);
 
   return (
     <div className="container mx-auto py-8">

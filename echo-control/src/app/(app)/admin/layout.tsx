@@ -1,19 +1,14 @@
+import { userOrRedirectLayout } from '@/auth/user-or-redirect';
 import { api } from '@/trpc/server';
-import { unauthorized } from 'next/navigation';
+import { forbidden } from 'next/navigation';
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  try {
-    const isAdmin = await api.admin.isAdmin();
+export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
+  await userOrRedirectLayout('/admin');
 
-    if (!isAdmin) {
-      return unauthorized();
-    }
-  } catch {
-    return unauthorized();
+  const isAdmin = await api.admin.isAdmin();
+
+  if (!isAdmin) {
+    return forbidden();
   }
 
   return children;

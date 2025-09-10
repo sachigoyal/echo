@@ -3,16 +3,11 @@ import {
   CompletedPayoutsTable,
 } from '@/app/(app)/admin/_components';
 import { userOrRedirect } from '@/auth/user-or-redirect';
-import { unauthorized } from 'next/navigation';
 
 export default async function AdminPayoutsPage(
   props: PageProps<'/admin/payouts'>
 ) {
-  const user = await userOrRedirect('/admin/payouts', props);
-
-  if (!user) {
-    return unauthorized();
-  }
+  await userOrRedirect('/admin/payouts', props);
 
   return (
     <div className="container mx-auto py-8 space-y-10">

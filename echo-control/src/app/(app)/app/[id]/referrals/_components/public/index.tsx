@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { unauthorized } from 'next/navigation';
-
 import { Body, Heading } from '@/app/(app)/_components/layout/page-utils';
 
 import { Referrals } from '../lib/referrals';
@@ -9,19 +7,15 @@ import { ReferralBonus } from '../lib/referral-amount';
 
 import { ReferralCode } from './code';
 
-import { auth } from '@/auth';
-
 interface Props {
   appId: string;
+  userId: string;
 }
 
-export const PublicReferralsPage: React.FC<Props> = async ({ appId }) => {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return unauthorized();
-  }
-
+export const PublicReferralsPage: React.FC<Props> = async ({
+  appId,
+  userId,
+}) => {
   return (
     <div>
       <Heading
@@ -37,7 +31,7 @@ export const PublicReferralsPage: React.FC<Props> = async ({ appId }) => {
         <ReferralCode appId={appId} />
         <Referrals
           appId={appId}
-          referrerUserId={session.user.id}
+          referrerUserId={userId}
           title="Referrals"
           description="You referred these users to this app."
           hideReferrer
