@@ -5,6 +5,7 @@ import { User } from '@/generated/prisma';
 export const issueInitialFreeTierCredits = async (
   userId: string
 ): Promise<{ minted: boolean; amountInDollars: number; user: User }> => {
+  console.log('issueInitialFreeTierCredits');
   const version = process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION;
   const amountStr = process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_AMOUNT;
 
@@ -75,4 +76,14 @@ export const issueInitialFreeTierCredits = async (
   });
 };
 
-
+export const hasClaimedInitialFreeTierCredits = async (
+  userId: string
+): Promise<boolean> => {
+  const existing = await db.user.findUnique({ where: { id: userId } });
+  return Boolean(
+    process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION &&
+      existing?.latestFreeCreditsVersion &&
+      existing.latestFreeCreditsVersion.toString() ===
+        process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION
+  );
+};

@@ -3,14 +3,23 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Gift } from 'lucide-react';
-import { motion } from 'motion/react';
+import { MultiStateCouponButton } from './multi-state-button';
 
 interface CouponProps {
-  value?: number;
+  value: number;
+  onClaim: () => void;
+  isClaiming: boolean;
+  isClaimed: boolean;
   className?: string;
 }
 
-export const Coupon: React.FC<CouponProps> = ({ value = 5.0, className }) => {
+export const Coupon: React.FC<CouponProps> = ({
+  value,
+  onClaim,
+  isClaiming,
+  isClaimed,
+  className,
+}) => {
   return (
     <div
       className={cn(
@@ -53,13 +62,11 @@ export const Coupon: React.FC<CouponProps> = ({ value = 5.0, className }) => {
         <div className="rounded-full size-4 bg-background" />
       </div>
       <div className="p-4">
-        <motion.button
-          className="bg-white text-black w-full hover:scale-101 hover:bg-white font-bold h-fit md:h-fit py-3 rounded-xl cursor-pointer shadow-[0_4px_24px_0_rgba(30,64,175,0.18),0_1.5px_6px_0_rgba(0,0,0,0.10)]"
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-        >
-          Claim and Continue
-        </motion.button>
+        <MultiStateCouponButton
+          onClaim={onClaim}
+          state={isClaiming ? 'processing' : isClaimed ? 'success' : 'idle'}
+          disabled={isClaiming || isClaimed}
+        />
       </div>
 
       {/* Animated shimmer overlay */}
