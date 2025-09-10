@@ -100,5 +100,3 @@ export const Coupon: React.FC<CouponProps> = ({
     </div>
   );
 };
-
-export default Coupon;

@@ -1,6 +1,6 @@
 'use client';
 
-import Coupon from '@/components/coupon';
+import { Coupon } from '@/components/coupon';
 import { api } from '@/trpc/client';
 import { Route } from 'next';
 import { useRouter } from 'next/navigation';
