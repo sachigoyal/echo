@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { Hero, Features, IntegrationSection, End } from './_components';
 import { redirect } from 'next/navigation';
+import { BillingSection } from './_components/4_billing';
 
 export default async function LandingPage() {
   if (await auth()) {
@@ -13,6 +14,7 @@ export default async function LandingPage() {
       <Hero />
       <Features />
       <IntegrationSection />
+      <BillingSection />
       <End className="border-t" />
     </div>
   );
