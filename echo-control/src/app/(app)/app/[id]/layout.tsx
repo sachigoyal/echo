@@ -29,7 +29,7 @@ export default async function AuthenticatedAppLayout({
   const isOwner = session?.user ? await getIsOwner(id) : false;
 
   return (
-    <div>
+    <div className="flex flex-col flex-1">
       <Nav
         tabs={[
           {
@@ -75,7 +75,7 @@ export default async function AuthenticatedAppLayout({
             : []),
         ]}
       />
-      <div className="flex flex-col py-6 md:py-8">{children}</div>
+      <div className="flex flex-col py-6 md:py-8 flex-1">{children}</div>
     </div>
   );
 }
