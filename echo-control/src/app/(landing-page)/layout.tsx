@@ -1,3 +1,4 @@
+import { AnimatedThemeToggler } from '@/components/magicui/animated-theme-toggler';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import Link from 'next/link';
@@ -26,6 +27,7 @@ export default function LandingPageLayout({
                 <span>Sign In</span>
               </Button>
             </Link>
+            <AnimatedThemeToggler />
           </div>
         </div>
       </header>
