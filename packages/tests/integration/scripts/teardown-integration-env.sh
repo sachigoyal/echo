@@ -67,14 +67,14 @@ else
     pkill -f "PORT=3069.*pnpm start" || true
     
     echo "🗃️ Cleaning up CI database..."
-    cd ../echo-control
+    cd ../../app/control
     
     # Reset database (optional in CI, but good for cleanup)
     if command -v pnpm >/dev/null 2>&1; then
         pnpm db:reset || echo "⚠️  Database reset failed (might not be running)"
     fi
     
-    cd ../integration
+    cd ../../tests/integration
     echo "✅ CI integration environment cleaned up"
 fi
 

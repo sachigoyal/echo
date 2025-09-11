@@ -24,12 +24,12 @@ graph TB
 
 ### Core Components
 
-**Echo Control** (`echo-control`)
+**Echo Control** (`packages/app/control`)
 - Web dashboard for app management, user analytics, billing
 - PostgreSQL database with Prisma ORM
 - NextAuth sessions for web UI authentication
 
-**Echo Server** (`echo-server`)  
+**Echo Server** (`packages/app/server`)  
 - API proxy that intercepts LLM requests
 - Handles authentication validation and usage metering
 - Routes requests to appropriate LLM providers
