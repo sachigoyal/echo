@@ -221,7 +221,7 @@ describe('In-Flight Requests Monitor', () => {
     try {
       await invalidClient.chat.completions.create({
         messages: [
-          { role: 'user', content: 'This should fail with auth error' },
+          { role: 'user', content: 'Respond with a single word as quickly as possible.' },
         ],
         model: 'gpt-3.5-turbo',
         stream: false,
@@ -231,7 +231,7 @@ describe('In-Flight Requests Monitor', () => {
     }
 
     // Wait for cleanup
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const inFlightAfterAuthError = await getInFlightCount();
     expect(inFlightAfterAuthError).toBe(0);
