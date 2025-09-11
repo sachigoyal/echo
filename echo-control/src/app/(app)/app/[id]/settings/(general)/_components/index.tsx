@@ -2,7 +2,6 @@ import React from 'react';
 
 import z from 'zod';
 
-import { notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 import { FormCard } from '../../_components/form/card';
@@ -18,17 +17,15 @@ import { updateAppSchema } from '@/services/apps/update';
 
 import { api } from '@/trpc/server';
 import { CopyButton } from '@/components/ui/copy-button';
+import { DeleteAppCard } from './delete';
+import { checkAppExists } from '../../../_lib/checks';
 
 interface Props {
   appId: string;
 }
 
 export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
-  const app = await api.apps.app.get({ appId });
-
-  if (!app) {
-    return notFound();
-  }
+  const app = await checkAppExists(appId);
 
   const updateApp = async (values: z.infer<typeof updateAppSchema>) => {
     'use server';
@@ -111,6 +108,8 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
           <AppHomepage />
         </FormCard>
       </AppDetailsFormProvider>
+
+      <DeleteAppCard appId={appId} appName={app.name} />
     </div>
   );
 };
