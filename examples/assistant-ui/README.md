@@ -2,6 +2,8 @@
 
 This example demonstrates how to use `@assistant-ui/react-ai-sdk-v5` with the Vercel AI SDK v5.
 
+Echo is an OAuth-enabled AI provider router that gives your users a universal balance and gives you billing, auth, and usage metering out of the box. Replace direct provider SDKs with Echo to monetize in minutes without handling API keys.
+
 ## Getting Started
 
 1. Install dependencies:
@@ -16,10 +18,10 @@ npm install
 cp .env.example .env.local
 ```
 
-Add your Anthropic API key to `.env.local`:
+Configure your Echo App ID in `.env.local`:
 
 ```
-ANTHROPIC_API_KEY=your-api-key-here
+NEXT_PUBLIC_ECHO_APP_ID=your-echo-app-id
 ```
 
 3. Run the development server:
@@ -32,7 +34,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the result.
 
 ## Key Features
 
-- Uses the new AI SDK v5 with `@ai-sdk/react` and `@ai-sdk/anthropic`
+- Uses the new AI SDK v5 with `@ai-sdk/react` and Echo as the model provider
 - Integrates with `@assistant-ui/react` using the new `useChatRuntime` hook
 - No RSC support (client-side only)
 - Simplified integration with the `useChatRuntime` hook that wraps AI SDK v5's `useChat`
