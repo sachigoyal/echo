@@ -5,6 +5,7 @@ This is a demonstration Next.js application showcasing the power and simplicity 
 ## 🚀 What is Echo?
 
 Echo is a comprehensive platform that handles the complex infrastructure needed for AI applications, including:
+
 - **AI Billing & Usage Tracking** - Automatic cost tracking and billing for AI API calls
 - **User Authentication** - Secure sign-in and session management
 - **Balance Management** - Real-time balance tracking and top-ups
@@ -52,25 +53,29 @@ src/
 ### Key Components
 
 #### 1. Echo SDK Configuration (`src/echo/index.ts`)
+
 ```typescript
-import Echo from "@merit-systems/echo-next-sdk";
+import Echo from '@merit-systems/echo-next-sdk';
 
 export const { handlers, isSignedIn, openai, anthropic } = Echo({
-  appId: "your-echo-app-id"
+  appId: 'your-echo-app-id',
 });
 ```
 
 #### 2. Authentication Flow
+
 - **Sign-in**: Uses Echo's built-in authentication system
 - **Session Management**: Automatic session handling across requests
 - **Auth Guards**: Pages check authentication status server-side
 
 #### 3. AI Integration
+
 - **Model Access**: Direct access to OpenAI models through Echo
 - **Automatic Billing**: All AI usage is tracked and billed automatically
 - **Streaming**: Real-time response streaming with reasoning display
 
 #### 4. Balance Management
+
 - **Real-time Updates**: Live balance display in the header
 - **Automatic Deduction**: Costs automatically deducted from user balance
 - **Top-up Integration**: Users can add funds through Echo platform
@@ -78,7 +83,9 @@ export const { handlers, isSignedIn, openai, anthropic } = Echo({
 ## 🔧 Echo Integration Details
 
 ### Authentication
+
 The app uses Echo's authentication system which provides:
+
 - Secure OAuth-based sign-in
 - Session management
 - User identity verification
@@ -88,58 +95,64 @@ The app uses Echo's authentication system which provides:
 const signedIn = await isSignedIn();
 
 // Sign in user (client-side)
-import { signIn } from "@merit-systems/echo-next-sdk/client";
+import { signIn } from '@merit-systems/echo-next-sdk/client';
 signIn();
 ```
 
 ### AI Model Access
+
 Echo provides direct access to AI models with automatic billing:
 
 ```typescript
-import { openai } from "@/echo";
+import { openai } from '@/echo';
 
 // Use OpenAI models with automatic billing
 const result = streamText({
-  model: openai("gpt-4o"), // or "gpt-5-nano"
+  model: openai('gpt-4o'), // or "gpt-5-nano"
   messages: convertToModelMessages(messages),
 });
 ```
 
 ### Balance Management
+
 Real-time balance tracking and display:
 
 ```typescript
-import { useEcho } from "@merit-systems/echo-next-sdk/client";
+import { useEcho } from '@merit-systems/echo-next-sdk/client';
 
 const echoClient = useEcho();
 const balanceData = await echoClient.balance.getBalance();
 ```
 
 ### API Endpoints
+
 Echo provides webhook handlers for various platform events:
 
 ```typescript
 // src/app/api/echo/[...echo]/route.ts
-import { handlers } from "@/echo";
+import { handlers } from '@/echo';
 export const { GET, POST } = handlers;
 ```
 
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - pnpm (recommended) or npm
 - An Echo account ([sign up here](https://echo.merit.systems))
 
 ### Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd my-next-ai-app
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
@@ -150,6 +163,7 @@ export const { GET, POST } = handlers;
    - Update `src/echo/index.ts` with your App ID
 
 4. **Run the development server**
+
    ```bash
    pnpm dev
    ```
@@ -158,16 +172,19 @@ export const { GET, POST } = handlers;
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Environment Setup
+
 No environment variables needed! Echo handles all configuration through the App ID.
 
 ## 📚 Learn More
 
 ### Echo Documentation
+
 - **Platform**: [echo.merit.systems](https://echo.merit.systems)
 - **Next.js Integration Guide**: [echo.merit.systems/docs/nextjs](https://echo.merit.systems/docs/nextjs)
 - **API Documentation**: Available in your Echo dashboard
 
 ### Technology Stack
+
 - **Framework**: Next.js 15 with App Router
 - **AI SDK**: Vercel AI SDK with Echo integration
 - **Styling**: Tailwind CSS
@@ -186,7 +203,7 @@ No environment variables needed! Echo handles all configuration through the App 
 ## 💡 Key Benefits of Echo
 
 - **Zero Infrastructure Setup**: No need to manage API keys, billing systems, or user databases
-- **Automatic Cost Tracking**: Every AI request is tracked and billed automatically  
+- **Automatic Cost Tracking**: Every AI request is tracked and billed automatically
 - **Built-in Authentication**: Secure user management out of the box
 - **Multi-Model Support**: Access to multiple AI providers through one interface
 - **Real-time Balance**: Users can see their usage and remaining balance instantly
