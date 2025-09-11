@@ -89,9 +89,7 @@ export async function createPaymentLink(
     after_completion: {
       type: 'redirect',
       redirect: {
-        url:
-          successUrl ||
-          `${env.ECHO_CONTROL_APP_BASE_URL}/credits?payment=success`,
+        url: successUrl || `${env.NEXT_PUBLIC_APP_URL}/credits?payment=success`,
       },
     },
   };
@@ -195,7 +193,7 @@ export async function createFreeTierPaymentLink(
   });
 
   // Prepare after_completion configuration
-  const defaultSuccessUrl = `${env.ECHO_CONTROL_APP_BASE_URL}/app/${appId}/free-tier?payment=success&type=free-tier`;
+  const defaultSuccessUrl = `${env.NEXT_PUBLIC_APP_URL}/app/${appId}/free-tier?payment=success&type=free-tier`;
   const afterCompletion: Stripe.PaymentLinkCreateParams.AfterCompletion = {
     type: 'redirect',
     redirect: {

@@ -112,5 +112,5 @@ const getReferralLinkUrl = ({
   echoAppId: string;
   code: string;
 }) => {
-  return `${homePage || `${env.ECHO_CONTROL_APP_BASE_URL}/app/${echoAppId}`}?referral_code=${code}`;
+  return `${homePage || `${env.NEXT_PUBLIC_APP_URL}/app/${echoAppId}`}?referral_code=${code}`;
 };

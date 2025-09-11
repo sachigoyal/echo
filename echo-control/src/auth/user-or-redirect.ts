@@ -11,7 +11,7 @@ export const userOrRedirect = async <T extends string>(
   const session = await auth();
   if (!session?.user) {
     const searchParams = await props.searchParams;
-    const redirect_url = new URL(route, env.ECHO_CONTROL_APP_BASE_URL);
+    const redirect_url = new URL(route, env.NEXT_PUBLIC_APP_URL);
     for (const [key, value] of Object.entries(searchParams)) {
       if (typeof value === 'string') {
         redirect_url.searchParams.set(key, value);

@@ -7,10 +7,6 @@ export const env = createEnv({
    * Will throw if you access these variables on the client.
    */
   server: {
-    // application
-
-    ECHO_CONTROL_APP_BASE_URL: z.url().default('http://localhost:3000'),
-
     // api keys
 
     API_KEY_PREFIX: z.string().default('echo_'),
@@ -103,10 +99,12 @@ export const env = createEnv({
 
     INTEGRATION_TEST_MODE: z.boolean().default(false),
 
-    // vercel
+    // merit
 
-    VERCEL_PROJECT_PRODUCTION_URL: z.url().default('http://localhost:3000'),
-    VERCEL_URL: z.url().default('http://localhost:3000'),
+    MERIT_API_KEY: z.string(),
+    MERIT_BASE_URL: z.url(),
+    MERIT_CHECKOUT_URL: z.url(),
+    MERIT_SENDER_GITHUB_ID: z.coerce.number(),
   },
   /*
    * Environment variables available on the client (and server).
@@ -114,6 +112,7 @@ export const env = createEnv({
    * You'll get type errors if these are not prefixed with NEXT_PUBLIC_.
    */
   client: {
+    NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
     NEXT_PUBLIC_POSTHOG_KEY:
       process.env.NODE_ENV === 'production'
         ? z.string()
@@ -121,6 +120,7 @@ export const env = createEnv({
     NEXT_PUBLIC_NODE_ENV: z.string().default('development'),
   },
   experimental__runtimeEnv: {
+    NEXT_PUBLIC_APP_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
   },
