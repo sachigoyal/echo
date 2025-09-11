@@ -19,7 +19,7 @@ export function UsersCsvDownload() {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   const downloadCsvMutation = api.admin.downloadUsersCsv.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Create and trigger download
       const blob = new Blob([data.csvString], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
@@ -35,7 +35,7 @@ export function UsersCsvDownload() {
         `Successfully downloaded CSV with ${data.userCount} users created after ${format(selectedDate!, 'PPP')}`
       );
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Failed to download CSV: ${error.message}`);
     },
   });
@@ -76,7 +76,7 @@ export function UsersCsvDownload() {
               <CalendarComponent
                 mode="single"
                 selected={selectedDate}
-                onSelect={(date) => {
+                onSelect={date => {
                   setSelectedDate(date);
                   setIsPopoverOpen(false);
                 }}

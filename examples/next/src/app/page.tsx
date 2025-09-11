@@ -22,7 +22,7 @@ export default async function Home() {
         <h1 className="text-2xl font-bold">Next.js SDK Example</h1>
         <SignOut />
       </div>
-      
+
       <p className="text-lg mb-6">User: {user?.email}</p>
       <p className="text-lg mb-6">id: {user?.id}</p>
       <p className="text-lg mb-6">Name: {user?.name}</p>

@@ -2,6 +2,7 @@
   "pages": [
     "index",
     "getting-started",
+    "money",
     "react-sdk",
     "next-sdk",
     "typescript-sdk",
