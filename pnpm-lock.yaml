@@ -47,40 +47,6 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  create-echo-app:
-    dependencies:
-      chalk:
-        specifier: ^5.3.0
-        version: 5.4.1
-      commander:
-        specifier: ^12.1.0
-        version: 12.1.0
-      degit:
-        specifier: ^2.8.4
-        version: 2.8.4
-      ora:
-        specifier: ^8.2.0
-        version: 8.2.0
-      prompts:
-        specifier: ^2.4.2
-        version: 2.4.2
-    devDependencies:
-      '@types/degit':
-        specifier: ^2.8.6
-        version: 2.8.6
-      '@types/node':
-        specifier: ^22.5.4
-        version: 22.18.1
-      '@types/prompts':
-        specifier: ^2.4.9
-        version: 2.4.9
-      tsup:
-        specifier: ^8.5.0
-        version: 8.5.0(@microsoft/api-extractor@7.52.8(@types/node@22.18.1))(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.5)(typescript@5.8.3)(yaml@2.8.0)
-      typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
-
   echo-authjs-provider:
     devDependencies:
       '@auth/core':
@@ -702,6 +668,40 @@ importers:
       vitest:
         specifier: ^3.2.3
         version: 3.2.3(@types/debug@4.1.12)(@types/node@20.19.1)(@vitest/ui@3.2.3)(jiti@2.4.2)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(lightningcss@1.30.1)(msw@2.10.2(@types/node@20.19.1)(typescript@5.8.3))(terser@5.42.0)(tsx@4.20.5)(yaml@2.8.0)
+
+  echo-start:
+    dependencies:
+      chalk:
+        specifier: ^5.3.0
+        version: 5.4.1
+      commander:
+        specifier: ^12.1.0
+        version: 12.1.0
+      degit:
+        specifier: ^2.8.4
+        version: 2.8.4
+      ora:
+        specifier: ^8.2.0
+        version: 8.2.0
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
+    devDependencies:
+      '@types/degit':
+        specifier: ^2.8.6
+        version: 2.8.6
+      '@types/node':
+        specifier: ^22.5.4
+        version: 22.18.1
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
+      tsup:
+        specifier: ^8.5.0
+        version: 8.5.0(@microsoft/api-extractor@7.52.8(@types/node@22.18.1))(jiti@2.4.2)(postcss@8.5.6)(tsx@4.20.5)(typescript@5.8.3)(yaml@2.8.0)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
   echo-typescript-sdk:
     dependencies:
