@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { UserSearch } from './UserSearch';
 import { AppSearch } from './AppSearch';
 import { CreditMinter } from './CreditMinter';
-import { UsersCsvDownload } from './UsersCsvDownload';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   UserEarningsTable,
   UserSpendingTable,
 } from '@/app/(app)/admin/_components';
+import { AppEarningsTable } from '@/app/(app)/admin/_components';
 import {
   Card,
   CardContent,
@@ -21,78 +22,113 @@ import { User, EchoApp } from '@/generated/prisma';
 export function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedApp, setSelectedApp] = useState<EchoApp | null>(null);
+  const [activeTab, setActiveTab] = useState('user');
+  const [userSubTab, setUserSubTab] = useState('apps');
 
   return (
-    <div className="grid gap-6">
-      {/* User Search Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>User Management</CardTitle>
-          <CardDescription>
-            Search and select users to manage their credits and view their apps
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UserSearch
-            selectedUser={selectedUser}
-            onUserSelect={setSelectedUser}
-          />
-        </CardContent>
-      </Card>
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList>
+        <TabsTrigger value="earnings">Earnings</TabsTrigger>
+        <TabsTrigger value="app-earnings">Apps</TabsTrigger>
+        <TabsTrigger value="spending">Spending</TabsTrigger>
+        <TabsTrigger value="user">User</TabsTrigger>
+      </TabsList>
 
-      {/* App Search Section - Only shown when user is selected */}
-      {selectedUser && (
+      <TabsContent value="user">
         <Card>
           <CardHeader>
-            <CardTitle>User Apps</CardTitle>
+            <CardTitle>User Management</CardTitle>
             <CardDescription>
-              Apps owned by {selectedUser.email}
+              Search and select users to manage their credits and view their
+              apps
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <AppSearch
-              userId={selectedUser.id}
-              selectedApp={selectedApp}
-              onAppSelect={setSelectedApp}
+            <UserSearch
+              selectedUser={selectedUser}
+              onUserSelect={setSelectedUser}
             />
           </CardContent>
         </Card>
-      )}
 
-      {/* Credit Minting Section - Only shown when user is selected */}
-      {selectedUser && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Mint Credits</CardTitle>
-            <CardDescription>
-              Issue credits to {selectedUser.email}
-              {selectedApp && ` for app "${selectedApp.name}"`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CreditMinter user={selectedUser} selectedApp={selectedApp} />
-          </CardContent>
-        </Card>
-      )}
+        <Tabs value={userSubTab} onValueChange={setUserSubTab}>
+          <TabsList>
+            <TabsTrigger value="apps" disabled={!selectedUser}>
+              Apps
+            </TabsTrigger>
+            <TabsTrigger value="mint" disabled={!selectedUser}>
+              Mint
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Users CSV Download Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Export Users</CardTitle>
-          <CardDescription>
-            Download a CSV file of users created after a specific date
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UsersCsvDownload />
-        </CardContent>
-      </Card>
+          <TabsContent value="apps">
+            {selectedUser ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Apps</CardTitle>
+                  <CardDescription>
+                    Apps owned by {selectedUser.email}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AppSearch
+                    userId={selectedUser.id}
+                    selectedApp={selectedApp}
+                    onAppSelect={setSelectedApp}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>User not selected</CardTitle>
+                  <CardDescription>
+                    Select a user above to view this section.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            )}
+          </TabsContent>
 
-      {/* User Earnings Section */}
-      <UserEarningsTable />
+          <TabsContent value="mint">
+            {selectedUser ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mint Credits</CardTitle>
+                  <CardDescription>
+                    Issue credits to {selectedUser.email}
+                    {selectedApp && ` for app "${selectedApp.name}"`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CreditMinter user={selectedUser} selectedApp={selectedApp} />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>User not selected</CardTitle>
+                  <CardDescription>
+                    Select a user above to view this section.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </TabsContent>
 
-      {/* User Spending Section */}
-      <UserSpendingTable />
-    </div>
+      <TabsContent value="earnings">
+        <UserEarningsTable />
+      </TabsContent>
+
+      <TabsContent value="app-earnings">
+        <AppEarningsTable />
+      </TabsContent>
+
+      <TabsContent value="spending">
+        <UserSpendingTable />
+      </TabsContent>
+    </Tabs>
   );
 }
