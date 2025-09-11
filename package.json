@@ -5,7 +5,7 @@
   "private": true,
   "packageManager": "pnpm@10.11.0",
   "scripts": {
-    "dev": "turbo run dev --filter=packages/app/control --filter=packages/app/server",
+    "dev": "turbo run dev --filter=echo-control --filter=echo-server",
     "build": "pnpm run --recursive build",
     "test:unit": "pnpm -C packages/sdk/ts run build && pnpm -r --filter=!packages/app/server run test:unit",
     "test:integration": "pnpm -C packages/tests/integration test",
@@ -27,6 +27,7 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "prettier": "^3.5.3",
     "tsup": "^8.5.0",
+    "turbo": "^2.5.6",
     "typescript": "^5.8.3"
   },
   "dependencies": {
