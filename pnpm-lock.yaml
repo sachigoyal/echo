@@ -572,8 +572,8 @@ importers:
         specifier: ^1.0.18
         version: 1.0.19(react@19.1.0)(zod@4.1.7)
       '@merit-systems/echo-next-sdk':
-        specifier: 0.0.9
-        version: 0.0.9(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(zod@4.1.7)
+        specifier: workspace:*
+        version: link:../../next
       ai:
         specifier: ^5.0.17
         version: 5.0.40(zod@4.1.7)
@@ -618,8 +618,8 @@ importers:
   packages/sdk/examples/vite:
     dependencies:
       '@merit-systems/echo-react-sdk':
-        specifier: 1.0.20
-        version: 1.0.20(openai@5.16.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(zod@4.1.7)
+        specifier: workspace:*
+        version: link:../../react
       ai:
         specifier: ^5.0.20
         version: 5.0.40(zod@4.1.7)
@@ -1798,21 +1798,6 @@ packages:
     peerDependencies:
       '@types/react': 19.1.10
       react: '>=16'
-
-  '@merit-systems/echo-next-sdk@0.0.9':
-    resolution: {integrity: sha512-ZnGbkC13UxVK/cIQGAxAuvcBLnVJgoUptwkGqsTxs7k8ztqXEv6FvJP3SOgEMmxUv2lP7fa+xaOjRz0dUvoySQ==}
-    peerDependencies:
-      next: '>=15.0.0'
-
-  '@merit-systems/echo-react-sdk@1.0.20':
-    resolution: {integrity: sha512-bXg7O7IAM9L9fZ2M9Gxyy+WXioseBeQTSgb38xjyaNuIf840dZyVSo6mzcLIG+jSRWiL4v+pHIegreJpumEOMg==}
-    peerDependencies:
-      openai: ^4.0.0 || ^5.0.0
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      openai:
-        optional: true
 
   '@merit-systems/echo-typescript-sdk@1.0.14':
     resolution: {integrity: sha512-tpN6KIhWIUXJvQwYFrdwjagfU/wuefh6O/5JQ4r1/0NtDeyF9EBe7oJlpyuPxQNUAt1toiZ+f4nB+KI0HT/CSg==}
@@ -10597,30 +10582,6 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.1.10
       react: 19.1.1
-
-  '@merit-systems/echo-next-sdk@0.0.9(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(zod@4.1.7)':
-    dependencies:
-      '@merit-systems/echo-typescript-sdk': 1.0.14(zod@4.1.7)
-      ai: 5.0.40(zod@4.1.7)
-      jwt-decode: 4.0.0
-      next: 15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-    transitivePeerDependencies:
-      - zod
-
-  '@merit-systems/echo-react-sdk@1.0.20(openai@5.16.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(zod@4.1.7)':
-    dependencies:
-      '@ai-sdk/react': 2.0.40(react@19.1.1)(zod@4.1.7)
-      '@merit-systems/echo-typescript-sdk': 1.0.14(zod@4.1.7)
-      ai: 5.0.40(zod@4.1.7)
-      dompurify: 3.2.6
-      oidc-client-ts: 3.3.0
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-      react-oidc-context: 3.3.0(oidc-client-ts@3.3.0)(react@19.1.1)
-    optionalDependencies:
-      openai: 5.16.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7)
-    transitivePeerDependencies:
-      - zod
 
   '@merit-systems/echo-typescript-sdk@1.0.14(zod@3.25.76)':
     dependencies:
