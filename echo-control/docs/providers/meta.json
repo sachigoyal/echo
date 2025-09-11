@@ -1,4 +1,5 @@
 {
   "title": "Providers",
-  "pages": ["index", "anthropic", "openai", "gemini"]
+  "pages": ["index", "anthropic", "openai", "gemini"],
+  "icon": "Openai"
 }

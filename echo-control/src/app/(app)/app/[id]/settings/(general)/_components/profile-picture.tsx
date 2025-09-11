@@ -43,7 +43,7 @@ export const AppProfilePicture = () => {
             uploadImage(files[0]);
           }}
           disabled={isUploading}
-          className="size-24 p-0 flex flex-col items-center justify-center gap-1 overflow-hidden"
+          className="size-24 md:size-24 p-0 flex flex-col items-center justify-center gap-1 overflow-hidden"
         >
           {field.value ? (
             <Image

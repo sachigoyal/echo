@@ -90,6 +90,7 @@ import {
   getReferralCodeByCodeSchema,
   getUserAppReferralCode,
 } from '@/services/apps/referral-code';
+import { deleteApp, deleteAppSchema } from '@/services/apps/delete';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -125,6 +126,12 @@ export const appsRouter = createTRPCRouter({
       .input(updateAppSchema)
       .mutation(async ({ ctx, input }) => {
         return await updateApp(input.appId, ctx.session.user.id, input);
+      }),
+
+    delete: appOwnerProcedure
+      .input(deleteAppSchema)
+      .mutation(async ({ ctx, input }) => {
+        return await deleteApp(ctx.session.user.id, input);
       }),
 
     getNumTokens: protectedProcedure
