@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 
 import { Balance } from './balance-display';
-import { HydrateClient } from '@/trpc/server';
+import { api, HydrateClient } from '@/trpc/server';
 import { auth } from '@/auth';
 
 export const BalanceButton = async () => {
@@ -16,10 +16,12 @@ export const BalanceButton = async () => {
     return null;
   }
 
+  void api.user.balance.get.prefetch();
+
   return (
     <HydrateClient>
       <Link href="/credits">
-        <Button variant="outline" asChild>
+        <Button variant="outline">
           <Suspense fallback={<Skeleton className="h-5 w-10" />}>
             <Balance />
           </Suspense>

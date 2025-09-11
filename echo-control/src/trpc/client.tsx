@@ -16,9 +16,10 @@ import type { inferRouterOutputs } from '@trpc/server';
 
 import SuperJSON from 'superjson';
 
-import { type AppRouter } from './routers/types';
 import { createQueryClient } from './query-client';
 import { env } from '@/env';
+
+import type { AppRouter } from './routers';
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {

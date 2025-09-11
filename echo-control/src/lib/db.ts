@@ -1,6 +1,5 @@
 import { env } from '@/env';
 import { PrismaClient } from '@/generated/prisma';
-import { logger } from '@/logger';
 
 declare global {
   var prisma: PrismaClient | undefined;
@@ -8,11 +7,7 @@ declare global {
 
 let prisma: PrismaClient;
 
-if (env.NODE_ENV === 'production') {
-  logger.emit({
-    body: 'Initializing Prisma client in production',
-    severityText: 'INFO',
-  });
+if (env.NEXT_PUBLIC_NODE_ENV === 'production') {
   prisma = new PrismaClient();
 } else {
   if (!globalThis.prisma) {
