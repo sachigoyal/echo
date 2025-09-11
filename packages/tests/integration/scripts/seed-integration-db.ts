@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../echo-control/src/generated/prisma/index.js';
+import { PrismaClient } from '../../../app/control/src/generated/prisma/index.js';
 import { TEST_CONFIG, TEST_DATA } from '../config/index.js';
 
 export async function seedIntegrationDatabase() {

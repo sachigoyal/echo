@@ -5,10 +5,10 @@
   "private": true,
   "packageManager": "pnpm@10.11.0",
   "scripts": {
-    "dev": "turbo run dev --filter=echo-control --filter=echo-server",
+    "dev": "turbo run dev --filter=packages/app/control --filter=packages/app/server",
     "build": "pnpm run --recursive build",
-    "test:unit": "cd echo-typescript-sdk && pnpm run build && cd .. && pnpm run --recursive --filter=!echo-server test:unit",
-    "test:integration": "cd integration-tests && pnpm test",
+    "test:unit": "pnpm -C packages/sdk/ts run build && pnpm -r --filter=!packages/app/server run test:unit",
+    "test:integration": "pnpm -C packages/tests/integration test",
     "test:all": "pnpm run test:unit && pnpm run test:integration",
     "lint": "pnpm run --recursive lint",
     "lint:fix": "pnpm run --recursive lint:fix",
@@ -17,6 +17,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
+    "@eslint/js": "^9.13.0",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
     "eslint": "^9.29.0",

@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../echo-control/src/generated/prisma/index.js';
+import { PrismaClient } from '../../../app/control/src/generated/prisma/index.js';
 import { TEST_CONFIG } from '../config/index.js';
 
 const prisma = new PrismaClient({

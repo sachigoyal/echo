@@ -13,29 +13,29 @@ Primary hook for accessing authentication state, user information, and core func
 import { useEcho } from '@merit-systems/echo-react-sdk';
 
 function AuthComponent() {
-  const { 
-    user, 
-    isAuthenticated, 
+  const {
+    user,
+    isAuthenticated,
     isLoading,
     error,
-    signIn, 
+    signIn,
     signOut,
     token,
-    getToken
+    getToken,
   } = useEcho();
-  
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
-  
+
   if (error) {
     return <div>Error: {error}</div>;
   }
-  
+
   if (!isAuthenticated) {
     return <button onClick={signIn}>Sign In</button>;
   }
-  
+
   return (
     <div>
       <p>Welcome {user?.name || user?.email}!</p>
@@ -55,9 +55,9 @@ import type { EchoContextValue } from '@merit-systems/echo-react-sdk';
 
 #### EchoContextValue
 
-<AutoTypeTable 
-  path="../echo-react-sdk/src/components/EchoProvider.tsx" 
-  name="EchoContextValue" 
+<AutoTypeTable
+  path="../../sdk/react/src/components/EchoProvider.tsx"
+  name="EchoContextValue"
 />
 
 ### EchoUser
@@ -72,10 +72,7 @@ const { user } = useEcho();
 
 #### EchoUser
 
-<AutoTypeTable 
-  path="../echo-react-sdk/src/types/index.ts" 
-  name="EchoUser" 
-/>
+<AutoTypeTable path="../../sdk/react/src/types/index.ts" name="EchoUser" />
 
 ## useEchoClient
 
@@ -84,8 +81,8 @@ Provides access to the Echo TypeScript SDK client for platform operations.
 ```tsx
 import { useEchoClient } from '@merit-systems/echo-react-sdk';
 
-const echoClient = useEchoClient({ 
-  apiUrl: 'https://echo.merit.systems' 
+const echoClient = useEchoClient({
+  apiUrl: 'https://echo.merit.systems',
 });
 
 // Access all TypeScript SDK functionality
@@ -96,8 +93,9 @@ const balance = await echoClient.balance.getBalance();
 `useEchoClient` provides a full [Echo TypeScript SDK](/docs/typescript-sdk) client instance, automatically authenticated using the current user's token.
 
 **Common operations:**
+
 - `echoClient.apps.*` - [App management](/docs/typescript-sdk#clientapps---app-management)
-- `echoClient.balance.*` - [Balance operations](/docs/typescript-sdk#clientbalance---balance-management)  
+- `echoClient.balance.*` - [Balance operations](/docs/typescript-sdk#clientbalance---balance-management)
 - `echoClient.payments.*` - [Payment links](/docs/typescript-sdk#clientpayments---payment-management)
 - `echoClient.models.*` - [Model information](/docs/typescript-sdk#clientmodels---model-information)
 - `echoClient.users.*` - [User operations](/docs/typescript-sdk#clientusers---user-management)
@@ -112,16 +110,16 @@ import { generateText } from 'ai';
 
 function AIComponent() {
   const { openai, anthropic } = useEchoModelProviders();
-  
+
   const handleGenerate = async () => {
     const { text } = await generateText({
       model: openai('gpt-4'),
-      prompt: 'Hello world'
+      prompt: 'Hello world',
     });
-    
+
     return text;
   };
-  
+
   return <button onClick={handleGenerate}>Generate</button>;
 }
 ```
@@ -131,26 +129,31 @@ function AIComponent() {
 The `useEcho` hook provides balance management functionality:
 
 ```tsx
-const { balance, freeTierBalance, refreshBalance, createPaymentLink } = useEcho();
+const { balance, freeTierBalance, refreshBalance, createPaymentLink } =
+  useEcho();
 ```
 
 **balance** - Current account balance
+
 ```tsx
 <p>Balance: ${balance?.balance || 0}</p>
 <p>Total Spent: ${balance?.totalSpent || 0}</p>
 ```
 
 **freeTierBalance** - Free tier usage information
+
 ```tsx
 <p>Free Credits Remaining: ${freeTierBalance?.userSpendInfo.amountLeft || 0}</p>
 ```
 
 **refreshBalance()** - Manually refresh balance data
+
 ```tsx
 <button onClick={refreshBalance}>Refresh Balance</button>
 ```
 
 **createPaymentLink()** - Create Stripe payment links
+
 ```tsx
 const paymentUrl = await createPaymentLink(25, 'Credits', '/success');
 window.location.href = paymentUrl;

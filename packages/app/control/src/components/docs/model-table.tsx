@@ -1,7 +1,7 @@
-import { SupportedModel } from '../../../../echo-typescript-sdk/src/supported-models/types';
-import { AnthropicModels } from '../../../../echo-typescript-sdk/src/supported-models/chat/anthropic';
-import { OpenAIModels } from '../../../../echo-typescript-sdk/src/supported-models/chat/openai';
-import { GeminiModels } from '../../../../echo-typescript-sdk/src/supported-models/chat/gemini';
+import { AnthropicModels } from '../../../../../sdk/ts/src/supported-models/chat/anthropic';
+import { GeminiModels } from '../../../../../sdk/ts/src/supported-models/chat/gemini';
+import { OpenAIModels } from '../../../../../sdk/ts/src/supported-models/chat/openai';
+import { SupportedModel } from '../../../../../sdk/ts/src/supported-models/types';
 
 interface ModelTableProps {
   path: string;

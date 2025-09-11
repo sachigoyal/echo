@@ -11,10 +11,7 @@ The OpenAI provider gives you access to GPT models through the Vercel AI SDK wit
 
 All OpenAI models are supported via the `OpenAIModel` type:
 
-<ModelTable 
-  path="../echo-typescript-sdk/src/supported-models/chat/openai.ts" 
-/>
-
+<ModelTable path="../sdk/ts/src/supported-models/chat/openai.ts" />
 
 ## Additional Features
 
@@ -23,11 +20,10 @@ All OpenAI models are supported via the `OpenAIModel` type:
 The OpenAI Responses API is fully supported through Echo's OpenAI provider.
 
 ```typescript
-  const result = streamText({
-    model: openai.responses('gpt-4o'),
-    messages: convertToModelMessages(messages),
-  });
-
+const result = streamText({
+  model: openai.responses('gpt-4o'),
+  messages: convertToModelMessages(messages),
+});
 ```
 
 ### Image Generation with GPT-image-1
@@ -35,10 +31,10 @@ The OpenAI Responses API is fully supported through Echo's OpenAI provider.
 Echo also supports OpenAI's image generation capabilities through the GPT-image-1 model:
 
 ```typescript
-  const result = await generateImage({
-    model: openai.image('gpt-image-1'),
-    prompt,
-  });
+const result = await generateImage({
+  model: openai.image('gpt-image-1'),
+  prompt,
+});
 ```
 
 To instantiate `openai.responses` in these examples, see the following guides:

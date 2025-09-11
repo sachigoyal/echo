@@ -20,9 +20,9 @@ COPY package.json ./
 COPY tsconfig.base.json ./
 
 # Copy all project files first
-COPY echo-control/ ./echo-control/
-COPY echo-server/ ./echo-server/
-COPY echo-typescript-sdk/ ./echo-typescript-sdk/
+COPY packages/app/control/ ./packages/app/control/
+COPY packages/app/server/ ./packages/app/server/
+COPY packages/sdk/ts/ ./packages/sdk/ts/
 
 # Install dependencies for both projects (including dev dependencies for build)
 WORKDIR /app/echo-control

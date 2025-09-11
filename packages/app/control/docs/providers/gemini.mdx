@@ -11,9 +11,7 @@ The Gemini provider gives you access to Google's Gemini models through the Verce
 
 All Gemini models are supported via the `GeminiModel` type:
 
-<ModelTable 
-  path="../echo-typescript-sdk/src/supported-models/chat/gemini.ts" 
-/>
+<ModelTable path="../sdk/ts/src/supported-models/chat/gemini.ts" />
 
 ## ⚠️ Gemini Limitations
 
@@ -23,16 +21,15 @@ All Gemini models are supported via the `GeminiModel` type:
 - For the most reliable streaming experience, ensure your implementation uses the chat completions interface
 - To enable this, you should use the OpenAI Provider, which will hit Gemini's supported chat/completions endpoint.
 - For more information, see Google's documentation [here](https://cloud.google.com/vertex-ai/generative-ai/docs/samples/generativeaionvertexai-gemini-chat-completions-non-streaming).
-- Streaming will be supported through the Vercel interface for Gemini as soon as possible. 
-
+- Streaming will be supported through the Vercel interface for Gemini as soon as possible.
 
 ```typescript
-  const result = streamText({
+const result = streamText({
   model: openai.chat('gemini-2.0-flash'),
-    messages: convertToModelMessages(messages),
-  });
+  messages: convertToModelMessages(messages),
+});
 
-  return result.toUIMessageStreamResponse();
+return result.toUIMessageStreamResponse();
 ```
 
 To instantiate `openai.chat` in this example, see the following guides:
@@ -40,9 +37,3 @@ To instantiate `openai.chat` in this example, see the following guides:
 For React applications, see [React SDK LLM Integration](/docs/react-sdk/llm-integration)
 
 For server-side usage, see [Next.js SDK LLM Integration](/docs/next-sdk/llm-integration)
-
-
-
-
-
-

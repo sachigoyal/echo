@@ -76,10 +76,10 @@ COPY package.json ./
 COPY tsconfig.base.json ./
 
 # Copy all project files first
-COPY echo-control/ ./echo-control/
-COPY echo-server/ ./echo-server/
-COPY echo-typescript-sdk/ ./echo-typescript-sdk/
-COPY echo-next-sdk/ ./echo-next-sdk/
+COPY packages/app/control/ ./packages/app/control/
+COPY packages/app/server/ ./packages/app/server/
+COPY packages/sdk/ts/ ./packages/sdk/ts/
+COPY packages/sdk/next/ ./packages/sdk/next/
 COPY echo-react-sdk/ ./echo-react-sdk/
 
 # Install dependencies for both projects (including dev dependencies for build)

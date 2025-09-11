@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -18,11 +18,11 @@ export default defineConfig({
       '@tests': resolve(__dirname, './tests'),
       '@prisma/client': resolve(
         __dirname,
-        '../echo-control/src/generated/prisma'
+        '../../app/control/src/generated/prisma'
       ),
       '@merit-systems/echo-typescript-sdk': resolve(
         __dirname,
-        '../echo-typescript-sdk/src/index.ts'
+        '../../sdk/ts/src/index.ts'
       ),
     },
   },

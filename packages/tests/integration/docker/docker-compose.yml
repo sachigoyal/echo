@@ -19,7 +19,7 @@ services:
   echo-control-test:
     build: 
       context: ../../
-      dockerfile: echo-control/Dockerfile.test
+      dockerfile: packages/app/control/Dockerfile.test
     env_file:
       - ../.env.test
       - ./.env.docker       # Docker-specific overrides
@@ -46,7 +46,7 @@ services:
   echo-data-server-test:
     build:
       context: ../../
-      dockerfile: echo-server/docker/Dockerfile.local
+      dockerfile: packages/app/server/docker/Dockerfile.local
     env_file:
       - ../.env.test
       - ./.env.docker       # Docker-specific overrides
@@ -77,7 +77,7 @@ services:
       - HEADLESS=true
       - BROWSER_TIMEOUT=30000
     volumes:
-      - ../integration-tests:/workspace
+      - ../integration:/workspace
     working_dir: /workspace
     depends_on:
       echo-control-test:

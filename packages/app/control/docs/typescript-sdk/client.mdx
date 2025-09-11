@@ -13,7 +13,7 @@ The `EchoClient` is your gateway to the Echo platform, providing access to all p
 import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 
 const echo = new EchoClient({
-  apiKey: 'your-api-key'
+  apiKey: 'your-api-key',
 });
 ```
 
@@ -25,10 +25,7 @@ import type { EchoClientOptions } from '@merit-systems/echo-typescript-sdk';
 
 ### EchoClientOptions
 
-<AutoTypeTable 
-  path="../echo-typescript-sdk/src/client.ts" 
-  name="EchoClientOptions" 
-/>
+<AutoTypeTable path="../../sdk/ts/src/client.ts" name="EchoClientOptions" />
 
 ## Environment Configuration
 
@@ -57,11 +54,11 @@ The client provides access to all platform resources:
 const echo = new EchoClient({ apiKey: 'your-key' });
 
 // Resource modules
-echo.apps      // App management
-echo.balance   // Account balance
-echo.payments  // Payment operations
-echo.models    // Supported models
-echo.users     // User information
+echo.apps; // App management
+echo.balance; // Account balance
+echo.payments; // Payment operations
+echo.models; // Supported models
+echo.users; // User information
 ```
 
 ## Error Handling
@@ -87,7 +84,7 @@ try {
 ```typescript
 const echo = new EchoClient({
   apiKey: 'your-key',
-  baseUrl: 'https://custom-echo-instance.com'
+  baseUrl: 'https://custom-echo-instance.com',
 });
 ```
 
@@ -99,7 +96,7 @@ import { ApiKeyTokenProvider } from '@merit-systems/echo-typescript-sdk';
 const tokenProvider = new ApiKeyTokenProvider('your-api-key');
 
 const echo = new EchoClient({
-  tokenProvider
+  tokenProvider,
 });
 ```
 

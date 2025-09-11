@@ -3,12 +3,13 @@ title: Components
 description: Pre-built UI components for authentication and payments
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 # Components
 
 <Callout type="info">
-**Recommended Approach**: For most applications, use `<EchoTokens />` as your primary component. It handles the complete user lifecycle including authentication, balance display, token purchases, and sign-out functionality in a single, polished interface.
+  **Recommended Approach**: For most applications, use `<EchoTokens />` as your
+  primary component. It handles the complete user lifecycle including
+  authentication, balance display, token purchases, and sign-out functionality
+  in a single, polished interface.
 </Callout>
 
 ## EchoTokens
@@ -19,18 +20,18 @@ The `<EchoTokens />` button component handles authentication, balance display, t
 import { EchoTokens } from '@merit-systems/echo-react-sdk';
 
 // Complete user management - handles everything
-<EchoTokens 
+<EchoTokens
   showAvatar={true} // Show user's profile picture
-  onPurchaseComplete={(balance) => console.log('New balance:', balance)}
-  onError={(error) => console.error('Error:', error)}
-/>
+  onPurchaseComplete={balance => console.log('New balance:', balance)}
+  onError={error => console.error('Error:', error)}
+/>;
 ```
 
 ### What EchoTokens Handles
 
 - **Authentication**: Shows sign-in button when user is not authenticated
 - **Balance Display**: Shows user's available credits (free tier + paid)
-- **Token Purchases**: Modal with purchase options and Stripe integration  
+- **Token Purchases**: Modal with purchase options and Stripe integration
 - **Sign Out**: Built-in sign-out button in the purchase modal
 - **Avatar Support**: Optional user profile picture display
 - **Error Handling**: Comprehensive error states and messaging
@@ -42,13 +43,13 @@ import { EchoTokens } from '@merit-systems/echo-react-sdk';
 <EchoTokens />
 
 // With avatar and custom purchase amount
-<EchoTokens 
+<EchoTokens
   showAvatar={true}
   amount={25} // Default purchase amount
 />
 
 // Custom styling and callbacks
-<EchoTokens 
+<EchoTokens
   className="my-tokens-button"
   showAvatar={true}
   onPurchaseComplete={(balance) => {
@@ -77,9 +78,9 @@ import type { EchoTokensProps } from '@merit-systems/echo-react-sdk';
 
 #### EchoTokensProps
 
-<AutoTypeTable 
-  path="../echo-react-sdk/src/types/index.ts" 
-  name="EchoTokensProps" 
+<AutoTypeTable
+  path="../../sdk/react/src/types/index.ts"
+  name="EchoTokensProps"
 />
 
 ---
@@ -87,7 +88,9 @@ import type { EchoTokensProps } from '@merit-systems/echo-react-sdk';
 ## Individual Components
 
 <Callout type="warn">
-**Most apps should use `<EchoTokens />` instead** - The individual components below are provided for advanced use cases where you need granular control. EchoTokens handles the complete user flow automatically.
+  **Most apps should use `<EchoTokens />` instead** - The individual components
+  below are provided for advanced use cases where you need granular control.
+  EchoTokens handles the complete user flow automatically.
 </Callout>
 
 ### EchoSignIn
@@ -98,7 +101,7 @@ Drop-in component for user authentication with customizable styling and callback
 import { EchoSignIn } from '@merit-systems/echo-react-sdk';
 
 // Default styled button
-<EchoSignIn 
+<EchoSignIn
   onSuccess={(user) => console.log('Signed in:', user)}
   onError={(error) => console.error('Sign in failed:', error)}
 />
@@ -112,7 +115,9 @@ import { EchoSignIn } from '@merit-systems/echo-react-sdk';
 ```
 
 <Callout type="info">
-**Consider using `<EchoTokens />` instead** - It includes sign-in functionality plus balance management and token purchases in a single component.
+  **Consider using `<EchoTokens />` instead** - It includes sign-in
+  functionality plus balance management and token purchases in a single
+  component.
 </Callout>
 
 #### Props
@@ -121,9 +126,9 @@ import { EchoSignIn } from '@merit-systems/echo-react-sdk';
 import type { EchoSignInProps } from '@merit-systems/echo-react-sdk';
 ```
 
-<AutoTypeTable 
-  path="../echo-react-sdk/src/types/index.ts" 
-  name="EchoSignInProps" 
+<AutoTypeTable
+  path="../../sdk/react/src/types/index.ts"
+  name="EchoSignInProps"
 />
 
 ### EchoSignOut
@@ -134,7 +139,7 @@ Component for user sign-out with customizable styling and callbacks.
 import { EchoSignOut } from '@merit-systems/echo-react-sdk';
 
 // Default styled button
-<EchoSignOut 
+<EchoSignOut
   onSuccess={() => console.log('Signed out successfully')}
   onError={(error) => console.error('Sign out failed:', error)}
 />
@@ -148,7 +153,8 @@ import { EchoSignOut } from '@merit-systems/echo-react-sdk';
 ```
 
 <Callout type="info">
-**Consider using `<EchoTokens />` instead** - It includes a sign-out button in the credits modal, providing a complete user management experience.
+  **Consider using `<EchoTokens />` instead** - It includes a sign-out button in
+  the credits modal, providing a complete user management experience.
 </Callout>
 
 #### Props
@@ -157,9 +163,9 @@ import { EchoSignOut } from '@merit-systems/echo-react-sdk';
 import type { EchoSignOutProps } from '@merit-systems/echo-react-sdk';
 ```
 
-<AutoTypeTable 
-  path="../echo-react-sdk/src/types/index.ts" 
-  name="EchoSignOutProps" 
+<AutoTypeTable
+  path="../../sdk/react/src/types/index.ts"
+  name="EchoSignOutProps"
 />
 
 ### Logo
@@ -169,10 +175,9 @@ Echo logo component with customizable variants.
 ```tsx
 import { Logo } from '@merit-systems/echo-react-sdk';
 
-<Logo 
-  width={24} 
-  height={24} 
+<Logo
+  width={24}
+  height={24}
   variant="light" // or "dark"
-/>
+/>;
 ```
-

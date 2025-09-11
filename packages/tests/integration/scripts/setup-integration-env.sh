@@ -1,11 +1,11 @@
 #!/bin/bash
-# integration-tests/scripts/setup-integration-env.sh
+# integration/scripts/setup-integration-env.sh
 
 set -e
 
 echo "🚀 Setting up Echo integration test environment..."
 
-# Change to integration-tests directory
+# Change to integration directory
 cd "$(dirname "$0")/.."
 
 # Detect environment
@@ -139,7 +139,7 @@ else
     
     # In CI, manually start echo-control since it's not in Docker
     echo "🗃️ Setting up database for CI..."
-    cd ../echo-control
+    cd ../../app/control
     
     # Wait for database to be available
     start_time=$(date +%s)
@@ -159,13 +159,13 @@ else
     
     # Seed integration test data
     echo "🌱 Seeding integration test database..."
-    INTEGRATION_TEST_MODE=true cd ../integration-tests && pnpm db:seed
+    INTEGRATION_TEST_MODE=true cd ../../tests/integration && pnpm db:seed
     
     echo "🚀 Starting echo-control test server..."
-    cd ../echo-control && INTEGRATION_TEST_MODE=true pnpm build
+    cd ../../app/control && INTEGRATION_TEST_MODE=true pnpm build
     
     # Start echo-control in background with explicit port and all required environment variables
-    cd ../echo-control && \
+    cd ../../app/control && \
     PORT=3001 \
     NODE_ENV=test \
     CI="$CI" \
@@ -217,7 +217,7 @@ else
     
     # Start echo-data-server in CI
     echo "🚀 Starting echo-data-server test server..."
-    cd ../echo-server
+    cd ../../app/server
     
     # Build echo-data-server
     pnpm build
@@ -248,7 +248,7 @@ else
     }
     
     echo "✅ echo-data-server is healthy at $ECHO_DATA_SERVER_URL"
-    cd ../integration-tests
+    cd ../../tests/integration
 fi
 
 echo ""

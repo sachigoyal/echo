@@ -14,9 +14,11 @@ import { EchoProvider } from '@merit-systems/echo-react-sdk';
 
 function App() {
   return (
-    <EchoProvider config={{
-      appId: 'your-echo-app-id',
-    }}>
+    <EchoProvider
+      config={{
+        appId: 'your-echo-app-id',
+      }}
+    >
       <YourApp />
     </EchoProvider>
   );
@@ -31,8 +33,7 @@ import type { EchoAuthConfig } from '@merit-systems/echo-react-sdk';
 
 #### EchoAuthConfig
 
-<AutoTypeTable 
-  path="../echo-react-sdk/src/types/index.ts" 
-  name="EchoAuthConfig" 
+<AutoTypeTable
+  path="../../sdk/react/src/types/index.ts"
+  name="EchoAuthConfig"
 />
-

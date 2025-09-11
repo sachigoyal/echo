@@ -11,7 +11,7 @@ This server depends on the generated Prisma client from the `echo-control` proje
 1. Make sure the `echo-control` project has generated its Prisma client:
 
    ```bash
-   cd ../echo-control
+   cd ../control
    pnpm run build  # or whatever command generates the Prisma client
    ```
 
@@ -43,8 +43,8 @@ When building a Docker image, you'll need to ensure both projects are available 
 FROM node:18-alpine AS base
 
 # Copy both projects
-COPY echo-control/ /app/echo-control/
-COPY echo-server/ /app/echo-server/
+COPY packages/app/control/ /app/packages/app/control/
+COPY packages/app/server/ /app/packages/app/server/
 
 # Build echo-control first
 WORKDIR /app/echo-control
@@ -56,9 +56,9 @@ RUN pnpm install && pnpm run build
 
 FROM node:18-alpine AS runtime
 WORKDIR /app
-COPY --from=base /app/echo-server/dist ./dist
-COPY --from=base /app/echo-server/node_modules ./node_modules
-COPY --from=base /app/echo-server/package.json ./package.json
+COPY --from=base /app/packages/app/server/dist ./dist
+COPY --from=base /app/packages/app/server/node_modules ./node_modules
+COPY --from=base /app/packages/app/server/package.json ./package.json
 
 CMD ["pnpm", "start"]
 ```

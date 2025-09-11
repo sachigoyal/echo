@@ -1,11 +1,11 @@
 #!/bin/bash
-# integration-tests/scripts/teardown-integration-env.sh
+# integration/scripts/teardown-integration-env.sh
 
 set -e
 
 echo "🧹 Tearing down Echo integration test environment..."
 
-# Change to integration-tests directory
+# Change to integration directory
 cd "$(dirname "$0")/.."
 
 # Detect environment
@@ -26,7 +26,7 @@ if [ "$IS_CI" != "true" ]; then
     echo "🗑️  Cleaning up Docker resources..."
     
     # Remove any dangling images from our compose
-    docker image prune -f --filter "label=com.docker.compose.project=integration-tests" || true
+    docker image prune -f --filter "label=com.docker.compose.project=integration" || true
     
     # Remove unused volumes
     docker volume prune -f || true
@@ -74,7 +74,7 @@ else
         pnpm db:reset || echo "⚠️  Database reset failed (might not be running)"
     fi
     
-    cd ../integration-tests
+    cd ../integration
     echo "✅ CI integration environment cleaned up"
 fi
 

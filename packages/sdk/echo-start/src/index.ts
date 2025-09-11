@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
 import chalk from 'chalk';
-import prompts from 'prompts';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import path from 'path';
+import { Command } from 'commander';
 import degit from 'degit';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import ora from 'ora';
+import path from 'path';
+import prompts from 'prompts';
 
 const program = new Command();
 
@@ -116,9 +116,9 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
     try {
       await emitter.clone(absoluteProjectPath);
       spinner.succeed('Template downloaded successfully');
-    } catch (error) {
+    } catch (cloneError) {
       spinner.fail('Failed to download template');
-      throw error;
+      throw cloneError;
     }
 
     // Show any warnings that occurred
@@ -153,8 +153,11 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
 
         writeFileSync(envPath, updatedContent);
         console.log(chalk.green(`✓ Updated ${envVarName} in .env.local`));
-      } catch (error) {
-        console.log(chalk.yellow(`Warning: Could not update .env.local file`));
+      } catch (envError) {
+        console.log(
+          chalk.yellow(`Warning: Could not update .env.local file`),
+          envError
+        );
       }
     }
 

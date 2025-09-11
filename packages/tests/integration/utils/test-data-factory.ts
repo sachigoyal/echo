@@ -1,6 +1,6 @@
-import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
-import { hashApiKey } from '../../echo-control/src/lib/crypto.js';
+import crypto from 'crypto';
+import { hashApiKey } from '../../app/control/src/lib/crypto.js';
 
 const prisma = new PrismaClient();
 

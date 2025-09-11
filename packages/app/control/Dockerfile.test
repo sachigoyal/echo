@@ -12,20 +12,20 @@ RUN npm install -g pnpm
 COPY pnpm-workspace.yaml pnpm-lock.yaml ./
 
 # Copy all workspace package.json files to satisfy pnpm workspace requirements
-COPY echo-control/package.json ./echo-control/
-COPY echo-server/package.json ./echo-server/
-COPY echo-typescript-sdk/package.json ./echo-typescript-sdk/
-COPY echo-react-sdk/package.json ./echo-react-sdk/
-COPY integration-tests/package.json ./integration-tests/
+COPY packages/app/control/package.json ./packages/app/control/
+COPY packages/app/server/package.json ./packages/app/server/
+COPY packages/sdk/ts/package.json ./packages/sdk/ts/
+COPY packages/sdk/react/package.json ./packages/sdk/react/
+COPY packages/tests/integration/package.json ./packages/tests/integration/
 
 # Install dependencies for the entire workspace
 RUN pnpm install --frozen-lockfile
 
 # Copy echo-control source code
-COPY echo-control/ ./echo-control/
+COPY packages/app/control/ ./packages/app/control/
 
 # Set working directory to echo-control
-WORKDIR /app/echo-control
+WORKDIR /app/packages/app/control
 
 # Generate Prisma client
 RUN pnpm prisma:generate
