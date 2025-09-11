@@ -5,6 +5,8 @@ import { hashApiKey } from './crypto';
 import { authenticateEchoAccessJwtToken } from './jwt-tokens';
 import { auth } from '@/auth';
 import { logger } from '@/logger';
+import { getUser } from '@/services/user';
+import { getApp } from '@/services/apps/get';
 
 export async function getCurrentUser(): Promise<User> {
   const session = await auth();
@@ -122,17 +124,7 @@ async function getCurrentUserByApiKeyOrEchoJwt(request: NextRequest): Promise<{
 
     const { userId, appId } = await authenticateEchoAccessJwtToken(token);
 
-    const user = await db.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
-    const app = await db.echoApp.findUnique({
-      where: {
-        id: appId,
-      },
-    });
+    const [user, app] = await Promise.all([getUser(userId), getApp(appId)]);
 
     if (!user) {
       logger.emit({
