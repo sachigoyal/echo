@@ -7,7 +7,7 @@ import { AppRole } from '@/lib/permissions';
 
 export const getApp = async (appId: AppId) => {
   return await db.echoApp.findUnique({
-    where: { id: appId },
+    where: { id: appId, isArchived: false },
     select: appSelect,
   });
 };

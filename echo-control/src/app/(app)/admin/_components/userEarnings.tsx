@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -22,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UsersCsvDownload } from '@/components/admin/UsersCsvDownload';
 import {
   Select,
   SelectContent,
@@ -325,6 +327,9 @@ export function UserEarningsTable() {
               </div>
             </div>
           </CardContent>
+          <CardFooter>
+            <UsersCsvDownload />
+          </CardFooter>
         </Card>
       )}
 

@@ -5,7 +5,8 @@ import { db } from '@/lib/db';
 // When user performs action, schedule email for 1 hour later
 export async function scheduleCreateAppFollowUpEmail(
   userId: string,
-  appName: string
+  appName: string,
+  appId: string
 ) {
   const resend = new Resend(process.env.AUTH_RESEND_KEY!);
   const fromEmail = process.env.AUTH_RESEND_FROM_EMAIL!;
@@ -64,5 +65,14 @@ export async function scheduleCreateAppFollowUpEmail(
       },
     });
   }
+
+  await db.outboundEmailSent.create({
+    data: {
+      emailCampaignId: 'create-app-follow-up',
+      userId,
+      echoAppId: appId,
+      createdAt: new Date(),
+    },
+  });
   return data;
 }

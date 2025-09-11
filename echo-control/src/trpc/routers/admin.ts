@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { adminProcedure, createTRPCRouter, paginatedProcedure } from '../trpc';
+import {
+  adminProcedure,
+  createTRPCRouter,
+  paginatedProcedure,
+  protectedProcedure,
+} from '../trpc';
 
 import {
   adminGetUsers,
@@ -24,6 +29,7 @@ import {
   getAppTransactionTotals,
   getUserTransactionsPaginated,
   getUserTransactionTotals,
+  isAdmin,
 } from '@/services/admin/admin';
 import { mintCreditsToUserSchema } from '@/services/credits';
 import { adminListPendingPayouts } from '@/services/admin/pending-payouts';
@@ -33,10 +39,16 @@ import {
   pollMeritCheckout,
   syncPendingPayoutsOnce,
 } from '@/services/payouts/merit';
+import {
+  listAvailableEmailCampaigns,
+  getSentCampaignsForApps,
+  scheduleCampaignForApps,
+} from '@/services/admin/email-campaigns';
+import { getAppsEarningsPaginatedWithCampaigns } from '@/services/admin/app-earnings';
 
 export const adminRouter = createTRPCRouter({
-  isAdmin: adminProcedure.query(async () => {
-    return true;
+  isAdmin: protectedProcedure.query(async ({ ctx }) => {
+    return await isAdmin(ctx.session.user.id);
   }),
 
   mintCredits: adminProcedure
@@ -107,6 +119,28 @@ export const adminRouter = createTRPCRouter({
         return await getAllUsersEarningsAggregatesPaginated(
           ctx.pagination.page,
           ctx.pagination.page_size
+        );
+      }),
+
+    /**
+     * App-centric earnings list with outbound campaign info and filters
+     */
+    getAppsWithCampaignsPaginated: paginatedProcedure
+      .input(
+        z.object({
+          cursor: z.number().optional().default(0),
+          page_size: z.number().optional().default(10),
+          filterCampaignKey: z.string().optional(),
+          onlyNotReceived: z.boolean().optional().default(false),
+        })
+      )
+      .concat(adminProcedure)
+      .query(async ({ input }) => {
+        return await getAppsEarningsPaginatedWithCampaigns(
+          input.cursor ?? 0,
+          input.page_size ?? 10,
+          input.filterCampaignKey,
+          input.onlyNotReceived
         );
       }),
 
@@ -260,5 +294,26 @@ export const adminRouter = createTRPCRouter({
     syncPending: adminProcedure.mutation(async () => {
       return await syncPendingPayoutsOnce();
     }),
+  },
+
+  emailCampaigns: {
+    list: adminProcedure.query(async () => {
+      return listAvailableEmailCampaigns();
+    }),
+    getSentForApps: adminProcedure
+      .input(z.object({ appIds: z.array(z.string()) }))
+      .query(async ({ input }) => {
+        return await getSentCampaignsForApps(input.appIds);
+      }),
+    scheduleForApps: adminProcedure
+      .input(
+        z.object({
+          campaignKey: z.string(),
+          appIds: z.array(z.string()),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return await scheduleCampaignForApps(input);
+      }),
   },
 });

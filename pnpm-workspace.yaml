@@ -1,4 +1,5 @@
 packages:
+  - echo-start
   - echo-control
   - echo-server
   - echo-typescript-sdk

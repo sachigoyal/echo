@@ -6,6 +6,8 @@ import { Keys } from './_components/keys';
 
 import { api, HydrateClient } from '@/trpc/server';
 
+import { checkAppExists } from '../_lib/checks';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,6 +18,7 @@ export default async function AppKeysPage(props: PageProps<'/app/[id]/keys'>) {
   const { id } = await props.params;
 
   await userOrRedirect(`/app/${id}/keys`, props);
+  await checkAppExists(id);
 
   const { generate } = await props.searchParams;
 

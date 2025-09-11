@@ -34,6 +34,14 @@ import {
   getUserTransactionTotals,
 } from './user-transactions';
 
+export const isAdmin = async (userId: string) => {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  });
+
+  return user?.admin;
+};
+
 export async function adminGetUsers(): Promise<User[]> {
   return await db.user.findMany();
 }
@@ -121,7 +129,7 @@ export async function downloadUsersCsv(
   const csvString = csvData
     .map(row => row.map(field => `"${field}"`).join(','))
     .join('\n');
-  
+
   return {
     csvString,
     filename: `users-created-after-${input.createdAfter.toISOString().split('T')[0]}.csv`,

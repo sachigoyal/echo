@@ -8,7 +8,7 @@ export default function LandingPageLayout({
   return (
     <div className="min-h-screen flex flex-col relative">
       <Navbar />
-      <div className="bg-background flex-1">{children}</div>
+      <div className="bg-background flex-1 flex flex-col">{children}</div>
       <Footer />
     </div>
   );
