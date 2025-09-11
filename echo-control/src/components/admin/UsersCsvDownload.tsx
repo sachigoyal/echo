@@ -53,7 +53,7 @@ export function UsersCsvDownload() {
 
   return (
     <div className="flex flex-col space-y-4">
-      <div className="flex items-center space-x-4">
+      <div className="flex items-end space-x-4">
         <div className="flex flex-col space-y-2">
           <label className="text-sm font-medium">
             Download users created after:
