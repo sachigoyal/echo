@@ -430,11 +430,11 @@ model InFlightRequest {
 }
 
 model OutboundEmailSent {
-  id        String   @id @default(uuid()) @db.Uuid
-  emailCampaignId   String
-  userId    String   @db.Uuid
-  echoAppId String?  @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  id              String   @id @default(uuid()) @db.Uuid
+  emailCampaignId String
+  userId          String   @db.Uuid
+  echoAppId       String?  @db.Uuid
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
 
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   echoApp EchoApp? @relation(fields: [echoAppId], references: [id], onDelete: Cascade)
