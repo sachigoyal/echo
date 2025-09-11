@@ -1,5 +1,5 @@
 packages:
-  - create-echo-app
+  - echo-start
   - echo-control
   - echo-server
   - echo-typescript-sdk

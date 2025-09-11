@@ -1,11 +1,11 @@
 {
-  "name": "create-echo-app",
+  "name": "echo-start",
   "version": "0.1.0",
   "description": "Create Echo applications from templates",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "create-echo-app": "dist/index.js"
+    "echo-start": "dist/index.js"
   },
   "files": [
     "dist"

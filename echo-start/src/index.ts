@@ -197,7 +197,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
 
 async function main() {
   program
-    .name('create-echo-app')
+    .name('echo-start')
     .description('Create a new Echo application')
     .version('0.1.0')
     .argument('[directory]', 'Directory to create the app in')
