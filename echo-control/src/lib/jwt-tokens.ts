@@ -2,7 +2,6 @@ import { db } from '@/lib/db';
 import {
   createEchoAccessTokenExpiry,
   createEchoRefreshTokenExpiry,
-  getArchivedRefreshTokenGraceMs,
 } from '@/lib/oauth-config';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
@@ -10,17 +9,16 @@ import { createHash } from 'crypto';
 import { SignJWT, jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
 import { logger } from '@/logger';
+import { env } from '@/env';
 
 // JWT secret for API tokens (different from OAuth codes)
 const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
-  process.env.API_ECHO_ACCESS_JWT_SECRET ||
-    'api-jwt-secret-change-in-production'
+  env.API_ECHO_ACCESS_JWT_SECRET || 'api-jwt-secret-change-in-production'
 );
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.OAUTH_CODE_SIGNING_JWT_SECRET ||
-    'your-secret-key-change-in-production'
+  env.OAUTH_CODE_SIGNING_JWT_SECRET || 'your-secret-key-change-in-production'
 );
 
 interface ApiTokenPayload {
@@ -194,7 +192,7 @@ export async function handleRefreshToken(
   });
 
   // Grace period for archived tokens
-  const archivedGraceMs = getArchivedRefreshTokenGraceMs();
+  const archivedGraceMs = env.OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS;
   if (
     !echoRefreshTokenRecord ||
     (echoRefreshTokenRecord.archivedAt &&

@@ -5,13 +5,11 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { PaymentStatus } from '@/lib/payment-processing';
 import { logger } from '@/logger';
+import { env } from '@/env';
 
-const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY || 'test_secret_stripe_key',
-  {
-    apiVersion: '2025-05-28.basil',
-  }
-);
+const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+  apiVersion: '2025-05-28.basil',
+});
 
 export const createPaymentLinkSchema = z.object({
   amount: z.number().min(1),
@@ -93,7 +91,7 @@ export async function createPaymentLink(
       redirect: {
         url:
           successUrl ||
-          `${process.env.ECHO_CONTROL_APP_BASE_URL}/credits?payment=success`,
+          `${env.ECHO_CONTROL_APP_BASE_URL}/credits?payment=success`,
       },
     },
   };
@@ -197,9 +195,7 @@ export async function createFreeTierPaymentLink(
   });
 
   // Prepare after_completion configuration
-  const defaultSuccessUrl =
-    process.env.ECHO_CONTROL_APP_BASE_URL +
-    `/owner/${appId}/settings?payment=success&type=free-tier`;
+  const defaultSuccessUrl = `${env.ECHO_CONTROL_APP_BASE_URL}/app/${appId}/free-tier?payment=success&type=free-tier`;
   const afterCompletion: Stripe.PaymentLinkCreateParams.AfterCompletion = {
     type: 'redirect',
     redirect: {

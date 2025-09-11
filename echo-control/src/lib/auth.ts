@@ -86,10 +86,7 @@ export async function getCurrentUser(): Promise<User> {
  * @param request - The request object
  * @returns The current user, apiKey, and echoApp
  */
-async function getCurrentUserByApiKeyOrEchoJwt(request: NextRequest): Promise<{
-  user: User;
-  echoApp: EchoApp;
-}> {
+async function getCurrentUserByApiKeyOrEchoJwt(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

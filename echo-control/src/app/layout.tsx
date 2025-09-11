@@ -14,6 +14,7 @@ import type { Metadata } from 'next';
 import type { Viewport } from 'next';
 
 import '@/styles/globals.css';
+import { env } from '@/env';
 
 export const metadata: Metadata = {
   title: {
@@ -25,9 +26,7 @@ export const metadata: Metadata = {
     title: 'Echo',
     statusBarStyle: 'black-translucent',
   },
-  metadataBase: new URL(
-    process.env.ECHO_CONTROL_APP_BASE_URL || 'http://localhost:3000'
-  ),
+  metadataBase: new URL(env.ECHO_CONTROL_APP_BASE_URL),
 };
 
 export const viewport: Viewport = {

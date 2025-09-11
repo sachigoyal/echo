@@ -1,12 +1,5 @@
+import { env } from '@/env';
 import { createHmac, randomBytes, randomUUID } from 'crypto';
-
-/**
- * Secret key for deterministic API key hashing
- * In production, this should be a strong random value from environment variables
- */
-const API_KEY_HASH_SECRET =
-  process.env.API_KEY_HASH_SECRET ||
-  'change-this-in-production-very-secret-key';
 
 /**
  * Hash an API key deterministically for O(1) database lookup
@@ -20,12 +13,14 @@ export function hashApiKey(apiKey: string): string {
   }
 
   // Use HMAC-SHA256 for secure, deterministic hashing
-  return createHmac('sha256', API_KEY_HASH_SECRET).update(apiKey).digest('hex');
+  return createHmac('sha256', env.API_KEY_HASH_SECRET)
+    .update(apiKey)
+    .digest('hex');
 }
 
 // Generate a secure API key using UUID v4 and additional entropy
 export function generateApiKey(): string {
-  const prefix = process.env.API_KEY_PREFIX || 'echo_';
+  const prefix = env.API_KEY_PREFIX;
 
   // Use UUID v4 for structured randomness
   const uuidPart = randomUUID().replace(/-/g, '');
