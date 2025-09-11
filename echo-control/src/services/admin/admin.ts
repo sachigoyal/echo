@@ -129,7 +129,7 @@ export async function downloadUsersCsv(
   const csvString = csvData
     .map(row => row.map(field => `"${field}"`).join(','))
     .join('\n');
-  
+
   return {
     csvString,
     filename: `users-created-after-${input.createdAfter.toISOString().split('T')[0]}.csv`,
