@@ -69,7 +69,7 @@ export const createApp = async (
       },
     });
 
-    await scheduleCreateAppFollowUpEmail(userId, data.name);
+    await scheduleCreateAppFollowUpEmail(userId, data.name, app.id);
 
     return app;
   } catch (error) {
