@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 import * as fs from 'fs';
 import * as path from 'path';
-import { Project, SourceFile, Node, SyntaxKind } from 'ts-morph';
+import { Project, SyntaxKind } from 'ts-morph';
 
 interface RouteInfo {
   filePath: string;
@@ -194,13 +194,41 @@ function generateTypesFileContent(
 }
 
 /**
- * Clean up type definitions for SDK consumption
+ * Clean up type definitions for SDK consumption using ts-morph for enum resolution
  * - Remove absolute import paths
  * - Convert Date to string
  * - Convert Decimal to string
+ * - Resolve enum references to string literals using ts-morph
  */
-function cleanTypeForSDK(typeText: string): string {
+function cleanTypeForSDK(typeText: string, project: Project): string {
   let cleanText = typeText;
+
+  // Replace Date with string (since JSON serialization converts dates to strings)
+  cleanText = cleanText.replace(/\bDate\b/g, 'string');
+
+  // Replace Prisma Decimal with string (common serialization format)
+  cleanText = cleanText.replace(/\bDecimal\b/g, 'string');
+
+  // Try to resolve known enum types using ts-morph
+  const enumReplacements = [
+    {
+      name: 'PaymentStatus',
+    },
+    {
+      name: 'PayoutStatus',
+    },
+    {
+      name: 'EnumPaymentSource',
+    },
+  ];
+
+  for (const { name } of enumReplacements) {
+    const enumPattern = new RegExp(`\\b${name}\\b`, 'g');
+    console.log(`🔍 Attempting to resolve enum: ${name} on text: ${cleanText}`);
+    if (enumPattern.test(cleanText)) {
+      cleanText = cleanText.replace(enumPattern, 'string');
+    }
+  }
 
   // Replace absolute import paths with their simple type names
   cleanText = cleanText.replace(/import\(".*?\/([^"\/]+)"\)\.(\w+)/g, '$2');
@@ -211,17 +239,17 @@ function cleanTypeForSDK(typeText: string): string {
   // Handle any remaining import statements by replacing with 'any'
   cleanText = cleanText.replace(/import\(".*?"\)/g, 'any');
 
-  // Fix any.string patterns
+  // Replace enum references with string for simplicity (after import processing)
+  cleanText = cleanText.replace(/\$Enums\.\w+/g, 'string');
+
+  // Fix any.string patterns - this handles cases like "any.string" in the resolved types
   cleanText = cleanText.replace(/any\.string/g, 'string');
 
-  // Replace Date with string (since JSON serialization converts dates to strings)
-  cleanText = cleanText.replace(/\bDate\b/g, 'string');
+  // Handle complex patterns like any.$Enums."string literal"
+  cleanText = cleanText.replace(/any\.\$Enums\."[^"]+"/g, 'string');
 
-  // Replace Prisma Decimal with string (common serialization format)
-  cleanText = cleanText.replace(/\bDecimal\b/g, 'string');
-
-  // Replace enum references with string for simplicity
-  cleanText = cleanText.replace(/\$Enums\.\w+/g, 'string');
+  // Handle any other patterns that might result from import resolution
+  cleanText = cleanText.replace(/any\.\w+/g, 'any');
 
   return cleanText;
 }
@@ -313,7 +341,7 @@ function generateResolvedTypesFile(
             }
 
             // Clean up the type text for SDK consumption
-            let cleanTypeText = cleanTypeForSDK(typeText);
+            let cleanTypeText = cleanTypeForSDK(typeText, project);
 
             // Create clean type definition
             let cleanDefinition: string;
