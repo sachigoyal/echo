@@ -1,11 +1,11 @@
 import { db } from './db';
-import { User, EchoApp } from '@/generated/prisma';
+import { User } from '@/generated/prisma';
 import { NextRequest } from 'next/server';
 import { hashApiKey } from './crypto';
-import { authenticateEchoAccessJwtToken } from './jwt-tokens';
+import { authenticateEchoAccessJwt } from './auth/jwt';
 import { auth } from '@/auth';
 import { logger } from '@/logger';
-import { getUser } from '@/services/user';
+import { getPublicUser } from '@/services/user';
 import { getApp } from '@/services/apps/get';
 
 export async function getCurrentUser(): Promise<User> {
@@ -119,17 +119,20 @@ async function getCurrentUserByApiKeyOrEchoJwt(request: NextRequest) {
       },
     });
 
-    const { userId, appId } = await authenticateEchoAccessJwtToken(token);
+    const { user_id, app_id } = await authenticateEchoAccessJwt(token);
 
-    const [user, app] = await Promise.all([getUser(userId), getApp(appId)]);
+    const [user, app] = await Promise.all([
+      getPublicUser(user_id),
+      getApp(app_id),
+    ]);
 
     if (!user) {
       logger.emit({
         severityText: 'ERROR',
         body: 'User not found for valid JWT token',
         attributes: {
-          userId,
-          appId,
+          userId: user_id,
+          appId: app_id,
           function: 'getCurrentUserByApiKeyOrEchoJwt',
         },
       });
@@ -141,8 +144,8 @@ async function getCurrentUserByApiKeyOrEchoJwt(request: NextRequest) {
         severityText: 'ERROR',
         body: 'App not found for valid JWT token',
         attributes: {
-          userId,
-          appId,
+          userId: user_id,
+          appId: app_id,
           function: 'getCurrentUserByApiKeyOrEchoJwt',
         },
       });
@@ -153,8 +156,8 @@ async function getCurrentUserByApiKeyOrEchoJwt(request: NextRequest) {
       severityText: 'INFO',
       body: 'Successfully authenticated with JWT token',
       attributes: {
-        userId,
-        appId,
+        userId: user_id,
+        appId: app_id,
         function: 'getCurrentUserByApiKeyOrEchoJwt',
       },
     });

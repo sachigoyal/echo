@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
 import { MiddlewareFunction } from '../../_utils/types';
-import { authenticateEchoAccessJwtToken } from '@/lib/jwt-tokens';
-import { hashApiKey } from '@/lib/crypto';
-import { db } from '@/lib/db';
+import { findApiKeyByHash } from '@/services/api-keys';
+import { authenticateEchoAccessJwt } from '@/lib/auth/jwt';
+import { createZodRoute } from '../../_utils/create-route';
 
 type MiddlewareContext = {
   userId: string;
+  appId: string;
 };
 
 // Create a middleware that checks permissions
-export const permissionCheckMiddleware: MiddlewareFunction<
+export const authMiddleware: MiddlewareFunction<
+  Record<string, unknown>,
   MiddlewareContext
 > = async ({ next, request }) => {
   const authHeader = request.headers.get('authorization');
@@ -23,36 +25,26 @@ export const permissionCheckMiddleware: MiddlewareFunction<
 
   if (isJWT) {
     try {
-      const { userId } = await authenticateEchoAccessJwtToken(token);
-      return next({ ctx: { userId } });
+      const { user_id, app_id } = await authenticateEchoAccessJwt(token);
+      return next({ ctx: { userId: user_id, appId: app_id } });
     } catch (error) {
       console.error(error);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   } else {
     try {
-      const keyHash = hashApiKey(token);
-      const apiKey = await db.apiKey.findUnique({
-        where: {
-          keyHash,
-        },
-        include: {
-          user: true,
-          echoApp: true,
-        },
-      });
-      if (
-        !apiKey ||
-        apiKey.isArchived ||
-        apiKey.user.isArchived ||
-        apiKey.echoApp.isArchived
-      ) {
+      const apiKey = await findApiKeyByHash(token);
+      if (!apiKey) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      return next({ ctx: { userId: apiKey.user.id } });
+      return next({
+        ctx: { userId: apiKey.user.id, appId: apiKey.echoApp.id },
+      });
     } catch (error) {
       console.error(error);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   }
 };
+
+export const authRoute = createZodRoute().use(authMiddleware);

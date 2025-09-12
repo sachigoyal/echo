@@ -1,5 +1,5 @@
 import { env } from '@/env';
-import { createHmac, randomBytes, randomUUID } from 'crypto';
+import { createHmac } from 'crypto';
 
 /**
  * Hash an API key deterministically for O(1) database lookup
@@ -16,18 +16,4 @@ export function hashApiKey(apiKey: string): string {
   return createHmac('sha256', env.API_KEY_HASH_SECRET)
     .update(apiKey)
     .digest('hex');
-}
-
-// Generate a secure API key using UUID v4 and additional entropy
-export function generateApiKey(): string {
-  const prefix = env.API_KEY_PREFIX;
-
-  // Use UUID v4 for structured randomness
-  const uuidPart = randomUUID().replace(/-/g, '');
-
-  // Add additional cryptographic entropy (16 bytes = 32 hex chars)
-  const entropyPart = randomBytes(16).toString('hex');
-
-  // Combine for maximum security: prefix + UUID + entropy
-  return `${prefix}${uuidPart}${entropyPart}`;
 }
