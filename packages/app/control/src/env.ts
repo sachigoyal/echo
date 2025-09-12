@@ -137,7 +137,7 @@ export const env = createEnv({
 
     // integration tests
 
-    INTEGRATION_TEST_MODE: z.boolean().default(false),
+    INTEGRATION_TEST_MODE: z.coerce.boolean().default(false),
 
     // merit
 
