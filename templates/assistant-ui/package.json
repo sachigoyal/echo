@@ -1,6 +1,5 @@
 {
-  "name": "example-with-ai-sdk-v5",
-  "private": true,
+  "name": "assistant-ui-echo-template",
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
