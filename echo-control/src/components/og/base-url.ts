@@ -1,3 +1,3 @@
 import { env } from '@/env';
 
-export const baseUrl = env.VERCEL_PROJECT_PRODUCTION_URL;
+export const baseUrl = env.NEXT_PUBLIC_APP_URL;

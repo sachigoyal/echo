@@ -6,8 +6,6 @@ const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
   env.API_ECHO_ACCESS_JWT_SECRET
 );
 
-const JWT_SECRET = new TextEncoder().encode(env.OAUTH_CODE_SIGNING_JWT_SECRET);
-
 const jwtPayloadSchema = z.object({
   user_id: z.string(),
   app_id: z.string(),

@@ -1,6 +1,6 @@
 // Central repository for all test data constants
 // This eliminates hardcoded values scattered across multiple files
-import { hashApiKey } from '../../echo-control/src/lib/crypto.js';
+import { hashApiKey } from '../../echo-control/src/services/api-keys';
 
 const primaryApiKey = 'ek_test_1234567890abcdef';
 
