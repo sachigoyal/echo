@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { signOut, echoClient } from '@merit-systems/echo-next-sdk/client';
 import Image from 'next/image';
-import { User } from '@merit-systems/echo-typescript-sdk';
+// Define the User type locally since it's not exported from the Next.js SDK
+interface User {
+  name?: string;
+  email: string;
+}
 import { useBalance } from './balance-provider';
 
 export const Header = () => {

@@ -2,7 +2,11 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { echoClient } from '@merit-systems/echo-next-sdk/client';
-import { Balance } from '@merit-systems/echo-typescript-sdk';
+
+// Define the Balance type locally since it's not exported from the Next.js SDK
+interface Balance {
+  balance: number;
+}
 
 interface BalanceContextType {
   balance: Balance | null;
