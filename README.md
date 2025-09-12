@@ -49,6 +49,24 @@ Consider giving a star on GitHub!
 - [Echo Next.js Example](./packages/sdk/examples/next)
 - [Echo React SDK](./packages/sdk/examples/vite)
 
+
+
+## Templates
+
+Get started quickly with `echo-start`:
+
+```bash
+npx echo-start my-app
+```
+
+Available templates:
+- **[next](./templates/next)** - Next.js application with Echo
+- **[react](./templates/react)** - Vite React application with Echo  
+- **[nextjsChatbot](./templates/nextjs-chatbot)** - Next.js with Echo and Vercel AI SDK
+- **[assistantUi](./templates/assistant-ui)** - Next.js with Echo and Assistant UI
+
+Or run `npx echo-start my-app` to choose interactively.
+
 # Development
 
 Fill out `packages/app/control/.env` and `packages/app/server/.env`. Then...
