@@ -4,18 +4,18 @@ on:
   push:
     branches: [master]
     paths:
-      - 'echo-typescript-sdk/**'
-      - 'echo-react-sdk/**'
-      - 'echo-next-sdk/**'
+      - 'packages/sdk/ts/**'
+      - 'packages/sdk/react/**'
+      - 'packages/sdk/next/**'
       - '.github/workflows/publish-sdks.yml'
       - '.github/workflows/test-publish.yml'
       - 'pnpm-lock.yaml'
       - 'package.json'
   pull_request:
     paths:
-      - 'echo-typescript-sdk/**'
-      - 'echo-react-sdk/**'
-      - 'echo-next-sdk/**'
+      - 'packages/sdk/ts/**'
+      - 'packages/sdk/react/**'
+      - 'packages/sdk/next/**'
       - '.github/workflows/publish-sdks.yml'
       - '.github/workflows/test-publish.yml'
 
@@ -53,9 +53,9 @@ jobs:
       - name: Get package versions
         id: get-versions
         run: |
-          TS_VERSION=$(node -p "require('./echo-typescript-sdk/package.json').version")
-          REACT_VERSION=$(node -p "require('./echo-react-sdk/package.json').version")
-          NEXT_VERSION=$(node -p "require('./echo-next-sdk/package.json').version")
+          TS_VERSION=$(node -p "require('./packages/sdk/ts/package.json').version")
+          REACT_VERSION=$(node -p "require('./packages/sdk/react/package.json').version")
+          NEXT_VERSION=$(node -p "require('./packages/sdk/next/package.json').version")
           echo "typescript-version=$TS_VERSION" >> $GITHUB_OUTPUT
           echo "react-version=$REACT_VERSION" >> $GITHUB_OUTPUT
           echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
@@ -65,7 +65,7 @@ jobs:
 
       # TypeScript SDK Tests
       - name: Check TypeScript SDK configuration
-        working-directory: ./echo-typescript-sdk
+        working-directory: ./packages/sdk/ts
         run: |
           echo "🔍 Checking TypeScript SDK configuration..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -86,7 +86,7 @@ jobs:
 
       - name: Build and test TypeScript SDK
         id: test-typescript
-        working-directory: ./echo-typescript-sdk
+        working-directory: ./packages/sdk/ts
         run: |
           echo "🔨 Building TypeScript SDK..."
           pnpm run build
@@ -133,7 +133,7 @@ jobs:
 
       # React SDK Tests
       - name: Check React SDK configuration
-        working-directory: ./echo-react-sdk
+        working-directory: ./packages/sdk/react
         run: |
           echo "🔍 Checking React SDK configuration..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -154,7 +154,7 @@ jobs:
 
       - name: Build and test React SDK
         id: test-react
-        working-directory: ./echo-react-sdk
+        working-directory: ./packages/sdk/react
         run: |
           echo "🔨 Building React SDK..."
           pnpm run build
@@ -203,7 +203,7 @@ jobs:
 
       # Next.js SDK Tests
       - name: Check Next.js SDK configuration
-        working-directory: ./echo-next-sdk
+        working-directory: ./packages/sdk/next
         run: |
           echo "🔍 Checking Next.js SDK configuration..."
           PACKAGE_NAME=$(node -p "require('./package.json').name")
@@ -224,7 +224,7 @@ jobs:
 
       - name: Build and test Next.js SDK
         id: test-next
-        working-directory: ./echo-next-sdk
+        working-directory: ./packages/sdk/next
         run: |
           echo "🔨 Building Next.js SDK..."
           pnpm run build
