@@ -1,6 +1,6 @@
 # AI SDK v5 Example
 
-This example demonstrates how to use `@assistant-ui/react-ai-sdk-v5` with the Vercel AI SDK v5.
+This example demonstrates how to use `@assistant-ui/react-ai-sdk` with the Vercel AI SDK v5.
 
 Echo is an OAuth-enabled AI provider router that gives your users a universal balance and gives you billing, auth, and usage metering out of the box. Replace direct provider SDKs with Echo to monetize in minutes without handling API keys.
 
