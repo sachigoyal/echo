@@ -18,15 +18,15 @@ export const POST = authRoute
     } catch (error) {
       if (error instanceof Stripe.errors.StripeError) {
         return NextResponse.json(
-          { error: `Stripe error: ${error.message}` },
+          { message: `Stripe error: ${error.message}` },
           { status: 400 }
         );
       }
       if (error instanceof Error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ message: error.message }, { status: 500 });
       }
       return NextResponse.json(
-        { error: 'Internal server error' },
+        { message: 'Internal server error' },
         { status: 500 }
       );
     }

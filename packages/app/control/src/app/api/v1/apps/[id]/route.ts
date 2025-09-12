@@ -4,6 +4,7 @@ import { authRoute } from '../../_lib/auth-route';
 import { z } from 'zod';
 import { appIdSchema } from '@/services/apps/lib/schemas';
 import { getApp } from '@/services/apps/get';
+import { OriginalRouteHandler } from '@/app/api/_utils/types';
 
 const paramsSchema = z.object({
   id: appIdSchema,
@@ -25,10 +26,16 @@ export const GET = authRoute
         },
       });
       return NextResponse.json(
-        { error: 'Access denied: App not found' },
+        { message: 'Access denied: App not found' },
         { status: 403 }
       );
     }
     const app = await getApp(id);
-    return NextResponse.json(app);
+    if (!app) {
+      return NextResponse.json({ message: 'App not found' }, { status: 404 });
+    }
+    const response = NextResponse.json(app);
+    return response;
   });
+
+export type Body = typeof GET extends OriginalRouteHandler<infer T> ? T : never;

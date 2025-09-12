@@ -16,7 +16,7 @@ const authMiddleware: MiddlewareFunction<
 > = async ({ next, request }) => {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   const token = authHeader.substring(7);
@@ -29,20 +29,20 @@ const authMiddleware: MiddlewareFunction<
       return next({ ctx: { userId: user_id, appId: app_id } });
     } catch (error) {
       console.error(error);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
   } else {
     try {
       const apiKey = await findApiKeyByHash(token);
       if (!apiKey) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
       }
       return next({
         ctx: { userId: apiKey.user.id, appId: apiKey.echoApp.id },
       });
     } catch (error) {
       console.error(error);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
   }
 };

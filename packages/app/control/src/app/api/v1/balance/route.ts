@@ -36,7 +36,7 @@ export const GET = authRoute.query(querySchema).handler(async (_, context) => {
         },
       });
       return NextResponse.json(
-        { error: 'Failed to fetch balance' },
+        { message: 'Failed to fetch balance' },
         { status: 404 }
       );
     }
@@ -65,7 +65,7 @@ export const GET = authRoute.query(querySchema).handler(async (_, context) => {
         },
       });
       return NextResponse.json(
-        { error: 'Failed to fetch balance' },
+        { message: 'Failed to fetch balance' },
         { status: 404 }
       );
     }
