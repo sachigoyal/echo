@@ -30,6 +30,10 @@ export async function POST(req: Request) {
         },
       }),
     },
+    onFinish: () => {
+      // Message completed - this callback fires when streaming is done
+      // The client-side assistant-ui will handle triggering balance refresh
+    },
   });
 
   return result.toUIMessageStreamResponse();
