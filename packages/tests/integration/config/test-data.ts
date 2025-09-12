@@ -1,6 +1,6 @@
 // Central repository for all test data constants
 // This eliminates hardcoded values scattered across multiple files
-import { hashApiKey } from '../../../app/control/src/lib/auth/api-key';
+import { hashApiKey } from '../../../app/control/src/services/api-keys';
 
 const primaryApiKey = 'ek_test_1234567890abcdef';
 
