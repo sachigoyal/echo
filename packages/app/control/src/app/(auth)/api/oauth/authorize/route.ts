@@ -35,6 +35,7 @@ export const GET = createZodRoute()
     }
 
     if (query.prompt === 'none') {
+      console.log('INTEGRATION_TEST_MODE', env.INTEGRATION_TEST_MODE);
       if (env.INTEGRATION_TEST_MODE) {
         return NextResponse.json(
           {
