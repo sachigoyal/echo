@@ -163,7 +163,9 @@ export const env = createEnv({
     NEXT_PUBLIC_NODE_ENV: z.string().default('development'),
   },
   experimental__runtimeEnv: {
-    NEXT_PUBLIC_APP_URL: `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`,
+    NEXT_PUBLIC_APP_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : undefined,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
   },

@@ -21,20 +21,6 @@ const JWT_SECRET = new TextEncoder().encode(
   env.OAUTH_CODE_SIGNING_JWT_SECRET || 'your-secret-key-change-in-production'
 );
 
-interface ApiTokenPayload {
-  user_id: string;
-  app_id: string;
-  scope: string;
-  key_version: number;
-  sid?: string;
-  // Standard JWT claims
-  sub: string; // user_id
-  aud: string; // app_id
-  exp: number;
-  iat: number;
-  jti: string; // unique token ID
-}
-
 interface AuthCodePayload {
   clientId: string;
   redirectUri: string;
