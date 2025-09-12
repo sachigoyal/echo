@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 import * as fs from 'fs';
 import * as path from 'path';
-import { Project, SourceFile, Node } from 'ts-morph';
+import { Project, SourceFile, Node, SyntaxKind } from 'ts-morph';
 
 interface RouteInfo {
   filePath: string;
@@ -134,11 +134,12 @@ function analyzeRouteFile(
 }
 
 /**
- * Generate the complete types file content
+ * Generate the complete types file content with resolved types
  */
 function generateTypesFileContent(
   generatedTypes: GeneratedType[],
-  apiDir: string
+  apiDir: string,
+  project: Project
 ): string {
   const imports = `import { OriginalRouteHandler } from '../app/api/_utils/types';
 
@@ -193,6 +194,177 @@ function generateTypesFileContent(
 }
 
 /**
+ * Clean up type definitions for SDK consumption
+ * - Remove absolute import paths
+ * - Convert Date to string
+ * - Convert Decimal to string
+ */
+function cleanTypeForSDK(typeText: string): string {
+  let cleanText = typeText;
+
+  // Replace absolute import paths with their simple type names
+  cleanText = cleanText.replace(/import\(".*?\/([^"\/]+)"\)\.(\w+)/g, '$2');
+
+  // Handle malformed import paths (like .string after import)
+  cleanText = cleanText.replace(/import\(".*?"\)\.string/g, 'string');
+
+  // Handle any remaining import statements by replacing with 'any'
+  cleanText = cleanText.replace(/import\(".*?"\)/g, 'any');
+
+  // Fix any.string patterns
+  cleanText = cleanText.replace(/any\.string/g, 'string');
+
+  // Replace Date with string (since JSON serialization converts dates to strings)
+  cleanText = cleanText.replace(/\bDate\b/g, 'string');
+
+  // Replace Prisma Decimal with string (common serialization format)
+  cleanText = cleanText.replace(/\bDecimal\b/g, 'string');
+
+  // Replace enum references with string for simplicity
+  cleanText = cleanText.replace(/\$Enums\.\w+/g, 'string');
+
+  return cleanText;
+}
+
+/**
+ * Generate resolved types file for SDK consumption
+ */
+function generateResolvedTypesFile(
+  generatedTypes: GeneratedType[],
+  project: Project,
+  outputDir: string
+): void {
+  console.log('🔧 Generating resolved types for SDK...');
+
+  const typeChecker = project.getTypeChecker();
+  const resolvedTypes: string[] = [];
+
+  // Create a temporary file to resolve the types
+  const tempFilePath = path.join(outputDir, 'temp-resolve.ts');
+
+  const typesByRoute = generatedTypes.reduce(
+    (acc, type) => {
+      if (!acc[type.routePath]) {
+        acc[type.routePath] = [];
+      }
+      acc[type.routePath].push(type);
+      return acc;
+    },
+    {} as Record<string, GeneratedType[]>
+  );
+
+  // Build the temp file content with imports and type definitions
+  let tempContent = `import { OriginalRouteHandler } from '../app/api/_utils/types';\n`;
+
+  // Add all route imports
+  for (const [routePath, types] of Object.entries(typesByRoute)) {
+    for (const type of types) {
+      const routeImportPath = routePath.replace(/\{[^}]+\}/g, '[id]');
+      const importPath = `../app/api/v1${routeImportPath}/route`;
+      const importAlias = `${type.method}${routePath.replace(/[^a-zA-Z0-9]/g, '')}`;
+      tempContent += `import { ${type.method} as ${importAlias} } from '${importPath}';\n`;
+    }
+  }
+
+  tempContent += '\n';
+
+  // Add type definitions
+  for (const [routePath, types] of Object.entries(typesByRoute)) {
+    for (const type of types) {
+      const importAlias = `${type.method}${routePath.replace(/[^a-zA-Z0-9]/g, '')}`;
+      tempContent += `export type ${type.name} = typeof ${importAlias} extends OriginalRouteHandler<infer T> ? T : never;\n`;
+    }
+  }
+
+  // Write temp file and add to project
+  fs.writeFileSync(tempFilePath, tempContent, 'utf8');
+  const tempSourceFile = project.addSourceFileAtPath(tempFilePath);
+
+  try {
+    // Get all exported types from the temp file
+    const exports = tempSourceFile.getExportedDeclarations();
+
+    for (const [exportName, declarations] of exports) {
+      for (const declaration of declarations) {
+        // Check for TypeAliasDeclaration using the enum value
+        if (declaration.getKind() === SyntaxKind.TypeAliasDeclaration) {
+          try {
+            console.log(`🔍 Attempting to resolve type: ${exportName}`);
+
+            // Get the resolved type
+            const type = typeChecker.getTypeAtLocation(declaration);
+            const typeText = type.getText(declaration);
+
+            console.log(`📝 Raw type text for ${exportName}: ${typeText}`);
+
+            // Skip unresolved types
+            if (
+              typeText === 'any' ||
+              typeText === 'never' ||
+              typeText === 'unknown'
+            ) {
+              console.log(
+                `⚠️  Could not resolve type: ${exportName} (got: ${typeText})`
+              );
+              resolvedTypes.push(
+                `export type ${exportName} = any; // Could not resolve from route handler - got: ${typeText}`
+              );
+              continue;
+            }
+
+            // Clean up the type text for SDK consumption
+            let cleanTypeText = cleanTypeForSDK(typeText);
+
+            // Create clean type definition
+            let cleanDefinition: string;
+            if (cleanTypeText.startsWith('{') && cleanTypeText.endsWith('}')) {
+              cleanDefinition = `export interface ${exportName} ${cleanTypeText}`;
+            } else {
+              cleanDefinition = `export type ${exportName} = ${cleanTypeText};`;
+            }
+
+            resolvedTypes.push(cleanDefinition);
+            console.log(
+              `✅ Resolved type: ${exportName} -> ${typeText.substring(0, 100)}...`
+            );
+          } catch (error) {
+            console.warn(`⚠️  Error resolving ${exportName}:`, error);
+            resolvedTypes.push(
+              `export type ${exportName} = any; // Resolution failed: ${error}`
+            );
+          }
+        } else {
+          console.log(
+            `⚠️  Declaration ${exportName} is not a type alias (kind: ${declaration.getKind()})`
+          );
+        }
+      }
+    }
+  } finally {
+    // Clean up temp file
+    project.removeSourceFile(tempSourceFile);
+    fs.unlinkSync(tempFilePath);
+  }
+
+  // Generate the resolved types file
+  const resolvedContent = `// Auto-generated resolved API response types
+// This file is generated by running: npm run generate-api-types
+// These types are resolved from the actual route handlers and can be safely copied to the SDK
+// Do not edit this file manually - it will be overwritten
+
+${resolvedTypes.join('\n\n')}
+`;
+
+  const resolvedTypesPath = path.join(outputDir, 'api-types-resolved.ts');
+  fs.writeFileSync(resolvedTypesPath, resolvedContent, 'utf8');
+
+  console.log(
+    `📝 Generated resolved types: ${path.relative(process.cwd(), resolvedTypesPath)}`
+  );
+  console.log(`   ${resolvedTypes.length} types resolved`);
+}
+
+/**
  * Main function to generate API types
  */
 async function main() {
@@ -240,8 +412,15 @@ async function main() {
 
   // Generate and write the types file
   if (allGeneratedTypes.length > 0) {
-    const content = generateTypesFileContent(allGeneratedTypes, apiDir);
+    const content = generateTypesFileContent(
+      allGeneratedTypes,
+      apiDir,
+      project
+    );
     fs.writeFileSync(outputFile, content, 'utf8');
+
+    // Also generate resolved types for SDK consumption
+    generateResolvedTypesFile(allGeneratedTypes, project, outputDir);
 
     console.log(
       `\n🎉 Generated ${allGeneratedTypes.length} API response types`

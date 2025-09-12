@@ -37,5 +37,3 @@ export const GET = authRoute
     const response = NextResponse.json(app);
     return response;
   });
-
-export type Body = typeof GET extends OriginalRouteHandler<infer T> ? T : never;
