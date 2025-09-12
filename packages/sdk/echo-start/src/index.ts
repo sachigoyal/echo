@@ -13,18 +13,34 @@ const program = new Command();
 // Available templates - add new ones here
 const TEMPLATES = {
   next: {
-    repo: 'Merit-Systems/echo/examples/next',
+    repo: 'Merit-Systems/echo/templates/next',
     title: 'Next.js',
     description: 'Full-stack Next.js application with Echo',
     devCommand: 'pnpm dev',
     envVarName: 'NEXT_PUBLIC_ECHO_APP_ID',
   },
-  vite: {
-    repo: 'Merit-Systems/echo/examples/vite',
+  react: {
+    repo: 'Merit-Systems/echo/templates/react',
     title: 'Vite',
     description: 'Fast Vite React application with Echo',
     devCommand: 'pnpm dev',
     envVarName: 'VITE_ECHO_APP_ID',
+  },
+  nextjsChatbot: {
+    repo: 'Merit-Systems/echo/templates/nextjs-chatbot',
+    title: 'Next.js Chatbot',
+    description:
+      'Full-stack Next.js application with Echo and the Vercel AI SDK',
+    devCommand: 'pnpm dev',
+    envVarName: 'NEXT_PUBLIC_ECHO_APP_ID',
+  },
+  assistantUi: {
+    repo: 'Merit-Systems/echo/templates/assistant-ui',
+    title: 'Assistant UI',
+    description:
+      'Full-stack Next.js application with Echo and the Assistant UI',
+    devCommand: 'pnpm dev',
+    envVarName: 'NEXT_PUBLIC_ECHO_APP_ID',
   },
 } as const;
 
