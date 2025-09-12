@@ -6,8 +6,9 @@ import { db } from '../lib/db';
 import { AppRole, MembershipStatus } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
 import { PaginationParams, toPaginatedReponse } from './lib/pagination';
-import { createHmac, randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { env } from '@/env';
+import { hashApiKey } from '@/lib/auth/api-key';
 
 export const getApiKeySchema = z.string();
 
@@ -189,14 +190,4 @@ export async function deleteApiKey(
       archivedAt: now,
     },
   });
-}
-
-export function hashApiKey(apiKey: string): string {
-  if (apiKey.length === 0) {
-    throw new Error('API key must be a non-empty string');
-  }
-
-  return createHmac('sha256', env.API_KEY_HASH_SECRET)
-    .update(apiKey)
-    .digest('hex');
 }
