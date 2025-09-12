@@ -43,7 +43,7 @@ jobs:
 
       - name: Get version from TypeScript SDK
         id: get-version
-        working-directory: ./echo-typescript-sdk
+        working-directory: ./packages/sdk/ts
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
@@ -51,14 +51,14 @@ jobs:
 
       # TypeScript SDK
       - name: Build TypeScript SDK
-        working-directory: ./echo-typescript-sdk
+        working-directory: ./packages/sdk/ts
         run: |
           echo "🔨 Building TypeScript SDK..."
           pnpm run build
           echo "✅ TypeScript SDK built"
 
       - name: Test TypeScript SDK
-        working-directory: ./echo-typescript-sdk
+        working-directory: ./packages/sdk/ts
         run: |
           echo "🧪 Testing TypeScript SDK..."
           pnpm run test
@@ -67,7 +67,7 @@ jobs:
 
       - name: Check and publish TypeScript SDK
         id: publish-typescript
-        working-directory: ./echo-typescript-sdk
+        working-directory: ./packages/sdk/ts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -95,14 +95,14 @@ jobs:
 
       # React SDK
       - name: Build React SDK
-        working-directory: ./echo-react-sdk
+        working-directory: ./packages/sdk/react
         run: |
           echo "🔨 Building React SDK..."
           pnpm run build
           echo "✅ React SDK built"
 
       - name: Test React SDK
-        working-directory: ./echo-react-sdk
+        working-directory: ./packages/sdk/react
         run: |
           echo "🧪 Testing React SDK..."
           # Note: Some authentication-related tests are currently failing due to SSR removal
@@ -113,7 +113,7 @@ jobs:
 
       - name: Check and publish React SDK
         id: publish-react
-        working-directory: ./echo-react-sdk
+        working-directory: ./packages/sdk/react
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -141,14 +141,14 @@ jobs:
 
       # Next.js SDK
       - name: Build Next.js SDK
-        working-directory: ./echo-next-sdk
+        working-directory: ./packages/sdk/next
         run: |
           echo "🔨 Building Next.js SDK..."
           pnpm run build
           echo "✅ Next.js SDK built"
 
       - name: Test Next.js SDK
-        working-directory: ./echo-next-sdk
+        working-directory: ./packages/sdk/next
         run: |
           echo "🧪 Testing Next.js SDK..."
           pnpm run test
@@ -157,7 +157,7 @@ jobs:
 
       - name: Check and publish Next.js SDK
         id: publish-next
-        working-directory: ./echo-next-sdk
+        working-directory: ./packages/sdk/next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
