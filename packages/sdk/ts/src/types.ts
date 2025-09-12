@@ -121,44 +121,6 @@ export interface CreatePaymentLinkResponse {
   };
 }
 
-export interface CreateLlmTransactionRequest {
-  model: string;
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-  providerId: string;
-  cost: number;
-  prompt?: string;
-  response?: string;
-  status?: string;
-  errorMessage?: string;
-}
-
-export interface CreateLlmTransactionResponse {
-  transaction: LlmTransaction;
-}
-
-export interface ApiKeyValidationResult {
-  userId: string;
-  echoAppId: string;
-  user: User;
-  echoApp: EchoApp;
-  apiKeyId?: string;
-  apiKey?: ApiKey;
-}
-
-/**
- * JWT payload for Echo Access Tokens
- */
-export interface EchoAccessJwtPayload {
-  user_id: string;
-  app_id: string;
-  scope: string;
-  exp: number;
-  iat: number;
-  jti: string;
-}
-
 /**
  * User spend information for a specific app
  */
