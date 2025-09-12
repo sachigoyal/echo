@@ -4,7 +4,7 @@ import { authRoute } from '../_lib/auth-route';
 import { listAppsSchema, listOwnerApps } from '@/services/apps/list';
 import { paginationSchema } from '@/services/lib/pagination';
 
-const querySchema = paginationSchema.extend(listAppsSchema);
+const querySchema = paginationSchema.extend(listAppsSchema.shape);
 
 // GET /api/v1/apps - List all Echo apps for the authenticated user
 export const GET = authRoute.query(querySchema).handler(async (_, context) => {

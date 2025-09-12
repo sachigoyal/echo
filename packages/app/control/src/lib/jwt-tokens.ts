@@ -83,34 +83,6 @@ async function createEchoAccessJwtToken(params: {
 }
 
 /**
- * Verify and decode JWT API token (fast path - no DB lookup)
- *
- * This should not include a Bearer prefix
- */
-async function verifyEchoAccessJwtToken(
-  token: string
-): Promise<ApiTokenPayload | null> {
-  try {
-    const { payload } = await jwtVerify(token, API_ECHO_ACCESS_JWT_SECRET, {
-      clockTolerance: 5, // 5 seconds clock skew tolerance
-    });
-
-    // Type assertion with validation
-    const apiPayload = payload as unknown as ApiTokenPayload;
-
-    // Validate required fields
-    if (!apiPayload.user_id || !apiPayload.app_id || !apiPayload.scope) {
-      return null;
-    }
-
-    return apiPayload;
-  } catch (error) {
-    console.error('JWT verification failed:', error);
-    return null;
-  }
-}
-
-/**
  * Refresh token response type
  */
 interface RefreshTokenResponse {
