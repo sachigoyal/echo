@@ -1,6 +1,13 @@
 import { createEnv } from '@t3-oss/env-nextjs'; // or core package
 import { z } from 'zod';
 
+const IS_VERCEL_PRODUCTION = ['production', 'staging'].includes(
+  process.env.VERCEL_ENV ?? ''
+);
+const IS_INTEGRATION_TEST = process.env.INTEGRATION_TEST_MODE === 'true';
+
+const IS_STRICT = IS_VERCEL_PRODUCTION && !IS_INTEGRATION_TEST;
+
 export const env = createEnv({
   /*
    * Serverside Environment variables, not available on the client.
@@ -10,66 +17,100 @@ export const env = createEnv({
     // api keys
 
     API_KEY_PREFIX: z.string().default('echo_'),
-    API_KEY_HASH_SECRET:
-      process.env.NODE_ENV === 'production'
-        ? z.string()
-        : z.string().default('api-key-hash-secret-change-in-production'),
-    API_ECHO_ACCESS_JWT_SECRET:
-      process.env.NODE_ENV === 'production'
-        ? z.string()
-        : z.string().default('api-echo-access-jwt-secret-change-in-production'),
+    API_KEY_HASH_SECRET: IS_STRICT
+      ? z.string()
+      : z.string().default('api-key-hash-secret-change-in-production'),
+    API_ECHO_ACCESS_JWT_SECRET: IS_STRICT
+      ? z.string()
+      : z.string().default('api-echo-access-jwt-secret-change-in-production'),
 
     // database
 
-    DATABASE_URL: z.url(),
+    DATABASE_URL: IS_STRICT
+      ? z.url()
+      : z
+          .url()
+          .default(
+            'postgresql://echo_user:echo_password@localhost:5469/echo_control?schema=public'
+          ),
 
     // auth
 
     AUTH_SECRET: z.string(),
 
-    AUTH_GOOGLE_ID: z.string(),
-    AUTH_GOOGLE_SECRET: z.string(),
+    AUTH_GOOGLE_ID: !IS_INTEGRATION_TEST
+      ? z.string()
+      : z.string().default('get-a-google-id-for-production'),
+    AUTH_GOOGLE_SECRET: !IS_INTEGRATION_TEST
+      ? z.string()
+      : z.string().default('auth-google-secret-change-in-production'),
 
-    AUTH_GITHUB_ID: z.string(),
-    AUTH_GITHUB_SECRET: z.string(),
+    AUTH_GITHUB_ID: !IS_INTEGRATION_TEST
+      ? z.string()
+      : z.string().default('get-a-github-id-for-production'),
+    AUTH_GITHUB_SECRET: !IS_INTEGRATION_TEST
+      ? z.string()
+      : z.string().default('auth-github-secret-change-in-production'),
 
-    AUTH_RESEND_KEY: z.string(),
-    AUTH_RESEND_FROM_EMAIL: z.email(),
+    AUTH_RESEND_KEY: !IS_INTEGRATION_TEST
+      ? z.string()
+      : z.string().default('auth-resend-key-change-in-production'),
+    AUTH_RESEND_FROM_EMAIL: !IS_INTEGRATION_TEST
+      ? z.email()
+      : z.string().default('john@doe.com'),
 
     // stripe
 
     STRIPE_SECRET_KEY: z.string(),
     STRIPE_PUBLISHABLE_KEY: z.string(),
     STRIPE_WEBHOOK_SECRET: z.string(),
-    WEBHOOK_URL: z.url(),
+    WEBHOOK_URL: IS_STRICT
+      ? z.url()
+      : z.url().default('http://localhost:3000/stripe/webhook'),
 
     // telemetry
 
-    SIGNOZ_INGESTION_KEY: z.string(),
+    SIGNOZ_INGESTION_KEY: IS_STRICT
+      ? z.string()
+      : z.string().default('signoz-ingestion-key-change-in-production'),
     OTEL_EXPORTER_OTLP_ENDPOINT: z.url().default('https://ingest.signoz.io'),
     SIGNOZ_SERVICE_NAME: z.string().default('echo-control'),
 
     // blob storage
 
-    BLOB_READ_WRITE_TOKEN: z.string(),
+    BLOB_READ_WRITE_TOKEN: IS_VERCEL_PRODUCTION
+      ? z.string()
+      : z.string().default('you wont be able to upload files without this'),
 
     // x402
 
-    NETWORK: z.string(),
-    RESOURCE_WALLET_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
-      message: 'RESOURCE_WALLET_ADDRESS must be a valid Ethereum address',
-    }),
+    NETWORK: z.string().default('base'),
+    RESOURCE_WALLET_ADDRESS: IS_VERCEL_PRODUCTION
+      ? z.string().regex(/^0x[a-fA-F0-9]{40}$/, {
+          message: 'RESOURCE_WALLET_ADDRESS must be a valid Ethereum address',
+        })
+      : z.string().default('0x1234567890123456789012345678901234567890'),
 
     // github
 
-    GITHUB_TOKEN: z.string(),
+    GITHUB_TOKEN: IS_STRICT
+      ? z.string()
+      : z.string().default('github-token-change-in-production'),
 
     // free tier
 
-    LATEST_FREE_TIER_CREDITS_ISSUANCE_AMOUNT: z.coerce.number().positive(),
-    LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION: z.coerce.number().positive(),
-    LATEST_TERMS_AND_SERVICES_VERSION: z.coerce.number().positive(),
-    LATEST_PRIVACY_POLICY_VERSION: z.coerce.number().positive(),
+    LATEST_FREE_TIER_CREDITS_ISSUANCE_AMOUNT: IS_STRICT
+      ? z.coerce.number().positive()
+      : z.coerce.number().positive().default(1),
+    LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION: IS_STRICT
+      ? z.coerce.number().positive()
+      : z.coerce.number().positive().default(1),
+    LATEST_TERMS_AND_SERVICES_VERSION: IS_STRICT
+      ? z.coerce.number().positive()
+      : z.coerce.number().positive().default(1),
+    LATEST_PRIVACY_POLICY_VERSION: IS_STRICT
+      ? z.coerce.number().positive()
+      : z.coerce.number().positive().default(1),
 
     // node environment
 
@@ -79,10 +120,9 @@ export const env = createEnv({
 
     // oauth
 
-    OAUTH_CODE_SIGNING_JWT_SECRET:
-      process.env.NODE_ENV === 'production'
-        ? z.string()
-        : z.string().default('your-secret-key-change-in-production'),
+    OAUTH_CODE_SIGNING_JWT_SECRET: IS_STRICT
+      ? z.string()
+      : z.string().default('your-secret-key-change-in-production'),
     OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS: z.coerce.number().positive().default(1),
     OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS: z.coerce.number().positive().default(1),
     OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS: z.coerce
@@ -101,10 +141,16 @@ export const env = createEnv({
 
     // merit
 
-    MERIT_API_KEY: z.string(),
-    MERIT_BASE_URL: z.url(),
-    MERIT_CHECKOUT_URL: z.url(),
-    MERIT_SENDER_GITHUB_ID: z.coerce.number(),
+    MERIT_API_KEY: IS_STRICT ? z.string() : z.string().default('abc123'),
+    MERIT_BASE_URL: IS_STRICT
+      ? z.url()
+      : z.url().default('http://localhost:5174'),
+    MERIT_CHECKOUT_URL: IS_STRICT
+      ? z.url()
+      : z.url().default('http://localhost:5174/pay'),
+    MERIT_SENDER_GITHUB_ID: IS_STRICT
+      ? z.coerce.number()
+      : z.coerce.number().default(1),
   },
   /*
    * Environment variables available on the client (and server).
@@ -120,7 +166,7 @@ export const env = createEnv({
     NEXT_PUBLIC_NODE_ENV: z.string().default('development'),
   },
   experimental__runtimeEnv: {
-    NEXT_PUBLIC_APP_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    NEXT_PUBLIC_APP_URL: `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_NODE_ENV: process.env.NODE_ENV,
   },
