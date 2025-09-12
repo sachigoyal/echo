@@ -10,7 +10,7 @@ type MiddlewareContext = {
 };
 
 // Create a middleware that checks permissions
-export const authMiddleware: MiddlewareFunction<
+const authMiddleware: MiddlewareFunction<
   Record<string, unknown>,
   MiddlewareContext
 > = async ({ next, request }) => {

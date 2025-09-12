@@ -110,30 +110,6 @@ async function verifyEchoAccessJwtToken(
   }
 }
 
-export async function authenticateEchoAccessJwtToken(
-  jwtToken: string
-): Promise<{
-  userId: string;
-  appId: string;
-  scope: string;
-}> {
-  const jwtPayload = await verifyEchoAccessJwtToken(jwtToken);
-
-  if (!jwtPayload) {
-    throw new Error('Invalid or expired JWT token');
-  }
-
-  if (jwtPayload.exp < Math.floor(Date.now() / 1000)) {
-    throw new Error('JWT token has expired');
-  }
-
-  return {
-    userId: jwtPayload.user_id,
-    appId: jwtPayload.app_id,
-    scope: jwtPayload.scope,
-  };
-}
-
 /**
  * Refresh token response type
  */
