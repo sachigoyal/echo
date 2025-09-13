@@ -63,21 +63,19 @@ interface EchoProviderProps {
   children: ReactNode;
 }
 
-// TODO(sragss):
-// 1. Audit configs, make sure they're sensible and work across both.
-// 2. What happens on sign out and shit. Are we handling that properly. Will we properly detect a sign out state?
-
 export function EchoProvider({ config, children }: EchoProviderProps) {
   const basePath = config.basePath || '/api/echo';
   const session = useProxySession(basePath, config.initialSession);
 
   const echoClient = useMemo(
     () =>
-      new EchoClient({
-        baseUrl: `${basePath}/proxy`,
-        apiKey: 'next-sdk-proxy',
-      }),
-    [basePath]
+      session.isAuthenticated
+        ? new EchoClient({
+            baseUrl: `${basePath}/proxy`,
+            apiKey: 'next-sdk-proxy',
+          })
+        : null,
+    [basePath, session.isAuthenticated]
   );
 
   const signIn = useCallback(async () => {
