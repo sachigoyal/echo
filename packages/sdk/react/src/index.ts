@@ -7,14 +7,13 @@ export { Logo } from './components/Logo';
 
 export { useEcho } from './hooks/useEcho';
 // useEchoRefresh is kept internal - most apps don't need refresh state
-export { useEchoOIDCClient as useEchoClient } from './hooks/useEchoClient'; // TODO(sragss): rename
+export { useEchoClient } from './hooks/useEchoClient';
 // OpenAI integration hook
 export { useEchoOpenAI } from './hooks/useEchoOpenAI';
 // Echo provider hooks
 export { useEchoModelProviders } from './hooks/useEchoModelProviders';
 // AI SDK integration hooks
 export { EchoChatProvider } from './components/EchoChatProvider';
-export { EchoProxyProvider } from './EchoProxyProvider'; // TODO(sragss): rm 
 export { useChat } from './hooks/useChat';
 
 export type {

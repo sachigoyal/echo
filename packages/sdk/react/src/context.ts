@@ -9,28 +9,28 @@ import { createContext } from 'react';
 
 export interface EchoContextValue {
     // Auth & User
-    rawUser: User | null | undefined;     // directly piped from oidc
-    user: EchoUser | null;                // directly piped from oidc
-    balance: EchoBalance | null;
-    freeTierBalance: FreeBalance | null;
-    isAuthenticated: boolean;
+    rawUser: User | null | undefined;     // directly piped from oidc -- TODO: rm when EchoUser is sufficient.
+    isLoggedIn: boolean;
+    signIn: () => Promise<void>;
+    signOut: () => Promise<void>;
+    getToken: () => Promise<string | null>; // null in proxy mode
+    echoClient: EchoClient | null;
+    config: EchoConfig;
+
     isLoading: boolean;
     error: string | null;
 
-    // Client and auth helpers
-    token: string | null;                 // null in proxy mode
-    echoClient: EchoClient | null;
-    signIn: () => Promise<void>;
-    signOut: () => Promise<void>;
+    user: EchoUser | null;                // directly piped from oidc
+
+    freeTierBalance: FreeBalance | null;
+    balance: EchoBalance | null;
     refreshBalance: () => Promise<void>;
+
     createPaymentLink: (
         amount: number,
         description?: string,
         successUrl?: string
     ) => Promise<string>;
-    getToken: () => Promise<string | null>; // null in proxy mode
-    clearAuth: () => Promise<void>;
-    config: EchoConfig;
 
     // Insufficient funds state
     isInsufficientFunds: boolean;

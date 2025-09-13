@@ -13,7 +13,7 @@ interface UseEchoClientOptions {
  * Custom hook for managing EchoClient lifecycle
  * Handles client creation, token management, and cleanup
  */
-export function useEchoOIDCClient({ apiUrl }: UseEchoClientOptions) {
+export function useEchoClient({ apiUrl }: UseEchoClientOptions) {
   const auth = useAuth();
 
   const client = useMemo(() => {

@@ -13,29 +13,47 @@ import {
   AuthProviderUserManagerProps,
   useAuth,
 } from 'react-oidc-context';
+import type { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import type { User } from 'oidc-client-ts';
 import { useEchoBalance } from '../hooks/useEchoBalance';
-import { useEchoOIDCClient } from '../hooks/useEchoClient';
+import { useEchoClient } from '../hooks/useEchoClient';
 import { useEchoPayments } from '../hooks/useEchoPayments';
 import { useEchoUser } from '../hooks/useEchoUser';
 import { EchoAuthConfig } from '../types';
 import { EchoContext, EchoContextValue, EchoRefreshContext, EchoRefreshContextValue } from '../context';
 
 
-interface EchoProviderProps {
-  config: EchoAuthConfig;
+interface EchoProviderInternalProps {
   children: ReactNode;
+
+  config: EchoAuthConfig;
+
+  rawUser: User | null | undefined;
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  authError: Error | null | undefined;
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
+  getToken: () => Promise<string | null>;
+
+  echoClient: EchoClient | null;
 }
 
 // Internal provider that handles everything
-function EchoProviderInternal({ config, children }: EchoProviderProps) {
-  const auth = useAuth();
+function EchoProviderInternal({
+  config,
+  children,
 
-  const user = auth.user;
-  const apiUrl = config.baseEchoUrl || 'https://echo.merit.systems';
-  const token = auth.user?.access_token || null;
+  rawUser,
+  isLoggedIn,
+  isLoading,
+  authError,
+  echoClient,
 
-  const echoClient = useEchoOIDCClient({ apiUrl });
-
+  signIn,
+  signOut,
+  getToken
+}: EchoProviderInternalProps) {
   // Insufficient funds state - shared across all components
   const [isInsufficientFunds, setIsInsufficientFunds] = useState(false);
 
@@ -59,29 +77,15 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
     isLoading: paymentLoading,
   } = useEchoPayments(echoClient);
 
-  const clearAuth = useCallback(async () => {
-    try {
-      await auth.removeUser();
-    } catch (err) {
-      console.error('Error during auth cleanup:', err);
-    }
-  }, [auth.removeUser]);
-
-  const getToken = useCallback(async (): Promise<string | null> => {
-    if (auth.user?.expired) {
-      return (await auth.signinSilent())?.access_token || null;
-    }
-    return auth.user?.access_token || null;
-  }, [auth.user?.access_token, auth.signinSilent]);
 
   // Combine errors from different sources
   const combinedError =
-    auth.error?.message || balanceError || paymentError || userError || null;
+    authError?.message || balanceError || paymentError || userError || null;
 
-  // Only include auth.isLoading for initial authentication, not token refresh
+  // Only include isLoading for initial authentication, not token refresh
   // Token refresh should be transparent to downstream components
-  const isInitialAuthLoading = auth.isLoading && !auth.isAuthenticated;
-  const isTokenRefreshing = auth.isLoading && auth.isAuthenticated;
+  const isInitialAuthLoading = isLoading && !isLoggedIn;
+  const isTokenRefreshing = isLoading && isLoggedIn;
   const combinedLoading =
     isInitialAuthLoading || balanceLoading || paymentLoading || userLoading;
 
@@ -89,36 +93,33 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   const contextValue: EchoContextValue = useMemo(
     () => ({
       user: echoUser,
-      rawUser: user,
+      rawUser,
       balance,
       freeTierBalance,
-      isAuthenticated: auth.isAuthenticated,
+      isLoggedIn,
       isLoading: combinedLoading,
       error: combinedError,
-      token,
       echoClient,
-      signIn: auth.signinRedirect,
-      signOut: clearAuth,
+      signIn: signIn,
+      signOut: signOut,
       refreshBalance,
       createPaymentLink,
       getToken,
-      clearAuth,
       config,
       isInsufficientFunds,
       setIsInsufficientFunds,
     }),
     [
       echoUser,
-      user,
+      rawUser,
       balance,
       freeTierBalance,
-      auth.isAuthenticated,
+      isLoggedIn,
       combinedLoading,
       combinedError,
-      token,
       echoClient,
-      auth.signinRedirect,
-      clearAuth,
+      signIn,
+      signOut,
       refreshBalance,
       createPaymentLink,
       getToken,
@@ -142,6 +143,52 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
       </EchoRefreshContext.Provider>
     </EchoContext.Provider>
   );
+}
+
+// Intermediate provider that uses auth and creates EchoClient
+function EchoProviderWithAuth({ config, children }: EchoProviderProps) {
+  const auth = useAuth();
+  const apiUrl = config.baseEchoUrl || 'https://echo.merit.systems';
+  const echoClient = useEchoClient({ apiUrl });
+
+  const signOut = useCallback(async () => {
+    try {
+      await auth.removeUser();
+    } catch (err) {
+      console.error('Error during auth cleanup:', err);
+    }
+  }, [auth.removeUser]);
+
+  const getToken = useCallback(async (): Promise<string | null> => {
+    if (auth.user?.expired) {
+      return (await auth.signinSilent())?.access_token || null;
+    }
+    return auth.user?.access_token || null;
+  }, [auth.user?.access_token, auth.signinSilent]);
+
+  const isLoggedIn = !!auth.user;
+
+  return (
+    <EchoProviderInternal
+      config={config}
+      rawUser={auth.user}
+      isLoggedIn={isLoggedIn}
+      isLoading={auth.isLoading}
+      authError={auth.error}
+      echoClient={echoClient}
+      signIn={auth.signinRedirect}
+      signOut={signOut}
+      getToken={getToken}
+    >
+      {children}
+    </EchoProviderInternal>
+  );
+}
+
+
+interface EchoProviderProps {
+  config: EchoAuthConfig;
+  children: ReactNode;
 }
 
 // Main provider that wraps react-oidc-context
@@ -207,7 +254,7 @@ export function EchoProvider({ config, children }: EchoProviderProps) {
 
   return (
     <AuthProvider {...oidcConfig}>
-      <EchoProviderInternal config={config}>{children}</EchoProviderInternal>
+      <EchoProviderWithAuth config={config}>{children}</EchoProviderWithAuth>
     </AuthProvider>
   );
 }
