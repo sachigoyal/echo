@@ -24,7 +24,7 @@ export interface EchoContextValue {
 
   freeTierBalance: FreeBalance | null;
   balance: EchoBalance | null;
-  refreshBalance: () => Promise<void>;
+  refreshBalance: () => Promise<any>;
 
   createPaymentLink: (
     amount: number,

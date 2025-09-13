@@ -37,7 +37,9 @@ export default function TabsContainer() {
       {/* Tab Content (kept mounted to preserve state) */}
       <div className="bg-card rounded-lg shadow-sm border p-6">
         <div className={activeTab === 'chat' ? '' : 'hidden'}>
-          <h2 className="text-lg font-semibold mb-4 text-foreground">AI Chat</h2>
+          <h2 className="text-lg font-semibold mb-4 text-foreground">
+            AI Chat
+          </h2>
           <Chat />
         </div>
         <div className={activeTab === 'image' ? '' : 'hidden'}>

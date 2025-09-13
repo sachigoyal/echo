@@ -754,6 +754,9 @@ importers:
       react-oidc-context:
         specifier: ^3.3.0
         version: 3.3.0(oidc-client-ts@3.3.0)(react@19.1.1)
+      swr:
+        specifier: ^2.2.4
+        version: 2.3.6(react@19.1.1)
     devDependencies:
       '@storybook/addon-docs':
         specifier: ^9.0.10

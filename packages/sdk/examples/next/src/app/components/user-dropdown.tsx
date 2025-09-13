@@ -9,7 +9,12 @@ interface UserDropdownProps {
   name?: string | null;
 }
 
-export default function UserDropdown({ firstName, email, id, name }: UserDropdownProps) {
+export default function UserDropdown({
+  firstName,
+  email,
+  id,
+  name,
+}: UserDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -32,7 +37,7 @@ export default function UserDropdown({ firstName, email, id, name }: UserDropdow
     <div className="relative" ref={ref}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(v => !v)}
         className="inline-flex items-center gap-2 px-3 h-9 rounded-md border border-gray-300 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
         aria-haspopup="menu"
         aria-expanded={open}
@@ -62,7 +67,10 @@ export default function UserDropdown({ firstName, email, id, name }: UserDropdow
             {email && (
               <div className="flex items-start justify-between">
                 <span className="text-gray-500">Email</span>
-                <span className="ml-4 truncate max-w-[12rem] text-gray-900" title={email}>
+                <span
+                  className="ml-4 truncate max-w-[12rem] text-gray-900"
+                  title={email}
+                >
                   {email}
                 </span>
               </div>
@@ -70,7 +78,10 @@ export default function UserDropdown({ firstName, email, id, name }: UserDropdow
             {id && (
               <div className="flex items-start justify-between">
                 <span className="text-gray-500">ID</span>
-                <span className="ml-4 truncate max-w-[12rem] text-gray-900" title={id}>
+                <span
+                  className="ml-4 truncate max-w-[12rem] text-gray-900"
+                  title={id}
+                >
                   {id}
                 </span>
               </div>
@@ -78,7 +89,10 @@ export default function UserDropdown({ firstName, email, id, name }: UserDropdow
             {name && (
               <div className="flex items-start justify-between">
                 <span className="text-gray-500">Name</span>
-                <span className="ml-4 truncate max-w-[12rem] text-gray-900" title={name}>
+                <span
+                  className="ml-4 truncate max-w-[12rem] text-gray-900"
+                  title={name}
+                >
                   {name}
                 </span>
               </div>
@@ -89,5 +103,3 @@ export default function UserDropdown({ firstName, email, id, name }: UserDropdow
     </div>
   );
 }
-
-

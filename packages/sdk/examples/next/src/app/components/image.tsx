@@ -77,9 +77,7 @@ export default function ImageGenerator() {
               priority
             />
           </div>
-          <p className="text-sm italic text-gray-500">
-            &quot;{prompt}&quot;
-          </p>
+          <p className="text-sm italic text-gray-500">&quot;{prompt}&quot;</p>
         </div>
       )}
     </div>
