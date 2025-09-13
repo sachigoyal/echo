@@ -12,7 +12,7 @@ interface ToPaginatedResponseParams<T> {
   total_count: number;
 }
 
-type PaginatedResponse<T> = {
+export type PaginatedResponse<T> = {
   items: T[];
   page_size: number;
   page: number;
