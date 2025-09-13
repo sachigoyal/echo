@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-next-sdk",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Next.js SDK for Echo",
   "type": "module",
   "main": "./dist/index.js",
@@ -41,7 +41,7 @@
     "@merit-systems/echo-react-sdk": "1.0.24",
     "ai": "^5.0.17",
     "jwt-decode": "^4.0.0",
-    "swr": "^2.2.4"
+    "swr": "^2.3.1"
   },
   "peerDependencies": {
     "next": ">=15.0.0",
