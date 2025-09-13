@@ -1,5 +1,3 @@
-'use client';
-
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
 import { type ModelMessage } from 'ai';
 import { createContext, useContext } from 'react';
