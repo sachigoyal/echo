@@ -1,9 +1,10 @@
 'use client';
 
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useMemo } from 'react';
 import { EchoProviderRaw } from '@merit-systems/echo-react-sdk/advanced';
 import type { EchoUser } from '@merit-systems/echo-react-sdk';
 import { EchoClient } from '@merit-systems/echo-typescript-sdk';
+import useSWR from 'swr';
 
 export interface EchoProxyConfig {
   appId: string;
@@ -15,47 +16,32 @@ function useProxySession(
   basePath: string,
   initial?: EchoProxyConfig['initialSession']
 ) {
-  const [state, setState] = useState<{
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    error: string | null;
-  }>({
-    isAuthenticated: !!initial?.isAuthenticated,
-    isLoading: !initial,
-    error: null,
-  });
+  const {
+    data: session,
+    error,
+    isLoading,
+  } = useSWR(
+    ['session', basePath],
+    async () => {
+      const res = await fetch(`${basePath}/session`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(`Session ${res.status}`);
+      return res.json();
+    },
+    {
+      fallbackData: initial,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      errorRetryCount: 2,
+    }
+  );
 
-  useEffect(() => {
-    if (initial) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`${basePath}/session`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error(`Session ${res.status}`);
-        const json = await res.json();
-        if (!cancelled)
-          setState({
-            isAuthenticated: !!json.isAuthenticated,
-            isLoading: false,
-            error: null,
-          });
-      } catch (e: any) {
-        if (!cancelled)
-          setState({
-            isAuthenticated: false,
-            isLoading: false,
-            error: e?.message ?? 'Session error',
-          });
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [basePath, initial]);
-
-  return state;
+  return {
+    isAuthenticated: session?.isAuthenticated ?? false,
+    isLoading,
+    error: error?.message ?? null,
+  };
 }
 
 interface EchoProviderProps {

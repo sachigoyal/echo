@@ -40,7 +40,8 @@
     "@merit-systems/echo-typescript-sdk": "1.0.14",
     "@merit-systems/echo-react-sdk": "workspace:*",
     "ai": "^5.0.17",
-    "jwt-decode": "^4.0.0"
+    "jwt-decode": "^4.0.0",
+    "swr": "^2.2.4"
   },
   "peerDependencies": {
     "next": ">=15.0.0",
