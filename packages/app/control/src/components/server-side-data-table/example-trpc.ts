@@ -85,6 +85,32 @@ const applyFiltering = (users: User[], filterParams: FilterParams): User[] => {
     return filterParams.filters!.every(filter => {
       const value = user[filter.column as keyof User]
       
+      // Handle date comparisons
+      if (value instanceof Date && filter.value) {
+        const filterDate = new Date(filter.value as string | number | Date)
+        
+        switch (filter.operator) {
+          case "equals":
+            return value.toDateString() === filterDate.toDateString()
+          case "not_equals":
+            return value.toDateString() !== filterDate.toDateString()
+          case "greater_than":
+            return value.getTime() > filterDate.getTime()
+          case "less_than":
+            return value.getTime() < filterDate.getTime()
+          case "greater_than_or_equal":
+            return value.getTime() >= filterDate.getTime()
+          case "less_than_or_equal":
+            return value.getTime() <= filterDate.getTime()
+          case "is_null":
+            return value == null
+          case "is_not_null":
+            return value != null
+          default:
+            return true
+        }
+      }
+      
       switch (filter.operator) {
         case "contains":
           return String(value).toLowerCase().includes(String(filter.value).toLowerCase())
