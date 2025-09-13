@@ -67,13 +67,13 @@ export function EchoProviderRaw({
     refreshBalance,
     error: balanceError,
     isLoading: balanceLoading,
-  } = useEchoBalance(echoClient, config.appId, isLoggedIn);
+  } = useEchoBalance(echoClient, config.appId);
 
   const {
     user: echoUser,
     error: userError,
     isLoading: userLoading,
-  } = useEchoUser(echoClient, isLoggedIn);
+  } = useEchoUser(echoClient);
 
   const {
     createPaymentLink,

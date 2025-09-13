@@ -3,13 +3,9 @@ import { EchoClient, parseEchoError } from '@merit-systems/echo-typescript-sdk';
 import useSWR from 'swr';
 import { EchoBalance } from '../types';
 
-export function useEchoBalance(
-  echoClient: EchoClient | null,
-  appId: string,
-  isLoggedIn?: boolean
-) {
+export function useEchoBalance(echoClient: EchoClient | null, appId: string) {
   const { data, error, isLoading, mutate } = useSWR(
-    isLoggedIn && appId ? ['balance', appId] : null,
+    echoClient && appId ? ['balance', appId] : null,
     async () => {
       if (!echoClient) {
         throw new Error('Not authenticated');
