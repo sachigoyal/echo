@@ -1,4 +1,5 @@
 'use client';
+
 import { useEcho } from '@merit-systems/echo-next-sdk/client';
 import { useEffect, useState } from 'react';
 import { PaymentLink } from './payment-link';
