@@ -13,7 +13,7 @@ import { handleEchoClientProxy } from 'proxy';
 import {
   handleCallback,
   handleRefresh,
-  handleSignIn, 
+  handleSignIn,
   handleSignOut,
   handleSession,
 } from './auth/oauth-handlers';

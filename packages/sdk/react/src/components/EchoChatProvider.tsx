@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
 import { type ModelMessage } from 'ai';

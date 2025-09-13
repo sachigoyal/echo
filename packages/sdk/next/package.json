@@ -38,15 +38,7 @@
   "license": "MIT",
   "dependencies": {
     "@merit-systems/echo-typescript-sdk": "1.0.14",
-
-
-
-
     "@merit-systems/echo-react-sdk": "workspace:*",
-
-
-
-
     "ai": "^5.0.17",
     "jwt-decode": "^4.0.0"
   },

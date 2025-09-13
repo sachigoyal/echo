@@ -11,11 +11,5 @@ if (!appId) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return (
-    <EchoProvider config={{ appId: appId }}>
-      {children}
-    </EchoProvider>
-  );
+  return <EchoProvider config={{ appId: appId }}>{children}</EchoProvider>;
 }
-
-

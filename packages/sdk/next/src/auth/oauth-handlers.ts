@@ -266,9 +266,14 @@ export async function handleRefresh(
 
 export async function handleSession(req: NextRequest, config: EchoConfig) {
   const jar = await cookies();
-  const refreshExp = jar.get(namespacedCookie(ECHO_COOKIE.REFRESH_TOKEN_EXPIRES, config.appId))?.value;
-  const isAuthenticated = !!refreshExp && Number(refreshExp) > Math.floor(Date.now()/1000);
-  const userInfo = jar.get(namespacedCookie(ECHO_COOKIE.USER_INFO, config.appId))?.value;
+  const refreshExp = jar.get(
+    namespacedCookie(ECHO_COOKIE.REFRESH_TOKEN_EXPIRES, config.appId)
+  )?.value;
+  const isAuthenticated =
+    !!refreshExp && Number(refreshExp) > Math.floor(Date.now() / 1000);
+  const userInfo = jar.get(
+    namespacedCookie(ECHO_COOKIE.USER_INFO, config.appId)
+  )?.value;
   const user = userInfo ? JSON.parse(userInfo) : null;
   return NextResponse.json({ isAuthenticated, user });
 }

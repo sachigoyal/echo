@@ -1,37 +1,29 @@
-import {
-  UserManager, WebStorageStateStore
-} from 'oidc-client-ts';
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { UserManager, WebStorageStateStore } from 'oidc-client-ts';
+import type { User } from 'oidc-client-ts';
 import {
   AuthProvider,
   AuthProviderUserManagerProps,
   useAuth,
 } from 'react-oidc-context';
 import type { EchoClient } from '@merit-systems/echo-typescript-sdk';
-import type { User } from 'oidc-client-ts';
 import { useEchoBalance } from '../hooks/useEchoBalance';
 import { useEchoClient } from '../hooks/useEchoClient';
 import { useEchoPayments } from '../hooks/useEchoPayments';
 import { useEchoUser } from '../hooks/useEchoUser';
 import { EchoAuthConfig } from '../types';
-import { EchoContext, EchoContextValue, EchoRefreshContext, EchoRefreshContextValue } from '../context';
+import { EchoContext, EchoContextValue } from '../context';
 
-
-interface EchoProviderInternalProps {
+export interface EchoProviderRawProps {
   children: ReactNode;
 
   config: EchoAuthConfig;
 
+  isAuthLoading: boolean;
+  authError: Error | null | undefined;
+
   rawUser: User | null | undefined;
   isLoggedIn: boolean;
-  isLoading: boolean;
-  authError: Error | null | undefined;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   getToken: () => Promise<string | null>;
@@ -39,21 +31,33 @@ interface EchoProviderInternalProps {
   echoClient: EchoClient | null;
 }
 
-// Internal provider that handles everything
-function EchoProviderInternal({
+/**
+ * Raw provider that manages Echo context without built-in authentication.
+ *
+ * Design: Single internal context with useEcho() hook for both SDK and client components.
+ * Accepts auth state/methods from parent, enabling custom auth implementations (Next.js proxy, etc).
+ *
+ * @param rawUser - OIDC user object from parent auth provider
+ * @param isLoggedIn - Auth state from parent
+ * @param signIn/signOut/getToken - Auth methods from parent
+ * @param echoClient - Configured Echo API client
+ */
+export function EchoProviderRaw({
   config,
   children,
 
+  isAuthLoading,
+  authError,
+
   rawUser,
   isLoggedIn,
-  isLoading,
-  authError,
-  echoClient,
 
   signIn,
   signOut,
-  getToken
-}: EchoProviderInternalProps) {
+  getToken,
+
+  echoClient,
+}: EchoProviderRawProps) {
   // Insufficient funds state - shared across all components
   const [isInsufficientFunds, setIsInsufficientFunds] = useState(false);
 
@@ -77,15 +81,13 @@ function EchoProviderInternal({
     isLoading: paymentLoading,
   } = useEchoPayments(echoClient);
 
-
   // Combine errors from different sources
   const combinedError =
     authError?.message || balanceError || paymentError || userError || null;
 
   // Only include isLoading for initial authentication, not token refresh
   // Token refresh should be transparent to downstream components
-  const isInitialAuthLoading = isLoading && !isLoggedIn;
-  const isTokenRefreshing = isLoading && isLoggedIn;
+  const isInitialAuthLoading = isAuthLoading && !isLoggedIn;
   const combinedLoading =
     isInitialAuthLoading || balanceLoading || paymentLoading || userLoading;
 
@@ -128,20 +130,8 @@ function EchoProviderInternal({
     ]
   );
 
-  // Separate refresh context - only components that need refresh state will re-render
-  const refreshContextValue: EchoRefreshContextValue = useMemo(
-    () => ({
-      isRefreshing: isTokenRefreshing,
-    }),
-    [isTokenRefreshing]
-  );
-
   return (
-    <EchoContext.Provider value={contextValue}>
-      <EchoRefreshContext.Provider value={refreshContextValue}>
-        {children}
-      </EchoRefreshContext.Provider>
-    </EchoContext.Provider>
+    <EchoContext.Provider value={contextValue}>{children}</EchoContext.Provider>
   );
 }
 
@@ -169,11 +159,11 @@ function EchoProviderWithAuth({ config, children }: EchoProviderProps) {
   const isLoggedIn = !!auth.user;
 
   return (
-    <EchoProviderInternal
+    <EchoProviderRaw
       config={config}
       rawUser={auth.user}
       isLoggedIn={isLoggedIn}
-      isLoading={auth.isLoading}
+      isAuthLoading={auth.isLoading}
       authError={auth.error}
       echoClient={echoClient}
       signIn={auth.signinRedirect}
@@ -181,10 +171,9 @@ function EchoProviderWithAuth({ config, children }: EchoProviderProps) {
       getToken={getToken}
     >
       {children}
-    </EchoProviderInternal>
+    </EchoProviderRaw>
   );
 }
-
 
 interface EchoProviderProps {
   config: EchoAuthConfig;

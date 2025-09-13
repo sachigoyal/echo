@@ -6,7 +6,6 @@ export { InsufficientFundsModal } from './components/InsufficientFundsModal';
 export { Logo } from './components/Logo';
 
 export { useEcho } from './hooks/useEcho';
-// useEchoRefresh is kept internal - most apps don't need refresh state
 export { useEchoClient } from './hooks/useEchoClient';
 // OpenAI integration hook
 export { useEchoOpenAI } from './hooks/useEchoOpenAI';
@@ -26,4 +25,4 @@ export type {
 } from './types';
 
 export type { EchoContextValue } from './context';
-export { EchoContext, EchoRefreshContext } from './context';
+export { EchoContext } from './context';
