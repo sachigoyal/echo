@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { EchoContext, EchoRefreshContext } from '../components/EchoProvider';
+import { EchoContext, EchoRefreshContext } from '../context';
 
 export function useEcho() {
   const context = useContext(EchoContext);

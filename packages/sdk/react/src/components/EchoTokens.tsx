@@ -143,6 +143,7 @@ export function EchoTokens({
     user,
     balance,
     freeTierBalance,
+    isLoading,
     refreshBalance,
     isInsufficientFunds,
     setIsInsufficientFunds,

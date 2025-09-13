@@ -58,3 +58,5 @@ export function useEcho(config?: EchoConfig): EchoClient {
   }
   return echoClient;
 }
+
+export { EchoProvider } from './components/EchoProvider';

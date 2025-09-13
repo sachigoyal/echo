@@ -1,11 +1,7 @@
-import type {
-  EchoClient,
-  EchoConfig,
-  FreeBalance,
-} from '@merit-systems/echo-typescript-sdk';
-import { User, UserManager, WebStorageStateStore } from 'oidc-client-ts';
 import {
-  createContext,
+  UserManager, WebStorageStateStore
+} from 'oidc-client-ts';
+import {
   ReactNode,
   useCallback,
   useEffect,
@@ -18,47 +14,12 @@ import {
   useAuth,
 } from 'react-oidc-context';
 import { useEchoBalance } from '../hooks/useEchoBalance';
-import { useEchoClient } from '../hooks/useEchoClient';
+import { useEchoOIDCClient } from '../hooks/useEchoClient';
 import { useEchoPayments } from '../hooks/useEchoPayments';
 import { useEchoUser } from '../hooks/useEchoUser';
-import { EchoAuthConfig, EchoBalance, EchoUser } from '../types';
+import { EchoAuthConfig } from '../types';
+import { EchoContext, EchoContextValue, EchoRefreshContext, EchoRefreshContextValue } from '../context';
 
-export interface EchoContextValue {
-  // Auth & User
-  rawUser: User | null | undefined; // directly piped from oidc
-  user: EchoUser | null; // directly piped from oidc
-  balance: EchoBalance | null;
-  freeTierBalance: FreeBalance | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  token: string | null;
-  echoClient: EchoClient | null;
-  signIn: () => Promise<void>;
-  signOut: () => Promise<void>;
-  refreshBalance: () => Promise<void>;
-  createPaymentLink: (
-    amount: number,
-    description?: string,
-    successUrl?: string
-  ) => Promise<string>;
-  getToken: () => Promise<string | null>;
-  clearAuth: () => Promise<void>;
-  config: EchoConfig;
-  // Insufficient funds state
-  isInsufficientFunds: boolean;
-  setIsInsufficientFunds: (value: boolean) => void;
-}
-
-// Separate context for refresh state to prevent unnecessary re-renders
-export interface EchoRefreshContextValue {
-  isRefreshing: boolean;
-}
-
-export const EchoContext = createContext<EchoContextValue | null>(null);
-export const EchoRefreshContext = createContext<EchoRefreshContextValue | null>(
-  null
-);
 
 interface EchoProviderProps {
   config: EchoAuthConfig;
@@ -73,7 +34,7 @@ function EchoProviderInternal({ config, children }: EchoProviderProps) {
   const apiUrl = config.baseEchoUrl || 'https://echo.merit.systems';
   const token = auth.user?.access_token || null;
 
-  const echoClient = useEchoClient({ apiUrl });
+  const echoClient = useEchoOIDCClient({ apiUrl });
 
   // Insufficient funds state - shared across all components
   const [isInsufficientFunds, setIsInsufficientFunds] = useState(false);

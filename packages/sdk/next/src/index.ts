@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { EchoConfig, EchoResult } from './types';
 
-import { createEchoAnthropic } from 'providers/anthropic';
-import { createEchoGoogle } from 'providers/google';
-import { createEchoOpenAI } from 'providers/openai';
+import { createEchoAnthropic } from 'ai-providers/anthropic';
+import { createEchoGoogle } from 'ai-providers/google';
+import { createEchoOpenAI } from 'ai-providers/openai';
 
 import { ECHO_COOKIE, namespacedCookie } from 'auth/cookie-names';
 import { RefreshTokenResponse } from 'auth/token-manager';
@@ -13,8 +13,9 @@ import { handleEchoClientProxy } from 'proxy';
 import {
   handleCallback,
   handleRefresh,
-  handleSignIn,
+  handleSignIn, 
   handleSignOut,
+  handleSession,
 } from './auth/oauth-handlers';
 
 /**
@@ -47,6 +48,9 @@ export default function Echo(config: EchoConfig): EchoResult {
 
       case '/refresh':
         return handleRefresh(req, config);
+
+      case '/session':
+        return handleSession(req, config);
 
       default:
         console.error('Unknown path', path);

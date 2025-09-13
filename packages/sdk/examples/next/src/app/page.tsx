@@ -3,6 +3,7 @@ import { Balance } from './components/balance';
 import SignIn from './components/signin';
 import SignOut from './components/signout';
 import TabsContainer from './components/tabs-container';
+import { EchoTokensComponent } from './components/echo-tokens';
 
 export default async function Home() {
   const _isSignedIn = await isSignedIn();
@@ -26,6 +27,7 @@ export default async function Home() {
       <p className="text-lg mb-6">User: {user?.email}</p>
       <p className="text-lg mb-6">id: {user?.id}</p>
       <p className="text-lg mb-6">Name: {user?.name}</p>
+      <EchoTokensComponent />
       <Balance />
       <div className="w-full max-w-4xl">
         <TabsContainer />
