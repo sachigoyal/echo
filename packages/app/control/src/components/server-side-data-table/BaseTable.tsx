@@ -20,6 +20,10 @@ import { PaginationControls } from "./PaginationControls"
 import { MultiSortControls } from "./SortControls"
 import { MultiFilterControls, ColumnType } from "./FilterControls"
 import { TableHeader as CustomTableHeader } from "./TableHeader"
+import { ActionConfig, ActionGroup, TableState } from "./ActionControls"
+
+// Re-export for convenience
+export type { ActionConfig, ActionGroup, TableState }
 
 // Define TypedColumnDef as an intersection type to guarantee columnType exists
 export type TypedColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {
@@ -33,6 +37,8 @@ interface BaseTableProps<TData, TValue> {
   skeletonRows?: number
   showControls?: boolean
   title?: string
+  actions?: ActionConfig[]
+  actionGroups?: ActionGroup[]
 } 
 
 
@@ -43,6 +49,8 @@ export function BaseTable<TData, TValue>({
   skeletonRows = 10,
   showControls = true,
   title = "Data Table",
+  actions = [],
+  actionGroups = [],
 }: BaseTableProps<TData, TValue>) {
   const defaultColumns = React.useMemo(() => 
     columns.map(col => {
@@ -88,10 +96,10 @@ export function BaseTable<TData, TValue>({
           <CustomTableHeader
             title={title}
             table={table}
-            availableColumns={defaultColumns}
-            columnConfigs={columnConfigs}
             onSortClick={() => setSortPopoverOpen(!sortPopoverOpen)}
             onFilterClick={() => setFilterPopoverOpen(!filterPopoverOpen)}
+            actions={actions}
+            actionGroups={actionGroups}
           />
         )}
         

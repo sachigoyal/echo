@@ -2,31 +2,37 @@
 
 import * as React from "react"
 import { Table as TanStackTable } from "@tanstack/react-table"
-import { SortAsc, Filter, MoreHorizontal, SortDesc } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { SortAsc, Filter, MoreHorizontal, Settings } from "lucide-react"
+import { ActionControls, ActionConfig, ActionGroup } from "./ActionControls"
 
 interface TableHeaderProps<TData> {
   title: string
   table: TanStackTable<TData>
-  availableColumns: string[]
-  columnConfigs?: Array<{ name: string; type: string }>
   onSortClick: () => void
   onFilterClick: () => void
+  actions?: ActionConfig[]
+  actionGroups?: ActionGroup[]
 }
 
 export function TableHeader<TData>({
   title,
   table,
-  availableColumns,
-  columnConfigs = [],
   onSortClick,
   onFilterClick,
+  actions = [],
+  actionGroups = [],
 }: TableHeaderProps<TData>) {
   const sorting = table.getState().sorting
   const columnFilters = table.getState().columnFilters
+  const [actionsOpen, setActionsOpen] = React.useState(false)
+  
+  const selectedRowCount = table.getFilteredSelectedRowModel().rows.length
+  const hasActions = actions.length > 0 || actionGroups.length > 0
 
   return (
+    <>
     <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white">
       <div className="flex items-center gap-3">
         <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
@@ -67,15 +73,31 @@ export function TableHeader<TData>({
           <Filter className="h-4 w-4" />
         </Button>
 
-        {/* More Options Button (placeholder for future features) */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-slate-50 hover:text-slate-600 transition-colors"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        {/* Actions Button */}
+        {hasActions && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setActionsOpen(true)}
+            className="h-8 w-8 p-0 hover:bg-green-50 hover:text-green-600 transition-colors"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
+    
+    {/* Action Controls Modal */}
+    {hasActions && (
+      <ActionControls
+        table={table}
+        actions={actions}
+        actionGroups={actionGroups}
+        isOpen={actionsOpen}
+        onOpenChange={setActionsOpen}
+        selectedRowCount={selectedRowCount}
+      />
+    )}
+  </>
   )
 }

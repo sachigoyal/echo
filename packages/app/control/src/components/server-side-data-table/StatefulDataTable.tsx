@@ -7,6 +7,7 @@ import {
   SortingState,
   ColumnFiltersState,
   PaginationState,
+  RowSelectionState,
 } from "@tanstack/react-table"
 
 import { BaseTable } from "./BaseTable"
@@ -14,6 +15,8 @@ import { PaginationParams, PaginatedResponse } from "@/services/lib/pagination"
 import { MultiSortParams, toMultiSortParams } from "@/services/lib/sorting"
 import { FilterParams, toFilterParams } from "@/services/lib/filtering"
 import { TypedColumnDef } from "./BaseTable"
+import { ActionConfig, ActionGroup } from "./ActionControls"
+import { Checkbox } from "@/components/ui/checkbox"
 
 // TRPC function type that accepts standardized params and returns paginated response
 export type TRPCDataFetcher<TData> = (
@@ -25,12 +28,16 @@ interface StatefulDataTableProps<TData, TValue> {
   data?: TData[]
   // TRPC integration - if provided, will manage data fetching automatically
   dataFetcher?: TRPCDataFetcher<TData>
+  actions?: ActionConfig[]
+  actionGroups?: ActionGroup[]
   // Loading state
   isLoading?: boolean
   // Controls configuration
   showControls?: boolean
   // Table title
   title?: string
+  // Row selection
+  enableRowSelection?: boolean
 }
 
 export function StatefulDataTable<TData, TValue>({
@@ -40,6 +47,9 @@ export function StatefulDataTable<TData, TValue>({
   isLoading = false,
   showControls = true,
   title,
+  actions,
+  actionGroups,
+  enableRowSelection = false,
 }: StatefulDataTableProps<TData, TValue>) {
   // Internal state management if external state is not provided
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([])
@@ -48,7 +58,7 @@ export function StatefulDataTable<TData, TValue>({
     pageIndex: 0,
     pageSize: 10,
   })
-
+  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({})
   // TRPC integration state
   const [fetchedData, setFetchedData] = React.useState<TData[]>([])
   const [internalLoading, setInternalLoading] = React.useState(false)
@@ -58,6 +68,39 @@ export function StatefulDataTable<TData, TValue>({
   const currentSorting = internalSorting
   const currentColumnFilters = internalColumnFilters
   const currentPagination = internalPagination
+
+  // Create checkbox column for row selection
+  const checkboxColumn: TypedColumnDef<TData, any> = React.useMemo(() => ({
+    id: "select",
+    columnType: "boolean",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() ? true : false)
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }), [])
+
+  // Combine columns with checkbox column if row selection is enabled
+  const finalColumns = React.useMemo(() => {
+    if (enableRowSelection) {
+      return [checkboxColumn, ...columns]
+    }
+    return columns
+  }, [enableRowSelection, checkboxColumn, columns])
 
   // Fetch data when using TRPC integration
   React.useEffect(() => {
@@ -95,33 +138,38 @@ export function StatefulDataTable<TData, TValue>({
 
   const table = useReactTable({
     data: tableData,
-    columns,
+    columns: finalColumns,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualFiltering: true,
     manualSorting: true,
     enableSortingRemoval: true,
     enableMultiSort: true,
+    enableRowSelection: enableRowSelection,
     // Use external state if provided, otherwise use internal state
     state: {
       sorting: currentSorting,
       columnFilters: currentColumnFilters,
       pagination: currentPagination,
+      rowSelection: internalRowSelection,
     },
     // Use external handlers if provided, otherwise use internal handlers
     onSortingChange: setInternalSorting,
     onColumnFiltersChange: setInternalColumnFilters,
     onPaginationChange: setInternalPagination,
+    onRowSelectionChange: setInternalRowSelection,
     pageCount: tablePageCount,
   })
 
   return (
     <BaseTable 
       table={table} 
-      columns={columns} 
+      columns={finalColumns} 
       isLoading={tableIsLoading}
       showControls={showControls}
       title={title}
+      actions={actions}
+      actionGroups={actionGroups}
     />
   )
 }

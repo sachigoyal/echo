@@ -5,7 +5,7 @@ import {
   StatefulDataTable
 } from '@/components/server-side-data-table'
 import { getUsersWithPagination, User } from '@/components/server-side-data-table/example-trpc'
-import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable'
+import { TableState, TypedColumnDef } from '@/components/server-side-data-table/BaseTable'
 
 // Define columns for the users table
 const columns: TypedColumnDef<User, any>[] = [
@@ -106,9 +106,18 @@ export default function DashboardV2Page() {
           <StatefulDataTable
             columns={columns}
             dataFetcher={getUsersWithPagination}
-            availableColumns={availableColumns}
             showControls={true}
-          />
+            actions={[
+              {
+                id: "edit",
+                label: "Edit",
+                action: ( tableState: TableState ) => {
+                  console.log("Edit", tableState)
+                }
+              },
+            ]} 
+            enableRowSelection={true} />
+
         </div>
       </div>
 
