@@ -34,24 +34,18 @@ export default function TabsContainer() {
         </button>
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content (kept mounted to preserve state) */}
       <div className="bg-card rounded-lg shadow-sm border p-6">
-        {activeTab === 'chat' && (
-          <div>
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
-              AI Chat
-            </h2>
-            <Chat />
-          </div>
-        )}
-        {activeTab === 'image' && (
-          <div>
-            <h2 className="text-lg font-semibold mb-4 text-foreground">
-              AI Image Generation
-            </h2>
-            <ImageGenerator />
-          </div>
-        )}
+        <div className={activeTab === 'chat' ? '' : 'hidden'}>
+          <h2 className="text-lg font-semibold mb-4 text-foreground">AI Chat</h2>
+          <Chat />
+        </div>
+        <div className={activeTab === 'image' ? '' : 'hidden'}>
+          <h2 className="text-lg font-semibold mb-4 text-foreground">
+            AI Image Generation
+          </h2>
+          <ImageGenerator />
+        </div>
       </div>
     </div>
   );
