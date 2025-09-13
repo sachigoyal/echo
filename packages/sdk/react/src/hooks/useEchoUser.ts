@@ -3,7 +3,12 @@ import useSWR from 'swr';
 import { EchoUser } from '../types';
 
 export function useEchoUser(echoClient: EchoClient | null) {
-  const { data: user, error, isLoading, mutate } = useSWR(
+  const {
+    data: user,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR(
     echoClient ? ['user'] : null,
     async () => {
       if (!echoClient) {

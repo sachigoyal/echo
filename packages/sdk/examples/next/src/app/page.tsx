@@ -1,7 +1,5 @@
 import { getUser, isSignedIn } from '@/echo';
-import { Balance } from './components/balance';
 import SignIn from './components/signin';
-import SignOut from './components/signout';
 import TabsContainer from './components/tabs-container';
 import { EchoWidget } from './components/echo-tokens';
 import UserDropdown from './components/user-dropdown';

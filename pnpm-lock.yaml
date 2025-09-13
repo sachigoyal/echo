@@ -574,9 +574,6 @@ importers:
       '@merit-systems/echo-next-sdk':
         specifier: workspace:*
         version: link:../../next
-      '@merit-systems/echo-react-sdk':
-        specifier: workspace:*
-        version: link:../../react
       ai:
         specifier: ^5.0.17
         version: 5.0.40(zod@4.1.7)
