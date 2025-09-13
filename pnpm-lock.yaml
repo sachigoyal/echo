@@ -676,8 +676,8 @@ importers:
   packages/sdk/next:
     dependencies:
       '@merit-systems/echo-react-sdk':
-        specifier: workspace:*
-        version: link:../react
+        specifier: 1.0.24
+        version: 1.0.24(openai@5.16.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@4.1.7)
       '@merit-systems/echo-typescript-sdk':
         specifier: 1.0.14
         version: 1.0.14(zod@4.1.7)
@@ -755,7 +755,7 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0(oidc-client-ts@3.3.0)(react@19.1.1)
       swr:
-        specifier: ^2.2.4
+        specifier: ^2.3.1
         version: 2.3.6(react@19.1.1)
     devDependencies:
       '@storybook/addon-docs':
@@ -1819,6 +1819,16 @@ packages:
     peerDependencies:
       '@types/react': 19.1.10
       react: '>=16'
+
+  '@merit-systems/echo-react-sdk@1.0.24':
+    resolution: {integrity: sha512-y5hdz/2xcme9XdjZ4EoxyumouEKk+IDOqkgYB+Rj/QN5PAALjBCOZfoou6wLqvOjSibqTCOpgx3+0DyBq9t+Zw==}
+    peerDependencies:
+      openai: ^4.0.0 || ^5.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      openai:
+        optional: true
 
   '@merit-systems/echo-typescript-sdk@1.0.14':
     resolution: {integrity: sha512-tpN6KIhWIUXJvQwYFrdwjagfU/wuefh6O/5JQ4r1/0NtDeyF9EBe7oJlpyuPxQNUAt1toiZ+f4nB+KI0HT/CSg==}
@@ -9792,6 +9802,16 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
+  '@ai-sdk/react@2.0.40(react@18.3.1)(zod@4.1.7)':
+    dependencies:
+      '@ai-sdk/provider-utils': 3.0.8(zod@4.1.7)
+      ai: 5.0.40(zod@4.1.7)
+      react: 18.3.1
+      swr: 2.3.6(react@18.3.1)
+      throttleit: 2.1.0
+    optionalDependencies:
+      zod: 4.1.7
+
   '@ai-sdk/react@2.0.40(react@19.1.0)(zod@4.1.7)':
     dependencies:
       '@ai-sdk/provider-utils': 3.0.8(zod@4.1.7)
@@ -10615,6 +10635,22 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.1.10
       react: 19.1.1
+
+  '@merit-systems/echo-react-sdk@1.0.24(openai@5.16.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@4.1.7)':
+    dependencies:
+      '@ai-sdk/react': 2.0.40(react@18.3.1)(zod@4.1.7)
+      '@merit-systems/echo-typescript-sdk': 1.0.14(zod@4.1.7)
+      ai: 5.0.40(zod@4.1.7)
+      dompurify: 3.2.6
+      oidc-client-ts: 3.3.0
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-oidc-context: 3.3.0(oidc-client-ts@3.3.0)(react@18.3.1)
+      swr: 2.3.6(react@18.3.1)
+    optionalDependencies:
+      openai: 5.16.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7)
+    transitivePeerDependencies:
+      - zod
 
   '@merit-systems/echo-typescript-sdk@1.0.14(zod@3.25.76)':
     dependencies:
@@ -18808,6 +18844,11 @@ snapshots:
     dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
+
+  react-oidc-context@3.3.0(oidc-client-ts@3.3.0)(react@18.3.1):
+    dependencies:
+      oidc-client-ts: 3.3.0
+      react: 18.3.1
 
   react-oidc-context@3.3.0(oidc-client-ts@3.3.0)(react@19.1.1):
     dependencies:

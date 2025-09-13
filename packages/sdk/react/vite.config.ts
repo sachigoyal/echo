@@ -81,6 +81,7 @@ export default defineConfig({
   },
 
   optimizeDeps: {
+    include: ['use-sync-external-store/shim/index.js'],
     exclude: ['@merit-systems/echo-typescript-sdk'],
   },
 });
