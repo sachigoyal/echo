@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { PaginationState, OnChangeFn, Table as TanStackTable } from "@tanstack/react-table"
+import { Table as TanStackTable } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"

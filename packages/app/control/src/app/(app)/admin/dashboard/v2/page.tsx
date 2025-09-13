@@ -8,7 +8,7 @@ import { getUsersWithPagination, User } from '@/components/server-side-data-tabl
 import { TableState, TypedColumnDef } from '@/components/server-side-data-table/BaseTable'
 
 // Define columns for the users table
-const columns: TypedColumnDef<User, any>[] = [
+const columns: TypedColumnDef<User, string | number | boolean | Date>[] = [
   {
     accessorKey: "name",
     header: "Name",
@@ -45,7 +45,7 @@ const columns: TypedColumnDef<User, any>[] = [
     header: "Created At",
     enableSorting: true,
     columnType: "date",
-    cell: ({ getValue }) => new Date(getValue()).toLocaleDateString(),
+    cell: ({ getValue }) => new Date(getValue() as string | number | Date).toLocaleDateString(),
   },
   {
     accessorKey: "isActive",
@@ -82,9 +82,6 @@ const columns: TypedColumnDef<User, any>[] = [
 ]
 
 export default function DashboardV2Page() {
-  // Available columns for filtering and sorting
-  const availableColumns = ["name", "email", "role", "createdAt", "isActive", "loginCount"]
-
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="mb-6">

@@ -4,7 +4,7 @@ import * as React from "react"
 import { Table as TanStackTable } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { SortAsc, Filter, MoreHorizontal, Settings } from "lucide-react"
+import { SortAsc, Filter, Settings } from "lucide-react"
 import { ActionControls, ActionConfig, ActionGroup } from "./ActionControls"
 
 interface TableHeaderProps<TData> {

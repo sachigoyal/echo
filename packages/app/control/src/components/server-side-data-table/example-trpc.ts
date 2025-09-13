@@ -129,7 +129,7 @@ export const getUsersWithPagination = async (
   await new Promise(resolve => setTimeout(resolve, 500))
   
   // Apply filtering first
-  let filteredUsers = applyFiltering(MOCK_USERS, params)
+  const filteredUsers = applyFiltering(MOCK_USERS, params)
   
   // Apply sorting
   const sortedUsers = applySorting(filteredUsers, params)

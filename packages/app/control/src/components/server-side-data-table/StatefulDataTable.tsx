@@ -16,7 +16,7 @@ import { MultiSortParams, toMultiSortParams } from "@/services/lib/sorting"
 import { FilterParams, toFilterParams } from "@/services/lib/filtering"
 import { TypedColumnDef } from "./BaseTable"
 import { ActionConfig, ActionGroup } from "./ActionControls"
-import { Checkbox } from "@/components/ui/checkbox"
+import { createCheckboxColumn } from "./CheckBoxColumn"
 
 // TRPC function type that accepts standardized params and returns paginated response
 export type TRPCDataFetcher<TData> = (
@@ -70,34 +70,14 @@ export function StatefulDataTable<TData, TValue>({
   const currentPagination = internalPagination
 
   // Create checkbox column for row selection
-  const checkboxColumn: TypedColumnDef<TData, any> = React.useMemo(() => ({
-    id: "select",
-    columnType: "boolean",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() ? true : false)
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  }), [])
+  const checkboxColumn: TypedColumnDef<TData, unknown> = React.useMemo(() => 
+    createCheckboxColumn<TData>(), []
+  )
 
   // Combine columns with checkbox column if row selection is enabled
   const finalColumns = React.useMemo(() => {
     if (enableRowSelection) {
-      return [checkboxColumn, ...columns]
+      return [checkboxColumn, ...columns] as TypedColumnDef<TData, TValue>[]
     }
     return columns
   }, [enableRowSelection, checkboxColumn, columns])

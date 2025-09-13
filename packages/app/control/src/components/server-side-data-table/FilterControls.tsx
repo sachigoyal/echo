@@ -253,9 +253,9 @@ export function MultiFilterControls<TData>({
             <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
               {filters.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                  {filters.map((filter, index) => (
+                  {filters.map((filter) => (
                     <Badge key={filter.id} variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 font-medium">
-                      <span className="font-medium">{filter.column}</span> {OPERATOR_LABELS[filter.operator].toLowerCase()} <span className="text-slate-900">"{filter.value?.substring(0, 10)}{filter.value?.length > 10 ? '...' : ''}"</span>
+                      <span className="font-medium">{filter.column}</span> {OPERATOR_LABELS[filter.operator].toLowerCase()} <span className="text-slate-900">&quot;{filter.value?.substring(0, 10)}{filter.value?.length > 10 ? '...' : ''}&quot;</span>
                     </Badge>
                   ))}
                 </div>
