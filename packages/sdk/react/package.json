@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-react-sdk",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "React SDK for Echo OAuth2 + PKCE authentication and token management",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -11,11 +11,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./advanced": {
-      "types": "./dist/advanced.d.ts",
-      "import": "./dist/advanced.js",
-      "require": "./dist/advanced.cjs"
     }
   },
   "files": [

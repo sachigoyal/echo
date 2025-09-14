@@ -6,4 +6,4 @@ export {
   InsufficientFundsModal,
 } from '@merit-systems/echo-react-sdk';
 
-export { useEcho } from '@merit-systems/echo-react-sdk';
+export { useEcho, EchoContext } from '@merit-systems/echo-react-sdk';

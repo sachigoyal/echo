@@ -1,8 +1,8 @@
 'use client';
 
 import { ReactNode, useCallback, useMemo } from 'react';
-import { EchoProviderRaw } from '@merit-systems/echo-react-sdk/advanced';
 import type { EchoUser } from '@merit-systems/echo-react-sdk';
+import { EchoProviderRaw } from '@merit-systems/echo-react-sdk';
 import { EchoClient } from '@merit-systems/echo-typescript-sdk';
 import useSWR from 'swr';
 

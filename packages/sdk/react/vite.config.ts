@@ -18,7 +18,6 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        advanced: resolve(__dirname, 'src/advanced.ts'),
       },
       name: 'EchoReactSDK',
       formats: ['es', 'cjs'],

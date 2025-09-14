@@ -26,3 +26,6 @@ export type {
 
 export type { EchoContextValue } from './context';
 export { EchoContext } from './context';
+
+export { EchoProviderRaw } from './components/EchoProvider';
+export type { EchoProviderRawProps } from './components/EchoProvider';
