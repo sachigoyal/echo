@@ -1,3 +1,5 @@
+'use client';
+
 export { EchoProvider } from './components/EchoProvider';
 export {
   EchoSignIn,

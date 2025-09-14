@@ -10,33 +10,18 @@ interface BalanceData {
 }
 
 export default function Balance() {
-  const [balance, setBalance] = useState<BalanceData | null>(null);
+  const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const echoClient = useEcho();
+  const { balance, echoClient } = useEcho();
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const balanceData = await echoClient.balance.getBalance();
-        setBalance(balanceData);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch balance'
-        );
-        console.error('Error fetching balance:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (echoClient) {
-      fetchBalance();
+    if (balance) {
+      setBalanceData({ balance: balance.balance || 0, currency: 'USD' });
+      setLoading(false);
     }
-  }, [echoClient]);
+  }, [balance]);
 
   const formatBalance = (amount: number, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
@@ -55,9 +40,9 @@ export default function Balance() {
 
       {error && <span className="text-red-600 text-xs">Error</span>}
 
-      {balance && !loading && !error && (
+      {balanceData && !loading && !error && (
         <span className="px-3 py-2 font-medium text-gray-700 text-sm hover:text-gray-900">
-          {formatBalance(balance.balance, balance.currency)}
+          {formatBalance(balanceData.balance, balanceData.currency)}
         </span>
       )}
     </Button>
