@@ -7,7 +7,7 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   outDir: 'dist',
-  external: ['axios', 'react', 'react-dom', '@merit-systems/echo-react-sdk'],
+  external: ['axios', 'react', 'react-dom', '@merit-systems/echo-react-sdk', 'swr', 'ai', '@ai-sdk/react'],
   splitting: false,
   bundle: true,
 });

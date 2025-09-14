@@ -13,7 +13,7 @@ Create a `providers.tsx` file to wrap your app with the Echo provider:
 ```typescript
 "use client";
 
-import { EchoProvider } from '@merit-systems/echo-next-sdk';
+import { EchoProvider } from '@merit-systems/echo-next-sdk/client';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -49,7 +49,7 @@ export default function RootLayout({
 The `useEcho` hook provides access to user data, balance information, and authentication methods:
 
 ```typescript
-import { useEcho } from '@merit-systems/echo-react-sdk';
+import { useEcho } from '@merit-systems/echo-next-sdk/client';
 
 export default function MyComponent() {
   const { user, balance, freeTierBalance, signIn, signOut, echoClient } = useEcho();
@@ -73,7 +73,7 @@ export default function MyComponent() {
 For more advanced use cases, you can access the `echoClient` directly to call any Echo API method:
 
 ```typescript
-import { useEcho } from '@merit-systems/echo-react-sdk';
+import { useEcho } from '@merit-systems/echo-next-sdk/client';
 
 export default function PaymentComponent() {
   const { echoClient } = useEcho();
