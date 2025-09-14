@@ -39,6 +39,7 @@ export default defineConfig({
         'react/jsx-runtime',
         'react/jsx-dev-runtime',
         'openai',
+        'swr',
         // Node.js modules that should not be bundled for browser
         'inquirer',
         'commander',
