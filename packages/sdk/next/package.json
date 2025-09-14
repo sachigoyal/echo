@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-next-sdk",
-  "version": "0.0.14",
+  "version": "0.0.18",
   "description": "Next.js SDK for Echo",
   "type": "module",
   "main": "./dist/index.js",
@@ -38,7 +38,7 @@
   "license": "MIT",
   "dependencies": {
     "@merit-systems/echo-typescript-sdk": "1.0.14",
-    "@merit-systems/echo-react-sdk": "1.0.26",
+    "@merit-systems/echo-react-sdk": "1.0.27",
     "ai": "^5.0.17",
     "jwt-decode": "^4.0.0",
     "swr": "^2.3.1"

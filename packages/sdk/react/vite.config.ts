@@ -40,6 +40,10 @@ export default defineConfig({
         'react/jsx-dev-runtime',
         'openai',
         'swr',
+        '@ai-sdk/react',
+        'ai',
+        'react-oidc-context',
+        'oidc-client-ts',
         // Node.js modules that should not be bundled for browser
         'inquirer',
         'commander',
