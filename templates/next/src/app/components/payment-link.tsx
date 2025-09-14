@@ -11,7 +11,7 @@ export const PaymentLink = ({
   amount = 10,
   description = 'Credits',
 }: PaymentLinkProps) => {
-  const echoClient = useEcho();
+  const { echoClient } = useEcho();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +20,11 @@ export const PaymentLink = ({
     setError(null);
 
     try {
-      const paymentResponse = await echoClient.payments.createPaymentLink({
+      if (!echoClient) {
+        throw new Error('Not authenticated');
+      }
+
+      const paymentResponse = await echoClient?.payments.createPaymentLink({
         amount,
         description,
       });
