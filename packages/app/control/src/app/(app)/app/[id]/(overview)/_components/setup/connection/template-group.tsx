@@ -24,7 +24,7 @@ export const TemplateGroup: React.FC<Props> = ({
   if (templateGroup.type === 'templates') {
     return (
       <TemplateGroupTemplates
-        templates={templateGroup.templates}
+        templates={templateGroup.options}
         appId={appId}
         index={index}
       />
@@ -32,7 +32,7 @@ export const TemplateGroup: React.FC<Props> = ({
   } else {
     return (
       <TemplateGroupSubgroups
-        subgroups={templateGroup.subgroups}
+        subgroups={templateGroup.options}
         subtitle={templateGroup.subtitle}
         appId={appId}
         index={index}
@@ -116,10 +116,9 @@ const TemplateGroupSubgroups: React.FC<TemplateGroupSubgroupsProps> = ({
       />
 
       <motion.div
-        initial={{ height: 0, marginTop: 0 }}
+        initial={{ height: 0 }}
         animate={{
           height: selectedSubgroup ? 'auto' : 0,
-          marginTop: selectedSubgroup ? 16 : 0,
         }}
       >
         {selectedSubgroup && (

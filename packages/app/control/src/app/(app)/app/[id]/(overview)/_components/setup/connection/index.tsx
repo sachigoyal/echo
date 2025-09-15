@@ -57,7 +57,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
   const [selectedTemplateGroupId, setSelectedTemplateGroupId] =
     useState<string>();
 
-  const selectedTemplateGroup = TEMPLATES.find(
+  const selectedTemplateGroup = TEMPLATES.options.find(
     template => template.id === selectedTemplateGroupId
   );
 
@@ -92,26 +92,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0 pt-4">
-            <OptionButtons
-              title="Select a Framework"
-              options={TEMPLATES}
-              selectedId={selectedTemplateGroupId}
-              setSelectedId={setSelectedTemplateGroupId}
-              index={0}
-            />
-            <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: selectedTemplateGroup ? 'auto' : 0 }}
-            >
-              {selectedTemplateGroup && (
-                <TemplateGroup
-                  templateGroup={selectedTemplateGroup}
-                  appId={appId}
-                  key={selectedTemplateGroupId}
-                  index={1}
-                />
-              )}
-            </motion.div>
+            <TemplateGroup templateGroup={TEMPLATES} appId={appId} index={0} />
           </CardContent>
         </Card>
         <div className="flex gap-2 items-center">

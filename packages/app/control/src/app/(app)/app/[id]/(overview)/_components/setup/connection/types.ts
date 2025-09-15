@@ -1,22 +1,23 @@
-export type TemplateShared = {
+export type TemplateOption = {
   id: string;
   title: string;
   description: string;
   Icon: (props: { className?: string }) => React.ReactNode;
 };
 
-export type TemplateGroup = TemplateShared & {
+export type Template = TemplateOption;
+
+export type TemplateGroup = TemplateOption & {
   moreAdvanced: React.ReactNode;
+  subtitle: string;
 } & (
     | {
         type: 'subgroup';
         subtitle: string;
-        subgroups: TemplateGroup[];
+        options: TemplateGroup[];
       }
     | {
         type: 'templates';
-        templates: Template[];
+        options: Template[];
       }
   );
-
-export type Template = TemplateShared;

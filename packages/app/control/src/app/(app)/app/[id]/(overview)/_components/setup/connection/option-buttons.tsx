@@ -1,12 +1,12 @@
 import React from 'react';
-import { TemplateShared } from './types';
+import { TemplateOption } from './types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 
 interface Props {
   title: string;
-  options: TemplateShared[];
+  options: TemplateOption[];
   selectedId: string | undefined;
   setSelectedId: (id: string) => void;
   index: number;
