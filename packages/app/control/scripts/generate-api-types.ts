@@ -106,7 +106,7 @@ function analyzeRouteFile(
   // Find exported route handlers (GET, POST, PUT, DELETE, etc.)
   const exportedDeclarations = sourceFile.getExportedDeclarations();
 
-  for (const [name, declarations] of exportedDeclarations) {
+  for (const [name] of exportedDeclarations) {
     if (['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(name)) {
       routeInfo.methods.push(name);
 
@@ -178,11 +178,7 @@ function analyzeRouteFile(
 /**
  * Generate the complete types file content with resolved types
  */
-function generateTypesFileContent(
-  generatedTypes: GeneratedType[],
-  apiDir: string,
-  project: Project
-): string {
+function generateTypesFileContent(generatedTypes: GeneratedType[]): string {
   const imports = `import { OriginalRouteHandler } from '../app/api/_utils/types';
 import { z } from 'zod';
 
@@ -270,7 +266,7 @@ type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams,
  * - Convert Decimal to string
  * - Resolve enum references to string literals using ts-morph
  */
-function cleanTypeForSDK(typeText: string, project: Project): string {
+function cleanTypeForSDK(typeText: string): string {
   let cleanText = typeText;
 
   // Replace Date with string (since JSON serialization converts dates to strings)
@@ -435,7 +431,7 @@ type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams,
             }
 
             // Clean up the type text for SDK consumption
-            let cleanTypeText = cleanTypeForSDK(typeText, project);
+            const cleanTypeText = cleanTypeForSDK(typeText);
 
             // Create clean type definition (always use export type)
             let cleanDefinition: string;
@@ -591,11 +587,7 @@ async function main() {
 
   // Generate and write the types file
   if (allGeneratedTypes.length > 0) {
-    const content = generateTypesFileContent(
-      allGeneratedTypes,
-      apiDir,
-      project
-    );
+    const content = generateTypesFileContent(allGeneratedTypes);
     fs.writeFileSync(outputFile, content, 'utf8');
 
     // Also generate resolved types for SDK consumption

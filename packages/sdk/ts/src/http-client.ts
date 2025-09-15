@@ -89,10 +89,10 @@ export class HttpClient {
    */
   async get(
     url: string,
-    params?: Record<string, string | number | boolean | null | undefined> | any,
+    params?: Record<string, string | number | boolean | null | undefined>,
     options?: RequestOptions
   ): Promise<Response> {
-    if (Object.keys(params).length > 0) {
+    if (params && Object.keys(params).length > 0) {
       url = `${url}?${new URLSearchParams(Object.entries(params).map(([key, value]) => [key, String(value)])).toString()}`;
     }
     return this.request(url, { ...options, method: 'GET' });

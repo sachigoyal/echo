@@ -76,8 +76,11 @@ export type MiddlewareResult<TContext> = NextResponse<MiddlewareErrorBody> & {
  * This is the type that Next.js uses internally before our library wraps it
  */
 export type OriginalRouteHandler<
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   TParams extends z.Schema,
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   TQuery extends z.Schema,
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   TBody extends z.Schema,
   TResponseBody,
 > = (

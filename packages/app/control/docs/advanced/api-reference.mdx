@@ -104,40 +104,34 @@ Get authenticated user's credit balance.
 
 **Response Type:**
 
-<AutoTypeTable path="src/lib/balance/types.ts" name="Balance" />
+<AutoTypeTable
+  path="src/services/user/balance.ts"
+  type={`Awaited<ReturnType<typeof getUserGlobalBalance>>`}
+/>
 
 ### Get Free Tier Balance
 
 ```http
-POST /api/v1/balance/free
+POST /api/v1/balance/{appId}/free
 ```
 
 Get user's free tier spending information for a specific app.
 
 **Authentication:** API key or JWT token required
 
-**Request Body:**
-
-```typescript
-{
-  echoAppId: string;
-}
-```
-
 **Response Type:**
 
 ```typescript
 {
-  spendPoolBalance: {
-    available: number;
-    total: number;
-    used: number;
-  }
+  spendPoolBalance: number;
   userSpendInfo: UserSpendInfo;
 }
 ```
 
-<AutoTypeTable path="src/lib/spend-pools/types.ts" name="UserSpendInfo" />
+<AutoTypeTable
+  path="src/lib/spend-pools/fetch-user-spend.ts"
+  type={`Awaited<ReturnType<typeof getCustomerSpendInfoForApp>>["userSpendInfo"]`}
+/>
 
 ## Payments
 
