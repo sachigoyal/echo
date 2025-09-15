@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -28,6 +29,13 @@ import { TEMPLATES } from './data';
 import { api } from '@/trpc/client';
 
 import { cn } from '@/lib/utils';
+import { Route } from 'next';
+import { Button } from '@/components/ui/button';
+import {
+  SiNextdotjs,
+  SiReact,
+  SiTypescript,
+} from '@icons-pack/react-simple-icons';
 
 interface Props {
   appId: string;
@@ -93,18 +101,38 @@ export const Connection: React.FC<Props> = ({ appId }) => {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Custom Setup</CardTitle>
+            <CardTitle className="text-base">
+              Building from Scratch or Adding to an Existing App?
+            </CardTitle>
             <CardDescription>
               Visit our{' '}
               <Link
-                href="/docs/getting-started/temmplates"
+                href={'/docs' as Route}
+                target="_blank"
                 className="text-primary underline font-medium"
               >
                 docs
               </Link>{' '}
-              to build your app from scratch.
+              for more details on our SDKs.
             </CardDescription>
           </CardHeader>
+          <CardFooter className="gap-2">
+            <Link href={'/docs/next-sdk'} target="_blank">
+              <Button variant="outline">
+                <SiNextdotjs className="size-4" /> Next.js SDK Docs
+              </Button>
+            </Link>
+            <Link href={'/docs/react-sdk'} target="_blank">
+              <Button variant="outline">
+                <SiReact className="size-4" /> React SDK Docs
+              </Button>
+            </Link>
+            <Link href={'/docs/typescript-sdk'} target="_blank">
+              <Button variant="outline">
+                <SiTypescript className="size-4" /> TypeScript SDK Docs
+              </Button>
+            </Link>
+          </CardFooter>
         </Card>
       </AccordionContent>
     </AccordionItem>

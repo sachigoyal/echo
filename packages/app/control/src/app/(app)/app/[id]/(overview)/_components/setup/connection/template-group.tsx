@@ -3,10 +3,7 @@ import React, { useState } from 'react';
 import { OptionButtons } from './option-buttons';
 import { Template } from './template';
 
-import type {
-  Template as TemplateType,
-  TemplateGroup as TemplateGroupType,
-} from './types';
+import type { TemplateGroup as TemplateGroupType } from './types';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
