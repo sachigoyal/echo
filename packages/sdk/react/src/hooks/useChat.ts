@@ -1,22 +1,16 @@
 import { useChat as useChatBase } from '@ai-sdk/react';
-import { convertToModelMessages, type ChatTransport, type UIMessage } from 'ai';
-import { useEchoChatConfig } from '../components/EchoChatProvider';
+import { type ChatTransport, type UIMessage } from 'ai';
+import {
+  ChatSendParams,
+  useEchoChatConfig,
+} from '../components/EchoChatProvider';
 
 function createInMemoryChatTransport(): ChatTransport<UIMessage> {
   const chatFn = useEchoChatConfig();
   return {
-    async sendMessages(params) {
-      const { messages, abortSignal, ...rest } = params;
-      const coreMessages = convertToModelMessages(
-        messages.map(({ role, parts, metadata }) => ({ role, parts, metadata }))
-      );
-
-      return await chatFn({
-        uiMessages: messages,
-        modelMessages: coreMessages,
-        abortSignal,
-        ...rest,
-      });
+    sendMessages: async options => {
+      console.log('sendMessages', options);
+      return chatFn(options as ChatSendParams);
     },
     async reconnectToStream() {
       return null;
