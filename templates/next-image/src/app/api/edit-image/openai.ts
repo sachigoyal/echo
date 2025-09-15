@@ -5,6 +5,7 @@
 import { getEchoToken } from '@/echo';
 import OpenAI from 'openai';
 import { dataUrlToFile } from '@/lib/image-utils';
+import { ERROR_MESSAGES } from '@/lib/constants';
 
 /**
  * Handles OpenAI image editing
@@ -17,7 +18,7 @@ export async function handleOpenAIEdit(
 
   if (!token) {
     return Response.json(
-      { error: 'Authentication failed. No token available.' },
+      { error: ERROR_MESSAGES.AUTH_FAILED },
       { status: 401 }
     );
   }
@@ -43,10 +44,7 @@ export async function handleOpenAIEdit(
 
     if (!result.data || result.data.length === 0) {
       return Response.json(
-        {
-          error:
-            'No edited image was generated. Please try a different edit prompt.',
-        },
+        { error: ERROR_MESSAGES.NO_EDITED_IMAGE },
         { status: 500 }
       );
     }

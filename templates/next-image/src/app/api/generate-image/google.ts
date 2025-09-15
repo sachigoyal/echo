@@ -4,6 +4,7 @@
 
 import { google } from '@/echo';
 import { generateText } from 'ai';
+import { ERROR_MESSAGES } from '@/lib/constants';
 
 /**
  * Handles Google Gemini image generation
@@ -20,7 +21,7 @@ export async function handleGoogleGenerate(prompt: string): Promise<Response> {
 
   if (!imageFile) {
     return Response.json(
-      { error: 'No image was generated. Please try a different prompt.' },
+      { error: ERROR_MESSAGES.NO_IMAGE_GENERATED },
       { status: 500 }
     );
   }

@@ -5,6 +5,7 @@
 import { google } from '@/echo';
 import { generateText } from 'ai';
 import { getMediaTypeFromDataUrl } from '@/lib/image-utils';
+import { ERROR_MESSAGES } from '@/lib/constants';
 
 /**
  * Handles Google Gemini image editing
@@ -41,10 +42,7 @@ export async function handleGoogleEdit(
 
   if (!imageFile) {
     return Response.json(
-      {
-        error:
-          'No edited image was generated. Please try a different edit prompt.',
-      },
+      { error: ERROR_MESSAGES.NO_EDITED_IMAGE },
       { status: 500 }
     );
   }

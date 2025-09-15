@@ -13,7 +13,7 @@ import {
   handleImageToFile,
   isImageActionable,
 } from '@/lib/image-actions';
-import type { GeneratedImage, ImageComponentProps } from '@/lib/types';
+import type { GeneratedImage } from '@/lib/types';
 
 /**
  * Self-contained loading timer component
@@ -40,7 +40,9 @@ const LoadingTimer = React.memo(function LoadingTimer({
   );
 });
 
-interface ImageHistoryItemProps extends ImageComponentProps {
+interface ImageHistoryItemProps {
+  image: GeneratedImage;
+  onAddToInput: (files: File[]) => void;
   onImageClick: (image: GeneratedImage) => void;
 }
 
@@ -68,13 +70,7 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({
 
   const handleCopy = useCallback(async () => {
     if (!isImageActionable(image)) return;
-
-    try {
-      await handleImageCopy(image.imageUrl!);
-    } catch (error) {
-      // Could add toast notification here in the future
-      console.error('Failed to copy image:', error);
-    }
+    await handleImageCopy(image.imageUrl!);
   }, [image]);
 
   return (

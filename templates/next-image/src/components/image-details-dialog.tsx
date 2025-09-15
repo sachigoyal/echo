@@ -48,12 +48,7 @@ export function ImageDetailsDialog({
 
   const handleCopy = useCallback(async () => {
     if (!isImageActionable(image)) return;
-
-    try {
-      await handleImageCopy(image.imageUrl!);
-    } catch (error) {
-      console.error('Failed to copy image:', error);
-    }
+    await handleImageCopy(image.imageUrl!);
   }, [image]);
 
   return (

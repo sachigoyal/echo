@@ -23,12 +23,7 @@ export function handleImageDownload(imageUrl: string, imageId: string): void {
  * Copies an image to the system clipboard
  */
 export async function handleImageCopy(imageUrl: string): Promise<void> {
-  try {
-    await copyDataUrlToClipboard(imageUrl);
-  } catch (error) {
-    console.error('Failed to copy image:', error);
-    throw error;
-  }
+  await copyDataUrlToClipboard(imageUrl);
 }
 
 /**
@@ -40,22 +35,19 @@ export function handleImageToFile(imageUrl: string, imageId: string): File {
 }
 
 /**
- * Checks if an image is available for actions (not loading, not error)
+ * Checks if an image is available for actions
  */
 export function isImageActionable(image: GeneratedImage): boolean {
-  return !image.isLoading && !image.error && !!image.imageUrl;
+  return !!image.imageUrl;
 }
 
 /**
  * Gets the display text for a model
  */
 export function getModelDisplayName(model?: string): string {
-  switch (model) {
-    case 'openai':
-      return 'GPT Image 1';
-    case 'gemini':
-      return 'Gemini Flash Image 2.5';
-    default:
-      return 'Unknown Model';
-  }
+  const modelMap = {
+    openai: 'GPT Image',
+    gemini: 'Gemini Flash Image',
+  };
+  return modelMap[model as keyof typeof modelMap] || 'Unknown Model';
 }
