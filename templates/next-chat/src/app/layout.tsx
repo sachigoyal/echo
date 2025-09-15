@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
 import Header from '@/app/_components/header';
 import { Providers } from '@/providers';
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
 const geistSans = Geist({
@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Echo AI App',
+  title: 'Echo Chat',
   description: 'AI-powered chat application with Echo billing integration',
 };
 
@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex h-screen flex-col antialiased`}
       >
         <Providers>
-          <Header title="Echo Demo App" />
+          <Header title="Echo Chat" />
           <div className="min-h-0 flex-1">{children}</div>
         </Providers>
       </body>
