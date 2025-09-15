@@ -111,7 +111,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
     const spinner = ora(`Downloading template: ${template}`).start();
 
     // Use degit to download the template
-    const emitter = degit(`Merit-Systems/echo/templates/${template}`);
+    const emitter = degit(`Merit-Systems/echo/templates/${template}#production`);
 
     // Collect warnings to show after spinner
     const warnings: string[] = [];
