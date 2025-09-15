@@ -70,7 +70,8 @@ export interface GenerateImageRequest {
  */
 export interface EditImageRequest {
   prompt: string;
-  imageUrl: string; // Data URL or regular URL
+  imageUrls: string[]; // Array of data URLs or regular URLs
+  provider: ModelOption;
 }
 
 /**

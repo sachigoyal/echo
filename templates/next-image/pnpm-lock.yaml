@@ -12,8 +12,8 @@ importers:
         specifier: ^2.0.16
         version: 2.0.28(zod@4.1.8)
       '@merit-systems/echo-next-sdk':
-        specifier: 0.0.18
-        version: 0.0.18(next@15.4.7(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.8)
+        specifier: 0.0.19
+        version: 0.0.19(next@15.4.7(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.8)
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.1.9(@types/react@19.1.10))(@types/react@19.1.10)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -355,8 +355,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@merit-systems/echo-next-sdk@0.0.18':
-    resolution: {integrity: sha512-+G6rtdl3eYqIplcBZ9G2HGAUQuHr7yFrjfYsaO7IgVeUulAC6nEabzAjOv43bL/kfdoRlXKW+6UvTe+kRi1Acw==}
+  '@merit-systems/echo-next-sdk@0.0.19':
+    resolution: {integrity: sha512-hcKA0YI+9YlZJUyodpszUDktK6yEb6ilSV/ZN4ePQFGkB9uZ+pONuLw1i4l51xjg0l91gk1f35Anqssawc03hg==}
     peerDependencies:
       next: '>=15.0.0'
       react: ^18.0.0 || ^19.0.0
@@ -2627,7 +2627,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@merit-systems/echo-next-sdk@0.0.18(next@15.4.7(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.8)':
+  '@merit-systems/echo-next-sdk@0.0.19(next@15.4.7(@opentelemetry/api@1.9.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.8)':
     dependencies:
       '@merit-systems/echo-react-sdk': 1.0.27(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.8)
       '@merit-systems/echo-typescript-sdk': 1.0.14(zod@4.1.8)

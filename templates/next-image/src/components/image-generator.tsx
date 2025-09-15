@@ -154,7 +154,7 @@ export default function ImageGenerator() {
     const placeholderImage: GeneratedImage = {
       id: imageId,
       prompt,
-      model: isEdit ? 'gemini' : model, // Image editing only works with Gemini
+      model: model,
       timestamp: new Date(),
       attachments: message.files?.map(f => ({
         filename: f.filename || 'attachment',
@@ -172,27 +172,30 @@ export default function ImageGenerator() {
       let imageUrl: ImageResponse['imageUrl'];
 
       if (isEdit) {
-        const imageFile = message.files?.find(file => 
+        const imageFiles = message.files?.filter(file => 
           file.mediaType?.startsWith('image/') || file.type === 'file'
-        );
+        ) || [];
         
-        if (!imageFile?.url) {
-          throw new Error('No image file found in attachments');
+        if (imageFiles.length === 0) {
+          throw new Error('No image files found in attachments');
         }
 
         try {
-          const response = await fetch(imageFile.url);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch image file: ${response.status}`);
-          }
+          const imageUrls = await Promise.all(
+            imageFiles.map(async (imageFile) => {
+              const response = await fetch(imageFile.url);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch image file: ${response.status}`);
+              }
+              const blob = await response.blob();
+              return await blobToBase64(blob);
+            })
+          );
           
-          const blob = await response.blob();
-          const dataUrl = await blobToBase64(blob);
-          
-          const result = await editImage({ prompt, imageUrl: dataUrl });
+          const result = await editImage({ prompt, imageUrls, provider: model });
           imageUrl = result.imageUrl;
         } catch (error) {
-          console.error('Error processing image file:', error);
+          console.error('Error processing image files:', error);
           throw error;
         }
       } else {
