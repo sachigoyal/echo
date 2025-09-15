@@ -113,7 +113,7 @@ function ImageHistoryItem({ image, onAddToInput, onImageClick }: ImageHistoryIte
   return (
     <div 
       onClick={handleImageClick}
-      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg hover:scale-102.5 transition-all duration-100 animate-in fade-in slide-in-from-left-4 duration-500"
+      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg transition-all duration-100 animate-in fade-in slide-in-from-left-4 duration-500"
     >
       {image.isLoading ? (
         <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
