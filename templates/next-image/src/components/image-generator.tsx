@@ -1,6 +1,11 @@
 'use client';
 
+// React imports
 import { useState, useRef, useEffect } from 'react';
+
+// UI component imports
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 import {
   PromptInput,
   PromptInputActionAddAttachments,
@@ -22,9 +27,12 @@ import {
   PromptInputTools,
   usePromptInputAttachments,
 } from '@/components/ai-elements/prompt-input';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+
+// Local imports
 import { ImageHistory, type GeneratedImage } from './image-history';
+import { blobToBase64 } from '@/lib/utils';
+
+// ===== CONSTANTS =====
 
 const models = [
   { id: 'openai' as const, name: 'GPT Image' },
@@ -33,17 +41,66 @@ const models = [
 
 export type ModelOption = typeof models[number]['id'];
 
+// ===== TYPES =====
+interface GenerateImageRequest {
+  prompt: string;
+  model: ModelOption;
+}
+
+interface EditImageRequest {
+  prompt: string;
+  imageUrl: string;
+}
+
+interface ImageResponse {
+  imageUrl: {
+    base64Data: string;
+    mediaType: string;
+  };
+}
+
+// ===== API FUNCTIONS =====
+async function generateImage(request: GenerateImageRequest): Promise<ImageResponse> {
+  const response = await fetch('/api/generate-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  }
+
+  return response.json();
+}
+
+async function editImage(request: EditImageRequest): Promise<ImageResponse> {
+  const response = await fetch('/api/edit-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  }
+
+  return response.json();
+}
+
+// ===== MAIN COMPONENT =====
 export default function ImageGenerator() {
   const [model, setModel] = useState<ModelOption>('gemini');
-  const [loading, setLoading] = useState(false);
   const [imageHistory, setImageHistory] = useState<GeneratedImage[]>([]);
-  const addToInputRef = useRef<((files: File[]) => void) | null>(null);
-  const clearFormRef = useRef<(() => void) | null>(null);
+  const attachmentActionsRef = useRef<{
+    addFiles: (files: File[]) => void;
+    clear: () => void;
+  } | null>(null);
 
   const handleAddToInput = (files: File[]) => {
-    if (addToInputRef.current) {
-      addToInputRef.current(files);
-    }
+    attachmentActionsRef.current?.addFiles(files);
   };
 
   // Component to manage file input from within PromptInput context
@@ -51,17 +108,13 @@ export default function ImageGenerator() {
     const attachments = usePromptInputAttachments();
     
     useEffect(() => {
-      addToInputRef.current = (files: File[]) => {
-        attachments.add(files);
-      };
-      
-      clearFormRef.current = () => {
-        attachments.clear();
+      attachmentActionsRef.current = {
+        addFiles: (files: File[]) => attachments.add(files),
+        clear: () => attachments.clear(),
       };
       
       return () => {
-        addToInputRef.current = null;
-        clearFormRef.current = null;
+        attachmentActionsRef.current = null;
       };
     }, [attachments]);
     
@@ -69,7 +122,7 @@ export default function ImageGenerator() {
   }
 
   const handleSubmit = async (message: PromptInputMessage) => {
-    const hasText = Boolean(message.text);
+    const hasText = Boolean(message.text?.trim());
     const hasAttachments = Boolean(message.files?.length);
 
     if (!(hasText || hasAttachments)) {
@@ -77,7 +130,7 @@ export default function ImageGenerator() {
     }
 
     const isEdit = hasAttachments;
-    const prompt = message.text || 'Image processing request';
+    const prompt = message.text?.trim() || '';
     
     // Generate unique ID for this request
     const imageId = Date.now().toString();
@@ -94,68 +147,37 @@ export default function ImageGenerator() {
     };
 
     setImageHistory(prev => [placeholderImage, ...prev]);
-    setLoading(true);
     try {
-      let endpoint: string;
-      let body: any;
+      let imageUrl: ImageResponse['imageUrl'];
 
       if (isEdit) {
-        // Use edit-image endpoint when there are attachments
-        endpoint = '/api/edit-image';
-        // Get the first image attachment
-        console.log('Message files:', message.files); // Debug log
         const imageFile = message.files?.find(file => 
           file.mediaType?.startsWith('image/') || file.type === 'file'
         );
         
-        if (imageFile && imageFile.url) {
-          // The PromptInput provides a URL to the file, we need to convert it to base64
-          try {
-            // Fetch the blob from the object URL
-            const response = await fetch(imageFile.url);
-            const blob = await response.blob();
-            
-            // Convert blob to base64
-            const reader = new FileReader();
-            const base64Promise = new Promise<string>((resolve, reject) => {
-              reader.onload = () => {
-                if (typeof reader.result === 'string') {
-                  resolve(reader.result);
-                } else {
-                  reject(new Error('Failed to convert blob to base64'));
-                }
-              };
-              reader.onerror = reject;
-            });
-            
-            reader.readAsDataURL(blob);
-            const dataUrl = await base64Promise;
-            
-            body = { prompt, imageUrl: dataUrl };
-          } catch (error) {
-            console.error('Error converting image file:', error);
-            throw new Error('Failed to process image attachment');
+        if (!imageFile?.url) {
+          throw new Error('No image file found in attachments');
+        }
+
+        try {
+          const response = await fetch(imageFile.url);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch image file: ${response.status}`);
           }
-        } else {
-          throw new Error('No image attachment found');
+          
+          const blob = await response.blob();
+          const dataUrl = await blobToBase64(blob);
+          
+          const result = await editImage({ prompt, imageUrl: dataUrl });
+          imageUrl = result.imageUrl;
+        } catch (error) {
+          console.error('Error processing image file:', error);
+          throw error; // Re-throw all errors as-is
         }
       } else {
-        // Use generate-image endpoint for text-only prompts
-        endpoint = '/api/generate-image';
-        body = { prompt, model };
+        const result = await generateImage({ prompt, model });
+        imageUrl = result.imageUrl;
       }
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${isEdit ? 'edit' : 'generate'} image`);
-      }
-
-      const { imageUrl } = await response.json();
       
       // Update the existing placeholder entry with the result
       setImageHistory(prev => 
@@ -168,6 +190,8 @@ export default function ImageGenerator() {
     } catch (error) {
       console.error(`Error ${isEdit ? 'editing' : 'generating'} image:`, error);
       
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       // Update the placeholder entry with error state
       setImageHistory(prev => 
         prev.map(img => 
@@ -175,19 +199,15 @@ export default function ImageGenerator() {
             ? { 
                 ...img, 
                 isLoading: false, 
-                error: `Failed to ${isEdit ? 'edit' : 'generate'} image`
+                error: errorMessage
               }
             : img
         )
       );
-    } finally {
-      setLoading(false);
     }
 
     // Clear the form
-    if (clearFormRef.current) {
-      clearFormRef.current();
-    }
+    attachmentActionsRef.current?.clear();
   };
 
   return (
@@ -239,7 +259,7 @@ export default function ImageGenerator() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => clearFormRef.current?.()}
+              onClick={() => attachmentActionsRef.current?.clear()}
               className="h-9 w-9 p-0"
             >
               <X size={16} />
@@ -249,7 +269,6 @@ export default function ImageGenerator() {
         </PromptInputToolbar>
       </PromptInput>
 
-      {/* Image History - Now properly outside PromptInput */}
       <ImageHistory 
         imageHistory={imageHistory} 
         onAddToInput={handleAddToInput}
