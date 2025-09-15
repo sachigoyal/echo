@@ -36,17 +36,6 @@ import { EchoSignIn, useChat, useEcho } from '@merit-systems/echo-react-sdk';
 import { CopyIcon, MessageSquare } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
-const models = [
-  {
-    name: 'GPT 5 nano',
-    value: 'gpt-5-nano',
-  },
-  {
-    name: 'GPT 4o',
-    value: 'gpt-4o',
-  },
-];
-
 const suggestions = [
   'Can you explain how to play tennis?',
   'Write me a code snippet of how to use the vercel ai sdk to create a chatbot',
@@ -55,7 +44,6 @@ const suggestions = [
 
 const ChatBotDemo = () => {
   const [input, setInput] = useState('');
-  const [model, setModel] = useState<string>(models[0].value);
   const { messages, sendMessage, status } = useChat();
 
   const { user } = useEcho();
@@ -65,27 +53,13 @@ const ChatBotDemo = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      sendMessage(
-        { text: input },
-        {
-          body: {
-            model: model,
-          },
-        }
-      );
+      sendMessage({ text: input });
       setInput('');
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    sendMessage(
-      { text: suggestion },
-      {
-        body: {
-          model: model,
-        },
-      }
-    );
+    sendMessage({ text: suggestion });
   };
 
   return (
@@ -206,29 +180,7 @@ const ChatBotDemo = () => {
                 onChange={e => setInput(e.target.value)}
                 value={input}
               />
-              <PromptInputToolbar>
-                <PromptInputTools>
-                  <PromptInputModelSelect
-                    onValueChange={value => {
-                      setModel(value);
-                    }}
-                    value={model}
-                  >
-                    <PromptInputModelSelectTrigger>
-                      <PromptInputModelSelectValue />
-                    </PromptInputModelSelectTrigger>
-                    <PromptInputModelSelectContent>
-                      {models.map(model => (
-                        <PromptInputModelSelectItem
-                          key={model.value}
-                          value={model.value}
-                        >
-                          {model.name}
-                        </PromptInputModelSelectItem>
-                      ))}
-                    </PromptInputModelSelectContent>
-                  </PromptInputModelSelect>
-                </PromptInputTools>
+              <PromptInputToolbar className="justify-end">
                 <PromptInputSubmit disabled={!input} status={status} />
               </PromptInputToolbar>
             </PromptInput>

@@ -1,6 +1,7 @@
 import {
   EchoChatProvider,
   EchoProvider,
+  useEcho,
   useEchoModelProviders,
 } from '@merit-systems/echo-react-sdk';
 import { streamText, type ModelMessage } from 'ai';
@@ -25,18 +26,19 @@ function App() {
 }
 
 export function ChatWrapper() {
-  const { anthropic } = useEchoModelProviders();
+  const { openai } = useEchoModelProviders();
+  const { user } = useEcho();
 
   async function doChat({ modelMessages }: { modelMessages: ModelMessage[] }) {
     const result = streamText({
-      model: anthropic('claude-sonnet-4-20250514'),
+      model: openai('gpt-5'),
       messages: modelMessages,
     });
     return result.toUIMessageStream(); // in-memory UI chunk stream
   }
 
   return (
-    <EchoChatProvider chatFn={doChat}>
+    <EchoChatProvider chatFn={doChat} key={user?.id}>
       <Chat />
     </EchoChatProvider>
   );
