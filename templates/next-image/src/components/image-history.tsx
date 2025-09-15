@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Edit, Download, Copy } from 'lucide-react';
 import type { ModelOption } from './image-generator';
+import { ImageDetailsDialog } from './image-details-dialog';
 
 
 export interface GeneratedImage {
@@ -17,7 +18,11 @@ export interface GeneratedImage {
   prompt: string;
   model?: ModelOption;
   timestamp: Date;
-  attachmentRefs?: string[];
+  attachments?: {
+    filename: string;
+    url: string;
+    mediaType: string;
+  }[];
   isEdit: boolean;
   isLoading?: boolean;
   error?: string;
@@ -26,9 +31,10 @@ export interface GeneratedImage {
 interface ImageHistoryItemProps {
   image: GeneratedImage;
   onAddToInput: (files: File[]) => void;
+  onImageClick: (image: GeneratedImage) => void;
 }
 
-function ImageHistoryItem({ image, onAddToInput }: ImageHistoryItemProps) {
+function ImageHistoryItem({ image, onAddToInput, onImageClick }: ImageHistoryItemProps) {
   // Calculate elapsed time for loading images
   const getElapsedTime = () => {
     if (!image.isLoading) return '';
@@ -59,16 +65,7 @@ function ImageHistoryItem({ image, onAddToInput }: ImageHistoryItemProps) {
   };
 
   const handleImageClick = () => {
-    console.log('Image clicked:', {
-      id: image.id,
-      prompt: image.prompt,
-      model: image.model,
-      timestamp: image.timestamp,
-      isEdit: image.isEdit,
-      attachmentRefs: image.attachmentRefs,
-      hasImage: !!image.imageUrl,
-      error: image.error
-    });
+    onImageClick(image);
   };
 
   const handleDownload = () => {
@@ -116,7 +113,7 @@ function ImageHistoryItem({ image, onAddToInput }: ImageHistoryItemProps) {
   return (
     <div 
       onClick={handleImageClick}
-      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-200 animate-in fade-in slide-in-from-left-4 duration-500"
+      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg hover:scale-102.5 transition-all duration-100 animate-in fade-in slide-in-from-left-4 duration-500"
     >
       {image.isLoading ? (
         <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
@@ -189,6 +186,7 @@ interface ImageHistoryProps {
 
 export function ImageHistory({ imageHistory, onAddToInput }: ImageHistoryProps) {
   const [timerTick, setTimerTick] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Timer effect to update loading durations
@@ -234,9 +232,16 @@ export function ImageHistory({ imageHistory, onAddToInput }: ImageHistoryProps) 
             key={image.id} 
             image={image} 
             onAddToInput={onAddToInput}
+            onImageClick={setSelectedImage}
           />
         ))}
       </div>
+      
+      <ImageDetailsDialog 
+        image={selectedImage}
+        onClose={() => setSelectedImage(null)}
+        onAddToInput={onAddToInput}
+      />
     </div>
   );
 }

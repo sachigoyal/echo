@@ -147,7 +147,11 @@ export default function ImageGenerator() {
       prompt,
       model: isEdit ? 'gemini' : model,
       timestamp: new Date(),
-      attachmentRefs: message.files?.map(f => f.filename || 'attachment'),
+      attachments: message.files?.map(f => ({
+        filename: f.filename || 'attachment',
+        url: f.url || '',
+        mediaType: f.mediaType || 'application/octet-stream'
+      })),
       isEdit,
       isLoading: true,
     };

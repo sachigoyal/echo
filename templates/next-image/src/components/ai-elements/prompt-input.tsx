@@ -214,6 +214,7 @@ export type PromptInputProps = Omit<
     message: PromptInputMessage,
     event: FormEvent<HTMLFormElement>
   ) => void;
+  ref?: React.Ref<HTMLFormElement>;
 };
 
 export const PromptInput = ({
