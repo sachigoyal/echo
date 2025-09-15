@@ -394,6 +394,39 @@ export const PromptInput = ({
     };
   }, [add, globalDrop]);
 
+  // Attach paste handler on document when globalDrop is enabled
+  useEffect(() => {
+    if (!globalDrop) {
+      return;
+    }
+    const onPaste = (e: ClipboardEvent) => {
+      const clipboardData = e.clipboardData;
+      if (!clipboardData) return;
+      
+      const files: File[] = [];
+      
+      // Check for image data in clipboard items
+      for (let i = 0; i < clipboardData.items.length; i++) {
+        const item = clipboardData.items[i];
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            files.push(file);
+          }
+        }
+      }
+      
+      if (files.length > 0) {
+        e.preventDefault();
+        add(files);
+      }
+    };
+    document.addEventListener('paste', onPaste);
+    return () => {
+      document.removeEventListener('paste', onPaste);
+    };
+  }, [add, globalDrop]);
+
   const handleChange: ChangeEventHandler<HTMLInputElement> = event => {
     if (event.currentTarget.files) {
       add(event.currentTarget.files);
