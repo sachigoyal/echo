@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { EchoTokens } from '@merit-systems/echo-next-sdk/client';
 import SignInButton from '@/app/_components/echo/sign-in-button';
-import NewChatButton from '@/app/_components/new-chat-button';
 import { isSignedIn } from '@/echo';
 
 interface HeaderProps {
@@ -26,7 +25,6 @@ const Header: FC<HeaderProps> = async ({
           </div>
 
           <nav className="flex items-center space-x-4">
-            {signedIn && <NewChatButton />}
             {!signedIn ? <SignInButton /> : <EchoTokens />}
           </nav>
         </div>
