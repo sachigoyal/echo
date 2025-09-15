@@ -1,8 +1,8 @@
 import { SiNextdotjs, SiReact } from '@icons-pack/react-simple-icons';
-import { TemplateGroup } from './types';
 import { AppWindow, BotMessageSquare, Image } from 'lucide-react';
-import Link from 'next/link';
 import { Route } from 'next';
+import Link from 'next/link';
+import { TemplateGroup } from './types';
 
 export const TEMPLATES: TemplateGroup = {
   id: 'frameworks',
@@ -34,14 +34,14 @@ export const TEMPLATES: TemplateGroup = {
       subtitle: 'Choose a Next.js Template',
       options: [
         {
-          id: 'next-chatbot',
+          id: 'next-chat',
           title: 'Chatbot',
           description:
             'A full-stack chatbot application using Next.js and the Vercel AI SDK.',
           Icon: BotMessageSquare,
         },
         {
-          id: 'next-imagegen',
+          id: 'next-image',
           title: 'Image Generation',
           description:
             'A full-stack image generation application using Next.js and the Vercel AI SDK.',
@@ -79,14 +79,14 @@ export const TEMPLATES: TemplateGroup = {
       subtitle: 'Choose a React Template',
       options: [
         {
-          id: 'react-chatbot',
+          id: 'react-chat',
           title: 'Chatbot',
           description:
             'A client-side chatbot application using React and the Vercel AI SDK.',
           Icon: BotMessageSquare,
         },
         {
-          id: 'react-imagegen',
+          id: 'react-image',
           title: 'Image Generation',
           description:
             'A client-side image generation application using React and the Vercel AI SDK.',
