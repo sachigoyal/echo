@@ -174,10 +174,11 @@ export const getUsersWithPagination = async (
   })
 }
 
-// Example usage with StatefulDataTable:
+// Example usage with StatefulDataTable using TRPC:
 /*
 import { StatefulDataTable } from "@/components/server-side-data-table/StatefulDataTable"
-import { getUsersWithPagination, User } from "./example-trpc"
+import { api } from "@/trpc/client"
+import { User } from "./example-trpc"
 
 // Define columns
 const columns: ColumnDef<User, any>[] = [
@@ -209,12 +210,25 @@ const columns: ColumnDef<User, any>[] = [
   },
 ]
 
-// Use in component
+// Use in component with TRPC useQuery hook
 export function UsersTable() {
   return (
     <StatefulDataTable
       columns={columns}
-      dataFetcher={getUsersWithPagination}
+      trpcQuery={api.admin.users.getUsersWithPagination.useQuery}
+    />
+  )
+}
+
+// Alternative: If you need to pass additional options to the query
+export function UsersTableWithOptions() {
+  return (
+    <StatefulDataTable
+      columns={columns}
+      trpcQuery={(params) => api.admin.users.getUsersWithPagination.useQuery(params, {
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      })}
     />
   )
 }

@@ -21,6 +21,7 @@ import { MultiSortControls } from "./SortControls"
 import { MultiFilterControls, ColumnType } from "./FilterControls"
 import { TableHeader as CustomTableHeader } from "./TableHeader"
 import { ActionConfig, ActionGroup, TableState } from "./ActionControls"
+import { getFilterableColumnConfigs, getSortableColumns } from "./utils"
 
 // Re-export for convenience
 export type { ActionConfig, ActionGroup, TableState }
@@ -52,38 +53,9 @@ export function BaseTable<TData, TValue>({
   actions = [],
   actionGroups = [],
 }: BaseTableProps<TData, TValue>) {
-  const defaultColumns = React.useMemo(() => 
-    columns.map(col => {
-      if ('accessorKey' in col && typeof col.accessorKey === 'string') {
-        return col.accessorKey
-      }
-      if ('id' in col && typeof col.id === 'string') {
-        return col.id
-      }
-      return 'unknown'
-    }).filter(col => col !== 'unknown'),
-    [columns]
-  )
-
-  // Create column configs from typed columns
-  const columnConfigs = React.useMemo(() => 
-    columns.map(col => {
-      let name: string
-      if ('accessorKey' in col && typeof col.accessorKey === 'string') {
-        name = col.accessorKey
-      } else if ('id' in col && typeof col.id === 'string') {
-        name = col.id
-      } else {
-        name = 'unknown'
-      }
-      
-      return {
-        name,
-        type: col.columnType
-      }
-    }).filter(config => config.name !== 'unknown'),
-    [columns]
-  )
+  // Get sortable and filterable columns using utility functions
+  const sortableColumns = React.useMemo(() => getSortableColumns(columns), [columns])
+  const filterableColumnConfigs = React.useMemo(() => getFilterableColumnConfigs(columns), [columns])
 
   // State for controlling popover visibility
   const [sortPopoverOpen, setSortPopoverOpen] = React.useState(false)
@@ -92,7 +64,7 @@ export function BaseTable<TData, TValue>({
   return (
     <div className="space-y-0">
       <div className="overflow-hidden rounded-md border">
-        {showControls && defaultColumns.length > 0 && (
+        {showControls && (
           <CustomTableHeader
             title={title}
             table={table}
@@ -159,21 +131,25 @@ export function BaseTable<TData, TValue>({
       <PaginationControls table={table} />
       
       {/* Render popovers outside the table for proper positioning */}
-      {showControls && defaultColumns.length > 0 && (
+      {showControls && (
         <>
-          <MultiSortControls 
-            table={table} 
-            availableColumns={defaultColumns}
-            isOpen={sortPopoverOpen}
-            onOpenChange={setSortPopoverOpen}
-          />
-          <MultiFilterControls 
-            table={table} 
-            availableColumns={defaultColumns} 
-            columnConfigs={columnConfigs}
-            isOpen={filterPopoverOpen}
-            onOpenChange={setFilterPopoverOpen}
-          />
+          {(
+            <MultiSortControls 
+              table={table} 
+              availableColumns={sortableColumns}
+              isOpen={sortPopoverOpen}
+              onOpenChange={setSortPopoverOpen}
+            />
+          )}
+          {(
+            <MultiFilterControls 
+              table={table} 
+              availableColumns={filterableColumnConfigs.map(config => config.name)} 
+              columnConfigs={filterableColumnConfigs}
+              isOpen={filterPopoverOpen}
+              onOpenChange={setFilterPopoverOpen}
+            />
+          )}
         </>
       )}
     </div>

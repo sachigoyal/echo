@@ -32,6 +32,7 @@ export function createCheckboxColumn<TData>(): TypedColumnDef<TData, unknown> {
       />
     ),
     enableSorting: false,
+    enableColumnFilter: false,
     enableHiding: false,
   }
 }

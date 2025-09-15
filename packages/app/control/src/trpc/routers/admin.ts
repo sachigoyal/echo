@@ -45,6 +45,10 @@ import {
   scheduleCampaignForApps,
 } from '@/services/admin/email-campaigns';
 import { getAppsEarningsPaginatedWithCampaigns } from '@/services/admin/app-earnings';
+import { getUserEarningsWithPagination } from '@/services/admin/v2/user-earnings';
+import { paginationParamsSchema } from '@/services/lib/pagination';
+import { multiSortParamsSchema } from '@/services/lib/sorting';
+import { filterParamsSchema } from '@/services/lib/filtering';
 
 export const adminRouter = createTRPCRouter({
   isAdmin: protectedProcedure.query(async ({ ctx }) => {
@@ -151,6 +155,15 @@ export const adminRouter = createTRPCRouter({
       .input(z.object({ appId: z.string() }))
       .query(async ({ input }) => {
         return await getAppEarningsAcrossAllUsers(input.appId);
+      }),
+
+    /**
+     * Get paginated user earnings with advanced filtering and sorting
+     */
+    getUserEarningsWithPagination: adminProcedure
+      .input(paginationParamsSchema.merge(multiSortParamsSchema).merge(filterParamsSchema))
+      .query(async ({ input }) => {
+        return await getUserEarningsWithPagination(input);
       }),
   },
 

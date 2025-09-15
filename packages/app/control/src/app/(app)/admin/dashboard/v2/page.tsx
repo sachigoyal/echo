@@ -6,6 +6,41 @@ import {
 } from '@/components/server-side-data-table'
 import { getUsersWithPagination, User } from '@/components/server-side-data-table/example-trpc'
 import { TableState, TypedColumnDef } from '@/components/server-side-data-table/BaseTable'
+import { PaginationParams, PaginatedResponse } from '@/services/lib/pagination'
+import { MultiSortParams } from '@/services/lib/sorting'
+import { FilterParams } from '@/services/lib/filtering'
+import { UseQueryResult } from '@tanstack/react-query'
+
+// Mock TRPC query hook for demonstration
+const useMockUsersQuery = (params: PaginationParams & MultiSortParams & FilterParams): UseQueryResult<PaginatedResponse<User>, Error> => {
+  const [data, setData] = React.useState<PaginatedResponse<User> | undefined>()
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<Error | null>(null)
+
+  React.useEffect(() => {
+    setIsLoading(true)
+    getUsersWithPagination(params)
+      .then(result => {
+        setData(result)
+        setError(null)
+      })
+      .catch(err => {
+        setError(err)
+        setData(undefined)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [params])
+
+  return {
+    data,
+    isLoading,
+    error,
+    isError: !!error,
+    isSuccess: !!data && !error,
+  } as UseQueryResult<PaginatedResponse<User>, Error>
+}
 
 // Define columns for the users table
 const columns: TypedColumnDef<User, string | number | boolean | Date>[] = [
@@ -102,7 +137,7 @@ export default function DashboardV2Page() {
         <div className="p-6">
           <StatefulDataTable
             columns={columns}
-            dataFetcher={getUsersWithPagination}
+            trpcQuery={useMockUsersQuery}
             showControls={true}
             actions={[
               {
