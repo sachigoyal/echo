@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -62,6 +63,9 @@ export function ImageDetailsDialog({
           <DialogTitle>
             {image.isEdit ? 'Edited Image' : 'Generated Image'}
           </DialogTitle>
+          <DialogDescription>
+            View and interact with the generated image and its details.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-6">
           {/* Full size image */}

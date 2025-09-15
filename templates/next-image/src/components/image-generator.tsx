@@ -153,17 +153,45 @@ export default function ImageGenerator() {
       // Generate unique ID for this request
       const imageId = `img_${Date.now()}`;
 
+      // Convert attachment blob URLs to permanent data URLs for persistent display
+      const permanentAttachments = message.files ? await Promise.all(
+        message.files.map(async f => {
+          if (f.url && f.mediaType?.startsWith('image/')) {
+            try {
+              // Convert blob URL to permanent base64 data URL
+              const response = await fetch(f.url);
+              const blob = await response.blob();
+              const base64 = await blobToBase64(blob);
+              return {
+                filename: f.filename || 'attachment',
+                url: base64, // blobToBase64 already returns full data URL
+                mediaType: f.mediaType,
+              };
+            } catch (error) {
+              console.error('Failed to convert attachment to base64:', error);
+              // Fallback to original URL if conversion fails
+              return {
+                filename: f.filename || 'attachment',
+                url: f.url || '',
+                mediaType: f.mediaType || 'application/octet-stream',
+              };
+            }
+          }
+          return {
+            filename: f.filename || 'attachment',
+            url: f.url || '',
+            mediaType: f.mediaType || 'application/octet-stream',
+          };
+        })
+      ) : undefined;
+
       // Create placeholder entry immediately for optimistic UI
       const placeholderImage: GeneratedImage = {
         id: imageId,
         prompt,
         model: model,
         timestamp: new Date(),
-        attachments: message.files?.map(f => ({
-          filename: f.filename || 'attachment',
-          url: f.url || '',
-          mediaType: f.mediaType || 'application/octet-stream',
-        })),
+        attachments: permanentAttachments,
         isEdit,
         isLoading: true,
       };
