@@ -2,11 +2,12 @@ import React from 'react';
 import { TemplateShared } from './types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { motion } from 'motion/react';
 
 interface Props {
   title: string;
   options: TemplateShared[];
-  selectedId: string;
+  selectedId: string | undefined;
   setSelectedId: (id: string) => void;
 }
 
@@ -18,8 +19,12 @@ export const OptionButtons: React.FC<Props> = ({
 }) => {
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-sm font-medium">{title}</h2>
-      <div className="flex gap-2 md:gap-4">
+      <h2 className="text-sm font-semibold">{title}</h2>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex gap-2 md:gap-4"
+      >
         {options.map(option => (
           <Button
             key={option.id}
@@ -52,7 +57,7 @@ export const OptionButtons: React.FC<Props> = ({
             </p>
           </Button>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 };

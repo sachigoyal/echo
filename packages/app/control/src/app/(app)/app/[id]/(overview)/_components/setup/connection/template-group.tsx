@@ -7,6 +7,7 @@ import type {
   Template as TemplateType,
   TemplateGroup as TemplateGroupType,
 } from './types';
+import { motion } from 'motion/react';
 
 interface Props {
   templateGroup: TemplateGroupType;
@@ -41,24 +42,36 @@ const TemplateGroupTemplates: React.FC<TemplateGroupTemplatesProps> = ({
   templates,
   appId,
 }) => {
-  const [selectedId, setSelectedId] = useState<string>(templates[0].id);
+  const [selectedId, setSelectedId] = useState<string>();
 
   const selectedTemplate = templates.find(
     template => template.id === selectedId
   );
 
   return (
-    <>
+    <motion.div>
       <OptionButtons
         title="Template"
         options={templates}
         selectedId={selectedId}
         setSelectedId={setSelectedId}
       />
-      {selectedTemplate && (
-        <Template template={selectedTemplate} appId={appId} />
-      )}
-    </>
+      <motion.div
+        initial={{ height: 0, marginTop: 0 }}
+        animate={{
+          height: selectedTemplate ? 'auto' : 0,
+          marginTop: selectedTemplate ? 16 : 0,
+        }}
+      >
+        {selectedTemplate && (
+          <Template
+            template={selectedTemplate}
+            appId={appId}
+            key={selectedId}
+          />
+        )}
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -73,9 +86,7 @@ const TemplateGroupSubgroups: React.FC<TemplateGroupSubgroupsProps> = ({
   subtitle,
   appId,
 }) => {
-  const [selectedSubgroupId, setSelectedSubgroupId] = useState<string>(
-    subgroups[0].id
-  );
+  const [selectedSubgroupId, setSelectedSubgroupId] = useState<string>();
 
   const selectedSubgroup = subgroups.find(
     subgroup => subgroup.id === selectedSubgroupId
@@ -89,13 +100,22 @@ const TemplateGroupSubgroups: React.FC<TemplateGroupSubgroupsProps> = ({
         selectedId={selectedSubgroupId}
         setSelectedId={setSelectedSubgroupId}
       />
-      {selectedSubgroup && (
-        <TemplateGroup
-          templateGroup={selectedSubgroup}
-          key={selectedSubgroupId}
-          appId={appId}
-        />
-      )}
+
+      <motion.div
+        initial={{ height: 0, marginTop: 0 }}
+        animate={{
+          height: selectedSubgroup ? 'auto' : 0,
+          marginTop: selectedSubgroup ? 16 : 0,
+        }}
+      >
+        {selectedSubgroup && (
+          <TemplateGroup
+            templateGroup={selectedSubgroup}
+            key={selectedSubgroupId}
+            appId={appId}
+          />
+        )}
+      </motion.div>
     </>
   );
 };

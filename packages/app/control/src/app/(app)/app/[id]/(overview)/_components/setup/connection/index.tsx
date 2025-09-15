@@ -2,18 +2,34 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 
+import Link from 'next/link';
+
+import { Check, ChevronsLeftRightEllipsis } from 'lucide-react';
+
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
-import { api } from '@/trpc/client';
-import { Check, ChevronsLeftRightEllipsis } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { TEMPLATES } from './data';
 import { TemplateGroup } from './template-group';
 import { OptionButtons } from './option-buttons';
+
+import { TEMPLATES } from './data';
+
+import { api } from '@/trpc/client';
+
+import { cn } from '@/lib/utils';
+import { motion } from 'motion/react';
 
 interface Props {
   appId: string;
@@ -39,7 +55,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
   }, [isConnected]);
 
   const [selectedTemplateGroupId, setSelectedTemplateGroupId] =
-    useState<string>(TEMPLATES[0].id);
+    useState<string>();
 
   const selectedTemplateGroup = TEMPLATES.find(
     template => template.id === selectedTemplateGroupId
@@ -63,19 +79,59 @@ export const Connection: React.FC<Props> = ({ appId }) => {
         </div>
       </AccordionTrigger>
       <AccordionContent className="flex flex-col gap-2 md:gap-4">
-        <OptionButtons
-          title="Framework"
-          options={TEMPLATES}
-          selectedId={selectedTemplateGroupId}
-          setSelectedId={setSelectedTemplateGroupId}
-        />
-        {selectedTemplateGroup && (
-          <TemplateGroup
-            templateGroup={selectedTemplateGroup}
-            key={selectedTemplateGroupId}
-            appId={appId}
-          />
-        )}
+        <Card>
+          <CardHeader className="border-b space-y-0.5">
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base">Guided Setup</CardTitle>
+              <Badge variant="glass" className="rounded-full">
+                Recommended
+              </Badge>
+            </div>
+            <CardDescription>
+              Use one of our starter templates to get started with your app.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col h-full gap-2 md:gap-4 pt-4">
+            <OptionButtons
+              title="Framework"
+              options={TEMPLATES}
+              selectedId={selectedTemplateGroupId}
+              setSelectedId={setSelectedTemplateGroupId}
+            />
+            <motion.div
+              initial={{ height: 0 }}
+              animate={{ height: selectedTemplateGroup ? 'auto' : 0 }}
+            >
+              {selectedTemplateGroup && (
+                <TemplateGroup
+                  templateGroup={selectedTemplateGroup}
+                  appId={appId}
+                  key={selectedTemplateGroupId}
+                />
+              )}
+            </motion.div>
+          </CardContent>
+        </Card>
+        <div className="flex gap-2 items-center">
+          <Separator className="flex-1" />
+          <p className="text-muted-foreground">or</p>
+          <Separator className="flex-1" />
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Custom Setup</CardTitle>
+            <CardDescription>
+              Visit our{' '}
+              <Link
+                href="/docs/getting-started/temmplates"
+                className="text-primary underline font-medium"
+              >
+                docs
+              </Link>{' '}
+              to build your app from scratch.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </AccordionContent>
     </AccordionItem>
   );
