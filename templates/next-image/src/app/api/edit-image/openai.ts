@@ -9,9 +9,12 @@ import { toFile } from './parse';
 /**
  * Handles OpenAI image editing
  */
-export async function handleOpenAIEdit(prompt: string, imageUrls: string[]): Promise<Response> {
+export async function handleOpenAIEdit(
+  prompt: string,
+  imageUrls: string[]
+): Promise<Response> {
   const token = await getEchoToken();
-  
+
   if (!token) {
     return Response.json(
       { error: 'Authentication failed. No token available.' },
@@ -20,7 +23,7 @@ export async function handleOpenAIEdit(prompt: string, imageUrls: string[]): Pro
   }
 
   // OpenAI editImage API is not supported through Vercel AI SDK, so we must construct
-  // a raw TS OpenAI client. 
+  // a raw TS OpenAI client.
   // https://platform.openai.com/docs/api-reference/images/createEdit
   const openaiClient = new OpenAI({
     apiKey: token,
@@ -40,7 +43,10 @@ export async function handleOpenAIEdit(prompt: string, imageUrls: string[]): Pro
 
     if (!result.data || result.data.length === 0) {
       return Response.json(
-        { error: 'No edited image was generated. Please try a different edit prompt.' },
+        {
+          error:
+            'No edited image was generated. Please try a different edit prompt.',
+        },
         { status: 500 }
       );
     }
@@ -48,16 +54,13 @@ export async function handleOpenAIEdit(prompt: string, imageUrls: string[]): Pro
     return Response.json({
       imageUrl: {
         base64Data: result.data[0]?.b64_json,
-        mediaType: 'image/png'
-      }
+        mediaType: 'image/png',
+      },
     });
   } catch (error: any) {
     // Pass through OpenAI's error response directly
     if (error?.status && error?.message) {
-      return Response.json(
-        { error: error.message },
-        { status: error.status }
-      );
+      return Response.json({ error: error.message }, { status: error.status });
     }
     throw error; // Re-throw for main error handler to catch
   }

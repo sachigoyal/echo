@@ -40,7 +40,7 @@ export type EchoResult = {
 
   getUser: () => Promise<RefreshTokenResponse['user'] | null>;
   isSignedIn: () => Promise<boolean>;
-  
+
   /** Get the Echo access token for server-side API calls */
   getEchoToken: () => Promise<string | null>;
 

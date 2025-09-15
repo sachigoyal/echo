@@ -9,9 +9,12 @@ import { parseImageInput } from './parse';
 /**
  * Handles Google Gemini image editing
  */
-export async function handleGoogleEdit(prompt: string, imageUrls: string[]): Promise<Response> {
+export async function handleGoogleEdit(
+  prompt: string,
+  imageUrls: string[]
+): Promise<Response> {
   const imageInputs = imageUrls.map(parseImageInput);
-  
+
   const content = [
     {
       type: 'text',
@@ -23,7 +26,7 @@ export async function handleGoogleEdit(prompt: string, imageUrls: string[]): Pro
       mediaType: imageInput.mediaType,
     })),
   ];
-  
+
   const result = await generateText({
     model: google('gemini-2.5-flash-image-preview'),
     prompt: [
@@ -35,21 +38,24 @@ export async function handleGoogleEdit(prompt: string, imageUrls: string[]): Pro
   });
 
   // Find the first image file in the result
-  const imageFile = result.files?.find(file => 
+  const imageFile = result.files?.find(file =>
     file.mediaType?.startsWith('image/')
   );
 
   if (!imageFile) {
     return Response.json(
-      { error: 'No edited image was generated. Please try a different edit prompt.' },
+      {
+        error:
+          'No edited image was generated. Please try a different edit prompt.',
+      },
       { status: 500 }
     );
   }
 
-  return Response.json({ 
+  return Response.json({
     imageUrl: {
       base64Data: imageFile.base64,
-      mediaType: imageFile.mediaType
-    } 
+      mediaType: imageFile.mediaType,
+    },
   });
 }

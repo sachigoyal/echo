@@ -3,18 +3,21 @@
  * Used by both ImageHistoryItem and ImageDetailsDialog components
  */
 
-import { 
-  createFileFromBase64, 
-  downloadImageFromBase64, 
+import {
+  createFileFromBase64,
+  downloadImageFromBase64,
   copyImageToClipboard,
-  generateImageFilename
+  generateImageFilename,
 } from './utils';
 import type { ImageData, GeneratedImage } from './types';
 
 /**
  * Downloads an image to the user's device
  */
-export function handleImageDownload(imageUrl: ImageData, imageId: string): void {
+export function handleImageDownload(
+  imageUrl: ImageData,
+  imageId: string
+): void {
   const filename = generateImageFilename(imageId, imageUrl.mediaType);
   downloadImageFromBase64(imageUrl.base64Data, imageUrl.mediaType, filename);
 }
@@ -36,7 +39,11 @@ export async function handleImageCopy(imageUrl: ImageData): Promise<void> {
  */
 export function handleImageToFile(imageUrl: ImageData, imageId: string): File {
   const filename = generateImageFilename(imageId, imageUrl.mediaType);
-  return createFileFromBase64(imageUrl.base64Data, imageUrl.mediaType, filename);
+  return createFileFromBase64(
+    imageUrl.base64Data,
+    imageUrl.mediaType,
+    filename
+  );
 }
 
 /**

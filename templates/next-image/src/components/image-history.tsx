@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Edit, Download, Copy } from 'lucide-react';
 import { ImageDetailsDialog } from './image-details-dialog';
-import { 
-  handleImageDownload, 
-  handleImageCopy, 
-  handleImageToFile, 
-  isImageActionable 
+import {
+  handleImageDownload,
+  handleImageCopy,
+  handleImageToFile,
+  isImageActionable,
 } from '@/lib/image-actions';
 import type { GeneratedImage, ImageComponentProps } from '@/lib/types';
 
@@ -19,30 +19,39 @@ import type { GeneratedImage, ImageComponentProps } from '@/lib/types';
  * Self-contained loading timer component
  * Only this component re-renders every 100ms, preventing parent re-renders
  */
-const LoadingTimer = React.memo(function LoadingTimer({ startTime }: { startTime: Date }) {
+const LoadingTimer = React.memo(function LoadingTimer({
+  startTime,
+}: {
+  startTime: Date;
+}) {
   const [, forceUpdate] = useState(0);
-  
+
   useEffect(() => {
     const timer = setInterval(() => {
       forceUpdate(n => n + 1);
     }, 100); // Update every 100ms for smooth animation
-    
+
     return () => clearInterval(timer);
   }, []);
-  
+
   const elapsed = (Date.now() - startTime.getTime()) / 1000;
-  return <div className="text-xs text-gray-500 font-mono">{elapsed.toFixed(1)}s</div>;
+  return (
+    <div className="text-xs text-gray-500 font-mono">{elapsed.toFixed(1)}s</div>
+  );
 });
 
 interface ImageHistoryItemProps extends ImageComponentProps {
   onImageClick: (image: GeneratedImage) => void;
 }
 
-const ImageHistoryItem = React.memo(function ImageHistoryItem({ image, onAddToInput, onImageClick }: ImageHistoryItemProps) {
-
+const ImageHistoryItem = React.memo(function ImageHistoryItem({
+  image,
+  onAddToInput,
+  onImageClick,
+}: ImageHistoryItemProps) {
   const handleAddToInput = useCallback(() => {
     if (!isImageActionable(image)) return;
-    
+
     const file = handleImageToFile(image.imageUrl!, image.id);
     onAddToInput([file]);
   }, [image, onAddToInput]);
@@ -53,13 +62,13 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({ image, onAddToIn
 
   const handleDownload = useCallback(() => {
     if (!isImageActionable(image)) return;
-    
+
     handleImageDownload(image.imageUrl!, image.id);
   }, [image]);
 
   const handleCopy = useCallback(async () => {
     if (!isImageActionable(image)) return;
-    
+
     try {
       await handleImageCopy(image.imageUrl!);
     } catch (error) {
@@ -69,9 +78,9 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({ image, onAddToIn
   }, [image]);
 
   return (
-    <div 
+    <div
       onClick={handleImageClick}
-      onKeyDown={(e) => {
+      onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handleImageClick();
@@ -104,7 +113,7 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({ image, onAddToIn
           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
             <Button
               size="sm"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handleCopy();
               }}
@@ -117,7 +126,7 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({ image, onAddToIn
             </Button>
             <Button
               size="sm"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handleDownload();
               }}
@@ -130,7 +139,7 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({ image, onAddToIn
             </Button>
             <Button
               size="sm"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handleAddToInput();
               }}
@@ -157,8 +166,13 @@ interface ImageHistoryProps {
   onAddToInput: (files: File[]) => void;
 }
 
-export const ImageHistory = React.memo(function ImageHistory({ imageHistory, onAddToInput }: ImageHistoryProps) {
-  const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+export const ImageHistory = React.memo(function ImageHistory({
+  imageHistory,
+  onAddToInput,
+}: ImageHistoryProps) {
+  const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(
+    null
+  );
 
   // Memoize callbacks to prevent unnecessary re-renders
   const handleImageClick = useCallback((image: GeneratedImage) => {
@@ -175,17 +189,17 @@ export const ImageHistory = React.memo(function ImageHistory({ imageHistory, onA
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Generated Images</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 transition-all duration-300 ease-out">
-        {imageHistory.map((image) => (
-          <ImageHistoryItem 
-            key={image.id} 
-            image={image} 
+        {imageHistory.map(image => (
+          <ImageHistoryItem
+            key={image.id}
+            image={image}
             onAddToInput={onAddToInput}
             onImageClick={handleImageClick}
           />
         ))}
       </div>
-      
-      <ImageDetailsDialog 
+
+      <ImageDetailsDialog
         image={selectedImage}
         onClose={handleCloseDialog}
         onAddToInput={onAddToInput}

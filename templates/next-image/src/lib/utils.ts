@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -41,14 +41,14 @@ export function base64ToBytes(base64Data: string): Uint8Array {
 
 /**
  * Creates a File object from base64 image data
- * @param base64Data - Base64 encoded string (without data URL prefix)  
+ * @param base64Data - Base64 encoded string (without data URL prefix)
  * @param mediaType - MIME type of the image
  * @param filename - Name for the file
  * @returns File object
  */
 export function createFileFromBase64(
-  base64Data: string, 
-  mediaType: string, 
+  base64Data: string,
+  mediaType: string,
   filename: string
 ): File {
   const bytes = base64ToBytes(base64Data);
@@ -63,7 +63,7 @@ export function createFileFromBase64(
  */
 export function downloadImageFromBase64(
   base64Data: string,
-  mediaType: string, 
+  mediaType: string,
   filename: string
 ): void {
   const dataUrl = `data:${mediaType};base64,${base64Data}`;
@@ -87,11 +87,11 @@ export async function copyImageToClipboard(
 ): Promise<void> {
   const bytes = base64ToBytes(base64Data);
   const blob = new Blob([bytes], { type: mediaType });
-  
+
   await navigator.clipboard.write([
     new ClipboardItem({
-      [mediaType]: blob
-    })
+      [mediaType]: blob,
+    }),
   ]);
 }
 
@@ -101,7 +101,10 @@ export async function copyImageToClipboard(
  * @param mediaType - MIME type of the image
  * @returns Filename string
  */
-export function generateImageFilename(imageId: string, mediaType: string): string {
+export function generateImageFilename(
+  imageId: string,
+  mediaType: string
+): string {
   const extension = mediaType.split('/')[1] || 'png';
   return `generated-image-${imageId}.${extension}`;
 }

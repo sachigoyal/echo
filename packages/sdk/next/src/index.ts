@@ -8,7 +8,10 @@ import { createEchoGoogle } from 'ai-providers/google';
 import { createEchoOpenAI } from 'ai-providers/openai';
 
 import { ECHO_COOKIE, namespacedCookie } from 'auth/cookie-names';
-import { RefreshTokenResponse, getEchoToken as getEchoTokenInternal } from 'auth/token-manager';
+import {
+  RefreshTokenResponse,
+  getEchoToken as getEchoTokenInternal,
+} from 'auth/token-manager';
 import { handleEchoClientProxy } from 'proxy';
 import {
   handleCallback,

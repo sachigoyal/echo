@@ -27,13 +27,13 @@ import {
 
 import { ImageHistory } from './image-history';
 import { blobToBase64 } from '@/lib/utils';
-import type { 
+import type {
   ModelOption,
   ModelConfig,
   GeneratedImage,
   GenerateImageRequest,
   EditImageRequest,
-  ImageResponse
+  ImageResponse,
 } from '@/lib/types';
 
 /**
@@ -51,7 +51,9 @@ const models: ModelConfig[] = [
  */
 
 // ===== API FUNCTIONS =====
-async function generateImage(request: GenerateImageRequest): Promise<ImageResponse> {
+async function generateImage(
+  request: GenerateImageRequest
+): Promise<ImageResponse> {
   const response = await fetch('/api/generate-image', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -83,7 +85,7 @@ async function editImage(request: EditImageRequest): Promise<ImageResponse> {
 
 /**
  * Main ImageGenerator component
- * 
+ *
  * This component demonstrates how to integrate Echo SDK with AI image generation:
  * - Uses PromptInput for unified input handling with attachments
  * - Supports both text-to-image generation and image editing
@@ -114,19 +116,19 @@ export default function ImageGenerator() {
   // Component to bridge PromptInput context with external file operations
   function FileInputManager() {
     const attachments = usePromptInputAttachments();
-    
+
     // Store reference to attachment actions for external use
     useEffect(() => {
       (window as any).__promptInputActions = {
         addFiles: attachments.add,
         clear: attachments.clear,
       };
-      
+
       return () => {
         delete (window as any).__promptInputActions;
       };
     }, [attachments]);
-    
+
     return null;
   }
 
@@ -135,118 +137,131 @@ export default function ImageGenerator() {
    * - Text-only: generates new image using selected model
    * - Text + attachments: edits uploaded images using Gemini
    */
-  const handleSubmit = useCallback(async (message: PromptInputMessage) => {
-    const hasText = Boolean(message.text?.trim());
-    const hasAttachments = Boolean(message.files?.length);
+  const handleSubmit = useCallback(
+    async (message: PromptInputMessage) => {
+      const hasText = Boolean(message.text?.trim());
+      const hasAttachments = Boolean(message.files?.length);
 
-    // Require either text prompt or attachments
-    if (!(hasText || hasAttachments)) {
-      return;
-    }
-
-    const isEdit = hasAttachments;
-    const prompt = message.text?.trim() || '';
-    
-    // Generate unique ID for this request
-    const imageId = `img_${Date.now()}`;
-    
-    // Create placeholder entry immediately for optimistic UI
-    const placeholderImage: GeneratedImage = {
-      id: imageId,
-      prompt,
-      model: model,
-      timestamp: new Date(),
-      attachments: message.files?.map(f => ({
-        filename: f.filename || 'attachment',
-        url: f.url || '',
-        mediaType: f.mediaType || 'application/octet-stream'
-      })),
-      isEdit,
-      isLoading: true,
-    };
-
-    // Add to history immediately for responsive UI
-    setImageHistory(prev => [placeholderImage, ...prev]);
-    
-    try {
-      let imageUrl: ImageResponse['imageUrl'];
-
-      if (isEdit) {
-        const imageFiles = message.files?.filter(file => 
-          file.mediaType?.startsWith('image/') || file.type === 'file'
-        ) || [];
-        
-        if (imageFiles.length === 0) {
-          throw new Error('No image files found in attachments');
-        }
-
-        try {
-          const imageUrls = await Promise.all(
-            imageFiles.map(async (imageFile) => {
-              const response = await fetch(imageFile.url);
-              if (!response.ok) {
-                throw new Error(`Failed to fetch image file: ${response.status}`);
-              }
-              const blob = await response.blob();
-              return await blobToBase64(blob);
-            })
-          );
-          
-          const result = await editImage({ prompt, imageUrls, provider: model });
-          imageUrl = result.imageUrl;
-        } catch (error) {
-          console.error('Error processing image files:', error);
-          throw error;
-        }
-      } else {
-        const result = await generateImage({ prompt, model });
-        imageUrl = result.imageUrl;
+      // Require either text prompt or attachments
+      if (!(hasText || hasAttachments)) {
+        return;
       }
-      
-      // Update the existing placeholder entry with the result
-      setImageHistory(prev => 
-        prev.map(img => 
-          img.id === imageId 
-            ? { ...img, imageUrl, isLoading: false }
-            : img
-        )
-      );
-    } catch (error) {
-      console.error(`Error ${isEdit ? 'editing' : 'generating'} image:`, error);
-      
-      // Update the placeholder entry with error state
-      setImageHistory(prev => 
-        prev.map(img => 
-          img.id === imageId 
-            ? { 
-                ...img, 
-                isLoading: false, 
-                error: error instanceof Error ? error.message : 'Failed to generate image'
-              }
-            : img
-        )
-      );
-    }
-  }, [model]);
+
+      const isEdit = hasAttachments;
+      const prompt = message.text?.trim() || '';
+
+      // Generate unique ID for this request
+      const imageId = `img_${Date.now()}`;
+
+      // Create placeholder entry immediately for optimistic UI
+      const placeholderImage: GeneratedImage = {
+        id: imageId,
+        prompt,
+        model: model,
+        timestamp: new Date(),
+        attachments: message.files?.map(f => ({
+          filename: f.filename || 'attachment',
+          url: f.url || '',
+          mediaType: f.mediaType || 'application/octet-stream',
+        })),
+        isEdit,
+        isLoading: true,
+      };
+
+      // Add to history immediately for responsive UI
+      setImageHistory(prev => [placeholderImage, ...prev]);
+
+      try {
+        let imageUrl: ImageResponse['imageUrl'];
+
+        if (isEdit) {
+          const imageFiles =
+            message.files?.filter(
+              file =>
+                file.mediaType?.startsWith('image/') || file.type === 'file'
+            ) || [];
+
+          if (imageFiles.length === 0) {
+            throw new Error('No image files found in attachments');
+          }
+
+          try {
+            const imageUrls = await Promise.all(
+              imageFiles.map(async imageFile => {
+                const response = await fetch(imageFile.url);
+                if (!response.ok) {
+                  throw new Error(
+                    `Failed to fetch image file: ${response.status}`
+                  );
+                }
+                const blob = await response.blob();
+                return await blobToBase64(blob);
+              })
+            );
+
+            const result = await editImage({
+              prompt,
+              imageUrls,
+              provider: model,
+            });
+            imageUrl = result.imageUrl;
+          } catch (error) {
+            console.error('Error processing image files:', error);
+            throw error;
+          }
+        } else {
+          const result = await generateImage({ prompt, model });
+          imageUrl = result.imageUrl;
+        }
+
+        // Update the existing placeholder entry with the result
+        setImageHistory(prev =>
+          prev.map(img =>
+            img.id === imageId ? { ...img, imageUrl, isLoading: false } : img
+          )
+        );
+      } catch (error) {
+        console.error(
+          `Error ${isEdit ? 'editing' : 'generating'} image:`,
+          error
+        );
+
+        // Update the placeholder entry with error state
+        setImageHistory(prev =>
+          prev.map(img =>
+            img.id === imageId
+              ? {
+                  ...img,
+                  isLoading: false,
+                  error:
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to generate image',
+                }
+              : img
+          )
+        );
+      }
+    },
+    [model]
+  );
 
   return (
     <div className="space-y-6">
-      <PromptInput 
+      <PromptInput
         ref={promptInputRef}
-        onSubmit={handleSubmit} 
-        className="relative" 
-        globalDrop 
-        multiple 
+        onSubmit={handleSubmit}
+        className="relative"
+        globalDrop
+        multiple
         accept="image/*"
       >
         <FileInputManager />
         <PromptInputBody>
           <PromptInputAttachments>
-            {(attachment) => <PromptInputAttachment data={attachment} />}
+            {attachment => <PromptInputAttachment data={attachment} />}
           </PromptInputAttachments>
-          <PromptInputTextarea
-            placeholder="Describe the image you want to generate, or attach an image and describe how to edit it..."
-          />
+          <PromptInputTextarea placeholder="Describe the image you want to generate, or attach an image and describe how to edit it..." />
         </PromptInputBody>
         <PromptInputToolbar>
           <PromptInputTools>
@@ -257,7 +272,7 @@ export default function ImageGenerator() {
               </PromptInputActionMenuContent>
             </PromptInputActionMenu>
             <PromptInputModelSelect
-              onValueChange={(value) => {
+              onValueChange={value => {
                 setModel(value as ModelOption);
               }}
               value={model}
@@ -266,7 +281,7 @@ export default function ImageGenerator() {
                 <PromptInputModelSelectValue />
               </PromptInputModelSelectTrigger>
               <PromptInputModelSelectContent>
-                {models.map((model) => (
+                {models.map(model => (
                   <PromptInputModelSelectItem key={model.id} value={model.id}>
                     {model.name}
                   </PromptInputModelSelectItem>
@@ -289,8 +304,8 @@ export default function ImageGenerator() {
         </PromptInputToolbar>
       </PromptInput>
 
-      <ImageHistory 
-        imageHistory={imageHistory} 
+      <ImageHistory
+        imageHistory={imageHistory}
         onAddToInput={handleAddToInput}
       />
     </div>

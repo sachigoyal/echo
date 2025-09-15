@@ -25,7 +25,7 @@ export interface ImageData {
 }
 
 /**
- * File attachment metadata  
+ * File attachment metadata
  */
 export interface AttachmentData {
   filename: string;
@@ -66,7 +66,7 @@ export interface GenerateImageRequest {
 }
 
 /**
- * Request payload for image editing API  
+ * Request payload for image editing API
  */
 export interface EditImageRequest {
   prompt: string;

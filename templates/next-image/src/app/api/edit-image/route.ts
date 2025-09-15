@@ -1,6 +1,6 @@
 /**
  * API Route: Edit Image
- * 
+ *
  * This route demonstrates Echo SDK integration with AI image editing:
  * - Uses both Google Gemini and OpenAI for image editing
  * - Supports both data URLs (base64) and regular URLs
@@ -20,7 +20,7 @@ const providers = {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
+
     const validation = validateEditImageRequest(body);
     if (!validation.isValid) {
       return Response.json(
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     const { prompt, imageUrls, provider } = body as EditImageRequest;
     const handler = providers[provider];
-    
+
     if (!handler) {
       return Response.json(
         { error: `Unsupported provider: ${provider}` },
@@ -42,9 +42,14 @@ export async function POST(req: Request) {
     return handler(prompt, imageUrls);
   } catch (error) {
     console.error('Image editing error:', error);
-    
+
     return Response.json(
-      { error: error instanceof Error ? error.message : 'Image editing failed. Please try again later.' },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Image editing failed. Please try again later.',
+      },
       { status: 500 }
     );
   }

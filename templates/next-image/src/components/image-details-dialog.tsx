@@ -10,12 +10,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Edit, Download, Copy } from 'lucide-react';
-import { 
-  handleImageDownload, 
-  handleImageCopy, 
-  handleImageToFile, 
+import {
+  handleImageDownload,
+  handleImageCopy,
+  handleImageToFile,
   isImageActionable,
-  getModelDisplayName 
+  getModelDisplayName,
 } from '@/lib/image-actions';
 import type { GeneratedImage, ImageActionHandlers } from '@/lib/types';
 
@@ -24,12 +24,16 @@ interface ImageDetailsDialogProps extends ImageActionHandlers {
   onClose: () => void;
 }
 
-export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetailsDialogProps) {
+export function ImageDetailsDialog({
+  image,
+  onClose,
+  onAddToInput,
+}: ImageDetailsDialogProps) {
   if (!image) return null;
 
   const handleAddToInput = useCallback(() => {
     if (!isImageActionable(image)) return;
-    
+
     const file = handleImageToFile(image.imageUrl!, image.id);
     onAddToInput([file]);
     onClose();
@@ -37,13 +41,13 @@ export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetail
 
   const handleDownload = useCallback(() => {
     if (!isImageActionable(image)) return;
-    
+
     handleImageDownload(image.imageUrl!, image.id);
   }, [image]);
 
   const handleCopy = useCallback(async () => {
     if (!isImageActionable(image)) return;
-    
+
     try {
       await handleImageCopy(image.imageUrl!);
     } catch (error) {
@@ -52,7 +56,7 @@ export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetail
   }, [image]);
 
   return (
-    <Dialog open={!!image} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={!!image} onOpenChange={open => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] w-[95vw] sm:w-full overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -65,7 +69,9 @@ export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetail
             {image.error ? (
               <div className="flex flex-col items-center justify-center h-full space-y-3 p-6">
                 <div className="text-red-500 text-lg">⚠️ Generation failed</div>
-                <div className="text-sm text-gray-500 text-center">{image.error}</div>
+                <div className="text-sm text-gray-500 text-center">
+                  {image.error}
+                </div>
               </div>
             ) : image.imageUrl ? (
               <NextImage
@@ -81,24 +87,28 @@ export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetail
               </div>
             )}
           </div>
-          
+
           {/* Details */}
           <div className="space-y-4">
-            <p className="text-lg font-medium text-gray-900">"{image.prompt}"</p>
+            <p className="text-lg font-medium text-gray-900">
+              "{image.prompt}"
+            </p>
             <div className="text-sm text-gray-500">
-              {getModelDisplayName(image.model)} • {' '}
-              {image.timestamp.toLocaleString()} • {' '}
+              {getModelDisplayName(image.model)} •{' '}
+              {image.timestamp.toLocaleString()} •{' '}
               {image.isEdit ? 'Edited Image' : 'Generated Image'}
             </div>
-            
+
             {/* Attachment previews */}
             {image.attachments && image.attachments.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium text-gray-900">Source Images</h4>
+                <h4 className="text-sm font-medium text-gray-900">
+                  Source Images
+                </h4>
                 <div className="flex gap-2 flex-wrap">
                   {image.attachments.map((attachment, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="relative w-16 h-16 rounded border overflow-hidden bg-gray-100"
                     >
                       {attachment.mediaType.startsWith('image/') ? (
@@ -123,7 +133,7 @@ export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetail
               </div>
             )}
           </div>
-          
+
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <Button
