@@ -8,7 +8,7 @@ import type {
   TemplateGroup as TemplateGroupType,
 } from './types';
 import { motion } from 'motion/react';
-import { ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Props {
   templateGroup: TemplateGroupType;
@@ -21,114 +21,50 @@ export const TemplateGroup: React.FC<Props> = ({
   appId,
   index,
 }) => {
-  if (templateGroup.type === 'templates') {
-    return (
-      <TemplateGroupTemplates
-        templates={templateGroup.options}
-        appId={appId}
-        index={index}
-      />
-    );
-  } else {
-    return (
-      <TemplateGroupSubgroups
-        subgroups={templateGroup.options}
-        subtitle={templateGroup.subtitle}
-        appId={appId}
-        index={index}
-      />
-    );
-  }
-};
-
-interface TemplateGroupTemplatesProps {
-  templates: TemplateType[];
-  appId: string;
-  index: number;
-}
-
-const TemplateGroupTemplates: React.FC<TemplateGroupTemplatesProps> = ({
-  templates,
-  appId,
-  index,
-}) => {
   const [selectedId, setSelectedId] = useState<string>();
 
-  const selectedTemplate = templates.find(
+  const selectedOption = templateGroup.options.find(
     template => template.id === selectedId
-  );
-
-  return (
-    <motion.div>
-      <OptionButtons
-        title="Choose a Template"
-        options={templates}
-        selectedId={selectedId}
-        setSelectedId={setSelectedId}
-        index={index}
-      />
-      <motion.div
-        initial={{ height: 0 }}
-        animate={{
-          height: selectedTemplate ? 'auto' : 0,
-        }}
-      >
-        {selectedTemplate && (
-          <Template
-            template={selectedTemplate}
-            appId={appId}
-            key={selectedId}
-            index={index + 1}
-          />
-        )}
-      </motion.div>
-    </motion.div>
-  );
-};
-
-interface TemplateGroupSubgroupsProps {
-  subtitle: string;
-  subgroups: TemplateGroupType[];
-  appId: string;
-  index: number;
-}
-
-const TemplateGroupSubgroups: React.FC<TemplateGroupSubgroupsProps> = ({
-  subgroups,
-  subtitle,
-  appId,
-  index,
-}) => {
-  const [selectedSubgroupId, setSelectedSubgroupId] = useState<string>();
-
-  const selectedSubgroup = subgroups.find(
-    subgroup => subgroup.id === selectedSubgroupId
   );
 
   return (
     <>
       <OptionButtons
-        title={subtitle}
-        options={subgroups}
-        selectedId={selectedSubgroupId}
-        setSelectedId={setSelectedSubgroupId}
+        title={templateGroup.subtitle}
+        options={templateGroup.options}
+        selectedId={selectedId}
+        setSelectedId={setSelectedId}
         index={index}
       />
-
+      <p className="px-4 text-sm text-muted-foreground pb-2 md:pb-4 opacity-60">
+        {templateGroup.moreAdvanced}
+      </p>
       <motion.div
         initial={{ height: 0 }}
         animate={{
-          height: selectedSubgroup ? 'auto' : 0,
+          height: selectedOption ? 'auto' : 0,
         }}
-      >
-        {selectedSubgroup && (
-          <TemplateGroup
-            templateGroup={selectedSubgroup}
-            key={selectedSubgroupId}
-            appId={appId}
-            index={index + 1}
-          />
+        className={cn(
+          'border-t border-transparent',
+          selectedOption && 'border-border'
         )}
+      >
+        {selectedOption &&
+          (templateGroup.type === 'templates' ? (
+            <Template
+              template={selectedOption}
+              appId={appId}
+              key={selectedId}
+              index={index + 1}
+            />
+          ) : (
+            <TemplateGroup
+              templateGroup={selectedOption as TemplateGroupType}
+              appId={appId}
+              key={selectedId}
+              index={index + 1}
+            />
+          ))}
       </motion.div>
     </>
   );

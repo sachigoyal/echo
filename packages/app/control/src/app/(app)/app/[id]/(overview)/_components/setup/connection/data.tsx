@@ -12,10 +12,11 @@ export const TEMPLATES: TemplateGroup = {
   Icon: () => null,
   moreAdvanced: (
     <>
-      Don't see the framework you're looking for? Check our{' '}
+      Don&apos;t see the framework you&apos;re looking for? Check our{' '}
       <Link
         href={'/docs' as Route}
         className="text-primary underline font-medium"
+        target="_blank"
       >
         docs
       </Link>{' '}
@@ -49,10 +50,12 @@ export const TEMPLATES: TemplateGroup = {
       ],
       moreAdvanced: (
         <>
-          Not exactly what you're looking for? See our full list of templates{' '}
+          Not exactly what you&apos;re looking for? See our full list of
+          templates{' '}
           <Link
             href={'/docs/getting-started/templates'}
             className="text-primary underline font-medium"
+            target="_blank"
           >
             here
           </Link>
@@ -85,10 +88,12 @@ export const TEMPLATES: TemplateGroup = {
       ],
       moreAdvanced: (
         <>
-          Not exactly what you're looking for? See our full list of templates{' '}
+          Not exactly what you&apos;re looking for? See our full list of
+          templates{' '}
           <Link
             href={'/docs/getting-started/templates'}
             className="text-primary underline font-medium"
+            target="_blank"
           >
             here
           </Link>

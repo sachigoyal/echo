@@ -22,14 +22,12 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
 import { TemplateGroup } from './template-group';
-import { OptionButtons } from './option-buttons';
 
 import { TEMPLATES } from './data';
 
 import { api } from '@/trpc/client';
 
 import { cn } from '@/lib/utils';
-import { motion } from 'motion/react';
 
 interface Props {
   appId: string;
@@ -53,13 +51,6 @@ export const Connection: React.FC<Props> = ({ appId }) => {
   useEffect(() => {
     setShouldRefetch(!isConnected);
   }, [isConnected]);
-
-  const [selectedTemplateGroupId, setSelectedTemplateGroupId] =
-    useState<string>();
-
-  const selectedTemplateGroup = TEMPLATES.options.find(
-    template => template.id === selectedTemplateGroupId
-  );
 
   return (
     <AccordionItem value="connection" className="border-none">
@@ -91,7 +82,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
               Use one of our starter templates to get started with your app.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 pt-4">
+          <CardContent className="p-0">
             <TemplateGroup templateGroup={TEMPLATES} appId={appId} index={0} />
           </CardContent>
         </Card>

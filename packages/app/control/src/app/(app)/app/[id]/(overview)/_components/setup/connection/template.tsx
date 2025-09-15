@@ -13,7 +13,7 @@ export const Template: React.FC<Props> = ({ template, appId, index }) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col gap-2 border-t bg-muted p-4"
+      className="flex flex-col gap-2 bg-muted p-4"
     >
       <h3 className="text-sm font-bold">
         {index + 1}) Run the {template.title} Creation Script

@@ -21,7 +21,7 @@ export const OptionButtons: React.FC<Props> = ({
   index,
 }) => {
   return (
-    <div className="flex flex-col gap-2 px-4 pb-2 md:pb-4">
+    <div className="flex flex-col gap-2 p-2 md:p-4 pb-1 md:pb-2">
       <h2 className="text-sm font-semibold">
         {index + 1}) {title}
       </h2>
