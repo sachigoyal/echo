@@ -1,0 +1,58 @@
+import React from 'react';
+import { TemplateShared } from './types';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+interface Props {
+  title: string;
+  options: TemplateShared[];
+  selectedId: string;
+  setSelectedId: (id: string) => void;
+}
+
+export const OptionButtons: React.FC<Props> = ({
+  title,
+  options,
+  selectedId,
+  setSelectedId,
+}) => {
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="text-sm font-medium">{title}</h2>
+      <div className="flex gap-2 md:gap-4">
+        {options.map(option => (
+          <Button
+            key={option.id}
+            variant={'outline'}
+            onClick={() => setSelectedId(option.id)}
+            className={cn(
+              'flex-1 h-fit md:h-fit py-4 px-4 flex-col gap-2 items-start hover:bg-primary/5 hover:border-primary/60',
+              selectedId === option.id &&
+                'bg-primary/10 border-primary hover:bg-primary/10'
+            )}
+          >
+            <div
+              className={cn(
+                'flex items-center gap-2',
+                selectedId === option.id && 'text-primary'
+              )}
+            >
+              <option.Icon className="size-6" />
+              <h3
+                className={cn(
+                  'text-lg font-bold',
+                  selectedId === option.id && 'text-primary'
+                )}
+              >
+                {option.title}
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {option.description}
+            </p>
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+};
