@@ -20,9 +20,10 @@
  */
 
 import { isSignedIn } from '@/echo';
-import SignIn from '@/components/signin';
 import ImageGenerator from '@/components/image-generator';
 import { EchoWidget } from '@/components/echo-tokens';
+
+import { EchoSignIn } from '@merit-systems/echo-next-sdk/client';
 
 /**
  * Main application page
@@ -33,15 +34,6 @@ import { EchoWidget } from '@/components/echo-tokens';
 export default async function Home() {
   // Check authentication status using Echo SDK
   const _isSignedIn = await isSignedIn();
-
-  // Show sign-in screen if not authenticated
-  if (!_isSignedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <SignIn />
-      </div>
-    );
-  }
 
   // Main application interface
   return (
@@ -55,12 +47,21 @@ export default async function Home() {
         </div>
         <div className="flex items-center gap-3">
           {/* Echo token display widget */}
-          <EchoWidget />
+          {_isSignedIn && <EchoWidget />}
         </div>
       </header>
 
       {/* Main image generation interface */}
-      <ImageGenerator />
+      <div className="relative">
+        <ImageGenerator />
+        
+        {/* Overlay when not signed in */}
+        {!_isSignedIn && (
+          <div className="absolute inset-0 backdrop-blur-[2px] bg-white/30 flex items-center justify-center rounded-xl border border-gray-300">
+              <EchoSignIn />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
