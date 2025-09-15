@@ -27,20 +27,7 @@ export default async function Home() {
         </div>
       </header>
 
-      <div className="w-full flex-1 flex flex-col min-h-0">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex-1 flex flex-col overflow-hidden">
-          <div className="mb-6 pb-3 border-b border-gray-100">
-            <h2 className="text-xl font-mono tracking-tight text-gray-800 flex items-center gap-2">
-              <span className="w-1.5 h-6 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full"></span>
-              AI Image Studio
-            </h2>
-            <p className="text-sm text-gray-500 mt-1 ml-5">
-              Generate new images or edit existing ones with AI
-            </p>
-          </div>
-          <ImageGenerator />
-        </div>
-      </div>
+      <ImageGenerator />
     </div>
   );
 }
