@@ -94,6 +94,7 @@ async function editImage(request: EditImageRequest): Promise<ImageResponse> {
 export default function ImageGenerator() {
   const [model, setModel] = useState<ModelOption>('gemini');
   const [imageHistory, setImageHistory] = useState<GeneratedImage[]>([]);
+  const promptInputRef = useRef<HTMLFormElement>(null);
   const attachmentActionsRef = useRef<{
     addFiles: (files: File[]) => void;
     clear: () => void;
@@ -101,6 +102,11 @@ export default function ImageGenerator() {
 
   const handleAddToInput = (files: File[]) => {
     attachmentActionsRef.current?.addFiles(files);
+  };
+
+  const clearForm = () => {
+    promptInputRef.current?.reset();
+    attachmentActionsRef.current?.clear();
   };
 
   // Component to manage file input from within PromptInput context
@@ -205,14 +211,12 @@ export default function ImageGenerator() {
         )
       );
     }
-
-    // Clear the form
-    attachmentActionsRef.current?.clear();
   };
 
   return (
     <div className="space-y-6">
       <PromptInput 
+        ref={promptInputRef}
         onSubmit={handleSubmit} 
         className="relative" 
         globalDrop 
@@ -259,7 +263,7 @@ export default function ImageGenerator() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => attachmentActionsRef.current?.clear()}
+              onClick={clearForm}
               className="h-9 w-9 p-0"
             >
               <X size={16} />
