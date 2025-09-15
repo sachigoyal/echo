@@ -1,6 +1,7 @@
 'use client';
 
 import NextImage from 'next/image';
+import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,85 +10,50 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Edit, Download, Copy } from 'lucide-react';
-import type { GeneratedImage } from './image-history';
+import { 
+  handleImageDownload, 
+  handleImageCopy, 
+  handleImageToFile, 
+  isImageActionable,
+  getModelDisplayName 
+} from '@/lib/image-actions';
+import type { GeneratedImage, ImageActionHandlers } from '@/lib/types';
 
-interface ImageDetailsDialogProps {
+interface ImageDetailsDialogProps extends ImageActionHandlers {
   image: GeneratedImage | null;
   onClose: () => void;
-  onAddToInput: (files: File[]) => void;
 }
 
 export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetailsDialogProps) {
   if (!image) return null;
 
-  const handleAddToInput = () => {
-    if (!image.imageUrl) return;
+  const handleAddToInput = useCallback(() => {
+    if (!isImageActionable(image)) return;
     
-    // Convert the base64 image back to a File object
-    const base64Data = image.imageUrl.base64Data;
-    const mediaType = image.imageUrl.mediaType;
-    
-    // Create a Uint8Array from base64
-    const binaryString = atob(base64Data);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    // Create a proper File object
-    const filename = `generated-image-${image.id}.${mediaType.split('/')[1] || 'png'}`;
-    const file = new File([bytes], filename, { type: mediaType });
-
-    // Add to attachments via prop
+    const file = handleImageToFile(image.imageUrl!, image.id);
     onAddToInput([file]);
     onClose();
-  };
+  }, [image, onAddToInput, onClose]);
 
-  const handleDownload = () => {
-    if (!image.imageUrl) return;
+  const handleDownload = useCallback(() => {
+    if (!isImageActionable(image)) return;
     
-    const base64Data = image.imageUrl.base64Data;
-    const mediaType = image.imageUrl.mediaType;
-    
-    // Create download link
-    const dataUrl = `data:${mediaType};base64,${base64Data}`;
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `generated-image-${image.id}.${mediaType.split('/')[1] || 'png'}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    handleImageDownload(image.imageUrl!, image.id);
+  }, [image]);
 
-  const handleCopy = async () => {
-    if (!image.imageUrl) return;
+  const handleCopy = useCallback(async () => {
+    if (!isImageActionable(image)) return;
     
     try {
-      const base64Data = image.imageUrl.base64Data;
-      const mediaType = image.imageUrl.mediaType;
-      
-      // Convert base64 to blob
-      const binaryString = atob(base64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      const blob = new Blob([bytes], { type: mediaType });
-      
-      // Copy to clipboard
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          [mediaType]: blob
-        })
-      ]);
+      await handleImageCopy(image.imageUrl!);
     } catch (error) {
       console.error('Failed to copy image:', error);
     }
-  };
+  }, [image]);
 
   return (
     <Dialog open={!!image} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] w-[95vw] sm:w-full overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {image.isEdit ? 'Edited Image' : 'Generated Image'}
@@ -120,7 +86,7 @@ export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetail
           <div className="space-y-4">
             <p className="text-lg font-medium text-gray-900">"{image.prompt}"</p>
             <div className="text-sm text-gray-500">
-              {image.model === 'openai' ? 'GPT Image' : 'Gemini Flash Image'} • {' '}
+              {getModelDisplayName(image.model)} • {' '}
               {image.timestamp.toLocaleString()} • {' '}
               {image.isEdit ? 'Edited Image' : 'Generated Image'}
             </div>
@@ -159,27 +125,30 @@ export function ImageDetailsDialog({ image, onClose, onAddToInput }: ImageDetail
           </div>
           
           {/* Action buttons */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <Button
               onClick={handleCopy}
-              disabled={!image.imageUrl}
-              className="flex items-center gap-2"
+              disabled={!isImageActionable(image)}
+              className="flex items-center gap-2 justify-center"
+              aria-label="Copy image to clipboard"
             >
               <Copy size={16} />
               Copy
             </Button>
             <Button
               onClick={handleDownload}
-              disabled={!image.imageUrl}
-              className="flex items-center gap-2"
+              disabled={!isImageActionable(image)}
+              className="flex items-center gap-2 justify-center"
+              aria-label="Download image"
             >
               <Download size={16} />
               Download
             </Button>
             <Button
               onClick={handleAddToInput}
-              disabled={!image.imageUrl}
-              className="flex items-center gap-2"
+              disabled={!isImageActionable(image)}
+              className="flex items-center gap-2 justify-center"
+              aria-label="Edit this image"
             >
               <Edit size={16} />
               Edit

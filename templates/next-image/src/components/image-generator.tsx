@@ -1,9 +1,6 @@
 'use client';
 
-// React imports
-import { useState, useRef, useEffect } from 'react';
-
-// UI component imports
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import {
@@ -28,36 +25,30 @@ import {
   usePromptInputAttachments,
 } from '@/components/ai-elements/prompt-input';
 
-// Local imports
-import { ImageHistory, type GeneratedImage } from './image-history';
+import { ImageHistory } from './image-history';
 import { blobToBase64 } from '@/lib/utils';
+import type { 
+  ModelOption,
+  ModelConfig,
+  GeneratedImage,
+  GenerateImageRequest,
+  EditImageRequest,
+  ImageResponse
+} from '@/lib/types';
 
-// ===== CONSTANTS =====
+/**
+ * Available AI models for image generation
+ * These models integrate with the Echo SDK to provide different image generation capabilities
+ */
+const models: ModelConfig[] = [
+  { id: 'openai', name: 'GPT Image' },
+  { id: 'gemini', name: 'Gemini Flash Image' },
+];
 
-const models = [
-  { id: 'openai' as const, name: 'GPT Image' },
-  { id: 'gemini' as const, name: 'Gemini Flash Image' },
-] as const;
-
-export type ModelOption = typeof models[number]['id'];
-
-// ===== TYPES =====
-interface GenerateImageRequest {
-  prompt: string;
-  model: ModelOption;
-}
-
-interface EditImageRequest {
-  prompt: string;
-  imageUrl: string;
-}
-
-interface ImageResponse {
-  imageUrl: {
-    base64Data: string;
-    mediaType: string;
-  };
-}
+/**
+ * API functions for image generation and editing
+ * These functions communicate with the Echo SDK backend routes
+ */
 
 // ===== API FUNCTIONS =====
 async function generateImage(request: GenerateImageRequest): Promise<ImageResponse> {
@@ -90,47 +81,65 @@ async function editImage(request: EditImageRequest): Promise<ImageResponse> {
   return response.json();
 }
 
-// ===== MAIN COMPONENT =====
+/**
+ * Main ImageGenerator component
+ * 
+ * This component demonstrates how to integrate Echo SDK with AI image generation:
+ * - Uses PromptInput for unified input handling with attachments
+ * - Supports both text-to-image generation and image editing
+ * - Maintains history of all generated/edited images
+ * - Provides seamless model switching between OpenAI and Gemini
+ */
 export default function ImageGenerator() {
   const [model, setModel] = useState<ModelOption>('gemini');
   const [imageHistory, setImageHistory] = useState<GeneratedImage[]>([]);
   const promptInputRef = useRef<HTMLFormElement>(null);
-  const attachmentActionsRef = useRef<{
-    addFiles: (files: File[]) => void;
-    clear: () => void;
-  } | null>(null);
 
-  const handleAddToInput = (files: File[]) => {
-    attachmentActionsRef.current?.addFiles(files);
-  };
+  // Handle adding files to the input from external triggers (like from image history)
+  const handleAddToInput = useCallback((files: File[]) => {
+    const actions = (window as any).__promptInputActions;
+    if (actions) {
+      actions.addFiles(files);
+    }
+  }, []);
 
-  const clearForm = () => {
+  const clearForm = useCallback(() => {
     promptInputRef.current?.reset();
-    attachmentActionsRef.current?.clear();
-  };
+    const actions = (window as any).__promptInputActions;
+    if (actions) {
+      actions.clear();
+    }
+  }, []);
 
-  // Component to manage file input from within PromptInput context
+  // Component to bridge PromptInput context with external file operations
   function FileInputManager() {
     const attachments = usePromptInputAttachments();
     
+    // Store reference to attachment actions for external use
     useEffect(() => {
-      attachmentActionsRef.current = {
-        addFiles: (files: File[]) => attachments.add(files),
-        clear: () => attachments.clear(),
+      (window as any).__promptInputActions = {
+        addFiles: attachments.add,
+        clear: attachments.clear,
       };
       
       return () => {
-        attachmentActionsRef.current = null;
+        delete (window as any).__promptInputActions;
       };
     }, [attachments]);
     
     return null;
   }
 
-  const handleSubmit = async (message: PromptInputMessage) => {
+  /**
+   * Handles form submission for both image generation and editing
+   * - Text-only: generates new image using selected model
+   * - Text + attachments: edits uploaded images using Gemini
+   */
+  const handleSubmit = useCallback(async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text?.trim());
     const hasAttachments = Boolean(message.files?.length);
 
+    // Require either text prompt or attachments
     if (!(hasText || hasAttachments)) {
       return;
     }
@@ -139,13 +148,13 @@ export default function ImageGenerator() {
     const prompt = message.text?.trim() || '';
     
     // Generate unique ID for this request
-    const imageId = Date.now().toString();
+    const imageId = `img_${Date.now()}`;
     
-    // Create placeholder entry immediately
+    // Create placeholder entry immediately for optimistic UI
     const placeholderImage: GeneratedImage = {
       id: imageId,
       prompt,
-      model: isEdit ? 'gemini' : model,
+      model: isEdit ? 'gemini' : model, // Image editing only works with Gemini
       timestamp: new Date(),
       attachments: message.files?.map(f => ({
         filename: f.filename || 'attachment',
@@ -156,7 +165,9 @@ export default function ImageGenerator() {
       isLoading: true,
     };
 
+    // Add to history immediately for responsive UI
     setImageHistory(prev => [placeholderImage, ...prev]);
+    
     try {
       let imageUrl: ImageResponse['imageUrl'];
 
@@ -182,7 +193,7 @@ export default function ImageGenerator() {
           imageUrl = result.imageUrl;
         } catch (error) {
           console.error('Error processing image file:', error);
-          throw error; // Re-throw all errors as-is
+          throw error;
         }
       } else {
         const result = await generateImage({ prompt, model });
@@ -200,7 +211,21 @@ export default function ImageGenerator() {
     } catch (error) {
       console.error(`Error ${isEdit ? 'editing' : 'generating'} image:`, error);
       
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      // Provide user-friendly error messages
+      let errorMessage = 'An unexpected error occurred';
+      if (error instanceof Error) {
+        if (error.message.includes('HTTP 400')) {
+          errorMessage = 'Invalid request. Please check your prompt and try again.';
+        } else if (error.message.includes('HTTP 401')) {
+          errorMessage = 'Authentication failed. Please sign in again.';
+        } else if (error.message.includes('HTTP 429')) {
+          errorMessage = 'Too many requests. Please wait a moment and try again.';
+        } else if (error.message.includes('HTTP 500')) {
+          errorMessage = 'Server error. Please try again later.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
       
       // Update the placeholder entry with error state
       setImageHistory(prev => 
@@ -215,7 +240,7 @@ export default function ImageGenerator() {
         )
       );
     }
-  };
+  }, [model]);
 
   return (
     <div className="space-y-6">
