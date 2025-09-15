@@ -153,20 +153,24 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
       try {
         const envContent = readFileSync(envPath, 'utf-8');
 
-        // Replace the environment variable value - specifically targeting the <app_id> placeholder
-        const updatedContent = envContent.replace('<app_id>', appId!);
+        // Replace the environment variable value - specifically targeting the *_ECHO_APP_ID placeholder
+        // Find the line with *_ECHO_APP_ID and replace the value after the = sign
+        const updatedContent = envContent.replace(
+          /^(.+_ECHO_APP_ID\s*=\s*).+$/m,
+          `$1${appId!}`
+        );
 
         // Check if the replacement actually occurred
         if (updatedContent === envContent) {
           console.error(
             chalk.red(
-              'Error: Could not find <app_id> placeholder in .env.local.'
+              'Error: Could not find *_ECHO_APP_ID placeholder in .env.local.'
             )
           );
         }
 
         writeFileSync(envPath, updatedContent);
-        console.log(chalk.green(`✓ Updated <app_id> in .env.local`));
+        console.log(chalk.green(`✓ Updated *_ECHO_APP_ID in .env.local`));
       } catch (envError) {
         console.log(
           chalk.yellow(`Warning: Could not update .env.local file`),

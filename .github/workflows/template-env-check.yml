@@ -12,10 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify each template has .env.local with <app_id>
+      - name: Verify each template has .env.local with *_ECHO_APP_ID
         run: |
           set -e
-          echo "Checking templates for .env.local with <app_id> placeholder..."
+          echo "Checking templates for .env.local with *_ECHO_APP_ID placeholder..."
           failed=0
           # Iterate over immediate subdirectories of templates/
           for d in templates/*/; do
@@ -27,8 +27,8 @@ jobs:
                 failed=1
                 continue
               fi
-              if ! grep -q "<app_id>" "$d/.env.local"; then
-                echo "::error file=$d::.env.local must contain the exact string <app_id>"
+              if ! grep -q "*_ECHO_APP_ID" "$d/.env.local"; then
+                echo "::error file=$d::.env.local must contain the exact string *_ECHO_APP_ID"
                 failed=1
               fi
             fi
