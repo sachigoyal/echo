@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUserGlobalBalance } from '@/lib/balance';
+import { getUserGlobalBalance } from '@/services/user/balance';
 import { logger } from '@/logger';
 import { authRoute } from '../_lib/auth-route';
 

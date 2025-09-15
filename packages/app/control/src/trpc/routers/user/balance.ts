@@ -2,7 +2,10 @@ import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
-import { getUserGlobalBalance, getUserAppBalance } from '@/lib/balance';
+import {
+  getUserGlobalBalance,
+  getUserAppBalance,
+} from '@/services/user/balance';
 import { getCustomerSpendInfoForApp } from '@/lib/spend-pools';
 
 export const userBalanceRouter = createTRPCRouter({
