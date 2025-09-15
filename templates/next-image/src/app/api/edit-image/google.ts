@@ -4,7 +4,7 @@
 
 import { google } from '@/echo';
 import { generateText } from 'ai';
-import { parseImageInput } from './parse';
+import { getMediaTypeFromDataUrl } from '@/lib/image-utils';
 
 /**
  * Handles Google Gemini image editing
@@ -13,17 +13,15 @@ export async function handleGoogleEdit(
   prompt: string,
   imageUrls: string[]
 ): Promise<Response> {
-  const imageInputs = imageUrls.map(parseImageInput);
-
   const content = [
     {
-      type: 'text',
+      type: 'text' as const,
       text: prompt,
     },
-    ...imageInputs.map(imageInput => ({
+    ...imageUrls.map(imageUrl => ({
       type: 'image' as const,
-      image: imageInput.data,
-      mediaType: imageInput.mediaType,
+      image: imageUrl, // Direct data URL - Gemini handles it
+      mediaType: getMediaTypeFromDataUrl(imageUrl),
     })),
   ];
 
@@ -37,7 +35,6 @@ export async function handleGoogleEdit(
     ],
   });
 
-  // Find the first image file in the result
   const imageFile = result.files?.find(file =>
     file.mediaType?.startsWith('image/')
   );
@@ -53,9 +50,6 @@ export async function handleGoogleEdit(
   }
 
   return Response.json({
-    imageUrl: {
-      base64Data: imageFile.base64,
-      mediaType: imageFile.mediaType,
-    },
+    imageUrl: `data:${imageFile.mediaType};base64,${imageFile.base64}`,
   });
 }

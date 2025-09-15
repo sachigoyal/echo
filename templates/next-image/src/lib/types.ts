@@ -17,38 +17,21 @@ export interface ModelConfig {
 }
 
 /**
- * Base64 encoded image data with metadata
- */
-export interface ImageData {
-  base64Data: string;
-  mediaType: string;
-}
-
-/**
- * File attachment metadata
- */
-export interface AttachmentData {
-  filename: string;
-  url: string;
-  mediaType: string;
-}
-
-/**
  * Complete generated image record with all metadata
  */
 export interface GeneratedImage {
   /** Unique identifier for the image */
   id: string;
-  /** The actual image data (undefined if still loading or error) */
-  imageUrl?: ImageData;
+  /** The actual image as data URL (undefined if still loading or error) */
+  imageUrl?: string;
   /** User prompt that generated this image */
   prompt: string;
   /** AI model used for generation */
   model?: ModelOption;
   /** When the image was generated */
   timestamp: Date;
-  /** Source images used for editing (if any) */
-  attachments?: AttachmentData[];
+  /** Source images used for editing as data URLs */
+  attachments?: string[];
   /** Whether this was an edit operation (vs. new generation) */
   isEdit: boolean;
   /** Whether the image is still being generated */
@@ -78,7 +61,7 @@ export interface EditImageRequest {
  * Response from image generation/editing APIs
  */
 export interface ImageResponse {
-  imageUrl: ImageData;
+  imageUrl: string; // data URL
 }
 
 /**
@@ -94,11 +77,4 @@ export interface ErrorResponse {
 export interface ImageActionHandlers {
   onAddToInput: (files: File[]) => void;
   onImageClick?: (image: GeneratedImage) => void;
-}
-
-/**
- * Common props for image-related components
- */
-export interface ImageComponentProps extends ImageActionHandlers {
-  image: GeneratedImage;
 }

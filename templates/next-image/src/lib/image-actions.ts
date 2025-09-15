@@ -4,30 +4,27 @@
  */
 
 import {
-  createFileFromBase64,
-  downloadImageFromBase64,
-  copyImageToClipboard,
-  generateImageFilename,
-} from './utils';
-import type { ImageData, GeneratedImage } from './types';
+  dataUrlToFile,
+  downloadDataUrl,
+  copyDataUrlToClipboard,
+  generateFilename,
+} from './image-utils';
+import type { GeneratedImage } from './types';
 
 /**
  * Downloads an image to the user's device
  */
-export function handleImageDownload(
-  imageUrl: ImageData,
-  imageId: string
-): void {
-  const filename = generateImageFilename(imageId, imageUrl.mediaType);
-  downloadImageFromBase64(imageUrl.base64Data, imageUrl.mediaType, filename);
+export function handleImageDownload(imageUrl: string, imageId: string): void {
+  const filename = generateFilename(imageId);
+  downloadDataUrl(imageUrl, filename);
 }
 
 /**
  * Copies an image to the system clipboard
  */
-export async function handleImageCopy(imageUrl: ImageData): Promise<void> {
+export async function handleImageCopy(imageUrl: string): Promise<void> {
   try {
-    await copyImageToClipboard(imageUrl.base64Data, imageUrl.mediaType);
+    await copyDataUrlToClipboard(imageUrl);
   } catch (error) {
     console.error('Failed to copy image:', error);
     throw error;
@@ -37,13 +34,9 @@ export async function handleImageCopy(imageUrl: ImageData): Promise<void> {
 /**
  * Converts image data to a File object for adding to input
  */
-export function handleImageToFile(imageUrl: ImageData, imageId: string): File {
-  const filename = generateImageFilename(imageId, imageUrl.mediaType);
-  return createFileFromBase64(
-    imageUrl.base64Data,
-    imageUrl.mediaType,
-    filename
-  );
+export function handleImageToFile(imageUrl: string, imageId: string): File {
+  const filename = generateFilename(imageId);
+  return dataUrlToFile(imageUrl, filename);
 }
 
 /**
@@ -59,9 +52,9 @@ export function isImageActionable(image: GeneratedImage): boolean {
 export function getModelDisplayName(model?: string): string {
   switch (model) {
     case 'openai':
-      return 'GPT Image';
+      return 'GPT Image 1';
     case 'gemini':
-      return 'Gemini Flash Image';
+      return 'Gemini Flash Image 2.5';
     default:
       return 'Unknown Model';
   }

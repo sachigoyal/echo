@@ -104,7 +104,7 @@ const ImageHistoryItem = React.memo(function ImageHistoryItem({
       ) : image.imageUrl ? (
         <>
           <NextImage
-            src={`data:${image.imageUrl.mediaType};base64,${image.imageUrl.base64Data}`}
+            src={image.imageUrl}
             alt={image.prompt}
             fill
             className="object-cover"

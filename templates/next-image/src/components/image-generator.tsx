@@ -26,7 +26,7 @@ import {
 } from '@/components/ai-elements/prompt-input';
 
 import { ImageHistory } from './image-history';
-import { blobToBase64 } from '@/lib/utils';
+import { fileToDataUrl } from '@/lib/image-utils';
 import type {
   ModelOption,
   ModelConfig,
@@ -154,36 +154,30 @@ export default function ImageGenerator() {
       const imageId = `img_${Date.now()}`;
 
       // Convert attachment blob URLs to permanent data URLs for persistent display
-      const permanentAttachments = message.files ? await Promise.all(
-        message.files.map(async f => {
-          if (f.url && f.mediaType?.startsWith('image/')) {
-            try {
-              // Convert blob URL to permanent base64 data URL
-              const response = await fetch(f.url);
-              const blob = await response.blob();
-              const base64 = await blobToBase64(blob);
-              return {
-                filename: f.filename || 'attachment',
-                url: base64, // blobToBase64 already returns full data URL
-                mediaType: f.mediaType,
-              };
-            } catch (error) {
-              console.error('Failed to convert attachment to base64:', error);
-              // Fallback to original URL if conversion fails
-              return {
-                filename: f.filename || 'attachment',
-                url: f.url || '',
-                mediaType: f.mediaType || 'application/octet-stream',
-              };
-            }
-          }
-          return {
-            filename: f.filename || 'attachment',
-            url: f.url || '',
-            mediaType: f.mediaType || 'application/octet-stream',
-          };
-        })
-      ) : undefined;
+      const attachmentDataUrls =
+        message.files && message.files.length > 0
+          ? await Promise.all(
+              message.files
+                .filter(f => f.mediaType?.startsWith('image/'))
+                .map(async f => {
+                  try {
+                    const response = await fetch(f.url);
+                    const blob = await response.blob();
+                    return await fileToDataUrl(
+                      new File([blob], f.filename || 'image', {
+                        type: f.mediaType,
+                      })
+                    );
+                  } catch (error) {
+                    console.error(
+                      'Failed to convert attachment to data URL:',
+                      error
+                    );
+                    return f.url; // fallback
+                  }
+                })
+            )
+          : undefined;
 
       // Create placeholder entry immediately for optimistic UI
       const placeholderImage: GeneratedImage = {
@@ -191,7 +185,7 @@ export default function ImageGenerator() {
         prompt,
         model: model,
         timestamp: new Date(),
-        attachments: permanentAttachments,
+        attachments: attachmentDataUrls,
         isEdit,
         isLoading: true,
       };
@@ -216,14 +210,12 @@ export default function ImageGenerator() {
           try {
             const imageUrls = await Promise.all(
               imageFiles.map(async imageFile => {
+                // Convert blob URL to data URL for API
                 const response = await fetch(imageFile.url);
-                if (!response.ok) {
-                  throw new Error(
-                    `Failed to fetch image file: ${response.status}`
-                  );
-                }
                 const blob = await response.blob();
-                return await blobToBase64(blob);
+                return await fileToDataUrl(
+                  new File([blob], 'image', { type: imageFile.mediaType })
+                );
               })
             );
 

@@ -402,9 +402,9 @@ export const PromptInput = ({
     const onPaste = (e: ClipboardEvent) => {
       const clipboardData = e.clipboardData;
       if (!clipboardData) return;
-      
+
       const files: File[] = [];
-      
+
       // Check for image data in clipboard items
       for (let i = 0; i < clipboardData.items.length; i++) {
         const item = clipboardData.items[i];
@@ -415,7 +415,7 @@ export const PromptInput = ({
           }
         }
       }
-      
+
       if (files.length > 0) {
         e.preventDefault();
         add(files);

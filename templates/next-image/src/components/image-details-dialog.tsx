@@ -79,7 +79,7 @@ export function ImageDetailsDialog({
               </div>
             ) : image.imageUrl ? (
               <NextImage
-                src={`data:${image.imageUrl.mediaType};base64,${image.imageUrl.base64Data}`}
+                src={image.imageUrl}
                 alt={image.prompt}
                 fill
                 className="object-contain"
@@ -110,29 +110,24 @@ export function ImageDetailsDialog({
                   Source Images
                 </h4>
                 <div className="flex gap-2 flex-wrap">
-                  {image.attachments.map((attachment, index) => (
+                  {image.attachments.map((dataUrl, index) => (
                     <div
                       key={index}
                       className="relative w-16 h-16 rounded border overflow-hidden bg-gray-100"
                     >
-                      {attachment.mediaType.startsWith('image/') ? (
-                        <NextImage
-                          src={attachment.url}
-                          alt={attachment.filename}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-xs text-gray-500">
-                          File
-                        </div>
-                      )}
+                      <NextImage
+                        src={dataUrl}
+                        alt={`Source image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
                     </div>
                   ))}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {image.attachments.map(a => a.filename).join(', ')}
+                  {image.attachments.length} source image
+                  {image.attachments.length !== 1 ? 's' : ''}
                 </div>
               </div>
             )}

@@ -14,7 +14,6 @@ export async function handleGoogleGenerate(prompt: string): Promise<Response> {
     prompt,
   });
 
-  // Find the first image file in the result
   const imageFile = result.files?.find(file =>
     file.mediaType?.startsWith('image/')
   );
@@ -27,9 +26,6 @@ export async function handleGoogleGenerate(prompt: string): Promise<Response> {
   }
 
   return Response.json({
-    imageUrl: {
-      base64Data: imageFile.base64,
-      mediaType: imageFile.mediaType,
-    },
+    imageUrl: `data:${imageFile.mediaType};base64,${imageFile.base64}`,
   });
 }

@@ -14,7 +14,8 @@ export async function handleOpenAIGenerate(prompt: string): Promise<Response> {
     prompt,
   });
 
+  const imageData = result.image;
   return Response.json({
-    imageUrl: result.image,
+    imageUrl: `data:${imageData.mediaType};base64,${imageData.base64}`,
   });
 }

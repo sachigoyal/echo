@@ -4,7 +4,7 @@
 
 import { getEchoToken } from '@/echo';
 import OpenAI from 'openai';
-import { toFile } from './parse';
+import { dataUrlToFile } from '@/lib/image-utils';
 
 /**
  * Handles OpenAI image editing
@@ -31,7 +31,7 @@ export async function handleOpenAIEdit(
   });
 
   try {
-    const imageFiles = await Promise.all(imageUrls.map(url => toFile(url)));
+    const imageFiles = imageUrls.map(url => dataUrlToFile(url, 'image.png'));
 
     const result = await openaiClient.images.edit({
       image: imageFiles,
@@ -52,10 +52,7 @@ export async function handleOpenAIEdit(
     }
 
     return Response.json({
-      imageUrl: {
-        base64Data: result.data[0]?.b64_json,
-        mediaType: 'image/png',
-      },
+      imageUrl: `data:image/png;base64,${result.data[0]?.b64_json}`,
     });
   } catch (error: any) {
     // Pass through OpenAI's error response directly
