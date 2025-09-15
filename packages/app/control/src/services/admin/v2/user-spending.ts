@@ -1,27 +1,18 @@
 /**
- * Example TRPC function that demonstrates integration with StatefulDataTable
+ * User Spending Service - Shows user spending analytics
  * This shows how to create a TRPC procedure that accepts standardized pagination,
- * sorting, and filtering parameters and returns data in the expected format.
+ * sorting, and filtering parameters and returns spending data in the expected format.
  */
 
 import { PaginationParams, toPaginatedReponse } from "@/services/lib/pagination"
-import { MultiSortParams, SortDirection } from "@/services/lib/sorting"
-import { FilterParams, FilterOperator, FilterValue } from "@/services/lib/filtering"
+import { MultiSortParams } from "@/services/lib/sorting"
+import { FilterParams } from "@/services/lib/filtering"
 import { db } from "@/lib/db"
 import { User } from "@/generated/prisma"
-import { Prisma } from "@/generated/prisma"
 
-
-export interface UserEarnings extends User {
-  totalRevenue: number
-  totalAppProfit: number
-  totalMarkupProfit: number
-  totalReferralProfit: number
-  transactionCount: number
-  uniqueEmailCampaigns: string[]
-  referralCodesGenerated: number
-  referredUsersCount: number
-  totalCompletedPayouts: number
+export interface UserSpending extends User {
+  balance: number
+  freeTierUsage: number
 }
 
 // Map frontend column names to SQL expressions
@@ -29,14 +20,10 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   id: 'u.id',
   name: 'u.name',
   email: 'u.email',
-  totalRevenue: 'COALESCE(t_agg."totalRevenue", 0)',
-  totalAppProfit: 'COALESCE(t_agg."totalAppProfit", 0)',
-  totalMarkupProfit: 'COALESCE(t_agg."totalMarkupProfit", 0)',
-  totalReferralProfit: 'COALESCE(t_agg."totalReferralProfit", 0)',
-  transactionCount: 'COALESCE(t_agg."transactionCount", 0)',
-  referralCodesGenerated: 'COUNT(DISTINCT rc.id) FILTER (WHERE rc."grantType" = \'referral\')',
-  referredUsersCount: 'COUNT(DISTINCT am_referred.id)',
-  totalCompletedPayouts: 'COALESCE(SUM(p."amount") FILTER (WHERE p."status" = \'completed\'), 0)',
+  totalSpent: 'u."totalSpent"',
+  totalPaid: 'u."totalPaid"',
+  balance: '(u."totalPaid" - u."totalSpent")',
+  freeTierUsage: 'COALESCE(SUM(uspu."totalSpent"), 0)',
   createdAt: 'u."createdAt"',
   updatedAt: 'u."updatedAt"'
 }
@@ -69,7 +56,7 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
   havingClause: string; 
   parameters: any[] 
 } => {
-  let whereClause = 'WHERE am.role = \'owner\''
+  let whereClause = 'WHERE 1=1'
   let havingClause = ''
   const parameters: any[] = []
 
@@ -82,9 +69,11 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
 
   // Columns that require HAVING clause (aggregated values)
   const aggregatedColumns = [
-    'totalRevenue', 'totalAppProfit', 'totalMarkupProfit', 'totalReferralProfit', 
-    'transactionCount', 'referralCodesGenerated', 'referredUsersCount', 'totalCompletedPayouts'
+    'freeTierUsage'
   ]
+
+  // Date/timestamp columns that need type casting
+  const dateColumns = ['createdAt', 'updatedAt']
 
   filters.forEach((filter, index) => {
     const sqlColumn = COLUMN_MAPPINGS[filter.column]
@@ -94,14 +83,19 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
 
     const paramIndex = parameters.length + 1
     let condition = ''
+    const isDateColumn = dateColumns.includes(filter.column)
 
     switch (filter.operator) {
       case 'equals':
-        condition = `${sqlColumn} = $${paramIndex}`
+        condition = isDateColumn 
+          ? `${sqlColumn} = $${paramIndex}::timestamp`
+          : `${sqlColumn} = $${paramIndex}`
         parameters.push(filter.value)
         break
       case 'not_equals':
-        condition = `${sqlColumn} != $${paramIndex}`
+        condition = isDateColumn 
+          ? `${sqlColumn} != $${paramIndex}::timestamp`
+          : `${sqlColumn} != $${paramIndex}`
         parameters.push(filter.value)
         break
       case 'contains':
@@ -121,19 +115,27 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
         parameters.push(`%${filter.value}`)
         break
       case 'greater_than':
-        condition = `${sqlColumn} > $${paramIndex}`
+        condition = isDateColumn 
+          ? `${sqlColumn} > $${paramIndex}::timestamp`
+          : `${sqlColumn} > $${paramIndex}`
         parameters.push(filter.value)
         break
       case 'less_than':
-        condition = `${sqlColumn} < $${paramIndex}`
+        condition = isDateColumn 
+          ? `${sqlColumn} < $${paramIndex}::timestamp`
+          : `${sqlColumn} < $${paramIndex}`
         parameters.push(filter.value)
         break
       case 'greater_than_or_equal':
-        condition = `${sqlColumn} >= $${paramIndex}`
+        condition = isDateColumn 
+          ? `${sqlColumn} >= $${paramIndex}::timestamp`
+          : `${sqlColumn} >= $${paramIndex}`
         parameters.push(filter.value)
         break
       case 'less_than_or_equal':
-        condition = `${sqlColumn} <= $${paramIndex}`
+        condition = isDateColumn 
+          ? `${sqlColumn} <= $${paramIndex}::timestamp`
+          : `${sqlColumn} <= $${paramIndex}`
         parameters.push(filter.value)
         break
       case 'in':
@@ -181,8 +183,8 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
   return { whereClause, havingClause, parameters }
 }
 
-// Example TRPC procedure function
-export const getUserEarningsWithPagination = async (
+// Main function for getting user spending data with pagination
+export const getUserSpendingWithPagination = async (
   params: PaginationParams & MultiSortParams & FilterParams
 ) => {
   // Build dynamic clauses
@@ -195,39 +197,18 @@ export const getUserEarningsWithPagination = async (
       u.id,
       u.name,
       u.email,
-      COALESCE(t_agg."totalRevenue", 0) as "totalRevenue",
-      COALESCE(t_agg."totalAppProfit", 0) as "totalAppProfit", 
-      COALESCE(t_agg."totalMarkupProfit", 0) as "totalMarkupProfit",
-      COALESCE(t_agg."totalReferralProfit", 0) as "totalReferralProfit",
-      COALESCE(t_agg."transactionCount", 0) as "transactionCount",
-      COALESCE(
-        array_agg(DISTINCT oes."emailCampaignId") FILTER (WHERE oes."emailCampaignId" IS NOT NULL),
-        '{}'::text[]
-      ) as "uniqueEmailCampaigns",
-      COUNT(DISTINCT rc.id) FILTER (WHERE rc."grantType" = 'referral') as "referralCodesGenerated",
-      COUNT(DISTINCT am_referred.id) as "referredUsersCount",
-      COALESCE(SUM(p."amount") FILTER (WHERE p."status" = 'completed'), 0) as "totalCompletedPayouts",
+      u."totalSpent",
+      (u."totalPaid" - u."totalSpent") as "balance",
+      COALESCE(SUM(uspu."totalSpent"), 0) as "freeTierUsage",
+      u."totalPaid",
       u."createdAt",
       u."updatedAt"
     FROM "users" u
-    INNER JOIN "app_memberships" am ON u.id = am."userId" 
-    LEFT JOIN (
-      SELECT 
-        "userId",
-        SUM("totalCost") as "totalRevenue",
-        SUM("appProfit") as "totalAppProfit",
-        SUM("markUpProfit") as "totalMarkupProfit", 
-        SUM("referralProfit") as "totalReferralProfit",
-        COUNT(*) as "transactionCount"
-      FROM "transactions"
-      GROUP BY "userId"
-    ) t_agg ON u.id = t_agg."userId"
-    LEFT JOIN "outbound_emails_sent" oes ON u.id = oes."userId"
-    LEFT JOIN "referral_codes" rc ON u.id = rc."userId"
-    LEFT JOIN "app_memberships" am_referred ON rc.id = am_referred."referrerId"
-    LEFT JOIN "payouts" p ON u.id = p."userId"
+    LEFT JOIN "app_memberships" am ON u.id = am."userId" 
+    LEFT JOIN "user_spend_pool_usage" uspu ON u.id = uspu."userId"
+    LEFT JOIN "payments" p ON u.id = p."userId"
     ${whereClause}
-    GROUP BY u.id, u.name, u.email, u."createdAt", u."updatedAt", t_agg."totalRevenue", t_agg."totalAppProfit", t_agg."totalMarkupProfit", t_agg."totalReferralProfit", t_agg."transactionCount"
+    GROUP BY u.id, u.name, u.email, u."totalSpent", u."totalPaid", u."createdAt", u."updatedAt"
     ${havingClause}
     ${orderByClause}
     LIMIT $${parameters.length + 1} 
@@ -238,22 +219,16 @@ export const getUserEarningsWithPagination = async (
   const queryParameters = [...parameters, params.page_size, params.page * params.page_size]
 
   // Execute the main query
-  const usersWithEarnings = await db.$queryRawUnsafe(
+  const usersWithSpending = await db.$queryRawUnsafe(
     baseQuery,
     ...queryParameters
   ) as Array<{
     id: string
     name: string | null
     email: string
-    totalRevenue: number
-    totalAppProfit: number
-    totalMarkupProfit: number
-    totalReferralProfit: number
-    transactionCount: number
-    uniqueEmailCampaigns: string[]
-    referralCodesGenerated: number
-    referredUsersCount: number
-    totalCompletedPayouts: number
+    totalSpent: number
+    balance: number
+    freeTierUsage: number
     createdAt: Date
     updatedAt: Date
   }>
@@ -262,24 +237,11 @@ export const getUserEarningsWithPagination = async (
   const countQuery = `
     SELECT COUNT(DISTINCT u.id) as count
     FROM "users" u
-    INNER JOIN "app_memberships" am ON u.id = am."userId"
-    LEFT JOIN (
-      SELECT 
-        "userId",
-        SUM("totalCost") as "totalRevenue",
-        SUM("appProfit") as "totalAppProfit",
-        SUM("markUpProfit") as "totalMarkupProfit", 
-        SUM("referralProfit") as "totalReferralProfit",
-        COUNT(*) as "transactionCount"
-      FROM "transactions"
-      GROUP BY "userId"
-    ) t_agg ON u.id = t_agg."userId"
-    LEFT JOIN "outbound_emails_sent" oes ON u.id = oes."userId"
-    LEFT JOIN "referral_codes" rc ON u.id = rc."userId"
-    LEFT JOIN "app_memberships" am_referred ON rc.id = am_referred."referrerId"
-    LEFT JOIN "payouts" p ON u.id = p."userId"
+    LEFT JOIN "app_memberships" am ON u.id = am."userId"
+    LEFT JOIN "user_spend_pool_usage" uspu ON u.id = uspu."userId"
+    LEFT JOIN "payments" p ON u.id = p."userId"
     ${whereClause}
-    ${havingClause ? `GROUP BY u.id, t_agg."totalRevenue", t_agg."totalAppProfit", t_agg."totalMarkupProfit", t_agg."totalReferralProfit", t_agg."transactionCount" ${havingClause}` : ''}
+    ${havingClause ? `GROUP BY u.id ${havingClause}` : ''}
   `
 
   // If we have HAVING clauses, we need to count the grouped results
@@ -294,7 +256,7 @@ export const getUserEarningsWithPagination = async (
 
   // Return in the expected format
   return toPaginatedReponse({
-    items: usersWithEarnings,
+    items: usersWithSpending,
     page: params.page,
     page_size: params.page_size,
     total_count: Number(totalCount[0].count),

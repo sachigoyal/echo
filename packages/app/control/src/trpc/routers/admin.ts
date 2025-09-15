@@ -47,6 +47,8 @@ import {
 import { getAppsEarningsPaginatedWithCampaigns } from '@/services/admin/app-earnings';
 import { getUserEarningsWithPagination } from '@/services/admin/v2/user-earnings';
 import { getAppEarningsWithPagination } from '@/services/admin/v2/app-earnings';
+import { getUserSpendingWithPagination } from '@/services/admin/v2/user-spending';
+import { getAppUsersWithPagination } from '@/services/admin/v2/app/users';
 import { paginationParamsSchema } from '@/services/lib/pagination';
 import { multiSortParamsSchema } from '@/services/lib/sorting';
 import { filterParamsSchema } from '@/services/lib/filtering';
@@ -175,6 +177,20 @@ export const adminRouter = createTRPCRouter({
       .query(async ({ input }) => {
         return await getAppEarningsWithPagination(input);
       }),
+
+    /**
+     * Get paginated users for a specific app with their token usage and spending data
+     */
+    getAppUsersWithPagination: adminProcedure
+      .input(
+        paginationParamsSchema
+          .merge(multiSortParamsSchema)
+          .merge(filterParamsSchema)
+          .merge(z.object({ appId: z.string() }))
+      )
+      .query(async ({ input }) => {
+        return await getAppUsersWithPagination(input);
+      }),
   },
 
   spending: {
@@ -222,6 +238,15 @@ export const adminRouter = createTRPCRouter({
       .input(z.object({ appId: z.string() }))
       .query(async ({ input }) => {
         return await getAppSpendingAcrossAllUsers(input.appId);
+      }),
+
+    /**
+     * Get paginated user spending with advanced filtering and sorting
+     */
+    getUserSpendingWithPagination: adminProcedure
+      .input(paginationParamsSchema.merge(multiSortParamsSchema).merge(filterParamsSchema))
+      .query(async ({ input }) => {
+        return await getUserSpendingWithPagination(input);
       }),
   },
 

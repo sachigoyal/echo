@@ -14,6 +14,10 @@ export default function DashboardV2Layout({
             href: '/admin/dashboard/v2/user-earnings',
           },
           {
+            label: 'User Spending',
+            href: '/admin/dashboard/v2/user-spending',
+          },
+          {
             label: 'App Earnings', 
             href: '/admin/dashboard/v2/app-earnings',
           },

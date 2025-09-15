@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react'
+import Link from 'next/link'
 import { 
   StatefulDataTable
 } from '@/components/server-side-data-table'
@@ -27,6 +28,7 @@ export interface AppEarnings {
   totalMarkupProfit: number
   totalReferralProfit: number
   totalReferralCodes: number
+  totalUsers: number
 }
 
 // Helper function to safely convert values to numbers
@@ -45,12 +47,18 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
     enableSorting: true,
     enableColumnFilter: true,
     columnType: "string",
-    cell: ({ getValue }) => {
+    size: 180,
+    cell: ({ getValue, row }) => {
       const name = getValue() as string
+      const appId = row.original.id
       return (
-        <span className="font-medium text-gray-900">
+        <Link 
+          href={`/admin/dashboard/v2/app-users/${appId}`}
+          className="font-medium text-blue-600 hover:text-blue-800 block truncate max-w-[160px] hover:underline"
+          title={name}
+        >
           {name}
-        </span>
+        </Link>
       )
     },
   },
@@ -78,10 +86,11 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
     enableSorting: false,
     enableColumnFilter: true,
     columnType: "string",
+    size: 200,
     cell: ({ getValue }) => {
       const description = getValue() as string | null
       return description ? (
-        <span className="text-sm text-gray-600 max-w-xs truncate">
+        <span className="text-sm text-gray-600 block truncate max-w-[180px]" title={description}>
           {description}
         </span>
       ) : (
@@ -97,10 +106,18 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
     columnType: "string",
     cell: ({ row }) => {
       const campaigns = row.original.appEmailCampaigns
+      const count = campaigns.length
+      const tooltipContent = campaigns.length > 0 ? campaigns.join(', ') : 'No campaigns'
       return (
-        <span className="font-mono text-sm bg-blue-50 px-2 py-1 rounded">
-          {campaigns.length}
-        </span>
+        <div className="relative group">
+          <span className="font-mono text-sm bg-blue-50 px-2 py-1 rounded cursor-help">
+            {count > 0 ? `${count} campaign${count === 1 ? '' : 's'}` : 'No campaigns'}
+          </span>
+          <div className="absolute z-50 invisible group-hover:visible bg-gray-900 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+            {tooltipContent}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+          </div>
+        </div>
       )
     },
   },
@@ -112,10 +129,18 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
     columnType: "string",
     cell: ({ row }) => {
       const campaigns = row.original.ownerEmailCampaigns
+      const count = campaigns.length
+      const tooltipContent = campaigns.length > 0 ? campaigns.join(', ') : 'No campaigns'
       return (
-        <span className="font-mono text-sm bg-purple-50 px-2 py-1 rounded">
-          {campaigns.length}
-        </span>
+        <div className="relative group">
+          <span className="font-mono text-sm bg-purple-50 px-2 py-1 rounded cursor-help">
+            {count > 0 ? `${count} campaign${count === 1 ? '' : 's'}` : 'No campaigns'}
+          </span>
+          <div className="absolute z-50 invisible group-hover:visible bg-gray-900 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+            {tooltipContent}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+          </div>
+        </div>
       )
     },
   },
@@ -129,6 +154,21 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
       const count = toNumber(getValue())
       return (
         <span className="font-mono text-sm">
+          {count.toLocaleString()}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "totalUsers",
+    header: "Users",
+    enableSorting: true,
+    enableColumnFilter: true,
+    columnType: "number",
+    cell: ({ getValue }) => {
+      const count = toNumber(getValue())
+      return (
+        <span className="font-mono text-sm text-indigo-600">
           {count.toLocaleString()}
         </span>
       )
@@ -258,6 +298,8 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
 ]
 
 export default function AppEarningsTable() {
+  const scheduleEmailCampaignMutation = api.admin.emailCampaigns.scheduleForApps.useMutation()
+  
   return (
     <div className="container mx-auto py-6 px-4">
         <div className="p-6">
@@ -268,17 +310,13 @@ export default function AppEarningsTable() {
             getRowId={(row) => row.id}
             actions={[
               {
-                id: "view-app-details",
-                label: "View App Details",
+                id: "send-limbo-email-campaign",
+                label: "Send Limbo Email Campaign",
                 action: ( tableState: TableState ) => {
-                  console.log("View app details", tableState)
-                }
-              },
-              {
-                id: "view-creator-details",
-                label: "View Creator Details",
-                action: ( tableState: TableState ) => {
-                  console.log("View creator details", tableState)
+                  scheduleEmailCampaignMutation.mutate({
+                    campaignKey: 'limbo-app-reminder',
+                    appIds: tableState.selectedRowIds,
+                  });
                 }
               },
             ]} 
