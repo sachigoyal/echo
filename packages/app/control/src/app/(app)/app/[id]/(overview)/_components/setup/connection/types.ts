@@ -5,8 +5,9 @@ export type TemplateShared = {
   Icon: (props: { className?: string }) => React.ReactNode;
 };
 
-export type TemplateGroup = TemplateShared &
-  (
+export type TemplateGroup = TemplateShared & {
+  moreAdvanced: React.ReactNode;
+} & (
     | {
         type: 'subgroup';
         subtitle: string;
@@ -18,6 +19,4 @@ export type TemplateGroup = TemplateShared &
       }
   );
 
-export type Template = TemplateShared & {
-  command: (appId: string) => string;
-};
+export type Template = TemplateShared;

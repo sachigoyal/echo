@@ -9,6 +9,8 @@ interface Props {
   options: TemplateShared[];
   selectedId: string | undefined;
   setSelectedId: (id: string) => void;
+  index: number;
+  moreAdvanced?: React.ReactNode;
 }
 
 export const OptionButtons: React.FC<Props> = ({
@@ -16,10 +18,13 @@ export const OptionButtons: React.FC<Props> = ({
   options,
   selectedId,
   setSelectedId,
+  index,
 }) => {
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-sm font-semibold">{title}</h2>
+    <div className="flex flex-col gap-2 px-4 pb-2 md:pb-4">
+      <h2 className="text-sm font-semibold">
+        {index + 1}) {title}
+      </h2>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

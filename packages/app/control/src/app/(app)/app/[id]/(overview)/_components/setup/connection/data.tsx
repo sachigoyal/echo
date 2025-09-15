@@ -1,6 +1,8 @@
 import { SiNextdotjs, SiReact } from '@icons-pack/react-simple-icons';
 import { TemplateGroup } from './types';
 import { BotMessageSquare, Image } from 'lucide-react';
+import Link from 'next/link';
+import { Route } from 'next';
 
 export const TEMPLATES: TemplateGroup[] = [
   {
@@ -16,8 +18,6 @@ export const TEMPLATES: TemplateGroup[] = [
         description:
           'A full-stack chatbot application using Next.js and the Vercel AI SDK.',
         Icon: BotMessageSquare,
-        command: (appId: string) =>
-          `pnpm create next-app --template nextjs-chatbot ${appId}`,
       },
       {
         id: 'next-imagegen',
@@ -25,10 +25,20 @@ export const TEMPLATES: TemplateGroup[] = [
         description:
           'A full-stack image generation application using Next.js and the Vercel AI SDK.',
         Icon: Image,
-        command: (appId: string) =>
-          `pnpm create next-app --template nextjs-imagegen ${appId}`,
       },
     ],
+    moreAdvanced: (
+      <>
+        Don't see the framework you're looking for? Check our{' '}
+        <Link
+          href={'/docs' as Route}
+          className="text-primary underline font-medium"
+        >
+          docs
+        </Link>{' '}
+        for more advanced configurations.
+      </>
+    ),
   },
   {
     id: 'react',
@@ -43,8 +53,6 @@ export const TEMPLATES: TemplateGroup[] = [
         description:
           'A client-side chatbot application using React and the Vercel AI SDK.',
         Icon: BotMessageSquare,
-        command: (appId: string) =>
-          `pnpm create react-app --template react-chatbot ${appId}`,
       },
       {
         id: 'react-imagegen',
@@ -52,9 +60,19 @@ export const TEMPLATES: TemplateGroup[] = [
         description:
           'A client-side image generation application using React and the Vercel AI SDK.',
         Icon: Image,
-        command: (appId: string) =>
-          `pnpm create react-app --template react-imagegen ${appId}`,
       },
     ],
+    moreAdvanced: (
+      <>
+        Not exactly what you're looking for? See our full list of templates{' '}
+        <Link
+          href={'/docs/getting-started/templates'}
+          className="text-primary underline font-medium"
+        >
+          here
+        </Link>
+        .
+      </>
+    ),
   },
 ];

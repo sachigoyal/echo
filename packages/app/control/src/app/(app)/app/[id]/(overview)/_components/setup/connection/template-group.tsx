@@ -8,18 +8,25 @@ import type {
   TemplateGroup as TemplateGroupType,
 } from './types';
 import { motion } from 'motion/react';
+import { ChevronRight } from 'lucide-react';
 
 interface Props {
   templateGroup: TemplateGroupType;
   appId: string;
+  index: number;
 }
 
-export const TemplateGroup: React.FC<Props> = ({ templateGroup, appId }) => {
+export const TemplateGroup: React.FC<Props> = ({
+  templateGroup,
+  appId,
+  index,
+}) => {
   if (templateGroup.type === 'templates') {
     return (
       <TemplateGroupTemplates
         templates={templateGroup.templates}
         appId={appId}
+        index={index}
       />
     );
   } else {
@@ -28,6 +35,7 @@ export const TemplateGroup: React.FC<Props> = ({ templateGroup, appId }) => {
         subgroups={templateGroup.subgroups}
         subtitle={templateGroup.subtitle}
         appId={appId}
+        index={index}
       />
     );
   }
@@ -36,11 +44,13 @@ export const TemplateGroup: React.FC<Props> = ({ templateGroup, appId }) => {
 interface TemplateGroupTemplatesProps {
   templates: TemplateType[];
   appId: string;
+  index: number;
 }
 
 const TemplateGroupTemplates: React.FC<TemplateGroupTemplatesProps> = ({
   templates,
   appId,
+  index,
 }) => {
   const [selectedId, setSelectedId] = useState<string>();
 
@@ -51,16 +61,16 @@ const TemplateGroupTemplates: React.FC<TemplateGroupTemplatesProps> = ({
   return (
     <motion.div>
       <OptionButtons
-        title="Template"
+        title="Choose a Template"
         options={templates}
         selectedId={selectedId}
         setSelectedId={setSelectedId}
+        index={index}
       />
       <motion.div
-        initial={{ height: 0, marginTop: 0 }}
+        initial={{ height: 0 }}
         animate={{
           height: selectedTemplate ? 'auto' : 0,
-          marginTop: selectedTemplate ? 16 : 0,
         }}
       >
         {selectedTemplate && (
@@ -68,6 +78,7 @@ const TemplateGroupTemplates: React.FC<TemplateGroupTemplatesProps> = ({
             template={selectedTemplate}
             appId={appId}
             key={selectedId}
+            index={index + 1}
           />
         )}
       </motion.div>
@@ -79,12 +90,14 @@ interface TemplateGroupSubgroupsProps {
   subtitle: string;
   subgroups: TemplateGroupType[];
   appId: string;
+  index: number;
 }
 
 const TemplateGroupSubgroups: React.FC<TemplateGroupSubgroupsProps> = ({
   subgroups,
   subtitle,
   appId,
+  index,
 }) => {
   const [selectedSubgroupId, setSelectedSubgroupId] = useState<string>();
 
@@ -99,6 +112,7 @@ const TemplateGroupSubgroups: React.FC<TemplateGroupSubgroupsProps> = ({
         options={subgroups}
         selectedId={selectedSubgroupId}
         setSelectedId={setSelectedSubgroupId}
+        index={index}
       />
 
       <motion.div
@@ -113,6 +127,7 @@ const TemplateGroupSubgroups: React.FC<TemplateGroupSubgroupsProps> = ({
             templateGroup={selectedSubgroup}
             key={selectedSubgroupId}
             appId={appId}
+            index={index + 1}
           />
         )}
       </motion.div>

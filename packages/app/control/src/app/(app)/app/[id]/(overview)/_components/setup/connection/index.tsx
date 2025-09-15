@@ -91,12 +91,13 @@ export const Connection: React.FC<Props> = ({ appId }) => {
               Use one of our starter templates to get started with your app.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col h-full gap-2 md:gap-4 pt-4">
+          <CardContent className="p-0 pt-4">
             <OptionButtons
-              title="Framework"
+              title="Select a Framework"
               options={TEMPLATES}
               selectedId={selectedTemplateGroupId}
               setSelectedId={setSelectedTemplateGroupId}
+              index={0}
             />
             <motion.div
               initial={{ height: 0 }}
@@ -107,6 +108,7 @@ export const Connection: React.FC<Props> = ({ appId }) => {
                   templateGroup={selectedTemplateGroup}
                   appId={appId}
                   key={selectedTemplateGroupId}
+                  index={1}
                 />
               )}
             </motion.div>
