@@ -52,11 +52,16 @@ export async function handleOpenAIEdit(
     return Response.json({
       imageUrl: `data:image/png;base64,${result.data[0]?.b64_json}`,
     });
-  } catch (error: any) {
-    // Pass through OpenAI's error response directly
-    if (error?.status && error?.message) {
-      return Response.json({ error: error.message }, { status: error.status });
-    }
-    throw error; // Re-throw for main error handler to catch
+  } catch (error) {
+    console.error('OpenAI image editing error:', error);
+    return Response.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : ERROR_MESSAGES.NO_EDITED_IMAGE,
+      },
+      { status: 500 }
+    );
   }
 }

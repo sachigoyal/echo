@@ -14,40 +14,53 @@ export async function handleGoogleEdit(
   prompt: string,
   imageUrls: string[]
 ): Promise<Response> {
-  const content = [
-    {
-      type: 'text' as const,
-      text: prompt,
-    },
-    ...imageUrls.map(imageUrl => ({
-      type: 'image' as const,
-      image: imageUrl, // Direct data URL - Gemini handles it
-      mediaType: getMediaTypeFromDataUrl(imageUrl),
-    })),
-  ];
-
-  const result = await generateText({
-    model: google('gemini-2.5-flash-image-preview'),
-    prompt: [
+  try {
+    const content = [
       {
-        role: 'user',
-        content,
+        type: 'text' as const,
+        text: prompt,
       },
-    ],
-  });
+      ...imageUrls.map(imageUrl => ({
+        type: 'image' as const,
+        image: imageUrl, // Direct data URL - Gemini handles it
+        mediaType: getMediaTypeFromDataUrl(imageUrl),
+      })),
+    ];
 
-  const imageFile = result.files?.find(file =>
-    file.mediaType?.startsWith('image/')
-  );
+    const result = await generateText({
+      model: google('gemini-2.5-flash-image-preview'),
+      prompt: [
+        {
+          role: 'user',
+          content,
+        },
+      ],
+    });
 
-  if (!imageFile) {
+    const imageFile = result.files?.find(file =>
+      file.mediaType?.startsWith('image/')
+    );
+
+    if (!imageFile) {
+      return Response.json(
+        { error: ERROR_MESSAGES.NO_EDITED_IMAGE },
+        { status: 500 }
+      );
+    }
+
+    return Response.json({
+      imageUrl: `data:${imageFile.mediaType};base64,${imageFile.base64}`,
+    });
+  } catch (error) {
+    console.error('Google image editing error:', error);
     return Response.json(
-      { error: ERROR_MESSAGES.NO_EDITED_IMAGE },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : ERROR_MESSAGES.NO_EDITED_IMAGE,
+      },
       { status: 500 }
     );
   }
-
-  return Response.json({
-    imageUrl: `data:${imageFile.mediaType};base64,${imageFile.base64}`,
-  });
 }
