@@ -36,7 +36,7 @@ export const OptionButtons: React.FC<Props> = ({
             variant={'outline'}
             onClick={() => setSelectedId(option.id)}
             className={cn(
-              'flex-1 h-fit md:h-fit py-4 px-4 flex-col gap-2 items-start hover:bg-primary/5 hover:border-primary/60',
+              'flex-1 h-fit md:h-fit py-4 px-4 flex-col gap-2 items-start hover:bg-primary/5 hover:border-primary/60 overflow-hidden text-left',
               selectedId === option.id &&
                 'bg-primary/10 border-primary hover:bg-primary/10'
             )}
@@ -57,7 +57,7 @@ export const OptionButtons: React.FC<Props> = ({
                 {option.title}
               </h3>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground/80 text-wrap">
               {option.description}
             </p>
           </Button>

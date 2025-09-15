@@ -1,6 +1,6 @@
 import { SiNextdotjs, SiReact } from '@icons-pack/react-simple-icons';
 import { TemplateGroup } from './types';
-import { BotMessageSquare, Image } from 'lucide-react';
+import { AppWindow, BotMessageSquare, Image, Presentation } from 'lucide-react';
 import Link from 'next/link';
 import { Route } from 'next';
 
@@ -47,6 +47,13 @@ export const TEMPLATES: TemplateGroup = {
             'A full-stack image generation application using Next.js and the Vercel AI SDK.',
           Icon: Image,
         },
+        {
+          id: 'next',
+          title: 'Boilerplate',
+          description:
+            'A minimal Next.js application configured with Echo - a blank canvas to build your app.',
+          Icon: AppWindow,
+        },
       ],
       moreAdvanced: (
         <>
@@ -66,7 +73,7 @@ export const TEMPLATES: TemplateGroup = {
     {
       id: 'react',
       title: 'React',
-      description: 'Get started with a simple React application.',
+      description: 'Get started with a client-side React + Vite application.',
       Icon: SiReact,
       type: 'templates',
       subtitle: 'Choose a React Template',
@@ -84,6 +91,13 @@ export const TEMPLATES: TemplateGroup = {
           description:
             'A client-side image generation application using React and the Vercel AI SDK.',
           Icon: Image,
+        },
+        {
+          id: 'react',
+          title: 'Boilerplate',
+          description:
+            'A minimal React application configured with Echo - a blank canvas to build your app.',
+          Icon: AppWindow,
         },
       ],
       moreAdvanced: (
