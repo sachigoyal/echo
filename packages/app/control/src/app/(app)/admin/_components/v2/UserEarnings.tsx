@@ -21,6 +21,8 @@ export interface UserEarnings {
   referralCodesGenerated: number
   referredUsersCount: number
   totalCompletedPayouts: number
+  createdAt: Date
+  updatedAt: Date
 }
 
 
@@ -167,6 +169,52 @@ const columns: TypedColumnDef<UserEarnings, string | number | boolean | Date>[] 
       return (
         <span className="font-mono text-sm text-orange-600">
           ${amount.toFixed(2)}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created At",
+    enableSorting: true,
+    enableColumnFilter: true,
+    columnType: "date",
+    cell: ({ getValue }) => {
+      const date = getValue() as Date
+      if (!date) return <span className="text-gray-400 italic">No date</span>
+      return (
+        <span className="font-mono text-sm text-gray-600">
+          {new Date(date).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          })}
+        </span>
+      )
+    },
+  },
+  {
+    accessorKey: "updatedAt",
+    header: "Updated At",
+    enableSorting: true,
+    enableColumnFilter: true,
+    columnType: "date",
+    cell: ({ getValue }) => {
+      const date = getValue() as Date
+      if (!date) return <span className="text-gray-400 italic">No date</span>
+      return (
+        <span className="font-mono text-sm text-gray-600">
+          {new Date(date).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          })}
         </span>
       )
     },

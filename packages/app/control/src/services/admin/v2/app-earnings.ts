@@ -1,50 +1,55 @@
 /**
- * Example TRPC function that demonstrates integration with StatefulDataTable
+ * TRPC function that demonstrates integration with StatefulDataTable for app earnings
  * This shows how to create a TRPC procedure that accepts standardized pagination,
- * sorting, and filtering parameters and returns data in the expected format.
+ * sorting, and filtering parameters and returns app earnings data in the expected format.
  */
 
 import { PaginationParams, toPaginatedReponse } from "@/services/lib/pagination"
 import { MultiSortParams, SortDirection } from "@/services/lib/sorting"
 import { FilterParams, FilterOperator, FilterValue } from "@/services/lib/filtering"
 import { db } from "@/lib/db"
-import { User } from "@/generated/prisma"
+import { EchoApp } from "@/generated/prisma"
 import { Prisma } from "@/generated/prisma"
 
 
-export interface UserEarnings extends User {
+export interface AppEarnings extends EchoApp {
+  creatorUser: {
+    id: string
+    name: string | null
+    email: string
+  }
+  appEmailCampaigns: string[]
+  ownerEmailCampaigns: string[]
+  totalTransactions: number
   totalRevenue: number
   totalAppProfit: number
   totalMarkupProfit: number
   totalReferralProfit: number
-  transactionCount: number
-  uniqueEmailCampaigns: string[]
-  referralCodesGenerated: number
-  referredUsersCount: number
-  totalCompletedPayouts: number
+  totalReferralCodes: number
 }
 
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
-  id: 'u.id',
-  name: 'u.name',
-  email: 'u.email',
+  id: 'a.id',
+  name: 'a.name',
+  description: 'a.description',
+  createdAt: 'a."createdAt"',
+  updatedAt: 'a."updatedAt"',
+  creatorUserId: 'creator.id',
+  creatorUserName: 'creator.name',
+  creatorUserEmail: 'creator.email',
+  totalTransactions: 'COUNT(t.id)',
   totalRevenue: 'COALESCE(SUM(t."totalCost"), 0)',
   totalAppProfit: 'COALESCE(SUM(t."appProfit"), 0)',
   totalMarkupProfit: 'COALESCE(SUM(t."markUpProfit"), 0)',
   totalReferralProfit: 'COALESCE(SUM(t."referralProfit"), 0)',
-  transactionCount: 'COUNT(t.id)',
-  referralCodesGenerated: 'COUNT(DISTINCT rc.id) FILTER (WHERE rc."grantType" = \'referral\')',
-  referredUsersCount: 'COUNT(DISTINCT am_referred.id)',
-  totalCompletedPayouts: 'COALESCE(SUM(p."amount") FILTER (WHERE p."status" = \'completed\'), 0)',
-  createdAt: 'u."createdAt"',
-  updatedAt: 'u."updatedAt"'
+  totalReferralCodes: 'COUNT(DISTINCT rc.id)'
 }
 
 // Generate ORDER BY clause from MultiSortParams
 const buildOrderByClause = (sorts?: MultiSortParams['sorts']): string => {
   if (!sorts || sorts.length === 0) {
-    return 'ORDER BY u."createdAt" DESC'
+    return 'ORDER BY a."createdAt" DESC'
   }
 
   const orderClauses = sorts.map(sort => {
@@ -69,7 +74,7 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
   havingClause: string; 
   parameters: any[] 
 } => {
-  let whereClause = 'WHERE am.role = \'owner\''
+  let whereClause = 'WHERE owner_am.role = \'owner\''
   let havingClause = ''
   const parameters: any[] = []
 
@@ -82,8 +87,8 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
 
   // Columns that require HAVING clause (aggregated values)
   const aggregatedColumns = [
-    'totalRevenue', 'totalAppProfit', 'totalMarkupProfit', 'totalReferralProfit', 
-    'transactionCount', 'referralCodesGenerated', 'referredUsersCount', 'totalCompletedPayouts'
+    'totalTransactions', 'totalRevenue', 'totalAppProfit', 'totalMarkupProfit', 
+    'totalReferralProfit', 'totalReferralCodes'
   ]
 
   filters.forEach((filter, index) => {
@@ -181,8 +186,8 @@ const buildFilterClauses = (filters?: FilterParams['filters']): {
   return { whereClause, havingClause, parameters }
 }
 
-// Example TRPC procedure function
-export const getUserEarningsWithPagination = async (
+// Main TRPC procedure function for app earnings
+export const getAppEarningsWithPagination = async (
   params: PaginationParams & MultiSortParams & FilterParams
 ) => {
   // Build dynamic clauses
@@ -192,32 +197,37 @@ export const getUserEarningsWithPagination = async (
   // Build the main query with dynamic clauses
   const baseQuery = `
     SELECT 
-      u.id,
-      u.name,
-      u.email,
+      a.id,
+      a.name,
+      a.description,
+      a."createdAt",
+      a."updatedAt",
+      creator.id as "creatorUserId",
+      creator.name as "creatorUserName",
+      creator.email as "creatorUserEmail",
+      COALESCE(
+        array_agg(DISTINCT app_oes."emailCampaignId") FILTER (WHERE app_oes."emailCampaignId" IS NOT NULL),
+        '{}'::text[]
+      ) as "appEmailCampaigns",
+      COALESCE(
+        array_agg(DISTINCT owner_oes."emailCampaignId") FILTER (WHERE owner_oes."emailCampaignId" IS NOT NULL),
+        '{}'::text[]
+      ) as "ownerEmailCampaigns",
+      COUNT(t.id) as "totalTransactions",
       COALESCE(SUM(t."totalCost"), 0) as "totalRevenue",
-      COALESCE(SUM(t."appProfit"), 0) as "totalAppProfit", 
+      COALESCE(SUM(t."appProfit"), 0) as "totalAppProfit",
       COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfit",
       COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfit",
-      COUNT(t.id) as "transactionCount",
-      COALESCE(
-        array_agg(DISTINCT oes."emailCampaignId") FILTER (WHERE oes."emailCampaignId" IS NOT NULL),
-        '{}'::text[]
-      ) as "uniqueEmailCampaigns",
-      COUNT(DISTINCT rc.id) FILTER (WHERE rc."grantType" = 'referral') as "referralCodesGenerated",
-      COUNT(DISTINCT am_referred.id) as "referredUsersCount",
-      COALESCE(SUM(p."amount") FILTER (WHERE p."status" = 'completed'), 0) as "totalCompletedPayouts",
-      u."createdAt",
-      u."updatedAt"
-    FROM "users" u
-    INNER JOIN "app_memberships" am ON u.id = am."userId" 
-    LEFT JOIN "transactions" t ON u.id = t."userId"
-    LEFT JOIN "outbound_emails_sent" oes ON u.id = oes."userId"
-    LEFT JOIN "referral_codes" rc ON u.id = rc."userId"
-    LEFT JOIN "app_memberships" am_referred ON rc.id = am_referred."referrerId"
-    LEFT JOIN "payouts" p ON u.id = p."userId"
+      COUNT(DISTINCT rc.id) as "totalReferralCodes"
+    FROM "echo_apps" a
+    INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
+    INNER JOIN "users" creator ON owner_am."userId" = creator.id
+    LEFT JOIN "transactions" t ON a.id = t."echoAppId"
+    LEFT JOIN "outbound_emails_sent" app_oes ON a.id = app_oes."echoAppId"
+    LEFT JOIN "outbound_emails_sent" owner_oes ON creator.id = owner_oes."userId"
+    LEFT JOIN "referral_codes" rc ON a.id = rc."echoAppId"
     ${whereClause}
-    GROUP BY u.id, u.name, u.email, u."createdAt", u."updatedAt"
+    GROUP BY a.id, a.name, a.description, a."createdAt", a."updatedAt", creator.id, creator.name, creator.email
     ${havingClause}
     ${orderByClause}
     LIMIT $${parameters.length + 1} 
@@ -228,38 +238,40 @@ export const getUserEarningsWithPagination = async (
   const queryParameters = [...parameters, params.page_size, params.page * params.page_size]
 
   // Execute the main query
-  const usersWithEarnings = await db.$queryRawUnsafe(
+  const appsWithEarnings = await db.$queryRawUnsafe(
     baseQuery,
     ...queryParameters
   ) as Array<{
     id: string
-    name: string | null
-    email: string
+    name: string
+    description: string | null
+    createdAt: Date
+    updatedAt: Date
+    creatorUserId: string
+    creatorUserName: string | null
+    creatorUserEmail: string
+    appEmailCampaigns: string[]
+    ownerEmailCampaigns: string[]
+    totalTransactions: number
     totalRevenue: number
     totalAppProfit: number
     totalMarkupProfit: number
     totalReferralProfit: number
-    transactionCount: number
-    uniqueEmailCampaigns: string[]
-    referralCodesGenerated: number
-    referredUsersCount: number
-    totalCompletedPayouts: number
-    createdAt: Date
-    updatedAt: Date
+    totalReferralCodes: number
   }>
 
   // Build count query with same filters
   const countQuery = `
-    SELECT COUNT(DISTINCT u.id) as count
-    FROM "users" u
-    INNER JOIN "app_memberships" am ON u.id = am."userId"
-    LEFT JOIN "transactions" t ON u.id = t."userId"
-    LEFT JOIN "outbound_emails_sent" oes ON u.id = oes."userId"
-    LEFT JOIN "referral_codes" rc ON u.id = rc."userId"
-    LEFT JOIN "app_memberships" am_referred ON rc.id = am_referred."referrerId"
-    LEFT JOIN "payouts" p ON u.id = p."userId"
+    SELECT COUNT(DISTINCT a.id) as count
+    FROM "echo_apps" a
+    INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
+    INNER JOIN "users" creator ON owner_am."userId" = creator.id
+    LEFT JOIN "transactions" t ON a.id = t."echoAppId"
+    LEFT JOIN "outbound_emails_sent" app_oes ON a.id = app_oes."echoAppId"
+    LEFT JOIN "outbound_emails_sent" owner_oes ON creator.id = owner_oes."userId"
+    LEFT JOIN "referral_codes" rc ON a.id = rc."echoAppId"
     ${whereClause}
-    ${havingClause ? `GROUP BY u.id ${havingClause}` : ''}
+    ${havingClause ? `GROUP BY a.id ${havingClause}` : ''}
   `
 
   // If we have HAVING clauses, we need to count the grouped results
@@ -272,9 +284,31 @@ export const getUserEarningsWithPagination = async (
     ...parameters
   ) as Array<{ count: bigint }>
 
+  // Transform the results to match the expected interface
+  const transformedResults = appsWithEarnings.map(app => ({
+    id: app.id,
+    name: app.name,
+    description: app.description,
+    createdAt: app.createdAt,
+    updatedAt: app.updatedAt,
+    creatorUser: {
+      id: app.creatorUserId,
+      name: app.creatorUserName,
+      email: app.creatorUserEmail
+    },
+    appEmailCampaigns: app.appEmailCampaigns,
+    ownerEmailCampaigns: app.ownerEmailCampaigns,
+    totalTransactions: app.totalTransactions,
+    totalRevenue: app.totalRevenue,
+    totalAppProfit: app.totalAppProfit,
+    totalMarkupProfit: app.totalMarkupProfit,
+    totalReferralProfit: app.totalReferralProfit,
+    totalReferralCodes: app.totalReferralCodes
+  }))
+
   // Return in the expected format
   return toPaginatedReponse({
-    items: usersWithEarnings,
+    items: transformedResults,
     page: params.page,
     page_size: params.page_size,
     total_count: Number(totalCount[0].count),
