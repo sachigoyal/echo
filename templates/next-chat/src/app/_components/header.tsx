@@ -1,7 +1,7 @@
-import type { FC } from 'react';
-import { EchoTokens } from '@merit-systems/echo-next-sdk/client';
 import SignInButton from '@/app/_components/echo/sign-in-button';
 import { isSignedIn } from '@/echo';
+import { EchoTokens } from '@merit-systems/echo-next-sdk/client';
+import type { FC } from 'react';
 
 interface HeaderProps {
   title?: string;
