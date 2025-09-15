@@ -13,13 +13,11 @@ const program = new Command();
 // Available templates - add new ones here
 const DEFAULT_TEMPLATES = {
   'next-chat': {
-    repo: 'Merit-Systems/echo/templates/next-chat',
     title: 'Next.js Chat',
     description:
       'Full-stack Next.js application with Echo and the Vercel AI SDK',
   },
   'react-chat': {
-    repo: 'Merit-Systems/echo/templates/react-chat',
     title: 'React Chat',
     description: 'Vite React application with Echo and the Vercel AI SDK',
   },
@@ -155,6 +153,15 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
 
         // Replace the environment variable value - specifically targeting the <app_id> placeholder
         const updatedContent = envContent.replace('<app_id>', appId!);
+
+        // Check if the replacement actually occurred
+        if (updatedContent === envContent) {
+          console.error(
+            chalk.red(
+              'Error: Could not find <app_id> placeholder in .env.local.'
+            )
+          );
+        }
 
         writeFileSync(envPath, updatedContent);
         console.log(chalk.green(`✓ Updated <app_id> in .env.local`));
