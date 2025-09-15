@@ -5,8 +5,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Edit } from 'lucide-react';
+import type { ModelOption } from './image-generator';
 
-export type ModelOption = 'openai' | 'gemini';
 
 export interface GeneratedImage {
   id: string;

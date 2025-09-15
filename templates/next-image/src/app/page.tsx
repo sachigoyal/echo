@@ -1,7 +1,7 @@
 import { isSignedIn } from '@/echo';
-import SignIn from './components/signin';
-import ImageGenerator from './components/image-generator';
-import { EchoWidget } from './components/echo-tokens';
+import SignIn from '@/components/signin';
+import ImageGenerator from '@/components/image-generator';
+import { EchoWidget } from '@/components/echo-tokens';
 
 export default async function Home() {
   const _isSignedIn = await isSignedIn();

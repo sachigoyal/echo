@@ -24,8 +24,14 @@ import {
 } from '@/components/ai-elements/prompt-input';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { ImageHistory, type GeneratedImage, type ModelOption } from './image-history';
+import { ImageHistory, type GeneratedImage } from './image-history';
 
+const models = [
+  { id: 'openai' as const, name: 'GPT Image' },
+  { id: 'gemini' as const, name: 'Gemini Flash Image' },
+] as const;
+
+export type ModelOption = typeof models[number]['id'];
 
 export default function ImageGenerator() {
   const [model, setModel] = useState<ModelOption>('gemini');
@@ -33,11 +39,6 @@ export default function ImageGenerator() {
   const [imageHistory, setImageHistory] = useState<GeneratedImage[]>([]);
   const addToInputRef = useRef<((files: File[]) => void) | null>(null);
   const clearFormRef = useRef<(() => void) | null>(null);
-
-  const models = [
-    { id: 'openai' as const, name: 'GPT Image' },
-    { id: 'gemini' as const, name: 'Gemini Flash Image' },
-  ];
 
   const handleAddToInput = (files: File[]) => {
     if (addToInputRef.current) {
@@ -243,10 +244,7 @@ export default function ImageGenerator() {
             >
               <X size={16} />
             </Button>
-            <PromptInputSubmit 
-              disabled={loading} 
-              status={loading ? 'streaming' : 'ready'} 
-            />
+            <PromptInputSubmit />
           </div>
         </PromptInputToolbar>
       </PromptInput>
