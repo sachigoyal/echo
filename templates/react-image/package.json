@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@merit-systems/echo-react-sdk": "1.0.24",
+    "@merit-systems/echo-react-sdk": "^1.0.28",
     "ai": "^5.0.20",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

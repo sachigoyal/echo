@@ -5,9 +5,7 @@ import {
   useEcho,
 } from '@merit-systems/echo-react-sdk';
 import { useState } from 'react';
-import { ChatInterface } from './components/ChatInterface';
 import { ImageGeneration } from './components/ImageGeneration';
-import UseChatInterface from './components/UseChatInterface';
 
 type Tab = 'chat' | 'images' | 'use-chat';
 
@@ -91,7 +89,7 @@ function Dashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <h1 className="text-xl font-semibold text-gray-800">
-                Echo React SDK Test
+                Image Generator
               </h1>
             </div>
 
@@ -106,46 +104,10 @@ function Dashboard() {
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="mb-8">
-          <nav className="flex space-x-8" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('chat')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'chat'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              💬 Chat
-            </button>
-            <button
-              onClick={() => setActiveTab('images')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'images'
-                  ? 'border-purple-500 text-purple-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              🎨 Image Generation
-            </button>
-            <button
-              onClick={() => setActiveTab('use-chat')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'use-chat'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              📤 useChat()
-            </button>
-          </nav>
-        </div>
 
         {/* Tab content */}
         <div className="bg-white rounded-lg shadow-sm p-6 min-h-[600px]">
-          {activeTab === 'chat' && <ChatInterface />}
-          {activeTab === 'images' && <ImageGeneration />}
-          {activeTab === 'use-chat' && <UseChatInterface />}
+          <ImageGeneration />
         </div>
 
         {/* Low balance warning */}
