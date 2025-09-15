@@ -4,7 +4,7 @@ import NextImage from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Edit } from 'lucide-react';
+import { Edit, Download, Copy } from 'lucide-react';
 import type { ModelOption } from './image-generator';
 
 
@@ -58,59 +58,126 @@ function ImageHistoryItem({ image, onAddToInput }: ImageHistoryItemProps) {
     onAddToInput([file]);
   };
 
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-medium text-gray-900">
-            {image.isEdit ? 'Edited Image' : 'Generated Image'}
-          </p>
-          <p className="text-xs text-gray-500">
-            {image.timestamp.toLocaleString()} • {image.model === 'openai' ? 'GPT Image' : 'Gemini Flash Image'} 
-            {image.attachmentRefs && (
-              <> • Attachments: {image.attachmentRefs.join(', ')}</>
-            )}
-          </p>
-        </div>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleAddToInput}
-          className="ml-4"
-          disabled={image.isLoading || !image.imageUrl}
-        >
-          <Edit size={16} />
-        </Button>
-      </div>
+  const handleImageClick = () => {
+    console.log('Image clicked:', {
+      id: image.id,
+      prompt: image.prompt,
+      model: image.model,
+      timestamp: image.timestamp,
+      isEdit: image.isEdit,
+      attachmentRefs: image.attachmentRefs,
+      hasImage: !!image.imageUrl,
+      error: image.error
+    });
+  };
+
+  const handleDownload = () => {
+    if (!image.imageUrl) return;
+    
+    const base64Data = image.imageUrl.base64Data;
+    const mediaType = image.imageUrl.mediaType;
+    
+    // Create download link
+    const dataUrl = `data:${mediaType};base64,${base64Data}`;
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `generated-image-${image.id}.${mediaType.split('/')[1] || 'png'}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleCopy = async () => {
+    if (!image.imageUrl) return;
+    
+    try {
+      const base64Data = image.imageUrl.base64Data;
+      const mediaType = image.imageUrl.mediaType;
       
-      <div className="relative h-64 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        {image.isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full space-y-3 p-6">
-            <Skeleton className="h-32 w-32 rounded-lg" />
-            <Skeleton className="h-4 w-24" />
-            <div className="text-xs text-gray-500 font-mono">{getElapsedTime()}</div>
-          </div>
-        ) : image.error ? (
-          <div className="flex flex-col items-center justify-center h-full space-y-3 p-6">
-            <div className="text-red-500 text-sm">⚠️ Generation failed</div>
-            <div className="text-xs text-gray-500">{image.error}</div>
-          </div>
-        ) : image.imageUrl ? (
+      // Convert base64 to blob
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: mediaType });
+      
+      // Copy to clipboard
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [mediaType]: blob
+        })
+      ]);
+    } catch (error) {
+      console.error('Failed to copy image:', error);
+    }
+  };
+
+  return (
+    <div 
+      onClick={handleImageClick}
+      className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg hover:scale-105 transition-all duration-200 animate-in fade-in slide-in-from-left-4 duration-500"
+    >
+      {image.isLoading ? (
+        <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
+          <Skeleton className="h-16 w-16 rounded-lg" />
+          <div className="text-xs text-gray-500 font-mono">{getElapsedTime()}</div>
+        </div>
+      ) : image.error ? (
+        <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
+          <div className="text-red-500 text-sm">⚠️ Failed</div>
+          <div className="text-xs text-gray-500 text-center">{image.error}</div>
+        </div>
+      ) : image.imageUrl ? (
+        <>
           <NextImage
             src={`data:${image.imageUrl.mediaType};base64,${image.imageUrl.base64Data}`}
             alt={image.prompt}
             fill
-            className="object-contain"
-            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No image available
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCopy();
+              }}
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150"
+              disabled={image.isLoading || !image.imageUrl}
+            >
+              <Copy size={14} />
+            </Button>
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownload();
+              }}
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150"
+              disabled={image.isLoading || !image.imageUrl}
+            >
+              <Download size={14} />
+            </Button>
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddToInput();
+              }}
+              className="h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-lg text-gray-700 hover:text-gray-900 cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-150"
+              disabled={image.isLoading || !image.imageUrl}
+            >
+              <Edit size={14} />
+            </Button>
           </div>
-        )}
-      </div>
-      
-      <p className="text-sm text-gray-700 italic">"{image.prompt}"</p>
+        </>
+      ) : (
+        <div className="flex items-center justify-center h-full text-gray-400">
+          No image
+        </div>
+      )}
     </div>
   );
 }
@@ -161,7 +228,7 @@ export function ImageHistory({ imageHistory, onAddToInput }: ImageHistoryProps) 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Generated Images</h3>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 transition-all duration-300 ease-out">
         {imageHistory.map((image) => (
           <ImageHistoryItem 
             key={image.id} 
