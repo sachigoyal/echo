@@ -211,22 +211,6 @@ export default function ImageGenerator() {
     } catch (error) {
       console.error(`Error ${isEdit ? 'editing' : 'generating'} image:`, error);
       
-      // Provide user-friendly error messages
-      let errorMessage = 'An unexpected error occurred';
-      if (error instanceof Error) {
-        if (error.message.includes('HTTP 400')) {
-          errorMessage = 'Invalid request. Please check your prompt and try again.';
-        } else if (error.message.includes('HTTP 401')) {
-          errorMessage = 'Authentication failed. Please sign in again.';
-        } else if (error.message.includes('HTTP 429')) {
-          errorMessage = 'Too many requests. Please wait a moment and try again.';
-        } else if (error.message.includes('HTTP 500')) {
-          errorMessage = 'Server error. Please try again later.';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
       // Update the placeholder entry with error state
       setImageHistory(prev => 
         prev.map(img => 
@@ -234,7 +218,7 @@ export default function ImageGenerator() {
             ? { 
                 ...img, 
                 isLoading: false, 
-                error: errorMessage
+                error: error instanceof Error ? error.message : 'Failed to generate image'
               }
             : img
         )
