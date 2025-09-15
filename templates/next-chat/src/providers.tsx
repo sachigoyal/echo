@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { EchoProvider } from '@merit-systems/echo-next-sdk/client';
 
