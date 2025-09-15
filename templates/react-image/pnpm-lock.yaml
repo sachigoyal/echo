@@ -9,17 +9,20 @@ importers:
   .:
     dependencies:
       '@merit-systems/echo-react-sdk':
-        specifier: 1.0.24
-        version: 1.0.24(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(zod@4.1.8)
+        specifier: ^1.0.28
+        version: 1.0.28(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(zod@4.1.8)
       ai:
         specifier: ^5.0.20
-        version: 5.0.41(zod@4.1.8)
+        version: 5.0.44(zod@4.1.8)
       react:
         specifier: ^19.1.0
         version: 19.1.1
       react-dom:
         specifier: ^19.1.0
         version: 19.1.1(react@19.1.1)
+      use-sync-external-store:
+        specifier: ^1.5.0
+        version: 1.5.0(react@19.1.1)
     devDependencies:
       '@eslint/js':
         specifier: ^9.25.0
@@ -72,12 +75,6 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
-  '@ai-sdk/gateway@1.0.21':
-    resolution: {integrity: sha512-yQPrMb1v0P8GwmmpcCT2DGPfgJVRkJ9QaRRJGO0+Em+wI+Xv3lvHHIc3ImVR3jjVfJPih/cNWWALUgRERfQaxQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4
-
   '@ai-sdk/gateway@1.0.23':
     resolution: {integrity: sha512-ynV7WxpRK2zWLGkdOtrU2hW22mBVkEYVS3iMg1+ZGmAYSgzCqzC74bfOJZ2GU1UdcrFWUsFI9qAYjsPkd+AebA==}
     engines: {node: '>=18'}
@@ -92,12 +89,6 @@ packages:
 
   '@ai-sdk/openai@2.0.30':
     resolution: {integrity: sha512-a9Vf64OT2dWEFyEGv+OxtCs69B18BsuzInvuyUxVPczbIiBLqUCt3zcD/8EwqbTPJwsFNsL8/9nbVZFmwA1+2A==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4
-
-  '@ai-sdk/provider-utils@3.0.8':
-    resolution: {integrity: sha512-cDj1iigu7MW2tgAQeBzOiLhjHOUM9vENsgh4oAVitek0d//WdgfPCsKO3euP7m7LyO/j9a1vr/So+BGNdpFXYw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -439,8 +430,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@merit-systems/echo-react-sdk@1.0.24':
-    resolution: {integrity: sha512-y5hdz/2xcme9XdjZ4EoxyumouEKk+IDOqkgYB+Rj/QN5PAALjBCOZfoou6wLqvOjSibqTCOpgx3+0DyBq9t+Zw==}
+  '@merit-systems/echo-react-sdk@1.0.28':
+    resolution: {integrity: sha512-tD0l15NgdmK6KMQ4A7o+3Ea7mdBICPDaUhOMGoQ7Pf1tdi7ZGEMVlM4mA8EF3xyTMtJJUimKpKsuL88aZWlZuw==}
     peerDependencies:
       openai: ^4.0.0 || ^5.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -693,12 +684,6 @@ packages:
     resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
-
-  ai@5.0.41:
-    resolution: {integrity: sha512-KQxXaohdTEawUGwBeCTORSNqL8otavTxqIUrOVFq1Fb+cFaTFBtxpdvFlBlsYHUNEHCLKEaBrlZso4ucsNgKuw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4
 
   ai@5.0.44:
     resolution: {integrity: sha512-l/rdoM4LcRpsRBVvZQBwSU73oNoFGlWj+PcH86QRzxDGJgZqgGItWO0QcKjBNcLDmUjGN1VYd/8J0TAXHJleRQ==}
@@ -1547,12 +1532,6 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.9(zod@4.1.8)
       zod: 4.1.8
 
-  '@ai-sdk/gateway@1.0.21(zod@4.1.8)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.8(zod@4.1.8)
-      zod: 4.1.8
-
   '@ai-sdk/gateway@1.0.23(zod@4.1.8)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
@@ -1569,13 +1548,6 @@ snapshots:
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.9(zod@4.1.8)
-      zod: 4.1.8
-
-  '@ai-sdk/provider-utils@3.0.8(zod@4.1.8)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@standard-schema/spec': 1.0.0
-      eventsource-parser: 3.0.6
       zod: 4.1.8
 
   '@ai-sdk/provider-utils@3.0.9(zod@4.1.8)':
@@ -1874,7 +1846,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@merit-systems/echo-react-sdk@1.0.24(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(zod@4.1.8)':
+  '@merit-systems/echo-react-sdk@1.0.28(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(zod@4.1.8)':
     dependencies:
       '@ai-sdk/react': 2.0.44(react@19.1.1)(zod@4.1.8)
       '@merit-systems/echo-typescript-sdk': 1.0.14(zod@4.1.8)
@@ -2133,14 +2105,6 @@ snapshots:
       acorn: 8.15.0
 
   acorn@8.15.0: {}
-
-  ai@5.0.41(zod@4.1.8):
-    dependencies:
-      '@ai-sdk/gateway': 1.0.21(zod@4.1.8)
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.8(zod@4.1.8)
-      '@opentelemetry/api': 1.9.0
-      zod: 4.1.8
 
   ai@5.0.44(zod@4.1.8):
     dependencies:

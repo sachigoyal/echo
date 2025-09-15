@@ -23,6 +23,7 @@ export function ImageGeneration() {
         model: openai.image('gpt-image-1'),
         prompt: prompt.trim(),
         size: '1024x1024',
+        providerOptions: { openai: { quality: 'low' } },
       });
 
       if (result.image) {
@@ -98,25 +99,6 @@ export function ImageGeneration() {
               alt="Generated image"
               className="w-full h-auto"
             />
-          </div>
-          <div className="flex gap-2">
-            <a
-              href={imageUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              View Full Size
-            </a>
-            <button
-              onClick={() => {
-                setImageUrl(null);
-                setPrompt('');
-              }}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              Generate New
-            </button>
           </div>
         </div>
       )}
