@@ -27,14 +27,14 @@ jobs:
                 failed=1
                 continue
               fi
-              if ! grep -q "*ECHO_APP_ID" "$d/.env.local"; then
-                echo "::error file=$d::.env.local must contain the exact string *ECHO_APP_ID"
+              if ! grep -q "ECHO_APP_ID" "$d/.env.local"; then
+                echo "::error file=$d::.env.local must contain the exact string ECHO_APP_ID"
                 failed=1
               fi
             fi
           done
           if [ "$failed" -ne 0 ]; then
-            echo "One or more templates failed the .env.local *ECHO_APP_ID placeholder check"
+            echo "One or more templates failed the .env.local ECHO_APP_ID placeholder check"
             exit 1
           fi
-          echo "All templates passed the .env.local *ECHO_APP_ID placeholder check"
+          echo "All templates passed the .env.local ECHO_APP_ID placeholder check"
