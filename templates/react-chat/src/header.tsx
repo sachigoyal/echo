@@ -1,6 +1,4 @@
-import SignInButton from '@/app/_components/echo/sign-in-button';
-import { isSignedIn } from '@/echo';
-import { EchoTokens } from '@merit-systems/echo-next-sdk/client';
+import { EchoTokens } from '@merit-systems/echo-react-sdk';
 import type { FC } from 'react';
 
 interface HeaderProps {
@@ -8,12 +6,7 @@ interface HeaderProps {
   className?: string;
 }
 
-const Header: FC<HeaderProps> = async ({
-  title = 'My App',
-  className = '',
-}) => {
-  const signedIn = await isSignedIn();
-
+const Header: FC<HeaderProps> = ({ title = 'My App', className = '' }) => {
   return (
     <header
       className={`border-gray-200 border-b bg-white shadow-sm ${className}`}
@@ -25,7 +18,7 @@ const Header: FC<HeaderProps> = async ({
           </div>
 
           <nav className="flex items-center space-x-4">
-            {!signedIn ? <SignInButton /> : <EchoTokens />}
+            <EchoTokens />
           </nav>
         </div>
       </div>
