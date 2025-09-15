@@ -21,6 +21,7 @@ import { MultiSortControls } from "./SortControls"
 import { MultiFilterControls, ColumnType } from "./FilterControls"
 import { TableHeader as CustomTableHeader } from "./TableHeader"
 import { ActionConfig, ActionGroup, TableState } from "./ActionControls"
+import { SortableColumnHeader } from "./SortableColumnHeader"
 import { getFilterableColumnConfigs, getSortableColumns } from "./utils"
 
 // Re-export for convenience
@@ -82,12 +83,14 @@ export function BaseTable<TData, TValue>({
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
+                      {header.isPlaceholder ? null : (
+                        <SortableColumnHeader column={header.column}>
+                          {flexRender(
                             header.column.columnDef.header,
                             header.getContext()
                           )}
+                        </SortableColumnHeader>
+                      )}
                     </TableHead>
                   )
                 })}
