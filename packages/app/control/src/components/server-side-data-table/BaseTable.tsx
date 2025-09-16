@@ -86,10 +86,15 @@ export function BaseTable<TData, TValue>({
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => {
+                  const isCheckboxColumn = header.column.id === 'select';
+                  const headerClassName = isCheckboxColumn 
+                    ? "w-10 min-w-10 max-w-10" 
+                    : "w-36 min-w-36 max-w-36";
+                  
                   return (
                     <TableHead
                       key={header.id}
-                      className="w-36 min-w-36 max-w-36"
+                      className={headerClassName}
                     >
                       {header.isPlaceholder ? null : (
                         <SortableColumnHeader column={header.column}>
@@ -109,14 +114,21 @@ export function BaseTable<TData, TValue>({
             {isLoading ? (
               Array.from({ length: skeletonRows }).map((_, index) => (
                 <TableRow key={`skeleton-${index}`}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell
-                      key={colIndex}
-                      className="w-48 min-w-48 max-w-48"
-                    >
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
+                  {columns.map((column, colIndex) => {
+                    const isCheckboxColumn = column.id === 'select';
+                    const cellClassName = isCheckboxColumn 
+                      ? "w-5 min-w-5 max-w-5" 
+                      : "w-36 min-w-36 max-w-36";
+                    
+                    return (
+                      <TableCell
+                        key={colIndex}
+                        className={cellClassName}
+                      >
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : table.getRowModel().rows?.length ? (
@@ -125,14 +137,21 @@ export function BaseTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id} className="w-48 min-w-48 max-w-48">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map(cell => {
+                    const isCheckboxColumn = cell.column.id === 'select';
+                    const cellClassName = isCheckboxColumn 
+                      ? "w-5 min-w-5 max-w-5" 
+                      : "w-36 min-w-36 max-w-36";
+                    
+                    return (
+                      <TableCell key={cell.id} className={cellClassName}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (

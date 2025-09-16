@@ -56,11 +56,11 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
       enableSorting: true,
       enableColumnFilter: true,
       columnType: 'string',
-      size: 180,
       cell: ({ getValue, row }) => {
         const name = getValue() as string;
         const appId = row.original.id;
-        return <AppLink appId={appId} name={name} showDescription={false} />;
+        const description = row.original.description;
+        return <AppLink appId={appId} name={name} showDescription={true} description={description} />;
       },
     },
     {
@@ -76,24 +76,6 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
             userId={creatorUser.id}
             name={creatorUser.name}
             email={creatorUser.email}
-          />
-        );
-      },
-    },
-    {
-      accessorKey: 'description',
-      header: 'Description',
-      enableSorting: false,
-      enableColumnFilter: true,
-      columnType: 'string',
-      size: 200,
-      cell: ({ getValue }) => {
-        const description = getValue() as string | null;
-        return (
-          <StringCell
-            value={description}
-            maxWidth="max-w-[180px]"
-            emptyText="No description"
           />
         );
       },

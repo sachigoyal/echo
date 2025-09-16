@@ -7,6 +7,7 @@ export function createCheckboxColumn<TData>(): TypedColumnDef<TData, unknown> {
   return {
     id: 'select',
     columnType: 'boolean',
+    size: 20,
     header: ({ table }) => (
       <input
         type="checkbox"

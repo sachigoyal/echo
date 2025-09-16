@@ -173,22 +173,7 @@ const columns: TypedColumnDef<
           <span className="text-gray-400 italic text-sm">Direct payment</span>
         );
       }
-      return (
-        <div className="space-y-1">
-          <div className="font-medium text-sm">{spendPool.name}</div>
-          <div className="text-xs text-gray-600">
-            App: {spendPool.echoApp.name}
-          </div>
-          {spendPool.description && (
-            <div
-              className="text-xs text-gray-500 truncate max-w-[150px]"
-              title={spendPool.description}
-            >
-              {spendPool.description}
-            </div>
-          )}
-        </div>
-      );
+      return <StringCell value={spendPool.name} />;
     },
   },
   {

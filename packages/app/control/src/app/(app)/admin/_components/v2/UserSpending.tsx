@@ -53,7 +53,6 @@ const columns: TypedColumnDef<
           userId={userId}
           name={name}
           email={email}
-          className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
         />
       );
     },
