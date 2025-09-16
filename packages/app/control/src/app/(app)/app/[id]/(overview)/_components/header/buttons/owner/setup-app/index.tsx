@@ -134,14 +134,14 @@ export const SetupApp: React.FC<Props> = ({ appId, onFinish }) => {
               percentageClassName="text-[7px] duration-0"
             />
           )}
-          <span className="text-primary">Complete your App Setup</span>
+          <span className="text-primary">Add your App Details</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
         <DialogHeader className="p-4 bg-muted border-b">
-          <DialogTitle>Complete your App Setup</DialogTitle>
+          <DialogTitle>Add your App Details</DialogTitle>
           <DialogDescription>
-            Add your app details to finish setting up your app.
+            Add your app details to add your app to the app store.
           </DialogDescription>
         </DialogHeader>
         <Accordion
