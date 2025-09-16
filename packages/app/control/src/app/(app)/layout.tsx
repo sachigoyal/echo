@@ -29,7 +29,7 @@ export default async function AppLayout({
         </LogoContainer>
         <header className="w-full flex flex-col pt-4 justify-center">
           <div className="flex items-center justify-between w-full px-2 md:px-6 pb-0 md:pb-0 h-10">
-            <div className="pl-10 md:pl-12 flex items-center gap-2 md:gap-3">
+            <div className="pl-10 md:pl-12 flex items-center gap-1 md:gap-2">
               {breadcrumbs}
             </div>
             <div className="flex items-center gap-1 md:gap-2">

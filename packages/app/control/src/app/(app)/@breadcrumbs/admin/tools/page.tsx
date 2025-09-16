@@ -1,11 +1,11 @@
-import { Shield, Building2 } from 'lucide-react';
+import { Shield, Wrench } from 'lucide-react';
 import { Breadcrumb } from '@/app/(app)/@breadcrumbs/_components/breadcrumb';
 
-export default function AdminDashboardV2AppEarningsBreadcrumb() {
+export default function AdminToolsBreadcrumb() {
   return (
     <>
       <Breadcrumb
-        href="/admin"
+        href="/admin/dashboard"
         image={null}
         name="Admin"
         Fallback={Shield}
@@ -13,10 +13,10 @@ export default function AdminDashboardV2AppEarningsBreadcrumb() {
       />
       <span className="text-muted-foreground">/</span>
       <Breadcrumb
-        href="/admin/dashboard/v2/app-earnings"
+        href="/admin/tools"
         image={null}
-        name="App Earnings"
-        Fallback={Building2}
+        name="Tools"
+        Fallback={Wrench}
         disabled
       />
     </>

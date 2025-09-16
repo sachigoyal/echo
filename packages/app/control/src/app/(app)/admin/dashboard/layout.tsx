@@ -1,29 +1,29 @@
 import { Nav } from '@/app/(app)/_components/layout/nav';
 
-export default function DashboardV2Layout({
+export default function AdminDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col flex-1">
+    <div className="relative">
       <Nav
         tabs={[
           {
             label: 'User Earnings',
-            href: '/admin/dashboard/v2/user-earnings',
+            href: '/admin/dashboard/user-earnings',
           },
           {
             label: 'User Spending',
-            href: '/admin/dashboard/v2/user-spending',
+            href: '/admin/dashboard/user-spending',
           },
           {
             label: 'App Earnings',
-            href: '/admin/dashboard/v2/app-earnings',
+            href: '/admin/dashboard/app-earnings',
           },
           {
             label: 'Payment History',
-            href: '/admin/dashboard/v2/payments',
+            href: '/admin/dashboard/payments',
           },
         ]}
       />

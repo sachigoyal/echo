@@ -1,11 +1,11 @@
-import { Shield, CreditCard } from 'lucide-react';
+import { Shield, CreditCard, LayoutDashboard } from 'lucide-react';
 import { Breadcrumb } from '@/app/(app)/@breadcrumbs/_components/breadcrumb';
 
-export default function AdminDashboardV2PaymentsBreadcrumb() {
+export default function AdminPayoutsBreadcrumb() {
   return (
     <>
       <Breadcrumb
-        href="/admin"
+        href="/admin/dashboard"
         image={null}
         name="Admin"
         Fallback={Shield}
@@ -13,10 +13,10 @@ export default function AdminDashboardV2PaymentsBreadcrumb() {
       />
       <span className="text-muted-foreground">/</span>
       <Breadcrumb
-        href="/admin/dashboard/v2/payments"
+        href="/admin/dashboard"
         image={null}
-        name="Payment History"
-        Fallback={CreditCard}
+        name="Dashboard"
+        Fallback={LayoutDashboard}
         disabled
       />
     </>

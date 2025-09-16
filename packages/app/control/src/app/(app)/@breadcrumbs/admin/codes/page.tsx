@@ -1,11 +1,11 @@
-import { Shield, Users } from 'lucide-react';
+import { Shield, Ticket } from 'lucide-react';
 import { Breadcrumb } from '@/app/(app)/@breadcrumbs/_components/breadcrumb';
 
-export default function AdminDashboardV2UserSpendingBreadcrumb() {
+export default function AdminCodesBreadcrumb() {
   return (
     <>
       <Breadcrumb
-        href="/admin"
+        href="/admin/dashboard"
         image={null}
         name="Admin"
         Fallback={Shield}
@@ -13,10 +13,10 @@ export default function AdminDashboardV2UserSpendingBreadcrumb() {
       />
       <span className="text-muted-foreground">/</span>
       <Breadcrumb
-        href="/admin/dashboard/v2/user-spending"
+        href="/admin/codes"
         image={null}
-        name="User Spending"
-        Fallback={Users}
+        name="Referral Codes"
+        Fallback={Ticket}
         disabled
       />
     </>

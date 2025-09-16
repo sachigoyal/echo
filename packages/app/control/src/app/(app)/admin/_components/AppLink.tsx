@@ -24,7 +24,7 @@ export function AppLink({
     return (
       <div className="flex flex-col">
         <Link
-          href={`/admin/dashboard/v2/app-users/${appId}`}
+          href={`/admin/dashboard/app/app-users/${appId}`}
           className={`${className} block truncate ${maxWidth}`}
           title={title || name}
         >
@@ -42,7 +42,7 @@ export function AppLink({
 
   return (
     <Link
-      href={`/admin/dashboard/v2/app-users/${appId}`}
+      href={`/admin/dashboard/app/app-users/${appId}`}
       className={`${className} block truncate ${maxWidth}`}
       title={title || name}
     >
