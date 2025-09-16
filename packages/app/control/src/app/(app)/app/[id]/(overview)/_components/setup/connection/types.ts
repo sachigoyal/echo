@@ -5,7 +5,9 @@ export type TemplateOption = {
   Icon: (props: { className?: string }) => React.ReactNode;
 };
 
-export type Template = TemplateOption;
+export type Template = TemplateOption & {
+  url: string;
+};
 
 export type TemplateGroup = TemplateOption & {
   moreAdvanced: React.ReactNode;
