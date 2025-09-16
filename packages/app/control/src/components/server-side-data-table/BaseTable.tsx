@@ -1,11 +1,11 @@
-"use client"
+'use client';
 
-import * as React from "react"
+import * as React from 'react';
 import {
   ColumnDef,
   flexRender,
   Table as TanStackTable,
-} from "@tanstack/react-table"
+} from '@tanstack/react-table';
 
 import {
   Table,
@@ -14,53 +14,58 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
-import { PaginationControls } from "./PaginationControls"
-import { MultiSortControls } from "./SortControls"
-import { MultiFilterControls, ColumnType } from "./FilterControls"
-import { TableHeader as CustomTableHeader } from "./TableHeader"
-import { ActionConfig, ActionGroup, TableState } from "./ActionControls"
-import { SortableColumnHeader } from "./SortableColumnHeader"
-import { getFilterableColumnConfigs, getSortableColumns } from "./utils"
+} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PaginationControls } from './PaginationControls';
+import { MultiSortControls } from './SortControls';
+import { MultiFilterControls, ColumnType } from './FilterControls';
+import { TableHeader as CustomTableHeader } from './TableHeader';
+import { ActionConfig, ActionGroup, TableState } from './ActionControls';
+import { SortableColumnHeader } from './SortableColumnHeader';
+import { getFilterableColumnConfigs, getSortableColumns } from './utils';
 
 // Re-export for convenience
-export type { ActionConfig, ActionGroup, TableState }
+export type { ActionConfig, ActionGroup, TableState };
 
 // Define TypedColumnDef as an intersection type to guarantee columnType exists
 export type TypedColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {
-  columnType: ColumnType
-}
+  columnType: ColumnType;
+};
 
 interface BaseTableProps<TData, TValue> {
-  table: TanStackTable<TData>
-  columns: TypedColumnDef<TData, TValue>[]
-  isLoading?: boolean
-  skeletonRows?: number
-  showControls?: boolean
-  title?: string
-  actions?: ActionConfig[]
-  actionGroups?: ActionGroup[]
-} 
-
+  table: TanStackTable<TData>;
+  columns: TypedColumnDef<TData, TValue>[];
+  isLoading?: boolean;
+  skeletonRows?: number;
+  showControls?: boolean;
+  title?: string;
+  actions?: ActionConfig[];
+  actionGroups?: ActionGroup[];
+}
 
 export function BaseTable<TData, TValue>({
   table,
   columns,
   isLoading = false,
-  skeletonRows = 10,
+  skeletonRows = 3,
   showControls = true,
-  title = "Data Table",
+  title = 'Data Table',
   actions = [],
   actionGroups = [],
 }: BaseTableProps<TData, TValue>) {
   // Get sortable and filterable columns using utility functions
-  const sortableColumns = React.useMemo(() => getSortableColumns(columns), [columns])
-  const filterableColumnConfigs = React.useMemo(() => getFilterableColumnConfigs(columns), [columns])
+  const sortableColumns = React.useMemo(
+    () => getSortableColumns(columns),
+    [columns]
+  );
+  const filterableColumnConfigs = React.useMemo(
+    () => getFilterableColumnConfigs(columns),
+    [columns]
+  );
 
   // State for controlling popover visibility
-  const [sortPopoverOpen, setSortPopoverOpen] = React.useState(false)
-  const [filterPopoverOpen, setFilterPopoverOpen] = React.useState(false)
+  const [sortPopoverOpen, setSortPopoverOpen] = React.useState(false);
+  const [filterPopoverOpen, setFilterPopoverOpen] = React.useState(false);
 
   return (
     <div className="space-y-0">
@@ -75,14 +80,17 @@ export function BaseTable<TData, TValue>({
             actionGroups={actionGroups}
           />
         )}
-        
-        <Table>
+
+        <Table className="table-fixed">
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+                {headerGroup.headers.map(header => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className="w-36 min-w-36 max-w-36"
+                    >
                       {header.isPlaceholder ? null : (
                         <SortableColumnHeader column={header.column}>
                           {flexRender(
@@ -92,7 +100,7 @@ export function BaseTable<TData, TValue>({
                         </SortableColumnHeader>
                       )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -102,28 +110,37 @@ export function BaseTable<TData, TValue>({
               Array.from({ length: skeletonRows }).map((_, index) => (
                 <TableRow key={`skeleton-${index}`}>
                   {columns.map((_, colIndex) => (
-                    <TableCell key={`skeleton-cell-${index}-${colIndex}`}>
+                    <TableCell
+                      key={colIndex}
+                      className="w-48 min-w-48 max-w-48"
+                    >
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id} className="w-48 min-w-48 max-w-48">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -132,29 +149,31 @@ export function BaseTable<TData, TValue>({
         </Table>
       </div>
       <PaginationControls table={table} />
-      
+
       {/* Render popovers outside the table for proper positioning */}
       {showControls && (
         <>
-          {(
-            <MultiSortControls 
-              table={table} 
+          {
+            <MultiSortControls
+              table={table}
               availableColumns={sortableColumns}
               isOpen={sortPopoverOpen}
               onOpenChange={setSortPopoverOpen}
             />
-          )}
-          {(
-            <MultiFilterControls 
-              table={table} 
-              availableColumns={filterableColumnConfigs.map(config => config.name)} 
+          }
+          {
+            <MultiFilterControls
+              table={table}
+              availableColumns={filterableColumnConfigs.map(
+                config => config.name
+              )}
               columnConfigs={filterableColumnConfigs}
               isOpen={filterPopoverOpen}
               onOpenChange={setFilterPopoverOpen}
             />
-          )}
+          }
         </>
       )}
     </div>
-  )
+  );
 }

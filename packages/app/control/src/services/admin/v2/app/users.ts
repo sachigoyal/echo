@@ -4,35 +4,38 @@
  * sorting, and filtering parameters and returns app user data in the expected format.
  */
 
-import { PaginationParams, toPaginatedReponse } from "@/services/lib/pagination"
-import { MultiSortParams } from "@/services/lib/sorting"
-import { FilterParams } from "@/services/lib/filtering"
-import { db } from "@/lib/db"
-import { User } from "@/generated/prisma"
+import {
+  PaginationParams,
+  toPaginatedReponse,
+} from '@/services/lib/pagination';
+import { MultiSortParams } from '@/services/lib/sorting';
+import { FilterParams } from '@/services/lib/filtering';
+import { db } from '@/lib/db';
+import { User } from '@/generated/prisma';
 
 export interface AppUser {
-  id: string
-  name: string | null
-  email: string
-  createdAt: Date
-  updatedAt: Date
-  totalPaid: number
-  userTotalSpent: number
+  id: string;
+  name: string | null;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+  totalPaid: number;
+  userTotalSpent: number;
   membership: {
-    role: string
-    status: string
-    totalSpent: number
-    createdAt: Date
-  }
-  totalTransactions: number
-  totalInputTokens: number
-  totalOutputTokens: number
-  totalTokens: number
-  totalSpent: number
-  totalAppProfit: number
-  totalMarkupProfit: number
-  totalReferralProfit: number
-  lastTransactionAt: Date | null
+    role: string;
+    status: string;
+    totalSpent: number;
+    createdAt: Date;
+  };
+  totalTransactions: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  totalSpent: number;
+  totalAppProfit: number;
+  totalMarkupProfit: number;
+  totalReferralProfit: number;
+  lastTransactionAt: Date | null;
 }
 
 // Map frontend column names to SQL expressions
@@ -54,212 +57,239 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   totalAppProfit: 'COALESCE(SUM(t."appProfit"), 0)',
   totalMarkupProfit: 'COALESCE(SUM(t."markUpProfit"), 0)',
   totalReferralProfit: 'COALESCE(SUM(t."referralProfit"), 0)',
-  lastTransactionAt: 'MAX(t."createdAt")'
-}
+  lastTransactionAt: 'MAX(t."createdAt")',
+};
 
 // Generate ORDER BY clause from MultiSortParams
 const buildOrderByClause = (sorts?: MultiSortParams['sorts']): string => {
   if (!sorts || sorts.length === 0) {
-    return 'ORDER BY am."createdAt" DESC'
+    return 'ORDER BY am."createdAt" DESC';
   }
 
   const orderClauses = sorts.map(sort => {
-    const sqlColumn = COLUMN_MAPPINGS[sort.column]
+    const sqlColumn = COLUMN_MAPPINGS[sort.column];
     if (!sqlColumn) {
-      throw new Error(`Invalid sort column: ${sort.column}`)
+      throw new Error(`Invalid sort column: ${sort.column}`);
     }
-    
-    // For aggregated columns, use the alias in ORDER BY
-    const isAggregated = sqlColumn.includes('SUM(') || sqlColumn.includes('COUNT(') || sqlColumn.includes('MAX(') || sqlColumn.includes('COALESCE(')
-    const orderColumn = isAggregated ? `"${sort.column}"` : sqlColumn
-    
-    return `${orderColumn} ${sort.direction.toUpperCase()}`
-  })
 
-  return `ORDER BY ${orderClauses.join(', ')}`
-}
+    // For aggregated columns, use the alias in ORDER BY
+    const isAggregated =
+      sqlColumn.includes('SUM(') ||
+      sqlColumn.includes('COUNT(') ||
+      sqlColumn.includes('MAX(') ||
+      sqlColumn.includes('COALESCE(');
+    const orderColumn = isAggregated ? `"${sort.column}"` : sqlColumn;
+
+    return `${orderColumn} ${sort.direction.toUpperCase()}`;
+  });
+
+  return `ORDER BY ${orderClauses.join(', ')}`;
+};
 
 // Generate WHERE and HAVING clauses from FilterParams
-const buildFilterClauses = (filters?: FilterParams['filters'], appId?: string): { 
-  whereClause: string; 
-  havingClause: string; 
-  parameters: any[] 
+const buildFilterClauses = (
+  filters?: FilterParams['filters'],
+  appId?: string
+): {
+  whereClause: string;
+  havingClause: string;
+  parameters: any[];
 } => {
-  const parameters: any[] = []
-  let whereClause = ''
-  let havingClause = ''
+  const parameters: any[] = [];
+  let whereClause = '';
+  let havingClause = '';
 
   // Always filter by appId if provided
   if (appId) {
-    whereClause = 'WHERE am."echoAppId" = $1::uuid'
-    parameters.push(appId)
+    whereClause = 'WHERE am."echoAppId" = $1::uuid';
+    parameters.push(appId);
   } else {
-    whereClause = 'WHERE 1=1'
+    whereClause = 'WHERE 1=1';
   }
 
   if (!filters || filters.length === 0) {
-    return { whereClause, havingClause, parameters }
+    return { whereClause, havingClause, parameters };
   }
 
-  const whereConditions: string[] = []
-  const havingConditions: string[] = []
+  const whereConditions: string[] = [];
+  const havingConditions: string[] = [];
 
   // Columns that require HAVING clause (aggregated values)
   const aggregatedColumns = [
-    'totalTransactions', 'totalInputTokens', 'totalOutputTokens', 'totalTokens',
-    'totalSpent', 'totalAppProfit', 'totalMarkupProfit', 'totalReferralProfit',
-    'lastTransactionAt'
-  ]
+    'totalTransactions',
+    'totalInputTokens',
+    'totalOutputTokens',
+    'totalTokens',
+    'totalSpent',
+    'totalAppProfit',
+    'totalMarkupProfit',
+    'totalReferralProfit',
+    'lastTransactionAt',
+  ];
 
   // Numeric columns that need type conversion
   const numericColumns = [
-    'totalTransactions', 'totalInputTokens', 'totalOutputTokens', 'totalTokens',
-    'totalSpent', 'totalAppProfit', 'totalMarkupProfit', 'totalReferralProfit',
-    'membershipTotalSpent'
-  ]
+    'totalTransactions',
+    'totalInputTokens',
+    'totalOutputTokens',
+    'totalTokens',
+    'totalSpent',
+    'totalAppProfit',
+    'totalMarkupProfit',
+    'totalReferralProfit',
+    'membershipTotalSpent',
+  ];
 
   // Date/timestamp columns that need type casting
-  const dateColumns = ['createdAt', 'updatedAt', 'membershipCreatedAt', 'lastTransactionAt']
-  
-  // UUID columns that need type casting
-  const uuidColumns = ['id']
+  const dateColumns = [
+    'createdAt',
+    'updatedAt',
+    'membershipCreatedAt',
+    'lastTransactionAt',
+  ];
 
-  filters.forEach((filter) => {
-    const sqlColumn = COLUMN_MAPPINGS[filter.column]
+  // UUID columns that need type casting
+  const uuidColumns = ['id'];
+
+  filters.forEach(filter => {
+    const sqlColumn = COLUMN_MAPPINGS[filter.column];
     if (!sqlColumn) {
-      throw new Error(`Invalid filter column: ${filter.column}`)
+      throw new Error(`Invalid filter column: ${filter.column}`);
     }
 
-    const paramIndex = parameters.length + 1
-    let condition = ''
-    const isDateColumn = dateColumns.includes(filter.column)
-    const isUuidColumn = uuidColumns.includes(filter.column)
+    const paramIndex = parameters.length + 1;
+    let condition = '';
+    const isDateColumn = dateColumns.includes(filter.column);
+    const isUuidColumn = uuidColumns.includes(filter.column);
 
     // Convert filter value to appropriate type for numeric columns
     const convertValue = (value: any) => {
       if (numericColumns.includes(filter.column)) {
-        return Number(value)
+        return Number(value);
       }
-      return value
-    }
+      return value;
+    };
 
     switch (filter.operator) {
       case 'equals':
         if (isDateColumn) {
-          condition = `${sqlColumn} = $${paramIndex}::timestamp`
+          condition = `${sqlColumn} = $${paramIndex}::timestamp`;
         } else if (isUuidColumn) {
-          condition = `${sqlColumn} = $${paramIndex}::uuid`
+          condition = `${sqlColumn} = $${paramIndex}::uuid`;
         } else {
-          condition = `${sqlColumn} = $${paramIndex}`
+          condition = `${sqlColumn} = $${paramIndex}`;
         }
-        parameters.push(convertValue(filter.value))
-        break
+        parameters.push(convertValue(filter.value));
+        break;
       case 'not_equals':
         if (isDateColumn) {
-          condition = `${sqlColumn} != $${paramIndex}::timestamp`
+          condition = `${sqlColumn} != $${paramIndex}::timestamp`;
         } else if (isUuidColumn) {
-          condition = `${sqlColumn} != $${paramIndex}::uuid`
+          condition = `${sqlColumn} != $${paramIndex}::uuid`;
         } else {
-          condition = `${sqlColumn} != $${paramIndex}`
+          condition = `${sqlColumn} != $${paramIndex}`;
         }
-        parameters.push(convertValue(filter.value))
-        break
+        parameters.push(convertValue(filter.value));
+        break;
       case 'contains':
-        condition = `${sqlColumn} ILIKE $${paramIndex}`
-        parameters.push(`%${filter.value}%`)
-        break
+        condition = `${sqlColumn} ILIKE $${paramIndex}`;
+        parameters.push(`%${filter.value}%`);
+        break;
       case 'not_contains':
-        condition = `${sqlColumn} NOT ILIKE $${paramIndex}`
-        parameters.push(`%${filter.value}%`)
-        break
+        condition = `${sqlColumn} NOT ILIKE $${paramIndex}`;
+        parameters.push(`%${filter.value}%`);
+        break;
       case 'starts_with':
-        condition = `${sqlColumn} ILIKE $${paramIndex}`
-        parameters.push(`${filter.value}%`)
-        break
+        condition = `${sqlColumn} ILIKE $${paramIndex}`;
+        parameters.push(`${filter.value}%`);
+        break;
       case 'ends_with':
-        condition = `${sqlColumn} ILIKE $${paramIndex}`
-        parameters.push(`%${filter.value}`)
-        break
+        condition = `${sqlColumn} ILIKE $${paramIndex}`;
+        parameters.push(`%${filter.value}`);
+        break;
       case 'greater_than':
-        condition = isDateColumn 
+        condition = isDateColumn
           ? `${sqlColumn} > $${paramIndex}::timestamp`
-          : `${sqlColumn} > $${paramIndex}`
-        parameters.push(convertValue(filter.value))
-        break
+          : `${sqlColumn} > $${paramIndex}`;
+        parameters.push(convertValue(filter.value));
+        break;
       case 'less_than':
-        condition = isDateColumn 
+        condition = isDateColumn
           ? `${sqlColumn} < $${paramIndex}::timestamp`
-          : `${sqlColumn} < $${paramIndex}`
-        parameters.push(convertValue(filter.value))
-        break
+          : `${sqlColumn} < $${paramIndex}`;
+        parameters.push(convertValue(filter.value));
+        break;
       case 'greater_than_or_equal':
-        condition = isDateColumn 
+        condition = isDateColumn
           ? `${sqlColumn} >= $${paramIndex}::timestamp`
-          : `${sqlColumn} >= $${paramIndex}`
-        parameters.push(convertValue(filter.value))
-        break
+          : `${sqlColumn} >= $${paramIndex}`;
+        parameters.push(convertValue(filter.value));
+        break;
       case 'less_than_or_equal':
-        condition = isDateColumn 
+        condition = isDateColumn
           ? `${sqlColumn} <= $${paramIndex}::timestamp`
-          : `${sqlColumn} <= $${paramIndex}`
-        parameters.push(convertValue(filter.value))
-        break
+          : `${sqlColumn} <= $${paramIndex}`;
+        parameters.push(convertValue(filter.value));
+        break;
       case 'in':
         if (Array.isArray(filter.value)) {
-          const placeholders = isUuidColumn 
+          const placeholders = isUuidColumn
             ? filter.value.map((_, i) => `$${paramIndex + i}::uuid`).join(', ')
-            : filter.value.map((_, i) => `$${paramIndex + i}`).join(', ')
-          condition = `${sqlColumn} IN (${placeholders})`
-          parameters.push(...filter.value.map(convertValue))
+            : filter.value.map((_, i) => `$${paramIndex + i}`).join(', ');
+          condition = `${sqlColumn} IN (${placeholders})`;
+          parameters.push(...filter.value.map(convertValue));
         }
-        break
+        break;
       case 'not_in':
         if (Array.isArray(filter.value)) {
-          const placeholders = isUuidColumn 
+          const placeholders = isUuidColumn
             ? filter.value.map((_, i) => `$${paramIndex + i}::uuid`).join(', ')
-            : filter.value.map((_, i) => `$${paramIndex + i}`).join(', ')
-          condition = `${sqlColumn} NOT IN (${placeholders})`
-          parameters.push(...filter.value.map(convertValue))
+            : filter.value.map((_, i) => `$${paramIndex + i}`).join(', ');
+          condition = `${sqlColumn} NOT IN (${placeholders})`;
+          parameters.push(...filter.value.map(convertValue));
         }
-        break
+        break;
       case 'is_null':
-        condition = `${sqlColumn} IS NULL`
-        break
+        condition = `${sqlColumn} IS NULL`;
+        break;
       case 'is_not_null':
-        condition = `${sqlColumn} IS NOT NULL`
-        break
+        condition = `${sqlColumn} IS NOT NULL`;
+        break;
       default:
-        throw new Error(`Unsupported filter operator: ${filter.operator}`)
+        throw new Error(`Unsupported filter operator: ${filter.operator}`);
     }
 
     if (condition) {
       // Decide whether this filter goes in WHERE or HAVING
       if (aggregatedColumns.includes(filter.column)) {
-        havingConditions.push(condition)
+        havingConditions.push(condition);
       } else {
-        whereConditions.push(condition)
+        whereConditions.push(condition);
       }
     }
-  })
+  });
 
   if (whereConditions.length > 0) {
-    whereClause += ` AND (${whereConditions.join(' AND ')})`
+    whereClause += ` AND (${whereConditions.join(' AND ')})`;
   }
 
   if (havingConditions.length > 0) {
-    havingClause = `HAVING ${havingConditions.join(' AND ')}`
+    havingClause = `HAVING ${havingConditions.join(' AND ')}`;
   }
 
-  return { whereClause, havingClause, parameters }
-}
+  return { whereClause, havingClause, parameters };
+};
 
 // Main function for getting app users with pagination
 export const getAppUsersWithPagination = async (
   params: PaginationParams & MultiSortParams & FilterParams & { appId: string }
 ) => {
   // Build dynamic clauses
-  const { whereClause, havingClause, parameters } = buildFilterClauses(params.filters, params.appId)
-  const orderByClause = buildOrderByClause(params.sorts)
+  const { whereClause, havingClause, parameters } = buildFilterClauses(
+    params.filters,
+    params.appId
+  );
+  const orderByClause = buildOrderByClause(params.sorts);
 
   // Build the main query with dynamic clauses
   const baseQuery = `
@@ -295,37 +325,41 @@ export const getAppUsersWithPagination = async (
     ${orderByClause}
     LIMIT $${parameters.length + 1} 
     OFFSET $${parameters.length + 2}
-  `
+  `;
 
   // Add pagination parameters
-  const queryParameters = [...parameters, params.page_size, params.page * params.page_size]
+  const queryParameters = [
+    ...parameters,
+    params.page_size,
+    params.page * params.page_size,
+  ];
 
   // Execute the main query
-  const appUsers = await db.$queryRawUnsafe(
+  const appUsers = (await db.$queryRawUnsafe(
     baseQuery,
     ...queryParameters
-  ) as Array<{
-    id: string
-    name: string | null
-    email: string
-    createdAt: Date
-    updatedAt: Date
-    totalPaid: number
-    userTotalSpent: number
-    membershipRole: string
-    membershipStatus: string
-    membershipTotalSpent: number
-    membershipCreatedAt: Date
-    totalTransactions: number
-    totalInputTokens: number
-    totalOutputTokens: number
-    totalTokens: number
-    totalSpent: number
-    totalAppProfit: number
-    totalMarkupProfit: number
-    totalReferralProfit: number
-    lastTransactionAt: Date | null
-  }>
+  )) as Array<{
+    id: string;
+    name: string | null;
+    email: string;
+    createdAt: Date;
+    updatedAt: Date;
+    totalPaid: number;
+    userTotalSpent: number;
+    membershipRole: string;
+    membershipStatus: string;
+    membershipTotalSpent: number;
+    membershipCreatedAt: Date;
+    totalTransactions: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalTokens: number;
+    totalSpent: number;
+    totalAppProfit: number;
+    totalMarkupProfit: number;
+    totalReferralProfit: number;
+    lastTransactionAt: Date | null;
+  }>;
 
   // Build count query with same filters
   const countQuery = `
@@ -336,17 +370,17 @@ export const getAppUsersWithPagination = async (
     LEFT JOIN "transaction_metadata" tm ON t."transactionMetadataId" = tm.id
     ${whereClause}
     ${havingClause ? `GROUP BY u.id ${havingClause}` : ''}
-  `
+  `;
 
   // If we have HAVING clauses, we need to count the grouped results
-  const totalCountQuery = havingClause 
+  const totalCountQuery = havingClause
     ? `SELECT COUNT(*) as count FROM (${countQuery}) as filtered_results`
-    : countQuery
+    : countQuery;
 
-  const totalCount = await db.$queryRawUnsafe(
+  const totalCount = (await db.$queryRawUnsafe(
     totalCountQuery,
     ...parameters
-  ) as Array<{ count: bigint }>
+  )) as Array<{ count: bigint }>;
 
   // Transform the results to match the expected interface
   const transformedResults = appUsers.map(user => ({
@@ -361,7 +395,7 @@ export const getAppUsersWithPagination = async (
       role: user.membershipRole,
       status: user.membershipStatus,
       totalSpent: user.membershipTotalSpent,
-      createdAt: user.membershipCreatedAt
+      createdAt: user.membershipCreatedAt,
     },
     totalTransactions: user.totalTransactions,
     totalInputTokens: user.totalInputTokens,
@@ -371,8 +405,8 @@ export const getAppUsersWithPagination = async (
     totalAppProfit: user.totalAppProfit,
     totalMarkupProfit: user.totalMarkupProfit,
     totalReferralProfit: user.totalReferralProfit,
-    lastTransactionAt: user.lastTransactionAt
-  }))
+    lastTransactionAt: user.lastTransactionAt,
+  }));
 
   // Return in the expected format
   return toPaginatedReponse({
@@ -380,5 +414,5 @@ export const getAppUsersWithPagination = async (
     page: params.page,
     page_size: params.page_size,
     total_count: Number(totalCount[0].count),
-  })
-}
+  });
+};

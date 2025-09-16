@@ -47,7 +47,7 @@ export async function adminListCompletedPayouts(pagination: PaginationParams) {
     db.payout.count({ where: { status: PayoutStatus.COMPLETED } }),
   ]);
 
-  const mapped: CompletedPayoutListItem[] = items.map((p) => ({
+  const mapped: CompletedPayoutListItem[] = items.map(p => ({
     id: p.id,
     amount: Number(p.amount),
     status: p.status,

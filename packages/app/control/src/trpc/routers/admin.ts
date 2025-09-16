@@ -167,7 +167,11 @@ export const adminRouter = createTRPCRouter({
      * Get paginated user earnings with advanced filtering and sorting
      */
     getUserEarningsWithPagination: adminProcedure
-      .input(paginationParamsSchema.merge(multiSortParamsSchema).merge(filterParamsSchema))
+      .input(
+        paginationParamsSchema
+          .merge(multiSortParamsSchema)
+          .merge(filterParamsSchema)
+      )
       .query(async ({ input }) => {
         return await getUserEarningsWithPagination(input);
       }),
@@ -176,7 +180,11 @@ export const adminRouter = createTRPCRouter({
      * Get paginated app earnings with advanced filtering and sorting
      */
     getAppEarningsWithPagination: adminProcedure
-      .input(paginationParamsSchema.merge(multiSortParamsSchema).merge(filterParamsSchema))
+      .input(
+        paginationParamsSchema
+          .merge(multiSortParamsSchema)
+          .merge(filterParamsSchema)
+      )
       .query(async ({ input }) => {
         return await getAppEarningsWithPagination(input);
       }),
@@ -270,7 +278,11 @@ export const adminRouter = createTRPCRouter({
      * Get paginated user spending with advanced filtering and sorting
      */
     getUserSpendingWithPagination: adminProcedure
-      .input(paginationParamsSchema.merge(multiSortParamsSchema).merge(filterParamsSchema))
+      .input(
+        paginationParamsSchema
+          .merge(multiSortParamsSchema)
+          .merge(filterParamsSchema)
+      )
       .query(async ({ input }) => {
         return await getUserSpendingWithPagination(input);
       }),
@@ -375,7 +387,11 @@ export const adminRouter = createTRPCRouter({
      * Get paginated payment history with advanced filtering and sorting
      */
     getPaymentsWithPagination: adminProcedure
-      .input(paginationParamsSchema.merge(multiSortParamsSchema).merge(filterParamsSchema))
+      .input(
+        paginationParamsSchema
+          .merge(multiSortParamsSchema)
+          .merge(filterParamsSchema)
+      )
       .query(async ({ input }) => {
         return await getPaymentsWithPagination(input);
       }),

@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import { TrendingUp } from "lucide-react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { TrendingUp } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 import {
   Card,
@@ -10,28 +10,28 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from '@/components/ui/card';
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from '@/components/ui/chart';
 
 interface ChartAreaLinearProps {
-  title: string
-  description: string
-  data: Array<Record<string, any>>
-  config: ChartConfig
-  xAxisDataKey: string
-  areaDataKey: string
-  xAxisTickFormatter?: (value: any) => string
+  title: string;
+  description: string;
+  data: Array<Record<string, any>>;
+  config: ChartConfig;
+  xAxisDataKey: string;
+  areaDataKey: string;
+  xAxisTickFormatter?: (value: any) => string;
   footerTrend?: {
-    percentage: string
-    direction: "up" | "down"
-    period: string
-  }
-  footerDateRange?: string
+    percentage: string;
+    direction: 'up' | 'down';
+    period: string;
+  };
+  footerDateRange?: string;
 }
 
 export function ChartAreaLinear({
@@ -41,11 +41,11 @@ export function ChartAreaLinear({
   config,
   xAxisDataKey,
   areaDataKey,
-  xAxisTickFormatter = (value) => value.toString().slice(0, 3),
+  xAxisTickFormatter = value => value.toString().slice(0, 3),
   footerTrend,
   footerDateRange,
 }: ChartAreaLinearProps) {
-  const colorVar = `var(--color-${areaDataKey})`
+  const colorVar = `var(--color-${areaDataKey})`;
 
   return (
     <Card>
@@ -91,7 +91,8 @@ export function ChartAreaLinear({
             <div className="grid gap-2">
               {footerTrend && (
                 <div className="flex items-center gap-2 leading-none font-medium">
-                  Trending {footerTrend.direction} by {footerTrend.percentage} {footerTrend.period}
+                  Trending {footerTrend.direction} by {footerTrend.percentage}{' '}
+                  {footerTrend.period}
                   <TrendingUp className="h-4 w-4" />
                 </div>
               )}
@@ -105,5 +106,5 @@ export function ChartAreaLinear({
         </CardFooter>
       )}
     </Card>
-  )
+  );
 }

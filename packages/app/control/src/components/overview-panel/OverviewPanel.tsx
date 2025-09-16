@@ -1,77 +1,91 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 // TRPC useQuery hook type - similar to StatefulDataTable
 export type TRPCUseQuery<TData> = () => {
-  data?: TData
-  isLoading: boolean
-  error?: any
-}
+  data?: TData;
+  isLoading: boolean;
+  error?: any;
+};
 
 // Metric display types
-export type MetricDisplayType = 
-  | "number" 
-  | "currency" 
-  | "percentage" 
-  | "badge" 
-  | "progress" 
-  | "trend"
+export type MetricDisplayType =
+  | 'number'
+  | 'currency'
+  | 'percentage'
+  | 'badge'
+  | 'progress'
+  | 'trend';
 
 // Individual metric configuration
 export interface MetricConfig {
-  id: string
-  title: string
-  description?: string
-  displayType: MetricDisplayType
-  valueKey: string // Key to extract value from data
+  id: string;
+  title: string;
+  description?: string;
+  displayType: MetricDisplayType;
+  valueKey: string; // Key to extract value from data
   // Optional formatting
   format?: {
-    prefix?: string
-    suffix?: string
-    decimals?: number
-    showTrend?: boolean
-    trendKey?: string // Key for trend data (e.g., percentage change)
-    trendDirection?: "up" | "down" | "neutral"
-  }
+    prefix?: string;
+    suffix?: string;
+    decimals?: number;
+    showTrend?: boolean;
+    trendKey?: string; // Key for trend data (e.g., percentage change)
+    trendDirection?: 'up' | 'down' | 'neutral';
+  };
   // Card styling
-  className?: string
-  size?: "sm" | "md" | "lg"
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 // Grid layout configuration
 export interface GridConfig {
-  columns?: 1 | 2 | 3 | 4 | 6
-  gap?: "sm" | "md" | "lg"
-  responsive?: boolean
+  columns?: 1 | 2 | 3 | 4 | 6;
+  gap?: 'sm' | 'md' | 'lg';
+  responsive?: boolean;
 }
 
 // Width constraint options
-export type WidthConstraint = "sm" | "md" | "lg" | "xl" | "2xl" | "full" | "none" | "content"
+export type WidthConstraint =
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  | '2xl'
+  | 'full'
+  | 'none'
+  | 'content';
 
 interface OverviewPanelProps<TData> {
-  metrics: MetricConfig[]
+  metrics: MetricConfig[];
   // TRPC integration - if provided, will manage data fetching automatically
-  trpcQuery?: TRPCUseQuery<TData>
+  trpcQuery?: TRPCUseQuery<TData>;
   // Static data - if provided, will use this instead of trpcQuery
-  data?: TData
+  data?: TData;
   // Loading state for static data
-  isLoading?: boolean
+  isLoading?: boolean;
   // Error state
-  error?: any
+  error?: any;
   // Layout configuration
-  grid?: GridConfig
+  grid?: GridConfig;
   // Panel title
-  title?: string
-  description?: string
+  title?: string;
+  description?: string;
   // Width and spacing configuration
-  maxWidth?: WidthConstraint
-  margin?: boolean
+  maxWidth?: WidthConstraint;
+  margin?: boolean;
   // Additional styling
-  className?: string
+  className?: string;
 }
 
 export function OverviewPanel<TData extends Record<string, any>>({
@@ -80,96 +94,108 @@ export function OverviewPanel<TData extends Record<string, any>>({
   data,
   isLoading = false,
   error,
-  grid = { columns: 3, gap: "sm", responsive: true },
+  grid = { columns: 3, gap: 'sm', responsive: true },
   title,
   description,
-  maxWidth = "content",
+  maxWidth = 'content',
   margin = true,
   className,
 }: OverviewPanelProps<TData>) {
   // Use TRPC query if provided
-  const trpcQueryResult = trpcQuery?.()
+  const trpcQueryResult = trpcQuery?.();
 
   // Determine which data to use
-  const panelData = trpcQuery ? trpcQueryResult?.data : data
-  const panelIsLoading = trpcQuery ? (trpcQueryResult?.isLoading ?? false) : isLoading
-  const panelError = trpcQuery ? trpcQueryResult?.error : error
+  const panelData = trpcQuery ? trpcQueryResult?.data : data;
+  const panelIsLoading = trpcQuery
+    ? (trpcQueryResult?.isLoading ?? false)
+    : isLoading;
+  const panelError = trpcQuery ? trpcQueryResult?.error : error;
 
   // Grid class mapping
   const gridClasses = {
     columns: {
-      1: "grid-cols-1",
-      2: "grid-cols-1 md:grid-cols-2",
-      3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-      4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
-      6: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
+      1: 'grid-cols-1',
+      2: 'grid-cols-1 md:grid-cols-2',
+      3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+      4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+      6: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6',
     },
     gap: {
-      sm: "gap-3",
-      md: "gap-4",
-      lg: "gap-6",
-    }
-  }
+      sm: 'gap-3',
+      md: 'gap-4',
+      lg: 'gap-6',
+    },
+  };
 
   // Width constraint classes
   const widthClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md", 
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    "2xl": "max-w-2xl",
-    full: "max-w-full",
-    none: "",
-    content: "w-[80%]" // 88% width for content layout
-  }
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
+    full: 'max-w-full',
+    none: '',
+    content: 'w-[80%]', // 88% width for content layout
+  };
 
   // Container classes for width and margin
   const containerClassName = cn(
-    "w-full",
-    maxWidth === "content" ? "w-[90%] mx-auto" : widthClasses[maxWidth],
-    margin && maxWidth !== "content" && "mx-auto",
-    maxWidth !== "full" && maxWidth !== "none" && maxWidth !== "content" && margin && "px-4"
-  )
+    'w-full',
+    maxWidth === 'content' ? 'w-[90%] mx-auto' : widthClasses[maxWidth],
+    margin && maxWidth !== 'content' && 'mx-auto',
+    maxWidth !== 'full' &&
+      maxWidth !== 'none' &&
+      maxWidth !== 'content' &&
+      margin &&
+      'px-4'
+  );
 
   const gridClassName = cn(
-    "grid",
-    grid.responsive ? gridClasses.columns[grid.columns || 3] : `grid-cols-${grid.columns || 3}`,
-    gridClasses.gap[grid.gap || "md"]
-  )
+    'grid',
+    grid.responsive
+      ? gridClasses.columns[grid.columns || 3]
+      : `grid-cols-${grid.columns || 3}`,
+    gridClasses.gap[grid.gap || 'md']
+  );
 
   if (panelError) {
     return (
       <div className={containerClassName}>
-        <Card className={cn("p-6 border-destructive", className)}>
+        <Card className={cn('p-6 border-destructive', className)}>
           {(title || description) && (
             <CardHeader className="px-0 pt-0 pb-4">
-              {title && <CardTitle className="text-lg font-semibold">{title}</CardTitle>}
+              {title && (
+                <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+              )}
               {description && <CardDescription>{description}</CardDescription>}
             </CardHeader>
           )}
           <CardContent className="px-0 pb-0">
             <div className="text-destructive">
-              Error loading metrics: {panelError.message || "Unknown error"}
+              Error loading metrics: {panelError.message || 'Unknown error'}
             </div>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
     <div className={containerClassName}>
-      <Card className={cn("p-6", className)}>
+      <Card className={cn('p-6', className)}>
         {(title || description) && (
           <CardHeader className="px-0 pt-0 pb-4">
-            {title && <CardTitle className="text-lg font-semibold">{title}</CardTitle>}
+            {title && (
+              <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+            )}
             {description && <CardDescription>{description}</CardDescription>}
           </CardHeader>
         )}
-        
+
         <CardContent className="px-0 pb-0">
           <div className={gridClassName}>
-            {metrics.map((metric) => (
+            {metrics.map(metric => (
               <MetricCard
                 key={metric.id}
                 metric={metric}
@@ -181,13 +207,13 @@ export function OverviewPanel<TData extends Record<string, any>>({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 interface MetricCardProps<TData> {
-  metric: MetricConfig
-  data?: TData
-  isLoading: boolean
+  metric: MetricConfig;
+  data?: TData;
+  isLoading: boolean;
 }
 
 function MetricCard<TData extends Record<string, any>>({
@@ -195,20 +221,22 @@ function MetricCard<TData extends Record<string, any>>({
   data,
   isLoading,
 }: MetricCardProps<TData>) {
-  const value = data?.[metric.valueKey]
-  const trendValue = metric.format?.trendKey ? data?.[metric.format.trendKey] : undefined
+  const value = data?.[metric.valueKey];
+  const trendValue = metric.format?.trendKey
+    ? data?.[metric.format.trendKey]
+    : undefined;
 
   // Size classes - made more compact
   const sizeClasses = {
-    sm: "p-2",
-    md: "p-3", 
-    lg: "p-4"
-  }
+    sm: 'p-2',
+    md: 'p-3',
+    lg: 'p-4',
+  };
 
   if (isLoading) {
     return (
       <Card className={cn(metric.className)}>
-        <CardContent className={cn(sizeClasses[metric.size || "sm"])}>
+        <CardContent className={cn(sizeClasses[metric.size || 'sm'])}>
           <div className="space-y-1">
             <Skeleton className="h-3 w-16" />
             <Skeleton className="h-6 w-12" />
@@ -216,12 +244,12 @@ function MetricCard<TData extends Record<string, any>>({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
     <Card className={cn(metric.className)}>
-      <CardContent className={cn(sizeClasses[metric.size || "sm"])}>
+      <CardContent className={cn(sizeClasses[metric.size || 'sm'])}>
         <div className="space-y-0.5">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-muted-foreground">
@@ -234,7 +262,7 @@ function MetricCard<TData extends Record<string, any>>({
               />
             )}
           </div>
-          
+
           <div className="flex items-baseline">
             <FormattedValue
               value={value}
@@ -242,7 +270,7 @@ function MetricCard<TData extends Record<string, any>>({
               format={metric.format}
             />
           </div>
-          
+
           {metric.description && (
             <p className="text-xs text-muted-foreground mt-0.5">
               {metric.description}
@@ -251,72 +279,72 @@ function MetricCard<TData extends Record<string, any>>({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 interface FormattedValueProps {
-  value: any
-  displayType: MetricDisplayType
-  format?: MetricConfig["format"]
+  value: any;
+  displayType: MetricDisplayType;
+  format?: MetricConfig['format'];
 }
 
 function FormattedValue({ value, displayType, format }: FormattedValueProps) {
   const formatNumber = (num: number) => {
-    const decimals = format?.decimals ?? (displayType === "currency" ? 2 : 0)
+    const decimals = format?.decimals ?? (displayType === 'currency' ? 2 : 0);
     return num.toLocaleString(undefined, {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
-    })
-  }
+    });
+  };
 
   const renderValue = () => {
-    if (value == null) return "—"
+    if (value == null) return '—';
 
     switch (displayType) {
-      case "currency":
-        return `$${formatNumber(Number(value))}`
-      
-      case "percentage":
-        return `${formatNumber(Number(value))}%`
-      
-      case "number":
-        return formatNumber(Number(value))
-      
-      case "badge":
+      case 'currency':
+        return `$${formatNumber(Number(value))}`;
+
+      case 'percentage':
+        return `${formatNumber(Number(value))}%`;
+
+      case 'number':
+        return formatNumber(Number(value));
+
+      case 'badge':
         return (
           <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
             {String(value)}
           </span>
-        )
-      
-      case "progress":
-        const percentage = Math.min(Math.max(Number(value), 0), 100)
+        );
+
+      case 'progress':
+        const percentage = Math.min(Math.max(Number(value), 0), 100);
         return (
           <div className="w-full">
             <div className="flex items-center justify-between text-xs">
               <span>{percentage}%</span>
             </div>
             <div className="mt-0.5 h-1.5 w-full bg-muted rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-primary transition-all duration-300"
                 style={{ width: `${percentage}%` }}
               />
             </div>
           </div>
-        )
-      
-      case "trend":
+        );
+
+      case 'trend':
         return (
           <div className="flex items-center space-x-1">
             <span>{formatNumber(Number(value))}</span>
             {/* Trend visualization could be added here */}
           </div>
-        )
-      
+        );
+
       default:
-        return String(value)
+        return String(value);
     }
-  }
+  };
 
   return (
     <div className="text-xl font-bold">
@@ -324,37 +352,43 @@ function FormattedValue({ value, displayType, format }: FormattedValueProps) {
       {renderValue()}
       {format?.suffix}
     </div>
-  )
+  );
 }
 
 interface TrendIndicatorProps {
-  value: number
-  direction?: "up" | "down" | "neutral"
+  value: number;
+  direction?: 'up' | 'down' | 'neutral';
 }
 
 function TrendIndicator({ value, direction }: TrendIndicatorProps) {
-  const isPositive = value > 0
-  const isNegative = value < 0
-  const actualDirection = direction || (isPositive ? "up" : isNegative ? "down" : "neutral")
+  const isPositive = value > 0;
+  const isNegative = value < 0;
+  const actualDirection =
+    direction || (isPositive ? 'up' : isNegative ? 'down' : 'neutral');
 
   const colorClasses = {
-    up: isPositive ? "text-green-600" : "text-red-600",
-    down: isNegative ? "text-green-600" : "text-red-600", 
-    neutral: "text-muted-foreground"
-  }
+    up: isPositive ? 'text-green-600' : 'text-red-600',
+    down: isNegative ? 'text-green-600' : 'text-red-600',
+    neutral: 'text-muted-foreground',
+  };
 
   const arrows = {
-    up: "↗",
-    down: "↘", 
-    neutral: "→"
-  }
+    up: '↗',
+    down: '↘',
+    neutral: '→',
+  };
 
-  if (value === 0) return null
+  if (value === 0) return null;
 
   return (
-    <div className={cn("flex items-center text-xs font-medium", colorClasses[actualDirection])}>
+    <div
+      className={cn(
+        'flex items-center text-xs font-medium',
+        colorClasses[actualDirection]
+      )}
+    >
       <span className="mr-1">{arrows[actualDirection]}</span>
       <span>{Math.abs(value).toFixed(1)}%</span>
     </div>
-  )
+  );
 }

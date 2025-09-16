@@ -3,41 +3,43 @@
  * Combines earnings, spending, and app data into summary metrics for OverviewPanel
  */
 
-import { db } from "@/lib/db"
+import { db } from '@/lib/db';
 
 export interface UserSummaryData {
   // User basic info
-  userId: string
-  userName: string | null
-  userEmail: string
-  userCreatedAt: Date
-  
+  userId: string;
+  userName: string | null;
+  userEmail: string;
+  userCreatedAt: Date;
+
   // Earnings summary
-  totalRevenue: number
-  totalAppProfit: number
-  totalMarkupProfit: number
-  totalReferralProfit: number
-  totalCompletedPayouts: number
-  
-  // Spending summary  
-  totalSpent: number
-  totalPaid: number
-  balance: number
-  freeTierUsage: number
-  
+  totalRevenue: number;
+  totalAppProfit: number;
+  totalMarkupProfit: number;
+  totalReferralProfit: number;
+  totalCompletedPayouts: number;
+
+  // Spending summary
+  totalSpent: number;
+  totalPaid: number;
+  balance: number;
+  freeTierUsage: number;
+
   // App statistics
-  totalApps: number
-  totalUsers: number
-  totalTransactions: number
-  totalTokens: number
-  
+  totalApps: number;
+  totalUsers: number;
+  totalTransactions: number;
+  totalTokens: number;
+
   // Activity metrics
-  referralCodesGenerated: number
-  referredUsersCount: number
-  lastTransactionAt: Date | null
+  referralCodesGenerated: number;
+  referredUsersCount: number;
+  lastTransactionAt: Date | null;
 }
 
-export const getUserSummary = async (userId: string): Promise<UserSummaryData> => {
+export const getUserSummary = async (
+  userId: string
+): Promise<UserSummaryData> => {
   const query = `
     WITH user_earnings AS (
       SELECT 
@@ -120,34 +122,34 @@ export const getUserSummary = async (userId: string): Promise<UserSummaryData> =
     LEFT JOIN user_spending us ON ue.id = us.id
     LEFT JOIN user_apps ua ON ue.id = ua."userId"
     LEFT JOIN user_referrals ur ON ue.id = ur.id
-  `
+  `;
 
-  const result = await db.$queryRawUnsafe(query, userId) as Array<{
-    userId: string
-    userName: string | null
-    userEmail: string
-    userCreatedAt: Date
-    totalRevenue: number
-    totalAppProfit: number
-    totalMarkupProfit: number
-    totalReferralProfit: number
-    totalCompletedPayouts: number
-    totalSpent: number
-    totalPaid: number
-    balance: number
-    freeTierUsage: number
-    totalApps: number
-    totalUsers: number
-    totalTransactions: number
-    totalTokens: number
-    referralCodesGenerated: number
-    referredUsersCount: number
-    lastTransactionAt: Date | null
-  }>
+  const result = (await db.$queryRawUnsafe(query, userId)) as Array<{
+    userId: string;
+    userName: string | null;
+    userEmail: string;
+    userCreatedAt: Date;
+    totalRevenue: number;
+    totalAppProfit: number;
+    totalMarkupProfit: number;
+    totalReferralProfit: number;
+    totalCompletedPayouts: number;
+    totalSpent: number;
+    totalPaid: number;
+    balance: number;
+    freeTierUsage: number;
+    totalApps: number;
+    totalUsers: number;
+    totalTransactions: number;
+    totalTokens: number;
+    referralCodesGenerated: number;
+    referredUsersCount: number;
+    lastTransactionAt: Date | null;
+  }>;
 
   if (result.length === 0) {
-    throw new Error(`User not found: ${userId}`)
+    throw new Error(`User not found: ${userId}`);
   }
 
-  return result[0]
-}
+  return result[0];
+};

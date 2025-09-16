@@ -3,13 +3,15 @@ import { Breadcrumb } from '@/app/(app)/@breadcrumbs/_components/breadcrumb';
 
 interface UserAppsBreadcrumbProps {
   params: Promise<{
-    userId: string
-  }>
+    userId: string;
+  }>;
 }
 
-export default async function AdminDashboardV2UserAppsBreadcrumb({ params }: UserAppsBreadcrumbProps) {
-  const { userId } = await params
-  
+export default async function AdminDashboardV2UserAppsBreadcrumb({
+  params,
+}: UserAppsBreadcrumbProps) {
+  const { userId } = await params;
+
   return (
     <>
       <Breadcrumb
