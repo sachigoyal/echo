@@ -22,6 +22,7 @@ export default async function AppPage(props: PageProps<'/app/[id]'>) {
   api.apps.app.getNumTokens.prefetch({ appId: id });
   api.apps.app.isOwner.prefetch(id);
   api.user.apiKeys.count.prefetch({ appId: id });
+  api.apps.app.stats.overall.prefetch({ appId: id });
 
   return (
     <HydrateClient>
