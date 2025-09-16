@@ -12,7 +12,10 @@ export { useEchoOpenAI } from './hooks/useEchoOpenAI';
 // Echo provider hooks
 export { useEchoModelProviders } from './hooks/useEchoModelProviders';
 // AI SDK integration hooks
-export { EchoChatProvider } from './components/EchoChatProvider';
+export {
+  EchoChatProvider,
+  type ChatSendParams,
+} from './components/EchoChatProvider';
 export { useChat } from './hooks/useChat';
 
 export type {
@@ -24,8 +27,8 @@ export type {
   EchoUser,
 } from './types';
 
-export type { EchoContextValue } from './context';
 export { EchoContext } from './context';
+export type { EchoContextValue } from './context';
 
 export { EchoProviderRaw } from './components/EchoProvider';
 export type { EchoProviderRawProps } from './components/EchoProvider';
