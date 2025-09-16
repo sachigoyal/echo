@@ -16,6 +16,7 @@
     "prisma:push": "pnpx prisma db push",
     "prisma:studio": "pnpx prisma studio",
     "prisma:reset": "pnpx prisma migrate reset",
+    "prisma:migrate-dev": "pnpx prisma migrate dev",
     "prisma:migrate-deploy": "pnpx prisma migrate deploy",
     "check-types": "next typegen && tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
