@@ -36,7 +36,7 @@ const OwnerButtons: React.FC<Props> = ({ appId }) => {
 
   return (
     <>
-      {isConnectionComplete || true ? <SetupApp appId={appId} /> : null}
+      {isConnectionComplete ? <SetupApp appId={appId} /> : null}
       <Link href={`/app/${appId}/settings/general`}>
         <Button variant="outline">
           <Settings className="size-4" />
