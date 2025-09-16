@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { DollarSign, Pen, Image, Check } from 'lucide-react';
+import { DollarSign, Pen, Image, Check, Globe } from 'lucide-react';
 
 import {
   Accordion,
@@ -27,6 +27,7 @@ import { AnimatedCircularProgressBar } from '@/components/ui/animated-circular-p
 import { useAppDetailsSetup } from '@/app/(app)/app/[id]/_hooks/use-app-setup';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { Visibility } from './visibility';
 
 interface Props {
   appId: string;
@@ -37,12 +38,14 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
     hasGithubLink,
     githubLink,
     hasDescription,
+    hasVisibility,
     app,
     hasProfilePicture,
     allStepsCompleted,
   } = useAppDetailsSetup(appId);
 
   const [isVisible, setIsVisible] = useState(!allStepsCompleted);
+  const [isOpen, setIsOpen] = useState(false);
 
   const steps = useMemo(
     () => [
@@ -84,6 +87,14 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
         ),
         className: 'basis-4/5 md:basis-2/5',
       },
+      {
+        title: 'Set Visibility',
+        description: 'Users can discover public apps in the app store',
+        Icon: Globe,
+        isComplete: hasVisibility,
+        component: <Visibility appId={appId} isPublic={app.isPublic} />,
+        className: 'basis-4/5 md:basis-2/5',
+      },
     ],
     [app, appId, githubLink]
   );
@@ -101,7 +112,7 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           variant="primaryOutline"
@@ -115,18 +126,22 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
             } as React.CSSProperties
           }
         >
+          {allStepsCompleted ? (
+            <Check className="size-4" />
+          ) : (
+            <AnimatedCircularProgressBar
+              gaugePrimaryColor="var(--primary)"
+              gaugeSecondaryColor="var(--accent)"
+              value={steps.filter(step => step.isComplete).length + 1}
+              max={steps.length + 1}
+              className="size-6"
+              percentageClassName="text-[7px] duration-0"
+            />
+          )}
           <span className="text-primary">Complete your App Setup</span>
-          <AnimatedCircularProgressBar
-            gaugePrimaryColor="var(--primary)"
-            gaugeSecondaryColor="var(--accent)"
-            value={steps.filter(step => step.isComplete).length + 1}
-            max={steps.length + 1}
-            className="size-6"
-            percentageClassName="text-[7px]"
-          />
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 gap-0 overflow-hidden">
+      <DialogContent className="p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
         <DialogHeader className="p-4 bg-muted border-b">
           <DialogTitle>Complete your App Setup</DialogTitle>
           <DialogDescription>
@@ -135,7 +150,7 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
         </DialogHeader>
         <Accordion
           type="single"
-          className="flex flex-col gap-2 p-4"
+          className="flex flex-col gap-2 p-4 flex-1 overflow-y-auto"
           value={accordionValue}
           onValueChange={setAccordionValue}
         >
@@ -171,7 +186,7 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
             </AccordionItem>
           ))}
         </Accordion>
-        <DialogFooter className="p-4 bg-muted border-t items-center gap-4">
+        <DialogFooter className="p-4 bg-muted border-t items-center gap-4 flex-row">
           <Progress
             value={
               ((steps.filter(step => step.isComplete).length + 1) /
@@ -182,8 +197,13 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
           />
           <Button
             variant="turbo"
-            disabled={!allStepsCompleted}
-            onClick={() => setIsVisible(false)}
+            // disabled={!allStepsCompleted}
+            onClick={() => {
+              setIsOpen(false);
+              setTimeout(() => {
+                setIsVisible(false);
+              }, 300);
+            }}
           >
             Finish Setup
           </Button>

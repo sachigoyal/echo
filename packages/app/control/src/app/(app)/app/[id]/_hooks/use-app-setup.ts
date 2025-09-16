@@ -86,8 +86,12 @@ export const useAppDetailsSetup = (appId: string) => {
     return app.description !== null;
   }, [app.description]);
 
+  const hasVisibility = useMemo(() => {
+    return app.isPublic !== null;
+  }, [app.isPublic]);
+
   const completedSteps = useMemo(() => {
-    return [hasGithubLink, hasProfilePicture, hasDescription];
+    return [hasGithubLink, hasProfilePicture, hasDescription, hasVisibility];
   }, [hasGithubLink, hasProfilePicture, hasDescription]);
 
   const allStepsCompleted = useMemo(() => {
@@ -98,6 +102,7 @@ export const useAppDetailsSetup = (appId: string) => {
     hasGithubLink,
     hasProfilePicture,
     hasDescription,
+    hasVisibility,
     allStepsCompleted,
     githubLink,
     app,

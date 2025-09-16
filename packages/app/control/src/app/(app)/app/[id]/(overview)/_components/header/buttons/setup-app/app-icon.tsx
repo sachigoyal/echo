@@ -109,6 +109,7 @@ export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
                       width={32}
                       height={32}
                       className="rounded-md"
+                      unoptimized
                     />
                   ) : (
                     <UploadIcon className="size-6" />
