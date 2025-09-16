@@ -75,6 +75,8 @@ export const AddCredits: React.FC<Props> = ({ appId }) => {
     createPaymentFromBalance({ appId, amountInDollars: amount });
   };
 
+  const [currentUserBalance] = api.user.balance.get.useSuspenseQuery();
+
   return (
     <div className="flex flex-col w-full gap-4">
       <MoneyInput
@@ -95,9 +97,9 @@ export const AddCredits: React.FC<Props> = ({ appId }) => {
       <div className="flex gap-3">
         <Button
           onClick={onAddCredits}
-          disabled={isPending || !amount || amount <= 0 || isSuccess}
+          disabled={isPending || !amount || amount < 1 || isSuccess}
           size="lg"
-          variant="turbo"
+          variant="turboSecondary"
           className="flex-1"
         >
           {isPending ? (
@@ -113,8 +115,9 @@ export const AddCredits: React.FC<Props> = ({ appId }) => {
           disabled={
             isPendingFromBalance ||
             !amount ||
-            amount <= 0 ||
-            isSuccessFromBalance
+            amount < 0 ||
+            isSuccessFromBalance ||
+            currentUserBalance.balance < amount
           }
           size="lg"
           variant="turbo"
