@@ -1,12 +1,13 @@
 import React from 'react';
-import { TemplateOption } from './types';
+import { Template, TemplateOption } from './types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
+import { ExternalLink } from 'lucide-react';
 
 interface Props {
   title: string;
-  options: TemplateOption[];
+  options: (TemplateOption | Template)[];
   selectedId: string | undefined;
   setSelectedId: (id: string) => void;
   index: number;
@@ -41,22 +42,38 @@ export const OptionButtons: React.FC<Props> = ({
                 'bg-primary/10 border-primary hover:bg-primary/10'
             )}
           >
-            <div
-              className={cn(
-                'flex items-center gap-2',
-                selectedId === option.id && 'text-primary'
-              )}
-            >
-              <option.Icon className="size-6" />
-              <h3
+            <div className="flex items-center gap-2 justify-between w-full">
+              <div
                 className={cn(
-                  'text-lg font-bold',
+                  'flex items-center gap-2',
                   selectedId === option.id && 'text-primary'
                 )}
               >
-                {option.title}
-              </h3>
+                <option.Icon className="size-6" />
+                <h3
+                  className={cn(
+                    'text-lg font-bold',
+                    selectedId === option.id && 'text-primary'
+                  )}
+                >
+                  {option.title}
+                </h3>
+              </div>
+              {(option as Template).url && (
+                <a
+                  href={(option as Template).url}
+                  target="_blank"
+                  className="text-sm text-muted-foreground/80 flex items-center gap-1 hover:underline rounded-md px-2 py-1"
+                  onClick={e => {
+                    e.stopPropagation();
+                  }}
+                >
+                  Demo
+                  <ExternalLink className="size-4" />
+                </a>
+              )}
             </div>
+
             <p className="text-sm text-muted-foreground/80 text-wrap">
               {option.description}
             </p>

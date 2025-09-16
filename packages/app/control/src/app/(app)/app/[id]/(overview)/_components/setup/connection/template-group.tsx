@@ -3,7 +3,10 @@ import React, { useState } from 'react';
 import { OptionButtons } from './option-buttons';
 import { Template } from './template';
 
-import type { TemplateGroup as TemplateGroupType } from './types';
+import type {
+  TemplateGroup as TemplateGroupType,
+  Template as TemplateType,
+} from './types';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 
@@ -49,7 +52,7 @@ export const TemplateGroup: React.FC<Props> = ({
         {selectedOption &&
           (templateGroup.type === 'templates' ? (
             <Template
-              template={selectedOption}
+              template={selectedOption as TemplateType}
               appId={appId}
               key={selectedId}
               index={index + 1}
