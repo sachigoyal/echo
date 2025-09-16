@@ -7,8 +7,6 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
-import { AppDetails } from './app-details';
-
 import { api } from '@/trpc/client';
 import { Connection } from './connection';
 import { Accordion } from '@/components/ui/accordion';
@@ -26,8 +24,6 @@ interface Props {
 }
 
 export const Setup: React.FC<Props> = ({ appId }) => {
-  const [app] = api.apps.app.get.useSuspenseQuery({ appId });
-  const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
   const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
     appId,
@@ -45,15 +41,6 @@ export const Setup: React.FC<Props> = ({ appId }) => {
     }).then(setHighlighter);
   }, []);
 
-  const appDetailsSteps = useMemo(
-    () => [
-      app.profilePictureUrl !== null,
-      app.description !== null,
-      githubLink !== null,
-    ],
-    [app.profilePictureUrl, app.description, githubLink]
-  );
-
   const connectionSteps = useMemo(
     () => [numTokens > 0 || numApiKeys > 0],
     [numTokens, numApiKeys]
@@ -64,7 +51,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
     [numTransactions]
   );
 
-  const steps = [...connectionSteps, ...generateTextSteps, ...appDetailsSteps];
+  const steps = [...connectionSteps, ...generateTextSteps];
 
   const completedSteps = steps.filter(Boolean).length;
   const allStepsCompleted = completedSteps === steps.length;
@@ -76,14 +63,11 @@ export const Setup: React.FC<Props> = ({ appId }) => {
       ? 'connection'
       : !generateTextSteps.every(Boolean)
         ? 'generate-text'
-        : !appDetailsSteps.every(Boolean)
-          ? 'app-details'
-          : 'connection'
+        : 'connection'
   );
 
   useEffect(() => {
     // Compute completion states only once
-    const appDetailsCompleted = appDetailsSteps.every(Boolean);
     const connectionCompleted = connectionSteps.every(Boolean);
     const generateTextCompleted = generateTextSteps.every(Boolean);
 
@@ -93,8 +77,6 @@ export const Setup: React.FC<Props> = ({ appId }) => {
       nextAccordionValue = 'connection';
     } else if (!generateTextCompleted) {
       nextAccordionValue = 'generate-text';
-    } else if (!appDetailsCompleted) {
-      nextAccordionValue = 'app-details';
     }
 
     if (nextAccordionValue !== '') {
@@ -102,7 +84,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
         prev === nextAccordionValue ? prev : nextAccordionValue
       );
     }
-  }, [appDetailsSteps, connectionSteps, generateTextSteps]);
+  }, [connectionSteps, generateTextSteps]);
 
   return (
     <AnimatePresence mode="wait">
@@ -156,7 +138,6 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             >
               <Connection appId={appId} />
               <GenerateText appId={appId} />
-              <AppDetails appId={appId} />
             </Accordion>
             <motion.div
               initial={{ opacity: 0, marginBottom: 0, height: 32 }}

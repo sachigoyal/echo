@@ -18,35 +18,24 @@ import { VisibilityButton } from './visibility-button';
 import { cn } from '@/lib/utils';
 
 import { api } from '@/trpc/client';
+import { SetupApp } from './setup-app';
 
 interface Props {
   appId: string;
 }
 
 export const HeaderCard: React.FC<Props> = ({ appId }) => {
-  const [app] = api.apps.app.get.useSuspenseQuery({ appId: appId });
+  const [app] = api.apps.app.get.useSuspenseQuery({ appId });
   const [isOwner] = api.apps.app.isOwner.useSuspenseQuery(appId);
-  const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
+  const [numApiKeys] = api.user.apiKeys.count.useSuspenseQuery({ appId });
   const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
     appId,
   });
 
   const isSetupComplete = useMemo(() => {
-    return (
-      githubLink !== null &&
-      numTokens > 0 &&
-      numTransactions > 0 &&
-      app.description !== null &&
-      app.profilePictureUrl !== null
-    );
-  }, [
-    githubLink,
-    numTokens,
-    numTransactions,
-    app.description,
-    app.profilePictureUrl,
-  ]);
+    return (numTokens > 0 || numApiKeys > 0) && numTransactions > 0;
+  }, [numTokens, numApiKeys, numTransactions]);
 
   return (
     <Card className={cn('relative mt-10 md:mt-12 mb-12')}>
@@ -71,7 +60,7 @@ export const HeaderCard: React.FC<Props> = ({ appId }) => {
               {app.description ?? 'No description'}
             </p>
           </div>
-          {isSetupComplete && (
+          {isSetupComplete ? (
             <div className="flex items-center gap-2">
               {app.homepageUrl ? (
                 <a href={app.homepageUrl} target="_blank">
@@ -94,6 +83,8 @@ export const HeaderCard: React.FC<Props> = ({ appId }) => {
               )}
               {isOwner && <VisibilityButton appId={appId} />}
             </div>
+          ) : (
+            <SetupApp appId={appId} />
           )}
         </div>
         <div className="col-span-2 relative rounded-b rounded-t-none md:rounded-bl-none md:rounded-r-lg overflow-hidden">
