@@ -31,7 +31,7 @@ import {
   getUserTransactionTotals,
   isAdmin,
 } from '@/services/admin/admin';
-import { mintCreditsToUserSchema } from '@/services/credits';
+import { mintCreditsToUserSchema } from '@/services/credits/mint';
 import { adminListPendingPayouts } from '@/services/admin/pending-payouts';
 import { adminListCompletedPayouts } from '@/services/admin/completed-payouts';
 import {

@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { mintCreditsToUser } from '@/services/credits';
+import { mintCreditsToUser } from '@/services/credits/mint';
 import { EnumPaymentSource, User } from '@/generated/prisma';
 
 export const issueInitialFreeTierCredits = async (

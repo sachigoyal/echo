@@ -1,16 +1,12 @@
 import { db } from '@/lib/db';
-import { Prisma } from '@/generated/prisma';
 import { ReferralCodeType } from '../types';
 
 export async function setUserReferrerForAppIfExists(
   userId: string,
   echoAppId: string,
-  code: string,
-  tx?: Prisma.TransactionClient
+  code: string
 ): Promise<boolean> {
-  const client = tx ?? db;
-
-  const appMembership = await client.appMembership.findUnique({
+  const appMembership = await db.appMembership.findUnique({
     where: {
       userId_echoAppId: {
         userId,
@@ -27,7 +23,7 @@ export async function setUserReferrerForAppIfExists(
     return false;
   }
 
-  const referralCode = await client.referralCode.findUnique({
+  const referralCode = await db.referralCode.findUnique({
     where: {
       code,
       grantType: ReferralCodeType.REFERRAL,
@@ -39,7 +35,7 @@ export async function setUserReferrerForAppIfExists(
     return false;
   }
 
-  await client.appMembership.update({
+  await db.appMembership.update({
     where: {
       userId_echoAppId: {
         userId,
@@ -51,7 +47,7 @@ export async function setUserReferrerForAppIfExists(
     },
   });
 
-  await client.referralCode.update({
+  await db.referralCode.update({
     where: { id: referralCode.id },
     data: {
       usedAt: new Date(),
