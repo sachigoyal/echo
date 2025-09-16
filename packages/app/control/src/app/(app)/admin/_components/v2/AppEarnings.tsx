@@ -1,12 +1,12 @@
 "use client"
 
 import React from 'react'
-import Link from 'next/link'
 import { 
   StatefulDataTable
 } from '@/components/server-side-data-table'
 import { TableState, TypedColumnDef } from '@/components/server-side-data-table/BaseTable'
 import { api } from '@/trpc/client'
+import { AppLink, UserLink } from '@/app/(app)/admin/_components'
 
 // Define AppEarnings type based on the service function
 export interface AppEarnings {
@@ -52,13 +52,11 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
       const name = getValue() as string
       const appId = row.original.id
       return (
-        <Link 
-          href={`/admin/dashboard/v2/app-users/${appId}`}
-          className="font-medium text-blue-600 hover:text-blue-800 block truncate max-w-[160px] hover:underline"
-          title={name}
-        >
-          {name}
-        </Link>
+        <AppLink 
+          appId={appId}
+          name={name}
+          showDescription={false}
+        />
       )
     },
   },
@@ -71,12 +69,11 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
     cell: ({ row }) => {
       const creatorUser = row.original.creatorUser
       return (
-        <div className="flex flex-col">
-          <span className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer">
-            {creatorUser.name || <span className="text-gray-400 italic">No name</span>}
-          </span>
-          <span className="text-xs text-gray-500">{creatorUser.email}</span>
-        </div>
+        <UserLink 
+          userId={creatorUser.id}
+          name={creatorUser.name}
+          email={creatorUser.email}
+        />
       )
     },
   },

@@ -21,6 +21,10 @@ export default function DashboardV2Layout({
             label: 'App Earnings', 
             href: '/admin/dashboard/v2/app-earnings',
           },
+          {
+            label: 'Payment History',
+            href: '/admin/dashboard/v2/payments',
+          },
         ]}
       />
       <div className="flex flex-col py-6 md:py-8 flex-1">{children}</div>

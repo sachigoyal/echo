@@ -6,6 +6,7 @@ import {
 } from '@/components/server-side-data-table'
 import { TableState, TypedColumnDef } from '@/components/server-side-data-table/BaseTable'
 import { api } from '@/trpc/client'
+import { UserLink } from '@/app/(app)/admin/_components'
 
 // Define UserEarnings type based on the service function
 export interface UserEarnings {
@@ -38,21 +39,23 @@ const toNumber = (value: unknown): number => {
 const columns: TypedColumnDef<UserEarnings, string | number | boolean | Date>[] = [
   {
     accessorKey: "name",
-    header: "Name",
+    header: "User",
     enableSorting: true,
     enableColumnFilter: true,
     columnType: "string",
-    cell: ({ getValue }) => {
+    cell: ({ getValue, row }) => {
       const name = getValue() as string | null
-      return name || <span className="text-gray-400 italic">No name</span>
+      const email = row.original.email
+      const userId = row.original.id
+      return (
+        <UserLink 
+          userId={userId}
+          name={name}
+          email={email}
+          className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
+        />
+      )
     },
-  },
-  {
-    accessorKey: "email", 
-    header: "Email",
-    enableSorting: true,
-    enableColumnFilter: true,
-    columnType: "string",
   },
   {
     accessorKey: "totalRevenue",

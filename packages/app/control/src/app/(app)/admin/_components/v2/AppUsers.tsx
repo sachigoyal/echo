@@ -6,6 +6,7 @@ import {
 } from '@/components/server-side-data-table'
 import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable'
 import { api } from '@/trpc/client'
+import { UserLink } from '@/app/(app)/admin/_components'
 
 // Define AppUser type based on the service function
 export interface AppUser {
@@ -51,13 +52,14 @@ const columns: TypedColumnDef<AppUser, string | number | boolean | Date>[] = [
     cell: ({ getValue, row }) => {
       const name = getValue() as string | null
       const email = row.original.email
+      const userId = row.original.id
       return (
-        <div className="flex flex-col">
-          <span className="font-medium text-gray-900">
-            {name || <span className="text-gray-400 italic">No name</span>}
-          </span>
-          <span className="text-xs text-gray-500">{email}</span>
-        </div>
+        <UserLink 
+          userId={userId}
+          name={name}
+          email={email}
+          className="font-medium text-blue-600 hover:text-blue-800 cursor-pointer"
+        />
       )
     },
   },

@@ -49,6 +49,9 @@ import { getUserEarningsWithPagination } from '@/services/admin/v2/user-earnings
 import { getAppEarningsWithPagination } from '@/services/admin/v2/app-earnings';
 import { getUserSpendingWithPagination } from '@/services/admin/v2/user-spending';
 import { getAppUsersWithPagination } from '@/services/admin/v2/app/users';
+import { getUserAppsWithPagination } from '@/services/admin/v2/user/apps';
+import { getUserSummary } from '@/services/admin/v2/user/user-summary';
+import { getPaymentsWithPagination } from '@/services/admin/v2/payments';
 import { paginationParamsSchema } from '@/services/lib/pagination';
 import { multiSortParamsSchema } from '@/services/lib/sorting';
 import { filterParamsSchema } from '@/services/lib/filtering';
@@ -190,6 +193,29 @@ export const adminRouter = createTRPCRouter({
       )
       .query(async ({ input }) => {
         return await getAppUsersWithPagination(input);
+      }),
+
+    /**
+     * Get paginated apps owned by a specific user with comprehensive usage and financial data
+     */
+    getUserAppsWithPagination: adminProcedure
+      .input(
+        paginationParamsSchema
+          .merge(multiSortParamsSchema)
+          .merge(filterParamsSchema)
+          .merge(z.object({ userId: z.string() }))
+      )
+      .query(async ({ input }) => {
+        return await getUserAppsWithPagination(input);
+      }),
+
+    /**
+     * Get summary statistics for a specific user including earnings, spending, and app data
+     */
+    getUserSummary: adminProcedure
+      .input(z.object({ userId: z.string() }))
+      .query(async ({ input }) => {
+        return await getUserSummary(input.userId);
       }),
   },
 
@@ -342,6 +368,17 @@ export const adminRouter = createTRPCRouter({
     syncPending: adminProcedure.mutation(async () => {
       return await syncPendingPayoutsOnce();
     }),
+  },
+
+  payments: {
+    /**
+     * Get paginated payment history with advanced filtering and sorting
+     */
+    getPaymentsWithPagination: adminProcedure
+      .input(paginationParamsSchema.merge(multiSortParamsSchema).merge(filterParamsSchema))
+      .query(async ({ input }) => {
+        return await getPaymentsWithPagination(input);
+      }),
   },
 
   emailCampaigns: {
