@@ -96,6 +96,7 @@ export const Visibility: React.FC<Props> = ({ appId, isPublic }) => {
                         field.onChange(value);
                       }}
                       className="flex-1 flex-col h-20 md:h-20"
+                      key={title}
                     >
                       <Icon className="size-8" />
                       <div className="flex flex-col">

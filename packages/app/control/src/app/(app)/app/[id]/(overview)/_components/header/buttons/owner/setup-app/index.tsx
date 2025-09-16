@@ -96,7 +96,15 @@ export const SetupApp: React.FC<Props> = ({ appId, onFinish }) => {
         className: 'basis-4/5 md:basis-2/5',
       },
     ],
-    [app, appId, githubLink]
+    [
+      app,
+      appId,
+      githubLink,
+      hasDescription,
+      hasVisibility,
+      hasProfilePicture,
+      hasGithubLink,
+    ]
   );
 
   const [accordionValue, setAccordionValue] = useState<string>(

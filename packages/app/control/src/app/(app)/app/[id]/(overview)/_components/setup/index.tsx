@@ -4,21 +4,18 @@ import { useEffect, useState } from 'react';
 
 import { AnimatePresence, motion } from 'motion/react';
 
+import { Accordion } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
-import { api } from '@/trpc/client';
 import { Connection } from './connection';
-import { Accordion } from '@/components/ui/accordion';
 import { GenerateText } from './generate-text';
-import { cn } from '@/lib/utils';
-import {
-  getSingletonHighlighter,
-  Highlighter,
-} from '@/components/ui/code/shiki.bundle';
-import { createJavaScriptRegexEngine } from '@shikijs/engine-javascript';
-import { HighlighterProvider } from './lib/highlighter-context';
+
 import { useAppConnectionSetup } from '../../../_hooks/use-app-setup';
+
+import { api } from '@/trpc/client';
+
+import { cn } from '@/lib/utils';
 
 interface Props {
   appId: string;

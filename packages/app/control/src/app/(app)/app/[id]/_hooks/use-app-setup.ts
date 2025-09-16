@@ -59,7 +59,7 @@ export const useAppConnectionSetup = (appId: string) => {
 
   const isConnectionComplete = useMemo(() => {
     return completedConnectionSteps.length === connectionSteps.length;
-  }, [connectionSteps]);
+  }, [connectionSteps.length, completedConnectionSteps.length]);
 
   return {
     isConnected,
@@ -92,7 +92,7 @@ export const useAppDetailsSetup = (appId: string) => {
 
   const completedSteps = useMemo(() => {
     return [hasGithubLink, hasProfilePicture, hasDescription, hasVisibility];
-  }, [hasGithubLink, hasProfilePicture, hasDescription]);
+  }, [hasGithubLink, hasProfilePicture, hasDescription, hasVisibility]);
 
   const allStepsCompleted = useMemo(() => {
     return completedSteps.every(Boolean);
