@@ -41,9 +41,9 @@ export const WelcomeCoupon: React.FC<Props> = ({
     mutate: signPrivacy,
     isPending: isSigningPrivacy,
     isSuccess: isSignedPrivacy,
-  } = api.user.termsAgreement.accept.privacy.useMutation({
+  } = api.user.legal.accept.privacy.useMutation({
     onSuccess: () => {
-      utils.user.termsAgreement.needs.privacy.invalidate();
+      utils.user.legal.needs.privacy.invalidate();
     },
     onError: () => {
       toast.error('Failed to accept privacy policy');
@@ -54,9 +54,9 @@ export const WelcomeCoupon: React.FC<Props> = ({
     mutate: signTerms,
     isPending: isSigningTerms,
     isSuccess: isSignedTerms,
-  } = api.user.termsAgreement.accept.terms.useMutation({
+  } = api.user.legal.accept.terms.useMutation({
     onSuccess: () => {
-      utils.user.termsAgreement.needs.terms.invalidate();
+      utils.user.legal.needs.terms.invalidate();
     },
     onError: () => {
       toast.error('Failed to accept terms');

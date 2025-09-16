@@ -29,7 +29,7 @@ export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
     endDate: defaultEndDate,
   });
 
-  const user = await api.user.current.get();
+  const user = await api.user.current();
   if (!user) {
     throw new Error('User not found');
   }
