@@ -4,12 +4,9 @@ import * as React from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { PaginationParams } from "@/services/lib/pagination"
-import { MultiSortParams } from "@/services/lib/sorting"
-import { FilterParams } from "@/services/lib/filtering"
 
 // TRPC useQuery hook type - similar to StatefulDataTable
-export type TRPCUseQuery<TData> = (params: PaginationParams & MultiSortParams & FilterParams) => {
+export type TRPCUseQuery<TData> = () => {
   data?: TData
   isLoading: boolean
   error?: any
@@ -90,14 +87,8 @@ export function OverviewPanel<TData extends Record<string, any>>({
   margin = true,
   className,
 }: OverviewPanelProps<TData>) {
-  // TRPC query parameters (minimal for overview data)
-  const queryParams = React.useMemo(() => ({
-    page: 0,
-    page_size: 1, // Overview typically doesn't need pagination
-  }), [])
-
   // Use TRPC query if provided
-  const trpcQueryResult = trpcQuery?.(queryParams)
+  const trpcQueryResult = trpcQuery?.()
 
   // Determine which data to use
   const panelData = trpcQuery ? trpcQueryResult?.data : data
