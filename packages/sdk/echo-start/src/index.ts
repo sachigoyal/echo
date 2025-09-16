@@ -3,7 +3,7 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import degit from 'degit';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import ora from 'ora';
 import path from 'path';
 import prompts from 'prompts';
@@ -166,7 +166,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
         // Replace the environment variable value - specifically targeting the *EHO_APP_ID placeholder
         // Find the line with *ECHO_APP_ID and replace the value after the = sign
         const updatedContent = envContent.replace(
-          /^(.*ECHO_APP_ID\s*=\s*).+$/m,
+          /^(.*ECHO_APP_ID\s*=\s*).+$/gm,
           `$1${appId!}`
         );
 
@@ -263,11 +263,22 @@ async function main() {
 
         // If no directory specified, prompt for it
         if (!projectDir) {
+          let defaultName = 'my-echo-app';
+          let counter = 1;
+
+          while (
+            existsSync(path.resolve(defaultName)) &&
+            readdirSync(path.resolve(defaultName)).length > 0
+          ) {
+            defaultName = `${defaultName}-${counter}`;
+            counter++;
+          }
+
           const response = await prompts({
             type: 'text',
             name: 'projectDir',
             message: 'What is your project named?',
-            initial: 'my-echo-app',
+            initial: defaultName,
             validate: (value: string) => {
               if (!value.trim()) {
                 return 'Please enter a project name';

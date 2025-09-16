@@ -9,7 +9,6 @@ import type {
 } from './types';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
-import { api } from '@/trpc/client';
 
 interface Props {
   templateGroup: TemplateGroupType;
@@ -22,8 +21,6 @@ export const TemplateGroup: React.FC<Props> = ({
   appId,
   index,
 }) => {
-  const [{ name: appName }] = api.apps.app.get.useSuspenseQuery({ appId });
-
   const [selectedId, setSelectedId] = useState<string>();
 
   const selectedOption = templateGroup.options.find(
@@ -57,7 +54,6 @@ export const TemplateGroup: React.FC<Props> = ({
             <Template
               template={selectedOption as TemplateType}
               appId={appId}
-              appName={appName}
               key={selectedId}
               index={index + 1}
             />
