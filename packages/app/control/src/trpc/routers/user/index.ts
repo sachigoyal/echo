@@ -10,7 +10,7 @@ import {
 
 import { userPayoutRouter } from './payout';
 
-import { getUser } from '@/services/user';
+import { getUser } from '@/services/user/get';
 import { getUserFeed, userFeedSchema } from '@/services/feed';
 import { listCreditPayments } from '@/services/payments';
 import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
@@ -47,6 +47,10 @@ import {
   needsLatestPrivacyPolicy,
   needsLatestTermsAndServices,
 } from '@/services/user/terms-agreement';
+import {
+  getUserCreatorActivity,
+  getUserCreatorActivitySchema,
+} from '@/services/user/activity';
 
 export const userRouter = createTRPCRouter({
   payout: userPayoutRouter,
@@ -188,4 +192,10 @@ export const userRouter = createTRPCRouter({
       }),
     }),
   },
+
+  creatorActivity: protectedProcedure
+    .input(getUserCreatorActivitySchema)
+    .query(async ({ ctx, input }) => {
+      return await getUserCreatorActivity(ctx.session.user.id, input);
+    }),
 });

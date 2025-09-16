@@ -15,7 +15,7 @@ export const AddCredits = () => {
     mutate: createPaymentLink,
     isPending,
     isSuccess,
-  } = api.user.credits.payments.create.useMutation({
+  } = api.user.payments.create.useMutation({
     onSuccess: data => {
       window.location.href = data.paymentLink.url;
     },
