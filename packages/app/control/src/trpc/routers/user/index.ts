@@ -1,12 +1,12 @@
 import {
   createTRPCRouter,
+  paginatedProcedure,
   protectedProcedure,
   timeBasedPaginatedProcedure,
 } from '../../trpc';
 
 import { userBalanceRouter } from './balance';
 import { userApiKeysRouter } from './api-keys';
-import { userPaymentsRouter } from './payments';
 import { userRedeemCodeRouter } from './redeem';
 import { userPublicRouter } from './public';
 import { userPayoutRouter } from './payout';
@@ -16,11 +16,12 @@ import { userTermsAgreementRouter } from './terms-agreement';
 
 import { getUserFeed, userFeedSchema } from '@/services/feed/feed';
 import { getUser } from '@/services/user';
+import { listCreditPayments } from '@/services/payments';
+import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
 
 export const userRouter = createTRPCRouter({
   balance: userBalanceRouter,
   apiKeys: userApiKeysRouter,
-  payments: userPaymentsRouter,
   redeem: userRedeemCodeRouter,
   public: userPublicRouter,
   payout: userPayoutRouter,
@@ -32,6 +33,20 @@ export const userRouter = createTRPCRouter({
     get: protectedProcedure.query(async ({ ctx }) => {
       return getUser(ctx.session.user.id);
     }),
+  },
+
+  payments: {
+    list: paginatedProcedure
+      .concat(protectedProcedure)
+      .query(async ({ ctx }) => {
+        return await listCreditPayments(ctx.session.user.id, ctx.pagination);
+      }),
+
+    createLink: protectedProcedure
+      .input(createPaymentLinkSchema)
+      .mutation(async ({ ctx, input }) => {
+        return await createPaymentLink(ctx.session.user.id, input);
+      }),
   },
 
   feed: {
