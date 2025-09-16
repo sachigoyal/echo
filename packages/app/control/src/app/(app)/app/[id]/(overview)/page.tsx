@@ -10,13 +10,11 @@ import { HeaderCard, LoadingHeaderCard } from './_components/header';
 import { Setup } from './_components/setup';
 import { Overview } from './_components/overview';
 import { userOrRedirect } from '@/auth/user-or-redirect';
-import { checkAppExists } from '../_lib/checks';
 
 export default async function AppPage(props: PageProps<'/app/[id]'>) {
   const { id } = await props.params;
 
   await userOrRedirect(`/app/${id}` as const, props);
-  await checkAppExists(id);
 
   api.apps.app.get.prefetch({ appId: id });
   api.apps.app.githubLink.get.prefetch(id);

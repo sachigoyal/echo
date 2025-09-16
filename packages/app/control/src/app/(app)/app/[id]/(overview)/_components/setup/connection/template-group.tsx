@@ -3,9 +3,13 @@ import React, { useState } from 'react';
 import { OptionButtons } from './option-buttons';
 import { Template } from './template';
 
-import type { TemplateGroup as TemplateGroupType } from './types';
+import type {
+  TemplateGroup as TemplateGroupType,
+  Template as TemplateType,
+} from './types';
 import { motion } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { api } from '@/trpc/client';
 
 interface Props {
   templateGroup: TemplateGroupType;
@@ -18,6 +22,8 @@ export const TemplateGroup: React.FC<Props> = ({
   appId,
   index,
 }) => {
+  const [{ name: appName }] = api.apps.app.get.useSuspenseQuery({ appId });
+
   const [selectedId, setSelectedId] = useState<string>();
 
   const selectedOption = templateGroup.options.find(
@@ -49,8 +55,9 @@ export const TemplateGroup: React.FC<Props> = ({
         {selectedOption &&
           (templateGroup.type === 'templates' ? (
             <Template
-              template={selectedOption}
+              template={selectedOption as TemplateType}
               appId={appId}
+              appName={appName}
               key={selectedId}
               index={index + 1}
             />
