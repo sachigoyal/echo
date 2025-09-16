@@ -166,7 +166,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
         // Replace the environment variable value - specifically targeting the *EHO_APP_ID placeholder
         // Find the line with *ECHO_APP_ID and replace the value after the = sign
         const updatedContent = envContent.replace(
-          /^(.*ECHO_APP_ID\s*=\s*).+$/m,
+          /^(.*ECHO_APP_ID\s*=\s*).+$/gm,
           `$1${appId!}`
         );
 
