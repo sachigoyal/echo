@@ -25,7 +25,7 @@ export const Template: React.FC<Props> = ({ template, appId, index }) => {
           yarn: `yarn dlx echo-start@latest --template ${template.id} --app-id ${appId}`,
           bun: `bunx echo-start@latest --template ${template.id} --app-id ${appId}`,
         }}
-        className="border-primary bg-card"
+        className="border-primary bg-card shadow-[0_0_6px_color-mix(in_oklab,var(--primary)_70%,transparent)]"
       />
     </motion.div>
   );

@@ -31,9 +31,10 @@ import { Visibility } from './visibility';
 
 interface Props {
   appId: string;
+  onFinish: () => void;
 }
 
-export const SetupApp: React.FC<Props> = ({ appId }) => {
+export const SetupApp: React.FC<Props> = ({ appId, onFinish }) => {
   const {
     hasGithubLink,
     githubLink,
@@ -44,7 +45,6 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
     allStepsCompleted,
   } = useAppDetailsSetup(appId);
 
-  const [isVisible, setIsVisible] = useState(!allStepsCompleted);
   const [isOpen, setIsOpen] = useState(false);
 
   const steps = useMemo(
@@ -106,10 +106,6 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
   useEffect(() => {
     setAccordionValue(steps.find(step => !step.isComplete)?.title ?? '');
   }, [steps]);
-
-  if (!isVisible) {
-    return null;
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -201,7 +197,7 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
             onClick={() => {
               setIsOpen(false);
               setTimeout(() => {
-                setIsVisible(false);
+                onFinish();
               }, 300);
             }}
           >
