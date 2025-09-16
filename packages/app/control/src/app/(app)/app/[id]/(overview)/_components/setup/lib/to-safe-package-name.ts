@@ -45,7 +45,7 @@ export function toSafePackageName(
 
   if (!input || typeof input !== 'string') return fallback;
 
-  let name = input.trim();
+  const name = input.trim();
 
   let scope: string | null = null;
   let bare = name;
