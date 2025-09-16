@@ -130,6 +130,7 @@ export const SetupApp: React.FC<Props> = ({ appId, onFinish }) => {
             } as React.CSSProperties
           }
         >
+          <span className="text-primary">Add your App Details</span>
           {allStepsCompleted ? (
             <Check className="size-4" />
           ) : (
@@ -139,10 +140,9 @@ export const SetupApp: React.FC<Props> = ({ appId, onFinish }) => {
               value={steps.filter(step => step.isComplete).length + 1}
               max={steps.length + 1}
               className="size-6"
-              percentageClassName="text-[7px] duration-0"
+              hideValue
             />
           )}
-          <span className="text-primary">Add your App Details</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">

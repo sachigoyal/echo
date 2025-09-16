@@ -11,6 +11,8 @@ export const useAppConnectionSetup = (appId: string) => {
 
   // check whether the user has connected to the app
 
+  const utils = api.useUtils();
+
   const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery(
     { appId },
     {
@@ -47,7 +49,8 @@ export const useAppConnectionSetup = (appId: string) => {
 
   useEffect(() => {
     setShouldRefetchTransactions(!hasMadeTransactions);
-  }, [isConnected, hasMadeTransactions]);
+    utils.apps.app.stats.bucketed.invalidate({ appId });
+  }, [hasMadeTransactions]);
 
   const connectionSteps = useMemo(() => {
     return [isConnected, hasMadeTransactions];
