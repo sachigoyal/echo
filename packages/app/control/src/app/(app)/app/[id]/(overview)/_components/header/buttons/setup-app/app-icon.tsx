@@ -85,7 +85,6 @@ export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
           name="profilePictureUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Profile Picture</FormLabel>
               <FormControl>
                 <Dropzone
                   accept={{
@@ -101,7 +100,7 @@ export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
                     uploadImage(files[0]);
                   }}
                   disabled={isUploading || isCompleted}
-                  className="h-20 md:h-20 w-full flex flex-col items-center justify-center gap-1"
+                  className="h-[104px] md:h-[104px] w-full flex flex-col items-center justify-center gap-2 text-muted-foreground"
                 >
                   {field.value ? (
                     <Image
@@ -112,20 +111,14 @@ export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
                       className="rounded-md"
                     />
                   ) : (
-                    <UploadIcon className="size-4" />
+                    <UploadIcon className="size-6" />
                   )}
                   {isCompleted ? (
-                    <span className="text-sm text-muted-foreground">
-                      Icon Added Successfully
-                    </span>
+                    <span className="text-sm">Icon Added Successfully</span>
                   ) : field.value ? (
-                    <span className="text-sm text-muted-foreground">
-                      Upload Successful
-                    </span>
+                    <span className="text-sm">Upload Successful</span>
                   ) : (
-                    <span className="text-sm text-muted-foreground">
-                      Upload an icon
-                    </span>
+                    <span className="text-sm">Upload an icon</span>
                   )}
                 </Dropzone>
               </FormControl>

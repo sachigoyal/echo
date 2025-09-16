@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { DollarSign, Pen, Image, Check } from 'lucide-react';
 
@@ -23,17 +23,26 @@ import { RecipientDetails } from './recipient-details';
 import { Description } from './description';
 import { AppIcon } from './app-icon';
 
-import { api } from '@/trpc/client';
 import { AnimatedCircularProgressBar } from '@/components/ui/animated-circular-progress-bar';
+import { useAppDetailsSetup } from '@/app/(app)/app/[id]/_hooks/use-app-setup';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 interface Props {
   appId: string;
 }
 
 export const SetupApp: React.FC<Props> = ({ appId }) => {
-  const [app] = api.apps.app.get.useSuspenseQuery({ appId });
+  const {
+    hasGithubLink,
+    githubLink,
+    hasDescription,
+    app,
+    hasProfilePicture,
+    allStepsCompleted,
+  } = useAppDetailsSetup(appId);
 
-  const [githubLink] = api.apps.app.githubLink.get.useSuspenseQuery(appId);
+  const [isVisible, setIsVisible] = useState(!allStepsCompleted);
 
   const steps = useMemo(
     () => [
@@ -41,7 +50,7 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
         title: 'Set Payout Details',
         description: 'Where your earnings will be sent',
         Icon: DollarSign,
-        isComplete: githubLink !== null,
+        isComplete: hasGithubLink,
         component: (
           <RecipientDetails
             githubLink={
@@ -61,7 +70,7 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
         title: 'Describe your App',
         description: 'This will be shown on the Echo dashboard',
         Icon: Pen,
-        isComplete: app.description !== null,
+        isComplete: hasDescription,
         component: <Description appId={appId} description={app.description} />,
         className: 'basis-4/5 md:basis-2/5',
       },
@@ -69,7 +78,7 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
         title: 'Add an Icon',
         description: 'Users will see this when they connect to your app',
         Icon: Image,
-        isComplete: app.profilePictureUrl !== null,
+        isComplete: hasProfilePicture,
         component: (
           <AppIcon appId={appId} profilePictureUrl={app.profilePictureUrl} />
         ),
@@ -79,11 +88,34 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
     [app, appId, githubLink]
   );
 
+  const [accordionValue, setAccordionValue] = useState<string>(
+    steps.find(step => !step.isComplete)?.title ?? ''
+  );
+
+  useEffect(() => {
+    setAccordionValue(steps.find(step => !step.isComplete)?.title ?? '');
+  }, [steps]);
+
+  if (!isVisible) {
+    return null;
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-fit hover:bg-accent/50">
-          <span>Complete your App Setup</span>
+        <Button
+          variant="primaryOutline"
+          className="w-fit hover:bg-accent/50 animate-pulse-shadow"
+          style={
+            {
+              '--pulse-color':
+                'color-mix(in oklab, var(--color-primary) 20%, transparent)',
+              '--duration': '2s',
+              '--pulse-size': '4px',
+            } as React.CSSProperties
+          }
+        >
+          <span className="text-primary">Complete your App Setup</span>
           <AnimatedCircularProgressBar
             gaugePrimaryColor="var(--primary)"
             gaugeSecondaryColor="var(--accent)"
@@ -94,15 +126,18 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
           />
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-0 gap-0">
-        <DialogHeader className="p-4">
-          <DialogTitle>Setup App</DialogTitle>
-          <DialogDescription>Setup your app to get started.</DialogDescription>
+      <DialogContent className="p-0 gap-0 overflow-hidden">
+        <DialogHeader className="p-4 bg-muted border-b">
+          <DialogTitle>Complete your App Setup</DialogTitle>
+          <DialogDescription>
+            Add your app details to finish setting up your app.
+          </DialogDescription>
         </DialogHeader>
         <Accordion
           type="single"
-          collapsible
           className="flex flex-col gap-2 p-4"
+          value={accordionValue}
+          onValueChange={setAccordionValue}
         >
           {steps.map(step => (
             <AccordionItem
@@ -110,14 +145,24 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
               value={step.title}
               className="border rounded-lg p-0 last:border-b"
             >
-              <AccordionTrigger className="p-4">
-                <div className="flex items-center gap-2">
-                  {step.isComplete ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <step.Icon className="size-4" />
+              <AccordionTrigger className="p-4 items-center">
+                <div
+                  className={cn(
+                    'flex items-center gap-4',
+                    step.isComplete && 'text-primary'
                   )}
-                  {step.title}
+                >
+                  {step.isComplete ? (
+                    <Check className="size-6" />
+                  ) : (
+                    <step.Icon className="size-6" />
+                  )}
+                  <div className="flex flex-col">
+                    <h3 className="text-sm font-semibold">{step.title}</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="border-t p-4">
@@ -126,9 +171,22 @@ export const SetupApp: React.FC<Props> = ({ appId }) => {
             </AccordionItem>
           ))}
         </Accordion>
-        <DialogFooter className="p-4">
-          <Button variant="outline">Cancel</Button>
-          <Button variant="turbo">Setup</Button>
+        <DialogFooter className="p-4 bg-muted border-t items-center gap-4">
+          <Progress
+            value={
+              ((steps.filter(step => step.isComplete).length + 1) /
+                (steps.length + 1)) *
+              100
+            }
+            className="flex-1"
+          />
+          <Button
+            variant="turbo"
+            disabled={!allStepsCompleted}
+            onClick={() => setIsVisible(false)}
+          >
+            Finish Setup
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

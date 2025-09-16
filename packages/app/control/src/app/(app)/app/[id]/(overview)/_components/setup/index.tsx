@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { AnimatePresence, motion } from 'motion/react';
 
@@ -18,17 +18,21 @@ import {
 } from '@/components/ui/code/shiki.bundle';
 import { createJavaScriptRegexEngine } from '@shikijs/engine-javascript';
 import { HighlighterProvider } from './lib/highlighter-context';
+import { useAppConnectionSetup } from '../../../_hooks/use-app-setup';
 
 interface Props {
   appId: string;
 }
 
 export const Setup: React.FC<Props> = ({ appId }) => {
-  const [numTokens] = api.apps.app.getNumTokens.useSuspenseQuery({ appId });
-  const [numTransactions] = api.apps.app.transactions.count.useSuspenseQuery({
-    appId,
-  });
-  const [numApiKeys] = api.user.apiKeys.count.useSuspenseQuery({ appId });
+  const {
+    isConnected,
+    completedConnectionSteps,
+    hasMadeTransactions,
+    connectionSteps,
+    isConnectionComplete,
+  } = useAppConnectionSetup(appId);
+
   const [isOwner] = api.apps.app.isOwner.useSuspenseQuery(appId);
 
   const [highlighter, setHighlighter] = useState<Highlighter | null>(null);
@@ -41,41 +45,22 @@ export const Setup: React.FC<Props> = ({ appId }) => {
     }).then(setHighlighter);
   }, []);
 
-  const connectionSteps = useMemo(
-    () => [numTokens > 0 || numApiKeys > 0],
-    [numTokens, numApiKeys]
-  );
-
-  const generateTextSteps = useMemo(
-    () => [numTransactions > 0],
-    [numTransactions]
-  );
-
-  const steps = [...connectionSteps, ...generateTextSteps];
-
-  const completedSteps = steps.filter(Boolean).length;
-  const allStepsCompleted = completedSteps === steps.length;
-
-  const [isComplete, setIsComplete] = useState(allStepsCompleted);
+  const [isComplete, setIsComplete] = useState(isConnectionComplete);
 
   const [accordionValue, setAccordionValue] = useState<string>(
-    !connectionSteps.every(Boolean)
+    !isConnected
       ? 'connection'
-      : !generateTextSteps.every(Boolean)
+      : !hasMadeTransactions
         ? 'generate-text'
         : 'connection'
   );
 
   useEffect(() => {
-    // Compute completion states only once
-    const connectionCompleted = connectionSteps.every(Boolean);
-    const generateTextCompleted = generateTextSteps.every(Boolean);
-
     let nextAccordionValue = '';
 
-    if (!connectionCompleted) {
+    if (!isConnected) {
       nextAccordionValue = 'connection';
-    } else if (!generateTextCompleted) {
+    } else if (!hasMadeTransactions) {
       nextAccordionValue = 'generate-text';
     }
 
@@ -84,7 +69,7 @@ export const Setup: React.FC<Props> = ({ appId }) => {
         prev === nextAccordionValue ? prev : nextAccordionValue
       );
     }
-  }, [connectionSteps, generateTextSteps]);
+  }, [isConnected, hasMadeTransactions]);
 
   return (
     <AnimatePresence mode="wait">
@@ -119,13 +104,18 @@ export const Setup: React.FC<Props> = ({ appId }) => {
                 <div className="flex flex-col items-end gap-1 w-full">
                   <p className="text-sm text-muted-foreground font-bold shrink-0">
                     {(
-                      ((completedSteps + 1) / (steps.length + 1)) *
+                      ((completedConnectionSteps.length + 1) /
+                        (connectionSteps.length + 1)) *
                       100
                     ).toFixed(0)}
                     % Complete
                   </p>
                   <Progress
-                    value={((completedSteps + 1) / (steps.length + 1)) * 100}
+                    value={
+                      ((completedConnectionSteps.length + 1) /
+                        (connectionSteps.length + 1)) *
+                      100
+                    }
                   />
                 </div>
               </div>
@@ -142,9 +132,9 @@ export const Setup: React.FC<Props> = ({ appId }) => {
             <motion.div
               initial={{ opacity: 0, marginBottom: 0, height: 32 }}
               animate={{
-                height: allStepsCompleted ? 48 : 32,
-                opacity: allStepsCompleted ? 1 : 0,
-                marginBottom: allStepsCompleted ? 32 : 0,
+                height: isConnectionComplete ? 48 : 32,
+                opacity: isConnectionComplete ? 1 : 0,
+                marginBottom: isConnectionComplete ? 32 : 0,
               }}
               exit={{
                 height: 0,
@@ -156,10 +146,10 @@ export const Setup: React.FC<Props> = ({ appId }) => {
                 variant="turbo"
                 className={cn(
                   'size-full text-lg font-bold',
-                  !allStepsCompleted && 'pointer-events-none'
+                  !isConnectionComplete && 'pointer-events-none'
                 )}
                 onClick={
-                  allStepsCompleted ? () => setIsComplete(true) : undefined
+                  isConnectionComplete ? () => setIsComplete(true) : undefined
                 }
               >
                 Finish Setup
