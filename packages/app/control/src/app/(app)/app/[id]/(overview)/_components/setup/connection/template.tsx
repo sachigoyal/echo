@@ -1,6 +1,10 @@
+'use client';
+
 import { Template as TemplateType } from './types';
 import { motion } from 'motion/react';
 import { CodeTabs } from '@/components/ui/shadcn-io/code-tabs';
+import { api } from '@/trpc/client';
+import { toSafePackageName } from '../lib/to-safe-package-name';
 
 interface Props {
   appId: string;
@@ -9,6 +13,8 @@ interface Props {
 }
 
 export const Template: React.FC<Props> = ({ template, appId, index }) => {
+  const [app] = api.apps.app.get.useSuspenseQuery({ appId });
+  const projectName = toSafePackageName(app.name);
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -20,10 +26,10 @@ export const Template: React.FC<Props> = ({ template, appId, index }) => {
       </h3>
       <CodeTabs
         codes={{
-          npm: `npx echo-start@latest --template ${template.id} --app-id ${appId}`,
-          pnpm: `pnpm dlx echo-start@latest --template ${template.id} --app-id ${appId}`,
-          yarn: `yarn dlx echo-start@latest --template ${template.id} --app-id ${appId}`,
-          bun: `bunx echo-start@latest --template ${template.id} --app-id ${appId}`,
+          npm: `npx echo-start@latest ${projectName} --template ${template.id} --app-id ${appId}`,
+          pnpm: `pnpm dlx echo-start@latest ${projectName} --template ${template.id} --app-id ${appId}`,
+          yarn: `yarn dlx echo-start@latest ${projectName} --template ${template.id} --app-id ${appId}`,
+          bun: `bunx echo-start@latest ${projectName} --template ${template.id} --app-id ${appId}`,
         }}
         className="border-primary bg-card"
       />
