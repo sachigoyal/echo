@@ -87,15 +87,12 @@ export function BaseTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => {
                   const isCheckboxColumn = header.column.id === 'select';
-                  const headerClassName = isCheckboxColumn 
-                    ? "w-10 min-w-10 max-w-10" 
-                    : "w-36 min-w-36 max-w-36";
-                  
+                  const headerClassName = isCheckboxColumn
+                    ? 'w-10 min-w-10 max-w-10'
+                    : 'w-36 min-w-36 max-w-36';
+
                   return (
-                    <TableHead
-                      key={header.id}
-                      className={headerClassName}
-                    >
+                    <TableHead key={header.id} className={headerClassName}>
                       {header.isPlaceholder ? null : (
                         <SortableColumnHeader column={header.column}>
                           {flexRender(
@@ -116,15 +113,12 @@ export function BaseTable<TData, TValue>({
                 <TableRow key={`skeleton-${index}`}>
                   {columns.map((column, colIndex) => {
                     const isCheckboxColumn = column.id === 'select';
-                    const cellClassName = isCheckboxColumn 
-                      ? "w-5 min-w-5 max-w-5" 
-                      : "w-36 min-w-36 max-w-36";
-                    
+                    const cellClassName = isCheckboxColumn
+                      ? 'w-5 min-w-5 max-w-5'
+                      : 'w-36 min-w-36 max-w-36';
+
                     return (
-                      <TableCell
-                        key={colIndex}
-                        className={cellClassName}
-                      >
+                      <TableCell key={colIndex} className={cellClassName}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
                     );
@@ -139,10 +133,10 @@ export function BaseTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map(cell => {
                     const isCheckboxColumn = cell.column.id === 'select';
-                    const cellClassName = isCheckboxColumn 
-                      ? "w-5 min-w-5 max-w-5" 
-                      : "w-36 min-w-36 max-w-36";
-                    
+                    const cellClassName = isCheckboxColumn
+                      ? 'w-5 min-w-5 max-w-5'
+                      : 'w-36 min-w-36 max-w-36';
+
                     return (
                       <TableCell key={cell.id} className={cellClassName}>
                         {flexRender(

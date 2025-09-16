@@ -6,6 +6,7 @@ import {
   DateCell,
   MoneyCell,
   IntCell,
+  toNumber,
 } from '@/components/server-side-data-table';
 import {
   TableState,
@@ -32,14 +33,6 @@ export interface UserEarnings {
   updatedAt: Date;
 }
 
-// Helper function to safely convert values to numbers
-const toNumber = (value: unknown): number => {
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') return parseFloat(value) || 0;
-  if (typeof value === 'bigint') return Number(value);
-  return 0;
-};
-
 // Define columns for the user earnings table
 const columns: TypedColumnDef<
   UserEarnings,
@@ -55,13 +48,7 @@ const columns: TypedColumnDef<
       const name = getValue() as string | null;
       const email = row.original.email;
       const userId = row.original.id;
-      return (
-        <UserLink
-          userId={userId}
-          name={name}
-          email={email}
-        />
-      );
+      return <UserLink userId={userId} name={name} email={email} />;
     },
   },
   {

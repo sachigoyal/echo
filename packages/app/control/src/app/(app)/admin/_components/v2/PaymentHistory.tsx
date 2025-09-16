@@ -6,6 +6,7 @@ import {
   DateCell,
   MoneyCell,
   StringCell,
+  toNumber,
 } from '@/components/server-side-data-table';
 import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
 import { api } from '@/trpc/client';
@@ -42,14 +43,6 @@ export interface PaymentHistory {
     };
   } | null;
 }
-
-// Helper function to safely convert values to numbers
-const toNumber = (value: unknown): number => {
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') return parseFloat(value) || 0;
-  if (typeof value === 'bigint') return Number(value);
-  return 0;
-};
 
 // Helper function to format payment source
 const formatPaymentSource = (source: EnumPaymentSource): string => {

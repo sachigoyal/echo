@@ -6,7 +6,7 @@ import {
   DateCell,
   EmailCell,
   MoneyCell,
-  StringCell,
+  toNumber,
   IntCell,
 } from '@/components/server-side-data-table';
 import {
@@ -39,14 +39,6 @@ export interface AppEarnings {
   totalUsers: number;
 }
 
-// Helper function to safely convert values to numbers
-const toNumber = (value: unknown): number => {
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') return parseFloat(value) || 0;
-  if (typeof value === 'bigint') return Number(value);
-  return 0;
-};
-
 // Define columns for the app earnings table
 const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
   [
@@ -60,7 +52,14 @@ const columns: TypedColumnDef<AppEarnings, string | number | boolean | Date>[] =
         const name = getValue() as string;
         const appId = row.original.id;
         const description = row.original.description;
-        return <AppLink appId={appId} name={name} showDescription={true} description={description} />;
+        return (
+          <AppLink
+            appId={appId}
+            name={name}
+            showDescription={true}
+            description={description}
+          />
+        );
       },
     },
     {

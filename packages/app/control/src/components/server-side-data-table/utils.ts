@@ -39,3 +39,10 @@ export function getFilterableColumnConfigs<TData, TValue>(
       (config): config is { name: string; type: ColumnType } => config !== null
     );
 }
+
+export function toNumber(value: unknown): number {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') return parseFloat(value) || 0;
+  if (typeof value === 'bigint') return Number(value);
+  return 0;
+}
