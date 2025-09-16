@@ -19,7 +19,7 @@ export const EarningsCharts: React.FC<Props> = ({ numAppsPromise }) => {
 
   const { startDate, endDate } = useActivityContext();
 
-  const [activity] = api.activity.creator.getCurrent.useSuspenseQuery({
+  const [activity] = api.user.creatorActivity.useSuspenseQuery({
     startDate,
     endDate,
   });

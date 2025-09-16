@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 
 export const getUser = async (userId: string) => {
-  const user = await db.user.findUnique({
+  return await db.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -10,5 +10,4 @@ export const getUser = async (userId: string) => {
       createdAt: true,
     },
   });
-  return user;
 };

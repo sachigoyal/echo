@@ -2,34 +2,30 @@ import z from 'zod';
 
 import { db } from '@/lib/db';
 
-export const getCreatorActivitySchema = z.object({
-  userId: z.uuid(),
+export const getUserCreatorActivitySchema = z.object({
   startDate: z.date(),
   endDate: z.date(),
   numBuckets: z.number().optional().default(48),
 });
 
-export const getCreatorActivity = async ({
-  userId,
-  startDate,
-  endDate,
-  numBuckets,
-}: z.infer<typeof getCreatorActivitySchema>) => {
-  const creatorApps = await db.appMembership.findMany({
-    where: {
-      userId,
-      role: 'owner',
-    },
-    select: {
-      echoAppId: true,
-    },
-  });
-
+export const getUserCreatorActivity = async (
+  userId: string,
+  {
+    startDate,
+    endDate,
+    numBuckets,
+  }: z.infer<typeof getUserCreatorActivitySchema>
+) => {
   // Get all transactions for the time period
   const transactions = await db.transaction.findMany({
     where: {
-      echoAppId: {
-        in: creatorApps.map(app => app.echoAppId),
+      echoApp: {
+        appMemberships: {
+          some: {
+            userId,
+            role: 'owner',
+          },
+        },
       },
       createdAt: {
         gte: startDate,
