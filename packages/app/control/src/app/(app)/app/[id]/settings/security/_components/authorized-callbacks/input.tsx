@@ -60,7 +60,7 @@ export const AuthorizedCallbackUrlsInput = () => {
                 onPaste={e => {
                   e.preventDefault();
                   const text = e.clipboardData.getData('text/plain');
-                  setInput(text);
+                  handleAddUrl(text);
                 }}
               />
               <Button
@@ -93,7 +93,7 @@ export const AuthorizedCallbackUrlsInput = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="p-0.5 size-fit"
+                    className="p-0.5 size-fit md:size-fit"
                     onClick={e => {
                       e.preventDefault();
                       e.stopPropagation();
