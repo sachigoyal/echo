@@ -56,7 +56,7 @@ export const issueInitialFreeTierCredits = async (
             issuanceVersion: version,
             issuanceSource: 'initial-free-tier',
           },
-          description: 'Initial Free-Tier Credits Issuance',
+          description: 'Welcome to Echo!',
           source: EnumPaymentSource.signUpGift,
         },
       },

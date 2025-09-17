@@ -3,11 +3,7 @@ import z from 'zod';
 import { db } from '@/lib/db';
 import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 
-import {
-  EnumPaymentSource,
-  Payment,
-  type Prisma,
-} from '@/generated/prisma';
+import { EnumPaymentSource, Payment, type Prisma } from '@/generated/prisma';
 import { logger } from '@/logger';
 import { updateSpendPoolFromPayment } from '@/lib/spend-pools';
 import { Decimal } from '@/generated/prisma/runtime/library';
@@ -67,7 +63,7 @@ export const mintCreditsToUser = async (
     defaultSpendLimit,
     description = options.isFreeTier
       ? 'Free-Tier Credit Redemption Payment'
-      : 'Personal Balance Credit Redemption Payment',
+      : 'A Gift from the Echo Team',
     source,
   } = options;
 
