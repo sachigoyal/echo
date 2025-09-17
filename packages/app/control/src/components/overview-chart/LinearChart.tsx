@@ -18,14 +18,42 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 
+// Prefer readable date labels on the X axis
+const defaultDateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: 'short',
+  day: 'numeric',
+});
+
+function parseDateLike(value: unknown): Date | null {
+  if (value instanceof Date) return value;
+  if (typeof value === 'number') {
+    const numeric = Number(value);
+    const ms = numeric > 1_000_000_000_000 ? numeric : numeric * 1000;
+    const d = new Date(ms);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof value === 'string') {
+    const d1 = new Date(value);
+    if (!Number.isNaN(d1.getTime())) return d1;
+    const d2 = new Date(value.replace(' ', 'T'));
+    if (!Number.isNaN(d2.getTime())) return d2;
+  }
+  return null;
+}
+
+function formatXAxisTick(value: unknown): string {
+  const d = parseDateLike(value);
+  return d ? defaultDateFormatter.format(d) : String(value ?? '');
+}
+
 interface ChartAreaLinearProps {
   title: string;
   description: string;
-  data: Array<Record<string, any>>;
+  data: Array<Record<string, unknown>>;
   config: ChartConfig;
   xAxisDataKey: string;
   areaDataKey: string;
-  xAxisTickFormatter?: (value: any) => string;
+  xAxisTickFormatter?: (value: unknown) => string;
   footerTrend?: {
     percentage: string;
     direction: 'up' | 'down';
@@ -41,7 +69,7 @@ export function ChartAreaLinear({
   config,
   xAxisDataKey,
   areaDataKey,
-  xAxisTickFormatter = value => value.toString().slice(0, 3),
+  xAxisTickFormatter = formatXAxisTick,
   footerTrend,
   footerDateRange,
 }: ChartAreaLinearProps) {

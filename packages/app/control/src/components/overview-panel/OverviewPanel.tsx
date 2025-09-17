@@ -10,13 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-
-// TRPC useQuery hook type - similar to StatefulDataTable
-export type TRPCUseQuery<TData> = () => {
-  data?: TData;
-  isLoading: boolean;
-  error?: any;
-};
+import { OverviewMetricConfig } from '@/services/admin/type/overview-metric';
 
 // Metric display types
 export type MetricDisplayType =
@@ -27,27 +21,6 @@ export type MetricDisplayType =
   | 'progress'
   | 'trend';
 
-// Individual metric configuration
-export interface MetricConfig {
-  id: string;
-  title: string;
-  description?: string;
-  displayType: MetricDisplayType;
-  valueKey: string; // Key to extract value from data
-  // Optional formatting
-  format?: {
-    prefix?: string;
-    suffix?: string;
-    decimals?: number;
-    showTrend?: boolean;
-    trendKey?: string; // Key for trend data (e.g., percentage change)
-    trendDirection?: 'up' | 'down' | 'neutral';
-  };
-  // Card styling
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
-}
-
 // Grid layout configuration
 export interface GridConfig {
   columns?: 1 | 2 | 3 | 4 | 6;
@@ -55,62 +28,29 @@ export interface GridConfig {
   responsive?: boolean;
 }
 
-// Width constraint options
-export type WidthConstraint =
-  | 'sm'
-  | 'md'
-  | 'lg'
-  | 'xl'
-  | '2xl'
-  | 'full'
-  | 'none'
-  | 'content';
-
-interface OverviewPanelProps<TData> {
-  metrics: MetricConfig[];
-  // TRPC integration - if provided, will manage data fetching automatically
-  trpcQuery?: TRPCUseQuery<TData>;
-  // Static data - if provided, will use this instead of trpcQuery
-  data?: TData;
-  // Loading state for static data
+interface OverviewPanelProps {
+  metrics: OverviewMetricConfig[]; // Pre-shaped list of metrics to render
+  // Loading and error states controlled by parent
   isLoading?: boolean;
-  // Error state
-  error?: any;
+  error?: unknown;
   // Layout configuration
   grid?: GridConfig;
   // Panel title
   title?: string;
   description?: string;
-  // Width and spacing configuration
-  maxWidth?: WidthConstraint;
-  margin?: boolean;
   // Additional styling
   className?: string;
 }
 
-export function OverviewPanel<TData extends Record<string, any>>({
+export function OverviewPanel({
   metrics,
-  trpcQuery,
-  data,
   isLoading = false,
   error,
-  grid = { columns: 3, gap: 'sm', responsive: true },
+  grid = { columns: 4, gap: 'sm', responsive: true },
   title,
   description,
-  maxWidth = 'content',
-  margin = true,
   className,
-}: OverviewPanelProps<TData>) {
-  // Use TRPC query if provided
-  const trpcQueryResult = trpcQuery?.();
-
-  // Determine which data to use
-  const panelData = trpcQuery ? trpcQueryResult?.data : data;
-  const panelIsLoading = trpcQuery
-    ? (trpcQueryResult?.isLoading ?? false)
-    : isLoading;
-  const panelError = trpcQuery ? trpcQueryResult?.error : error;
-
+}: OverviewPanelProps) {
   // Grid class mapping
   const gridClasses = {
     columns: {
@@ -127,29 +67,8 @@ export function OverviewPanel<TData extends Record<string, any>>({
     },
   };
 
-  // Width constraint classes
-  const widthClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    full: 'max-w-full',
-    none: '',
-    content: 'w-[80%]', // 88% width for content layout
-  };
-
-  // Container classes for width and margin
-  const containerClassName = cn(
-    'w-full',
-    maxWidth === 'content' ? 'w-[90%] mx-auto' : widthClasses[maxWidth],
-    margin && maxWidth !== 'content' && 'mx-auto',
-    maxWidth !== 'full' &&
-      maxWidth !== 'none' &&
-      maxWidth !== 'content' &&
-      margin &&
-      'px-4'
-  );
+  // Container: always full width of its parent (no custom width constraints)
+  const containerClassName = cn('w-full');
 
   const gridClassName = cn(
     'grid',
@@ -159,7 +78,7 @@ export function OverviewPanel<TData extends Record<string, any>>({
     gridClasses.gap[grid.gap || 'md']
   );
 
-  if (panelError) {
+  if (error) {
     return (
       <div className={containerClassName}>
         <Card className={cn('p-6 border-destructive', className)}>
@@ -173,7 +92,8 @@ export function OverviewPanel<TData extends Record<string, any>>({
           )}
           <CardContent className="px-0 pb-0">
             <div className="text-destructive">
-              Error loading metrics: {panelError.message || 'Unknown error'}
+              Error loading metrics:{' '}
+              {error instanceof Error ? error.message : 'Unknown error'}
             </div>
           </CardContent>
         </Card>
@@ -199,8 +119,7 @@ export function OverviewPanel<TData extends Record<string, any>>({
               <MetricCard
                 key={metric.id}
                 metric={metric}
-                data={panelData}
-                isLoading={panelIsLoading}
+                isLoading={isLoading}
               />
             ))}
           </div>
@@ -210,21 +129,14 @@ export function OverviewPanel<TData extends Record<string, any>>({
   );
 }
 
-interface MetricCardProps<TData> {
-  metric: MetricConfig;
-  data?: TData;
+interface MetricCardProps {
+  metric: OverviewMetricConfig;
   isLoading: boolean;
 }
 
-function MetricCard<TData extends Record<string, any>>({
-  metric,
-  data,
-  isLoading,
-}: MetricCardProps<TData>) {
-  const value = data?.[metric.valueKey];
-  const trendValue = metric.format?.trendKey
-    ? data?.[metric.format.trendKey]
-    : undefined;
+function MetricCard({ metric, isLoading }: MetricCardProps) {
+  const value = metric.value;
+  const trendValue = metric.trendValue;
 
   // Size classes - made more compact
   const sizeClasses = {
@@ -258,7 +170,7 @@ function MetricCard<TData extends Record<string, any>>({
             {metric.format?.showTrend && trendValue !== undefined && (
               <TrendIndicator
                 value={trendValue}
-                direction={metric.format.trendDirection}
+                label={metric.format?.trendLabel}
               />
             )}
           </div>
@@ -283,9 +195,9 @@ function MetricCard<TData extends Record<string, any>>({
 }
 
 interface FormattedValueProps {
-  value: any;
+  value: unknown;
   displayType: MetricDisplayType;
-  format?: MetricConfig['format'];
+  format?: OverviewMetricConfig['format'];
 }
 
 function FormattedValue({ value, displayType, format }: FormattedValueProps) {
@@ -357,38 +269,44 @@ function FormattedValue({ value, displayType, format }: FormattedValueProps) {
 
 interface TrendIndicatorProps {
   value: number;
-  direction?: 'up' | 'down' | 'neutral';
+  label?: string;
 }
 
-function TrendIndicator({ value, direction }: TrendIndicatorProps) {
+function TrendIndicator({ value, label }: TrendIndicatorProps) {
   const isPositive = value > 0;
   const isNegative = value < 0;
-  const actualDirection =
-    direction || (isPositive ? 'up' : isNegative ? 'down' : 'neutral');
+  const computedDirection = isPositive ? 'up' : isNegative ? 'down' : 'neutral';
 
-  const colorClasses = {
-    up: isPositive ? 'text-green-600' : 'text-red-600',
-    down: isNegative ? 'text-green-600' : 'text-red-600',
-    neutral: 'text-muted-foreground',
-  };
+  const colorClass = isPositive
+    ? 'text-green-600'
+    : isNegative
+      ? 'text-red-600'
+      : 'text-muted-foreground';
 
   const arrows = {
     up: '↗',
     down: '↘',
     neutral: '→',
-  };
+  } as const;
 
   if (value === 0) return null;
 
   return (
     <div
       className={cn(
-        'flex items-center text-xs font-medium',
-        colorClasses[actualDirection]
+        'flex flex-col items-start text-xs font-medium',
+        colorClass
       )}
     >
-      <span className="mr-1">{arrows[actualDirection]}</span>
-      <span>{Math.abs(value).toFixed(1)}%</span>
+      <div className="flex items-center gap-1.5">
+        <span>{arrows[computedDirection]}</span>
+        <span>{Math.abs(value).toFixed(1)}%</span>
+      </div>
+      {label ? (
+        <span className="mt-0.5 rounded bg-muted px-1.5 py-0.5 text-[10px] leading-none text-muted-foreground">
+          {label}
+        </span>
+      ) : null}
     </div>
   );
 }

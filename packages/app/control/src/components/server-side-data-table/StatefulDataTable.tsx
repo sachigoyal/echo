@@ -23,7 +23,7 @@ export type TRPCUseQuery<TData> = (
 ) => {
   data?: PaginatedResponse<TData>;
   isLoading: boolean;
-  error?: any;
+  error?: unknown;
 };
 
 interface StatefulDataTableProps<TData, TValue> {

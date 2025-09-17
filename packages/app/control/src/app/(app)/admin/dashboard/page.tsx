@@ -13,8 +13,6 @@ import {
   Code,
   CreditCard,
   Users,
-  DollarSign,
-  Activity,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -58,7 +56,8 @@ export default async function AdminDashboard(
               <CardTitle>User Spending</CardTitle>
             </div>
             <CardDescription>
-              Analyze user spending patterns and credit usage across the platform
+              Analyze user spending patterns and credit usage across the
+              platform
             </CardDescription>
           </CardHeader>
           <CardContent>

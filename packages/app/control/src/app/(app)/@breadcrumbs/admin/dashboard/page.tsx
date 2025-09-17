@@ -1,4 +1,4 @@
-import { Shield, CreditCard, LayoutDashboard } from 'lucide-react';
+import { Shield, LayoutDashboard } from 'lucide-react';
 import { Breadcrumb } from '@/app/(app)/@breadcrumbs/_components/breadcrumb';
 
 export default function AdminPayoutsBreadcrumb() {

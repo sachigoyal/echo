@@ -1,8 +1,2 @@
 export { OverviewPanel } from './OverviewPanel';
-export type {
-  MetricConfig,
-  MetricDisplayType,
-  GridConfig,
-  TRPCUseQuery,
-  WidthConstraint,
-} from './OverviewPanel';
+export type { MetricDisplayType, GridConfig } from './OverviewPanel';

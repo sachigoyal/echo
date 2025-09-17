@@ -47,7 +47,7 @@ export function BaseTable<TData, TValue>({
   table,
   columns,
   isLoading = false,
-  skeletonRows = 3,
+  skeletonRows = 10,
   showControls = true,
   title = 'Data Table',
   actions = [],

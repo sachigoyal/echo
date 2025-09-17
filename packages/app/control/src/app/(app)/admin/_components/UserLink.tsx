@@ -33,9 +33,9 @@ export function UserLink({
             (typeof displayName === 'string' ? displayName : name || email)
           }
         >
-          {displayName}
+          <span className="block w-xxs truncate">{displayName}</span>
         </Link>
-        <span className="text-xs text-gray-500">{email}</span>
+        <span className="text-xs text-gray-500 truncate max-w-xs">{email}</span>
       </div>
     );
   }
@@ -49,7 +49,7 @@ export function UserLink({
         (typeof displayName === 'string' ? displayName : name || userId)
       }
     >
-      {displayName}
+      <span className="block w-[36px] truncate">{displayName}</span>
     </Link>
   );
 }

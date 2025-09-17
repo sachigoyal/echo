@@ -34,9 +34,7 @@ const DashboardNavLink = <T extends string>({
 }: NavLinkProps<T>) => {
   return (
     <Link href={href}>
-      <DashboardNavButton href={href}>
-        {children}
-      </DashboardNavButton>
+      <DashboardNavButton href={href}>{children}</DashboardNavButton>
     </Link>
   );
 };

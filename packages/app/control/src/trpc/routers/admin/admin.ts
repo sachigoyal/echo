@@ -1,0 +1,21 @@
+import { createTRPCRouter } from '../../trpc';
+
+import { adminBaseProcedures } from './base';
+import { adminEarningsRouter } from './earnings';
+import { adminAppRouter } from './app';
+import { adminUserRouter } from './user';
+import { adminSpendingRouter } from './spending';
+import { adminPayoutsRouter } from './payouts';
+import { adminPaymentsRouter } from './payments';
+import { adminEmailCampaignsRouter } from './email-campaigns';
+
+export const adminRouter = createTRPCRouter({
+  ...adminBaseProcedures,
+  earnings: adminEarningsRouter,
+  app: adminAppRouter,
+  user: adminUserRouter,
+  spending: adminSpendingRouter,
+  payouts: adminPayoutsRouter,
+  payments: adminPaymentsRouter,
+  emailCampaigns: adminEmailCampaignsRouter,
+});
