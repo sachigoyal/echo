@@ -1,13 +1,13 @@
 'use client';
 
 import { Thread } from '@/components/assistant-ui/thread';
+import { Header } from '@/components/header';
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { useChatRuntime } from '@assistant-ui/react-ai-sdk';
-import { Header } from '@/components/header';
-import { BalanceProvider, useBalance } from '@/components/balance-provider';
+import { useEcho } from '@merit-systems/echo-next-sdk/client';
 
 function ChatApp() {
-  const { refreshBalance } = useBalance();
+  const { refreshBalance } = useEcho();
 
   // Using the new simplified useChatRuntime hook
   const runtime = useChatRuntime({
@@ -30,9 +30,5 @@ function ChatApp() {
 }
 
 export default function Home() {
-  return (
-    <BalanceProvider>
-      <ChatApp />
-    </BalanceProvider>
-  );
+  return <ChatApp />;
 }

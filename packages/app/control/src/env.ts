@@ -19,10 +19,10 @@ export const env = createEnv({
     API_KEY_PREFIX: z.string().default('echo_'),
     API_KEY_HASH_SECRET: IS_STRICT
       ? z.string()
-      : z.string().default('api-key-hash-secret-change-in-production'),
+      : z.string().default('change-this-in-production-very-secret-key'),
     API_ECHO_ACCESS_JWT_SECRET: IS_STRICT
       ? z.string()
-      : z.string().default('api-echo-access-jwt-secret-change-in-production'),
+      : z.string().default('api-jwt-secret-change-in-production'),
 
     // database
 

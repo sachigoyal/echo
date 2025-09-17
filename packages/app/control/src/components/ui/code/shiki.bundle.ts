@@ -46,10 +46,10 @@ const createHighlighter = /* @__PURE__ */ createdBundledHighlighter<
   engine: () => createJavaScriptRegexEngine(),
 });
 
-const { codeToHast, getSingletonHighlighter } =
-  /* @__PURE__ */ createSingletonShorthands<BundledLanguage, BundledTheme>(
-    createHighlighter
-  );
+const { codeToHast } = /* @__PURE__ */ createSingletonShorthands<
+  BundledLanguage,
+  BundledTheme
+>(createHighlighter);
 
-export { codeToHast, getSingletonHighlighter };
+export { codeToHast };
 export type { BundledLanguage, Highlighter };

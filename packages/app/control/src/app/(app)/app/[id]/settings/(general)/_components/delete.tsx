@@ -118,6 +118,7 @@ export const DeleteAppCard: React.FC<Props> = ({ appId, appName }) => {
                 onClick={handleDelete}
                 disabled={
                   isPending ||
+                  isSuccess ||
                   nameInput !== appName ||
                   deleteMyProjectInput !== deleteMyProjectText
                 }

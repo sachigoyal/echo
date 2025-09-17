@@ -2,18 +2,18 @@ import { db } from '@/lib/db';
 import { ReferralCodeType } from '../types';
 import { mintCreditsToUser } from '@/services/credits';
 import { EnumPaymentSource } from '@/generated/prisma';
+import z from 'zod';
 
-export async function redeemCreditReferralCode(
+export const redeemCreditReferralCodeSchema = z.object({
+  code: z.string(),
+  freeTier: z.boolean().optional(),
+  echoAppId: z.string().optional(),
+});
+
+export const redeemCreditReferralCode = async (
   userId: string,
-  code: string,
-  freeTier: boolean = false,
-  echoAppId?: string
-): Promise<{
-  userId: string;
-  amountInDollars: number;
-  echoAppId: string | undefined;
-  isFreeTier: boolean;
-}> {
+  { code, freeTier, echoAppId }: z.infer<typeof redeemCreditReferralCodeSchema>
+) => {
   const user = await db.user.findUnique({
     where: {
       id: userId,
@@ -74,4 +74,4 @@ export async function redeemCreditReferralCode(
       isFreeTier,
     };
   });
-}
+};
