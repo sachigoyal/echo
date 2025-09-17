@@ -1,14 +1,19 @@
 /*
   Warnings:
 
+  - You are about to drop the column `echoAppId` on the `referral_codes` table. All the data in the column will be lost.
   - You are about to drop the column `grantAmount` on the `referral_codes` table. All the data in the column will be lost.
   - You are about to drop the column `grantType` on the `referral_codes` table. All the data in the column will be lost.
   - You are about to drop the column `isUsed` on the `referral_codes` table. All the data in the column will be lost.
   - You are about to drop the column `reusable` on the `referral_codes` table. All the data in the column will be lost.
 
 */
+-- DropForeignKey
+ALTER TABLE "public"."referral_codes" DROP CONSTRAINT "referral_codes_echoAppId_fkey";
+
 -- AlterTable
-ALTER TABLE "public"."referral_codes" DROP COLUMN "grantAmount",
+ALTER TABLE "public"."referral_codes" DROP COLUMN "echoAppId",
+DROP COLUMN "grantAmount",
 DROP COLUMN "grantType",
 DROP COLUMN "isUsed",
 DROP COLUMN "reusable";

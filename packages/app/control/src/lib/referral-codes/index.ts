@@ -29,7 +29,6 @@ export async function setUserReferrerForAppIfExists(
   const referralCode = await client.referralCode.findUnique({
     where: {
       code,
-      echoAppId: echoAppId,
     },
   });
 

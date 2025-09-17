@@ -210,7 +210,6 @@ async function createReferralCodeForUser(
     data: {
       code,
       userId,
-      echoAppId: appId,
       expiresAt: addDays(new Date(), 365),
     },
     select: { id: true, code: true },
