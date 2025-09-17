@@ -8,6 +8,7 @@ import { adminSpendingRouter } from './spending';
 import { adminPayoutsRouter } from './payouts';
 import { adminPaymentsRouter } from './payments';
 import { adminEmailCampaignsRouter } from './email-campaigns';
+import { adminCreditGrantsRouter } from './credit-grants';
 import { adminTokensRouter } from './tokens';
 
 export const adminRouter = createTRPCRouter({
@@ -19,5 +20,6 @@ export const adminRouter = createTRPCRouter({
   payouts: adminPayoutsRouter,
   payments: adminPaymentsRouter,
   emailCampaigns: adminEmailCampaignsRouter,
+  creditGrants: adminCreditGrantsRouter,
   tokens: adminTokensRouter,
 });

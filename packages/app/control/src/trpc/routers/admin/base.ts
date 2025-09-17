@@ -6,13 +6,11 @@ import {
   adminGetUsers,
   adminGetAppsForUser,
   adminMintCreditsToUser,
-  adminMintCreditReferralCode,
-  adminMintCreditReferralCodeSchema,
   downloadUsersCsv,
   downloadUsersCsvSchema,
   isAdmin,
 } from '@/services/admin/admin';
-import { mintCreditsToUserSchema } from '@/services/credits';
+import { mintCreditsToUserSchema } from '@/services/credits/mint';
 
 export const adminBaseProcedures = {
   isAdmin: protectedProcedure.query(async ({ ctx }) => {
@@ -44,11 +42,5 @@ export const adminBaseProcedures = {
     .input(downloadUsersCsvSchema)
     .mutation(async ({ input }) => {
       return await downloadUsersCsv(input);
-    }),
-
-  mintCreditReferralCode: adminProcedure
-    .input(adminMintCreditReferralCodeSchema)
-    .mutation(async ({ input }) => {
-      return await adminMintCreditReferralCode(input);
     }),
 };

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { setUserReferrerForAppIfExists } from '@/lib/referral-codes/user-referral';
+import { setUserReferrerForAppIfExists } from '@/lib/referral-codes';
 import { z } from 'zod';
 
 const setUserReferrerForAppSchema = z.object({

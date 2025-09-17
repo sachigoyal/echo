@@ -1,12 +1,16 @@
 import z from 'zod';
 
-import { mintCreditsToUser, mintCreditsToUserSchema } from '../credits';
+import { mintCreditsToUser, mintCreditsToUserSchema } from '../credits/mint';
 
 import { db } from '@/lib/db';
 
-import { ReferralCodeType } from '@/lib/referral-codes/types';
+import type { EchoApp, Prisma, User } from '@/generated/prisma';
 
-import type { EchoApp, User } from '@/generated/prisma';
+import { PaginationParams, toPaginatedReponse } from '../lib/pagination';
+import {
+  adminCreateCreditGrantSchema,
+  adminUpdateCreditGrantSchema,
+} from './schemas';
 
 export const isAdmin = async (userId: string) => {
   const user = await db.user.findUnique({
@@ -39,37 +43,130 @@ export async function adminMintCreditsToUser(
   return await mintCreditsToUser(input);
 }
 
-export const adminMintCreditReferralCodeSchema = z.object({
-  amountInDollars: z.number().positive('Amount must be positive'),
-  expiresAt: z
-    .date()
-    .optional()
-    .default(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)),
+export const adminGetCreditGrantSchema = z.object({
+  code: z.string(),
 });
 
-export async function adminMintCreditReferralCode(
-  input: z.infer<typeof adminMintCreditReferralCodeSchema>
+export const adminGetCreditGrant = async (
+  input: z.infer<typeof adminGetCreditGrantSchema>
+) => {
+  const creditGrant = await db.creditGrantCode.findUnique({
+    where: { code: input.code },
+  });
+
+  if (!creditGrant) {
+    return null;
+  }
+
+  return {
+    ...creditGrant,
+    grantAmount: creditGrant.grantAmount.toNumber(),
+  };
+};
+
+export async function adminCreateCreditGrant(
+  input: z.infer<typeof adminCreateCreditGrantSchema>
 ) {
   const code = crypto.randomUUID();
 
-  const { amountInDollars, expiresAt } = input;
-
-  const referralCode = await db.referralCode.create({
+  return await db.creditGrantCode.create({
     data: {
       code,
-      echoAppId: null,
-      grantType: ReferralCodeType.CREDITS,
-      grantAmount: amountInDollars,
-      reusable: false,
-      expiresAt,
+      ...input,
     },
   });
+}
 
-  return {
-    code: referralCode.code,
-    grantAmount: referralCode.grantAmount,
-    expiresAt: referralCode.expiresAt,
+export async function adminListCreditGrants(pagination: PaginationParams) {
+  const where: Prisma.CreditGrantCodeWhereInput = {
+    isArchived: false,
   };
+  const [count, creditGrants] = await Promise.all([
+    db.creditGrantCode.count({ where }),
+    db.creditGrantCode.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: pagination.page_size,
+      skip: pagination.page * pagination.page_size,
+      where,
+    }),
+  ]);
+
+  return toPaginatedReponse({
+    items: creditGrants.map(creditGrant => ({
+      ...creditGrant,
+      grantAmount: creditGrant.grantAmount.toNumber(),
+    })),
+    page: pagination.page,
+    page_size: pagination.page_size,
+    total_count: count,
+  });
+}
+
+export const adminListCreditGrantUsagesSchema = z.object({
+  code: z.string(),
+});
+
+export async function adminListCreditGrantUsages(
+  { code }: z.infer<typeof adminListCreditGrantUsagesSchema>,
+  pagination: PaginationParams
+) {
+  const where: Prisma.UserWhereInput = {
+    creditGrantCodeUsages: {
+      some: {
+        creditGrantCode: {
+          code,
+        },
+      },
+    },
+  };
+
+  const [count, users] = await Promise.all([
+    db.user.count({ where }),
+    db.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        creditGrantCodeUsages: {
+          where: {
+            creditGrantCode: {
+              code,
+            },
+          },
+          select: {
+            grantedAmount: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  return toPaginatedReponse({
+    items: users.map(user => ({
+      ...user,
+      creditGrantCodeUsages: user.creditGrantCodeUsages.map(usage => ({
+        ...usage,
+        grantedAmount: usage.grantedAmount.toNumber(),
+      })),
+    })),
+    page: pagination.page,
+    page_size: pagination.page_size,
+    total_count: count,
+  });
+}
+
+export async function adminUpdateCreditGrant({
+  id,
+  ...data
+}: z.infer<typeof adminUpdateCreditGrantSchema>) {
+  return await db.creditGrantCode.update({
+    where: { id },
+    data,
+  });
 }
 
 export const downloadUsersCsvSchema = z.object({

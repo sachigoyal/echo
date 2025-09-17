@@ -31,12 +31,13 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
             href: '/admin/payouts',
           },
           {
-            label: 'Referral Codes',
-            href: '/admin/codes',
+            label: 'Credit Grants',
+            href: '/admin/credit-grants',
+            subRoutes: ['/admin/credit-grants', '/admin/credit-grants/new'],
           },
         ]}
       />
-      <div className="flex flex-col pb-6 md:pb-8 flex-1">{children}</div>
+      <div className="flex flex-col py-6 md:py-8 flex-1">{children}</div>
     </div>
   );
 }

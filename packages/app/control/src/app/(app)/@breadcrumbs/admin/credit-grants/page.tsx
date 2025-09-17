@@ -13,11 +13,10 @@ export default function AdminCodesBreadcrumb() {
       />
       <span className="text-muted-foreground">/</span>
       <Breadcrumb
-        href="/admin/codes"
+        href="/admin/credit-grants"
         image={null}
-        name="Referral Codes"
+        name="Credit Grants"
         Fallback={Ticket}
-        disabled
       />
     </>
   );
