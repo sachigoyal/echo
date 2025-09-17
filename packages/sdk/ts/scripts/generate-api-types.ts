@@ -63,7 +63,13 @@ function generateControlAppTypes(options: ScriptOptions): void {
       throw new Error(`Control app not found at: ${controlAppPath}`);
     }
 
-    // Run the generate-api-types command in the control app
+    // Ensure Prisma is generated first
+    execSync('pnpm prisma:generate', {
+      cwd: controlAppPath,
+      stdio: options.verbose ? 'inherit' : 'pipe',
+    });
+
+    // Ensure Prisma is generated first, then run the generate-api-types command
     execSync('npm run generate-api-types', {
       cwd: controlAppPath,
       stdio: options.verbose ? 'inherit' : 'pipe',

@@ -10,7 +10,7 @@ export type GetAppsByIdResponse = {
   profilePictureUrl: string | null;
   bannerImageUrl: string | null;
   homepageUrl: string | null;
-  isPublic: boolean;
+  isPublic: boolean | null;
   createdAt: string;
   updatedAt: string;
   authorizedCallbackUrls: string[];
@@ -26,7 +26,7 @@ export type GetAppsResponse = {
     profilePictureUrl: string | null;
     bannerImageUrl: string | null;
     homepageUrl: string | null;
-    isPublic: boolean;
+    isPublic: boolean | null;
     createdAt: string;
     updatedAt: string;
     authorizedCallbackUrls: string[];
