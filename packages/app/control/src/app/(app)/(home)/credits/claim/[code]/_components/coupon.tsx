@@ -2,9 +2,16 @@
 
 import React from 'react';
 
+import { ArrowLeft } from 'lucide-react';
+
+import Link from 'next/link';
+
 import { useRouter } from 'next/navigation';
 
 import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import {
   CouponContainer,
@@ -20,10 +27,6 @@ import {
 } from '@/components/coupon';
 
 import { api } from '@/trpc/client';
-import { Skeleton } from '@/components/ui/skeleton';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface Props {
   value: number;

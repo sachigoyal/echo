@@ -66,7 +66,7 @@ export default async function AdminCodePage(
 const checkCreditGrant = async (code: string) => {
   try {
     return await api.credits.grant.get({ code });
-  } catch (error) {
+  } catch {
     return notFound();
   }
 };
