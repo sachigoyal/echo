@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "registry:build": "shadcn build",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "registry:build": "shadcn build"
+    "lint": "next lint"
   },
   "dependencies": {
     "@merit-systems/echo-next-sdk": "^0.0.20",
