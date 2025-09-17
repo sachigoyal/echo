@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
 import { Prisma } from '@/generated/prisma';
-import { ReferralCodeType } from '../types';
 
 export async function setUserReferrerForAppIfExists(
   userId: string,
@@ -30,7 +29,6 @@ export async function setUserReferrerForAppIfExists(
   const referralCode = await client.referralCode.findUnique({
     where: {
       code,
-      grantType: ReferralCodeType.REFERRAL,
       echoAppId: echoAppId,
     },
   });
