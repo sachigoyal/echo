@@ -21,7 +21,7 @@ interface MintedCode {
   maxUsesPerUser?: number;
 }
 
-export function CreditCodeMinter() {
+export const CreditGrantForm = () => {
   const [amount, setAmount] = useState<string>('');
   const [expiresAt, setExpiresAt] = useState<string>('');
   const [maxUses, setMaxUses] = useState<string>('');
@@ -30,7 +30,7 @@ export function CreditCodeMinter() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const mintCodeMutation = api.admin.mintCreditReferralCode.useMutation({
+  const mintCodeMutation = api.admin.creditGrants.create.useMutation({
     onSuccess: data => {
       // Convert grantAmount from Decimal to number
       const convertedData: MintedCode = {
@@ -250,4 +250,4 @@ export function CreditCodeMinter() {
       )}
     </div>
   );
-}
+};

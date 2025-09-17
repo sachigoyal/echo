@@ -11,8 +11,8 @@ import {
   adminGetUsers,
   adminGetAppsForUser,
   adminMintCreditsToUser,
-  adminMintCreditReferralCode,
-  adminMintCreditReferralCodeSchema,
+  adminCreateCreditGrant,
+  adminCreateCreditGrantSchema,
   downloadUsersCsv,
   downloadUsersCsvSchema,
   getUserEarningsAggregates,
@@ -30,6 +30,9 @@ import {
   getUserTransactionsPaginated,
   getUserTransactionTotals,
   isAdmin,
+  adminListCreditGrants,
+  adminDisableCreditGrant,
+  adminDisableCreditGrantSchema,
 } from '@/services/admin/admin';
 import { mintCreditsToUserSchema } from '@/services/credits/mint';
 import { adminListPendingPayouts } from '@/services/admin/pending-payouts';
@@ -78,11 +81,23 @@ export const adminRouter = createTRPCRouter({
       return await downloadUsersCsv(input);
     }),
 
-  mintCreditReferralCode: adminProcedure
-    .input(adminMintCreditReferralCodeSchema)
-    .mutation(async ({ input }) => {
-      return await adminMintCreditReferralCode(input);
+  creditGrants: {
+    create: adminProcedure
+      .input(adminCreateCreditGrantSchema)
+      .mutation(async ({ input }) => {
+        return await adminCreateCreditGrant(input);
+      }),
+
+    list: paginatedProcedure.concat(adminProcedure).query(async ({ ctx }) => {
+      return await adminListCreditGrants(ctx.pagination);
     }),
+
+    disable: adminProcedure
+      .input(adminDisableCreditGrantSchema)
+      .mutation(async ({ input }) => {
+        return await adminDisableCreditGrant(input);
+      }),
+  },
 
   earnings: {
     /**
