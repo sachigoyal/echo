@@ -1,4 +1,5 @@
-import { Nav } from '@/app/(app)/_components/layout/nav';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function AdminDashboardLayout({
   children,
@@ -7,27 +8,33 @@ export default function AdminDashboardLayout({
 }) {
   return (
     <div className="relative">
-      <Nav
-        tabs={[
-          {
-            label: 'User Earnings',
-            href: '/admin/dashboard/user-earnings',
-          },
-          {
-            label: 'User Spending',
-            href: '/admin/dashboard/user-spending',
-          },
-          {
-            label: 'App Earnings',
-            href: '/admin/dashboard/app-earnings',
-          },
-          {
-            label: 'Payment History',
-            href: '/admin/dashboard/payments',
-          },
-        ]}
-      />
-      <div className="flex flex-col py-6 md:py-8 flex-1">{children}</div>
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="lg:w-[240px] lg:sticky lg:top-0">
+          <div className="w-full flex flex-col gap-2">
+            <Link href="/admin/dashboard/user-earnings">
+              <Button variant="ghost" className="w-full justify-start text-base">
+                User Earnings
+              </Button>
+            </Link>
+            <Link href="/admin/dashboard/user-spending">
+              <Button variant="ghost" className="w-full justify-start text-base">
+                User Spending
+              </Button>
+            </Link>
+            <Link href="/admin/dashboard/app-earnings">
+              <Button variant="ghost" className="w-full justify-start text-base">
+                App Earnings
+              </Button>
+            </Link>
+            <Link href="/admin/dashboard/payments">
+              <Button variant="ghost" className="w-full justify-start text-base">
+                Payment History
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col gap-6">{children}</div>
+      </div>
     </div>
   );
 }
