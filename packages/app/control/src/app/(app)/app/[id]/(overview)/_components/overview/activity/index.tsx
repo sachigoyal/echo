@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { endOfDay, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 
 import { Card } from '@/components/ui/card';
 
