@@ -27,10 +27,6 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
             ],
           },
           {
-            label: 'Tools',
-            href: '/admin/tools',
-          },
-          {
             label: 'Payouts',
             href: '/admin/payouts',
           },
