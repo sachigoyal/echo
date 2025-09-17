@@ -4,7 +4,7 @@ import { mintCreditsToUser, mintCreditsToUserSchema } from '../credits/mint';
 
 import { db } from '@/lib/db';
 
-import { ReferralCodeType } from '@/lib/referral-codes/types';
+import { ReferralCodeType } from '@/types/referral-code';
 
 import type { EchoApp, User } from '@/generated/prisma';
 

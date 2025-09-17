@@ -259,8 +259,6 @@ export {
   CouponHeader,
   CouponValue,
   CouponLabel,
-  CouponLabelText,
-  CouponLabelIcon,
   CouponDivider,
   CouponFooter,
   CouponTitle,

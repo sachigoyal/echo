@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { appIdSchema } from './lib/schemas';
 import { UserId } from '@/services/lib/schemas';
 
-import { ReferralCodeType } from '@/lib/referral-codes/types';
+import { ReferralCodeType } from '@/types/referral-code';
 
 export const getAppReferralCodeSchema = appIdSchema;
 

@@ -1,7 +1,7 @@
 import {
   redeemCreditReferralCode,
   redeemCreditReferralCodeSchema,
-} from '@/lib/referral-codes/credit-grants';
+} from '@/services/credits/coupon';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import {
   getReferralCode,

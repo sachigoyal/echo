@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { ReferralCodeType } from '../types';
+import { ReferralCodeType } from '@/types/referral-code';
 
 export async function setUserReferrerForAppIfExists(
   userId: string,
