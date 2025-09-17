@@ -129,6 +129,50 @@ export async function adminListCreditGrants(pagination: PaginationParams) {
   });
 }
 
+export const adminListCreditGrantUsagesSchema = z.object({
+  code: z.string(),
+});
+
+export async function adminListCreditGrantUsages(
+  { code }: z.infer<typeof adminListCreditGrantUsagesSchema>,
+  pagination: PaginationParams
+) {
+  const [creditGrantUsages] = await Promise.all([
+    db.creditGrantCodeUsage.groupBy({
+      by: ['userId'],
+      where: {
+        creditGrantCode: {
+          code,
+        },
+      },
+      _count: {
+        userId: true,
+        _all: true,
+      },
+      orderBy: {
+        _count: {
+          userId: 'desc',
+        },
+      },
+      take: pagination.page_size,
+      skip: pagination.page * pagination.page_size,
+    }),
+  ]);
+
+  db.user.findMany({
+    where: {
+      creditGrantCodeUsages: {},
+    },
+  });
+
+  return toPaginatedReponse({
+    items: creditGrantUsages,
+    page: pagination.page,
+    page_size: pagination.page_size,
+    total_count: creditGrantUsages[0]._count._all,
+  });
+}
+
 export async function adminUpdateCreditGrant({
   id,
   ...data
