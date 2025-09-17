@@ -1,0 +1,106 @@
+---
+title: Client
+description: Echo's Next.js SDK client-side functionality.
+---
+
+Echo maintains authentication using HTTP Cookies. The browser does not have access
+to these so login state needs to be handled by server components.
+
+# Setup Provider
+
+Create a `providers.tsx` file to wrap your app with the Echo provider:
+
+```typescript
+"use client";
+
+import { EchoProvider } from '@merit-systems/echo-next-sdk/client';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <EchoProvider config={{ appId: 'your-app-id' }}>
+      {children}
+    </EchoProvider>
+  );
+}
+```
+
+Then wrap your app in `layout.tsx`:
+
+```typescript
+import { Providers } from './providers';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+# Using the useEcho Hook
+
+The `useEcho` hook provides access to user data, balance information, and authentication methods:
+
+```typescript
+import { useEcho } from '@merit-systems/echo-next-sdk/client';
+
+export default function MyComponent() {
+  const { user, balance, freeTierBalance, signIn, signOut, echoClient } = useEcho();
+
+  if (!user) {
+    return <button onClick={signIn}>Sign In</button>;
+  }
+
+  return (
+    <div>
+      <p>Welcome {user.name}!</p>
+      <p>Balance: ${balance?.balance || 0}</p>
+      <button onClick={signOut}>Sign Out</button>
+    </div>
+  );
+}
+```
+
+# Direct API Access with echoClient
+
+For more advanced use cases, you can access the `echoClient` directly to call any Echo API method:
+
+```typescript
+import { useEcho } from '@merit-systems/echo-next-sdk/client';
+
+export default function PaymentComponent() {
+  const { echoClient } = useEcho();
+
+  const handleCreatePayment = async () => {
+    if (!echoClient) return;
+
+    try {
+      // Create payment link
+      const paymentLink = await echoClient.payments.createPaymentLink({
+        amount: 10,
+        description: 'Credits',
+      });
+      
+      // Get detailed user info
+      const userInfo = await echoClient.users.getUserInfo();
+      
+      // Check balance
+      const balance = await echoClient.balance.getBalance();
+      
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  return <button onClick={handleCreatePayment}>Create Payment</button>;
+}
+```
+
+The `echoClient` provides full access to all Echo API endpoints. For a complete list of available methods, see the [TypeScript SDK](../typescript-sdk) documentation.

@@ -6,25 +6,14 @@
 
 </div>
 
-<div align="center">
-
   <div align="center">
-    <a href="https://discord.gg/JuKt7tPnNc">
-      <img alt="Discord" src="https://img.shields.io/discord/1382120201713352836?color=7289da&logo=discord&logoColor=white">
-    </a> 
-    <a href="https://x.com/merit_systems">
-      <img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/merit_systems?style=social">
-    </a> 
-    <a href="https://github.com/Merit-Systems/echo">
-      <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Merit-Systems/echo?style=social">
-    </a> 
-    <a href="https://opensource.org/licenses/Apache-2.0">
-      <img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg">
-    </a>
+    
+  [![Discord](https://img.shields.io/discord/1382120201713352836?style=flat&logo=discord&logoColor=white&label=Discord)](https://discord.gg/JuKt7tPnNc) 
+  ![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/merit_systems) 
+  [![GitHub Repo stars](https://img.shields.io/github/stars/Merit-Systems/echo?style=social)](https://github.com/Merit-Systems/echo) 
+  [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
   </div>
-</div>
-
-
 
 From Vercel AI SDK to Revenue in 5 Lines
 
@@ -46,23 +35,40 @@ Consider giving a star on GitHub!
 
 ## Core
 
-- [Echo Control](./echo-control): Next.js app for [echo.merit.systems](https://echo.merit.systems). Hosted site and api routes.
-- [Echo Server](./echo-server): Express server for router.echo.merit.systems. Proxy for routing and metering LLM requests from clients.
+- [Echo Control](./packages/app/control): Next.js app for [echo.merit.systems](https://echo.merit.systems). Hosted site and api routes.
+- [Echo Server](./packages/app/server): Express server for router.echo.merit.systems. Proxy for routing and metering LLM requests from clients.
 
 ## SDKs
 
-- [Echo TS SDK](./echo-typescript-sdk) Typescript SDK that all the framework specific SDKs are built on top of.
-- [Echo Next.js SDK](./echo-next-sdk) SDK for simple Next.js 15+ App Router integration.
-- [Echo React SDK](./echo-react-sdk) SDK for simple React client side SPA integration.
+- [Echo TS SDK](./packages/sdk/ts) Typescript SDK that all the framework specific SDKs are built on top of.
+- [Echo Next.js SDK](./packages/sdk/next) SDK for simple Next.js 15+ App Router integration.
+- [Echo React SDK](./packages/sdk/react) SDK for simple React client side SPA integration.
 
 ## Examples
 
-- [Echo Next.js Example](./examples/next-sdk-example)
-- [Echo React SDK](./examples/vite)
+- [Echo Next.js Example](./packages/sdk/examples/next)
+- [Echo React SDK](./packages/sdk/examples/vite)
+
+## Templates
+
+Get started quickly with `echo-start`:
+
+```bash
+npx echo-start my-app
+```
+
+Available templates:
+
+- **[next](./templates/next)** - Next.js application with Echo
+- **[react](./templates/react)** - Vite React application with Echo
+- **[nextjsChatbot](./templates/nextjs-chatbot)** - Next.js with Echo and Vercel AI SDK
+- **[assistantUi](./templates/assistant-ui)** - Next.js with Echo and Assistant UI
+
+Or run `npx echo-start my-app` to choose interactively.
 
 # Development
 
-Fill out `echo-control/.env` and `echo-server/.env`. Then...
+Fill out `packages/app/control/.env` and `packages/app/server/.env`. Then...
 
 - `pnpm i`
 - `pnpm dev`
