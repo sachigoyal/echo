@@ -49,7 +49,7 @@ export const AddCredits: React.FC<Props> = ({ appId }) => {
 
       // Invalidate balance queries
       utils.user.balance.get.invalidate();
-      utils.user.balance.app.free.invalidate({ appId });
+      utils.user.balance.app.free.invalidate(appId);
       utils.apps.app.freeTier.get.invalidate({ appId });
     },
     onError: error => {
