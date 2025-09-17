@@ -32,6 +32,7 @@ import {
   getUserTransactionTotals,
 } from './user-transactions';
 import { PaginationParams, toPaginatedReponse } from '../lib/pagination';
+import { adminCreateCreditGrantSchema } from './schemas';
 
 export const isAdmin = async (userId: string) => {
   const user = await db.user.findUnique({
@@ -63,24 +64,6 @@ export async function adminMintCreditsToUser(
 ) {
   return await mintCreditsToUser(input);
 }
-
-export const adminCreateCreditGrantSchema = z.object({
-  amountInDollars: z.number().positive('Amount must be positive'),
-  expiresAt: z
-    .date()
-    .optional()
-    .default(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)),
-  maxUses: z
-    .number()
-    .int()
-    .positive('Max uses must be a positive integer')
-    .optional(),
-  maxUsesPerUser: z
-    .number()
-    .int()
-    .positive('Max uses per user must be a positive integer')
-    .optional(),
-});
 
 export async function adminCreateCreditGrant(
   input: z.infer<typeof adminCreateCreditGrantSchema>

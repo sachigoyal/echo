@@ -12,7 +12,6 @@ import {
   adminGetAppsForUser,
   adminMintCreditsToUser,
   adminCreateCreditGrant,
-  adminCreateCreditGrantSchema,
   downloadUsersCsv,
   downloadUsersCsvSchema,
   getUserEarningsAggregates,
@@ -34,6 +33,7 @@ import {
   adminDisableCreditGrant,
   adminDisableCreditGrantSchema,
 } from '@/services/admin/admin';
+import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
 import { mintCreditsToUserSchema } from '@/services/credits/mint';
 import { adminListPendingPayouts } from '@/services/admin/pending-payouts';
 import { adminListCompletedPayouts } from '@/services/admin/completed-payouts';

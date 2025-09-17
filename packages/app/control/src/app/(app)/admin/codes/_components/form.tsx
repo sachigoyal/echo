@@ -1,253 +1,195 @@
 'use client';
 
-import { useState } from 'react';
+import z from 'zod';
+
+import { CalendarDays, Check, Loader2 } from 'lucide-react';
+
+import { addYears, format } from 'date-fns';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+import { toast } from 'sonner';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Copy, Check } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { MoneyInput } from '@/components/ui/money-input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+
 import { api } from '@/trpc/client';
 
-interface MintedCode {
-  code: string;
-  grantAmount: number;
-  expiresAt: Date;
-  maxUses?: number;
-  maxUsesPerUser?: number;
-}
+import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
 
 export const CreditGrantForm = () => {
-  const [amount, setAmount] = useState<string>('');
-  const [expiresAt, setExpiresAt] = useState<string>('');
-  const [maxUses, setMaxUses] = useState<string>('');
-  const [maxUsesPerUser, setMaxUsesPerUser] = useState<string>('');
-  const [mintedCodes, setMintedCodes] = useState<MintedCode[]>([]);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const utils = api.useUtils();
 
-  const mintCodeMutation = api.admin.creditGrants.create.useMutation({
-    onSuccess: data => {
-      // Convert grantAmount from Decimal to number
-      const convertedData: MintedCode = {
-        code: data.code,
-        grantAmount:
-          typeof data.grantAmount === 'number'
-            ? data.grantAmount
-            : Number(data.grantAmount),
-        expiresAt: data.expiresAt,
-        maxUses: data.maxUses || undefined,
-        maxUsesPerUser: data.maxUsesPerUser || undefined,
-      };
-      setMintedCodes([convertedData, ...mintedCodes]);
-      setAmount('');
-      setExpiresAt('');
-      setMaxUses('');
-      setMaxUsesPerUser('');
-      setError(null);
-    },
-    onError: error => {
-      setError(error.message);
+  const form = useForm({
+    resolver: zodResolver(adminCreateCreditGrantSchema),
+    mode: 'onChange',
+    defaultValues: {
+      expiresAt: addYears(new Date(), 1),
+      maxUsesPerUser: 1,
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    mutate: createCreditGrant,
+    isPending,
+    isSuccess,
+  } = api.admin.creditGrants.create.useMutation({
+    onSuccess: () => {
+      utils.admin.creditGrants.list.invalidate();
+      form.reset();
+    },
+    onError: error => {
+      toast.error(error.message);
+    },
+  });
 
-    const amountInDollars = parseFloat(amount);
-    if (isNaN(amountInDollars) || amountInDollars <= 0) {
-      setError('Please enter a valid positive amount');
-      return;
-    }
-
-    const expirationDate = expiresAt ? new Date(expiresAt) : undefined;
-    const maxUsesValue = maxUses ? parseInt(maxUses, 10) : undefined;
-    const maxUsesPerUserValue = maxUsesPerUser
-      ? parseInt(maxUsesPerUser, 10)
-      : undefined;
-
-    if (maxUses && (isNaN(maxUsesValue!) || maxUsesValue! <= 0)) {
-      setError('Please enter a valid positive number for max uses');
-      return;
-    }
-
-    if (
-      maxUsesPerUser &&
-      (isNaN(maxUsesPerUserValue!) || maxUsesPerUserValue! <= 0)
-    ) {
-      setError('Please enter a valid positive number for max uses per user');
-      return;
-    }
-
-    await mintCodeMutation.mutateAsync({
-      amountInDollars,
-      expiresAt: expirationDate,
-      maxUses: maxUsesValue,
-      maxUsesPerUser: maxUsesPerUserValue,
-    });
-  };
-
-  const copyToClipboard = async (code: string) => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopiedCode(code);
-      setTimeout(() => setCopiedCode(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy code:', err);
-    }
+  const onSubmit = (data: z.infer<typeof adminCreateCreditGrantSchema>) => {
+    createCreditGrant(data);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Mint Code Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mint Credit Grant Code</CardTitle>
-          <CardDescription>
-            Create a new referral code that grants credits to users
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="amount" className="text-sm font-medium">
-                Credit Amount (USD)
-              </label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="Enter amount in dollars"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="expiresAt" className="text-sm font-medium">
-                Expiration Date (Optional)
-              </label>
-              <Input
-                id="expiresAt"
-                type="date"
-                value={expiresAt}
-                onChange={e => setExpiresAt(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-              />
-              <p className="text-xs text-muted-foreground">
-                Leave empty to default to 1 year from now
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="maxUses" className="text-sm font-medium">
-                Max Uses (Optional)
-              </label>
-              <Input
-                id="maxUses"
-                type="number"
-                min="1"
-                step="1"
-                placeholder="Enter maximum number of uses"
-                value={maxUses}
-                onChange={e => setMaxUses(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Leave empty for unlimited uses
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="maxUsesPerUser" className="text-sm font-medium">
-                Max Uses Per User (Optional)
-              </label>
-              <Input
-                id="maxUsesPerUser"
-                type="number"
-                min="1"
-                step="1"
-                placeholder="Enter maximum uses per user"
-                value={maxUsesPerUser}
-                onChange={e => setMaxUsesPerUser(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Leave empty for unlimited uses per user
-              </p>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={mintCodeMutation.isPending || !amount}
-              className="w-full"
-            >
-              {mintCodeMutation.isPending
-                ? 'Minting Code...'
-                : 'Mint Credit Code'}
-            </Button>
-
-            {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                {error}
-              </div>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Minted Codes List */}
-      {mintedCodes.length > 0 && (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
-          <CardHeader>
-            <CardTitle>Recently Minted Codes</CardTitle>
+          <CardHeader className="border-b">
+            <CardTitle>Mint Credit Grant Code</CardTitle>
             <CardDescription>
-              Codes created in this session. Share these with users to grant
-              them credits.
+              Create a new referral code that grants credits to users
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {mintedCodes.map((mintedCode, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 border rounded-lg bg-muted/50"
-                >
-                  <div className="flex-1">
-                    <div className="font-mono text-sm font-medium">
-                      {mintedCode.code}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      ${mintedCode.grantAmount.toFixed(2)} • Expires{' '}
-                      {mintedCode.expiresAt.toLocaleDateString()}
-                      {mintedCode.maxUses &&
-                        ` • Max uses: ${mintedCode.maxUses}`}
-                      {mintedCode.maxUsesPerUser &&
-                        ` • Max per user: ${mintedCode.maxUsesPerUser}`}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyToClipboard(mintedCode.code)}
-                    className="ml-2"
-                  >
-                    {copiedCode === mintedCode.code ? (
-                      <Check className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              ))}
+          <CardContent className="py-4 flex flex-col gap-4">
+            <FormField
+              control={form.control}
+              name="amountInDollars"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <MoneyInput
+                      setAmount={amount => field.onChange(amount)}
+                      placeholder="10.00"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="expiresAt"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-2">
+                    <FormLabel>
+                      Expiration Date (Defaults to 1 year from now)
+                    </FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="justify-start">
+                          <CalendarDays className="size-4" />
+                          {field.value
+                            ? format(field.value, 'MM/dd/yyyy')
+                            : 'Select Date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 size-fit">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="maxUses"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-2">
+                    <FormLabel>Max Uses (Empty for unlimited)</FormLabel>
+                    <FormControl>
+                      <Input
+                        id="maxUses"
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="Enter maximum number of uses"
+                        onChange={e => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="maxUsesPerUser"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-2">
+                    <FormLabel>
+                      Max Uses Per User (Empty for unlimited)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        id="maxUsesPerUser"
+                        type="number"
+                        min="1"
+                        step="1"
+                        placeholder="Enter maximum uses per user"
+                        onChange={e => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </CardContent>
+          <CardFooter className="border-t p-4">
+            <Button
+              type="submit"
+              disabled={isPending || isSuccess || !form.formState.isValid}
+              className="w-full"
+            >
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : isSuccess ? (
+                <Check className="size-4" />
+              ) : (
+                'Mint Credit Code'
+              )}
+            </Button>
+          </CardFooter>
         </Card>
-      )}
-    </div>
+      </form>
+    </Form>
   );
 };
