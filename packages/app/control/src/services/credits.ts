@@ -6,7 +6,6 @@ import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 import {
   EnumPaymentSource,
   Payment,
-  Session,
   type Prisma,
 } from '@/generated/prisma';
 import { logger } from '@/logger';
