@@ -37,6 +37,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
           {
             label: 'Credit Grants',
             href: '/admin/credit-grants',
+            subRoutes: ['/admin/credit-grants', '/admin/credit-grants/new'],
           },
         ]}
       />

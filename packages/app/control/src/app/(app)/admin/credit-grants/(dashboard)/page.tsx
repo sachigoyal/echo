@@ -7,10 +7,14 @@ import {
   CreditGrantsTable,
   LoadingCreditGrantTable,
 } from './_components/table';
-import { CreateCreditGrantForm } from './_components/create-form';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
-export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
-  await userOrRedirect('/admin/codes', props);
+export default async function AdminCodesPage(
+  props: PageProps<'/admin/credit-grants'>
+) {
+  await userOrRedirect('/admin/credit-grants', props);
 
   api.admin.creditGrants.list.prefetchInfinite({});
 
@@ -19,9 +23,16 @@ export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
       <Heading
         title="Credit Grants"
         description="Manage and mint credit grants for users to get free credits"
+        actions={
+          <Link href="/admin/credit-grants/new">
+            <Button variant="turbo">
+              <Plus className="size-4" />
+              New Credit Grant
+            </Button>
+          </Link>
+        }
       />
       <Body>
-        <CreateCreditGrantForm />
         <Suspense fallback={<LoadingCreditGrantTable />}>
           <CreditGrantsTable />
         </Suspense>
