@@ -16,14 +16,12 @@ import {
   CouponValue,
 } from '@/components/coupon';
 
-import { api } from '@/trpc/server';
-
-import { notFound } from 'next/navigation';
-
 import { ShareButton } from './_components/share-button';
+import { formatCurrency } from '@/lib/utils';
+import { checkCreditGrant } from '../_lib/checks';
 
 export default async function AdminCodePage(
-  props: PageProps<'/admin/codes/[code]'>
+  props: PageProps<'/admin/codes/[code]/share'>
 ) {
   const { code } = await props.params;
 
@@ -31,7 +29,10 @@ export default async function AdminCodePage(
 
   return (
     <div>
-      <Heading title="Credit Grant" />
+      <Heading
+        title="Free Credits"
+        description={`Scan this QR code to claim ${formatCurrency(creditGrant.grantAmount)} of Echo credits`}
+      />
       <Body>
         <div className="grid grid-cols-1 lg:grid-cols-3 items-center gap-4 lg:gap-8">
           <Card className="aspect-square shrink-0 rounded-xl border overflow-hidden relative p-4">
@@ -62,11 +63,3 @@ export default async function AdminCodePage(
     </div>
   );
 }
-
-const checkCreditGrant = async (code: string) => {
-  try {
-    return await api.credits.grant.get({ code });
-  } catch {
-    return notFound();
-  }
-};

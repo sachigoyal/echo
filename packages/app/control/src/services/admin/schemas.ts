@@ -20,3 +20,10 @@ export const adminCreateCreditGrantSchema = z.object({
     .positive('Max uses per user must be a positive integer')
     .optional(),
 });
+
+export const adminUpdateCreditGrantSchema = adminCreateCreditGrantSchema
+  .partial()
+  .extend({
+    id: z.string(),
+    isArchived: z.boolean().optional(),
+  });

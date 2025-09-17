@@ -30,10 +30,14 @@ import {
   getUserTransactionTotals,
   isAdmin,
   adminListCreditGrants,
-  adminDisableCreditGrant,
-  adminDisableCreditGrantSchema,
+  adminGetCreditGrant,
+  adminGetCreditGrantSchema,
+  adminUpdateCreditGrant,
 } from '@/services/admin/admin';
-import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import {
+  adminCreateCreditGrantSchema,
+  adminUpdateCreditGrantSchema,
+} from '@/services/admin/schemas';
 import { mintCreditsToUserSchema } from '@/services/credits/mint';
 import { adminListPendingPayouts } from '@/services/admin/pending-payouts';
 import { adminListCompletedPayouts } from '@/services/admin/completed-payouts';
@@ -48,6 +52,7 @@ import {
   scheduleCampaignForApps,
 } from '@/services/admin/email-campaigns';
 import { getAppsEarningsPaginatedWithCampaigns } from '@/services/admin/app-earnings';
+import { TRPCError } from '@trpc/server';
 
 export const adminRouter = createTRPCRouter({
   isAdmin: protectedProcedure.query(async ({ ctx }) => {
@@ -82,20 +87,30 @@ export const adminRouter = createTRPCRouter({
     }),
 
   creditGrants: {
-    create: adminProcedure
-      .input(adminCreateCreditGrantSchema)
-      .mutation(async ({ input }) => {
-        return await adminCreateCreditGrant(input);
+    get: adminProcedure
+      .input(adminGetCreditGrantSchema)
+      .query(async ({ input }) => {
+        const creditGrant = await adminGetCreditGrant(input);
+        if (!creditGrant) {
+          throw new TRPCError({ code: 'NOT_FOUND' });
+        }
+        return creditGrant;
       }),
 
     list: paginatedProcedure.concat(adminProcedure).query(async ({ ctx }) => {
       return await adminListCreditGrants(ctx.pagination);
     }),
 
-    disable: adminProcedure
-      .input(adminDisableCreditGrantSchema)
+    create: adminProcedure
+      .input(adminCreateCreditGrantSchema)
       .mutation(async ({ input }) => {
-        return await adminDisableCreditGrant(input);
+        return await adminCreateCreditGrant(input);
+      }),
+
+    update: adminProcedure
+      .input(adminUpdateCreditGrantSchema)
+      .mutation(async ({ input }) => {
+        return await adminUpdateCreditGrant(input);
       }),
   },
 

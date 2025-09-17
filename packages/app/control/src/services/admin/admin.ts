@@ -32,7 +32,10 @@ import {
   getUserTransactionTotals,
 } from './user-transactions';
 import { PaginationParams, toPaginatedReponse } from '../lib/pagination';
-import { adminCreateCreditGrantSchema } from './schemas';
+import {
+  adminCreateCreditGrantSchema,
+  adminUpdateCreditGrantSchema,
+} from './schemas';
 
 export const isAdmin = async (userId: string) => {
   const user = await db.user.findUnique({
@@ -65,6 +68,27 @@ export async function adminMintCreditsToUser(
   return await mintCreditsToUser(input);
 }
 
+export const adminGetCreditGrantSchema = z.object({
+  code: z.string(),
+});
+
+export const adminGetCreditGrant = async (
+  input: z.infer<typeof adminGetCreditGrantSchema>
+) => {
+  const creditGrant = await db.creditGrantCode.findUnique({
+    where: { code: input.code },
+  });
+
+  if (!creditGrant) {
+    return null;
+  }
+
+  return {
+    ...creditGrant,
+    grantAmount: creditGrant.grantAmount.toNumber(),
+  };
+};
+
 export async function adminCreateCreditGrant(
   input: z.infer<typeof adminCreateCreditGrantSchema>
 ) {
@@ -72,7 +96,7 @@ export async function adminCreateCreditGrant(
 
   const { amountInDollars, expiresAt, maxUses, maxUsesPerUser } = input;
 
-  const referralCode = await db.creditGrantCode.create({
+  return await db.creditGrantCode.create({
     data: {
       code,
       grantAmount: amountInDollars,
@@ -81,14 +105,6 @@ export async function adminCreateCreditGrant(
       maxUsesPerUser,
     },
   });
-
-  return {
-    code: referralCode.code,
-    grantAmount: referralCode.grantAmount,
-    expiresAt: referralCode.expiresAt,
-    maxUses: referralCode.maxUses,
-    maxUsesPerUser: referralCode.maxUsesPerUser,
-  };
 }
 
 export async function adminListCreditGrants(pagination: PaginationParams) {
@@ -118,16 +134,13 @@ export async function adminListCreditGrants(pagination: PaginationParams) {
   });
 }
 
-export const adminDisableCreditGrantSchema = z.object({
-  creditGrantId: z.string(),
-});
-
-export async function adminDisableCreditGrant(
-  input: z.infer<typeof adminDisableCreditGrantSchema>
-) {
+export async function adminUpdateCreditGrant({
+  id,
+  ...data
+}: z.infer<typeof adminUpdateCreditGrantSchema>) {
   await db.creditGrantCode.update({
-    where: { id: input.creditGrantId },
-    data: { isArchived: true },
+    where: { id },
+    data,
   });
 }
 

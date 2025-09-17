@@ -4,12 +4,10 @@ import z from 'zod';
 
 import { CalendarDays, Check, Loader2 } from 'lucide-react';
 
-import { addYears, format } from 'date-fns';
+import { format } from 'date-fns';
 
-import { useForm } from 'react-hook-form';
+import { DefaultValues, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,43 +35,42 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 
-import { api } from '@/trpc/client';
-
 import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
 
-export const CreditGrantForm = () => {
-  const utils = api.useUtils();
+interface Props {
+  onSubmit: (
+    data: z.infer<typeof adminCreateCreditGrantSchema>
+  ) => Promise<void>;
+  isSubmitting: boolean;
+  isSuccess?: boolean;
+  defaultValues?: DefaultValues<z.input<typeof adminCreateCreditGrantSchema>>;
+}
 
-  const form = useForm({
+export const CreditGrantForm: React.FC<Props> = ({
+  onSubmit,
+  isSubmitting,
+  isSuccess,
+  defaultValues,
+}) => {
+  const form = useForm<
+    z.input<typeof adminCreateCreditGrantSchema>,
+    unknown,
+    z.output<typeof adminCreateCreditGrantSchema>
+  >({
     resolver: zodResolver(adminCreateCreditGrantSchema),
     mode: 'onChange',
-    defaultValues: {
-      expiresAt: addYears(new Date(), 1),
-      maxUsesPerUser: 1,
-    },
+    defaultValues,
   });
 
-  const {
-    mutate: createCreditGrant,
-    isPending,
-    isSuccess,
-  } = api.admin.creditGrants.create.useMutation({
-    onSuccess: () => {
-      utils.admin.creditGrants.list.invalidate();
+  const handleSubmit = (data: z.infer<typeof adminCreateCreditGrantSchema>) => {
+    onSubmit(data).then(() => {
       form.reset();
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
-
-  const onSubmit = (data: z.infer<typeof adminCreateCreditGrantSchema>) => {
-    createCreditGrant(data);
+    });
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(handleSubmit)}>
         <Card>
           <CardHeader className="border-b">
             <CardTitle>Mint Credit Grant Code</CardTitle>
@@ -176,10 +173,10 @@ export const CreditGrantForm = () => {
           <CardFooter className="border-t p-4">
             <Button
               type="submit"
-              disabled={isPending || isSuccess || !form.formState.isValid}
+              disabled={isSubmitting || isSuccess || !form.formState.isValid}
               className="w-full"
             >
-              {isPending ? (
+              {isSubmitting ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : isSuccess ? (
                 <Check className="size-4" />

@@ -1,12 +1,13 @@
-import { CreditGrantForm } from '@/app/(app)/admin/codes/_components/form';
+import { Suspense } from 'react';
+
 import { userOrRedirect } from '@/auth/user-or-redirect';
 import { api, HydrateClient } from '@/trpc/server';
-import { Body, Heading } from '../../_components/layout/page-utils';
+import { Body, Heading } from '../../../_components/layout/page-utils';
 import {
   CreditGrantsTable,
   LoadingCreditGrantTable,
 } from './_components/table';
-import { Suspense } from 'react';
+import { CreateCreditGrantForm } from './_components/create-form';
 
 export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
   await userOrRedirect('/admin/codes', props);
@@ -22,7 +23,7 @@ export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
         description="Manage and mint credit grants for users to get free credits"
       />
       <Body>
-        <CreditGrantForm />
+        <CreateCreditGrantForm />
         <Suspense fallback={<LoadingCreditGrantTable />}>
           <CreditGrantsTable />
         </Suspense>

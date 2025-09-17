@@ -31,7 +31,7 @@ export const DisableCreditGrantDialog: React.FC<Props> = ({
     mutate: disableCreditGrant,
     isPending,
     isSuccess,
-  } = api.admin.creditGrants.disable.useMutation({
+  } = api.admin.creditGrants.update.useMutation({
     onSuccess: () => {
       utils.admin.creditGrants.list.invalidate();
       setIsOpen(false);
@@ -56,7 +56,9 @@ export const DisableCreditGrantDialog: React.FC<Props> = ({
             Cancel
           </Button>
           <Button
-            onClick={() => disableCreditGrant({ creditGrantId })}
+            onClick={() =>
+              disableCreditGrant({ id: creditGrantId, isArchived: true })
+            }
             disabled={isPending || isSuccess}
           >
             Disable

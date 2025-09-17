@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, Settings, Share } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/card';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { DisableCreditGrantDialog } from './disable-dialog';
 
 interface Pagination {
   hasNext: boolean;
@@ -67,13 +66,17 @@ export const CreditGrantsTable = () => {
               </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-2">
-                  <DisableCreditGrantDialog creditGrantId={creditGrant.id}>
-                    <Button size="xs" variant="destructiveOutline">
-                      Disable
-                    </Button>
-                  </DisableCreditGrantDialog>
                   <Link href={`/admin/codes/${creditGrant.code}`}>
-                    <Button size="xs">Share</Button>
+                    <Button size="xs" variant="outline">
+                      <Settings className="size-3" />
+                      Settings
+                    </Button>
+                  </Link>
+                  <Link href={`/admin/codes/${creditGrant.code}/share`}>
+                    <Button size="xs">
+                      <Share className="size-3" />
+                      Share
+                    </Button>
                   </Link>
                 </div>
               </TableCell>
