@@ -4,7 +4,7 @@ import { api } from '@/trpc/server';
 
 export const checkCreditGrant = async (code: string) => {
   try {
-    return await api.admin.creditGrants.get({ code });
+    return await api.admin.creditGrants.grant.get({ code });
   } catch {
     return notFound();
   }

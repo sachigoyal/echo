@@ -15,6 +15,8 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { CopyCode } from '@/components/ui/copy-code';
+import { api, HydrateClient } from '@/trpc/server';
+import { CreditGrantUsersTable } from './_components/users-table';
 
 export default async function AdminCodePage(
   props: PageProps<'/admin/codes/[code]'>
@@ -23,8 +25,12 @@ export default async function AdminCodePage(
 
   const creditGrant = await checkCreditGrant(code);
 
+  api.admin.creditGrants.grant.listUsers.prefetchInfinite({
+    code,
+  });
+
   return (
-    <div>
+    <HydrateClient>
       <Heading
         title="Credit Grant"
         description="Edit this credit grant"
@@ -65,7 +71,8 @@ export default async function AdminCodePage(
           </CardFooter>
         </Card>
         <EditCreditGrantForm id={creditGrant.id} creditGrant={creditGrant} />
+        <CreditGrantUsersTable code={code} />
       </Body>
-    </div>
+    </HydrateClient>
   );
 }

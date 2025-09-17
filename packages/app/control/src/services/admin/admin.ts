@@ -137,39 +137,50 @@ export async function adminListCreditGrantUsages(
   { code }: z.infer<typeof adminListCreditGrantUsagesSchema>,
   pagination: PaginationParams
 ) {
-  const [creditGrantUsages] = await Promise.all([
-    db.creditGrantCodeUsage.groupBy({
-      by: ['userId'],
-      where: {
+  const where: Prisma.UserWhereInput = {
+    creditGrantCodeUsages: {
+      some: {
         creditGrantCode: {
           code,
         },
       },
-      _count: {
-        userId: true,
-        _all: true,
-      },
-      orderBy: {
-        _count: {
-          userId: 'desc',
+    },
+  };
+
+  const [count, users] = await Promise.all([
+    db.user.count({ where }),
+    db.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        creditGrantCodeUsages: {
+          where: {
+            creditGrantCode: {
+              code,
+            },
+          },
+          select: {
+            grantedAmount: true,
+          },
         },
       },
-      take: pagination.page_size,
-      skip: pagination.page * pagination.page_size,
     }),
   ]);
 
-  db.user.findMany({
-    where: {
-      creditGrantCodeUsages: {},
-    },
-  });
-
   return toPaginatedReponse({
-    items: creditGrantUsages,
+    items: users.map(user => ({
+      ...user,
+      creditGrantCodeUsages: user.creditGrantCodeUsages.map(usage => ({
+        ...usage,
+        grantedAmount: usage.grantedAmount.toNumber(),
+      })),
+    })),
     page: pagination.page,
     page_size: pagination.page_size,
-    total_count: creditGrantUsages[0]._count._all,
+    total_count: count,
   });
 }
 

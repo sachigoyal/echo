@@ -33,6 +33,8 @@ import {
   adminGetCreditGrant,
   adminGetCreditGrantSchema,
   adminUpdateCreditGrant,
+  adminListCreditGrantUsages,
+  adminListCreditGrantUsagesSchema,
 } from '@/services/admin/admin';
 import {
   adminCreateCreditGrantSchema,
@@ -87,15 +89,30 @@ export const adminRouter = createTRPCRouter({
     }),
 
   creditGrants: {
-    get: adminProcedure
-      .input(adminGetCreditGrantSchema)
-      .query(async ({ input }) => {
-        const creditGrant = await adminGetCreditGrant(input);
-        if (!creditGrant) {
-          throw new TRPCError({ code: 'NOT_FOUND' });
-        }
-        return creditGrant;
-      }),
+    grant: {
+      get: adminProcedure
+        .input(adminGetCreditGrantSchema)
+        .query(async ({ input }) => {
+          const creditGrant = await adminGetCreditGrant(input);
+          if (!creditGrant) {
+            throw new TRPCError({ code: 'NOT_FOUND' });
+          }
+          return creditGrant;
+        }),
+
+      update: adminProcedure
+        .input(adminUpdateCreditGrantSchema)
+        .mutation(async ({ input }) => {
+          return await adminUpdateCreditGrant(input);
+        }),
+
+      listUsers: paginatedProcedure
+        .concat(adminProcedure)
+        .input(adminListCreditGrantUsagesSchema)
+        .query(async ({ input, ctx }) => {
+          return await adminListCreditGrantUsages(input, ctx.pagination);
+        }),
+    },
 
     list: paginatedProcedure.concat(adminProcedure).query(async ({ ctx }) => {
       return await adminListCreditGrants(ctx.pagination);
@@ -105,12 +122,6 @@ export const adminRouter = createTRPCRouter({
       .input(adminCreateCreditGrantSchema)
       .mutation(async ({ input }) => {
         return await adminCreateCreditGrant(input);
-      }),
-
-    update: adminProcedure
-      .input(adminUpdateCreditGrantSchema)
-      .mutation(async ({ input }) => {
-        return await adminUpdateCreditGrant(input);
       }),
   },
 

@@ -12,14 +12,14 @@ import { revalidateCodePage } from '../_actions/revalidate';
 
 interface Props {
   id: string;
-  creditGrant: RouterOutputs['admin']['creditGrants']['get'];
+  creditGrant: RouterOutputs['admin']['creditGrants']['grant']['get'];
 }
 
 export const EditCreditGrantForm: React.FC<Props> = ({ id, creditGrant }) => {
   const utils = api.useUtils();
 
   const { mutate: editCreditGrant, isPending } =
-    api.admin.creditGrants.update.useMutation({
+    api.admin.creditGrants.grant.update.useMutation({
       onSuccess: ({ code }) => {
         utils.admin.creditGrants.list.invalidate();
         revalidateCodePage(code);

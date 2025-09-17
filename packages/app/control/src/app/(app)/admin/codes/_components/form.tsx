@@ -187,6 +187,11 @@ export const CreditGrantForm: React.FC<Props> = ({
           <CardFooter className="border-t p-4">
             <Button
               type="submit"
+              variant={
+                form.formState.isDirty && form.formState.isValid
+                  ? 'turbo'
+                  : 'primaryOutline'
+              }
               disabled={
                 isSubmitting ||
                 isSuccess ||

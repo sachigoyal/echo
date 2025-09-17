@@ -12,9 +12,7 @@ import { CreateCreditGrantForm } from './_components/create-form';
 export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
   await userOrRedirect('/admin/codes', props);
 
-  api.admin.creditGrants.list.prefetchInfinite({
-    cursor: 0,
-  });
+  api.admin.creditGrants.list.prefetchInfinite({});
 
   return (
     <HydrateClient>
