@@ -1,39 +1,29 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Body, Heading } from '../../_components/layout/page-utils';
+import { DashboardNav } from './_components/nav';
 
-export default function AdminDashboardLayout({
+import type { Metadata } from 'next';
+import { userOrRedirectLayout } from '@/auth/user-or-redirect';
+
+export const metadata: Metadata = {
+  title: 'Admin Dashboard',
+};
+
+export default async function AdminDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await userOrRedirectLayout('/admin/dashboard');
+
   return (
-    <div className="relative">
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="lg:w-[240px] lg:sticky lg:top-0">
-          <div className="w-full flex flex-col gap-2">
-            <Link href="/admin/dashboard/user-earnings">
-              <Button variant="ghost" className="w-full justify-start text-base">
-                User Earnings
-              </Button>
-            </Link>
-            <Link href="/admin/dashboard/user-spending">
-              <Button variant="ghost" className="w-full justify-start text-base">
-                User Spending
-              </Button>
-            </Link>
-            <Link href="/admin/dashboard/app-earnings">
-              <Button variant="ghost" className="w-full justify-start text-base">
-                App Earnings
-              </Button>
-            </Link>
-            <Link href="/admin/dashboard/payments">
-              <Button variant="ghost" className="w-full justify-start text-base">
-                Payment History
-              </Button>
-            </Link>
+    <div>
+      <div className="flex flex-col gap-8 w-full py-8">
+        <div className="flex flex-col lg:flex-row gap-1">
+          <div className="lg:w-[240px] lg:sticky lg:top-0 lg:pl-4">
+            <DashboardNav />
           </div>
+          <div className="flex-1 flex flex-col gap-6 px-2">{children}</div>
         </div>
-        <div className="flex-1 flex flex-col gap-6">{children}</div>
       </div>
     </div>
   );
