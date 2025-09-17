@@ -17,7 +17,7 @@ export const ActivityOverlay: React.FC<Props> = ({ appId }) => {
 
   return (
     <AnimatePresence>
-      {(numTokens <= 1 || numTransactions === 0) && (
+      {numTransactions === 0 && (
         <motion.div
           className="absolute inset-0 bg-card/60 z-50 flex flex-col gap-4 items-center justify-center backdrop-blur-xs"
           initial={{ opacity: 0 }}
@@ -28,7 +28,7 @@ export const ActivityOverlay: React.FC<Props> = ({ appId }) => {
           <Lock className="size-16 text-primary" />
           <p className="text-lg font-medium text-center max-w-xs">
             {isOwner
-              ? numTokens <= 1
+              ? numTokens === 0
                 ? 'Connect to Echo from your app to view your app activity'
                 : 'Generate text from your app to view your app activity'
               : 'The owner of this app has not connected to Echo yet'}
