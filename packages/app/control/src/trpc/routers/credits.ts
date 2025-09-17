@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
 import {
   getCreditGrantCode,
-  getCreditGrantCodeSchema,
+  creditGrantCodeSchema,
   getCreditGrantCodeWithUsages,
   redeemCreditGrantCode,
   redeemCreditGrantCodeSchema,
@@ -12,7 +12,7 @@ import {
 export const creditsRouter = createTRPCRouter({
   grant: {
     get: publicProcedure
-      .input(getCreditGrantCodeSchema)
+      .input(creditGrantCodeSchema)
       .query(async ({ input }) => {
         const referralCode = await getCreditGrantCode(input);
 
@@ -27,7 +27,7 @@ export const creditsRouter = createTRPCRouter({
       }),
 
     getWithUsages: protectedProcedure
-      .input(getCreditGrantCodeSchema)
+      .input(creditGrantCodeSchema)
       .query(async ({ ctx, input }) => {
         const creditGrantCode = await getCreditGrantCodeWithUsages(
           ctx.session.user.id,

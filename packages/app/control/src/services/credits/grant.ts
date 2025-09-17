@@ -20,8 +20,6 @@ const getCreditGrantCodeWhere = (
   grantAmount: { gt: 0 },
 });
 
-export const getCreditGrantCodeSchema = creditGrantCodeSchema;
-
 export const getCreditGrantCode = async ({
   code,
 }: z.infer<typeof creditGrantCodeSchema>) => {

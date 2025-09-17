@@ -2,7 +2,11 @@ import { CreditGrantForm } from '@/app/(app)/admin/codes/_components/form';
 import { userOrRedirect } from '@/auth/user-or-redirect';
 import { api, HydrateClient } from '@/trpc/server';
 import { Body, Heading } from '../../_components/layout/page-utils';
-import { CreditGrantsTable } from './_components/table';
+import {
+  CreditGrantsTable,
+  LoadingCreditGrantTable,
+} from './_components/table';
+import { Suspense } from 'react';
 
 export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
   await userOrRedirect('/admin/codes', props);
@@ -19,7 +23,9 @@ export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
       />
       <Body>
         <CreditGrantForm />
-        <CreditGrantsTable />
+        <Suspense fallback={<LoadingCreditGrantTable />}>
+          <CreditGrantsTable />
+        </Suspense>
       </Body>
     </HydrateClient>
   );
