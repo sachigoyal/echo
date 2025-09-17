@@ -4,8 +4,6 @@ import { mintCreditsToUser, mintCreditsToUserSchema } from '../credits/mint';
 
 import { db } from '@/lib/db';
 
-import { ReferralCodeType } from '@/types/referral-code';
-
 import type { EchoApp, User } from '@/generated/prisma';
 
 import {
@@ -71,6 +69,16 @@ export const adminMintCreditReferralCodeSchema = z.object({
     .date()
     .optional()
     .default(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)),
+  maxUses: z
+    .number()
+    .int()
+    .positive('Max uses must be a positive integer')
+    .optional(),
+  maxUsesPerUser: z
+    .number()
+    .int()
+    .positive('Max uses per user must be a positive integer')
+    .optional(),
 });
 
 export async function adminMintCreditReferralCode(
@@ -78,16 +86,15 @@ export async function adminMintCreditReferralCode(
 ) {
   const code = crypto.randomUUID();
 
-  const { amountInDollars, expiresAt } = input;
+  const { amountInDollars, expiresAt, maxUses, maxUsesPerUser } = input;
 
-  const referralCode = await db.referralCode.create({
+  const referralCode = await db.creditGrantCode.create({
     data: {
       code,
-      echoAppId: null,
-      grantType: ReferralCodeType.CREDITS,
       grantAmount: amountInDollars,
-      reusable: false,
       expiresAt,
+      maxUses,
+      maxUsesPerUser,
     },
   });
 
@@ -95,6 +102,8 @@ export async function adminMintCreditReferralCode(
     code: referralCode.code,
     grantAmount: referralCode.grantAmount,
     expiresAt: referralCode.expiresAt,
+    maxUses: referralCode.maxUses,
+    maxUsesPerUser: referralCode.maxUsesPerUser,
   };
 }
 

@@ -1,5 +1,4 @@
 import { db } from '@/lib/db';
-import { ReferralCodeType } from '@/types/referral-code';
 
 export async function setUserReferrerForAppIfExists(
   userId: string,
@@ -26,8 +25,6 @@ export async function setUserReferrerForAppIfExists(
   const referralCode = await db.referralCode.findUnique({
     where: {
       code,
-      grantType: ReferralCodeType.REFERRAL,
-      echoAppId: echoAppId,
     },
   });
 

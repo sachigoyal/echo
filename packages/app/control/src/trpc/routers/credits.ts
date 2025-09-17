@@ -8,6 +8,10 @@ import {
   getReferralCodeSchema,
 } from '@/services/credits/coupon';
 import { TRPCError } from '@trpc/server';
+import {
+  redeemCreditGrantCode,
+  redeemCreditGrantCodeSchema,
+} from '@/lib/credit-grants';
 
 export const creditsRouter = createTRPCRouter({
   grant: {
@@ -26,9 +30,9 @@ export const creditsRouter = createTRPCRouter({
         return referralCode;
       }),
     redeem: protectedProcedure
-      .input(redeemCreditReferralCodeSchema)
+      .input(redeemCreditGrantCodeSchema)
       .mutation(async ({ ctx, input }) => {
-        return await redeemCreditReferralCode(ctx.session.user.id, input);
+        return await redeemCreditGrantCode(ctx.session.user.id, input);
       }),
   },
 });

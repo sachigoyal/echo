@@ -442,7 +442,7 @@ importers:
         version: 2.7.0
       openai:
         specifier: ^4.97.0
-        version: 4.104.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
+        version: 4.104.0(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
       prisma:
         specifier: 6.16.0
         version: 6.16.0(magicast@0.3.5)(typescript@5.8.3)
@@ -670,8 +670,8 @@ importers:
   packages/sdk/next:
     dependencies:
       '@merit-systems/echo-react-sdk':
-        specifier: 1.0.27
-        version: 1.0.27(openai@5.20.3(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@4.1.7)
+        specifier: 1.0.29
+        version: 1.0.29(openai@5.20.3(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@4.1.7)
       '@merit-systems/echo-typescript-sdk':
         specifier: 1.0.14
         version: 1.0.14(zod@4.1.7)
@@ -1814,8 +1814,8 @@ packages:
       '@types/react': 19.1.10
       react: '>=16'
 
-  '@merit-systems/echo-react-sdk@1.0.27':
-    resolution: {integrity: sha512-+I5EA5jqAnZ+gqoFggJKWxEolfwAOvzTytg1Mi7z4+3qNMD43xejrPyTwMyLP8cfVj1kEXsT47JxhR7XK3zVOg==}
+  '@merit-systems/echo-react-sdk@1.0.29':
+    resolution: {integrity: sha512-VHyyvXStO6Qs1RfO+29RDZ8NG3OCcEeHpBltZhJ4Oh189KvB+2F/PzIlQPIUiYhoKJuiwQxXoQJ70OGjAb0xMw==}
     peerDependencies:
       openai: ^4.0.0 || ^5.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -10629,7 +10629,7 @@ snapshots:
       '@types/react': 19.1.10
       react: 19.1.1
 
-  '@merit-systems/echo-react-sdk@1.0.27(openai@5.20.3(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@4.1.7)':
+  '@merit-systems/echo-react-sdk@1.0.29(openai@5.20.3(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@4.1.7))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(zod@4.1.7)':
     dependencies:
       '@ai-sdk/react': 2.0.40(react@18.3.1)(zod@4.1.7)
       '@merit-systems/echo-typescript-sdk': 1.0.14(zod@4.1.7)
@@ -18245,7 +18245,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.104.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76):
+  openai@4.104.0(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76):
     dependencies:
       '@types/node': 18.19.112
       '@types/node-fetch': 2.6.12
@@ -18255,7 +18255,7 @@ snapshots:
       formdata-node: 4.4.1
       node-fetch: 2.7.0
     optionalDependencies:
-      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       zod: 3.25.76
     transitivePeerDependencies:
       - encoding
