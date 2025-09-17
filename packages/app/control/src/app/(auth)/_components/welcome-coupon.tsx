@@ -1,6 +1,17 @@
 'use client';
 
-import { Coupon } from '@/components/coupon';
+import {
+  CouponClaimButton,
+  CouponContainer,
+  CouponDescription,
+  CouponDivider,
+  CouponFooter,
+  CouponHeader,
+  CouponLabel,
+  CouponMarquee,
+  CouponTitle,
+  CouponValue,
+} from '@/components/coupon';
 import { STATES } from '@/components/coupon/multi-state-button';
 import { api } from '@/trpc/client';
 import { toast } from 'sonner';
@@ -8,6 +19,7 @@ import { toast } from 'sonner';
 interface Props {
   amount: number;
   onSuccess: () => void;
+  code?: string;
   states?: STATES;
   subText?: React.ReactNode;
 }
@@ -15,13 +27,20 @@ interface Props {
 export const WelcomeCoupon: React.FC<Props> = ({
   amount,
   onSuccess,
+  code,
   states,
   subText,
 }) => {
   const utils = api.useUtils();
 
   const {
-    mutate: claimCoupon,
+    mutate: redeemCreditGrant,
+    isPending: isRedeemingCreditGrant,
+    isSuccess: isRedeemCreditGrantSuccess,
+  } = api.credits.grant.redeem.useMutation();
+
+  const {
+    mutate: claimInitialFreeTier,
     isPending: isClaimingCoupon,
     isSuccess: isClaimedCoupon,
   } = api.user.initialFreeTier.issue.useMutation({
@@ -64,19 +83,52 @@ export const WelcomeCoupon: React.FC<Props> = ({
   });
 
   return (
-    <Coupon
-      value={amount}
-      onClaim={() =>
-        signTerms(void 0, {
-          onSuccess: () => {
-            signPrivacy(void 0, { onSuccess: () => claimCoupon() });
-          },
-        })
-      }
-      isClaiming={isClaimingCoupon || isSigningTerms || isSigningPrivacy}
-      isClaimed={isClaimedCoupon && isSignedTerms && isSignedPrivacy}
-      states={states}
-      subText={subText}
-    />
+    <CouponContainer>
+      <CouponHeader className="pb-2">
+        <CouponTitle>
+          <CouponValue value={amount} />
+          <CouponLabel />
+        </CouponTitle>
+        <CouponDescription>{subText}</CouponDescription>
+      </CouponHeader>
+      <CouponMarquee size={36} />
+      <CouponDivider />
+      <CouponFooter>
+        <CouponClaimButton
+          onClaim={() =>
+            signTerms(void 0, {
+              onSuccess: () => {
+                signPrivacy(void 0, {
+                  onSuccess: () =>
+                    claimInitialFreeTier(void 0, {
+                      onSuccess: () => {
+                        if (code) {
+                          redeemCreditGrant(
+                            { code },
+                            { onSuccess: () => onSuccess() }
+                          );
+                        } else {
+                          onSuccess();
+                        }
+                      },
+                    }),
+                });
+              },
+            })
+          }
+          isClaiming={
+            isClaimingCoupon ||
+            isSigningTerms ||
+            isSigningPrivacy ||
+            (code ? isRedeemingCreditGrant : false)
+          }
+          isClaimed={
+            (isClaimedCoupon && isSignedTerms && isSignedPrivacy) ||
+            (code ? isRedeemCreditGrantSuccess : false)
+          }
+          states={states}
+        />
+      </CouponFooter>
+    </CouponContainer>
   );
 };
