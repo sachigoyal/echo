@@ -91,6 +91,10 @@ import {
   getUserAppReferralCode,
 } from '@/services/apps/referral-code';
 import { deleteApp, deleteAppSchema } from '@/services/apps/delete';
+import {
+  createFreeTierPaymentFromBalance,
+  createFreeTierPaymentFromBalanceSchema,
+} from '@/services/credits';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -180,6 +184,12 @@ export const appsRouter = createTRPCRouter({
           .input(createFreeTierPaymentLinkSchema)
           .mutation(async ({ ctx, input }) => {
             return await createFreeTierPaymentLink(ctx.session.user.id, input);
+          }),
+
+        createFromBalance: appOwnerProcedure
+          .input(createFreeTierPaymentFromBalanceSchema)
+          .mutation(async ({ ctx, input }) => {
+            return await createFreeTierPaymentFromBalance(ctx, input);
           }),
       },
 
