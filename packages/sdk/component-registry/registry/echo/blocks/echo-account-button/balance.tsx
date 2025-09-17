@@ -1,3 +1,10 @@
+import { formatCurrency } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/registry/echo/ui/tooltip';
 import { useEcho } from '@merit-systems/echo-react-sdk';
 import { Gift } from 'lucide-react';
 
@@ -13,15 +20,26 @@ export default function EchoBalance() {
       <div className="space-y-1 flex flex-col items-center">
         <div className="flex flex-col items-center gap-1">
           <div className="text-2xl font-semibold">
-            ${totalBalance.toLocaleString()}
+            {formatCurrency(totalBalance)}
           </div>
           {hasFreeCredits && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <span>${balance?.balance?.toLocaleString() || '0'}</span>
+              <span>{formatCurrency(balance?.balance || 0)}</span>
               <span>+</span>
               <span className="flex items-center gap-1">
-                ${freeTierAmountLeft.toLocaleString()} free
-                <Gift className="size-3" />
+                {formatCurrency(freeTierAmountLeft)}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex h-4 w-4 items-center justify-center rounded-full bg-primary cursor-help">
+                        <Gift className="size-3 text-primary-foreground" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Free credits you can spend only on this app</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </span>
             </div>
           )}

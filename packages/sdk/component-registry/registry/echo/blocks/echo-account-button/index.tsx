@@ -1,4 +1,5 @@
 'use client';
+import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/registry/echo/ui/button';
 import { Popover, PopoverTrigger } from '@/registry/echo/ui/popover';
 import { Skeleton } from '@/registry/echo/ui/skeleton';
@@ -25,22 +26,26 @@ export function EchoAccountButton() {
   ) : (
     <>
       <Logo width={16} height={16} variant="light" />
-      <span className="flex items-center gap-1">
-        ${totalBalance.toLocaleString()}
-        {hasFreeCredits && <Gift className="size-3 text-muted-foreground" />}
-      </span>
+      <span>{formatCurrency(totalBalance)}</span>
     </>
   );
 
   const button = (
-    <Button
-      variant="outline"
-      onClick={!user ? signIn : undefined}
-      disabled={isLoading}
-      className="w-[120px] justify-start gap-2"
-    >
-      {buttonContent}
-    </Button>
+    <div className="relative inline-flex">
+      <Button
+        variant="outline"
+        onClick={!user ? signIn : undefined}
+        disabled={isLoading}
+        className="w-[100px] justify-start gap-2"
+      >
+        {buttonContent}
+      </Button>
+      {hasFreeCredits && (
+        <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
+          <Gift className="size-3 text-primary-foreground " />
+        </div>
+      )}
+    </div>
   );
 
   if (!user || isLoading) {
