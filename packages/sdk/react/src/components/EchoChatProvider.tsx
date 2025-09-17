@@ -1,21 +1,14 @@
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
-import { type ModelMessage } from 'ai';
 import { createContext, useContext } from 'react';
 
 // Derive the transport send types directly from AI SDK
-type ChatSendParams = Parameters<ChatTransport<UIMessage>['sendMessages']>[0];
-
-export type EchoChatBuildContext = Pick<
-  ChatSendParams,
-  'trigger' | 'chatId' | 'messageId' | 'abortSignal'
-> & {
-  uiMessages: UIMessage[];
-  modelMessages: ModelMessage[];
-};
+export type ChatSendParams = Parameters<
+  ChatTransport<UIMessage>['sendMessages']
+>[0];
 
 // Single async function returning a UI message chunk stream (in-memory)
 export type EchoChatFn = (
-  ctx: EchoChatBuildContext
+  ctx: ChatSendParams
 ) => Promise<ReadableStream<UIMessageChunk>> | ReadableStream<UIMessageChunk>;
 
 const EchoChatConfigContext = createContext<EchoChatFn | null>(null);

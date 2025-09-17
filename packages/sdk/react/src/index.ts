@@ -6,14 +6,16 @@ export { InsufficientFundsModal } from './components/InsufficientFundsModal';
 export { Logo } from './components/Logo';
 
 export { useEcho } from './hooks/useEcho';
-// useEchoRefresh is kept internal - most apps don't need refresh state
 export { useEchoClient } from './hooks/useEchoClient';
 // OpenAI integration hook
 export { useEchoOpenAI } from './hooks/useEchoOpenAI';
 // Echo provider hooks
 export { useEchoModelProviders } from './hooks/useEchoModelProviders';
 // AI SDK integration hooks
-export { EchoChatProvider } from './components/EchoChatProvider';
+export {
+  EchoChatProvider,
+  type ChatSendParams,
+} from './components/EchoChatProvider';
 export { useChat } from './hooks/useChat';
 
 export type {
@@ -25,4 +27,8 @@ export type {
   EchoUser,
 } from './types';
 
-export type { EchoContextValue } from './components/EchoProvider';
+export { EchoContext } from './context';
+export type { EchoContextValue } from './context';
+
+export { EchoProviderRaw } from './components/EchoProvider';
+export type { EchoProviderRawProps } from './components/EchoProvider';

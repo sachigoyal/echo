@@ -24,12 +24,12 @@ export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
   const defaultStartDate = subDays(new Date(), 7);
   const defaultEndDate = endOfDay(new Date());
 
-  api.activity.creator.getCurrent.prefetch({
+  api.user.creatorActivity.prefetch({
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });
 
-  const user = await api.user.current.get();
+  const user = await api.user.current();
   if (!user) {
     throw new Error('User not found');
   }

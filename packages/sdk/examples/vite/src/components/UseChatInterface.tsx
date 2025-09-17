@@ -2,17 +2,21 @@ import {
   EchoChatProvider,
   useChat,
   useEchoModelProviders,
+  type ChatSendParams,
 } from '@merit-systems/echo-react-sdk';
-import { streamText, type ModelMessage } from 'ai';
+import { convertToModelMessages, streamText } from 'ai';
 import { useState } from 'react';
 
 export default function UseChatInterface() {
   const { anthropic } = useEchoModelProviders();
 
-  async function doChat({ modelMessages }: { modelMessages: ModelMessage[] }) {
+  type Body = { model: string };
+  async function doChat(params: ChatSendParams) {
+    const body: Body = params.body as Body;
+    const model = body?.model;
     const result = streamText({
-      model: anthropic('claude-sonnet-4-20250514'),
-      messages: modelMessages,
+      model: anthropic(model),
+      messages: convertToModelMessages(params.messages),
     });
     return result.toUIMessageStream(); // in-memory UI chunk stream
   }
@@ -87,7 +91,10 @@ function Chat() {
       <form
         onSubmit={e => {
           e.preventDefault();
-          sendMessage({ text: input });
+          sendMessage(
+            { text: input },
+            { body: { model: 'claude-sonnet-4-20250514' } }
+          );
           setInput('');
         }}
         className="flex gap-2"

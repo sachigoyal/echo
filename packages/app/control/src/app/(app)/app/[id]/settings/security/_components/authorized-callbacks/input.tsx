@@ -57,6 +57,11 @@ export const AuthorizedCallbackUrlsInput = () => {
                     handleAddUrl(input);
                   }
                 }}
+                onPaste={e => {
+                  e.preventDefault();
+                  const text = e.clipboardData.getData('text/plain');
+                  handleAddUrl(text);
+                }}
               />
               <Button
                 onClick={e => {
@@ -66,7 +71,11 @@ export const AuthorizedCallbackUrlsInput = () => {
                 }}
                 disabled={Boolean(z.url().safeParse(input).error)}
                 size="sm"
-                variant="primaryGhost"
+                variant={
+                  Boolean(z.url().safeParse(input).error)
+                    ? 'primaryGhost'
+                    : 'default'
+                }
                 className="absolute right-1 top-1/2 -translate-y-1/2 size-fit px-2 py-1"
               >
                 Add
@@ -84,7 +93,7 @@ export const AuthorizedCallbackUrlsInput = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="p-0.5 size-fit"
+                    className="p-0.5 size-fit md:size-fit"
                     onClick={e => {
                       e.preventDefault();
                       e.stopPropagation();
