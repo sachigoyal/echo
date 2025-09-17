@@ -6,31 +6,6 @@ import { db } from '@/lib/db';
 
 import type { EchoApp, Prisma, User } from '@/generated/prisma';
 
-import {
-  getUserEarningsAggregates,
-  getAppTransactionAggregates,
-  getAllUsersEarningsAggregates,
-  getAllUsersEarningsAggregatesPaginated,
-  getAppEarningsAcrossAllUsers,
-} from './user-earnings';
-
-import {
-  getUserSpendingAggregates,
-  getAppSpendingAggregates,
-  getAllUsersSpendingAggregates,
-  getAllUsersSpendingAggregatesPaginated,
-  getAppSpendingAcrossAllUsers,
-} from './user-spending';
-
-import {
-  getAppTransactionsPaginated,
-  getAppTransactionTotals,
-} from './app-transactions';
-
-import {
-  getUserTransactionsPaginated,
-  getUserTransactionTotals,
-} from './user-transactions';
 import { PaginationParams, toPaginatedReponse } from '../lib/pagination';
 import {
   adminCreateCreditGrantSchema,
@@ -232,27 +207,3 @@ export async function downloadUsersCsv(
     userCount: users.length,
   };
 }
-
-// Export user earnings aggregation functions
-export {
-  getUserEarningsAggregates,
-  getAppTransactionAggregates,
-  getAllUsersEarningsAggregates,
-  getAllUsersEarningsAggregatesPaginated,
-  getAppEarningsAcrossAllUsers,
-};
-
-// Export user spending aggregation functions
-export {
-  getUserSpendingAggregates,
-  getAppSpendingAggregates,
-  getAllUsersSpendingAggregates,
-  getAllUsersSpendingAggregatesPaginated,
-  getAppSpendingAcrossAllUsers,
-};
-
-// Export app transaction detail functions
-export { getAppTransactionsPaginated, getAppTransactionTotals };
-
-// Export user transaction detail functions
-export { getUserTransactionsPaginated, getUserTransactionTotals };

@@ -10,8 +10,8 @@ export default async function AdminPayoutsPage(
   await userOrRedirect('/admin/payouts', props);
 
   return (
-    <div className="container mx-auto py-8 space-y-10">
-      <div className="mb-6">
+    <div className="container mx-auto space-y-10">
+      <div>
         <h1 className="text-3xl font-bold">Admin Payouts</h1>
         <p className="text-muted-foreground mt-2">
           Review pending payouts and view completed payout history.
