@@ -94,15 +94,10 @@ export async function adminCreateCreditGrant(
 ) {
   const code = crypto.randomUUID();
 
-  const { amountInDollars, expiresAt, maxUses, maxUsesPerUser } = input;
-
   return await db.creditGrantCode.create({
     data: {
       code,
-      grantAmount: amountInDollars,
-      expiresAt,
-      maxUses,
-      maxUsesPerUser,
+      ...input,
     },
   });
 }
@@ -138,7 +133,8 @@ export async function adminUpdateCreditGrant({
   id,
   ...data
 }: z.infer<typeof adminUpdateCreditGrantSchema>) {
-  await db.creditGrantCode.update({
+  console.log(data);
+  return await db.creditGrantCode.update({
     where: { id },
     data,
   });

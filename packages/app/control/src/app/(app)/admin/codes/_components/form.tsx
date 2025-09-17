@@ -36,17 +36,22 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 
 import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import { useEffect } from 'react';
 
 interface Props {
-  onSubmit: (
-    data: z.infer<typeof adminCreateCreditGrantSchema>
-  ) => Promise<void>;
+  title: string;
+  description: string;
+  submitButtonText: string;
+  onSubmit: (data: z.infer<typeof adminCreateCreditGrantSchema>) => void;
   isSubmitting: boolean;
   isSuccess?: boolean;
   defaultValues?: DefaultValues<z.input<typeof adminCreateCreditGrantSchema>>;
 }
 
 export const CreditGrantForm: React.FC<Props> = ({
+  title,
+  description,
+  submitButtonText,
   onSubmit,
   isSubmitting,
   isSuccess,
@@ -62,10 +67,12 @@ export const CreditGrantForm: React.FC<Props> = ({
     defaultValues,
   });
 
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [defaultValues]);
+
   const handleSubmit = (data: z.infer<typeof adminCreateCreditGrantSchema>) => {
-    onSubmit(data).then(() => {
-      form.reset();
-    });
+    onSubmit(data);
   };
 
   return (
@@ -73,15 +80,13 @@ export const CreditGrantForm: React.FC<Props> = ({
       <form onSubmit={form.handleSubmit(handleSubmit)}>
         <Card>
           <CardHeader className="border-b">
-            <CardTitle>Mint Credit Grant Code</CardTitle>
-            <CardDescription>
-              Create a new referral code that grants credits to users
-            </CardDescription>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
           </CardHeader>
           <CardContent className="py-4 flex flex-col gap-4">
             <FormField
               control={form.control}
-              name="amountInDollars"
+              name="grantAmount"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Amount</FormLabel>
@@ -89,6 +94,7 @@ export const CreditGrantForm: React.FC<Props> = ({
                     <MoneyInput
                       setAmount={amount => field.onChange(amount)}
                       placeholder="10.00"
+                      initialAmount={field.value}
                     />
                   </FormControl>
                   <FormMessage />
@@ -135,11 +141,15 @@ export const CreditGrantForm: React.FC<Props> = ({
                     <FormControl>
                       <Input
                         id="maxUses"
-                        type="number"
-                        min="1"
-                        step="1"
                         placeholder="Enter maximum number of uses"
-                        onChange={e => field.onChange(Number(e.target.value))}
+                        onChange={e => {
+                          if (e.target.value === '') {
+                            field.onChange(undefined);
+                          } else {
+                            field.onChange(Number(e.target.value));
+                          }
+                        }}
+                        defaultValue={field.value ?? undefined}
                       />
                     </FormControl>
                     <FormMessage />
@@ -157,11 +167,15 @@ export const CreditGrantForm: React.FC<Props> = ({
                     <FormControl>
                       <Input
                         id="maxUsesPerUser"
-                        type="number"
-                        min="1"
-                        step="1"
                         placeholder="Enter maximum uses per user"
-                        onChange={e => field.onChange(Number(e.target.value))}
+                        onChange={e => {
+                          if (e.target.value === '') {
+                            field.onChange(undefined);
+                          } else {
+                            field.onChange(Number(e.target.value));
+                          }
+                        }}
+                        defaultValue={field.value ?? undefined}
                       />
                     </FormControl>
                     <FormMessage />
@@ -173,7 +187,12 @@ export const CreditGrantForm: React.FC<Props> = ({
           <CardFooter className="border-t p-4">
             <Button
               type="submit"
-              disabled={isSubmitting || isSuccess || !form.formState.isValid}
+              disabled={
+                isSubmitting ||
+                isSuccess ||
+                !form.formState.isValid ||
+                !form.formState.isDirty
+              }
               className="w-full"
             >
               {isSubmitting ? (
@@ -181,7 +200,7 @@ export const CreditGrantForm: React.FC<Props> = ({
               ) : isSuccess ? (
                 <Check className="size-4" />
               ) : (
-                'Mint Credit Code'
+                submitButtonText
               )}
             </Button>
           </CardFooter>

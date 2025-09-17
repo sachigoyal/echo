@@ -1,0 +1,55 @@
+'use client';
+
+import z from 'zod';
+
+import { toast } from 'sonner';
+
+import { api, RouterOutputs } from '@/trpc/client';
+
+import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import { CreditGrantForm } from '../../../_components/form';
+import { revalidateCodePage } from '../_actions/revalidate';
+
+interface Props {
+  id: string;
+  creditGrant: RouterOutputs['admin']['creditGrants']['get'];
+}
+
+export const EditCreditGrantForm: React.FC<Props> = ({ id, creditGrant }) => {
+  const utils = api.useUtils();
+
+  const { mutate: editCreditGrant, isPending } =
+    api.admin.creditGrants.update.useMutation({
+      onSuccess: ({ code }) => {
+        utils.admin.creditGrants.list.invalidate();
+        revalidateCodePage(code);
+        toast.success('Credit grant updated');
+      },
+      onError: error => {
+        toast.error(error.message);
+      },
+    });
+
+  const onSubmit = (data: z.infer<typeof adminCreateCreditGrantSchema>) => {
+    editCreditGrant({
+      id,
+      ...data,
+    });
+  };
+
+  return (
+    <CreditGrantForm
+      title="Edit Credit Grant"
+      description="Edit the credit grant"
+      submitButtonText="Save"
+      onSubmit={onSubmit}
+      isSubmitting={isPending}
+      defaultValues={{
+        expiresAt: creditGrant.expiresAt,
+        maxUsesPerUser: creditGrant.maxUsesPerUser ?? undefined,
+        maxUses: creditGrant.maxUses ?? undefined,
+        grantAmount: creditGrant.grantAmount,
+      }}
+    />
+  );
+};
