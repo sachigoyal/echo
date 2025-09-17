@@ -5,7 +5,7 @@ export default async function AdminCodesPage(props: PageProps<'/admin/codes'>) {
   await userOrRedirect('/admin/codes', props);
 
   return (
-    <div className="container mx-auto space-y-8">
+    <div className="container mx-auto space-y-8 mt-10">
       <div>
         <h1 className="text-3xl font-bold">Referral Codes</h1>
         <p className="text-muted-foreground mt-2">
