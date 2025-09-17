@@ -20,7 +20,7 @@ export function EchoAccountButton() {
     </>
   ) : !user ? (
     <>
-      <div className="h-4 w-4" />
+      <Logo width={16} height={16} variant="light" />
       <span>Sign In</span>
     </>
   ) : (
@@ -40,11 +40,11 @@ export function EchoAccountButton() {
       >
         {buttonContent}
       </Button>
-      {hasFreeCredits && (
+      {hasFreeCredits ? (
         <div className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary">
           <Gift className="size-3 text-primary-foreground " />
         </div>
-      )}
+      ) : null}
     </div>
   );
 
