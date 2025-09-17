@@ -8,18 +8,16 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface Props {
-  code: string;
+  url: string;
 }
 
-export const ShareButton: React.FC<Props> = ({ code }) => {
+export const ShareButton: React.FC<Props> = ({ url }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const onCopy = () => {
     setIsCopied(true);
 
-    navigator.clipboard.writeText(
-      `${process.env.ECHO_CONTROL_APP_BASE_URL}/credits/claim/${code}`
-    );
+    navigator.clipboard.writeText(url);
 
     toast.success('Copied to clipboard');
     setTimeout(() => {

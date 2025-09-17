@@ -55,7 +55,9 @@ export default async function AdminCodePage(
             <CouponMarquee size={48} />
             <CouponDivider />
             <CouponFooter>
-              <ShareButton code={code} />
+              <ShareButton
+                url={`${process.env.ECHO_CONTROL_APP_BASE_URL}/credits/claim/${code}`}
+              />
             </CouponFooter>
           </CouponContainer>
         </div>
