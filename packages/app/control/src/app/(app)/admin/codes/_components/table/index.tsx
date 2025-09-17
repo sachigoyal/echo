@@ -72,7 +72,7 @@ export const CreditGrantsTable = () => {
                       Disable
                     </Button>
                   </DisableCreditGrantDialog>
-                  <Link href={`/admin/codes/${creditGrant.id}`}>
+                  <Link href={`/admin/codes/${creditGrant.code}`}>
                     <Button size="xs">Share</Button>
                   </Link>
                 </div>
