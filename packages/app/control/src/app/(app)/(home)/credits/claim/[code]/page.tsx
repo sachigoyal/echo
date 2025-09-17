@@ -16,9 +16,18 @@ export default async function ClaimCreditsPage(
 
   const creditGrantCode = await checkCreditGrantCode(code);
 
+  const canUse = Boolean(
+    creditGrantCode.maxUsesPerUser &&
+      creditGrantCode.maxUsesPerUser > creditGrantCode.usages.length
+  );
+
   return (
     <ClaimCreditsContainer>
-      <ClaimCreditsCoupon value={creditGrantCode.grantAmount} code={code} />
+      <ClaimCreditsCoupon
+        value={creditGrantCode.grantAmount}
+        code={code}
+        canUse={canUse}
+      />
     </ClaimCreditsContainer>
   );
 }

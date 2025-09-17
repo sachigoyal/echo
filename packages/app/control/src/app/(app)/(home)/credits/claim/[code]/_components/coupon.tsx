@@ -16,16 +16,26 @@ import {
   CouponClaimButton,
   CouponValue,
   CouponLabel,
+  CouponMarquee,
 } from '@/components/coupon';
 
 import { api } from '@/trpc/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface Props {
   value: number;
   code: string;
+  canUse: boolean;
 }
 
-export const ClaimCreditsCoupon: React.FC<Props> = ({ value, code }) => {
+export const ClaimCreditsCoupon: React.FC<Props> = ({
+  value,
+  code,
+  canUse,
+}) => {
   const router = useRouter();
 
   const utils = api.useUtils();
@@ -50,21 +60,62 @@ export const ClaimCreditsCoupon: React.FC<Props> = ({ value, code }) => {
   };
 
   return (
+    <div className="flex flex-col items-center gap-4">
+      <CouponContainer>
+        <CouponHeader>
+          <CouponTitle>
+            <CouponValue value={value} />
+            <CouponLabel />
+          </CouponTitle>
+          <CouponDescription />
+        </CouponHeader>
+        <CouponMarquee size={36} />
+        <CouponDivider />
+        <CouponFooter>
+          {canUse ? (
+            <CouponClaimButton
+              onClaim={handleClaim}
+              isClaiming={isClaiming}
+              isClaimed={isClaimed}
+            />
+          ) : (
+            <Link href="/credits">
+              <Button
+                variant="unstyled"
+                className="rounded-xl bg-white text-black h-12 md:h-12 w-full"
+              >
+                <ArrowLeft className="size-4" />
+                Back to Credits
+              </Button>
+            </Link>
+          )}
+        </CouponFooter>
+      </CouponContainer>
+      {!canUse && (
+        <p className="text-sm text-muted-foreground">
+          You have already claimed this coupon.
+        </p>
+      )}
+    </div>
+  );
+};
+
+export const LoadingCoupon = () => {
+  return (
     <CouponContainer>
       <CouponHeader>
         <CouponTitle>
-          <CouponValue value={value} />
+          <div className="opacity-50">
+            <Skeleton className="w-24 h-12" />
+          </div>
           <CouponLabel />
         </CouponTitle>
         <CouponDescription />
       </CouponHeader>
+      <CouponMarquee size={36} />
       <CouponDivider />
-      <CouponFooter>
-        <CouponClaimButton
-          onClaim={handleClaim}
-          isClaiming={isClaiming}
-          isClaimed={isClaimed}
-        />
+      <CouponFooter className="opacity-50">
+        <Skeleton className="w-full h-12 rounded-xl" />
       </CouponFooter>
     </CouponContainer>
   );
