@@ -188,7 +188,6 @@ export async function adminUpdateCreditGrant({
   id,
   ...data
 }: z.infer<typeof adminUpdateCreditGrantSchema>) {
-  console.log(data);
   return await db.creditGrantCode.update({
     where: { id },
     data,

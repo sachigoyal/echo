@@ -81,7 +81,9 @@ export const CreditGrantUsersTable: React.FC<Props> = ({ code }) => {
             </TableRow>
           ))
       ) : (
-        <TableEmpty colSpan={4}>No credit grants found</TableEmpty>
+        <TableEmpty colSpan={4}>
+          Nobody has claimed this credit grant yet
+        </TableEmpty>
       )}
     </BaseCreditGrantUsersTable>
   );

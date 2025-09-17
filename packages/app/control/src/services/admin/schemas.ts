@@ -23,6 +23,8 @@ export const adminCreateCreditGrantSchema = z.object({
     .optional()
     .nullable()
     .default(null),
+  name: z.string().nullable().optional().default(null),
+  description: z.string().nullable().optional().default(null),
 });
 
 export const adminUpdateCreditGrantSchema = adminCreateCreditGrantSchema

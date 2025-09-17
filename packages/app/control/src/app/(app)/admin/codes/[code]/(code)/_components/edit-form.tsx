@@ -49,6 +49,8 @@ export const EditCreditGrantForm: React.FC<Props> = ({ id, creditGrant }) => {
         maxUsesPerUser: creditGrant.maxUsesPerUser ?? undefined,
         maxUses: creditGrant.maxUses ?? undefined,
         grantAmount: creditGrant.grantAmount,
+        name: creditGrant.name ?? undefined,
+        description: creditGrant.description ?? undefined,
       }}
     />
   );

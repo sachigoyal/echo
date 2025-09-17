@@ -37,6 +37,7 @@ import { Calendar } from '@/components/ui/calendar';
 
 import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
 import { useEffect } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Props {
   title: string;
@@ -95,6 +96,42 @@ export const CreditGrantForm: React.FC<Props> = ({
                       setAmount={amount => field.onChange(amount)}
                       placeholder="10.00"
                       initialAmount={field.value}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter name"
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter description"
+                      {...field}
+                      value={field.value ?? ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -188,7 +225,9 @@ export const CreditGrantForm: React.FC<Props> = ({
             <Button
               type="submit"
               variant={
-                form.formState.isDirty && form.formState.isValid
+                (form.formState.isDirty && form.formState.isValid) ||
+                isSubmitting ||
+                isSuccess
                   ? 'turbo'
                   : 'primaryOutline'
               }

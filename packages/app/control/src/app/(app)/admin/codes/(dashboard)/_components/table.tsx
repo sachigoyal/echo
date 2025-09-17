@@ -56,6 +56,9 @@ export const CreditGrantsTable = () => {
           .map(creditGrant => (
             <TableRow key={creditGrant.id}>
               <TableCell className="pl-4 font-bold">
+                {creditGrant.name ?? 'Unnamed Credit Grant'}
+              </TableCell>
+              <TableCell className="font-bold">
                 {formatCurrency(Number(creditGrant.grantAmount))}
               </TableCell>
               <TableCell>{creditGrant.maxUses || 'Unlimited'}</TableCell>
@@ -101,7 +104,10 @@ export const LoadingCreditGrantTable = () => {
 const LoadingCreditGrantRow = () => {
   return (
     <TableRow>
-      <TableCell className="pl-4 font-bold">
+      <TableCell className="pl-4">
+        <Skeleton className="h-4 w-20" />
+      </TableCell>
+      <TableCell>
         <Skeleton className="h-4 w-16" />
       </TableCell>
       <TableCell>
@@ -143,7 +149,8 @@ const BaseCreditGrantTable: React.FC<BaseCreditGrantTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="pl-4">Amount</TableHead>
+            <TableHead className="pl-4">Name</TableHead>
+            <TableHead>Amount</TableHead>
             <TableHead>Max Uses</TableHead>
             <TableHead>Max / Per User</TableHead>
             <TableHead>Uses</TableHead>

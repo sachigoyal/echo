@@ -399,6 +399,8 @@ model CreditGrantCode {
   code           String    @unique
   isArchived     Boolean   @default(false)
   archivedAt     DateTime? @db.Timestamptz
+  name           String?
+  description    String?
   createdAt      DateTime  @default(now()) @db.Timestamptz
   updatedAt      DateTime  @updatedAt @db.Timestamptz
   grantAmount    Decimal   @default(0.0) @db.Decimal(65, 14)

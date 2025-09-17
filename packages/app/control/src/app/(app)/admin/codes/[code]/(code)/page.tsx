@@ -32,8 +32,8 @@ export default async function AdminCodePage(
   return (
     <HydrateClient>
       <Heading
-        title="Credit Grant"
-        description="Edit this credit grant"
+        title={creditGrant.name ?? 'Unnamed Credit Grant'}
+        description={creditGrant.description ?? 'No description'}
         actions={
           <DisableCreditGrantDialog creditGrantId={creditGrant.id}>
             <Button variant="destructiveOutline">
