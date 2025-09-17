@@ -496,7 +496,9 @@ describe('EchoClient', () => {
     });
 
     it('should handle empty app list', async () => {
-      mockFetch.mockResolvedValueOnce(createMockResponse({ apps: [] }));
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ items: [], total_count: 0 })
+      );
 
       const { items, total_count } = await client.apps.listEchoApps();
 
