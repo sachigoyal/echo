@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 
 export const getUserCreatorActivitySchema = z.object({
   startDate: z.date(),
-  endDate: z.date(),
+  endDate: z.date().default(new Date()),
   numBuckets: z.number().optional().default(48),
 });
 
