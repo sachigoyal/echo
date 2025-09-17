@@ -39,6 +39,7 @@ export const TEMPLATES: TemplateGroup = {
           description:
             'A full-stack chatbot application using Next.js and the Vercel AI SDK.',
           Icon: BotMessageSquare,
+          url: 'https://echo-next-chat.vercel.app/',
         },
         {
           id: 'next-image',
@@ -46,6 +47,7 @@ export const TEMPLATES: TemplateGroup = {
           description:
             'A full-stack image generation application using Next.js and the Vercel AI SDK.',
           Icon: Image,
+          url: 'https://echo-next-image.vercel.app/',
         },
         {
           id: 'next',
@@ -53,6 +55,7 @@ export const TEMPLATES: TemplateGroup = {
           description:
             'A minimal Next.js application configured with Echo - a blank canvas to build your app.',
           Icon: AppWindow,
+          url: 'https://echo-next-boilerplate.vercel.app/',
         },
       ],
       moreAdvanced: (
@@ -84,6 +87,7 @@ export const TEMPLATES: TemplateGroup = {
           description:
             'A client-side chatbot application using React and the Vercel AI SDK.',
           Icon: BotMessageSquare,
+          url: 'https://echo-react-chat.vercel.app/',
         },
         {
           id: 'react-image',
@@ -91,6 +95,7 @@ export const TEMPLATES: TemplateGroup = {
           description:
             'A client-side image generation application using React and the Vercel AI SDK.',
           Icon: Image,
+          url: 'https://echo-react-image.vercel.app/',
         },
         {
           id: 'react',
@@ -98,6 +103,7 @@ export const TEMPLATES: TemplateGroup = {
           description:
             'A minimal React application configured with Echo - a blank canvas to build your app.',
           Icon: AppWindow,
+          url: 'https://echo-react-boilerplate.vercel.app/',
         },
       ],
       moreAdvanced: (

@@ -2,31 +2,31 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 
-import Link from 'next/link';
-
-import { SiNextdotjs, SiReact } from '@icons-pack/react-simple-icons';
-
 import {
-  Tabs,
-  TabsTrigger,
-  TabsList,
-  TabsContent,
-  TabsContents,
-} from '@/components/ui/shadcn-io/tabs';
-
-import { Card } from '@/components/ui/card';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-import { ReactStep1, ReactStep2 } from './frameworks/react';
-import { NextStep1, NextStep2 } from './frameworks/next';
-
 import { api } from '@/trpc/client';
 import { Check, Lock, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  SiNextdotjs,
+  SiTypescript,
+  SiReact,
+} from '@icons-pack/react-simple-icons';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Route } from 'next';
 
 interface Props {
   appId: string;
@@ -70,56 +70,77 @@ export const GenerateText: React.FC<Props> = ({ appId }) => {
           ) : (
             <MessageSquare className="size-4" />
           )}
-          Make an LLM Request
+          Make an LLM or Image Generation Request
         </div>
       </AccordionTrigger>
       <AccordionContent className="pb-0">
-        <Tabs className="flex flex-col gap-2" defaultValue="next">
-          <TabsList className="rounded-lg">
-            <TabsTrigger value="next" className="px-8 gap-2 rounded-lg">
-              <SiNextdotjs className="size-4" />
-              Next.js
-            </TabsTrigger>
-            <TabsTrigger value="react" className="px-8 gap-2 rounded-lg">
-              <SiReact className="size-4" />
-              React
-            </TabsTrigger>
-          </TabsList>
-          <TabsContents>
-            <TabsContent value="next" className="gap-2 flex flex-col">
-              <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">
-                <NextStep1 />
-                <NextStep2 />
-              </Card>
-              <p className="text-sm text-muted-foreground">
-                For more detailed instructions, see our{' '}
-                <Link
-                  href="/docs/getting-started/next-js"
-                  className="text-primary underline font-medium"
-                  target="_blank"
-                >
-                  Next.js docs
-                </Link>
-              </p>
-            </TabsContent>
-            <TabsContent value="react" className="gap-2 flex flex-col">
-              <Card className="flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x">
-                <ReactStep1 />
-                <ReactStep2 />
-              </Card>
-              <p className="text-sm text-muted-foreground">
-                For more detailed instructions, see our{' '}
-                <Link
-                  href="/docs/getting-started/react"
-                  className="text-primary underline font-medium"
-                  target="_blank"
-                >
-                  React docs
-                </Link>
-              </p>
-            </TabsContent>
-          </TabsContents>
-        </Tabs>
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b space-y-0.5 bg-muted">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="bg-primary rounded-full size-3 animate-ping absolute inset-0" />
+                <div className="bg-primary rounded-full size-3" />
+              </div>
+              <CardTitle className="text-base">Waiting for Requests</CardTitle>
+            </div>
+            <CardDescription>
+              Make your first request from your app.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 p-4">
+            <Tabs defaultValue="template">
+              <TabsList>
+                <TabsTrigger value="template">Template</TabsTrigger>
+                <TabsTrigger value="custom">Custom Integration</TabsTrigger>
+              </TabsList>
+              <TabsContent value="template" className="border rounded-lg p-4">
+                <p>
+                  If you used a starter template, you have everything you need
+                  to make a request.
+                </p>
+              </TabsContent>
+              <TabsContent
+                value="custom"
+                className="border rounded-lg p-4 flex flex-col gap-2"
+              >
+                <p>
+                  If you built a custom integration, see our docs on how to make
+                  a request with the SDK you used.
+                </p>
+                <div className="flex gap-2 w-full md:w-auto overflow-x-auto no-scrollbar py-1">
+                  {[
+                    {
+                      href: '/docs/next-sdk/server#ai-providers',
+                      icon: <SiNextdotjs className="size-4" />,
+                      label: 'Next.js SDK',
+                    },
+                    {
+                      href: '/docs/react-sdk/llm-integration',
+                      icon: <SiReact className="size-4" />,
+                      label: 'React SDK',
+                    },
+                    {
+                      href: '/docs/typescript-sdk#ai-integration',
+                      icon: <SiTypescript className="size-4" />,
+                      label: 'TypeScript SDK',
+                    },
+                  ].map(({ href, icon, label }) => (
+                    <Link
+                      href={href as Route<'/docs/[sdk]'>}
+                      target="_blank"
+                      key={href}
+                      className="h-fit"
+                    >
+                      <Button variant="outline" size="sm">
+                        {icon} {label}
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </AccordionContent>
     </AccordionItem>
   );

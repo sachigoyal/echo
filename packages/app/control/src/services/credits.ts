@@ -3,8 +3,15 @@ import z from 'zod';
 import { db } from '@/lib/db';
 import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 
-import { EnumPaymentSource, type Prisma } from '@/generated/prisma';
+import {
+  EnumPaymentSource,
+  Payment,
+  type Prisma,
+} from '@/generated/prisma';
 import { logger } from '@/logger';
+import { updateSpendPoolFromPayment } from '@/lib/spend-pools';
+import { Decimal } from '@/generated/prisma/runtime/library';
+import { User } from '@auth/core/types';
 
 export const mintCreditsToUserSchema = z.object({
   userId: z.uuid(),
@@ -121,3 +128,138 @@ export const mintCreditsToUser = async (
     isFreeTier,
   };
 };
+
+export const createFreeTierPaymentFromBalanceSchema = z.object({
+  appId: z.string(),
+  amountInDollars: z.number(),
+});
+
+export async function createFreeTierPaymentFromBalance(
+  ctx: { session: { user: User } },
+  input: z.infer<typeof createFreeTierPaymentFromBalanceSchema>
+): Promise<{
+  success: boolean;
+  freeTierPayment: Payment | null;
+  error_message: string | null;
+}> {
+  const validationResult =
+    createFreeTierPaymentFromBalanceSchema.safeParse(input);
+
+  if (!validationResult.success) {
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Invalid input for credit minting',
+      attributes: {
+        validationError: validationResult.error.message,
+        input: JSON.stringify(input),
+        function: 'createFreeTierPaymentFromBalance',
+      },
+    });
+    throw new Error(validationResult.error.message, {
+      cause: validationResult.error,
+    });
+  }
+
+  const { appId, amountInDollars } = validationResult.data;
+  const echoAppId = await db.echoApp.findUnique({
+    where: { id: appId },
+  });
+
+  if (!echoAppId) {
+    throw new Error('Echo app not found');
+  }
+
+  const userId = ctx.session.user.id;
+
+  if (!userId) {
+    throw new Error('User not found');
+  }
+
+  const amountInDollarsDecimal = new Decimal(amountInDollars);
+  const amountInCentsDecimal = amountInDollarsDecimal.mul(100);
+
+  const freeTierPaymentId = `free_tier_from_balance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  const result = await db.$transaction(async tx => {
+    // check if the user has enough balance
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        freeTierPayment: null,
+        error_message: 'User not found',
+      };
+    }
+
+    const currentUserBalance = user.totalPaid.minus(user.totalSpent);
+
+    if (currentUserBalance < amountInDollarsDecimal) {
+      return {
+        success: false,
+        freeTierPayment: null,
+        error_message: 'Insufficient balance to complete transaction.',
+      };
+    }
+
+    const freeTierPayment = await tx.payment.create({
+      data: {
+        paymentId: freeTierPaymentId,
+        userId: userId,
+        amount: amountInDollars,
+        currency: 'usd',
+        status: PaymentStatus.COMPLETED,
+        source: EnumPaymentSource.balance,
+        description: 'Free Tier Credit Redemption Payment from Balance',
+      },
+    });
+
+    await updateSpendPoolFromPayment(
+      tx,
+      echoAppId.id,
+      freeTierPayment,
+      Number(amountInCentsDecimal),
+      {}
+    );
+
+    // decrement the user's balance
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        totalSpent: {
+          increment: amountInDollarsDecimal,
+        },
+      },
+    });
+    const transactionMetadata = await tx.transactionMetadata.create({
+      data: {
+        providerId: freeTierPaymentId,
+        provider: 'balance_transfer',
+        model: 'balance_transfer',
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+      },
+    });
+    await tx.transaction.create({
+      data: {
+        userId,
+        totalCost: amountInDollarsDecimal,
+        rawTransactionCost: amountInDollarsDecimal,
+        status: 'success',
+        echoAppId: echoAppId.id,
+        transactionMetadataId: transactionMetadata.id,
+      },
+    });
+
+    return {
+      success: true,
+      freeTierPayment,
+      error_message: null,
+    };
+  });
+
+  return result;
+}

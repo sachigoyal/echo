@@ -22,7 +22,7 @@ export const RedeemCredits = () => {
     isSuccess,
     isError,
     error,
-  } = api.user.redeem.redeem.useMutation({
+  } = api.credits.referralCode.redeem.useMutation({
     onSuccess: () => {
       setCode('');
       setFreeTier(false);

@@ -15,7 +15,7 @@ const buttonVariants = cva(
         outline:
           'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
         primaryOutline:
-          'border border-primary bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
+          'border border-primary text-primary bg-transparent shadow-xs hover:bg-primary/20',
         secondary:
           'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
         ghost:
@@ -27,6 +27,15 @@ const buttonVariants = cva(
           'bg-gradient-to-br from-primary via-primary/80 to-primary text-white hover:opacity-90',
           'shadow-[0_2px_6px_color-mix(in_oklab,var(--primary)_70%,transparent)]',
           'hover:shadow-[0_2px_4px_color-mix(in_oklab,var(--primary)_70%,transparent)]',
+          'inset-ring-2 inset-ring-inset inset-ring-border/50',
+          'relative overflow-hidden',
+          'before:content-[""] before:absolute before:w-full before:h-full before:rounded-md before:pointer-events-none',
+          'before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:animate-shimmer'
+        ),
+        turboSecondary: cn(
+          'bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white hover:opacity-90',
+          'shadow-[0_2px_6px_color-mix(in_oklab,theme(colors.gray.500)_70%,transparent)]',
+          'hover:shadow-[0_2px_4px_color-mix(in_oklab,theme(colors.gray.500)_70%,transparent)]',
           'inset-ring-2 inset-ring-inset inset-ring-border/50',
           'relative overflow-hidden',
           'before:content-[""] before:absolute before:w-full before:h-full before:rounded-md before:pointer-events-none',

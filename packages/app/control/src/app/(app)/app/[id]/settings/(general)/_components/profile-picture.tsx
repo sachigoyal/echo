@@ -52,6 +52,7 @@ export const AppProfilePicture = () => {
               width={96}
               height={96}
               className="size-full hover:opacity-80 transition-opacity"
+              unoptimized
             />
           ) : (
             <UploadIcon className="size-4" />

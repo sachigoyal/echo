@@ -15,7 +15,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -36,6 +35,7 @@ import {
   SiReact,
   SiTypescript,
 } from '@icons-pack/react-simple-icons';
+import { CopyCode } from '@/components/ui/copy-code';
 
 interface Props {
   appId: string;
@@ -78,8 +78,8 @@ export const Connection: React.FC<Props> = ({ appId }) => {
         </div>
       </AccordionTrigger>
       <AccordionContent className="flex flex-col gap-2 md:gap-4">
-        <Card>
-          <CardHeader className="border-b space-y-0.5">
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b space-y-0.5 bg-muted">
             <div className="flex items-center gap-2">
               <CardTitle className="text-base">Guided Setup</CardTitle>
               <Badge variant="glass" className="rounded-full">
@@ -99,40 +99,63 @@ export const Connection: React.FC<Props> = ({ appId }) => {
           <p className="text-muted-foreground">or</p>
           <Separator className="flex-1" />
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              Building from Scratch or Adding to an Existing App?
-            </CardTitle>
-            <CardDescription>
-              Visit our{' '}
-              <Link
-                href={'/docs' as Route}
-                target="_blank"
-                className="text-primary underline font-medium"
-              >
-                docs
-              </Link>{' '}
-              for more details on our SDKs.
-            </CardDescription>
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b bg-muted flex flex-col md:flex-row justify-between space-y-0 items-start md:items-center gap-1 md:gap-4">
+            <div className="flex flex-col gap-1">
+              <CardTitle>
+                Building from Scratch or Adding to an Existing App?
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Visit our{' '}
+                <Link
+                  href={'/docs' as Route}
+                  target="_blank"
+                  className="text-primary underline font-medium"
+                >
+                  docs
+                </Link>{' '}
+                for more details on our SDKs.
+              </CardDescription>
+            </div>
+            <div className="flex gap-2 w-full md:w-auto overflow-x-auto no-scrollbar py-1">
+              {[
+                {
+                  href: '/docs/next-sdk',
+                  icon: <SiNextdotjs className="size-4" />,
+                  label: 'Next.js SDK',
+                },
+                {
+                  href: '/docs/react-sdk',
+                  icon: <SiReact className="size-4" />,
+                  label: 'React SDK',
+                },
+                {
+                  href: '/docs/typescript-sdk',
+                  icon: <SiTypescript className="size-4" />,
+                  label: 'TypeScript SDK',
+                },
+              ].map(({ href, icon, label }) => (
+                <Link
+                  href={href as Route<'/docs/[sdk]'>}
+                  target="_blank"
+                  key={href}
+                  className="h-fit"
+                >
+                  <Button variant="outline" size="sm">
+                    {icon} {label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
           </CardHeader>
-          <CardFooter className="gap-2">
-            <Link href={'/docs/next-sdk'} target="_blank">
-              <Button variant="outline">
-                <SiNextdotjs className="size-4" /> Next.js SDK Docs
-              </Button>
-            </Link>
-            <Link href={'/docs/react-sdk'} target="_blank">
-              <Button variant="outline">
-                <SiReact className="size-4" /> React SDK Docs
-              </Button>
-            </Link>
-            <Link href={'/docs/typescript-sdk'} target="_blank">
-              <Button variant="outline">
-                <SiTypescript className="size-4" /> TypeScript SDK Docs
-              </Button>
-            </Link>
-          </CardFooter>
+          <div className="flex flex-col gap-1 p-4">
+            <h3 className="text-sm font-medium">Your App ID</h3>
+            <CopyCode
+              code={appId}
+              toastMessage="Copied to clipboard"
+              className="border-primary"
+            />
+          </div>
         </Card>
       </AccordionContent>
     </AccordionItem>

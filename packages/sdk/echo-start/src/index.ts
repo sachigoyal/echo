@@ -3,7 +3,7 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import degit from 'degit';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import ora from 'ora';
 import path from 'path';
 import prompts from 'prompts';
@@ -75,7 +75,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
       message: 'What is your Echo App ID?',
       validate: (value: string) => {
         if (!value.trim()) {
-          return 'Please enter an App ID';
+          return 'Please enter an App ID or create one at https://echo.merit.systems/new';
         }
         return true;
       },
@@ -147,16 +147,26 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
       );
     }
 
+    // Update package.json with the name of the project
+    const packageJsonPath = path.join(absoluteProjectPath, 'package.json');
+    // Technically this is checked above, but good practice to check again
+    if (existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+      packageJson.name = toSafePackageName(projectDir);
+      writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      console.log(chalk.green(`✓ Updated package.json with project name`));
+    }
+
     // Update .env.local with the provided app ID
     const envPath = path.join(absoluteProjectPath, '.env.local');
     if (existsSync(envPath)) {
       try {
         const envContent = readFileSync(envPath, 'utf-8');
 
-        // Replace the environment variable value - specifically targeting the *_ECHO_APP_ID placeholder
-        // Find the line with *_ECHO_APP_ID and replace the value after the = sign
+        // Replace the environment variable value - specifically targeting the *EHO_APP_ID placeholder
+        // Find the line with *ECHO_APP_ID and replace the value after the = sign
         const updatedContent = envContent.replace(
-          /^(.+ECHO_APP_ID\s*=\s*).+$/m,
+          /^(.*ECHO_APP_ID\s*=\s*).+$/gm,
           `$1${appId!}`
         );
 
@@ -253,11 +263,22 @@ async function main() {
 
         // If no directory specified, prompt for it
         if (!projectDir) {
+          let defaultName = 'my-echo-app';
+          let counter = 1;
+
+          while (
+            existsSync(path.resolve(defaultName)) &&
+            readdirSync(path.resolve(defaultName)).length > 0
+          ) {
+            defaultName = `${defaultName}-${counter}`;
+            counter++;
+          }
+
           const response = await prompts({
             type: 'text',
             name: 'projectDir',
             message: 'What is your project named?',
-            initial: 'my-echo-app',
+            initial: defaultName,
             validate: (value: string) => {
               if (!value.trim()) {
                 return 'Please enter a project name';
@@ -282,6 +303,15 @@ async function main() {
     );
 
   await program.parseAsync();
+}
+
+function toSafePackageName(dirname: string) {
+  return dirname
+    .toLowerCase()
+    .replace(/[^a-z0-9-_.]/g, '-') // replace unsafe chars with dashes
+    .replace(/^-+/, '') // remove leading dashes
+    .replace(/^_+/, '') // remove leading underscores
+    .replace(/\.+$/, ''); // remove trailing dots
 }
 
 main().catch(error => {
