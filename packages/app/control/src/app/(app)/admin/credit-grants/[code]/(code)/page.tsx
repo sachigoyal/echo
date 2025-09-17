@@ -4,7 +4,7 @@ import { checkCreditGrant } from '../_lib/checks';
 import { EditCreditGrantForm } from './_components/edit-form';
 import { DisableCreditGrantDialog } from './_components/disable-dialog';
 import { Button } from '@/components/ui/button';
-import { QrCode, Share, Trash } from 'lucide-react';
+import { QrCode, Trash } from 'lucide-react';
 import Link from 'next/link';
 import {
   Card,
@@ -19,7 +19,7 @@ import { api, HydrateClient } from '@/trpc/server';
 import { CreditGrantUsersTable } from './_components/users-table';
 
 export default async function AdminCodePage(
-  props: PageProps<'/admin/codes/[code]'>
+  props: PageProps<'/admin/credit-grants/[code]'>
 ) {
   const { code } = await props.params;
 
@@ -59,7 +59,7 @@ export default async function AdminCodePage(
           </CardContent>
           <CardFooter className="border-t py-4">
             <Link
-              href={`/admin/codes/${code}/share`}
+              href={`/admin/credit-grants/${code}/share`}
               passHref
               className="w-full"
             >

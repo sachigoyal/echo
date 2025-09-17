@@ -69,13 +69,13 @@ export const CreditGrantsTable = () => {
               </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-2">
-                  <Link href={`/admin/codes/${creditGrant.code}`}>
+                  <Link href={`/admin/credit-grants/${creditGrant.code}`}>
                     <Button size="xs" variant="outline">
                       <Settings className="size-3" />
                       Settings
                     </Button>
                   </Link>
-                  <Link href={`/admin/codes/${creditGrant.code}/share`}>
+                  <Link href={`/admin/credit-grants/${creditGrant.code}/share`}>
                     <Button size="xs">
                       <Share className="size-3" />
                       Share

@@ -27,7 +27,7 @@ export const CreateCreditGrantForm = () => {
     onSuccess: ({ code }) => {
       utils.admin.creditGrants.list.invalidate();
       toast.success('Credit grant created');
-      router.push(`/admin/codes/${code}`);
+      router.push(`/admin/credit-grants/${code}`);
     },
     onError: error => {
       toast.error(error.message);

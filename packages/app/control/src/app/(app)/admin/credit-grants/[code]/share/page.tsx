@@ -21,7 +21,7 @@ import { formatCurrency } from '@/lib/utils';
 import { checkCreditGrant } from '../_lib/checks';
 
 export default async function AdminCodePage(
-  props: PageProps<'/admin/codes/[code]/share'>
+  props: PageProps<'/admin/credit-grants/[code]/share'>
 ) {
   const { code } = await props.params;
 

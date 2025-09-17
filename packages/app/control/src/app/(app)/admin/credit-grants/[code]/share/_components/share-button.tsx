@@ -17,7 +17,9 @@ export const ShareButton: React.FC<Props> = ({ code }) => {
   const onCopy = () => {
     setIsCopied(true);
 
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(
+      `${process.env.ECHO_CONTROL_APP_BASE_URL}/credits/claim/${code}`
+    );
 
     toast.success('Copied to clipboard');
     setTimeout(() => {

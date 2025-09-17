@@ -70,7 +70,7 @@ export const CreditGrantForm: React.FC<Props> = ({
 
   useEffect(() => {
     form.reset(defaultValues);
-  }, [defaultValues]);
+  }, [defaultValues, form]);
 
   const handleSubmit = (data: z.infer<typeof adminCreateCreditGrantSchema>) => {
     onSubmit(data);

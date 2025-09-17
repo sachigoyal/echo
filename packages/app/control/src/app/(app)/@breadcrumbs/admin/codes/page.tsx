@@ -15,7 +15,7 @@ export default function AdminCodesBreadcrumb() {
       <Breadcrumb
         href="/admin/codes"
         image={null}
-        name="Referral Codes"
+        name="Credit Grants"
         Fallback={Ticket}
         disabled
       />
