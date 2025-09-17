@@ -1,3 +1,8 @@
+import QRCode from 'react-qr-code';
+
+import { Logo } from '@/components/ui/logo';
+import { Card } from '@/components/ui/card';
+
 import { Body, Heading } from '@/app/(app)/_components/layout/page-utils';
 import {
   CouponContainer,
@@ -10,11 +15,12 @@ import {
   CouponTitle,
   CouponValue,
 } from '@/components/coupon';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/logo';
+
 import { api } from '@/trpc/server';
-import { Share } from 'lucide-react';
+
 import { notFound } from 'next/navigation';
+
+import { ShareButton } from './_components/share-button';
 
 export default async function AdminCodePage(
   props: PageProps<'/admin/codes/[code]'>
@@ -28,10 +34,16 @@ export default async function AdminCodePage(
       <Heading title="Credit Grant" />
       <Body>
         <div className="grid grid-cols-1 lg:grid-cols-3 items-center gap-4 lg:gap-8">
-          <div className="aspect-square shrink-0 bg-red-500">
-            <Logo />
-          </div>
-          <CouponContainer className="col-span-1 lg:col-span-2 h-full justify-between">
+          <Card className="aspect-square shrink-0 rounded-xl border overflow-hidden relative p-4">
+            <QRCode
+              value={`${process.env.ECHO_CONTROL_APP_BASE_URL}/credits/claim/${code}`}
+              className="size-full"
+            />
+            <Card className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card p-2 rounded-xl border-primary border-4">
+              <Logo className="size-12" />
+            </Card>
+          </Card>
+          <CouponContainer className="col-span-1 lg:col-span-2 h-full flex flex-col justify-between">
             <CouponHeader>
               <CouponTitle>
                 <CouponValue value={creditGrant.grantAmount} />
@@ -42,12 +54,7 @@ export default async function AdminCodePage(
             <CouponMarquee size={48} />
             <CouponDivider />
             <CouponFooter>
-              <Button
-                variant="unstyled"
-                className="w-full bg-white h-12 md:h-12 hover:bg-white/90"
-              >
-                Share Credit Grant <Share className="size-4" />
-              </Button>
+              <ShareButton code={code} />
             </CouponFooter>
           </CouponContainer>
         </div>
