@@ -59,12 +59,18 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
   if (isClaimCredits) {
     // Extract the code from the callbackUrl, which should be in the format /credits/claim/{code}
     const match = callbackUrl.match(/\/credits\/claim\/([^/?#]+)/);
-    code = match ? match[1] : undefined;
+    const creditGrantCode = match ? match[1] : undefined;
     if (code) {
-      const coupon = await api.credits.grant.get({ code });
-      if (coupon?.grantAmount) {
-        couponAmount += coupon.grantAmount;
-      }
+      try {
+        const coupon = await api.credits.grant.getWithUsages({ code });
+        if (
+          coupon.maxUsesPerUser &&
+          coupon.maxUsesPerUser > coupon.usages.length
+        ) {
+          couponAmount += coupon.grantAmount;
+          code = creditGrantCode;
+        }
+      } catch {}
     }
   }
 
@@ -110,6 +116,7 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
           amount={couponAmount}
           callbackUrl={redirectUrl.toString() as Route}
           code={code}
+          hasClaimedFreeTier={hasClaimedFreeTier}
         />
         <p className="text-sm text-muted-foreground text-center">
           By claiming these credits, you agree to the
