@@ -14,4 +14,3 @@ export { MoneyCell } from './MoneyCell';
 export { StringCell } from './StringCell';
 export { IntCell } from './IntCell';
 export { toNumber } from './utils';
-export * from './example-trpc';

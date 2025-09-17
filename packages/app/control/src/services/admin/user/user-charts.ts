@@ -1,5 +1,5 @@
 import { ChartItem } from '../type/chart';
-import { getCreatorActivity } from '@/services/activity/creator/overview';
+import { getUserCreatorActivity } from '@/services/user/activity';
 import { ChartConfig } from '@/components/ui/chart';
 
 export interface GetUserAppsChartsInput {
@@ -31,8 +31,7 @@ export const getUserAppsCharts = async (
     );
   const numBuckets = input.numBuckets ?? 30;
 
-  const activity = await getCreatorActivity({
-    userId: input.userId,
+  const activity = await getUserCreatorActivity(input.userId, {
     startDate,
     endDate,
     numBuckets,
