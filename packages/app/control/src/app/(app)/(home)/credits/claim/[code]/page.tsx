@@ -14,18 +14,18 @@ export default async function ClaimCreditsPage(
 
   await userOrRedirect(`/credits/claim/${code}`, props);
 
-  const referralCode = await checkReferralCode(code);
+  const creditGrantCode = await checkCreditGrantCode(code);
 
   return (
     <ClaimCreditsContainer>
-      <ClaimCreditsCoupon value={referralCode.grantAmount!} code={code} />
+      <ClaimCreditsCoupon value={creditGrantCode.grantAmount} code={code} />
     </ClaimCreditsContainer>
   );
 }
 
-const checkReferralCode = async (code: string) => {
+const checkCreditGrantCode = async (code: string) => {
   try {
-    return await api.credits.grant.get({ code });
+    return await api.credits.grant.getWithUsages({ code });
   } catch {
     return notFound();
   }

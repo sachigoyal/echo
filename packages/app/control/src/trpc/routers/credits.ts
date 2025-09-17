@@ -1,24 +1,20 @@
-import {
-  redeemCreditReferralCode,
-  redeemCreditReferralCodeSchema,
-} from '@/services/credits/coupon';
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '../trpc';
-import {
-  getReferralCode,
-  getReferralCodeSchema,
-} from '@/services/credits/coupon';
+
 import { TRPCError } from '@trpc/server';
 import {
+  getCreditGrantCode,
+  getCreditGrantCodeSchema,
+  getCreditGrantCodeWithUsages,
   redeemCreditGrantCode,
   redeemCreditGrantCodeSchema,
-} from '@/lib/credit-grants';
+} from '@/services/credits/grant';
 
 export const creditsRouter = createTRPCRouter({
   grant: {
     get: publicProcedure
-      .input(getReferralCodeSchema)
+      .input(getCreditGrantCodeSchema)
       .query(async ({ input }) => {
-        const referralCode = await getReferralCode(input);
+        const referralCode = await getCreditGrantCode(input);
 
         if (!referralCode) {
           throw new TRPCError({
@@ -29,6 +25,25 @@ export const creditsRouter = createTRPCRouter({
 
         return referralCode;
       }),
+
+    getWithUsages: protectedProcedure
+      .input(getCreditGrantCodeSchema)
+      .query(async ({ ctx, input }) => {
+        const creditGrantCode = await getCreditGrantCodeWithUsages(
+          ctx.session.user.id,
+          input
+        );
+
+        if (!creditGrantCode) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Credit grant code not found',
+          });
+        }
+
+        return creditGrantCode;
+      }),
+
     redeem: protectedProcedure
       .input(redeemCreditGrantCodeSchema)
       .mutation(async ({ ctx, input }) => {
