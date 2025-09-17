@@ -283,6 +283,7 @@ enum EnumPaymentSource {
   stripe
   admin
   signUpGift
+  balance
 }
 
 model Transaction {

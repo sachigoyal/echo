@@ -32,6 +32,15 @@ const buttonVariants = cva(
           'before:content-[""] before:absolute before:w-full before:h-full before:rounded-md before:pointer-events-none',
           'before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:animate-shimmer'
         ),
+        turboSecondary: cn(
+          'bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 text-white hover:opacity-90',
+          'shadow-[0_2px_6px_color-mix(in_oklab,theme(colors.gray.500)_70%,transparent)]',
+          'hover:shadow-[0_2px_4px_color-mix(in_oklab,theme(colors.gray.500)_70%,transparent)]',
+          'inset-ring-2 inset-ring-inset inset-ring-border/50',
+          'relative overflow-hidden',
+          'before:content-[""] before:absolute before:w-full before:h-full before:rounded-md before:pointer-events-none',
+          'before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:animate-shimmer'
+        ),
         unstyled: '',
       },
       size: {
