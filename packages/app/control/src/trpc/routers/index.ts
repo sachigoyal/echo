@@ -2,7 +2,7 @@ import { createCallerFactory, createTRPCRouter } from '../trpc';
 
 import { appsRouter } from './apps';
 import { userRouter } from './user';
-import { adminRouter } from './admin';
+import { adminRouter } from './admin/admin';
 import { uploadRouter } from './upload';
 import { creditsRouter } from './credits';
 
