@@ -44,6 +44,8 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
     if (hasClaimedFreeTier) {
       return redirect('/dashboard');
     }
+  } else {
+    redirectUrl.pathname = '/credits';
   }
 
   let couponAmount = 0;
@@ -60,18 +62,25 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
     // Extract the code from the callbackUrl, which should be in the format /credits/claim/{code}
     const match = callbackUrl.match(/\/credits\/claim\/([^/?#]+)/);
     const creditGrantCode = match ? match[1] : undefined;
-    if (code) {
+    if (creditGrantCode) {
       try {
-        const coupon = await api.credits.grant.getWithUsages({ code });
+        const coupon = await api.credits.grant.getWithUsages({
+          code: creditGrantCode,
+        });
         if (
           coupon.maxUsesPerUser &&
           coupon.maxUsesPerUser > coupon.usages.length
         ) {
           couponAmount += coupon.grantAmount;
           code = creditGrantCode;
+          redirectUrl.pathname = '/credits';
         }
       } catch {}
     }
+  }
+
+  if (couponAmount === 0) {
+    return redirect(redirectUrl.toString() as Route);
   }
 
   return (
