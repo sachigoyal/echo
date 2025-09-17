@@ -211,10 +211,7 @@ async function createReferralCodeForUser(
       code,
       userId,
       echoAppId: appId,
-      grantType: 'referral',
-      reusable: true,
       expiresAt: addDays(new Date(), 365),
-      isUsed: false,
     },
     select: { id: true, code: true },
   });

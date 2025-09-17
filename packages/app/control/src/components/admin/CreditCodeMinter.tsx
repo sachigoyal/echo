@@ -17,11 +17,15 @@ interface MintedCode {
   code: string;
   grantAmount: number;
   expiresAt: Date;
+  maxUses?: number;
+  maxUsesPerUser?: number;
 }
 
 export function CreditCodeMinter() {
   const [amount, setAmount] = useState<string>('');
   const [expiresAt, setExpiresAt] = useState<string>('');
+  const [maxUses, setMaxUses] = useState<string>('');
+  const [maxUsesPerUser, setMaxUsesPerUser] = useState<string>('');
   const [mintedCodes, setMintedCodes] = useState<MintedCode[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,10 +40,14 @@ export function CreditCodeMinter() {
             ? data.grantAmount
             : Number(data.grantAmount),
         expiresAt: data.expiresAt,
+        maxUses: data.maxUses || undefined,
+        maxUsesPerUser: data.maxUsesPerUser || undefined,
       };
       setMintedCodes([convertedData, ...mintedCodes]);
       setAmount('');
       setExpiresAt('');
+      setMaxUses('');
+      setMaxUsesPerUser('');
       setError(null);
     },
     onError: error => {
@@ -57,10 +65,29 @@ export function CreditCodeMinter() {
     }
 
     const expirationDate = expiresAt ? new Date(expiresAt) : undefined;
+    const maxUsesValue = maxUses ? parseInt(maxUses, 10) : undefined;
+    const maxUsesPerUserValue = maxUsesPerUser
+      ? parseInt(maxUsesPerUser, 10)
+      : undefined;
+
+    if (maxUses && (isNaN(maxUsesValue!) || maxUsesValue! <= 0)) {
+      setError('Please enter a valid positive number for max uses');
+      return;
+    }
+
+    if (
+      maxUsesPerUser &&
+      (isNaN(maxUsesPerUserValue!) || maxUsesPerUserValue! <= 0)
+    ) {
+      setError('Please enter a valid positive number for max uses per user');
+      return;
+    }
 
     await mintCodeMutation.mutateAsync({
       amountInDollars,
       expiresAt: expirationDate,
+      maxUses: maxUsesValue,
+      maxUsesPerUser: maxUsesPerUserValue,
     });
   };
 
@@ -118,6 +145,42 @@ export function CreditCodeMinter() {
               </p>
             </div>
 
+            <div className="space-y-2">
+              <label htmlFor="maxUses" className="text-sm font-medium">
+                Max Uses (Optional)
+              </label>
+              <Input
+                id="maxUses"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Enter maximum number of uses"
+                value={maxUses}
+                onChange={e => setMaxUses(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty for unlimited uses
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="maxUsesPerUser" className="text-sm font-medium">
+                Max Uses Per User (Optional)
+              </label>
+              <Input
+                id="maxUsesPerUser"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Enter maximum uses per user"
+                value={maxUsesPerUser}
+                onChange={e => setMaxUsesPerUser(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty for unlimited uses per user
+              </p>
+            </div>
+
             <Button
               type="submit"
               disabled={mintCodeMutation.isPending || !amount}
@@ -161,6 +224,10 @@ export function CreditCodeMinter() {
                     <div className="text-sm text-muted-foreground">
                       ${mintedCode.grantAmount.toFixed(2)} • Expires{' '}
                       {mintedCode.expiresAt.toLocaleDateString()}
+                      {mintedCode.maxUses &&
+                        ` • Max uses: ${mintedCode.maxUses}`}
+                      {mintedCode.maxUsesPerUser &&
+                        ` • Max per user: ${mintedCode.maxUsesPerUser}`}
                     </div>
                   </div>
                   <Button

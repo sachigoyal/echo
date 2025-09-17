@@ -39,6 +39,7 @@ model User {
   latestPrivacyVersion     Decimal?
   latestFreeCreditsVersion Decimal?
   OutboundEmailSent        OutboundEmailSent[]
+  creditGrantCodeUsages    CreditGrantCodeUsage[]
 
   @@map("users")
 }
@@ -379,11 +380,7 @@ model ReferralCode {
   code        String    @unique
   userId      String?   @db.Uuid
   echoAppId   String?   @db.Uuid
-  grantType   String // 'credits' or 'referral'
-  grantAmount Decimal?  @default(0.0) @db.Decimal(65, 14) // Amount of credits to grant if grantType is 'credits'
-  reusable    Boolean   @default(false)
   expiresAt   DateTime  @db.Timestamptz
-  isUsed      Boolean   @default(false)
   isArchived  Boolean   @default(false)
   archivedAt  DateTime? @db.Timestamptz
   usedAt      DateTime? @db.Timestamptz
@@ -397,6 +394,42 @@ model ReferralCode {
   Transaction Transaction[]
 
   @@map("referral_codes")
+}
+
+model CreditGrantCode {
+  id          String    @id @default(uuid()) @db.Uuid
+  code        String    @unique
+  isArchived  Boolean   @default(false)
+  archivedAt  DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+  grantAmount Decimal  @default(0.0) @db.Decimal(65, 14)
+  expiresAt   DateTime  @db.Timestamptz
+  uses        Int       @default(0)
+  maxUses     Int?
+  maxUsesPerUser Int?
+
+  usages CreditGrantCodeUsage[]
+
+  @@map("credit_grant_codes")
+}
+
+model CreditGrantCodeUsage {
+  id                 String          @id @default(uuid()) @db.Uuid
+  userId             String          @db.Uuid
+  creditGrantCodeId  String          @db.Uuid
+  grantedAmount      Decimal         @db.Decimal(65, 14) // Amount granted when this code was used
+  usedAt             DateTime        @default(now()) @db.Timestamptz
+  createdAt          DateTime        @default(now()) @db.Timestamptz
+  updatedAt          DateTime        @updatedAt @db.Timestamptz
+
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditGrantCode  CreditGrantCode @relation(fields: [creditGrantCodeId], references: [id], onDelete: Cascade)
+
+  @@index([creditGrantCodeId])
+  @@index([userId])
+  @@index([usedAt])
+  @@map("credit_grant_code_usage")
 }
 
 model ReferralReward {

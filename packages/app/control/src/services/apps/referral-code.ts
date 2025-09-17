@@ -5,8 +5,6 @@ import { db } from '@/lib/db';
 import { appIdSchema } from './lib/schemas';
 import { UserId } from '@/services/lib/schemas';
 
-import { ReferralCodeType } from '@/lib/referral-codes/types';
-
 export const getAppReferralCodeSchema = appIdSchema;
 
 export const getUserAppReferralCode = async (
@@ -14,7 +12,7 @@ export const getUserAppReferralCode = async (
   appId: z.infer<typeof appIdSchema>
 ) => {
   const referralCode = await db.referralCode.findFirst({
-    where: { userId, echoAppId: appId, grantType: ReferralCodeType.REFERRAL },
+    where: { userId, echoAppId: appId },
     include: {
       echoApp: {
         select: {
@@ -49,7 +47,7 @@ export const getReferralCodeByCode = async (
   code: z.infer<typeof getReferralCodeByCodeSchema>
 ) => {
   const referralCode = await db.referralCode.findFirst({
-    where: { code, grantType: ReferralCodeType.REFERRAL },
+    where: { code },
   });
 
   return referralCode;
@@ -74,8 +72,6 @@ export const createAppReferralCode = async (
       code,
       echoAppId: input.appId,
       userId,
-      grantType: ReferralCodeType.REFERRAL,
-      reusable: true,
       expiresAt: input.expiresAt,
     },
     include: {
