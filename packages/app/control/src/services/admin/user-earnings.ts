@@ -37,8 +37,7 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   totalMarkupProfit: 'COALESCE(t_agg."totalMarkupProfit", 0)',
   totalReferralProfit: 'COALESCE(t_agg."totalReferralProfit", 0)',
   transactionCount: 'COALESCE(t_agg."transactionCount", 0)',
-  referralCodesGenerated:
-    'COUNT(DISTINCT rc.id)',
+  referralCodesGenerated: 'COUNT(DISTINCT rc.id)',
   referredUsersCount: 'COUNT(DISTINCT am_referred.id)',
   totalCompletedPayouts:
     'COALESCE(SUM(p."amount") FILTER (WHERE p."status" = \'completed\'), 0)',

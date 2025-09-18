@@ -4,7 +4,6 @@ import { adminProcedure, createTRPCRouter } from '../../trpc';
 
 import { getHomePageChart } from '@/services/admin/home-page';
 
-
 export const adminTokensRouter = createTRPCRouter({
   getHomePageChart: adminProcedure
     .input(
@@ -17,8 +16,6 @@ export const adminTokensRouter = createTRPCRouter({
         .optional()
     )
     .query(async ({ input }) => {
-        return await getHomePageChart(input);
+      return await getHomePageChart(input);
     }),
 });
-
-

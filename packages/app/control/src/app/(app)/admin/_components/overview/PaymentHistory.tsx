@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { OverviewPanel } from '@/components/overview-panel/OverviewPanel';
@@ -20,4 +20,3 @@ export function PaymentsOverview() {
     />
   );
 }
-

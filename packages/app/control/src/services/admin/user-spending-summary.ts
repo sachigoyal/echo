@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { OverviewMetricConfig } from './type/overview-metric';
 
-function percentChange(currentValue: number | bigint, previousValue: number | bigint): number {
+function percentChange(
+  currentValue: number | bigint,
+  previousValue: number | bigint
+): number {
   const currentNumber = Number(currentValue) || 0;
   const previousNumber = Number(previousValue) || 0;
   if (previousNumber === 0) return currentNumber ? 100 : 0;
@@ -28,7 +31,9 @@ type SpendingTrendRow = {
   spending_users_prev: number;
 };
 
-export async function getUserSpendingOverviewMetrics(): Promise<OverviewMetricConfig[]> {
+export async function getUserSpendingOverviewMetrics(): Promise<
+  OverviewMetricConfig[]
+> {
   const summaryQuery = `
     WITH t AS (
       SELECT 
@@ -57,7 +62,9 @@ export async function getUserSpendingOverviewMetrics(): Promise<OverviewMetricCo
     FROM t, p, b, su;
   `;
 
-  const summary = (await db.$queryRawUnsafe(summaryQuery)) as Array<SpendingOverviewRow>;
+  const summary = (await db.$queryRawUnsafe(
+    summaryQuery
+  )) as Array<SpendingOverviewRow>;
   const s = summary[0] || {
     totalSpend: 0,
     totalPayments: 0,
@@ -109,7 +116,9 @@ export async function getUserSpendingOverviewMetrics(): Promise<OverviewMetricCo
     FROM txn, pay, su;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(trendQuery)) as Array<SpendingTrendRow>;
+  const trendRows = (await db.$queryRawUnsafe(
+    trendQuery
+  )) as Array<SpendingTrendRow>;
   const t = trendRows[0] || {
     spend_current: 0,
     spend_prev: 0,
@@ -123,8 +132,12 @@ export async function getUserSpendingOverviewMetrics(): Promise<OverviewMetricCo
 
   const trendLabel = 'vs previous 7d';
 
-  const avgCurrent = t.spending_users_current ? t.spend_current / t.spending_users_current : 0;
-  const avgPrev = t.spending_users_prev ? t.spend_prev / t.spending_users_prev : 0;
+  const avgCurrent = t.spending_users_current
+    ? t.spend_current / t.spending_users_current
+    : 0;
+  const avgPrev = t.spending_users_prev
+    ? t.spend_prev / t.spending_users_prev
+    : 0;
   const netBalanceDeltaCurrent = t.payments_current - t.spend_current;
   const netBalanceDeltaPrev = t.payments_prev - t.spend_prev;
 
@@ -165,7 +178,10 @@ export async function getUserSpendingOverviewMetrics(): Promise<OverviewMetricCo
       description: 'Distinct users with at least one transaction',
       displayType: 'number',
       value: s.spendingUsers,
-      trendValue: percentChange(t.spending_users_current, t.spending_users_prev),
+      trendValue: percentChange(
+        t.spending_users_current,
+        t.spending_users_prev
+      ),
       size: 'sm',
       format: { showTrend: true, trendLabel },
     },
@@ -193,5 +209,3 @@ export async function getUserSpendingOverviewMetrics(): Promise<OverviewMetricCo
 
   return metrics;
 }
-
-
