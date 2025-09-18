@@ -9,7 +9,7 @@ interface Props {
 
 export const ClaimCreditsContainer: React.FC<Props> = ({ children }) => {
   return (
-    <div className="flex flex-col items-center justify-center gap-8 w-full max-w-xl mx-auto py-8">
+    <div className="flex flex-col items-center justify-center gap-8 w-full max-w-xl mx-auto py-8 px-2">
       <div className="flex flex-col items-center gap-4 text-center max-w-2xl">
         <Card className="size-20 p-2 border rounded-xl flex items-center justify-center bg-card">
           <Logo className="size-full" />
