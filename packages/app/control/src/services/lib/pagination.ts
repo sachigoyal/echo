@@ -7,6 +7,12 @@ export const paginationSchema = z.object({
 
 export type PaginationParams = z.infer<typeof paginationSchema>;
 
+// Zod schema for pagination parameters
+export const paginationParamsSchema = z.object({
+  page: z.number().min(0).default(0),
+  page_size: z.number().min(1).max(100).default(10),
+});
+
 interface ToPaginatedResponseParams<T> {
   items: T[];
   page: number;
@@ -14,7 +20,7 @@ interface ToPaginatedResponseParams<T> {
   total_count: number;
 }
 
-type PaginatedResponse<T> = {
+export type PaginatedResponse<T> = {
   items: T[];
   page_size: number;
   page: number;

@@ -5,7 +5,6 @@ import { db } from '@/lib/db';
 import { appIdSchema } from './lib/schemas';
 import { UserId } from '@/services/lib/schemas';
 
-import { ReferralCodeType } from '@/lib/referral-codes/types';
 import { env } from '@/env';
 
 export const getAppReferralCodeSchema = appIdSchema;
@@ -15,22 +14,23 @@ export const getUserAppReferralCode = async (
   appId: z.infer<typeof appIdSchema>
 ) => {
   const referralCode = await db.referralCode.findFirst({
-    where: { userId, echoAppId: appId, grantType: ReferralCodeType.REFERRAL },
-    include: {
-      echoApp: {
-        select: {
-          homepageUrl: true,
-        },
-      },
-    },
+    where: { userId },
   });
 
   if (!referralCode) {
     return null;
   }
 
+  const echoApp = await db.echoApp.findUnique({
+    where: { id: appId },
+  });
+
+  if (!echoApp) {
+    throw new Error('Echo app not found');
+  }
+
   const referralLinkUrl = getReferralLinkUrl({
-    homePage: referralCode.echoApp?.homepageUrl,
+    homePage: echoApp.homepageUrl,
     echoAppId: appId,
     code: referralCode.code,
   });
@@ -40,7 +40,7 @@ export const getUserAppReferralCode = async (
     code: referralCode.code,
     expiresAt: referralCode.expiresAt,
     userId: referralCode.userId,
-    echoAppId: referralCode.echoAppId,
+    echoAppId: appId,
   };
 };
 
@@ -50,7 +50,7 @@ export const getReferralCodeByCode = async (
   code: z.infer<typeof getReferralCodeByCodeSchema>
 ) => {
   const referralCode = await db.referralCode.findFirst({
-    where: { code, grantType: ReferralCodeType.REFERRAL },
+    where: { code },
   });
 
   return referralCode;
@@ -73,23 +73,21 @@ export const createAppReferralCode = async (
   const referralCode = await db.referralCode.create({
     data: {
       code,
-      echoAppId: input.appId,
       userId,
-      grantType: ReferralCodeType.REFERRAL,
-      reusable: true,
       expiresAt: input.expiresAt,
-    },
-    include: {
-      echoApp: {
-        select: {
-          homepageUrl: true,
-        },
-      },
     },
   });
 
+  const echoApp = await db.echoApp.findUnique({
+    where: { id: input.appId },
+  });
+
+  if (!echoApp) {
+    throw new Error('Echo app not found');
+  }
+
   const referralLinkUrl = getReferralLinkUrl({
-    homePage: referralCode.echoApp?.homepageUrl,
+    homePage: echoApp.homepageUrl,
     echoAppId: input.appId,
     code: referralCode.code,
   });
@@ -99,7 +97,7 @@ export const createAppReferralCode = async (
     code: referralCode.code,
     expiresAt: referralCode.expiresAt,
     userId: referralCode.userId,
-    echoAppId: referralCode.echoAppId,
+    echoAppId: input.appId,
   };
 };
 

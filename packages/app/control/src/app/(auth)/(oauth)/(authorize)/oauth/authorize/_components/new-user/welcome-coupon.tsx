@@ -25,6 +25,7 @@ export const WelcomePageCoupon = ({
         processing: 'Claiming...',
         success: 'Continuing to App...',
       }}
+      hasClaimedFreeTier={false}
       subText={
         <p className="text-sm">
           You can use these credits to make LLM requests on{' '}

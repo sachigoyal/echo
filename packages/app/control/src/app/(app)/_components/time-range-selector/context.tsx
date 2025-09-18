@@ -8,7 +8,7 @@ import { ActivityTimeframe } from '@/types/timeframes';
 
 interface ActivityContextType {
   startDate: Date;
-  endDate: Date;
+  endDate: Date | undefined;
   timeframe: ActivityTimeframe;
   setTimeframe: (timeframe: ActivityTimeframe) => void;
   setDateRange: (startDate: Date, endDate: Date) => void;
@@ -25,7 +25,7 @@ const ActivityContext = createContext<ActivityContextType>({
 interface Props {
   children: React.ReactNode;
   initialStartDate: Date;
-  initialEndDate: Date;
+  initialEndDate?: Date;
   creationDate: Date;
 }
 
@@ -38,7 +38,7 @@ export const ActivityContextProvider = ({
   const [timeframe, setTimeframe] = useState<ActivityTimeframe>(
     ActivityTimeframe.AllTime
   );
-  const [endDate, setEndDate] = useState<Date>(initialEndDate);
+  const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate);
   const [startDate, setStartDate] = useState<Date>(initialStartDate);
 
   useEffect(() => {
@@ -47,7 +47,6 @@ export const ActivityContextProvider = ({
     }
     if (timeframe === ActivityTimeframe.AllTime) {
       setStartDate(creationDate);
-      setEndDate(new Date());
       return;
     }
     setStartDate(subDays(new Date(), timeframe));

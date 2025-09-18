@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { setUserReferrerForAppIfExists } from '@/lib/referral-codes/user-referral';
+import { setUserReferrerForAppIfExists } from '@/lib/referral-codes';
 import { z } from 'zod';
 import { appIdSchema } from '@/services/apps/lib/schemas';
 import { authRoute } from '../../_lib/auth-route';
