@@ -6,13 +6,15 @@ import { TokenMetadata } from './types';
 import { addSeconds, differenceInSeconds, subMilliseconds } from 'date-fns';
 import { createEchoAccessJwt } from './create-jwt';
 import z from 'zod';
+import { Prisma } from '@/generated/prisma';
+import { tokenResponse } from './response';
 
 export const handleRefreshTokenSchema = z.object({
   refresh_token: z.string(),
 });
 
 export async function handleRefreshToken(
-  { refresh_token }: z.output<typeof handleRefreshTokenSchema>,
+  { refresh_token: token }: z.output<typeof handleRefreshTokenSchema>,
   metadata?: TokenMetadata
 ) {
   logger.emit({
@@ -23,14 +25,11 @@ export async function handleRefreshToken(
     },
   });
 
-  const echoRefreshTokenRecord = await db.refreshToken.findUnique({
+  const refreshToken = await db.refreshToken.findUnique({
     where: {
-      token: refresh_token,
+      token,
       OR: [
-        {
-          isArchived: false,
-          archivedAt: null,
-        },
+        { isArchived: false, archivedAt: null },
         {
           isArchived: true,
           archivedAt: {
@@ -39,21 +38,12 @@ export async function handleRefreshToken(
               env.OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS
             ),
           },
-          expiresAt: {
-            lt: new Date(),
-          },
+          expiresAt: { lt: new Date() },
         },
       ],
-      session: {
-        isArchived: false,
-        revokedAt: null,
-      },
-      echoApp: {
-        isArchived: false,
-      },
-      user: {
-        isArchived: false,
-      },
+      session: { isArchived: false, revokedAt: null },
+      echoApp: { isArchived: false },
+      user: { isArchived: false },
     },
     include: {
       user: true,
@@ -62,21 +52,21 @@ export async function handleRefreshToken(
     },
   });
 
-  if (!echoRefreshTokenRecord) {
+  if (!refreshToken) {
     throw new Error('Refresh token not found');
   }
 
-  if (echoRefreshTokenRecord.expiresAt < new Date()) {
+  if (refreshToken.expiresAt < new Date()) {
     // Deactivate expired token
-    archiveRefreshToken(refresh_token);
+    archiveRefreshToken(token);
     throw new Error('Refresh token expired');
   }
 
-  if (echoRefreshTokenRecord.archivedAt) {
+  if (refreshToken.archivedAt) {
     console.warn('🔄 Allowed a refresh for archived token within grace period');
   }
 
-  const { user, echoApp, session, scope } = echoRefreshTokenRecord;
+  const { user, echoApp: app, session, scope } = refreshToken;
 
   if (!session) {
     throw new Error('Session not found');
@@ -84,24 +74,20 @@ export async function handleRefreshToken(
 
   const sessionId = session.id;
 
-  /* 4️⃣ Generate new refresh token (rotate within the same session) */
-  const newEchoRefreshTokenExpiry = createEchoRefreshTokenExpiry();
-
   // Deactivate old refresh token
-  await archiveRefreshToken(refresh_token);
+  await archiveRefreshToken(token);
 
-  const newEchoRefreshToken = await db.$transaction(async tx => {
-    const [newEchoRefreshToken] = await Promise.all([
-      await tx.refreshToken.create({
-        data: {
-          token: `refresh_${nanoid(48)}`,
-          expiresAt: newEchoRefreshTokenExpiry,
+  const newRefreshToken = await db.$transaction(async tx => {
+    const [newRefreshToken] = await Promise.all([
+      await createRefreshToken(
+        {
           userId: user.id,
-          echoAppId: echoApp.id,
+          echoAppId: app.id,
           scope,
           sessionId,
         },
-      }),
+        tx
+      ),
       await db.appSession.update({
         where: { id: sessionId },
         data: {
@@ -113,37 +99,22 @@ export async function handleRefreshToken(
       }),
     ]);
 
-    return newEchoRefreshToken;
+    return newRefreshToken;
   });
 
-  const { access_token, access_token_expiry } = await createEchoAccessJwt({
+  const accessToken = await createEchoAccessJwt({
     userId: user.id,
-    appId: echoApp.id,
+    appId: app.id,
     scope,
     sessionId,
   });
 
-  return {
-    access_token,
-    token_type: 'Bearer',
-    expires_in: differenceInSeconds(access_token_expiry, new Date()),
-    refresh_token: newEchoRefreshToken.token,
-    refresh_token_expires_in: differenceInSeconds(
-      newEchoRefreshTokenExpiry,
-      new Date()
-    ),
-    scope: echoRefreshTokenRecord.scope,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name || '',
-    },
-    echo_app: {
-      id: echoApp.id,
-      name: echoApp.name,
-      description: echoApp.description || '',
-    },
-  };
+  return tokenResponse({
+    user,
+    app,
+    accessToken,
+    refreshToken: newRefreshToken,
+  });
 }
 
 const archiveRefreshToken = async (refreshToken: string) => {
@@ -153,7 +124,29 @@ const archiveRefreshToken = async (refreshToken: string) => {
   });
 };
 
-export const createEchoRefreshTokenExpiry = () => {
+const createRefreshTokenParamsSchema = z.object({
+  userId: z.uuid(),
+  echoAppId: z.uuid(),
+  scope: z.string().default(''),
+  sessionId: z.uuid(),
+});
+
+export const createRefreshToken = async (
+  params: z.input<typeof createRefreshTokenParamsSchema>,
+  tx?: Prisma.TransactionClient
+) => {
+  const client = tx ?? db;
+  const tokenData = createRefreshTokenParamsSchema.parse(params);
+  return client.refreshToken.create({
+    data: {
+      token: `refresh_${nanoid(48)}`,
+      expiresAt: createEchoRefreshTokenExpiry(),
+      ...tokenData,
+    },
+  });
+};
+
+const createEchoRefreshTokenExpiry = () => {
   const expiry = addSeconds(new Date(), env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS);
   logger.emit({
     severityText: 'DEBUG',

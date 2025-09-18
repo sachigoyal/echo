@@ -9,7 +9,7 @@ import { ConnectionBeam } from '../connection-beam';
 import { Scopes } from './scopes';
 import { AuthorizeButtons } from './buttons';
 
-import type { AuthorizeParams } from '@/app/(auth)/_lib/authorize';
+import type { AuthorizeParams } from '../../_actions/schema';
 
 interface Props {
   name: string;

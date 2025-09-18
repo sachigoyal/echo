@@ -57,11 +57,12 @@ export const createEchoAccessJwt = async (
 
   return {
     access_token,
+    scope,
     access_token_expiry: expiry,
   };
 };
 
-export function createEchoAccessJwtExpiry(): Date {
+const createEchoAccessJwtExpiry = (): Date => {
   const expiry = addSeconds(new Date(), env.OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS);
   logger.emit({
     severityText: 'DEBUG',
@@ -72,4 +73,4 @@ export function createEchoAccessJwtExpiry(): Date {
     },
   });
   return expiry;
-}
+};

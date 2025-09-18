@@ -44,7 +44,7 @@ export const getUserAppReferralCode = async (
   };
 };
 
-export const getReferralCodeByCodeSchema = z.uuid();
+export const getReferralCodeByCodeSchema = z.string();
 
 export const getReferralCodeByCode = async (
   code: z.infer<typeof getReferralCodeByCodeSchema>

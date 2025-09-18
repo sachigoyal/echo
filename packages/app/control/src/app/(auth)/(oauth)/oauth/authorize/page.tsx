@@ -14,10 +14,8 @@ import { NewUserAuthorize } from './_components/new-user';
 
 import { api } from '@/trpc/server';
 
-import {
-  authorizeParamsSchema,
-  isValidRedirectUri,
-} from '../../_lib/authorize';
+import { isValidRedirectUri } from '../../_lib/redirect-uri';
+import { authorizeParamsSchema } from './_actions/schema';
 import { userOrRedirect } from '@/auth/user-or-redirect';
 
 const paramsSchema = authorizeParamsSchema.extend({

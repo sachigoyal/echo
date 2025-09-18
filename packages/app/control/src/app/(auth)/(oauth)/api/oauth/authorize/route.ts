@@ -1,8 +1,8 @@
 import {
   authorizeParamsSchema,
   getAuthorizationRedirect,
-  isValidRedirectUri,
-} from '@/app/(auth)/_lib/authorize';
+} from '../../..//_lib/authorize';
+import { isValidRedirectUri } from '../../../_lib/redirect-uri';
 import { createZodRoute } from '@/app/api/_utils/create-route';
 import { auth } from '@/auth';
 import { env } from '@/env';
@@ -11,8 +11,10 @@ import { NextResponse } from 'next/server';
 import z from 'zod';
 
 const querySchema = authorizeParamsSchema.extend({
+  response_type: z.literal('code').default('code'),
   prompt: z.literal('none').optional(),
   new_user: z.literal('true').optional(),
+  referral_code: z.string().optional(),
 });
 
 export const GET = createZodRoute()

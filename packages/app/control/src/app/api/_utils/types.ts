@@ -106,6 +106,6 @@ export type InternalErrorBody = {
   errors?: z.core.$ZodIssue[];
 };
 
-export type MiddlewareErrorBody = {
+type MiddlewareErrorBody = {
   message: string;
 };

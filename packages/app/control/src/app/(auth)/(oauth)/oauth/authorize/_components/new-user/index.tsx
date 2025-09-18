@@ -1,4 +1,4 @@
-import type { AuthorizeParams } from '@/app/(auth)/_lib/authorize';
+import type { AuthorizeParams } from '../../_actions/schema';
 import Link from 'next/link';
 import { WelcomePageCoupon } from './welcome-coupon';
 import { ConnectionBeam } from '../connection-beam';
