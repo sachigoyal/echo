@@ -4,29 +4,28 @@ import { Button } from '@/registry/echo/ui/echo-button';
 import { useState } from 'react';
 import { CopyCommand } from './copy-command';
 
-const REGISTRY_HOMEPAGE =
-  process.env.NEXT_PUBLIC_VERCEL_URL || 'http://localhost:3000';
+const REGISTRY_HOMEPAGE = 'https://www.echo-components.com/';
 
 const PACKAGE_MANAGERS = [
   {
     id: 'pnpm',
     label: 'pnpm',
-    command: `pnpm dlx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
+    command: `pnpm dlx shadcn@latest add ${REGISTRY_HOMEPAGE}/r/`,
   },
   {
     id: 'npm',
     label: 'npm',
-    command: `npx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
+    command: `npx shadcn@latest add ${REGISTRY_HOMEPAGE}/r/`,
   },
   {
     id: 'yarn',
     label: 'yarn',
-    command: `yarn dlx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
+    command: `yarn dlx shadcn@latest add ${REGISTRY_HOMEPAGE}/r/`,
   },
   {
     id: 'bun',
     label: 'bun',
-    command: `bunx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
+    command: `bunx shadcn@latest add ${REGISTRY_HOMEPAGE}/r/`,
   },
 ] as const;
 
