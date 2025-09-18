@@ -47,7 +47,7 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   totalAppProfit: 'COALESCE(SUM(t."appProfit"), 0)',
   totalMarkupProfit: 'COALESCE(SUM(t."markUpProfit"), 0)',
   totalReferralProfit: 'COALESCE(SUM(t."referralProfit"), 0)',
-  totalReferralCodes: 'COUNT(DISTINCT rc.id)',
+  totalReferralCodes: 'COUNT(DISTINCT am_users."referrerId")',
   totalUsers: 'COUNT(DISTINCT am_users.id)',
 };
 
@@ -111,7 +111,7 @@ export const getAppEarningsWithPagination = async (
       COALESCE(SUM(t."appProfit"), 0) as "totalAppProfit",
       COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfit",
       COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfit",
-      COUNT(DISTINCT rc.id) as "totalReferralCodes",
+      COUNT(DISTINCT am_users."referrerId") as "totalReferralCodes",
       COUNT(DISTINCT am_users.id) as "totalUsers"
     FROM "echo_apps" a
     INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
@@ -120,7 +120,7 @@ export const getAppEarningsWithPagination = async (
     LEFT JOIN "transactions" t ON a.id = t."echoAppId"
     LEFT JOIN "outbound_emails_sent" app_oes ON a.id = app_oes."echoAppId"
     LEFT JOIN "outbound_emails_sent" owner_oes ON creator.id = owner_oes."userId"
-    LEFT JOIN "referral_codes" rc ON a.id = rc."echoAppId"
+    -- Referral codes are linked via app_memberships.referrerId in the new schema
     ${whereClause}
     GROUP BY a.id, a.name, a.description, a."createdAt", a."updatedAt", creator.id, creator.name, creator.email
     ${havingClause}
@@ -170,7 +170,6 @@ export const getAppEarningsWithPagination = async (
     LEFT JOIN "transactions" t ON a.id = t."echoAppId"
     LEFT JOIN "outbound_emails_sent" app_oes ON a.id = app_oes."echoAppId"
     LEFT JOIN "outbound_emails_sent" owner_oes ON creator.id = owner_oes."userId"
-    LEFT JOIN "referral_codes" rc ON a.id = rc."echoAppId"
     ${whereClause}
     ${havingClause ? `GROUP BY a.id ${havingClause}` : ''}
   `;

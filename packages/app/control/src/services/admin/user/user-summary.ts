@@ -75,7 +75,7 @@ export const getUserSummary = async (
       SELECT 
         am."userId",
         COUNT(DISTINCT a.id) as "totalApps",
-        COUNT(DISTINCT am_users.id) as "totalUsers",
+        COUNT(DISTINCT am_users."userId") as "totalUsers",
         COUNT(DISTINCT t.id) as "totalTransactions",
         COALESCE(SUM(tm."inputTokens" + tm."outputTokens"), 0) as "totalTokens",
         MAX(t."createdAt") as "lastTransactionAt"
@@ -211,7 +211,7 @@ async function getUserOverviewSummary(
       SELECT 
         am."userId",
         COUNT(DISTINCT a.id) AS "totalApps",
-        COUNT(DISTINCT am_users.id) AS "totalUsers",
+        COUNT(DISTINCT am_users."userId") AS "totalUsers",
         COUNT(DISTINCT t.id) AS "totalTransactions",
         COALESCE(SUM(tm."inputTokens" + tm."outputTokens"), 0) AS "totalTokens"
       FROM "app_memberships" am

@@ -7,6 +7,7 @@ import type { Route } from 'next';
 export const DashboardNav: React.FC = () => {
   return (
     <div className="w-full flex flex-col gap-2">
+      <DashboardNavLink href="/admin/dashboard">Home</DashboardNavLink>
       <DashboardNavLink href="/admin/dashboard/user-earnings">
         User Earnings
       </DashboardNavLink>
