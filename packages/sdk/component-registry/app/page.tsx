@@ -1,7 +1,7 @@
 // This page displays items from the custom registry.
 // You are free to implement this with your own design as needed.
 
-import { EchoAccountButton } from '@/registry/echo/blocks/echo-account-button/echo-account';
+import { EchoAccount } from '@/registry/echo/blocks/echo-account-button/echo-account-next';
 
 export default function Home() {
   return (
@@ -22,7 +22,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="flex items-center justify-center min-h-[400px] relative">
-            <EchoAccountButton />
+            <EchoAccount />
           </div>
         </div>
       </main>
