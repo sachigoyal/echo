@@ -125,7 +125,7 @@ export async function handleIssueToken(
         },
       });
       userRole = AppRole.CUSTOMER;
-    } catch (error) {
+    } catch {
       throw new Error('Error creating app membership');
     }
   }

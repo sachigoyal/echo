@@ -39,10 +39,8 @@ export const POST = createZodRoute()
 
     switch (body.grant_type) {
       case 'authorization_code': {
-        const { grant_type, ...issueTokenBody } = body;
-
         try {
-          const result = await handleIssueToken(issueTokenBody, metadata);
+          const result = await handleIssueToken(body, metadata);
           return NextResponse.json(result);
         } catch (error) {
           const message =
@@ -58,10 +56,8 @@ export const POST = createZodRoute()
         }
       }
       case 'refresh_token': {
-        const { grant_type, ...refreshTokenBody } = body;
-
         try {
-          const result = await handleRefreshToken(refreshTokenBody, metadata);
+          const result = await handleRefreshToken(body, metadata);
           return NextResponse.json(result);
         } catch (error) {
           const message =
