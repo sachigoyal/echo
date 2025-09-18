@@ -47,20 +47,18 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   description: 'a.description',
   createdAt: 'a."createdAt"',
   updatedAt: 'a."updatedAt"',
-  totalUsers: 'COUNT(DISTINCT am."userId")',
-  totalTransactions: 'COUNT(t.id)',
-  totalInputTokens: 'COALESCE(SUM(tm."inputTokens"), 0)',
-  totalOutputTokens: 'COALESCE(SUM(tm."outputTokens"), 0)',
-  totalTokens: 'COALESCE(SUM(tm."totalTokens"), 0)',
-  totalSpent: 'COALESCE(SUM(t."totalCost"), 0)',
-  totalSpentFreeTier:
-    'COALESCE(SUM(CASE WHEN t."spendPoolId" IS NOT NULL THEN t."totalCost" ELSE 0 END), 0)',
-  totalSpentUserBalances:
-    'COALESCE(SUM(CASE WHEN t."spendPoolId" IS NULL THEN t."totalCost" ELSE 0 END), 0)',
-  totalReferralProfitEarned: 'COALESCE(SUM(t."referralProfit"), 0)',
-  totalMarkupProfitEarned: 'COALESCE(SUM(t."markUpProfit"), 0)',
-  totalTransactionCosts: 'COALESCE(SUM(t."rawTransactionCost"), 0)',
-  lastTransactionAt: 'MAX(t."createdAt")',
+  totalUsers: 'COALESCE(u_stat."totalUsers", 0)',
+  totalTransactions: 'COALESCE(tx."totalTransactions", 0)',
+  totalInputTokens: 'COALESCE(tx."totalInputTokens", 0)',
+  totalOutputTokens: 'COALESCE(tx."totalOutputTokens", 0)',
+  totalTokens: 'COALESCE(tx."totalTokens", 0)',
+  totalSpent: 'COALESCE(tx."totalSpent", 0)',
+  totalSpentFreeTier: 'COALESCE(tx."totalSpentFreeTier", 0)',
+  totalSpentUserBalances: 'COALESCE(tx."totalSpentUserBalances", 0)',
+  totalReferralProfitEarned: 'COALESCE(tx."totalReferralProfitEarned", 0)',
+  totalMarkupProfitEarned: 'COALESCE(tx."totalMarkupProfitEarned", 0)',
+  totalTransactionCosts: 'COALESCE(tx."totalTransactionCosts", 0)',
+  lastTransactionAt: 'tx."lastTransactionAt"',
 };
 
 // Helper function to get payout information
@@ -126,9 +124,7 @@ export const getUserAppsWithPagination = async (
     {
       columnMappings: COLUMN_MAPPINGS,
       defaultWhere:
-        'WHERE owner_am."userId" = $1::uuid AND owner_am.role = \'' +
-        'owner' +
-        "'",
+        "WHERE EXISTS (SELECT 1 FROM \"app_memberships\" owner_am WHERE owner_am.\"echoAppId\" = a.id AND owner_am.\"userId\" = $1::uuid AND owner_am.role = 'owner')",
       aggregatedColumns: [
         'totalUsers',
         'totalTransactions',
@@ -174,25 +170,49 @@ export const getUserAppsWithPagination = async (
       a.description,
       a."createdAt",
       a."updatedAt",
-      COUNT(DISTINCT am."userId") as "totalUsers",
-      COUNT(t.id) as "totalTransactions",
-      COALESCE(SUM(tm."inputTokens"), 0) as "totalInputTokens",
-      COALESCE(SUM(tm."outputTokens"), 0) as "totalOutputTokens",
-      COALESCE(SUM(tm."totalTokens"), 0) as "totalTokens",
-      COALESCE(SUM(t."totalCost"), 0) as "totalSpent",
-      COALESCE(SUM(CASE WHEN t."spendPoolId" IS NOT NULL THEN t."totalCost" ELSE 0 END), 0) as "totalSpentFreeTier",
-      COALESCE(SUM(CASE WHEN t."spendPoolId" IS NULL THEN t."totalCost" ELSE 0 END), 0) as "totalSpentUserBalances",
-      COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfitEarned",
-      COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfitEarned",
-      COALESCE(SUM(t."rawTransactionCost"), 0) as "totalTransactionCosts",
-      MAX(t."createdAt") as "lastTransactionAt"
+      COALESCE(u_stat."totalUsers", 0) as "totalUsers",
+      COALESCE(tx."totalTransactions", 0) as "totalTransactions",
+      COALESCE(tx."totalInputTokens", 0) as "totalInputTokens",
+      COALESCE(tx."totalOutputTokens", 0) as "totalOutputTokens",
+      COALESCE(tx."totalTokens", 0) as "totalTokens",
+      COALESCE(tx."totalSpent", 0) as "totalSpent",
+      COALESCE(tx."totalSpentFreeTier", 0) as "totalSpentFreeTier",
+      COALESCE(tx."totalSpentUserBalances", 0) as "totalSpentUserBalances",
+      COALESCE(tx."totalReferralProfitEarned", 0) as "totalReferralProfitEarned",
+      COALESCE(tx."totalMarkupProfitEarned", 0) as "totalMarkupProfitEarned",
+      COALESCE(tx."totalTransactionCosts", 0) as "totalTransactionCosts",
+      tx."lastTransactionAt" as "lastTransactionAt"
     FROM "echo_apps" a
-    INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
-    LEFT JOIN "app_memberships" am ON a.id = am."echoAppId"
-    LEFT JOIN "transactions" t ON a.id = t."echoAppId"
-    LEFT JOIN "transaction_metadata" tm ON t."transactionMetadataId" = tm.id
+    LEFT JOIN LATERAL (
+      SELECT 
+        COUNT(*) as "totalTransactions",
+        COALESCE(SUM(tm."inputTokens"), 0) as "totalInputTokens",
+        COALESCE(SUM(tm."outputTokens"), 0) as "totalOutputTokens",
+        COALESCE(SUM(tm."totalTokens"), 0) as "totalTokens",
+        COALESCE(SUM(t."totalCost"), 0) as "totalSpent",
+        COALESCE(SUM(CASE WHEN t."spendPoolId" IS NOT NULL THEN t."totalCost" ELSE 0 END), 0) as "totalSpentFreeTier",
+        COALESCE(SUM(CASE WHEN t."spendPoolId" IS NULL THEN t."totalCost" ELSE 0 END), 0) as "totalSpentUserBalances",
+        COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfitEarned",
+        COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfitEarned",
+        COALESCE(SUM(t."rawTransactionCost"), 0) as "totalTransactionCosts",
+        MAX(t."createdAt") as "lastTransactionAt"
+      FROM "transactions" t
+      LEFT JOIN "transaction_metadata" tm ON t."transactionMetadataId" = tm.id
+      WHERE t."echoAppId" = a.id
+    ) tx ON TRUE
+    LEFT JOIN LATERAL (
+      SELECT COUNT(DISTINCT am."userId") as "totalUsers"
+      FROM "app_memberships" am
+      WHERE am."echoAppId" = a.id
+    ) u_stat ON TRUE
     ${whereClause}
-    GROUP BY a.id, a.name, a.description, a."createdAt", a."updatedAt"
+    GROUP BY 
+      a.id, a.name, a.description, a."createdAt", a."updatedAt",
+      u_stat."totalUsers",
+      tx."totalTransactions", tx."totalInputTokens", tx."totalOutputTokens", tx."totalTokens",
+      tx."totalSpent", tx."totalSpentFreeTier", tx."totalSpentUserBalances",
+      tx."totalReferralProfitEarned", tx."totalMarkupProfitEarned", tx."totalTransactionCosts",
+      tx."lastTransactionAt"
     ${havingClause}
     ${orderByClause}
     LIMIT $${parameters.length + 1} 
@@ -235,21 +255,43 @@ export const getUserAppsWithPagination = async (
   const payoutInfo = await getPayoutInformation(appIds);
 
   // Build count query with same filters
-  const countQuery = `
-    SELECT COUNT(DISTINCT a.id) as count
+  const countSourceQuery = `
+    SELECT a.id
     FROM "echo_apps" a
-    INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
-    LEFT JOIN "app_memberships" am ON a.id = am."echoAppId"
-    LEFT JOIN "transactions" t ON a.id = t."echoAppId"
-    LEFT JOIN "transaction_metadata" tm ON t."transactionMetadataId" = tm.id
+    LEFT JOIN LATERAL (
+      SELECT 
+        COUNT(*) as "totalTransactions",
+        COALESCE(SUM(tm."inputTokens"), 0) as "totalInputTokens",
+        COALESCE(SUM(tm."outputTokens"), 0) as "totalOutputTokens",
+        COALESCE(SUM(tm."totalTokens"), 0) as "totalTokens",
+        COALESCE(SUM(t."totalCost"), 0) as "totalSpent",
+        COALESCE(SUM(CASE WHEN t."spendPoolId" IS NOT NULL THEN t."totalCost" ELSE 0 END), 0) as "totalSpentFreeTier",
+        COALESCE(SUM(CASE WHEN t."spendPoolId" IS NULL THEN t."totalCost" ELSE 0 END), 0) as "totalSpentUserBalances",
+        COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfitEarned",
+        COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfitEarned",
+        COALESCE(SUM(t."rawTransactionCost"), 0) as "totalTransactionCosts",
+        MAX(t."createdAt") as "lastTransactionAt"
+      FROM "transactions" t
+      LEFT JOIN "transaction_metadata" tm ON t."transactionMetadataId" = tm.id
+      WHERE t."echoAppId" = a.id
+    ) tx ON TRUE
+    LEFT JOIN LATERAL (
+      SELECT COUNT(DISTINCT am."userId") as "totalUsers"
+      FROM "app_memberships" am
+      WHERE am."echoAppId" = a.id
+    ) u_stat ON TRUE
     ${whereClause}
-    ${havingClause ? `GROUP BY a.id ${havingClause}` : ''}
+    GROUP BY 
+      a.id,
+      u_stat."totalUsers",
+      tx."totalTransactions", tx."totalInputTokens", tx."totalOutputTokens", tx."totalTokens",
+      tx."totalSpent", tx."totalSpentFreeTier", tx."totalSpentUserBalances",
+      tx."totalReferralProfitEarned", tx."totalMarkupProfitEarned", tx."totalTransactionCosts",
+      tx."lastTransactionAt"
+    ${havingClause}
   `;
 
-  // If we have HAVING clauses, we need to count the grouped results
-  const totalCountQuery = havingClause
-    ? `SELECT COUNT(*) as count FROM (${countQuery}) as filtered_results`
-    : countQuery;
+  const totalCountQuery = `SELECT COUNT(*) as count FROM (${countSourceQuery}) as filtered_results`;
 
   const totalCount = (await db.$queryRawUnsafe(
     totalCountQuery,
