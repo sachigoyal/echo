@@ -8,7 +8,7 @@ import { appIdSchema } from './lib/schemas';
 export const getBucketedAppStatsSchema = z.object({
   appId: appIdSchema,
   startDate: z.date(),
-  endDate: z.date(),
+  endDate: z.date().optional(),
   numBuckets: z.number().optional().default(48),
   userId: userIdSchema.optional(),
 });
@@ -40,7 +40,7 @@ export const getBucketedAppStats = async ({
   });
 
   // Calculate bucket size in milliseconds
-  const totalMs = endDate.getTime() - startDate.getTime();
+  const totalMs = (endDate ?? new Date()).getTime() - startDate.getTime();
   const bucketSizeMs = Math.floor(totalMs / numBuckets);
 
   // Initialize buckets

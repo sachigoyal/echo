@@ -25,7 +25,7 @@ export default async function UserBreadcrumbs({
 }
 
 const UserBreadcrumb = async ({ userId }: { userId: string }) => {
-  const user = await api.user.public.get(userId);
+  const user = await api.user.get(userId);
   return (
     <Breadcrumb
       href={`/user/${userId}`}

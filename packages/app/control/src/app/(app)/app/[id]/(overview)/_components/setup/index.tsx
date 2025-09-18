@@ -51,8 +51,6 @@ export const Setup: React.FC<Props> = ({ appId }) => {
       nextAccordionValue = 'generate-text';
     }
 
-    console.log(nextAccordionValue);
-
     setAccordionValue(prev =>
       prev === nextAccordionValue ? prev : nextAccordionValue
     );

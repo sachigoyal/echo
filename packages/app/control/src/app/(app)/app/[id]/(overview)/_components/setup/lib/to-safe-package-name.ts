@@ -3,7 +3,7 @@
 const RESERVED = new Set(['node_modules', 'favicon.ico']);
 const DEFAULT_MAX_LEN = 214;
 
-export interface SafeNameOptions {
+interface SafeNameOptions {
   /** Allow parsing & sanitizing @scope/name form */
   allowScope?: boolean;
   /** Fallback if the cleaned name becomes empty */

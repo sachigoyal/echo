@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { endOfDay, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 
 import { Card } from '@/components/ui/card';
 
@@ -22,14 +22,12 @@ interface Props {
 
 export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
   const defaultStartDate = subDays(new Date(), 7);
-  const defaultEndDate = endOfDay(new Date());
 
-  api.activity.creator.getCurrent.prefetch({
+  api.user.creatorActivity.prefetch({
     startDate: defaultStartDate,
-    endDate: defaultEndDate,
   });
 
-  const user = await api.user.current.get();
+  const user = await api.user.current();
   if (!user) {
     throw new Error('User not found');
   }
@@ -38,7 +36,6 @@ export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
     <HydrateClient>
       <ActivityContextProvider
         initialStartDate={defaultStartDate}
-        initialEndDate={defaultEndDate}
         creationDate={user.createdAt}
       >
         <ActivityContainer>

@@ -16,6 +16,7 @@ export default function AuthenticatedHomeLayout({
           {
             label: 'Credits',
             href: '/credits',
+            subRoutes: [`/credits/claim`],
           },
           {
             label: 'Your Apps',

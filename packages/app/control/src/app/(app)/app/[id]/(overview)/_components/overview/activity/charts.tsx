@@ -24,6 +24,7 @@ export const ActivityCharts: React.FC<Props> = ({ appId }) => {
       endDate,
     },
     {
+      staleTime: 15000,
       refetchInterval: 15000,
     }
   );

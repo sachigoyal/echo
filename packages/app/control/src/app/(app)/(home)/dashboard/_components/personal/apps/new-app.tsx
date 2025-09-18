@@ -26,7 +26,7 @@ const Button = async () => {
 
   return (
     <Link href="/new">
-      <ButtonComponent variant="primaryGhost" size="xs">
+      <ButtonComponent variant="primaryGhost" size="xs" className="text-xs">
         Create
         <Plus className="size-3" />
       </ButtonComponent>
