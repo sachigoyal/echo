@@ -94,7 +94,7 @@ import { deleteApp, deleteAppSchema } from '@/services/apps/delete';
 import {
   createFreeTierPaymentFromBalance,
   createFreeTierPaymentFromBalanceSchema,
-} from '@/services/credits';
+} from '@/services/credits/mint';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure

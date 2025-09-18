@@ -36,26 +36,55 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
     return redirect(redirectUrl.toString() as Route);
   }
 
-  const hasClaimed = await api.user.initialFreeTier.hasClaimed();
+  const isClaimCredits = callbackUrl.includes('/credits/claim');
 
-  if (hasClaimed) {
-    return redirect('/dashboard');
+  const hasClaimedFreeTier = await api.user.initialFreeTier.hasClaimed();
+
+  if (!isClaimCredits) {
+    if (hasClaimedFreeTier) {
+      return redirect('/dashboard');
+    }
+  } else {
+    redirectUrl.pathname = '/credits';
   }
 
-  const couponAmount = Number.parseFloat(
-    process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_AMOUNT ?? '0'
-  );
-  if (!Number.isFinite(couponAmount) || couponAmount <= 0) {
-    throw new Error('LATEST_FREE_TIER_CREDITS_ISSUANCE_AMOUNT is not set');
+  let couponAmount = 0;
+
+  if (!hasClaimedFreeTier) {
+    couponAmount += Number.parseFloat(
+      process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_AMOUNT ?? '0'
+    );
   }
 
-  const couponVersion = process.env.LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION;
-  if (!couponVersion) {
-    throw new Error('LATEST_FREE_TIER_CREDITS_ISSUANCE_VERSION is not set');
+  let code: string | undefined = undefined;
+
+  if (isClaimCredits) {
+    // Extract the code from the callbackUrl, which should be in the format /credits/claim/{code}
+    const match = callbackUrl.match(/\/credits\/claim\/([^/?#]+)/);
+    const creditGrantCode = match ? match[1] : undefined;
+    if (creditGrantCode) {
+      try {
+        const coupon = await api.credits.grant.getWithUsages({
+          code: creditGrantCode,
+        });
+        if (
+          coupon.maxUsesPerUser &&
+          coupon.maxUsesPerUser > coupon.usages.length
+        ) {
+          couponAmount += coupon.grantAmount;
+          code = creditGrantCode;
+          redirectUrl.pathname = '/credits';
+        }
+      } catch {}
+    }
+  }
+
+  if (couponAmount === 0) {
+    return redirect(redirectUrl.toString() as Route);
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8 w-full">
+    <div className="flex flex-col items-center justify-center gap-6 w-full">
       <div className="flex flex-col items-center gap-4 text-center">
         <Card className="size-20 p-2 border rounded-xl flex items-center justify-center bg-card">
           <Logo className="size-full" />
@@ -74,9 +103,20 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
       <Separator />
       <div className="flex flex-col items-center gap-4 w-full">
         <p className="text-center">
-          As a new Echo user, you get{' '}
-          {formatCurrency(couponAmount, { notation: 'standard' })} of free LLM
-          credits. <br />{' '}
+          {isClaimCredits ? (
+            <span>
+              You have been gifted{' '}
+              {formatCurrency(couponAmount, { notation: 'standard' })} of free
+              LLM credits.
+            </span>
+          ) : (
+            <span>
+              As a new Echo user, you get{' '}
+              {formatCurrency(couponAmount, { notation: 'standard' })} of free
+              LLM credits.
+            </span>
+          )}
+          <br />
           <span className="font-bold">
             We look forward to seeing what you build!
           </span>
@@ -84,6 +124,8 @@ export default async function WelcomePage(props: PageProps<'/welcome'>) {
         <WelcomePageCoupon
           amount={couponAmount}
           callbackUrl={redirectUrl.toString() as Route}
+          code={code}
+          hasClaimedFreeTier={hasClaimedFreeTier}
         />
         <p className="text-sm text-muted-foreground text-center">
           By claiming these credits, you agree to the
