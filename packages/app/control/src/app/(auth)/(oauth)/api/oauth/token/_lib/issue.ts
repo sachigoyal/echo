@@ -3,7 +3,7 @@ import z from 'zod';
 import { createHash } from 'crypto';
 import { jwtVerify } from 'jose';
 
-import { authCodeJwtBodySchema } from '@/app/(auth)/(oauth)/_lib/code';
+import { authCodeJwtBodySchema } from '@/app/(auth)/(oauth)/(authorize)/_lib/code';
 import { isValidRedirectUri } from '@/app/(auth)/(oauth)/_lib/redirect-uri';
 
 import { db } from '@/lib/db';

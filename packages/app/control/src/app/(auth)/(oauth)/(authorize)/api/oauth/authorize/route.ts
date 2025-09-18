@@ -1,8 +1,8 @@
 import {
   authorizeParamsSchema,
   getAuthorizationRedirect,
-} from '../../..//_lib/authorize';
-import { isValidRedirectUri } from '../../../_lib/redirect-uri';
+} from '../../../_lib/authorize';
+import { isValidRedirectUri } from '../../../../_lib/redirect-uri';
 import { createZodRoute } from '@/app/api/_utils/create-route';
 import { auth } from '@/auth';
 import { env } from '@/env';

@@ -1,6 +1,6 @@
 'use server';
 
-import { getAuthorizationRedirect } from '@/app/(auth)/(oauth)/_lib/authorize';
+import { getAuthorizationRedirect } from '@/app/(auth)/(oauth)/(authorize)/_lib/authorize';
 import { api } from '@/trpc/server';
 import { Route } from 'next';
 import { redirect } from 'next/navigation';

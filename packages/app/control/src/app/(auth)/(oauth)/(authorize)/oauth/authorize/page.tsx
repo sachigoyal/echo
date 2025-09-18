@@ -7,16 +7,17 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 
 import { UnauthorizedRedirect } from './_components/unauthorized-redirect';
-
 import { ErrorPage } from './_components/error-page';
 import { ExistingUserAuthorize } from './_components/existing-user';
 import { NewUserAuthorize } from './_components/new-user';
 
+import { userOrRedirect } from '@/auth/user-or-redirect';
+
 import { api } from '@/trpc/server';
 
-import { isValidRedirectUri } from '../../_lib/redirect-uri';
 import { authorizeParamsSchema } from './_actions/schema';
-import { userOrRedirect } from '@/auth/user-or-redirect';
+
+import { isValidRedirectUri } from '../../../_lib/redirect-uri';
 
 const paramsSchema = authorizeParamsSchema.extend({
   new_user: z.literal('true').optional(),
