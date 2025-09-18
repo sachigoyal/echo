@@ -2,15 +2,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/registry/echo/ui/avatar';
 import { Button } from '@/registry/echo/ui/button';
 import { PopoverContent } from '@/registry/echo/ui/popover';
 import { useEcho } from '@merit-systems/echo-react-sdk';
-import { Bot, Image, LogOut, MessageSquare, PlusCircle } from 'lucide-react';
+import { LogOut, MessageSquare } from 'lucide-react';
 import EchoBalance from '../balance';
 import { EchoTopUpButton } from '../top-up-button';
 
-export function EchoAccountButtonPopover({
-  showAllApps = false,
-}: {
-  showAllApps?: boolean;
-}) {
+export function EchoAccountButtonPopover() {
   const { user } = useEcho();
   return (
     <PopoverContent className="w-[380px] p-0" align="end">
@@ -54,70 +50,6 @@ export function EchoAccountButtonPopover({
       <div className="p-4 border-b">
         <EchoTopUpButton />
       </div>
-
-      {/* Apps Usage */}
-      {showAllApps && (
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h5 className="font-medium text-sm">Recent Apps</h5>
-            <Button variant="ghost" size="sm" className="h-7">
-              <PlusCircle className="h-3 w-3 mr-1" />
-              New
-            </Button>
-          </div>
-          <div className="space-y-3">
-            <AppUsageRow
-              name="Chat Assistant"
-              icon={MessageSquare}
-              usage="2,405 messages"
-              date="Last used 2h ago"
-            />
-            <AppUsageRow
-              name="Image Generator"
-              icon={Image}
-              usage="156 images"
-              date="Last used yesterday"
-            />
-            <AppUsageRow
-              name="Code Assistant"
-              icon={Bot}
-              usage="890 conversations"
-              date="Last used 3d ago"
-            />
-          </div>
-        </div>
-      )}
     </PopoverContent>
-  );
-}
-
-function AppUsageRow({
-  name,
-  icon: Icon,
-  usage,
-  date,
-}: {
-  name: string;
-  icon: typeof MessageSquare;
-  usage: string;
-  date: string;
-}) {
-  return (
-    <div className="flex items-center justify-between group hover:bg-muted/50 -mx-4 px-4 py-2 rounded-lg cursor-pointer transition-colors">
-      <div className="flex items-center gap-3">
-        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icon className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-sm font-medium">{name}</p>
-          <p className="text-xs text-muted-foreground">{usage}</p>
-        </div>
-      </div>
-      <div className="text-right">
-        <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-          {date}
-        </p>
-      </div>
-    </div>
   );
 }

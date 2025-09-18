@@ -55,7 +55,7 @@ export function EchoAccountButton() {
   return (
     <Popover>
       <PopoverTrigger asChild>{button}</PopoverTrigger>
-      <EchoAccountButtonPopover showAllApps />
+      <EchoAccountButtonPopover />
     </Popover>
   );
 }
