@@ -1,7 +1,7 @@
 // This page displays items from the custom registry.
 // You are free to implement this with your own design as needed.
 
-import { EchoAccountButton } from '@/registry/echo/blocks/echo-account-button';
+import { EchoAccountButton } from '@/registry/echo/blocks/echo-account-button/echo-account';
 
 export default function Home() {
   return (

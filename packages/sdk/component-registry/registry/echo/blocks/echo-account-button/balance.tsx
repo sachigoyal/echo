@@ -1,15 +1,15 @@
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/registry/echo/blocks/lib/currency-utils';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/registry/echo/ui/tooltip';
-import { useEcho } from '@merit-systems/echo-react-sdk';
+import { type EchoContextValue } from '@merit-systems/echo-react-sdk';
 import { Gift } from 'lucide-react';
 
-export default function EchoBalance() {
-  const { balance, freeTierBalance } = useEcho();
+export default function EchoBalance({ echo }: { echo: EchoContextValue }) {
+  const { balance, freeTierBalance } = echo;
 
   const freeTierAmountLeft = freeTierBalance?.userSpendInfo.amountLeft ?? 0;
   const totalBalance = (balance?.balance || 0) + (freeTierAmountLeft || 0);
@@ -44,7 +44,7 @@ export default function EchoBalance() {
             </div>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">Available Credits</p>
+        <p className="text-sm text-foreground">Available Credits</p>
       </div>
     </div>
   );

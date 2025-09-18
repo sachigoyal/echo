@@ -1,14 +1,16 @@
 'use client';
-import { formatCurrency } from '@/lib/utils';
-import { Button } from '@/registry/echo/ui/button';
+
+import { EchoAccountButtonPopover } from '@/registry/echo/blocks/echo-account-button/echo-popover';
+import { formatCurrency } from '@/registry/echo/blocks/lib/currency-utils';
+import { Button } from '@/registry/echo/ui/echo-button';
+import { Logo } from '@/registry/echo/ui/logo';
 import { Popover, PopoverTrigger } from '@/registry/echo/ui/popover';
 import { Skeleton } from '@/registry/echo/ui/skeleton';
-import { Logo, useEcho } from '@merit-systems/echo-react-sdk';
+import { type EchoContextValue } from '@merit-systems/echo-react-sdk';
 import { Gift } from 'lucide-react';
-import { EchoAccountButtonPopover } from './popover';
 
-export function EchoAccountButton() {
-  const { user, balance, freeTierBalance, signIn, isLoading } = useEcho();
+export function EchoAccountButton({ echo }: { echo: EchoContextValue }) {
+  const { user, balance, freeTierBalance, signIn, isLoading } = echo;
 
   const totalBalance =
     (balance?.balance || 0) + (freeTierBalance?.userSpendInfo.amountLeft || 0);
@@ -20,12 +22,12 @@ export function EchoAccountButton() {
     </>
   ) : !user ? (
     <>
-      <Logo width={16} height={16} variant="light" />
+      <Logo className="size-6" />
       <span>Sign In</span>
     </>
   ) : (
     <>
-      <Logo width={16} height={16} variant="light" />
+      <Logo className="size-6" />
       <span>{formatCurrency(totalBalance)}</span>
     </>
   );
@@ -55,7 +57,7 @@ export function EchoAccountButton() {
   return (
     <Popover>
       <PopoverTrigger asChild>{button}</PopoverTrigger>
-      <EchoAccountButtonPopover />
+      <EchoAccountButtonPopover echo={echo} />
     </Popover>
   );
 }

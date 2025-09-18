@@ -1,13 +1,15 @@
-import { Button } from '@/registry/echo/ui/button';
+'use client';
+
+import { Button } from '@/registry/echo/ui/echo-button';
 import { MoneyInput } from '@/registry/echo/ui/money-input';
-import { useEcho } from '@merit-systems/echo-react-sdk';
+import { type EchoContextValue } from '@merit-systems/echo-react-sdk';
 import { Check, CreditCard, Edit, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-export function EchoTopUpButton() {
+export function EchoTopUpButton({ echo }: { echo: EchoContextValue }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const { createPaymentLink } = useEcho();
+  const { createPaymentLink } = echo;
 
   const [amount, setAmount] = useState(10);
 

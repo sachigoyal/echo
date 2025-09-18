@@ -2,7 +2,7 @@
 
 import { EchoProvider } from '@merit-systems/echo-next-sdk/client';
 import { ThemeProvider } from 'next-themes';
-import React from 'react';
+import React, { Suspense } from 'react';
 
 const appId = process.env.NEXT_PUBLIC_ECHO_APP_ID!;
 
@@ -17,8 +17,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
+      storageKey="echo-theme"
+      forcedTheme={undefined}
+      enableColorScheme={false}
     >
-      <EchoProvider config={{ appId: appId }}>{children}</EchoProvider>
+      <Suspense fallback={null}>
+        <EchoProvider config={{ appId: appId }}>{children}</EchoProvider>
+      </Suspense>
     </ThemeProvider>
   );
 }

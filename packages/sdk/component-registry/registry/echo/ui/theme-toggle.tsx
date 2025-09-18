@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/registry/echo/ui/button';
+import { Button } from '@/registry/echo/ui/echo-button';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 

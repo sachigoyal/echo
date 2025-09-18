@@ -1,13 +1,14 @@
+'use client';
+import EchoBalance from '@/registry/echo/blocks/echo-account-button/balance';
+import { EchoTopUpButton } from '@/registry/echo/blocks/echo-account-button/top-up-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/registry/echo/ui/avatar';
-import { Button } from '@/registry/echo/ui/button';
+import { Button } from '@/registry/echo/ui/echo-button';
 import { PopoverContent } from '@/registry/echo/ui/popover';
-import { useEcho } from '@merit-systems/echo-react-sdk';
-import { LogOut, MessageSquare } from 'lucide-react';
-import EchoBalance from '../balance';
-import { EchoTopUpButton } from '../top-up-button';
+import { type EchoContextValue } from '@merit-systems/echo-react-sdk';
+import { LogOut } from 'lucide-react';
 
-export function EchoAccountButtonPopover() {
-  const { user } = useEcho();
+export function EchoAccountButtonPopover({ echo }: { echo: EchoContextValue }) {
+  const { user, signOut } = echo;
   return (
     <PopoverContent className="w-[380px] p-0" align="end">
       {/* Header */}
@@ -35,7 +36,7 @@ export function EchoAccountButtonPopover() {
           </div>
         </Button>
         <div className="flex gap-2">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={() => signOut()}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
@@ -43,12 +44,12 @@ export function EchoAccountButtonPopover() {
 
       {/* Balance */}
       <div className="p-4 border-b">
-        <EchoBalance />
+        <EchoBalance echo={echo} />
       </div>
 
       {/* Add Credits Button */}
       <div className="p-4 border-b">
-        <EchoTopUpButton />
+        <EchoTopUpButton echo={echo} />
       </div>
     </PopoverContent>
   );
