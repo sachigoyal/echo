@@ -8,7 +8,6 @@ import { addSeconds, getUnixTime } from 'date-fns';
 
 import { env } from '@/env';
 import { logger } from '@/logger';
-import { Prisma } from '@/generated/prisma';
 
 const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
   env.API_ECHO_ACCESS_JWT_SECRET

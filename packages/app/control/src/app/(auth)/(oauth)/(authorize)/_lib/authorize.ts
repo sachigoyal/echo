@@ -3,13 +3,10 @@ import { z } from 'zod';
 import { nanoid } from 'nanoid';
 
 import { auth } from '@/auth';
-import { authCodeJwtBodySchema, createAuthCodeJwt } from './code';
+import { authCodeJwtInputSchema, createAuthCodeJwt } from './code';
 
-export const authorizeParamsSchema = authCodeJwtBodySchema
+export const authorizeParamsSchema = authCodeJwtInputSchema
   .omit({
-    code: true,
-    exp: true,
-    iat: true,
     user_id: true,
   })
   .extend({

@@ -3,7 +3,7 @@ import z from 'zod';
 import { createHash } from 'crypto';
 import { jwtVerify } from 'jose';
 
-import { authCodeJwtBodySchema } from '@/app/(auth)/(oauth)/(authorize)/_lib/code';
+import { authCodeJwtPayloadSchema } from '@/app/(auth)/(oauth)/(authorize)/_lib/code';
 import { isValidRedirectUri } from '@/app/(auth)/(oauth)/_lib/redirect-uri';
 
 import { db } from '@/lib/db';
@@ -57,7 +57,7 @@ export async function handleIssueToken(
     code_challenge,
     user_id,
     scope,
-  } = authCodeJwtBodySchema.parse(payload);
+  } = authCodeJwtPayloadSchema.parse(payload);
 
   /* 4️⃣ Validate the authorization code data */
   if (codeClientId !== client_id || codeRedirectUri !== redirect_uri) {
