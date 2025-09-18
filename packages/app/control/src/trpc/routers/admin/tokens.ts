@@ -2,10 +2,11 @@ import { z } from 'zod';
 
 import { adminProcedure, createTRPCRouter } from '../../trpc';
 
-import { getTotalTokensChart } from '@/services/admin/total-tokens';
+import { getHomePageChart } from '@/services/admin/home-page';
+
 
 export const adminTokensRouter = createTRPCRouter({
-  getTotalTokensChart: adminProcedure
+  getHomePageChart: adminProcedure
     .input(
       z
         .object({
@@ -16,7 +17,7 @@ export const adminTokensRouter = createTRPCRouter({
         .optional()
     )
     .query(async ({ input }) => {
-      return await getTotalTokensChart(input);
+        return await getHomePageChart(input);
     }),
 });
 

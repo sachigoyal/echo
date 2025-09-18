@@ -38,7 +38,7 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   totalReferralProfit: 'COALESCE(t_agg."totalReferralProfit", 0)',
   transactionCount: 'COALESCE(t_agg."transactionCount", 0)',
   referralCodesGenerated:
-    'COUNT(DISTINCT rc.id) FILTER (WHERE rc."grantType" = \'referral\')',
+    'COUNT(DISTINCT rc.id)',
   referredUsersCount: 'COUNT(DISTINCT am_referred.id)',
   totalCompletedPayouts:
     'COALESCE(SUM(p."amount") FILTER (WHERE p."status" = \'completed\'), 0)',
@@ -88,7 +88,7 @@ export const getUserEarningsWithPagination = async (
         array_agg(DISTINCT oes."emailCampaignId") FILTER (WHERE oes."emailCampaignId" IS NOT NULL),
         '{}'::text[]
       ) as "uniqueEmailCampaigns",
-      COUNT(DISTINCT rc.id) FILTER (WHERE rc."grantType" = 'referral') as "referralCodesGenerated",
+      COUNT(DISTINCT rc.id) as "referralCodesGenerated",
       COUNT(DISTINCT am_referred.id) as "referredUsersCount",
       COALESCE(SUM(p."amount") FILTER (WHERE p."status" = 'completed'), 0) as "totalCompletedPayouts",
       u."createdAt",
