@@ -42,13 +42,14 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   creatorUserId: 'creator.id',
   creatorUserName: 'creator.name',
   creatorUserEmail: 'creator.email',
-  totalTransactions: 'COUNT(t.id)',
-  totalRevenue: 'COALESCE(SUM(t."totalCost"), 0)',
-  totalAppProfit: 'COALESCE(SUM(t."appProfit"), 0)',
-  totalMarkupProfit: 'COALESCE(SUM(t."markUpProfit"), 0)',
-  totalReferralProfit: 'COALESCE(SUM(t."referralProfit"), 0)',
-  totalReferralCodes: 'COUNT(DISTINCT am_users."referrerId")',
-  totalUsers: 'COUNT(DISTINCT am_users.id)',
+  // Use aggregated CTE outputs to avoid fan-out multiplication
+  totalTransactions: 'COALESCE(txn.total_transactions, 0)',
+  totalRevenue: 'COALESCE(txn.total_revenue, 0)',
+  totalAppProfit: 'COALESCE(txn.total_app_profit, 0)',
+  totalMarkupProfit: 'COALESCE(txn.total_markup_profit, 0)',
+  totalReferralProfit: 'COALESCE(txn.total_referral_profit, 0)',
+  totalReferralCodes: 'COALESCE(membership.total_referral_codes, 0)',
+  totalUsers: 'COALESCE(membership.total_users, 0)',
 };
 
 // Main TRPC procedure function for app earnings
@@ -89,6 +90,30 @@ export const getAppEarningsWithPagination = async (
 
   // Build the main query with dynamic clauses
   const baseQuery = `
+    WITH txn AS (
+      SELECT 
+        t."echoAppId" AS app_id,
+        COUNT(t.id)::double precision AS total_transactions,
+        COALESCE(SUM(t."totalCost"), 0)::double precision AS total_revenue,
+        COALESCE(SUM(t."appProfit"), 0)::double precision AS total_app_profit,
+        COALESCE(SUM(t."markUpProfit"), 0)::double precision AS total_markup_profit,
+        COALESCE(SUM(t."referralProfit"), 0)::double precision AS total_referral_profit
+      FROM "transactions" t
+      GROUP BY t."echoAppId"
+    ), membership AS (
+      SELECT 
+        am."echoAppId" AS app_id,
+        COALESCE(COUNT(DISTINCT am."userId"), 0)::double precision AS total_users,
+        COALESCE(COUNT(DISTINCT am."referrerId") FILTER (WHERE am."referrerId" IS NOT NULL), 0)::double precision AS total_referral_codes
+      FROM "app_memberships" am
+      GROUP BY am."echoAppId"
+    ), app_emails AS (
+      SELECT 
+        oes."echoAppId" AS app_id,
+        COALESCE(array_agg(DISTINCT oes."emailCampaignId") FILTER (WHERE oes."emailCampaignId" IS NOT NULL), '{}'::text[]) AS app_email_campaigns
+      FROM "outbound_emails_sent" oes
+      GROUP BY oes."echoAppId"
+    )
     SELECT 
       a.id,
       a.name,
@@ -98,31 +123,27 @@ export const getAppEarningsWithPagination = async (
       creator.id as "creatorUserId",
       creator.name as "creatorUserName",
       creator.email as "creatorUserEmail",
-      COALESCE(
-        array_agg(DISTINCT app_oes."emailCampaignId") FILTER (WHERE app_oes."emailCampaignId" IS NOT NULL),
-        '{}'::text[]
-      ) as "appEmailCampaigns",
-      COALESCE(
-        array_agg(DISTINCT owner_oes."emailCampaignId") FILTER (WHERE owner_oes."emailCampaignId" IS NOT NULL),
-        '{}'::text[]
-      ) as "ownerEmailCampaigns",
-      COUNT(t.id) as "totalTransactions",
-      COALESCE(SUM(t."totalCost"), 0) as "totalRevenue",
-      COALESCE(SUM(t."appProfit"), 0) as "totalAppProfit",
-      COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfit",
-      COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfit",
-      COUNT(DISTINCT am_users."referrerId") as "totalReferralCodes",
-      COUNT(DISTINCT am_users.id) as "totalUsers"
+      COALESCE(app_emails.app_email_campaigns, '{}'::text[]) as "appEmailCampaigns",
+      COALESCE((
+        SELECT COALESCE(array_agg(DISTINCT owner_oes."emailCampaignId") FILTER (WHERE owner_oes."emailCampaignId" IS NOT NULL), '{}'::text[])
+        FROM "outbound_emails_sent" owner_oes 
+        WHERE owner_oes."userId" = creator.id
+      ), '{}'::text[]) as "ownerEmailCampaigns",
+      ${COLUMN_MAPPINGS.totalTransactions} as "totalTransactions",
+      ${COLUMN_MAPPINGS.totalRevenue} as "totalRevenue",
+      ${COLUMN_MAPPINGS.totalAppProfit} as "totalAppProfit",
+      ${COLUMN_MAPPINGS.totalMarkupProfit} as "totalMarkupProfit",
+      ${COLUMN_MAPPINGS.totalReferralProfit} as "totalReferralProfit",
+      ${COLUMN_MAPPINGS.totalReferralCodes} as "totalReferralCodes",
+      ${COLUMN_MAPPINGS.totalUsers} as "totalUsers"
     FROM "echo_apps" a
     INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
     INNER JOIN "users" creator ON owner_am."userId" = creator.id
-    LEFT JOIN "app_memberships" am_users ON a.id = am_users."echoAppId"
-    LEFT JOIN "transactions" t ON a.id = t."echoAppId"
-    LEFT JOIN "outbound_emails_sent" app_oes ON a.id = app_oes."echoAppId"
-    LEFT JOIN "outbound_emails_sent" owner_oes ON creator.id = owner_oes."userId"
-    -- Referral codes are linked via app_memberships.referrerId in the new schema
+    LEFT JOIN txn ON txn.app_id = a.id
+    LEFT JOIN membership ON membership.app_id = a.id
+    LEFT JOIN app_emails ON app_emails.app_id = a.id
     ${whereClause}
-    GROUP BY a.id, a.name, a.description, a."createdAt", a."updatedAt", creator.id, creator.name, creator.email
+    GROUP BY a.id, a.name, a.description, a."createdAt", a."updatedAt", creator.id, creator.name, creator.email, app_emails.app_email_campaigns, txn.total_transactions, txn.total_revenue, txn.total_app_profit, txn.total_markup_profit, txn.total_referral_profit, membership.total_referral_codes, membership.total_users
     ${havingClause}
     ${orderByClause}
     LIMIT $${parameters.length + 1} 
@@ -162,16 +183,35 @@ export const getAppEarningsWithPagination = async (
 
   // Build count query with same filters
   const countQuery = `
-    SELECT COUNT(DISTINCT a.id) as count
-    FROM "echo_apps" a
-    INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
-    INNER JOIN "users" creator ON owner_am."userId" = creator.id
-    LEFT JOIN "app_memberships" am_users ON a.id = am_users."echoAppId"
-    LEFT JOIN "transactions" t ON a.id = t."echoAppId"
-    LEFT JOIN "outbound_emails_sent" app_oes ON a.id = app_oes."echoAppId"
-    LEFT JOIN "outbound_emails_sent" owner_oes ON creator.id = owner_oes."userId"
-    ${whereClause}
-    ${havingClause ? `GROUP BY a.id ${havingClause}` : ''}
+    WITH txn AS (
+      SELECT 
+        t."echoAppId" AS app_id,
+        COUNT(t.id)::double precision AS total_transactions,
+        COALESCE(SUM(t."totalCost"), 0)::double precision AS total_revenue,
+        COALESCE(SUM(t."appProfit"), 0)::double precision AS total_app_profit,
+        COALESCE(SUM(t."markUpProfit"), 0)::double precision AS total_markup_profit,
+        COALESCE(SUM(t."referralProfit"), 0)::double precision AS total_referral_profit
+      FROM "transactions" t
+      GROUP BY t."echoAppId"
+    ), membership AS (
+      SELECT 
+        am."echoAppId" AS app_id,
+        COALESCE(COUNT(DISTINCT am."userId"), 0)::double precision AS total_users,
+        COALESCE(COUNT(DISTINCT am."referrerId") FILTER (WHERE am."referrerId" IS NOT NULL), 0)::double precision AS total_referral_codes
+      FROM "app_memberships" am
+      GROUP BY am."echoAppId"
+    )
+    SELECT COUNT(*) as count FROM (
+      SELECT a.id
+      FROM "echo_apps" a
+      INNER JOIN "app_memberships" owner_am ON a.id = owner_am."echoAppId"
+      INNER JOIN "users" creator ON owner_am."userId" = creator.id
+      LEFT JOIN txn ON txn.app_id = a.id
+      LEFT JOIN membership ON membership.app_id = a.id
+      ${whereClause}
+      GROUP BY a.id, a.name, a.description, a."createdAt", a."updatedAt", creator.id, creator.name, creator.email, txn.total_transactions, txn.total_revenue, txn.total_app_profit, txn.total_markup_profit, txn.total_referral_profit, membership.total_referral_codes, membership.total_users
+      ${havingClause}
+    ) grouped
   `;
 
   // If we have HAVING clauses, we need to count the grouped results
