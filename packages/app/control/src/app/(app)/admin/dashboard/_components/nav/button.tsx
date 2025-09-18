@@ -21,9 +21,7 @@ export const DashboardNavButton = <T extends string>({
       variant="ghost"
       className={cn(
         'w-full justify-start text-base',
-        pathname === href ||
-          (href === '/admin/dashboard/user-earnings' &&
-            pathname === '/admin/dashboard')
+        pathname === href 
           ? 'text-foreground font-medium'
           : 'text-muted-foreground/80 font-normal'
       )}
