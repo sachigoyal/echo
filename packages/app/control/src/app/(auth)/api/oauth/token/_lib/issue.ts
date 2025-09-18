@@ -6,15 +6,14 @@ import {
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
 import { createHash } from 'crypto';
-import { SignJWT, jwtVerify } from 'jose';
+import { jwtVerify } from 'jose';
 import { nanoid } from 'nanoid';
 import { logger } from '@/logger';
 import { env } from '@/env';
-
-// JWT secret for API tokens (different from OAuth codes)
-const API_ECHO_ACCESS_JWT_SECRET = new TextEncoder().encode(
-  env.API_ECHO_ACCESS_JWT_SECRET || 'api-jwt-secret-change-in-production'
-);
+import { createEchoAccessJwt } from './create-jwt';
+import { differenceInSeconds } from 'date-fns';
+import z from 'zod';
+import { TokenMetadata } from './types';
 
 // JWT secret for verifying authorization codes (must match authorize endpoint)
 const JWT_SECRET = new TextEncoder().encode(
@@ -32,70 +31,42 @@ interface AuthCodePayload {
   code: string;
 }
 
-/**
- * Create a JWT-based Echo Access Token for fast validation
- */
-async function createEchoAccessJwtToken(params: {
-  userId: string;
-  appId: string;
-  scope: string;
-  expiry: Date;
-  keyVersion?: number;
-  sessionId?: string;
-}): Promise<string> {
-  const { userId, appId, scope, expiry, keyVersion = 1, sessionId } = params;
-
-  const tokenId = nanoid(16);
-  const now = Math.floor(Date.now() / 1000); // divide by 1000 to convert to seconds
-  const expirySeconds = Math.floor(expiry.getTime() / 1000); // divide by 1000 to convert to seconds
-
-  const token = await new SignJWT({
-    user_id: userId,
-    app_id: appId,
-    scope,
-    key_version: keyVersion,
-    ...(sessionId ? { sid: sessionId } : {}),
-  })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setSubject(userId)
-    .setAudience(appId)
-    .setJti(tokenId)
-    .setIssuedAt(now)
-    // set expiration time to the expiry time of the access token
-    .setExpirationTime(expirySeconds)
-    .sign(API_ECHO_ACCESS_JWT_SECRET);
-
-  return token;
-}
+const authCodePayloadSchema = z.object({
+  clientId: z.uuid(),
+  redirectUri: z.url(),
+  codeChallenge: z.string(),
+  codeChallengeMethod: z.string(),
+  scope: z.string(),
+  userId: z.string(),
+  exp: z.number(),
+  code: z.string(),
+});
 
 /**
  * Authorization code token request parameters
  */
-interface AuthCodeTokenRequest {
-  code: string;
-  redirect_uri: string;
-  client_id: string;
-  code_verifier: string;
-  deviceName?: string;
-  userAgent?: string;
-  ipAddress?: string;
-}
+
+export const handleTokenIssuanceSchema = z.object({
+  redirect_uri: z.url('redirect_uri must be a valid URL'),
+  client_id: z.uuid('client_id must be a valid UUID'),
+  code: z.string(),
+  code_verifier: z
+    .string()
+    .min(43, 'code_verifier must be at least 43 characters')
+    .max(128, 'code_verifier must be at most 128 characters')
+    .regex(/^[A-Za-z0-9_-]+$/, {
+      message: 'code_verifier must be base64url encoded',
+    }),
+});
 
 /**
  * Handle initial token issuance from authorization code
  */
 export async function handleInitialTokenIssuance(
-  params: AuthCodeTokenRequest
-): Promise<InitialTokenResponse | InitialTokenError> {
-  const {
-    code,
-    redirect_uri,
-    client_id,
-    code_verifier,
-    deviceName,
-    userAgent,
-    ipAddress,
-  } = params;
+  params: z.infer<typeof handleTokenIssuanceSchema>,
+  metadata?: TokenMetadata
+) {
+  const { code, redirect_uri, client_id, code_verifier } = params;
 
   logger.emit({
     severityText: 'INFO',
@@ -105,22 +76,6 @@ export async function handleInitialTokenIssuance(
       client_id,
     },
   });
-
-  /* 1️⃣ Validate code verifier length (RFC 7636 Section 4.1) */
-  if (code_verifier.length < 43 || code_verifier.length > 128) {
-    return {
-      error: 'invalid_request',
-      error_description: 'code_verifier must be 43-128 characters long',
-    };
-  }
-
-  /* 2️⃣ Validate code verifier format (only unreserved characters) */
-  if (!/^[A-Za-z0-9._~-]+$/.test(code_verifier)) {
-    return {
-      error: 'invalid_request',
-      error_description: 'code_verifier contains invalid characters',
-    };
-  }
 
   /* 3️⃣ Verify and decode the authorization code JWT */
   let authData: AuthCodePayload;
@@ -275,12 +230,10 @@ export async function handleInitialTokenIssuance(
   const newEchoAccessTokenExpiry = createEchoAccessTokenExpiry();
 
   /* 1️⃣1️⃣ Generate JWT access token for fast validation */
-  const echoAccessTokenJwtToken = await createEchoAccessJwtToken({
+  const { access_token, access_token_expiry } = await createEchoAccessJwt({
     userId: user.id,
     appId: echoApp.id,
     scope: authData.scope,
-    keyVersion: 1,
-    expiry: newEchoAccessTokenExpiry,
     sessionId: appSession.id,
   });
 
@@ -296,14 +249,13 @@ export async function handleInitialTokenIssuance(
 
   /* 1️⃣2️⃣ Return the JWT access token response with refresh token */
   return {
-    access_token: echoAccessTokenJwtToken,
+    access_token,
     token_type: 'Bearer',
-    expires_in: Math.floor(
-      (newEchoAccessTokenExpiry.getTime() - Date.now()) / 1000
-    ),
+    expires_in: differenceInSeconds(access_token_expiry, new Date()),
     refresh_token: newEchoRefreshToken.token,
-    refresh_token_expires_in: Math.floor(
-      (newEchoRefreshToken.expiresAt.getTime() - Date.now()) / 1000
+    refresh_token_expires_in: differenceInSeconds(
+      newEchoRefreshToken.expiresAt,
+      new Date()
     ),
     scope: authData.scope,
     user: {

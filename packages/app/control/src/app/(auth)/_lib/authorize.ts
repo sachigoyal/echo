@@ -2,8 +2,9 @@ import { z } from 'zod';
 
 import { nanoid } from 'nanoid';
 
-import { auth } from '@/auth';
 import { SignJWT } from 'jose';
+
+import { auth } from '@/auth';
 import { env } from '@/env';
 
 // TTL for the one-time authorization code (seconds)
