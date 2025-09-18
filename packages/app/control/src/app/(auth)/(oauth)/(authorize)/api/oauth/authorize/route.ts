@@ -3,7 +3,7 @@ import {
   getAuthorizationRedirect,
 } from '../../../_lib/authorize';
 import { isValidRedirectUri } from '../../../../_lib/redirect-uri';
-import { createZodRoute } from '@/app/api/_utils/create-route';
+import { createZodRoute } from '@/lib/api/create-route';
 import { auth } from '@/auth';
 import { env } from '@/env';
 import { getApp } from '@/services/apps/get';

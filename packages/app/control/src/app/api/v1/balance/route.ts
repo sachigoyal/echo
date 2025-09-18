@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getUserGlobalBalance } from '@/services/user/balance';
 import { logger } from '@/logger';
-import { authRoute } from '../_lib/auth-route';
+import { authRoute } from '../../../../lib/api/auth-route';
 
 export const GET = authRoute.handler(async (_, context) => {
   try {

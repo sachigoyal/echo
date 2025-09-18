@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
-import { authRoute } from '../../_lib/auth-route';
+import { authRoute } from '../../../../../lib/api/auth-route';
 import { z } from 'zod';
 import { appIdSchema } from '@/services/apps/lib/schemas';
 import { getApp } from '@/services/apps/get';

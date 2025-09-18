@@ -1,6 +1,6 @@
 import { getCustomerSpendInfoForApp } from '@/lib/spend-pools/fetch-user-spend';
 import { NextResponse } from 'next/server';
-import { authRoute } from '../../../_lib/auth-route';
+import { authRoute } from '../../../../../../lib/api/auth-route';
 import { appIdSchema } from '@/services/apps/lib/schemas';
 import { z } from 'zod';
 

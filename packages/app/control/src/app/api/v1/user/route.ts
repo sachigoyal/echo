@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { authRoute } from '../_lib/auth-route';
+import { authRoute } from '../../../../lib/api/auth-route';
 import { getFullUser } from '@/services/user/get';
 
 export const GET = authRoute.handler(async (_, context) => {

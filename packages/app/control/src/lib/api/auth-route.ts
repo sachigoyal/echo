@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
-import { MiddlewareFunction } from '../../_utils/types';
+
+import { createZodRoute } from './create-route';
+
 import { findApiKeyByHash } from '@/services/api-keys';
+
 import { authenticateEchoAccessJwt } from '@/lib/access-token';
-import { createZodRoute } from '../../_utils/create-route';
+
+import type { MiddlewareFunction } from './types';
 
 type MiddlewareContext = {
   userId: string;

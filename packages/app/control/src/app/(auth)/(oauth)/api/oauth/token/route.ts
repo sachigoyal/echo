@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import z from 'zod';
 
-import { createZodRoute } from '@/app/api/_utils/create-route';
+import { createZodRoute } from '@/lib/api/create-route';
 
 import { handleRefreshToken, handleRefreshTokenSchema } from './_lib/refresh';
 import { handleIssueToken, handleIssueTokenSchema } from './_lib/issue';
