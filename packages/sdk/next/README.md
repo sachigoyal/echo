@@ -10,12 +10,12 @@ pnpm install @merit-systems/echo-next-sdk
 
 ## Features
 
-- 🔐 **OAuth Authentication** - Complete authentication flow with automatic token management
-- 🤖 **AI Provider Integration** - Pre-configured OpenAI, Anthropic, and Google AI providers
-- ⚡ **Server & Client Components** - Support for both server-side and client-side usage
-- 🔄 **Automatic Token Refresh** - Handles token refresh automatically
-- 📦 **TypeScript Support** - Full TypeScript support with type definitions
-- 🍪 **Cookie-based Sessions** - Secure HTTP-only cookie authentication
+- **OAuth Authentication** - Complete authentication flow with automatic token management
+- **AI Provider Integration** - Pre-configured OpenAI, Anthropic, and Google AI providers
+- **Server & Client Components** - Support for both server-side and client-side usage
+- **Automatic Token Refresh** - Handles token refresh automatically
+- **TypeScript Support** - Full TypeScript support with type definitions
+- **Cookie-based Sessions** - Secure HTTP-only cookie authentication
 
 ## Quick Start
 
