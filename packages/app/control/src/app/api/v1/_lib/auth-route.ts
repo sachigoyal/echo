@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { MiddlewareFunction } from '../../_utils/types';
 import { findApiKeyByHash } from '@/services/api-keys';
-import { authenticateEchoAccessJwt } from '@/lib/auth/jwt';
+import { authenticateEchoAccessJwt } from '@/lib/access-token';
 import { createZodRoute } from '../../_utils/create-route';
 
 type MiddlewareContext = {

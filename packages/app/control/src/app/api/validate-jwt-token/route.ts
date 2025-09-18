@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/logger';
-import { authenticateEchoAccessJwt } from '@/lib/auth/jwt';
+import { authenticateEchoAccessJwt } from '@/lib/access-token';
 
 // POST /api/validate-jwt-token - Fast JWT validation without DB lookup
 export async function POST(request: NextRequest) {

@@ -1,13 +1,20 @@
-import { db } from '@/lib/db';
+import z from 'zod';
+
 import { nanoid } from 'nanoid';
+
+import { addSeconds, subMilliseconds } from 'date-fns';
+
+import { tokenResponse } from './response';
+
+import { db } from '@/lib/db';
+
 import { logger } from '@/logger';
 import { env } from '@/env';
-import { TokenMetadata } from './types';
-import { addSeconds, differenceInSeconds, subMilliseconds } from 'date-fns';
-import { createEchoAccessJwt } from './create-jwt';
-import z from 'zod';
-import { Prisma } from '@/generated/prisma';
-import { tokenResponse } from './response';
+
+import { createEchoAccessJwt } from '@/lib/access-token';
+
+import type { Prisma } from '@/generated/prisma';
+import type { TokenMetadata } from './types';
 
 export const handleRefreshTokenSchema = z.object({
   refresh_token: z.string(),
@@ -103,10 +110,10 @@ export async function handleRefreshToken(
   });
 
   const accessToken = await createEchoAccessJwt({
-    userId: user.id,
-    appId: app.id,
+    user_id: user.id,
+    app_id: app.id,
+    session_id: sessionId,
     scope,
-    sessionId,
   });
 
   return tokenResponse({

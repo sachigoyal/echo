@@ -1,7 +1,10 @@
-import { EchoApp, User } from '@/generated/prisma';
 import { differenceInSeconds } from 'date-fns';
-import { createEchoAccessJwt } from './create-jwt';
+
+import { createEchoAccessJwt } from '@/lib/access-token';
+
 import { createRefreshToken } from './refresh';
+
+import type { EchoApp, User } from '@/generated/prisma';
 
 interface TokenResponseParams {
   user: User;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateEchoAccessJwt } from '@/lib/auth/jwt';
+import { authenticateEchoAccessJwt } from '@/lib/access-token';
 import { db } from '@/lib/db';
 import { logger } from '@/logger';
 

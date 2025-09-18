@@ -10,7 +10,7 @@ import { db } from '@/lib/db';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
 
-import { createEchoAccessJwt } from './create-jwt';
+import { createEchoAccessJwt } from '@/lib/access-token';
 import { createRefreshToken } from './refresh';
 import { tokenResponse } from './response';
 
@@ -155,10 +155,10 @@ export async function handleIssueToken(
   });
 
   const accessToken = await createEchoAccessJwt({
-    userId: user.id,
-    appId: app.id,
+    user_id: user.id,
+    app_id: app.id,
+    session_id: session.id,
     scope,
-    sessionId: session.id,
   });
 
   logger.emit({
