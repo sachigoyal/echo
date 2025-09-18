@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { OverviewMetricConfig } from './type/overview-metric';
 
-function percentChange(currentValue: number | bigint, previousValue: number | bigint): number {
+function percentChange(
+  currentValue: number | bigint,
+  previousValue: number | bigint
+): number {
   const currentNumber = Number(currentValue) || 0;
   const previousNumber = Number(previousValue) || 0;
   if (previousNumber === 0) return currentNumber ? 100 : 0;
@@ -29,7 +32,9 @@ type AppEarningsTrendRow = {
   free_tier_prev: number;
 };
 
-export async function getAppEarningsOverviewMetrics(): Promise<OverviewMetricConfig[]> {
+export async function getAppEarningsOverviewMetrics(): Promise<
+  OverviewMetricConfig[]
+> {
   const summaryQuery = `
     WITH t AS (
       SELECT 
@@ -54,7 +59,9 @@ export async function getAppEarningsOverviewMetrics(): Promise<OverviewMetricCon
     FROM t, a, avg_tx;
   `;
 
-  const summary = (await db.$queryRawUnsafe(summaryQuery)) as Array<AppEarningsOverviewRow>;
+  const summary = (await db.$queryRawUnsafe(
+    summaryQuery
+  )) as Array<AppEarningsOverviewRow>;
   const s = summary[0] || {
     totalRevenue: 0,
     totalTransactions: 0,
@@ -100,7 +107,9 @@ export async function getAppEarningsOverviewMetrics(): Promise<OverviewMetricCon
     FROM txn, apps;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(trendQuery)) as Array<AppEarningsTrendRow>;
+  const trendRows = (await db.$queryRawUnsafe(
+    trendQuery
+  )) as Array<AppEarningsTrendRow>;
   const t = trendRows[0] || {
     spend_current: 0,
     spend_prev: 0,
@@ -114,9 +123,13 @@ export async function getAppEarningsOverviewMetrics(): Promise<OverviewMetricCon
 
   const trendLabel = 'vs previous 7d';
 
-  const avgRevCurrent = t.active_apps_current ? t.spend_current / t.active_apps_current : 0;
+  const avgRevCurrent = t.active_apps_current
+    ? t.spend_current / t.active_apps_current
+    : 0;
   const avgRevPrev = t.active_apps_prev ? t.spend_prev / t.active_apps_prev : 0;
-  const avgTxnCurrent = t.tx_count_current ? t.spend_current / t.tx_count_current : 0;
+  const avgTxnCurrent = t.tx_count_current
+    ? t.spend_current / t.tx_count_current
+    : 0;
   const avgTxnPrev = t.tx_count_prev ? t.spend_prev / t.tx_count_prev : 0;
 
   const metrics: OverviewMetricConfig[] = [
@@ -184,4 +197,3 @@ export async function getAppEarningsOverviewMetrics(): Promise<OverviewMetricCon
 
   return metrics;
 }
-

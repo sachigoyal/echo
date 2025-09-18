@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { OverviewMetricConfig } from './type/overview-metric';
 
-function percentChange(currentValue: number | bigint, previousValue: number | bigint): number {
+function percentChange(
+  currentValue: number | bigint,
+  previousValue: number | bigint
+): number {
   const currentNumber = Number(currentValue) || 0;
   const previousNumber = Number(previousValue) || 0;
   if (previousNumber === 0) return currentNumber ? 100 : 0;
@@ -33,7 +36,9 @@ type EarningsTrendRow = {
   earning_users_prev: number;
 };
 
-export async function getUserEarningsOverviewMetrics(): Promise<OverviewMetricConfig[]> {
+export async function getUserEarningsOverviewMetrics(): Promise<
+  OverviewMetricConfig[]
+> {
   const summaryQuery = `
     WITH t AS (
       SELECT 
@@ -62,7 +67,9 @@ export async function getUserEarningsOverviewMetrics(): Promise<OverviewMetricCo
     FROM t, p, eu;
   `;
 
-  const summary = (await db.$queryRawUnsafe(summaryQuery)) as Array<EarningsOverviewRow>;
+  const summary = (await db.$queryRawUnsafe(
+    summaryQuery
+  )) as Array<EarningsOverviewRow>;
   const s = summary[0] || {
     totalRevenue: 0,
     totalAppProfit: 0,
@@ -122,7 +129,9 @@ export async function getUserEarningsOverviewMetrics(): Promise<OverviewMetricCo
     FROM txn, payouts, earning_users;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(trendQuery)) as Array<EarningsTrendRow>;
+  const trendRows = (await db.$queryRawUnsafe(
+    trendQuery
+  )) as Array<EarningsTrendRow>;
   const t = trendRows[0] || {
     revenue_current: 0,
     revenue_prev: 0,
@@ -177,7 +186,10 @@ export async function getUserEarningsOverviewMetrics(): Promise<OverviewMetricCo
       description: 'Profit from referrals',
       displayType: 'currency',
       value: s.totalReferralProfit,
-      trendValue: percentChange(t.referral_profit_current, t.referral_profit_prev),
+      trendValue: percentChange(
+        t.referral_profit_current,
+        t.referral_profit_prev
+      ),
       size: 'md',
       format: { showTrend: true, decimals: 2, trendLabel },
     },
@@ -194,7 +206,8 @@ export async function getUserEarningsOverviewMetrics(): Promise<OverviewMetricCo
     {
       id: 'earningUsers',
       title: 'Earning Users',
-      description: 'Distinct owners with at least one app that has a transaction',
+      description:
+        'Distinct owners with at least one app that has a transaction',
       displayType: 'number',
       value: s.earningUsers,
       trendValue: percentChange(t.earning_users_current, t.earning_users_prev),
@@ -205,5 +218,3 @@ export async function getUserEarningsOverviewMetrics(): Promise<OverviewMetricCo
 
   return metrics;
 }
-
-

@@ -192,9 +192,6 @@ export async function createFreeTierPaymentFromBalance(
 
     const currentUserBalance = user.totalPaid.minus(user.totalSpent);
 
-    console.log('currentUserBalance', currentUserBalance);
-    console.log('amountInDollarsDecimal', amountInDollarsDecimal);
-
     if (currentUserBalance.lessThan(amountInDollarsDecimal)) {
       return {
         success: false,

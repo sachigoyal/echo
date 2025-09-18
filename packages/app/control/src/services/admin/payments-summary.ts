@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { OverviewMetricConfig } from './type/overview-metric';
 
-function percentChange(currentValue: number | bigint, previousValue: number | bigint): number {
+function percentChange(
+  currentValue: number | bigint,
+  previousValue: number | bigint
+): number {
   const currentNumber = Number(currentValue) || 0;
   const previousNumber = Number(previousValue) || 0;
   if (previousNumber === 0) return currentNumber ? 100 : 0;
@@ -30,7 +33,9 @@ type PaymentsTrendRow = {
   unique_payers_prev: number;
 };
 
-export async function getPaymentsOverviewMetrics(): Promise<OverviewMetricConfig[]> {
+export async function getPaymentsOverviewMetrics(): Promise<
+  OverviewMetricConfig[]
+> {
   const summaryQuery = `
     WITH p AS (
       SELECT 
@@ -51,7 +56,9 @@ export async function getPaymentsOverviewMetrics(): Promise<OverviewMetricConfig
     FROM p;
   `;
 
-  const summary = (await db.$queryRawUnsafe(summaryQuery)) as Array<PaymentsOverviewRow>;
+  const summary = (await db.$queryRawUnsafe(
+    summaryQuery
+  )) as Array<PaymentsOverviewRow>;
   const s = summary[0] || {
     totalAmount: 0,
     stripeAmount: 0,
@@ -100,7 +107,9 @@ export async function getPaymentsOverviewMetrics(): Promise<OverviewMetricConfig
     FROM t, u;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(trendQuery)) as Array<PaymentsTrendRow>;
+  const trendRows = (await db.$queryRawUnsafe(
+    trendQuery
+  )) as Array<PaymentsTrendRow>;
   const t = trendRows[0] || {
     total_current: 0,
     total_prev: 0,
@@ -185,5 +194,3 @@ export async function getPaymentsOverviewMetrics(): Promise<OverviewMetricConfig
 
   return metrics;
 }
-
-

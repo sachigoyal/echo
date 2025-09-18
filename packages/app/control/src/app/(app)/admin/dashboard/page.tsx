@@ -8,9 +8,7 @@ export default async function AdminDashboard(
   await userOrRedirect('/admin/dashboard', props);
 
   return (
-    <TableLayout
-      title="Admin Dashboard"
-    >
+    <TableLayout title="Admin Dashboard">
       <HomePageChart />
     </TableLayout>
   );
