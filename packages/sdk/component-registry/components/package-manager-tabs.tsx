@@ -11,22 +11,22 @@ const PACKAGE_MANAGERS = [
   {
     id: 'pnpm',
     label: 'pnpm',
-    command: `pnpm dlx shadcn@latest add ${REGISTRY_HOMEPAGE}/`,
+    command: `pnpm dlx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
   },
   {
     id: 'npm',
     label: 'npm',
-    command: `npx shadcn@latest add ${REGISTRY_HOMEPAGE}/`,
+    command: `npx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
   },
   {
     id: 'yarn',
     label: 'yarn',
-    command: `yarn dlx shadcn@latest add ${REGISTRY_HOMEPAGE}/`,
+    command: `yarn dlx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
   },
   {
     id: 'bun',
     label: 'bun',
-    command: `bunx shadcn@latest add ${REGISTRY_HOMEPAGE}/`,
+    command: `bunx shadcn@latest add https://${REGISTRY_HOMEPAGE}/`,
   },
 ] as const;
 
