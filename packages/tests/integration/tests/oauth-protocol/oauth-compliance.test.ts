@@ -202,7 +202,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
         expect(response.status).toBe(400);
 
         const result = await response.json();
-        expect(result.error).toBe('invalid_request');
+        expect(result.error).toBe('unsupported_response_type');
         expect(result.error_description).toMatch(
           /Only authorization code flow \(response_type=code\) is supported/i
         );
