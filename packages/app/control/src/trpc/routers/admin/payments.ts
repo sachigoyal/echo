@@ -1,6 +1,7 @@
 import { adminProcedure, createTRPCRouter } from '../../trpc';
 
 import { getPaymentsWithPagination } from '@/services/admin/payments';
+import { getPaymentsOverviewMetrics } from '@/services/admin/payments-summary';
 import { paginationParamsSchema } from '@/services/lib/pagination';
 import { multiSortParamsSchema } from '@/services/lib/sorting';
 import { filterParamsSchema } from '@/services/lib/filtering';
@@ -15,4 +16,8 @@ export const adminPaymentsRouter = createTRPCRouter({
     .query(async ({ input }) => {
       return await getPaymentsWithPagination(input);
     }),
+
+  getPaymentsOverviewMetrics: adminProcedure.query(async () => {
+    return await getPaymentsOverviewMetrics();
+  }),
 });

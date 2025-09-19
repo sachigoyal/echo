@@ -4,7 +4,8 @@ import { ChartPanel } from '@/components/overview-chart/ChartPanel';
 import { api } from '@/trpc/client';
 
 export default function HomePageChart() {
-  const { data, isLoading, error } = api.admin.tokens.getHomePageChart.useQuery();
+  const { data, isLoading, error } =
+    api.admin.tokens.getHomePageChart.useQuery();
 
   return (
     <ChartPanel

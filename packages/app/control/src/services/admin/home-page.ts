@@ -2,7 +2,7 @@ import { ChartItem } from '@/services/admin/type/chart';
 import { ChartConfig } from '@/components/ui/chart';
 import { db } from '@/lib/db';
 
-export interface GetHomePageChartInput {
+interface GetHomePageChartInput {
   startDate?: Date;
   endDate?: Date;
   numBuckets?: number; // default 30 (daily buckets over last 30 days)
@@ -22,7 +22,10 @@ export const getHomePageChart = async (
   const startDate =
     input?.startDate ??
     new Date(
-      (input?.endDate ? startOfUtcDay(input.endDate) : defaultEndExclusive).getTime() -
+      (input?.endDate
+        ? startOfUtcDay(input.endDate)
+        : defaultEndExclusive
+      ).getTime() -
         30 * 24 * 60 * 60 * 1000
     );
   const numBuckets = input?.numBuckets ?? 30;
@@ -83,13 +86,18 @@ export const getHomePageChart = async (
   const makeBuckets = () =>
     Array.from({ length: numBuckets }, (_, i) => {
       const bucketStart = new Date(startDate.getTime() + i * bucketSizeMs);
-      return { timestamp: bucketStart } as { timestamp: Date } & Record<string, number>;
+      return { timestamp: bucketStart } as { timestamp: Date } & Record<
+        string,
+        number
+      >;
     });
 
   // Tokens per bucket
   const tokenBuckets = makeBuckets().map(b => ({ ...b, tokens: 0 }));
   for (const t of transactions) {
-    const idx = Math.floor((t.createdAt.getTime() - startDate.getTime()) / bucketSizeMs);
+    const idx = Math.floor(
+      (t.createdAt.getTime() - startDate.getTime()) / bucketSizeMs
+    );
     if (idx >= 0 && idx < numBuckets) {
       const amt = Number(t.transactionMetadata?.totalTokens || 0);
       tokenBuckets[idx].tokens += amt;
@@ -103,7 +111,9 @@ export const getHomePageChart = async (
   // User signups per bucket
   const signupBuckets = makeBuckets().map(b => ({ ...b, signups: 0 }));
   for (const u of users) {
-    const idx = Math.floor((u.createdAt.getTime() - startDate.getTime()) / bucketSizeMs);
+    const idx = Math.floor(
+      (u.createdAt.getTime() - startDate.getTime()) / bucketSizeMs
+    );
     if (idx >= 0 && idx < numBuckets) {
       signupBuckets[idx].signups += 1;
     }
@@ -116,7 +126,9 @@ export const getHomePageChart = async (
   // App creations per bucket
   const appBuckets = makeBuckets().map(b => ({ ...b, apps: 0 }));
   for (const a of apps) {
-    const idx = Math.floor((a.createdAt.getTime() - startDate.getTime()) / bucketSizeMs);
+    const idx = Math.floor(
+      (a.createdAt.getTime() - startDate.getTime()) / bucketSizeMs
+    );
     if (idx >= 0 && idx < numBuckets) {
       appBuckets[idx].apps += 1;
     }
@@ -129,7 +141,9 @@ export const getHomePageChart = async (
   // Refresh tokens created per bucket
   const rtBuckets = makeBuckets().map(b => ({ ...b, refreshTokens: 0 }));
   for (const rt of refreshTokens) {
-    const idx = Math.floor((rt.createdAt.getTime() - startDate.getTime()) / bucketSizeMs);
+    const idx = Math.floor(
+      (rt.createdAt.getTime() - startDate.getTime()) / bucketSizeMs
+    );
     if (idx >= 0 && idx < numBuckets) {
       rtBuckets[idx].refreshTokens += 1;
     }
@@ -158,7 +172,8 @@ export const getHomePageChart = async (
       id: 'total-tokens-over-time',
       type: 'area-linear',
       title: 'Total Tokens',
-      description: 'Total tokens generated across all apps over the last 30 days',
+      description:
+        'Total tokens generated across all apps over the last 30 days',
       props: {
         title: 'Total Tokens',
         description: 'Tokens generated per day (last 30 days)',

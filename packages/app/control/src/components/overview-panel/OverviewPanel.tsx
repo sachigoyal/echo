@@ -9,11 +9,11 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { OverviewMetricConfig } from '@/services/admin/type/overview-metric';
 
 // Metric display types
-export type MetricDisplayType =
+type MetricDisplayType =
   | 'number'
   | 'currency'
   | 'percentage'
@@ -22,7 +22,7 @@ export type MetricDisplayType =
   | 'trend';
 
 // Grid layout configuration
-export interface GridConfig {
+interface GridConfig {
   columns?: 1 | 2 | 3 | 4 | 6;
   gap?: 'sm' | 'md' | 'lg';
   responsive?: boolean;
@@ -214,7 +214,7 @@ function FormattedValue({ value, displayType, format }: FormattedValueProps) {
 
     switch (displayType) {
       case 'currency':
-        return `$${formatNumber(Number(value))}`;
+        return formatCurrency(Number(value));
 
       case 'percentage':
         return `${formatNumber(Number(value))}%`;

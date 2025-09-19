@@ -12,25 +12,8 @@ import { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
 import { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
-import { Payment, EnumPaymentSource } from '@/generated/prisma';
+import { EnumPaymentSource } from '@/generated/prisma';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
-
-export interface PaymentHistory extends Payment {
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-  };
-  spendPool: {
-    id: string;
-    name: string;
-    description: string | null;
-    echoApp: {
-      id: string;
-      name: string;
-    };
-  } | null;
-}
 
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {

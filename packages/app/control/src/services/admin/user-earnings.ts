@@ -12,20 +12,7 @@ import { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
 import { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
-import { User } from '@/generated/prisma';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
-
-export interface UserEarnings extends User {
-  totalRevenue: number;
-  totalAppProfit: number;
-  totalMarkupProfit: number;
-  totalReferralProfit: number;
-  transactionCount: number;
-  uniqueEmailCampaigns: string[];
-  referralCodesGenerated: number;
-  referredUsersCount: number;
-  totalCompletedPayouts: number;
-}
 
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
@@ -37,8 +24,7 @@ const COLUMN_MAPPINGS: Record<string, string> = {
   totalMarkupProfit: 'COALESCE(t_agg."totalMarkupProfit", 0)',
   totalReferralProfit: 'COALESCE(t_agg."totalReferralProfit", 0)',
   transactionCount: 'COALESCE(t_agg."transactionCount", 0)',
-  referralCodesGenerated:
-    'COUNT(DISTINCT rc.id)',
+  referralCodesGenerated: 'COUNT(DISTINCT rc.id)',
   referredUsersCount: 'COUNT(DISTINCT am_referred.id)',
   totalCompletedPayouts:
     'COALESCE(SUM(p."amount") FILTER (WHERE p."status" = \'completed\'), 0)',
