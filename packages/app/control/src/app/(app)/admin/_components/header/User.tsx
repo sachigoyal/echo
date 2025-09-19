@@ -116,5 +116,3 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     </div>
   );
 };
-
-export default UserHeader;

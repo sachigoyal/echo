@@ -1,8 +1,8 @@
 import { MultiSortParams } from '@/services/lib/sorting';
 
-export type OrderByColumnMappings = Record<string, string>;
+type OrderByColumnMappings = Record<string, string>;
 
-export type BuildOrderByOptions = {
+type BuildOrderByOptions = {
   columnMappings: OrderByColumnMappings;
   // Example: p."createdAt" DESC
   defaultOrderClause: string;
@@ -47,5 +47,3 @@ export const buildOrderByClause = (
 
   return `ORDER BY ${orderClauses.join(', ')}`;
 };
-
-export default buildOrderByClause;

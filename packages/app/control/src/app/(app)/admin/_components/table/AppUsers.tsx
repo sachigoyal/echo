@@ -11,34 +11,13 @@ import {
 import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
 import { api } from '@/trpc/client';
 import { UserLink } from '@/app/(app)/admin/_components';
-
-// Define AppUser type based on the service function
-export interface AppUser {
-  id: string;
-  name: string | null;
-  email: string;
-  createdAt: Date;
-  updatedAt: Date;
-  totalPaid: number;
-  membership: {
-    role: string;
-    status: string;
-    totalSpent: number;
-    createdAt: Date;
-  };
-  totalTransactions: number;
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalTokens: number;
-  totalSpent: number;
-  totalAppProfit: number;
-  totalMarkupProfit: number;
-  totalReferralProfit: number;
-  lastTransactionAt: Date | null;
-}
+import { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the app users table
-const columns: TypedColumnDef<AppUser, string | number | boolean | Date>[] = [
+const columns: TypedColumnDef<
+  RouterOutputs['admin']['app']['getAppUsersWithPagination']['items'][number],
+  string | number | boolean | Date
+>[] = [
   {
     accessorKey: 'name',
     header: 'User Name',

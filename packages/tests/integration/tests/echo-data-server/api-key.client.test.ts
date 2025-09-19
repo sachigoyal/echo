@@ -66,9 +66,7 @@ describe('API Key Client', () => {
     });
 
     const completion = await openaiClient.chat.completions.create({
-      messages: [
-        { role: 'user', content: 'reply with a single word: hello' },
-      ],
+      messages: [{ role: 'user', content: 'reply with a single word: hello' }],
       model: 'gpt-3.5-turbo',
       stream: false,
       max_completion_tokens: 16,

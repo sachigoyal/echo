@@ -14,32 +14,6 @@ import { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
-export interface UserApp {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  // Spending information
-  totalSpentAcrossApps: number;
-  totalSpentFreeTier: number;
-  totalSpentUserBalances: number;
-  totalSpent: number;
-  // Earnings information
-  totalReferralProfitEarned: number;
-  totalReferralProfitClaimed: number;
-  totalMarkupProfitEarned: number;
-  totalMarkupProfitClaimed: number;
-  totalTransactionCosts: number;
-  // Usage statistics
-  totalUsers: number;
-  totalTransactions: number;
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalTokens: number;
-  lastTransactionAt: Date | null;
-}
-
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
   id: 'a.id',

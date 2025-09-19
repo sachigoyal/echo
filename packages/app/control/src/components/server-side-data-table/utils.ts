@@ -2,7 +2,7 @@ import { TypedColumnDef } from './BaseTable';
 import { ColumnType } from './FilterControls';
 
 // Utility function to extract column name from column definition
-export function getColumnName<TData, TValue>(
+function getColumnName<TData, TValue>(
   col: TypedColumnDef<TData, TValue>
 ): string | null {
   if ('accessorKey' in col && typeof col.accessorKey === 'string') {

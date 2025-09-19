@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import ChartPanel from '@/components/overview-chart/ChartPanel';
+import { ChartPanel } from '@/components/overview-chart/ChartPanel';
 import { api } from '@/trpc/client';
 
 interface UserAppsChartProps {

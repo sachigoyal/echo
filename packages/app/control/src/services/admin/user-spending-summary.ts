@@ -1,16 +1,6 @@
 import { db } from '@/lib/db';
 import { OverviewMetricConfig } from './type/overview-metric';
-
-function percentChange(
-  currentValue: number | bigint,
-  previousValue: number | bigint
-): number {
-  const currentNumber = Number(currentValue) || 0;
-  const previousNumber = Number(previousValue) || 0;
-  if (previousNumber === 0) return currentNumber ? 100 : 0;
-  const delta = currentNumber - previousNumber;
-  return (delta / previousNumber) * 100;
-}
+import { percentChange } from './util/percent-change';
 
 type SpendingOverviewRow = {
   totalSpend: number;
