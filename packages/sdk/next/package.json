@@ -26,7 +26,9 @@
     "test:unit": "echo 'no tests'",
     "test:watch": "echo 'no tests'",
     "prepublishOnly": "pnpm run build",
-    "prepare": "tsup src/index.ts src/client.ts --dts --format esm --out-dir dist"
+    "prepare": "tsup src/index.ts src/client.ts --dts --format esm --out-dir dist",
+    "publish:test": "pnpm publish --access public --dry-run",
+    "publish:real": "pnpm publish --access public"
   },
   "keywords": [
     "echo",

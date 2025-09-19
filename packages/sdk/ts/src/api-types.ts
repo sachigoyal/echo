@@ -110,12 +110,9 @@ export type GetUserResponse = {
   name: string | null;
   createdAt: string;
   updatedAt: string;
-  totalPaid: string;
-  totalSpent: string;
   email: string;
-  emailVerified: string | null;
   image: string | null;
-} | null;
+};
 
 export type GetOauthAuthorizeQuery = {
   client_id: string;
