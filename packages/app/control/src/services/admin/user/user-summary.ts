@@ -60,15 +60,26 @@ async function getUserOverviewSummary(
     WITH user_earnings AS (
       SELECT 
         u.id,
-        COALESCE(SUM(t."totalCost"), 0) AS "totalRevenue",
-        COALESCE(SUM(t."appProfit"), 0) AS "totalAppProfit",
-        COALESCE(SUM(t."markUpProfit"), 0) AS "totalMarkupProfit",
-        COALESCE(SUM(p."amount") FILTER (WHERE p."status" = 'completed'), 0) AS "totalCompletedPayouts"
+        COALESCE(t_agg."totalRevenue", 0) AS "totalRevenue",
+        COALESCE(t_agg."totalAppProfit", 0) AS "totalAppProfit",
+        COALESCE(t_agg."totalMarkupProfit", 0) AS "totalMarkupProfit",
+        COALESCE(p_agg."totalCompletedPayouts", 0) AS "totalCompletedPayouts"
       FROM "users" u
-      LEFT JOIN "transactions" t ON u.id = t."userId"
-      LEFT JOIN "payouts" p ON u.id = p."userId"
+      LEFT JOIN LATERAL (
+        SELECT 
+          COALESCE(SUM(t."totalCost"), 0) AS "totalRevenue",
+          COALESCE(SUM(t."appProfit"), 0) AS "totalAppProfit",
+          COALESCE(SUM(t."markUpProfit"), 0) AS "totalMarkupProfit"
+        FROM "transactions" t
+        WHERE t."userId" = u.id
+      ) t_agg ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT 
+          COALESCE(SUM(p."amount"), 0) AS "totalCompletedPayouts"
+        FROM "payouts" p
+        WHERE p."userId" = u.id AND p."status" = 'completed'
+      ) p_agg ON TRUE
       WHERE u.id = $1::uuid
-      GROUP BY u.id
     ),
     user_free_tier AS (
       SELECT 
@@ -81,18 +92,33 @@ async function getUserOverviewSummary(
     ),
     user_apps AS (
       SELECT 
-        am."userId",
-        COUNT(DISTINCT a.id) AS "totalApps",
-        COUNT(DISTINCT am_users."userId") AS "totalUsers",
-        COUNT(DISTINCT t.id) AS "totalTransactions",
-        COALESCE(SUM(tm."inputTokens" + tm."outputTokens"), 0) AS "totalTokens"
-      FROM "app_memberships" am
-      INNER JOIN "echo_apps" a ON am."echoAppId" = a.id
-      LEFT JOIN "app_memberships" am_users ON a.id = am_users."echoAppId"
-      LEFT JOIN "transactions" t ON a.id = t."echoAppId"
-      LEFT JOIN "transaction_metadata" tm ON t."transactionMetadataId" = tm.id
-      WHERE am."userId" = $1::uuid AND am.role = 'owner'
-      GROUP BY am."userId"
+        owner_apps."userId",
+        COUNT(*) as "totalApps",
+        COALESCE(SUM(app_user_counts."totalUsers"), 0) as "totalUsers",
+        COALESCE(SUM(app_tx."totalTransactions"), 0) as "totalTransactions",
+        COALESCE(SUM(app_tx."totalTokens"), 0) as "totalTokens",
+        MAX(app_tx."lastTransactionAt") as "lastTransactionAt"
+      FROM (
+        SELECT am."userId", a.id as app_id
+        FROM "app_memberships" am
+        INNER JOIN "echo_apps" a ON am."echoAppId" = a.id
+        WHERE am."userId" = $1::uuid AND am.role = 'owner'
+      ) owner_apps
+      LEFT JOIN LATERAL (
+        SELECT COUNT(DISTINCT am2."userId") as "totalUsers"
+        FROM "app_memberships" am2
+        WHERE am2."echoAppId" = owner_apps.app_id
+      ) app_user_counts ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT 
+          COUNT(t.id) as "totalTransactions",
+          COALESCE(SUM(tm."inputTokens" + tm."outputTokens"), 0) as "totalTokens",
+          MAX(t."createdAt") as "lastTransactionAt"
+        FROM "transactions" t
+        LEFT JOIN "transaction_metadata" tm ON t."transactionMetadataId" = tm.id
+        WHERE t."echoAppId" = owner_apps.app_id
+      ) app_tx ON TRUE
+      GROUP BY owner_apps."userId"
     ),
     user_referrals AS (
       SELECT 
