@@ -6,8 +6,9 @@ const IS_VERCEL_PRODUCTION = ['production', 'staging'].includes(
 );
 
 const IS_INTEGRATION_TEST = process.env.INTEGRATION_TEST_MODE === 'true';
-
-const IS_STRICT = IS_VERCEL_PRODUCTION && !IS_INTEGRATION_TEST;
+const SKIP_ENV_VALIDATION = process.env.SKIP_ENV_VALIDATION === 'true';
+const IS_STRICT =
+  IS_VERCEL_PRODUCTION && !IS_INTEGRATION_TEST && !SKIP_ENV_VALIDATION;
 
 export const env = createEnv({
   /*
