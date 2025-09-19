@@ -1,8 +1,10 @@
 import { Response as ExpressResponse } from 'express';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web';
-import { ReadableStream } from 'stream/web';
+import type {
+  ReadableStream as NodeReadableStream,
+  ReadableStreamDefaultReader as NodeReadableStreamDefaultReader,
+} from 'node:stream/web';
 import logger from '../logger';
 import { BaseProvider } from '../providers/BaseProvider';
 import { Transaction } from '../types';
@@ -14,8 +16,8 @@ export class HandleStreamService {
    * @returns A tuple of two independent streams
    */
   private duplicateStream(
-    stream: ReadableStream<Uint8Array>
-  ): [ReadableStream<Uint8Array>, ReadableStream<Uint8Array>] {
+    stream: NodeReadableStream<Uint8Array>
+  ): [NodeReadableStream<Uint8Array>, NodeReadableStream<Uint8Array>] {
     return stream.tee();
   }
 
@@ -31,7 +33,7 @@ export class HandleStreamService {
     provider: BaseProvider,
     res: ExpressResponse
   ): Promise<Transaction> {
-    const bodyStream = response.body as ReadableStream<Uint8Array>;
+    const bodyStream = response.body as NodeReadableStream<Uint8Array>;
     if (!bodyStream) {
       throw new Error('No body stream returned from API');
     }
@@ -68,7 +70,7 @@ export class HandleStreamService {
    * @param res - Express response object
    */
   private async streamToClient(
-    stream: NodeWebReadableStream<Uint8Array>,
+    stream: NodeReadableStream<Uint8Array>,
     res: ExpressResponse
   ): Promise<void> {
     await pipeline(Readable.fromWeb(stream), res);
@@ -80,7 +82,7 @@ export class HandleStreamService {
    * @param provider - The provider instance for handling the response
    */
   private async processStreamData(
-    reader: ReadableStreamDefaultReader<Uint8Array>,
+    reader: NodeReadableStreamDefaultReader<Uint8Array>,
     provider: BaseProvider
   ): Promise<Transaction> {
     let data = '';
