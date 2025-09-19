@@ -109,5 +109,3 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appId, className }) => {
     </div>
   );
 };
-
-export default AppHeader;

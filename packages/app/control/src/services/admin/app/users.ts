@@ -14,31 +14,6 @@ import { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
-export interface AppUser {
-  id: string;
-  name: string | null;
-  email: string;
-  createdAt: Date;
-  updatedAt: Date;
-  totalPaid: number;
-  userTotalSpent: number;
-  membership: {
-    role: string;
-    status: string;
-    totalSpent: number;
-    createdAt: Date;
-  };
-  totalTransactions: number;
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalTokens: number;
-  totalSpent: number;
-  totalAppProfit: number;
-  totalMarkupProfit: number;
-  totalReferralProfit: number;
-  lastTransactionAt: Date | null;
-}
-
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
   id: 'u.id',

@@ -2,7 +2,7 @@ import { ChartItem } from '@/services/admin/type/chart';
 import { ChartConfig } from '@/components/ui/chart';
 import { db } from '@/lib/db';
 
-export interface GetHomePageChartInput {
+interface GetHomePageChartInput {
   startDate?: Date;
   endDate?: Date;
   numBuckets?: number; // default 30 (daily buckets over last 30 days)

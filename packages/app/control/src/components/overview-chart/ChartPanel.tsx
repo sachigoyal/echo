@@ -15,7 +15,7 @@ import { ChartAreaLinear } from './LinearChart';
 import { ChartItem } from '@/services/admin/type/chart';
 
 // Grid layout configuration (mirrors OverviewPanel)
-export interface GridConfig {
+interface GridConfig {
   columns?: 1 | 2 | 3 | 4 | 6;
   gap?: 'sm' | 'md' | 'lg';
   responsive?: boolean;
@@ -167,5 +167,3 @@ function renderChart(item: ChartItem) {
       );
   }
 }
-
-export default ChartPanel;

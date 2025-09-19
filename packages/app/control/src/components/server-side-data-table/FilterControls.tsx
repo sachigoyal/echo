@@ -25,7 +25,7 @@ import {
 import { FilterOperator } from '@/services/lib/filtering';
 
 // Enhanced filter structure to support operators
-export interface FilterConfig {
+interface FilterConfig {
   id: string;
   column: string;
   operator: FilterOperator;
@@ -35,7 +35,7 @@ export interface FilterConfig {
 // Column type definitions for input validation
 export type ColumnType = 'string' | 'number' | 'boolean' | 'date';
 
-export interface ColumnConfig {
+interface ColumnConfig {
   name: string;
   type: ColumnType;
 }
