@@ -18,7 +18,7 @@ import { ActionConfig, ActionGroup } from './ActionControls';
 import { createCheckboxColumn } from './CheckBoxColumn';
 
 // TRPC useQuery hook type - accepts the raw TRPC useQuery function
-export type TRPCUseQuery<TData> = (
+type TRPCUseQuery<TData> = (
   params: PaginationParams & MultiSortParams & FilterParams
 ) => {
   data?: PaginatedResponse<TData>;

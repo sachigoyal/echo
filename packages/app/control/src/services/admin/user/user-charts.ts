@@ -2,7 +2,7 @@ import { ChartItem } from '../type/chart';
 import { getUserCreatorActivity } from '@/services/user/activity';
 import { ChartConfig } from '@/components/ui/chart';
 
-export interface GetUserAppsChartsInput {
+interface GetUserAppsChartsInput {
   userId: string;
   startDate?: Date;
   endDate?: Date;
