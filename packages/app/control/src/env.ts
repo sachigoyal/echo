@@ -4,6 +4,12 @@ import { z } from 'zod';
 const IS_VERCEL_PRODUCTION = ['production', 'staging'].includes(
   process.env.VERCEL_ENV ?? ''
 );
+
+console.log(
+  'IS_INTEGRATION_TEST',
+  process.env.INTEGRATION_TEST_MODE,
+  typeof process.env.INTEGRATION_TEST_MODE
+);
 const IS_INTEGRATION_TEST = process.env.INTEGRATION_TEST_MODE === 'true';
 
 const IS_STRICT = IS_VERCEL_PRODUCTION && !IS_INTEGRATION_TEST;
