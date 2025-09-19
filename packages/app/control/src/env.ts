@@ -6,11 +6,12 @@ const IS_VERCEL_PRODUCTION = ['production', 'staging'].includes(
 );
 
 const IS_INTEGRATION_TEST = process.env.INTEGRATION_TEST_MODE === 'true';
-const SKIP_ENV_VALIDATION = process.env.SKIP_ENV_VALIDATION === 'true';
-const IS_STRICT =
-  IS_VERCEL_PRODUCTION && !IS_INTEGRATION_TEST && !SKIP_ENV_VALIDATION;
+const SKIP_ENV_VALIDATION = Boolean(process.env.SKIP_ENV_VALIDATION);
+console.log({ SKIP_ENV_VALIDATION });
+const IS_STRICT = IS_VERCEL_PRODUCTION && !IS_INTEGRATION_TEST;
 
 export const env = createEnv({
+  skipValidation: SKIP_ENV_VALIDATION,
   /*
    * Serverside Environment variables, not available on the client.
    * Will throw if you access these variables on the client.
