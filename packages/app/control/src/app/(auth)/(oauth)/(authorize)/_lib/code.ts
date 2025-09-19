@@ -25,7 +25,12 @@ export const authCodeJwtInputSchema = z.object({
       error_description: 'user_id must be a valid UUID',
     }),
   }),
-  redirect_uri: z.url('redirect_uri must be a valid URL'),
+  redirect_uri: z.url({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'redirect_uri must be a valid URL',
+    }),
+  }),
   code_challenge: z
     .string({
       error: oauthValidationError({
@@ -39,7 +44,12 @@ export const authCodeJwtInputSchema = z.object({
         error_description: 'code_challenge must be at least 43 characters',
       }),
     })
-    .max(128, 'code_challenge must be at most 128 characters')
+    .max(128, {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_challenge must be at most 128 characters',
+      }),
+    })
     .regex(/^[A-Za-z0-9_-]+$/, {
       error: oauthValidationError({
         error: OAuthErrorType.INVALID_REQUEST,

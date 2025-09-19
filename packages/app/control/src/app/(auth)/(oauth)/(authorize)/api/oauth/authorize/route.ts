@@ -21,7 +21,8 @@ const querySchema = authorizeParamsSchema.extend({
     .literal('code', {
       error: oauthValidationError({
         error: OAuthErrorType.INVALID_REQUEST,
-        error_description: 'response_type must be code',
+        error_description:
+          'Only authorization code flow (response_type=code) is supported',
       }),
     })
     .default('code'),
@@ -29,7 +30,7 @@ const querySchema = authorizeParamsSchema.extend({
     .literal('none', {
       error: oauthValidationError({
         error: OAuthErrorType.INVALID_REQUEST,
-        error_description: 'promt can only be none',
+        error_description: 'Only prompt=none is supported',
       }),
     })
     .optional(),

@@ -44,7 +44,12 @@ export const handleIssueTokenSchema = z.object({
     }),
   }),
   code_verifier: z
-    .string()
+    .string({
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier must be a string',
+      }),
+    })
     .min(43, {
       error: oauthValidationError({
         error: OAuthErrorType.INVALID_REQUEST,
@@ -57,10 +62,10 @@ export const handleIssueTokenSchema = z.object({
         error_description: 'code_verifier must be at most 128 characters',
       }),
     })
-    .regex(/^[A-Za-z0-9_-]+$/, {
+    .regex(/^[A-Za-z0-9._~-]+$/, {
       error: oauthValidationError({
         error: OAuthErrorType.INVALID_REQUEST,
-        error_description: 'code_verifier must be base64url encoded',
+        error_description: 'code_verifier contains invalid characters',
       }),
     }),
 });
@@ -99,7 +104,10 @@ export async function handleIssueToken(
 
   /* 4️⃣ Validate the authorization code data */
   if (codeClientId !== client_id || codeRedirectUri !== redirect_uri) {
-    throw new Error('Authorization code does not match request parameters');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'Authorization code does not match request parameters',
+    });
   }
 
   /* 5️⃣ Verify PKCE code challenge */
@@ -108,7 +116,10 @@ export async function handleIssueToken(
     .digest('base64url');
 
   if (codeVerifierHash !== code_challenge) {
-    throw new Error('PKCE verification failed');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'PKCE verification failed',
+    });
   }
 
   const user = await db.user.findUnique({
@@ -116,7 +127,10 @@ export async function handleIssueToken(
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'User not found',
+    });
   }
 
   /* 7️⃣ Find and validate the Echo app (client) */
@@ -128,14 +142,18 @@ export async function handleIssueToken(
   });
 
   if (!app) {
-    throw new Error('App not found');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'App not found',
+    });
   }
 
   /* 8️⃣ Validate redirect_uri against authorized callback URLs */
   if (!isValidRedirectUri(redirect_uri, app.authorizedCallbackUrls)) {
-    throw new Error(
-      `Redirect URI is not authorized for this app: ${redirect_uri}`
-    );
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: `Redirect URI is not authorized for this app: ${redirect_uri}`,
+    });
   }
 
   /* 9️⃣ Ensure the user has access to this Echo app */
@@ -164,7 +182,10 @@ export async function handleIssueToken(
       });
       userRole = AppRole.CUSTOMER;
     } catch {
-      throw new Error('Error creating app membership');
+      throw new OAuthError({
+        error: OAuthErrorType.SERVER_ERROR,
+        error_description: 'Error creating app membership',
+      });
     }
   }
 

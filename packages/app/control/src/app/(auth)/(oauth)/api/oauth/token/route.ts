@@ -20,18 +20,28 @@ const invalidGrantError = oauthValidationError({
     'grant_type can only be authorization_code or refresh_token',
 });
 
-const bodySchema = z.discriminatedUnion('grant_type', [
-  handleIssueTokenSchema.extend({
-    grant_type: z.literal('authorization_code', {
-      error: invalidGrantError,
+const bodySchema = z.discriminatedUnion(
+  'grant_type',
+  [
+    handleIssueTokenSchema.extend({
+      grant_type: z.literal('authorization_code', {
+        error: invalidGrantError,
+      }),
     }),
-  }),
-  handleRefreshTokenSchema.extend({
-    grant_type: z.literal('refresh_token', {
-      error: invalidGrantError,
+    handleRefreshTokenSchema.extend({
+      grant_type: z.literal('refresh_token', {
+        error: invalidGrantError,
+      }),
     }),
-  }),
-]);
+  ],
+  {
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description:
+        'Must provide a valid grant_type (authorization_code or refresh_token)',
+    }),
+  }
+);
 
 export const POST = oauthRoute
   .body(bodySchema)
@@ -62,6 +72,7 @@ export const POST = oauthRoute
         }
       }
     } catch (error) {
+      console.log('refresh token error', error);
       if (error instanceof OAuthError) {
         return OAuthRouteError(error.body);
       }

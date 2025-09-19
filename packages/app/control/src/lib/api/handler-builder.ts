@@ -262,6 +262,9 @@ export class RouteHandlerBuilder<
               });
             }
           } catch (error) {
+            if (error instanceof InternalRouteHandlerError) {
+              throw error;
+            }
             if (this.config.bodySchema) {
               throw new InternalRouteHandlerError({
                 message: 'Invalid body',

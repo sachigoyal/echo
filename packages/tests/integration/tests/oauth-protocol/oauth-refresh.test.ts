@@ -63,7 +63,9 @@ describe('OAuth Refresh Token Tests', () => {
 
       expect(response.ok).toBe(false);
       const errorData = await response.json();
-      expect(errorData.error).toMatch(/unsupported.*grant.*type/i);
+      expect(errorData.error_description).toMatch(
+        /must provide a valid grant_type \(authorization_code or refresh_token\)/i
+      );
     });
   });
 
@@ -190,7 +192,7 @@ describe('OAuth Refresh Token Tests', () => {
           refresh_token: 'test-refresh-token',
           client_id: '99999999-9999-9999-9999-999999999999', // Non-existent
         })
-      ).rejects.toThrow(/invalid.*grant|invalid.*client|client.*not.*found/i);
+      ).rejects.toThrow(/refresh token not found/i);
     });
   });
 
@@ -214,8 +216,8 @@ describe('OAuth Refresh Token Tests', () => {
       // Should fail due to invalid token, not content-type
       expect(response.ok).toBe(false);
       const errorData = await response.json();
-      expect(errorData.error_description).toBeInstanceOf(String);
-      expect(errorData.error_description).not.toThrow('Invalid content-type');
+      expect(typeof errorData.error_description).toBe('string');
+      expect(errorData.error_description).not.toEqual('Invalid content-type');
     });
 
     test('supports application/x-www-form-urlencoded content-type', async () => {
@@ -239,8 +241,8 @@ describe('OAuth Refresh Token Tests', () => {
       // Should fail due to invalid token, not content-type
       expect(response.ok).toBe(false);
       const errorData = await response.json();
-      expect(errorData.error_description).toBeInstanceOf(String);
-      expect(errorData.error_description).toThrow('Invalid content-type');
+      expect(typeof errorData.error_description).toBe('string');
+      expect(errorData.error_description).not.toEqual('Invalid content-type');
     });
 
     test('rejects unsupported content-types', async () => {
@@ -257,7 +259,7 @@ describe('OAuth Refresh Token Tests', () => {
 
       expect(response.ok).toBe(false);
       const errorData = await response.json();
-      expect(errorData.error_description).toBeInstanceOf(String);
+      expect(typeof errorData.error_description).toBe('string');
       expect(errorData.error_description).toBe('Invalid content-type');
     });
   });

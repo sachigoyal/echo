@@ -170,12 +170,30 @@ describe('PKCE Security Validation', () => {
 
     test('prevents malformed code challenge attacks', async () => {
       const malformedChallenges = [
-        '', // Empty
-        'invalid!@#$%', // Invalid characters
-        'a', // Too short
-        'A'.repeat(200), // Too long
-        '====', // Invalid base64url
-        'contains+and/characters', // Base64 instead of base64url
+        {
+          value: '',
+          expectedError: /code_challenge must be a string/i,
+        }, // Empty
+        {
+          value: 'invalid!@#$%',
+          expectedError: /code_challenge must be base64url encoded/i,
+        }, // Invalid characters
+        {
+          value: 'a',
+          expectedError: /code_challenge must be at least 43 characters/i,
+        }, // Too short
+        {
+          value: 'A'.repeat(200),
+          expectedError: /code_challenge must be at most 128 characters/i,
+        }, // Too long
+        {
+          value: '====',
+          expectedError: /code_challenge must be base64url encoded/i,
+        }, // Invalid base64url
+        {
+          value: 'contains+and/characters',
+          expectedError: /code_challenge must be base64url encoded/i,
+        }, // Base64 instead of base64url
       ];
 
       for (const challenge of malformedChallenges) {
@@ -184,10 +202,10 @@ describe('PKCE Security Validation', () => {
             client_id: TEST_CLIENT_IDS.primary,
             redirect_uri: 'http://localhost:3000/callback',
             state: generateState(),
-            code_challenge: challenge,
+            code_challenge: challenge.value,
             code_challenge_method: 'S256',
           })
-        ).rejects.toThrow(/invalid.*challenge|malformed.*challenge/i);
+        ).rejects.toThrow(challenge.expectedError);
       }
     });
 
@@ -345,9 +363,9 @@ describe('PKCE Security Validation', () => {
       } catch (error) {
         const err = error as Error;
         expect(err.message).not.toMatch(
-          /code_verifier must be base64url encoded/i
+          /code_verifier contains invalid characters/i
         );
-        expect(err.message).toMatch(/invalid.*grant|authorization.*code/i);
+        expect(err.message).toMatch(/PKCE verification failed/i);
       }
     });
   });
