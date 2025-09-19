@@ -5,7 +5,7 @@
   "scripts": {
     "predev": "docker-compose -f docker-local-db.yml up -d && sleep 3 && prisma generate && prisma migrate deploy",
     "dev": "next dev --turbopack",
-    "prebuild": "prisma generate && npm run generate-api-types",
+    "prebuild": "prisma generate",
     "build": "next build",
     "generate-api-types": "tsx scripts/generate-api-types.ts",
     "start": "next start",
@@ -31,7 +31,6 @@
     "@coinbase/x402": "^0.5.0",
     "@hookform/resolvers": "^5.2.1",
     "@icons-pack/react-simple-icons": "^13.7.0",
-    "@merit-systems/echo-typescript-sdk": "1.0.14",
     "@merit-systems/sdk": "0.0.8",
     "@number-flow/react": "^0.5.10",
     "@opentelemetry/api": "^1.9.0",

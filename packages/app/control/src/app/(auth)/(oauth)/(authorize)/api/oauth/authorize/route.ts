@@ -1,32 +1,67 @@
+import z from 'zod';
+
 import {
   authorizeParamsSchema,
   getAuthorizationRedirect,
 } from '../../../_lib/authorize';
 import { isValidRedirectUri } from '../../../../_lib/redirect-uri';
-import { createZodRoute } from '@/lib/api/create-route';
 import { auth } from '@/auth';
 import { env } from '@/env';
 import { getApp } from '@/services/apps/get';
 import { NextResponse } from 'next/server';
-import z from 'zod';
+import {
+  oauthRoute,
+  oauthValidationError,
+  OAuthRouteError,
+} from '@/app/(auth)/(oauth)/_lib/oauth-route';
+import { OAuthErrorType } from '@/app/(auth)/(oauth)/_lib/oauth-error';
 
 const querySchema = authorizeParamsSchema.extend({
-  response_type: z.literal('code').default('code'),
-  prompt: z.literal('none').optional(),
-  new_user: z.literal('true').optional(),
-  referral_code: z.string().optional(),
+  response_type: z
+    .literal('code', {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description:
+          'Only authorization code flow (response_type=code) is supported',
+      }),
+    })
+    .default('code'),
+  prompt: z
+    .literal('none', {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'Only prompt=none is supported',
+      }),
+    })
+    .optional(),
+  new_user: z
+    .literal('true', {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'new_user can only be true',
+      }),
+    })
+    .optional(),
+  referral_code: z
+    .string({
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'referral_code can only be a string',
+      }),
+    })
+    .optional(),
 });
 
-export const GET = createZodRoute()
+export const GET = oauthRoute
   .query(querySchema)
   .handler(async (request, { query }) => {
     const app = await getApp(query.client_id);
 
     if (!app) {
-      return NextResponse.json(
-        { error: 'not_found', error_description: 'Echo app not found' },
-        { status: 404 }
-      );
+      return OAuthRouteError({
+        error: OAuthErrorType.INVALID_CLIENT,
+        error_description: 'Echo app not found',
+      });
     }
 
     const session = await auth();
@@ -38,35 +73,26 @@ export const GET = createZodRoute()
 
     if (query.prompt === 'none') {
       if (!env.INTEGRATION_TEST_MODE) {
-        return NextResponse.json(
-          {
-            error: 'invalid_request',
-            message: 'prompt=none is not supported',
-          },
-          { status: 400 }
-        );
+        return OAuthRouteError({
+          error: OAuthErrorType.INVALID_REQUEST,
+          error_description: 'prompt=none is not supported',
+        });
       }
 
       if (!isValidRedirectUri(query.redirect_uri, app.authorizedCallbackUrls)) {
-        return NextResponse.json(
-          {
-            error: 'invalid_request',
-            message: 'redirect_uri is not authorized for this app',
-          },
-          { status: 400 }
-        );
+        return OAuthRouteError({
+          error: OAuthErrorType.INVALID_REQUEST,
+          error_description: 'redirect_uri is not authorized for this app',
+        });
       }
 
       const redirectUrl = await getAuthorizationRedirect(query);
 
       if (!redirectUrl) {
-        return NextResponse.json(
-          {
-            error: 'unauthorized',
-            error_description: 'User not authenticated',
-          },
-          { status: 400 }
-        );
+        return OAuthRouteError({
+          error: OAuthErrorType.INVALID_REQUEST,
+          error_description: 'User not authenticated',
+        });
       }
 
       return NextResponse.redirect(redirectUrl.toString(), 302);

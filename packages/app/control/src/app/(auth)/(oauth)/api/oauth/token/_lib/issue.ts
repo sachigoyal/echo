@@ -18,17 +18,55 @@ import { logger } from '@/logger';
 import { env } from '@/env';
 
 import type { TokenMetadata } from './types';
+import {
+  OAuthError,
+  OAuthErrorType,
+} from '@/app/(auth)/(oauth)/_lib/oauth-error';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 
 export const handleIssueTokenSchema = z.object({
-  redirect_uri: z.url('redirect_uri must be a valid URL'),
-  client_id: z.uuid('client_id must be a valid UUID'),
-  code: z.string(),
+  redirect_uri: z.url({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'redirect_uri must be a valid URL',
+    }),
+  }),
+  client_id: z.uuid({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_CLIENT,
+      error_description: 'client_id must be a valid UUID',
+    }),
+  }),
+  code: z.string({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'code must be a string',
+    }),
+  }),
   code_verifier: z
-    .string()
-    .min(43, 'code_verifier must be at least 43 characters')
-    .max(128, 'code_verifier must be at most 128 characters')
-    .regex(/^[A-Za-z0-9_-]+$/, {
-      message: 'code_verifier must be base64url encoded',
+    .string({
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier must be a string',
+      }),
+    })
+    .min(43, {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier must be at least 43 characters',
+      }),
+    })
+    .max(128, {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier must be at most 128 characters',
+      }),
+    })
+    .regex(/^[A-Za-z0-9._~-]+$/, {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier contains invalid characters',
+      }),
     }),
 });
 
@@ -50,7 +88,12 @@ export async function handleIssueToken(
   const { payload } = await jwtVerify(
     code,
     new TextEncoder().encode(env.OAUTH_CODE_SIGNING_JWT_SECRET)
-  );
+  ).catch(() => {
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'Invalid authorization code',
+    });
+  });
   const {
     client_id: codeClientId,
     redirect_uri: codeRedirectUri,
@@ -61,7 +104,10 @@ export async function handleIssueToken(
 
   /* 4️⃣ Validate the authorization code data */
   if (codeClientId !== client_id || codeRedirectUri !== redirect_uri) {
-    throw new Error('Authorization code does not match request parameters');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'Authorization code does not match request parameters',
+    });
   }
 
   /* 5️⃣ Verify PKCE code challenge */
@@ -70,7 +116,10 @@ export async function handleIssueToken(
     .digest('base64url');
 
   if (codeVerifierHash !== code_challenge) {
-    throw new Error('PKCE verification failed');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'PKCE verification failed',
+    });
   }
 
   const user = await db.user.findUnique({
@@ -78,7 +127,10 @@ export async function handleIssueToken(
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'User not found',
+    });
   }
 
   /* 7️⃣ Find and validate the Echo app (client) */
@@ -90,14 +142,18 @@ export async function handleIssueToken(
   });
 
   if (!app) {
-    throw new Error('App not found');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'App not found',
+    });
   }
 
   /* 8️⃣ Validate redirect_uri against authorized callback URLs */
   if (!isValidRedirectUri(redirect_uri, app.authorizedCallbackUrls)) {
-    throw new Error(
-      `Redirect URI is not authorized for this app: ${redirect_uri}`
-    );
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: `Redirect URI is not authorized for this app: ${redirect_uri}`,
+    });
   }
 
   /* 9️⃣ Ensure the user has access to this Echo app */
@@ -126,7 +182,10 @@ export async function handleIssueToken(
       });
       userRole = AppRole.CUSTOMER;
     } catch {
-      throw new Error('Error creating app membership');
+      throw new OAuthError({
+        error: OAuthErrorType.SERVER_ERROR,
+        error_description: 'Error creating app membership',
+      });
     }
   }
 

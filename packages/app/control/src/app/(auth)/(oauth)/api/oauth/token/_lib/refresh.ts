@@ -15,9 +15,19 @@ import { createEchoAccessJwt } from '@/lib/access-token';
 
 import type { Prisma } from '@/generated/prisma';
 import type { TokenMetadata } from './types';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
+import {
+  OAuthError,
+  OAuthErrorType,
+} from '@/app/(auth)/(oauth)/_lib/oauth-error';
 
 export const handleRefreshTokenSchema = z.object({
-  refresh_token: z.string(),
+  refresh_token: z.string({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'refresh_token must be a string',
+    }),
+  }),
 });
 
 export async function handleRefreshToken(
@@ -60,13 +70,19 @@ export async function handleRefreshToken(
   });
 
   if (!refreshToken) {
-    throw new Error('Refresh token not found');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'Refresh token not found',
+    });
   }
 
   if (refreshToken.expiresAt < new Date()) {
     // Deactivate expired token
     archiveRefreshToken(token);
-    throw new Error('Refresh token expired');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'Refresh token expired',
+    });
   }
 
   if (refreshToken.archivedAt) {
@@ -76,7 +92,10 @@ export async function handleRefreshToken(
   const { user, echoApp: app, session, scope } = refreshToken;
 
   if (!session) {
-    throw new Error('Session not found');
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'Session not found',
+    });
   }
 
   const sessionId = session.id;
