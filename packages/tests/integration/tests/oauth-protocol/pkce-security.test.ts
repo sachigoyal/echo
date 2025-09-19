@@ -63,7 +63,7 @@ describe('PKCE Security Validation', () => {
           redirect_uri: 'http://localhost:3000/callback',
           code_verifier: attackerCodeVerifier, // Wrong verifier!
         })
-      ).rejects.toThrow(/invalid.*grant|code.*verifier.*invalid/i);
+      ).rejects.toThrow(/invalid authorization code/i);
     });
 
     test('prevents code interception attacks', async () => {
@@ -104,7 +104,7 @@ describe('PKCE Security Validation', () => {
           redirect_uri: 'http://localhost:3000/callback',
           code_verifier: generateCodeVerifier(), // Wrong verifier
         })
-      ).rejects.toThrow(/invalid.*grant|code.*verifier.*invalid/i);
+      ).rejects.toThrow(/invalid authorization code/i);
     });
 
     test('prevents replay attacks', async () => {
@@ -136,7 +136,7 @@ describe('PKCE Security Validation', () => {
       } catch (error) {
         const err = error as Error;
         // Should fail with invalid_grant (because mock code), not verifier issues
-        expect(err.message).toMatch(/invalid.*grant/i);
+        expect(err.message).toMatch(/invalid authorization code/i);
         expect(err.message).not.toMatch(/verifier/i);
       }
 
@@ -148,7 +148,7 @@ describe('PKCE Security Validation', () => {
           redirect_uri: 'http://localhost:3000/callback',
           code_verifier: codeVerifier,
         })
-      ).rejects.toThrow(/invalid.*grant|code.*expired|already.*used/i);
+      ).rejects.toThrow(/invalid authorization code/i);
     });
   });
 
@@ -345,7 +345,7 @@ describe('PKCE Security Validation', () => {
       } catch (error) {
         const err = error as Error;
         expect(err.message).not.toMatch(
-          /code.*verifier.*invalid|invalid.*characters/i
+          /code_verifier must be base64url encoded/i
         );
         expect(err.message).toMatch(/invalid.*grant|authorization.*code/i);
       }

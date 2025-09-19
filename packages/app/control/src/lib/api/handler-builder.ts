@@ -253,8 +253,13 @@ export class RouteHandlerBuilder<
             ) {
               const formData = await request.formData();
               body = Object.fromEntries(formData.entries());
-            } else {
+            } else if (contentType.includes('application/json')) {
               body = await request.json();
+            } else {
+              throw new InternalRouteHandlerError({
+                message: 'Invalid content-type',
+                errors: [],
+              });
             }
           } catch (error) {
             if (this.config.bodySchema) {

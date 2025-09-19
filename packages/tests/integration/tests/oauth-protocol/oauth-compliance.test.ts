@@ -147,7 +147,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
         if (response.status === 400) {
           // Parameter validation rejected it (ideal case)
           const result = await response.json();
-          expect(result.message).toBe('Invalid query');
+          expect(result.error).toBe('Invalid query');
           expect(JSON.stringify(result.errors)).toMatch(
             /Only S256 code challenge method is supported/i
           );

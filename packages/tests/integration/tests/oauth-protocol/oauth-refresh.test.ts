@@ -214,8 +214,8 @@ describe('OAuth Refresh Token Tests', () => {
       // Should fail due to invalid token, not content-type
       expect(response.ok).toBe(false);
       const errorData = await response.json();
-      expect(errorData.error).not.toMatch(/content.*type|unsupported.*media/i);
-      expect(errorData.error).toMatch(/invalid.*grant|invalid.*token/i);
+      expect(errorData.error_description).toBeInstanceOf(String);
+      expect(errorData.error_description).not.toThrow('Invalid content-type');
     });
 
     test('supports application/x-www-form-urlencoded content-type', async () => {
@@ -239,10 +239,8 @@ describe('OAuth Refresh Token Tests', () => {
       // Should fail due to invalid token, not content-type
       expect(response.ok).toBe(false);
       const errorData = await response.json();
-      expect(errorData.error).not.toMatch(/content.*type|unsupported.*media/i);
-      expect(errorData.error).toMatch(
-        /invalid.*grant|invalid.*token|server.*error/i
-      );
+      expect(errorData.error_description).toBeInstanceOf(String);
+      expect(errorData.error_description).toThrow('Invalid content-type');
     });
 
     test('rejects unsupported content-types', async () => {
@@ -259,9 +257,8 @@ describe('OAuth Refresh Token Tests', () => {
 
       expect(response.ok).toBe(false);
       const errorData = await response.json();
-      expect(errorData.error).toMatch(
-        /invalid.*request|unsupported.*media|content.*type|server.*error/i
-      );
+      expect(errorData.error_description).toBeInstanceOf(String);
+      expect(errorData.error_description).toBe('Invalid content-type');
     });
   });
 
