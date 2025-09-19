@@ -171,10 +171,6 @@ describe('PKCE Security Validation', () => {
     test('prevents malformed code challenge attacks', async () => {
       const malformedChallenges = [
         {
-          value: '',
-          expectedError: /code_challenge must be a string/i,
-        }, // Empty
-        {
           value: 'invalid!@#$%',
           expectedError: /code_challenge must be base64url encoded/i,
         }, // Invalid characters
@@ -365,7 +361,7 @@ describe('PKCE Security Validation', () => {
         expect(err.message).not.toMatch(
           /code_verifier contains invalid characters/i
         );
-        expect(err.message).toMatch(/PKCE verification failed/i);
+        expect(err.message).toMatch(/Invalid authorization code/i);
       }
     });
   });

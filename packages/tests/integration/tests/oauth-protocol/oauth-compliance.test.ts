@@ -148,7 +148,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           // Parameter validation rejected it (ideal case)
           const result = await response.json();
           expect(result.error).toBe('invalid_request');
-          expect(JSON.stringify(result.errors)).toMatch(
+          expect(result.error_description).toMatch(
             /Only S256 code challenge method is supported/i
           );
         } else if (response.status === 302) {
@@ -203,7 +203,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
 
         const result = await response.json();
         expect(result.error).toBe('invalid_request');
-        expect(JSON.stringify(result.errors)).toMatch(
+        expect(result.error_description).toMatch(
           /Only authorization code flow \(response_type=code\) is supported/i
         );
       }

@@ -38,6 +38,12 @@ export const authCodeJwtInputSchema = z.object({
         error_description: 'code_challenge must be a string',
       }),
     })
+    .regex(/^[A-Za-z0-9_-]+$/, {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_challenge must be base64url encoded',
+      }),
+    })
     .min(43, {
       error: oauthValidationError({
         error: OAuthErrorType.INVALID_REQUEST,
@@ -48,12 +54,6 @@ export const authCodeJwtInputSchema = z.object({
       error: oauthValidationError({
         error: OAuthErrorType.INVALID_REQUEST,
         error_description: 'code_challenge must be at most 128 characters',
-      }),
-    })
-    .regex(/^[A-Za-z0-9_-]+$/, {
-      error: oauthValidationError({
-        error: OAuthErrorType.INVALID_REQUEST,
-        error_description: 'code_challenge must be base64url encoded',
       }),
     }),
   code_challenge_method: z.literal('S256', {
