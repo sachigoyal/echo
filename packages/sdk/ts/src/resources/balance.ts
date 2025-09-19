@@ -25,11 +25,8 @@ export class BalanceResource extends BaseResource {
   async getFreeBalance(
     echoAppId: string
   ): Promise<ApiRoutes['GET /balance/{id}/free']['response']> {
-    const request: ApiRoutes['GET /balance/{id}/free']['params'] = {
-      echoAppId,
-    };
     return this.handleRequest(
-      () => this.http.get(`/api/v1/balance/${echoAppId}/free`, request),
+      () => this.http.get(`/api/v1/balance/${echoAppId}/free`),
       'fetching free tier balance',
       '/api/v1/balance/free'
     );
