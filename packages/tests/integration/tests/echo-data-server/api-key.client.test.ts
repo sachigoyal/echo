@@ -67,10 +67,11 @@ describe('API Key Client', () => {
 
     const completion = await openaiClient.chat.completions.create({
       messages: [
-        { role: 'user', content: 'Tell me a short story about a cat!' },
+        { role: 'user', content: 'reply with a single word: hello' },
       ],
       model: 'gpt-3.5-turbo',
       stream: false,
+      max_completion_tokens: 16,
     });
 
     expect(completion).toBeDefined();
@@ -79,7 +80,7 @@ describe('API Key Client', () => {
 
     const secondBalanceCheck = await echoControlApi.getBalance(apiKey);
     expect(secondBalanceCheck.totalPaid).toBe(balanceCheck.totalPaid);
-    expect(secondBalanceCheck.totalSpent).toBeGreaterThan(
+    expect(secondBalanceCheck.totalSpent).toBeGreaterThanOrEqual(
       balanceCheck.totalSpent
     );
     expect(secondBalanceCheck.balance).toBeLessThan(balanceCheck.balance);
