@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { handlePaymentSuccessFromx402 } from '@/lib/base';
 import z from 'zod';
-import { authRoute } from '../../_lib/auth-route';
+import { authRoute } from '../../../../../lib/api/auth-route';
 
 const querySchema = z.object({
   amount: z.number().positive(),
@@ -24,5 +24,3 @@ export const GET = authRoute.query(querySchema).handler(async (_, context) => {
     { status: 201 }
   );
 });
-
-export const POST = GET;

@@ -92,6 +92,10 @@ import {
   updateAppSchema,
   updateMarkupSchema,
 } from '@/services/apps/lib/schemas';
+import {
+  createFreeTierPaymentFromBalance,
+  createFreeTierPaymentFromBalanceSchema,
+} from '@/services/credits/mint';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -181,6 +185,12 @@ export const appsRouter = createTRPCRouter({
           .input(createFreeTierPaymentLinkSchema)
           .mutation(async ({ ctx, input }) => {
             return await createFreeTierPaymentLink(ctx.session.user.id, input);
+          }),
+
+        createFromBalance: appOwnerProcedure
+          .input(createFreeTierPaymentFromBalanceSchema)
+          .mutation(async ({ ctx, input }) => {
+            return await createFreeTierPaymentFromBalance(ctx, input);
           }),
       },
 

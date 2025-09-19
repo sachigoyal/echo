@@ -12,7 +12,7 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
 });
 
 export const createPaymentLinkSchema = z.object({
-  amount: z.number().min(1),
+  amount: z.number(),
   description: z.string().optional(),
   successUrl: z.url().optional(),
 });
@@ -25,7 +25,7 @@ export async function createPaymentLink(
     successUrl,
   }: z.infer<typeof createPaymentLinkSchema>
 ) {
-  if (amount <= 0) {
+  if (amount < 1) {
     logger.emit({
       severityText: 'WARN',
       body: 'Invalid amount for payment link creation',
@@ -35,7 +35,7 @@ export async function createPaymentLink(
         function: 'createPaymentLink',
       },
     });
-    throw new Error('Valid amount is required');
+    throw new Error('A minimum of 1 dollar is required to purchase credits');
   }
 
   logger.emit({
@@ -150,8 +150,10 @@ export async function createFreeTierPaymentLink(
     appId,
   }: z.infer<typeof createFreeTierPaymentLinkSchema>
 ) {
-  if (amount <= 0) {
-    throw new Error('Valid amount is required');
+  if (amount < 1) {
+    throw new Error(
+      'A minimum of 1 dollar is required to purchase free tier credits'
+    );
   }
 
   // Verify the app exists and user has access

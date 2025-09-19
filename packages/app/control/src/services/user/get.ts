@@ -19,11 +19,8 @@ export const getFullUser = async (userId: string) => {
       id: true,
       name: true,
       image: true,
-      createdAt: true,
-      totalPaid: true,
-      totalSpent: true,
       email: true,
-      emailVerified: true,
+      createdAt: true,
       updatedAt: true,
     },
   });

@@ -32,7 +32,10 @@ import {
   updateGithubLinkForUser,
   updateUserGithubLinkSchema,
 } from '@/services/user/github-link';
-import { getUserAppBalance, getUserGlobalBalance } from '@/lib/balance';
+import {
+  getUserAppBalance,
+  getUserGlobalBalance,
+} from '@/services/user/balance';
 import { appIdSchema } from '@/services/apps/lib/schemas';
 import { getCustomerSpendInfoForApp } from '@/lib/spend-pools';
 

@@ -4,7 +4,7 @@ import { Users } from 'lucide-react';
 
 import { CardStack } from '@/components/ui/card-stack';
 
-import { formatCurrency } from '@/lib/balance';
+import { formatCurrency } from '@/services/user/balance';
 
 export const UniversalBalance = () => {
   return (

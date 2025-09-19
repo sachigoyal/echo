@@ -191,7 +191,7 @@ export async function deleteApiKey(
   });
 }
 
-export function hashApiKey(apiKey: string): string {
+const hashApiKey = (apiKey: string) => {
   if (apiKey.length === 0) {
     throw new Error('API key must be a non-empty string');
   }
@@ -199,4 +199,4 @@ export function hashApiKey(apiKey: string): string {
   return createHmac('sha256', env.API_KEY_HASH_SECRET)
     .update(apiKey)
     .digest('hex');
-}
+};
