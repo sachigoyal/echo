@@ -54,12 +54,17 @@ export const env = createEnv({
       ? z.string()
       : z.string().default('auth-github-secret-change-in-production'),
 
+    // email
+
     AUTH_RESEND_KEY: !IS_INTEGRATION_TEST
       ? z.string()
       : z.string().default('auth-resend-key-change-in-production'),
     AUTH_RESEND_FROM_EMAIL: !IS_INTEGRATION_TEST
       ? z.email()
       : z.string().default('john@doe.com'),
+    RESEND_FLOW_CONTROL_KEY: IS_STRICT
+      ? z.string()
+      : z.string().default('resend-flow-control-key'),
 
     // stripe
 
@@ -153,6 +158,16 @@ export const env = createEnv({
     MERIT_SENDER_GITHUB_ID: IS_STRICT
       ? z.coerce.number()
       : z.coerce.number().default(1),
+
+    // qstash
+
+    QSTASH_TOKEN: IS_STRICT ? z.string() : z.string().default('qstash-token'),
+    QSTASH_CURRENT_SIGNING_KEY: IS_STRICT
+      ? z.string()
+      : z.string().default('qstash-signing-key-1'),
+    QSTASH_NEXT_SIGNING_KEY: IS_STRICT
+      ? z.string()
+      : z.string().default('qstash-signing-key-2'),
   },
   /*
    * Environment variables available on the client (and server).
