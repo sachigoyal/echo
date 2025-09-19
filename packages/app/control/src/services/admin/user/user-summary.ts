@@ -48,16 +48,28 @@ export const getUserSummary = async (
         u.name,
         u.email,
         u."createdAt",
-        COALESCE(SUM(t."totalCost"), 0) as "totalRevenue",
-        COALESCE(SUM(t."appProfit"), 0) as "totalAppProfit",
-        COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfit", 
-        COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfit",
-        COALESCE(SUM(p."amount") FILTER (WHERE p."status" = 'completed'), 0) as "totalCompletedPayouts"
+        COALESCE(t_agg."totalRevenue", 0) as "totalRevenue",
+        COALESCE(t_agg."totalAppProfit", 0) as "totalAppProfit",
+        COALESCE(t_agg."totalMarkupProfit", 0) as "totalMarkupProfit", 
+        COALESCE(t_agg."totalReferralProfit", 0) as "totalReferralProfit",
+        COALESCE(p_agg."totalCompletedPayouts", 0) as "totalCompletedPayouts"
       FROM "users" u
-      LEFT JOIN "transactions" t ON u.id = t."userId"
-      LEFT JOIN "payouts" p ON u.id = p."userId"
+      LEFT JOIN LATERAL (
+        SELECT 
+          COALESCE(SUM(t."totalCost"), 0) as "totalRevenue",
+          COALESCE(SUM(t."appProfit"), 0) as "totalAppProfit",
+          COALESCE(SUM(t."markUpProfit"), 0) as "totalMarkupProfit",
+          COALESCE(SUM(t."referralProfit"), 0) as "totalReferralProfit"
+        FROM "transactions" t
+        WHERE t."userId" = u.id
+      ) t_agg ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT 
+          COALESCE(SUM(p."amount"), 0) as "totalCompletedPayouts"
+        FROM "payouts" p
+        WHERE p."userId" = u.id AND p."status" = 'completed'
+      ) p_agg ON TRUE
       WHERE u.id = $1::uuid
-      GROUP BY u.id, u.name, u.email, u."createdAt"
     ),
     user_spending AS (
       SELECT 
@@ -202,15 +214,26 @@ async function getUserOverviewSummary(
     WITH user_earnings AS (
       SELECT 
         u.id,
-        COALESCE(SUM(t."totalCost"), 0) AS "totalRevenue",
-        COALESCE(SUM(t."appProfit"), 0) AS "totalAppProfit",
-        COALESCE(SUM(t."markUpProfit"), 0) AS "totalMarkupProfit",
-        COALESCE(SUM(p."amount") FILTER (WHERE p."status" = 'completed'), 0) AS "totalCompletedPayouts"
+        COALESCE(t_agg."totalRevenue", 0) AS "totalRevenue",
+        COALESCE(t_agg."totalAppProfit", 0) AS "totalAppProfit",
+        COALESCE(t_agg."totalMarkupProfit", 0) AS "totalMarkupProfit",
+        COALESCE(p_agg."totalCompletedPayouts", 0) AS "totalCompletedPayouts"
       FROM "users" u
-      LEFT JOIN "transactions" t ON u.id = t."userId"
-      LEFT JOIN "payouts" p ON u.id = p."userId"
+      LEFT JOIN LATERAL (
+        SELECT 
+          COALESCE(SUM(t."totalCost"), 0) AS "totalRevenue",
+          COALESCE(SUM(t."appProfit"), 0) AS "totalAppProfit",
+          COALESCE(SUM(t."markUpProfit"), 0) AS "totalMarkupProfit"
+        FROM "transactions" t
+        WHERE t."userId" = u.id
+      ) t_agg ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT 
+          COALESCE(SUM(p."amount"), 0) AS "totalCompletedPayouts"
+        FROM "payouts" p
+        WHERE p."userId" = u.id AND p."status" = 'completed'
+      ) p_agg ON TRUE
       WHERE u.id = $1::uuid
-      GROUP BY u.id
     ),
     user_free_tier AS (
       SELECT 
