@@ -58,7 +58,7 @@ export const RangeSelector = () => {
             <CalendarDays className="size-4 text-foreground/50" />
             {timeframe === ActivityTimeframe.Custom && (
               <span className="text-xs font-normal">
-                {formatRange(startDate, endDate)}
+                {formatRange(startDate, endDate!)}
               </span>
             )}
           </Button>

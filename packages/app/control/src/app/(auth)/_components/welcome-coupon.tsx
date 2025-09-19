@@ -1,6 +1,17 @@
 'use client';
 
-import { Coupon } from '@/components/coupon';
+import {
+  CouponClaimButton,
+  CouponContainer,
+  CouponDescription,
+  CouponDivider,
+  CouponFooter,
+  CouponHeader,
+  CouponLabel,
+  CouponMarquee,
+  CouponTitle,
+  CouponValue,
+} from '@/components/coupon';
 import { STATES } from '@/components/coupon/multi-state-button';
 import { api } from '@/trpc/client';
 import { toast } from 'sonner';
@@ -8,6 +19,8 @@ import { toast } from 'sonner';
 interface Props {
   amount: number;
   onSuccess: () => void;
+  hasClaimedFreeTier?: boolean;
+  code?: string;
   states?: STATES;
   subText?: React.ReactNode;
 }
@@ -15,30 +28,15 @@ interface Props {
 export const WelcomeCoupon: React.FC<Props> = ({
   amount,
   onSuccess,
+  hasClaimedFreeTier,
+  code,
   states,
   subText,
 }) => {
   const utils = api.useUtils();
 
   const {
-    mutate: claimCoupon,
-    isPending: isClaimingCoupon,
-    isSuccess: isClaimedCoupon,
-  } = api.user.initialFreeTier.issue.useMutation({
-    onSuccess: () => {
-      utils.user.initialFreeTier.hasClaimed.invalidate();
-      setTimeout(() => {
-        toast.success('Credits Claimed!');
-        onSuccess();
-      }, 500);
-    },
-    onError: () => {
-      toast.error('Failed to claim credits');
-    },
-  });
-
-  const {
-    mutate: signPrivacy,
+    mutateAsync: signPrivacy,
     isPending: isSigningPrivacy,
     isSuccess: isSignedPrivacy,
   } = api.user.legal.accept.privacy.useMutation({
@@ -51,7 +49,7 @@ export const WelcomeCoupon: React.FC<Props> = ({
   });
 
   const {
-    mutate: signTerms,
+    mutateAsync: signTerms,
     isPending: isSigningTerms,
     isSuccess: isSignedTerms,
   } = api.user.legal.accept.terms.useMutation({
@@ -63,20 +61,66 @@ export const WelcomeCoupon: React.FC<Props> = ({
     },
   });
 
+  const {
+    mutateAsync: redeemCreditGrant,
+    isPending: isRedeemingCreditGrant,
+    isSuccess: isRedeemCreditGrantSuccess,
+  } = api.credits.grant.redeem.useMutation();
+
+  const {
+    mutateAsync: claimInitialFreeTier,
+    isPending: isClaimingCoupon,
+    isSuccess: isClaimedCoupon,
+  } = api.user.initialFreeTier.issue.useMutation({
+    onSuccess: () => {
+      utils.user.initialFreeTier.hasClaimed.invalidate();
+      toast.success('Credits Claimed!');
+    },
+    onError: () => {
+      toast.error('Failed to claim credits');
+    },
+  });
+
+  const onClaim = async () => {
+    await Promise.all([signTerms(), signPrivacy()]);
+    await Promise.all([
+      !hasClaimedFreeTier ? claimInitialFreeTier() : Promise.resolve(),
+      code ? redeemCreditGrant({ code }) : Promise.resolve(),
+    ]);
+    setTimeout(() => {
+      onSuccess();
+    }, 500);
+  };
+
   return (
-    <Coupon
-      value={amount}
-      onClaim={() =>
-        signTerms(void 0, {
-          onSuccess: () => {
-            signPrivacy(void 0, { onSuccess: () => claimCoupon() });
-          },
-        })
-      }
-      isClaiming={isClaimingCoupon || isSigningTerms || isSigningPrivacy}
-      isClaimed={isClaimedCoupon && isSignedTerms && isSignedPrivacy}
-      states={states}
-      subText={subText}
-    />
+    <CouponContainer>
+      <CouponHeader className="pb-2">
+        <CouponTitle>
+          <CouponValue value={amount} />
+          <CouponLabel />
+        </CouponTitle>
+        <CouponDescription>{subText}</CouponDescription>
+      </CouponHeader>
+      <CouponMarquee size={36} />
+      <CouponDivider />
+      <CouponFooter>
+        <CouponClaimButton
+          onClaim={onClaim}
+          isClaiming={
+            isClaimingCoupon ||
+            isSigningTerms ||
+            isSigningPrivacy ||
+            (code ? isRedeemingCreditGrant : false)
+          }
+          isClaimed={
+            isClaimedCoupon &&
+            isSignedTerms &&
+            isSignedPrivacy &&
+            (code ? isRedeemCreditGrantSuccess : true)
+          }
+          states={states}
+        />
+      </CouponFooter>
+    </CouponContainer>
   );
 };

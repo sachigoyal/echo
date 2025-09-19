@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
 
-import { authRoute } from '../../_lib/auth-route';
+import { authRoute } from '../../../../../lib/api/auth-route';
 
 export const POST = authRoute
   .body(createPaymentLinkSchema)

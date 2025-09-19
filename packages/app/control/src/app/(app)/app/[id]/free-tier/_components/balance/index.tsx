@@ -13,8 +13,10 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Balance as BalanceDisplay } from '@/app/(app)/_components/layout/header/balance/balance-display';
 
 import { AddCredits } from './add-credits';
 
@@ -29,7 +31,9 @@ interface Props {
 const BalanceContainer = ({ children }: { children: React.ReactNode }) => {
   return (
     <Card className="border rounded-lg overflow-hidden flex flex-col gap-2 p-4">
-      <h1 className="text-lg font-semibold text-muted-foreground">Balance</h1>
+      <h1 className="text-lg font-semibold text-muted-foreground">
+        Free Tier Balance
+      </h1>
       <div className="flex items-center gap-4 w-full">{children}</div>
     </Card>
   );
@@ -58,6 +62,12 @@ export const Balance: React.FC<Props> = ({ appId }) => {
               Your users will be able to use free tier credits before they have
               to buy credits and spend their Echo balance.
             </DialogDescription>
+            <DialogFooter>
+              <span className="text-sm font-semibold text-muted-foreground">
+                Current Balance:
+              </span>
+              <BalanceDisplay />
+            </DialogFooter>
           </DialogHeader>
           <AddCredits appId={appId} />
         </DialogContent>

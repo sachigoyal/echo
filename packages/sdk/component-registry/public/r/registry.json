@@ -1,0 +1,111 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "Merit Systems: Echo",
+  "homepage": "https://echo.merit.systems",
+  "items": [
+    {
+      "name": "echo-account-react",
+      "type": "registry:component",
+      "title": "Echo Account (React)",
+      "description": "React variant of Echo Account",
+      "registryDependencies": ["popover", "skeleton", "avatar"],
+      "files": [
+        {
+          "path": "registry/echo/blocks/echo-account-button/echo-account-react.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/echo-account.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/echo-popover.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/balance.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/top-up-button.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/ui/echo-button.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/lib/currency-utils.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/echo/ui/money-input.tsx",
+          "type": "registry:component"
+        },
+        { "path": "registry/echo/ui/logo.tsx", "type": "registry:component" },
+        {
+          "path": "public/logo/light.svg",
+          "target": "~/public/logo/light.svg",
+          "type": "registry:file"
+        },
+        {
+          "path": "public/logo/dark.svg",
+          "target": "~/public/logo/dark.svg",
+          "type": "registry:file"
+        }
+      ]
+    },
+    {
+      "name": "echo-account-next",
+      "type": "registry:component",
+      "title": "Echo Account (Next)",
+      "description": "Next.js variant of Echo Account",
+      "registryDependencies": ["popover", "skeleton", "avatar"],
+      "files": [
+        {
+          "path": "registry/echo/blocks/echo-account-button/echo-account-next.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/echo-account.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/echo-popover.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/balance.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/echo-account-button/top-up-button.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/ui/echo-button.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "registry/echo/blocks/lib/currency-utils.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "registry/echo/ui/money-input.tsx",
+          "type": "registry:component"
+        },
+        { "path": "registry/echo/ui/logo.tsx", "type": "registry:component" },
+        {
+          "path": "public/logo/light.svg",
+          "target": "~/public/logo/light.svg",
+          "type": "registry:file"
+        },
+        {
+          "path": "public/logo/dark.svg",
+          "target": "~/public/logo/dark.svg",
+          "type": "registry:file"
+        }
+      ]
+    }
+  ]
+}

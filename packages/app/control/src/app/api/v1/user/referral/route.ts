@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { setUserReferrerForAppIfExists } from '@/lib/referral-codes/user-referral';
+import { setUserReferrerForAppIfExists } from '@/lib/referral-codes';
 import { z } from 'zod';
 import { appIdSchema } from '@/services/apps/lib/schemas';
-import { authRoute } from '../../_lib/auth-route';
+import { authRoute } from '../../../../../lib/api/auth-route';
 
 const setUserReferrerForAppSchema = z.object({
   echoAppId: appIdSchema,
