@@ -3,8 +3,9 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { AppRole, MembershipStatus } from '@/lib/permissions';
 import { logger } from '@/logger';
-import { scheduleCreateAppFollowUpEmail } from '../email/create-app';
 import { createAppSchema } from './lib/schemas';
+import { EmailCampaign } from '../email/emailer/types';
+import { queueJob } from '../email/emailer/queue-job';
 
 export const createApp = async (
   userId: string,
@@ -59,7 +60,14 @@ export const createApp = async (
       },
     });
 
-    await scheduleCreateAppFollowUpEmail(userId, data.name, app.id);
+    await queueJob({
+      campaign: EmailCampaign.CREATE_APP_FOLLOW_UP,
+      payload: {
+        userId,
+        appName: app.name,
+        appId: app.id,
+      },
+    });
 
     return app;
   } catch (error) {

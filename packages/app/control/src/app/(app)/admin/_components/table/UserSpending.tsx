@@ -7,28 +7,15 @@ import {
   MoneyCell,
   toNumber,
 } from '@/components/server-side-data-table';
-import {
-  TableState,
-  TypedColumnDef,
-} from '@/components/server-side-data-table/BaseTable';
+import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import { TableState } from '@/components/server-side-data-table/ActionControls';
 import { api } from '@/trpc/client';
 import { UserLink } from '@/app/(app)/admin/_components';
-
-// Define UserSpending type based on the service function
-export interface UserSpending {
-  id: string;
-  name: string | null;
-  email: string;
-  totalSpent: number;
-  balance: number;
-  totalPaid: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the user spending table
 const columns: TypedColumnDef<
-  UserSpending,
+  RouterOutputs['admin']['spending']['getUserSpendingWithPagination']['items'][number],
   string | number | boolean | Date
 >[] = [
   {

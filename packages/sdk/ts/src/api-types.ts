@@ -55,7 +55,7 @@ export type GetBalanceByIdFreeResponse = {
   };
 };
 
-export type GetBalanceByIdFreeParams = { echoAppId: string };
+export type GetBalanceByIdFreeParams = { id: string };
 
 export type GetBalanceResponse = {
   totalPaid: number;

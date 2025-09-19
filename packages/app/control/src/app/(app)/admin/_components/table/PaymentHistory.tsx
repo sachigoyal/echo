@@ -12,37 +12,7 @@ import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
 import { api } from '@/trpc/client';
 import { UserLink } from '@/app/(app)/admin/_components';
 import { EnumPaymentSource } from '@/generated/prisma';
-
-// Define PaymentHistory type based on the service function
-export interface PaymentHistory {
-  id: string;
-  paymentId: string;
-  amount: number;
-  currency: string;
-  status: string;
-  source: EnumPaymentSource;
-  description: string | null;
-  isArchived: boolean;
-  archivedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
-  spendPoolId: string | null;
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-  };
-  spendPool: {
-    id: string;
-    name: string;
-    description: string | null;
-    echoApp: {
-      id: string;
-      name: string;
-    };
-  } | null;
-}
+import { RouterOutputs } from '@/trpc/client';
 
 // Helper function to format payment source
 const formatPaymentSource = (source: EnumPaymentSource): string => {
@@ -80,7 +50,7 @@ const formatPaymentStatus = (
 
 // Define columns for the payment history table
 const columns: TypedColumnDef<
-  PaymentHistory,
+  RouterOutputs['admin']['payments']['getPaymentsWithPagination']['items'][number],
   string | number | boolean | Date
 >[] = [
   {
