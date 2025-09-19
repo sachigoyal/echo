@@ -14,6 +14,7 @@ export type HandlerFunction<
   TContext,
   TMetadata = unknown,
   TResponseBody = unknown,
+  TServerErrorBody = ServerErrorBody,
 > = (
   request: NextRequest,
   context: {
@@ -24,8 +25,8 @@ export type HandlerFunction<
     metadata?: TMetadata;
   }
 ) =>
-  | NextResponse<TResponseBody | ServerErrorBody>
-  | Promise<NextResponse<TResponseBody | ServerErrorBody>>;
+  | NextResponse<TResponseBody | TServerErrorBody>
+  | Promise<NextResponse<TResponseBody | TServerErrorBody>>;
 
 /**
  * Function signature for the next() function in middleware
@@ -84,12 +85,28 @@ export type OriginalRouteHandler<
   TBody extends z.Schema,
   TResponseBody,
   TServerErrorBody = ServerErrorBody,
+  TInternalErrorBody = InternalErrorBody,
 > = (
   request: NextRequest,
   context: { params: Promise<Record<string, unknown>> }
 ) => Promise<
-  NextResponse<TResponseBody | TServerErrorBody | InternalErrorBody>
+  NextResponse<
+    TResponseBody | TServerErrorBody | TInternalErrorBody | InternalErrorBody
+  >
 >;
+
+export class InternalRouteHandlerError extends Error {
+  readonly body: InternalErrorBody;
+  constructor(body: InternalErrorBody) {
+    super(body.message);
+    this.name = 'InternalRouteHandlerError';
+    this.body = body;
+  }
+}
+
+export type HandleInternalErrorFn<TInternalErrorBody = InternalErrorBody> = (
+  error: InternalRouteHandlerError
+) => NextResponse<TInternalErrorBody>;
 
 /**
  * Function that handles server errors in route handlers

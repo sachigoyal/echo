@@ -18,17 +18,47 @@ import { logger } from '@/logger';
 import { env } from '@/env';
 
 import type { TokenMetadata } from './types';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth_validation_error';
+import { OAuthErrorType } from '@/app/(auth)/(oauth)/_lib/oauth-error';
 
 export const handleIssueTokenSchema = z.object({
-  redirect_uri: z.url('redirect_uri must be a valid URL'),
-  client_id: z.uuid('client_id must be a valid UUID'),
-  code: z.string(),
+  redirect_uri: z.url({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'redirect_uri must be a valid URL',
+    }),
+  }),
+  client_id: z.uuid({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_CLIENT,
+      error_description: 'client_id must be a valid UUID',
+    }),
+  }),
+  code: z.string({
+    error: oauthValidationError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'code must be a string',
+    }),
+  }),
   code_verifier: z
     .string()
-    .min(43, 'code_verifier must be at least 43 characters')
-    .max(128, 'code_verifier must be at most 128 characters')
+    .min(43, {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier must be at least 43 characters',
+      }),
+    })
+    .max(128, {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier must be at most 128 characters',
+      }),
+    })
     .regex(/^[A-Za-z0-9_-]+$/, {
-      message: 'code_verifier must be base64url encoded',
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'code_verifier must be base64url encoded',
+      }),
     }),
 });
 

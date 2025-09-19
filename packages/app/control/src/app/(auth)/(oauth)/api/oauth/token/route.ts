@@ -5,18 +5,28 @@ import z from 'zod';
 import { handleRefreshToken, handleRefreshTokenSchema } from './_lib/refresh';
 import { handleIssueToken, handleIssueTokenSchema } from './_lib/issue';
 
-import { logger } from '@/logger';
-
-import { oauthRoute } from '../../../_lib/oauth-route';
+import { oauthRoute, OAuthRouteError } from '../../../_lib/oauth-route';
 
 import type { TokenMetadata } from './_lib/types';
+import { oauthValidationError } from '../../../_lib/oauth_validation_error';
+import { OAuthError, OAuthErrorType } from '../../../_lib/oauth-error';
+
+const invalidGrantError = oauthValidationError({
+  error: OAuthErrorType.INVALID_GRANT,
+  error_description:
+    'grant_type can only be authorization_code or refresh_token',
+});
 
 const bodySchema = z.discriminatedUnion('grant_type', [
   handleIssueTokenSchema.extend({
-    grant_type: z.literal('authorization_code'),
+    grant_type: z.literal('authorization_code', {
+      error: invalidGrantError,
+    }),
   }),
   handleRefreshTokenSchema.extend({
-    grant_type: z.literal('refresh_token'),
+    grant_type: z.literal('refresh_token', {
+      error: invalidGrantError,
+    }),
   }),
 ]);
 
@@ -37,40 +47,26 @@ export const POST = oauthRoute
         undefined,
     };
 
-    switch (body.grant_type) {
-      case 'authorization_code': {
-        try {
+    try {
+      switch (body.grant_type) {
+        case 'authorization_code': {
           const result = await handleIssueToken(body, metadata);
           return NextResponse.json(result);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : 'Unknown error';
-          logger.emit({
-            severityText: 'WARN',
-            body: 'Failed to issue OAuth token',
-            attributes: {
-              error: message,
-            },
-          });
-          return NextResponse.json({ message }, { status: 400 });
         }
-      }
-      case 'refresh_token': {
-        try {
+        case 'refresh_token': {
           const result = await handleRefreshToken(body, metadata);
           return NextResponse.json(result);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : 'Unknown error';
-          logger.emit({
-            severityText: 'WARN',
-            body: 'Failed to refresh OAuth token',
-            attributes: {
-              error: message,
-            },
-          });
-          return NextResponse.json({ message }, { status: 400 });
         }
       }
+    } catch (error) {
+      if (error instanceof OAuthError) {
+        return OAuthRouteError(error.body);
+      }
+
+      return OAuthRouteError({
+        error: OAuthErrorType.SERVER_ERROR,
+        error_description:
+          error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   });

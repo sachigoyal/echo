@@ -9,13 +9,49 @@ import { auth } from '@/auth';
 import { env } from '@/env';
 import { getApp } from '@/services/apps/get';
 import { NextResponse } from 'next/server';
-import { oauthRoute } from '@/app/(auth)/(oauth)/_lib/oauth-route';
+import {
+  oauthRoute,
+  OAuthRouteError,
+} from '@/app/(auth)/(oauth)/_lib/oauth-route';
+import {
+  OAuthError,
+  OAuthErrorType,
+} from '@/app/(auth)/(oauth)/_lib/oauth-error';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth_validation_error';
 
 const querySchema = authorizeParamsSchema.extend({
-  response_type: z.literal('code').default('code'),
-  prompt: z.literal('none').optional(),
-  new_user: z.literal('true').optional(),
-  referral_code: z.string().optional(),
+  response_type: z
+    .literal('code', {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'response_type must be code',
+      }),
+    })
+    .default('code'),
+  prompt: z
+    .literal('none', {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'promt can only be none',
+      }),
+    })
+    .optional(),
+  new_user: z
+    .literal('true', {
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'new_user can only be true',
+      }),
+    })
+    .optional(),
+  referral_code: z
+    .string({
+      error: oauthValidationError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'referral_code can only be a string',
+      }),
+    })
+    .optional(),
 });
 
 export const GET = oauthRoute
@@ -24,10 +60,10 @@ export const GET = oauthRoute
     const app = await getApp(query.client_id);
 
     if (!app) {
-      return NextResponse.json(
-        { error: 'not_found', error_description: 'Echo app not found' },
-        { status: 404 }
-      );
+      return OAuthRouteError({
+        error: OAuthErrorType.INVALID_CLIENT,
+        error_description: 'Echo app not found',
+      });
     }
 
     const session = await auth();
@@ -39,35 +75,26 @@ export const GET = oauthRoute
 
     if (query.prompt === 'none') {
       if (!env.INTEGRATION_TEST_MODE) {
-        return NextResponse.json(
-          {
-            error: 'invalid_request',
-            message: 'prompt=none is not supported',
-          },
-          { status: 400 }
-        );
+        return OAuthRouteError({
+          error: OAuthErrorType.INVALID_REQUEST,
+          error_description: 'prompt=none is not supported',
+        });
       }
 
       if (!isValidRedirectUri(query.redirect_uri, app.authorizedCallbackUrls)) {
-        return NextResponse.json(
-          {
-            error: 'invalid_request',
-            message: 'redirect_uri is not authorized for this app',
-          },
-          { status: 400 }
-        );
+        return OAuthRouteError({
+          error: OAuthErrorType.INVALID_REQUEST,
+          error_description: 'redirect_uri is not authorized for this app',
+        });
       }
 
       const redirectUrl = await getAuthorizationRedirect(query);
 
       if (!redirectUrl) {
-        return NextResponse.json(
-          {
-            error: 'unauthorized',
-            error_description: 'User not authenticated',
-          },
-          { status: 400 }
-        );
+        return OAuthRouteError({
+          error: OAuthErrorType.INVALID_REQUEST,
+          error_description: 'User not authenticated',
+        });
       }
 
       return NextResponse.redirect(redirectUrl.toString(), 302);

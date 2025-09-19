@@ -1,9 +1,13 @@
 import { createZodRoute } from '@/lib/api/create-route';
 import { OAuthError, OAuthErrorBody, OAuthErrorType } from './oauth-error';
 import { NextResponse } from 'next/server';
-import { HandlerServerErrorFn } from '@/lib/api/types';
+import {
+  HandleInternalErrorFn,
+  HandlerServerErrorFn,
+  InternalRouteHandlerError,
+} from '@/lib/api/types';
 
-export const handleOAuthError: HandlerServerErrorFn<OAuthErrorBody> = (
+const handleOAuthServerError: HandlerServerErrorFn<OAuthErrorBody> = (
   error: Error
 ) => {
   if (error instanceof OAuthError) {
@@ -15,6 +19,29 @@ export const handleOAuthError: HandlerServerErrorFn<OAuthErrorBody> = (
   );
 };
 
-export const oauthRoute = createZodRoute({
-  handleServerError: handleOAuthError,
+const handleOAuthInternalError: HandleInternalErrorFn<OAuthErrorBody> = (
+  error: InternalRouteHandlerError
+) => {
+  const { errors } = error.body;
+  if (!errors?.length) {
+    return NextResponse.json(
+      { error: OAuthErrorType.SERVER_ERROR, error_description: error.message },
+      { status: 500 }
+    );
+  }
+  const firstError = errors[0];
+  return NextResponse.json(JSON.parse(firstError.message) as OAuthErrorBody, {
+    status: 400,
+  });
+};
+
+export const oauthRoute = createZodRoute<OAuthErrorBody, OAuthErrorBody>({
+  handleServerError: handleOAuthServerError,
+  handleInternalError: handleOAuthInternalError,
 });
+
+export const OAuthRouteError = (error: OAuthErrorBody) => {
+  return NextResponse.json(error, {
+    status: error.error === OAuthErrorType.SERVER_ERROR ? 500 : 400,
+  });
+};

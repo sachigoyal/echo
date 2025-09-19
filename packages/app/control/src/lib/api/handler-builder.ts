@@ -1,9 +1,11 @@
 import z from 'zod';
 
 import {
+  HandleInternalErrorFn,
   HandlerFunction,
   HandlerServerErrorFn,
   InternalErrorBody,
+  InternalRouteHandlerError,
   MiddlewareFunction,
   MiddlewareResult,
   NextFunction,
@@ -13,15 +15,6 @@ import {
 import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
 
-class InternalRouteHandlerError extends Error {
-  readonly body: InternalErrorBody;
-  constructor(body: InternalErrorBody) {
-    super(body.message);
-    this.name = 'InternalRouteHandlerError';
-    this.body = body;
-  }
-}
-
 export class RouteHandlerBuilder<
   TParams extends z.Schema = z.Schema,
   TQuery extends z.Schema = z.Schema,
@@ -29,6 +22,7 @@ export class RouteHandlerBuilder<
   TContext = object,
   TMetadata extends z.Schema = z.Schema,
   TServerErrorBody = ServerErrorBody,
+  TInternalErrorBody = InternalErrorBody,
 > {
   readonly config: {
     paramsSchema: TParams;
@@ -39,6 +33,7 @@ export class RouteHandlerBuilder<
   readonly middlewares: Array<
     MiddlewareFunction<TContext, Record<string, unknown>, z.infer<TMetadata>>
   >;
+  readonly handleInternalError?: HandleInternalErrorFn<TInternalErrorBody>;
   readonly handleServerError?: HandlerServerErrorFn<TServerErrorBody>;
   readonly metadataValue: z.infer<TMetadata> | undefined;
   readonly contextType!: TContext;
@@ -65,6 +60,7 @@ export class RouteHandlerBuilder<
       MiddlewareFunction<TContext, Record<string, unknown>, z.infer<TMetadata>>
     >;
     handleServerError?: HandlerServerErrorFn<TServerErrorBody>;
+    handleInternalError?: HandleInternalErrorFn<TInternalErrorBody>;
     contextType: TContext;
     metadataValue?: z.infer<TMetadata>;
   }) {
@@ -87,7 +83,8 @@ export class RouteHandlerBuilder<
       TBody,
       TContext,
       TMetadata,
-      TServerErrorBody
+      TServerErrorBody,
+      TInternalErrorBody
     >({
       ...this,
       config: { ...this.config, paramsSchema: schema },
@@ -106,7 +103,8 @@ export class RouteHandlerBuilder<
       TBody,
       TContext,
       TMetadata,
-      TServerErrorBody
+      TServerErrorBody,
+      TInternalErrorBody
     >({
       ...this,
       config: { ...this.config, querySchema: schema },
@@ -125,7 +123,8 @@ export class RouteHandlerBuilder<
       T,
       TContext,
       TMetadata,
-      TServerErrorBody
+      TServerErrorBody,
+      TInternalErrorBody
     >({
       ...this,
       config: { ...this.config, bodySchema: schema },
@@ -144,7 +143,8 @@ export class RouteHandlerBuilder<
       TBody,
       TContext,
       T,
-      TServerErrorBody
+      TServerErrorBody,
+      TInternalErrorBody
     >({
       ...this,
       config: { ...this.config, metadataSchema: schema },
@@ -165,7 +165,8 @@ export class RouteHandlerBuilder<
       TBody,
       TContext,
       TMetadata,
-      TServerErrorBody
+      TServerErrorBody,
+      TInternalErrorBody
     >({
       ...this,
       metadataValue: value,
@@ -192,7 +193,8 @@ export class RouteHandlerBuilder<
       TBody,
       MergedContext,
       TMetadata,
-      TServerErrorBody
+      TServerErrorBody,
+      TInternalErrorBody
     >({
       ...this,
       middlewares: [...this.middlewares, middleware],
@@ -212,14 +214,16 @@ export class RouteHandlerBuilder<
       z.infer<TBody>,
       TContext,
       z.infer<TMetadata>,
-      TResponseBody
+      TResponseBody,
+      TServerErrorBody
     >
   ): OriginalRouteHandler<
     TParams,
     TQuery,
     TBody,
     TResponseBody,
-    TServerErrorBody
+    TServerErrorBody,
+    TInternalErrorBody
   > {
     return async (request, context) => {
       try {
@@ -372,10 +376,14 @@ export class RouteHandlerBuilder<
   }
 }
 
-const handleError = <TServerErrorBody = ServerErrorBody>(
+const handleError = <
+  TServerErrorBody = ServerErrorBody,
+  TInternalErrorBody = InternalErrorBody,
+>(
   error: Error,
-  handleServerError?: HandlerServerErrorFn<TServerErrorBody>
-): NextResponse<InternalErrorBody | TServerErrorBody> => {
+  handleServerError?: HandlerServerErrorFn<TServerErrorBody>,
+  handleInternalError?: HandleInternalErrorFn<TInternalErrorBody>
+): NextResponse<TInternalErrorBody | TServerErrorBody | InternalErrorBody> => {
   if (error instanceof InternalRouteHandlerError) {
     logger.emit({
       severityText: 'WARN',
@@ -386,6 +394,9 @@ const handleError = <TServerErrorBody = ServerErrorBody>(
         errorType: 'InternalRouteHandlerError',
       },
     });
+    if (handleInternalError) {
+      return handleInternalError(error);
+    }
     return NextResponse.json(error.body, { status: 400 });
   }
 

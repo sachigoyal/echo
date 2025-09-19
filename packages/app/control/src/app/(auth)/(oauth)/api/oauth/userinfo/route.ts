@@ -3,7 +3,8 @@ import { logger } from '@/logger';
 import { authMiddleware } from '@/lib/api/auth-route';
 import { getFullUser } from '@/services/user/get';
 import { getUnixTime } from 'date-fns';
-import { oauthRoute } from '../../../_lib/oauth-route';
+import { oauthRoute, OAuthRouteError } from '../../../_lib/oauth-route';
+import { OAuthErrorType } from '../../../_lib/oauth-error';
 
 export const GET = oauthRoute
   .use(authMiddleware)
@@ -18,7 +19,10 @@ export const GET = oauthRoute
           userId,
         },
       });
-      return NextResponse.json({ message: 'User not found' }, { status: 401 });
+      return OAuthRouteError({
+        error: OAuthErrorType.INVALID_REQUEST,
+        error_description: 'User not found',
+      });
     }
 
     return NextResponse.json(
