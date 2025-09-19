@@ -21,12 +21,23 @@ interface GeneratedType {
 /**
  * Convert file path to API route path
  * e.g., "apps/[id]/route.ts" -> "/apps/{id}"
+ * e.g., "oauth/authorize/route.ts" -> "/oauth/authorize"
  */
 function filePathToRoutePath(filePath: string): string {
-  const relativePath = filePath
-    .replace(/^.*\/api\/v1\//, '')
+  let relativePath = filePath
+    .replace(/^.*\/api\//, '')
     .replace(/\/route\.ts$/, '')
     .replace(/\[([^\]]+)\]/g, '{$1}'); // Convert [id] to {id}
+
+  // Handle OAuth routes differently - they don't need the v1 prefix
+  if (relativePath.startsWith('oauth/')) {
+    return `/${relativePath}`;
+  }
+
+  // For v1 routes, remove the v1 prefix
+  if (relativePath.startsWith('v1/')) {
+    relativePath = relativePath.replace(/^v1\//, '');
+  }
 
   return relativePath ? `/${relativePath}` : '';
 }
@@ -179,7 +190,7 @@ function analyzeRouteFile(
  * Generate the complete types file content with resolved types
  */
 function generateTypesFileContent(generatedTypes: GeneratedType[]): string {
-  const imports = `import { OriginalRouteHandler } from '../app/api/_utils/types';
+  const imports = `import { OriginalRouteHandler } from '../lib/api/types';
 import { z } from 'zod';
 
 // Auto-generated API response types
@@ -218,7 +229,24 @@ type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams,
   for (const [routePath, types] of Object.entries(typesByRoute)) {
     for (const type of types) {
       const routeImportPath = routePath.replace(/\{[^}]+\}/g, '[id]'); // Convert back to Next.js format
-      const importPath = `../app/api/v1${routeImportPath}/route`;
+
+      // Determine the correct import path based on whether it's an OAuth route or v1 route
+      let importPath: string;
+      if (routePath.startsWith('/oauth/')) {
+        // Handle specific OAuth route paths
+        if (routePath === '/oauth/authorize') {
+          importPath = `../app/(auth)/(oauth)/(authorize)/api/oauth/authorize/route`;
+        } else if (routePath === '/oauth/token') {
+          importPath = `../app/(auth)/(oauth)/api/oauth/token/route`;
+        } else if (routePath === '/oauth/userinfo') {
+          importPath = `../app/(auth)/(oauth)/api/oauth/userinfo/route`;
+        } else {
+          importPath = `../app/api${routeImportPath}/route`;
+        }
+      } else {
+        importPath = `../app/api/v1${routeImportPath}/route`;
+      }
+
       const importAlias = `${type.method}${routePath.replace(/[^a-zA-Z0-9]/g, '')}`;
       const importStatement = `import { ${type.method} as ${importAlias} } from '${importPath}';`;
 
@@ -348,7 +376,7 @@ function generateResolvedTypesFile(
   );
 
   // Build the temp file content with imports and type definitions
-  let tempContent = `import { OriginalRouteHandler } from '../app/api/_utils/types';
+  let tempContent = `import { OriginalRouteHandler } from '../lib/api/types';
 import { z } from 'zod';
 
 // Utility type to extract types from route handlers
@@ -368,7 +396,24 @@ type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams,
   for (const [routePath, types] of Object.entries(typesByRoute)) {
     for (const type of types) {
       const routeImportPath = routePath.replace(/\{[^}]+\}/g, '[id]');
-      const importPath = `../app/api/v1${routeImportPath}/route`;
+
+      // Determine the correct import path based on whether it's an OAuth route or v1 route
+      let importPath: string;
+      if (routePath.startsWith('/oauth/')) {
+        // Handle specific OAuth route paths
+        if (routePath === '/oauth/authorize') {
+          importPath = `../app/(auth)/(oauth)/(authorize)/api/oauth/authorize/route`;
+        } else if (routePath === '/oauth/token') {
+          importPath = `../app/(auth)/(oauth)/api/oauth/token/route`;
+        } else if (routePath === '/oauth/userinfo') {
+          importPath = `../app/(auth)/(oauth)/api/oauth/userinfo/route`;
+        } else {
+          importPath = `../app/api${routeImportPath}/route`;
+        }
+      } else {
+        importPath = `../app/api/v1${routeImportPath}/route`;
+      }
+
       const importAlias = `${type.method}${routePath.replace(/[^a-zA-Z0-9]/g, '')}`;
       const importStatement = `import { ${type.method} as ${importAlias} } from '${importPath}';`;
 
@@ -543,7 +588,7 @@ ${recordType}
  * Main function to generate API types
  */
 async function main() {
-  const apiDir = path.join(__dirname, '../src/app/api/v1');
+  const v1ApiDir = path.join(__dirname, '../src/app/api/v1');
   const outputFile = path.join(__dirname, '../src/generated/api-types.ts');
 
   console.log('🔍 Scanning API routes...');
@@ -559,9 +604,45 @@ async function main() {
     tsConfigFilePath: path.join(__dirname, '../tsconfig.json'),
   });
 
-  // Find all route files
-  const routes = findRouteFiles(apiDir);
-  console.log(`📁 Found ${routes.length} route files`);
+  // Find all v1 route files
+  const v1Routes = findRouteFiles(v1ApiDir);
+
+  // Hardcode OAuth routes with their specific paths
+  const oauthRoutes: RouteInfo[] = [
+    {
+      filePath: path.join(
+        __dirname,
+        '../src/app/(auth)/(oauth)/(authorize)/api/oauth/authorize/route.ts'
+      ),
+      routePath: '/oauth/authorize',
+      methods: [],
+      hasTypeExport: false,
+    },
+    {
+      filePath: path.join(
+        __dirname,
+        '../src/app/(auth)/(oauth)/api/oauth/token/route.ts'
+      ),
+      routePath: '/oauth/token',
+      methods: [],
+      hasTypeExport: false,
+    },
+    {
+      filePath: path.join(
+        __dirname,
+        '../src/app/(auth)/(oauth)/api/oauth/userinfo/route.ts'
+      ),
+      routePath: '/oauth/userinfo',
+      methods: [],
+      hasTypeExport: false,
+    },
+  ];
+
+  const routes = [...v1Routes, ...oauthRoutes];
+
+  console.log(`📁 Found ${v1Routes.length} v1 route files`);
+  console.log(`📁 Found ${oauthRoutes.length} oauth route files`);
+  console.log(`📁 Total: ${routes.length} route files`);
 
   // Analyze each route file
   const allGeneratedTypes: GeneratedType[] = [];

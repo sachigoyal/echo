@@ -117,6 +117,62 @@ export type GetUserResponse = {
   image: string | null;
 } | null;
 
+export type GetOauthAuthorizeQuery = {
+  client_id: string;
+  redirect_uri: string;
+  code_challenge: string;
+  code_challenge_method: 'S256';
+  scope: string;
+  state: string;
+  response_type: 'code';
+  prompt?: 'none' | undefined;
+  new_user?: 'true' | undefined;
+  referral_code?: string | undefined;
+};
+
+export type CreateOauthTokenResponse = {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string;
+  refresh_token_expires_in: number;
+  scope: string;
+  user: { id: string; email: string; name: string };
+  echo_app: { id: string; name: string; description: string };
+};
+
+export type CreateOauthTokenBody =
+  | {
+      redirect_uri: string;
+      client_id: string;
+      code: string;
+      code_verifier: string;
+      grant_type: 'authorization_code';
+    }
+  | { refresh_token: string; grant_type: 'refresh_token' };
+
+export type GetOauthUserinfoResponse = {
+  sub: string;
+  email: string;
+  email_verified: boolean;
+  name: string;
+  preferred_username: string;
+  given_name: string;
+  family_name: string;
+  updated_at: number;
+};
+
+export type CreateOauthUserinfoResponse = {
+  sub: string;
+  email: string;
+  email_verified: boolean;
+  name: string;
+  preferred_username: string;
+  given_name: string;
+  family_name: string;
+  updated_at: number;
+};
+
 export type ApiRoutes = {
   'GET /apps/{id}': {
     response: GetAppsByIdResponse;
@@ -141,4 +197,11 @@ export type ApiRoutes = {
     body: CreateUserReferralBody;
   };
   'GET /user': { response: GetUserResponse };
+  'GET /oauth/authorize': { query: GetOauthAuthorizeQuery };
+  'POST /oauth/token': {
+    response: CreateOauthTokenResponse;
+    body: CreateOauthTokenBody;
+  };
+  'GET /oauth/userinfo': { response: GetOauthUserinfoResponse };
+  'POST /oauth/userinfo': { response: CreateOauthUserinfoResponse };
 };

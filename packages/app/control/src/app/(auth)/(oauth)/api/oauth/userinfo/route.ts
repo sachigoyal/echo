@@ -22,7 +22,7 @@ export const GET = authRoute.handler(async (_, { ctx: { userId } }) => {
     {
       sub: user.id,
       email: user.email,
-      email_verified: user.emailVerified,
+      email_verified: Boolean(user.emailVerified),
       name: user.name || user.email,
       preferred_username: user.name || user.email,
       given_name: user.name?.split(' ')[0] || '',
