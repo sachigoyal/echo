@@ -15,7 +15,7 @@ import type { TokenMetadata } from './_lib/types';
 import { OAuthError, OAuthErrorType } from '../../../_lib/oauth-error';
 
 const invalidGrantError = oauthValidationError({
-  error: OAuthErrorType.INVALID_GRANT,
+  error: OAuthErrorType.UNSUPPORTED_GRANT_TYPE,
   error_description:
     'grant_type can only be authorization_code or refresh_token',
 });

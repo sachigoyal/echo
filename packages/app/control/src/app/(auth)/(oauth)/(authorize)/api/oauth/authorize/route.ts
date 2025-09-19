@@ -20,7 +20,7 @@ const querySchema = authorizeParamsSchema.extend({
   response_type: z
     .literal('code', {
       error: oauthValidationError({
-        error: OAuthErrorType.INVALID_REQUEST,
+        error: OAuthErrorType.UNSUPPORTED_RESPONSE_TYPE,
         error_description:
           'Only authorization code flow (response_type=code) is supported',
       }),
