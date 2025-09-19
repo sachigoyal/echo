@@ -35,7 +35,7 @@ const handleOAuthInternalError: HandleInternalErrorFn<OAuthErrorBody> = (
   });
 };
 
-export const oauthRoute = createZodRoute<OAuthErrorBody, OAuthErrorBody>({
+export const oauthRoute = createZodRoute({
   handleServerError: handleOAuthServerError,
   handleInternalError: handleOAuthInternalError,
 });
