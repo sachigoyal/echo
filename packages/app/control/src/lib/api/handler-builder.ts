@@ -47,6 +47,7 @@ export class RouteHandlerBuilder<
     },
     middlewares = [],
     handleServerError,
+    handleInternalError,
     contextType,
     metadataValue,
   }: {
@@ -67,6 +68,7 @@ export class RouteHandlerBuilder<
     this.config = config;
     this.middlewares = middlewares;
     this.handleServerError = handleServerError;
+    this.handleInternalError = handleInternalError;
     this.contextType = contextType as TContext;
     this.metadataValue = metadataValue;
   }

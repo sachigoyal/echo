@@ -15,7 +15,7 @@ import { createEchoAccessJwt } from '@/lib/access-token';
 
 import type { Prisma } from '@/generated/prisma';
 import type { TokenMetadata } from './types';
-import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-validation-error';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 import {
   OAuthError,
   OAuthErrorType,

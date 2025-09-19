@@ -18,8 +18,11 @@ import { logger } from '@/logger';
 import { env } from '@/env';
 
 import type { TokenMetadata } from './types';
-import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-validation-error';
-import { OAuthErrorType } from '@/app/(auth)/(oauth)/_lib/oauth-error';
+import {
+  OAuthError,
+  OAuthErrorType,
+} from '@/app/(auth)/(oauth)/_lib/oauth-error';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 
 export const handleIssueTokenSchema = z.object({
   redirect_uri: z.url({
@@ -77,12 +80,15 @@ export async function handleIssueToken(
     },
   });
 
-  console.log(env.OAUTH_CODE_SIGNING_JWT_SECRET);
-
   const { payload } = await jwtVerify(
     code,
     new TextEncoder().encode(env.OAUTH_CODE_SIGNING_JWT_SECRET)
-  );
+  ).catch(() => {
+    throw new OAuthError({
+      error: OAuthErrorType.INVALID_REQUEST,
+      error_description: 'Invalid authorization code',
+    });
+  });
   const {
     client_id: codeClientId,
     redirect_uri: codeRedirectUri,

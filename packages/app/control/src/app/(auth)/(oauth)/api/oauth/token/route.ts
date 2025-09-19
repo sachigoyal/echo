@@ -5,10 +5,13 @@ import z from 'zod';
 import { handleRefreshToken, handleRefreshTokenSchema } from './_lib/refresh';
 import { handleIssueToken, handleIssueTokenSchema } from './_lib/issue';
 
-import { oauthRoute, OAuthRouteError } from '../../../_lib/oauth-route';
+import {
+  oauthRoute,
+  OAuthRouteError,
+  oauthValidationError,
+} from '../../../_lib/oauth-route';
 
 import type { TokenMetadata } from './_lib/types';
-import { oauthValidationError } from '../../../_lib/oauth-validation-error';
 import { OAuthError, OAuthErrorType } from '../../../_lib/oauth-error';
 
 const invalidGrantError = oauthValidationError({

@@ -45,3 +45,6 @@ export const OAuthRouteError = (error: OAuthErrorBody) => {
     status: error.error === OAuthErrorType.SERVER_ERROR ? 500 : 400,
   });
 };
+
+export const oauthValidationError = (error: OAuthErrorBody) =>
+  JSON.stringify(error);

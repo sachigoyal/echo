@@ -11,10 +11,10 @@ import { getApp } from '@/services/apps/get';
 import { NextResponse } from 'next/server';
 import {
   oauthRoute,
+  oauthValidationError,
   OAuthRouteError,
 } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 import { OAuthErrorType } from '@/app/(auth)/(oauth)/_lib/oauth-error';
-import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-validation-error';
 
 const querySchema = authorizeParamsSchema.extend({
   response_type: z

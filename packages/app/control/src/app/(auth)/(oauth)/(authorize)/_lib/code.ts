@@ -6,7 +6,7 @@ import { SignJWT } from 'jose';
 
 import { env } from '@/env';
 import { addSeconds, getUnixTime } from 'date-fns';
-import { oauthValidationError } from '../../_lib/oauth-validation-error';
+import { oauthValidationError } from '../../_lib/oauth-route';
 import { OAuthErrorType } from '../../_lib/oauth-error';
 
 const AUTH_CODE_TTL = 300; // 5 minutes
