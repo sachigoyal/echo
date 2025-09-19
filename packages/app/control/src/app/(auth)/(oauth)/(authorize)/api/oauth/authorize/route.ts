@@ -1,14 +1,15 @@
+import z from 'zod';
+
 import {
   authorizeParamsSchema,
   getAuthorizationRedirect,
 } from '../../../_lib/authorize';
 import { isValidRedirectUri } from '../../../../_lib/redirect-uri';
-import { createZodRoute } from '@/lib/api/create-route';
 import { auth } from '@/auth';
 import { env } from '@/env';
 import { getApp } from '@/services/apps/get';
 import { NextResponse } from 'next/server';
-import z from 'zod';
+import { oauthRoute } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 
 const querySchema = authorizeParamsSchema.extend({
   response_type: z.literal('code').default('code'),
@@ -17,7 +18,7 @@ const querySchema = authorizeParamsSchema.extend({
   referral_code: z.string().optional(),
 });
 
-export const GET = createZodRoute()
+export const GET = oauthRoute
   .query(querySchema)
   .handler(async (request, { query }) => {
     const app = await getApp(query.client_id);

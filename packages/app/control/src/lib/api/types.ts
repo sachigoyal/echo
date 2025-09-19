@@ -83,19 +83,22 @@ export type OriginalRouteHandler<
   /* eslint-disable @typescript-eslint/no-unused-vars */
   TBody extends z.Schema,
   TResponseBody,
+  TServerErrorBody = ServerErrorBody,
 > = (
   request: NextRequest,
   context: { params: Promise<Record<string, unknown>> }
-) => Promise<NextResponse<TResponseBody | ServerErrorBody>>;
+) => Promise<
+  NextResponse<TResponseBody | TServerErrorBody | InternalErrorBody>
+>;
 
 /**
  * Function that handles server errors in route handlers
  * @param error - The error that was thrown
  * @returns Response object with appropriate error details and status code
  */
-export type HandlerServerErrorFn = (
+export type HandlerServerErrorFn<TServerErrorBody = ServerErrorBody> = (
   error: Error
-) => NextResponse<ServerErrorBody>;
+) => NextResponse<TServerErrorBody>;
 
 export type ServerErrorBody = {
   message: string;

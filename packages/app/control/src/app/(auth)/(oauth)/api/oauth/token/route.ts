@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 
 import z from 'zod';
 
-import { createZodRoute } from '@/lib/api/create-route';
-
 import { handleRefreshToken, handleRefreshTokenSchema } from './_lib/refresh';
 import { handleIssueToken, handleIssueTokenSchema } from './_lib/issue';
 
 import { logger } from '@/logger';
+
+import { oauthRoute } from '../../../_lib/oauth-route';
 
 import type { TokenMetadata } from './_lib/types';
 
@@ -20,7 +20,7 @@ const bodySchema = z.discriminatedUnion('grant_type', [
   }),
 ]);
 
-export const POST = createZodRoute()
+export const POST = oauthRoute
   .body(bodySchema)
   .handler(async (req, { body }) => {
     const metadata: TokenMetadata = {
