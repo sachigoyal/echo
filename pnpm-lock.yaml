@@ -70,9 +70,6 @@ importers:
       '@icons-pack/react-simple-icons':
         specifier: ^13.7.0
         version: 13.7.0(react@19.1.1)
-      '@merit-systems/echo-typescript-sdk':
-        specifier: 1.0.14
-        version: 1.0.14(zod@4.1.7)
       '@merit-systems/sdk':
         specifier: 0.0.8
         version: 0.0.8
@@ -11467,16 +11464,6 @@ snapshots:
       '@ai-sdk/openai': 2.0.28(zod@3.25.76)
       '@openrouter/ai-sdk-provider': 1.2.0(ai@5.0.40(zod@3.25.76))(zod@3.25.76)
       ai: 5.0.40(zod@3.25.76)
-    transitivePeerDependencies:
-      - zod
-
-  '@merit-systems/echo-typescript-sdk@1.0.14(zod@4.1.7)':
-    dependencies:
-      '@ai-sdk/anthropic': 2.0.6(zod@4.1.7)
-      '@ai-sdk/google': 2.0.8(zod@4.1.7)
-      '@ai-sdk/openai': 2.0.28(zod@4.1.7)
-      '@openrouter/ai-sdk-provider': 1.2.0(ai@5.0.40(zod@4.1.7))(zod@4.1.7)
-      ai: 5.0.40(zod@4.1.7)
     transitivePeerDependencies:
       - zod
 
