@@ -49,7 +49,7 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           code_challenge: '',
           code_challenge_method: 'S256',
         })
-      ).rejects.toThrow(/code_challenge must be at least 43 characters/i);
+      ).rejects.toThrow(/code_challenge must be base64url encoded/i);
     });
 
     test('validates client_id against database', async () => {
