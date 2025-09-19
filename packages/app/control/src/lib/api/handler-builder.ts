@@ -361,16 +361,21 @@ export class RouteHandlerBuilder<
               headers: { 'Content-Type': 'application/json' },
             });
           } catch (error) {
-            return handleError<TServerErrorBody>(
+            return handleError(
               error as Error,
-              this.handleServerError
+              this.handleServerError,
+              this.handleInternalError
             );
           }
         };
 
         return executeMiddlewareChain(0);
       } catch (error) {
-        return handleError(error as Error, this.handleServerError);
+        return handleError(
+          error as Error,
+          this.handleServerError,
+          this.handleInternalError
+        );
       }
     };
   }

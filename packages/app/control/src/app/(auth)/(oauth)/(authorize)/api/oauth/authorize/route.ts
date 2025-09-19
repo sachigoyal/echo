@@ -13,11 +13,8 @@ import {
   oauthRoute,
   OAuthRouteError,
 } from '@/app/(auth)/(oauth)/_lib/oauth-route';
-import {
-  OAuthError,
-  OAuthErrorType,
-} from '@/app/(auth)/(oauth)/_lib/oauth-error';
-import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth_validation_error';
+import { OAuthErrorType } from '@/app/(auth)/(oauth)/_lib/oauth-error';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-validation-error';
 
 const querySchema = authorizeParamsSchema.extend({
   response_type: z

@@ -18,7 +18,7 @@ import { logger } from '@/logger';
 import { env } from '@/env';
 
 import type { TokenMetadata } from './types';
-import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth_validation_error';
+import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-validation-error';
 import { OAuthErrorType } from '@/app/(auth)/(oauth)/_lib/oauth-error';
 
 export const handleIssueTokenSchema = z.object({
@@ -76,6 +76,8 @@ export async function handleIssueToken(
       client_id,
     },
   });
+
+  console.log(env.OAUTH_CODE_SIGNING_JWT_SECRET);
 
   const { payload } = await jwtVerify(
     code,

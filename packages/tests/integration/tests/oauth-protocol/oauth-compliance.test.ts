@@ -64,7 +64,9 @@ describe('OAuth 2.0 Protocol Compliance', () => {
           code_challenge: codeChallenge,
           code_challenge_method: 'S256',
         })
-      ).rejects.toThrow(/not_found.*Echo app not found/i);
+      ).rejects.toThrow(
+        /\{"error":"invalid_client","error_description":"Echo app not found"\}/i
+      );
     });
 
     test('enforces redirect URI allowlist', async () => {
