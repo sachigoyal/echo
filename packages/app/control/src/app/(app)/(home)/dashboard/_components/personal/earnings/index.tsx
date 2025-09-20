@@ -21,22 +21,21 @@ interface Props {
 }
 
 export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
-  const defaultStartDate = subDays(new Date(), 7);
-
-  api.user.creatorActivity.prefetch({
-    startDate: defaultStartDate,
-    isCumulative: false,
-  });
 
   const user = await api.user.current();
   if (!user) {
     throw new Error('User not found');
   }
 
+
+  api.user.creatorActivity.prefetch({
+    startDate: user.createdAt,
+    isCumulative: false,
+  });
+
   return (
     <HydrateClient>
       <ActivityContextProvider
-        initialStartDate={defaultStartDate}
         creationDate={user.createdAt}
       >
         <ActivityContainer>

@@ -28,14 +28,12 @@ const ActivityContext = createContext<ActivityContextType>({
 
 interface Props {
   children: React.ReactNode;
-  initialStartDate: Date;
   initialEndDate?: Date;
   creationDate: Date;
 }
 
 export const ActivityContextProvider = ({
   children,
-  initialStartDate,
   initialEndDate,
   creationDate,
 }: Props) => {
@@ -43,7 +41,7 @@ export const ActivityContextProvider = ({
     ActivityTimeframe.AllTime
   );
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate);
-  const [startDate, setStartDate] = useState<Date>(initialStartDate);
+  const [startDate, setStartDate] = useState<Date>(creationDate);
   const [isCumulative, setIsCumulative] = useState<boolean>(false);
 
   useEffect(() => {
