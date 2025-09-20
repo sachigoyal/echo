@@ -57,6 +57,20 @@ export type GetBalanceByIdFreeResponse = {
 
 export type GetBalanceByIdFreeParams = { id: string };
 
+export type CreateBalanceFreeResponse = {
+  spendPoolBalance: number;
+  userSpendInfo: {
+    userId: string;
+    echoAppId: string;
+    spendPoolId: string | null;
+    amountSpent: number;
+    spendLimit: number | null;
+    amountLeft: number;
+  };
+};
+
+export type CreateBalanceFreeBody = { echoAppId: string };
+
 export type GetBalanceResponse = {
   totalPaid: number;
   totalSpent: number;
@@ -106,6 +120,7 @@ export type CreateUserReferralResponse = { success: boolean; message: string };
 export type CreateUserReferralBody = { echoAppId: string; code: string };
 
 export type GetUserResponse = {
+  picture: string | null;
   id: string;
   name: string | null;
   createdAt: string;
@@ -179,6 +194,10 @@ export type ApiRoutes = {
   'GET /balance/{id}/free': {
     response: GetBalanceByIdFreeResponse;
     params: GetBalanceByIdFreeParams;
+  };
+  'POST /balance/free': {
+    response: CreateBalanceFreeResponse;
+    body: CreateBalanceFreeBody;
   };
   'GET /balance': { response: GetBalanceResponse };
   'GET /base/payment-link': {
