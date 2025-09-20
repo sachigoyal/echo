@@ -11,7 +11,7 @@ export function createEchoGoogle(
   getTokenFn: (appId: string) => Promise<string | null>,
   onInsufficientFunds?: () => void
 ): GoogleGenerativeAIProvider {
-  const provider = createGoogleBase({
+  return createGoogleBase({
     baseURL: baseRouterUrl,
     apiKey: 'placeholder_replaced_by_echoFetch',
     fetch: echoFetch(
@@ -20,6 +20,4 @@ export function createEchoGoogle(
       onInsufficientFunds
     ),
   });
-
-  return provider;
 }

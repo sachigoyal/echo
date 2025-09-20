@@ -11,7 +11,7 @@ export function createEchoOpenRouter(
   getTokenFn: (appId: string) => Promise<string | null>,
   onInsufficientFunds?: () => void
 ): OpenRouterProvider {
-  const provider = createOpenRouterBase({
+  return createOpenRouterBase({
     baseURL: baseRouterUrl,
     apiKey: 'placeholder_replaced_by_echoFetch',
     fetch: echoFetch(
@@ -20,6 +20,4 @@ export function createEchoOpenRouter(
       onInsufficientFunds
     ),
   });
-
-  return provider;
 }

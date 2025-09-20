@@ -11,7 +11,7 @@ export function createEchoAnthropic(
   getTokenFn: (appId: string) => Promise<string | null>,
   onInsufficientFunds?: () => void
 ): AnthropicProvider {
-  const provider = createAnthropicBase({
+  return createAnthropicBase({
     baseURL: baseRouterUrl,
     apiKey: 'placeholder_replaced_by_echoFetch',
     headers: {
@@ -25,6 +25,4 @@ export function createEchoAnthropic(
       onInsufficientFunds
     ),
   });
-
-  return provider;
 }

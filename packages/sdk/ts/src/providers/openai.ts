@@ -11,7 +11,7 @@ export function createEchoOpenAI(
   getTokenFn: (appId: string) => Promise<string | null>,
   onInsufficientFunds?: () => void
 ): OpenAIProvider {
-  const provider = createOpenAIBase({
+  return createOpenAIBase({
     baseURL: baseRouterUrl,
     apiKey: 'placeholder_replaced_by_echoFetch',
     fetch: echoFetch(
@@ -20,6 +20,4 @@ export function createEchoOpenAI(
       onInsufficientFunds
     ),
   });
-
-  return provider;
 }
