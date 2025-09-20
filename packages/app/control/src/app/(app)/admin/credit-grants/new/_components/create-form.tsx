@@ -12,7 +12,7 @@ import { CreditGrantForm } from '../../_components/form';
 
 import { api } from '@/trpc/client';
 
-import type { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import type { adminCreateCreditGrantSchema } from '@/services/db/ops/admin/schemas';
 
 export const CreateCreditGrantForm = () => {
   const utils = api.useUtils();

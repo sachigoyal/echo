@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { NextResponse } from 'next/server';
 
-import { appIdSchema } from '@/services/apps/lib/schemas';
+import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
 
 import { getCustomerSpendInfoForApp } from '@/lib/spend-pools/fetch-user-spend';
 import { authRoute } from '@/lib/api/auth-route';

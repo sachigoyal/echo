@@ -14,7 +14,7 @@ import { UserAvatar } from '@/components/utils/user-avatar';
 
 import { ItemContent } from './content';
 
-import type { FeedActivity } from '@/services/feed/types';
+import type { FeedActivity } from '@/services/db/ops/feed/types';
 
 interface Props {
   activity: FeedActivity;

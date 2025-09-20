@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { adminProcedure, createTRPCRouter } from '../../trpc';
 
-import { getHomePageChart } from '@/services/admin/home-page';
+import { getHomePageChart } from '@/services/db/ops/admin/home-page';
 
 export const adminTokensRouter = createTRPCRouter({
   getHomePageChart: adminProcedure

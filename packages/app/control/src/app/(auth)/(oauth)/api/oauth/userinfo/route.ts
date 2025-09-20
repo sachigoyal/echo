@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
 import { authMiddleware } from '@/lib/api/auth-route';
-import { getFullUser } from '@/services/user/get';
+import { getFullUser } from '@/services/db/ops/user/get';
 import { getUnixTime } from 'date-fns';
 import { oauthRoute, OAuthRouteError } from '../../../_lib/oauth-route';
 import { OAuthErrorType } from '../../../_lib/oauth-error';

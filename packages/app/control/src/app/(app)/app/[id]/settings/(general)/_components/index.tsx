@@ -13,7 +13,7 @@ import { AppDescription } from './description';
 import { AppProfilePicture } from './profile-picture';
 import { AppHomepage } from './homepage';
 
-import type { updateAppSchema } from '@/services/apps/lib/schemas';
+import type { updateAppSchema } from '@/services/db/ops/apps/lib/schemas';
 
 import { api } from '@/trpc/server';
 import { CopyButton } from '@/components/ui/copy-button';

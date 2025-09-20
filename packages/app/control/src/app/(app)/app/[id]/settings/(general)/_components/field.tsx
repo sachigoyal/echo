@@ -9,7 +9,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import type { updateAppSchema } from '@/services/apps/lib/schemas';
+import type { updateAppSchema } from '@/services/db/ops/apps/lib/schemas';
 
 interface Props {
   name: keyof typeof updateAppSchema.shape;

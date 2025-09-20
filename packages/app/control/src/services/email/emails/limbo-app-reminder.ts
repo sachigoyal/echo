@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { sendEmailWithRetry } from '../lib/send';
 
-import { getFullUser } from '@/services/user/get';
+import { getFullUser } from '@/services/db/ops/user/get';
 
 import { logger } from '@/logger';
 import { db } from '@/services/db/client';

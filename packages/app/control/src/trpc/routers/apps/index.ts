@@ -8,7 +8,7 @@ import {
 } from '@/trpc/trpc';
 import { TRPCError } from '@trpc/server';
 
-import { createApp } from '@/services/apps/create';
+import { createApp } from '@/services/db/ops/apps/create';
 import {
   appOwnerProcedure,
   protectedAppProcedure,
@@ -23,22 +23,22 @@ import {
   createAppMembershipSchema,
   updateAppMembershipReferrer,
   updateAppMembershipReferrerSchema,
-} from '@/services/apps/membership';
+} from '@/services/db/ops/apps/membership';
 import {
   listAppsSchema,
   listPublicApps,
   listMemberApps,
   listOwnerApps,
-} from '@/services/apps/list';
-import { updateApp } from '@/services/apps/update';
-import { getAppOwner } from '@/services/apps/get';
-import { appIdSchema } from '@/services/apps/lib/schemas';
-import { getAppMarkup, updateMarkup } from '@/services/apps/markup';
+} from '@/services/db/ops/apps/list';
+import { updateApp } from '@/services/db/ops/apps/update';
+import { getAppOwner } from '@/services/db/ops/apps/get';
+import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
+import { getAppMarkup, updateMarkup } from '@/services/db/ops/apps/markup';
 import {
   getGithubLink,
   updateGithubLinkSchema,
   updateGithubLink,
-} from '@/services/apps/github-link';
+} from '@/services/db/ops/apps/github-link';
 import {
   createFreeTierPaymentLink,
   createFreeTierPaymentLinkSchema,
@@ -47,37 +47,40 @@ import {
   getFreeTierSpendPool,
   updateFreeTierSpendPool,
   updateFreeTierSpendPoolSchema,
-} from '@/services/apps/free-tier';
-import { listFreeTierPayments } from '@/services/payments';
-import { countAppTokens } from '@/services/apps/tokens';
+} from '@/services/db/ops/apps/free-tier';
+import { listFreeTierPayments } from '@/services/db/ops/payments';
+import { countAppTokens } from '@/services/db/ops/apps/tokens';
 import {
   countAppTransactions,
   countAppTransactionsSchema,
   listAppTransactions,
   listAppTransactionsSchema,
-} from '@/services/apps/transactions';
+} from '@/services/db/ops/apps/transactions';
 import {
   getBucketedAppStats,
   getBucketedAppStatsSchema,
   getOverallAppStats,
   getOverallAppStatsSchema,
-} from '@/services/apps/stats';
+} from '@/services/db/ops/apps/stats';
 import {
   listAppUsers,
   countAppUsers,
   appUsersSchema,
-} from '@/services/apps/users';
+} from '@/services/db/ops/apps/users';
 import {
   countMemberApps,
   countOwnerApps,
   countPublicApps,
-} from '@/services/apps/count';
-import { appEarningsSchema, getAppEarnings } from '@/services/apps/earnings';
+} from '@/services/db/ops/apps/count';
+import {
+  appEarningsSchema,
+  getAppEarnings,
+} from '@/services/db/ops/apps/earnings';
 import {
   getAppReferralReward,
   setAppReferralReward,
   setAppReferralRewardSchema,
-} from '@/services/apps/referral-reward';
+} from '@/services/db/ops/apps/referral-reward';
 import {
   createAppReferralCode,
   createAppReferralCodeSchema,
@@ -85,17 +88,17 @@ import {
   getReferralCodeByCode,
   getReferralCodeByCodeSchema,
   getUserAppReferralCode,
-} from '@/services/apps/referral-code';
-import { deleteApp, deleteAppSchema } from '@/services/apps/delete';
+} from '@/services/db/ops/apps/referral-code';
+import { deleteApp, deleteAppSchema } from '@/services/db/ops/apps/delete';
 import {
   createAppSchema,
   updateAppSchema,
   updateMarkupSchema,
-} from '@/services/apps/lib/schemas';
+} from '@/services/db/ops/apps/lib/schemas';
 import {
   createFreeTierPaymentFromBalance,
   createFreeTierPaymentFromBalanceSchema,
-} from '@/services/credits/mint';
+} from '@/services/db/ops/credits/mint';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure

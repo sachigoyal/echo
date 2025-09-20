@@ -6,13 +6,13 @@ import {
   paginatedProcedure,
 } from '../../trpc';
 
-import { adminListPendingPayouts } from '@/services/admin/pending-payouts';
-import { adminListCompletedPayouts } from '@/services/admin/completed-payouts';
+import { adminListPendingPayouts } from '@/services/db/ops/admin/pending-payouts';
+import { adminListCompletedPayouts } from '@/services/db/ops/admin/completed-payouts';
 import {
   generateCheckoutUrlForPayout,
   pollMeritCheckout,
   syncPendingPayoutsOnce,
-} from '@/services/payouts/merit';
+} from '@/services/db/ops/payouts/merit';
 
 export const adminPayoutsRouter = createTRPCRouter({
   listPending: paginatedProcedure

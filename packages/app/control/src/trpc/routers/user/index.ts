@@ -10,9 +10,9 @@ import {
 
 import { userPayoutRouter } from './payout';
 
-import { getPublicUser, getFullUser } from '@/services/user/get';
-import { getUserFeed, userFeedSchema } from '@/services/feed';
-import { listCreditPayments } from '@/services/payments';
+import { getPublicUser, getFullUser } from '@/services/db/ops/user/get';
+import { getUserFeed, userFeedSchema } from '@/services/db/ops/feed';
+import { listCreditPayments } from '@/services/db/ops/payments';
 import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
 import {
   countApiKeys,
@@ -26,34 +26,34 @@ import {
   listApiKeysSchema,
   updateApiKey,
   updateApiKeySchema,
-} from '@/services/api-keys';
+} from '@/services/db/ops/api-keys';
 import {
   getGithubLinkForUser,
   updateGithubLinkForUser,
   updateUserGithubLinkSchema,
-} from '@/services/user/github-link';
+} from '@/services/db/ops/user/github-link';
 import {
   getUserAppBalance,
   getUserGlobalBalance,
-} from '@/services/user/balance';
-import { appIdSchema } from '@/services/apps/lib/schemas';
+} from '@/services/db/ops/user/balance';
+import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
 import { getCustomerSpendInfoForApp } from '@/lib/spend-pools';
 
-import { userIdSchema } from '@/services/lib/schemas';
+import { userIdSchema } from '@/services/db/lib/schemas';
 import {
   hasClaimedInitialFreeTierCredits,
   issueInitialFreeTierCredits,
-} from '@/services/user/initial-free-tier';
+} from '@/services/db/ops/user/initial-free-tier';
 import {
   acceptLatestPrivacyPolicy,
   acceptLatestTermsAndServices,
   needsLatestPrivacyPolicy,
   needsLatestTermsAndServices,
-} from '@/services/user/terms-agreement';
+} from '@/services/db/ops/user/terms-agreement';
 import {
   getUserCreatorActivity,
   getUserCreatorActivitySchema,
-} from '@/services/user/activity';
+} from '@/services/db/ops/user/activity';
 
 export const userRouter = createTRPCRouter({
   payout: userPayoutRouter,

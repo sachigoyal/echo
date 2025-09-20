@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getFullUser } from '@/services/user/get';
+import { getFullUser } from '@/services/db/ops/user/get';
 
 import { authRoute } from '@/lib/api/auth-route';
 

@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
 import { authRoute } from '../../../../../lib/api/auth-route';
 import { z } from 'zod';
-import { appIdSchema } from '@/services/apps/lib/schemas';
-import { getApp } from '@/services/apps/get';
+import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
+import { getApp } from '@/services/db/ops/apps/get';
 
 const paramsSchema = z.object({
   id: appIdSchema,

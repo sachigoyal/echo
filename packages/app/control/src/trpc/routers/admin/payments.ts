@@ -1,10 +1,10 @@
 import { adminProcedure, createTRPCRouter } from '../../trpc';
 
-import { getPaymentsWithPagination } from '@/services/admin/payments';
-import { getPaymentsOverviewMetrics } from '@/services/admin/payments-summary';
-import { paginationParamsSchema } from '@/services/lib/pagination';
-import { multiSortParamsSchema } from '@/services/lib/sorting';
-import { filterParamsSchema } from '@/services/lib/filtering';
+import { getPaymentsWithPagination } from '@/services/db/ops/admin/payments';
+import { getPaymentsOverviewMetrics } from '@/services/db/ops/admin/payments-summary';
+import { paginationParamsSchema } from '@/services/db/lib/pagination';
+import { multiSortParamsSchema } from '@/services/db/lib/sorting';
+import { filterParamsSchema } from '@/services/db/lib/filtering';
 
 export const adminPaymentsRouter = createTRPCRouter({
   getPaymentsWithPagination: adminProcedure

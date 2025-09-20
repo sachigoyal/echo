@@ -7,7 +7,7 @@ import {
 import { isValidRedirectUri } from '../../../../_lib/redirect-uri';
 import { auth } from '@/auth';
 import { env } from '@/env';
-import { getApp } from '@/services/apps/get';
+import { getApp } from '@/services/db/ops/apps/get';
 import { NextResponse } from 'next/server';
 import {
   oauthRoute,

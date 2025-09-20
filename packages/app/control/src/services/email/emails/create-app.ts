@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import { sendEmailWithRetry } from '../lib/send';
 
-import { getFullUser } from '@/services/user/get';
-import { countOwnerApps } from '@/services/apps/count';
+import { getFullUser } from '@/services/db/ops/user/get';
+import { countOwnerApps } from '@/services/db/ops/apps/count';
 
 import { logger } from '@/logger';
 import { db } from '@/services/db/client';

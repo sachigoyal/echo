@@ -1,8 +1,8 @@
 import { TransactionContent } from './transactions';
 import { SignInContent } from './sign-in';
 
-import type { FeedActivity } from '@/services/feed/types';
-import { FeedActivityType } from '@/services/feed/types';
+import type { FeedActivity } from '@/services/db/ops/feed/types';
+import { FeedActivityType } from '@/services/db/ops/feed/types';
 
 interface Props {
   activity: FeedActivity;

@@ -1,7 +1,7 @@
 import { getCustomerSpendInfoForApp } from '@/lib/spend-pools/fetch-user-spend';
 import { NextResponse } from 'next/server';
 import { authRoute } from '../../../../../../lib/api/auth-route';
-import { appIdSchema } from '@/services/apps/lib/schemas';
+import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
 import { z } from 'zod';
 
 const getFreeBalanceParamsSchema = z.object({
