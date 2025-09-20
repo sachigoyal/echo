@@ -7,9 +7,7 @@ export const getUser = async (username: string) => {
     })
     .then(res => res.data)
     .catch(error => {
-      if (error.status === 404) {
-        return null;
-      }
-      throw error;
+      console.error('Error getting GitHub user:', error);
+      return null;
     });
 };

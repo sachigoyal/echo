@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import type { FilterParams } from '@/services/lib/filtering';
 import type {
   SQLParameter,

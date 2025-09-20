@@ -83,7 +83,7 @@ async function logCompletedPayoutTransaction(payout: OutgoingPayment) {
     return;
   }
 
-  if (existing.status === PayoutStatus.COMPLETED) {
+  if (existing.status === (PayoutStatus.COMPLETED as string)) {
     return;
   }
 

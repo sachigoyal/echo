@@ -89,7 +89,7 @@ export async function createPaymentLink(
     after_completion: {
       type: 'redirect',
       redirect: {
-        url: successUrl || `${env.NEXT_PUBLIC_APP_URL}/credits?payment=success`,
+        url: successUrl ?? `${env.NEXT_PUBLIC_APP_URL}/credits?payment=success`,
       },
     },
   };
@@ -199,7 +199,7 @@ export async function createFreeTierPaymentLink(
   const afterCompletion: Stripe.PaymentLinkCreateParams.AfterCompletion = {
     type: 'redirect',
     redirect: {
-      url: successUrl || defaultSuccessUrl,
+      url: successUrl ?? defaultSuccessUrl,
     },
   };
 
@@ -217,9 +217,9 @@ export async function createFreeTierPaymentLink(
       description,
       type: 'free-tier-credits',
       poolName:
-        poolName ||
+        poolName ??
         `Free Tier Credits - ${new Date().toISOString().split('T')[0]}`,
-      defaultSpendLimit: defaultSpendLimit?.toString() || '100',
+      defaultSpendLimit: defaultSpendLimit?.toString() ?? '100',
     },
     after_completion: afterCompletion,
   };

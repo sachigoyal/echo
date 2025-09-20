@@ -19,11 +19,9 @@ if (env.NODE_ENV === 'production') {
     token: env.QSTASH_TOKEN,
   });
 } else {
-  if (!globalThis.queueClient) {
-    globalThis.queueClient = new Client({
-      token: env.QSTASH_TOKEN,
-    });
-  }
+  globalThis.queueClient ??= new Client({
+    token: env.QSTASH_TOKEN,
+  });
   queueClient = globalThis.queueClient;
 }
 

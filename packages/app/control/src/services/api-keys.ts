@@ -5,7 +5,7 @@ import type { ApiKey, Prisma } from '@/generated/prisma';
 import { db } from '../lib/db';
 import { AppRole, MembershipStatus } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
-import type { PaginationParams} from './lib/pagination';
+import type { PaginationParams } from './lib/pagination';
 import { toPaginatedReponse } from './lib/pagination';
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { env } from '@/env';
@@ -143,7 +143,7 @@ export async function createApiKey(
   const apiKey = await db.apiKey.create({
     data: {
       keyHash,
-      name: name || 'API Key',
+      name: name ?? 'API Key',
       userId,
       echoAppId,
       scope,
