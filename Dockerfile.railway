@@ -82,6 +82,8 @@ COPY packages/app/server/ ./packages/app/server/
 COPY packages/sdk/ts/ ./packages/sdk/ts/
 COPY packages/sdk/next/ ./packages/sdk/next/
 COPY packages/sdk/react/ ./packages/sdk/react/
+COPY packages/sdk/examples/next/ ./packages/sdk/examples/next/
+COPY packages/sdk/examples/vite/ ./packages/sdk/examples/vite/
 
 # Install all workspace dependencies
 WORKDIR /app
