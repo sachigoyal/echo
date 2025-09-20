@@ -4,7 +4,7 @@ import { AppRole, MembershipStatus } from '@/lib/permissions';
 
 import type { AppId } from './lib/schemas';
 import { z } from 'zod';
-import type { PaginationParams} from '../lib/pagination';
+import type { PaginationParams } from '../lib/pagination';
 import { toPaginatedReponse } from '../lib/pagination';
 import type { Prisma } from '@/generated/prisma';
 

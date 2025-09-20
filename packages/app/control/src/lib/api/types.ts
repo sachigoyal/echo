@@ -34,8 +34,8 @@ export type HandlerFunction<
  * @returns Promise resolving to the response from the next middleware or handler
  */
 export type NextFunction<TContext> = <NC extends object = object>(opts?: {
-    ctx?: NC;
-  }) => Promise<MiddlewareResult<NC & TContext>>;
+  ctx?: NC;
+}) => Promise<MiddlewareResult<NC & TContext>>;
 
 /**
  * Middleware function that can:

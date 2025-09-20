@@ -1,12 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import type {
-  ColumnDef,
-  Table as TanStackTable} from '@tanstack/react-table';
-import {
-  flexRender
-} from '@tanstack/react-table';
+import type { ColumnDef, Table as TanStackTable } from '@tanstack/react-table';
+import { flexRender } from '@tanstack/react-table';
 
 import {
   Table,

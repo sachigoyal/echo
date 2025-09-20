@@ -1,12 +1,11 @@
-import type {
-  BarProps} from 'recharts';
+import type { BarProps } from 'recharts';
 import {
   BarChart,
   XAxis,
   YAxis,
   Bar,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from 'recharts';
 import { Card } from '@/components/ui/card';
 import { format, subDays } from 'date-fns';

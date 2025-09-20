@@ -1,5 +1,5 @@
 import { createZodRoute } from '@/lib/api/create-route';
-import type { OAuthErrorBody} from './oauth-error';
+import type { OAuthErrorBody } from './oauth-error';
 import { OAuthError, OAuthErrorType } from './oauth-error';
 import { NextResponse } from 'next/server';
 import type {

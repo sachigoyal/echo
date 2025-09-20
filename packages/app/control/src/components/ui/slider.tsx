@@ -39,14 +39,10 @@ const Slider = React.forwardRef<
     // Invert value for vertical reverse
     const isVerticalReverse = orientation === 'vertical' && reverse;
     const mappedValue =
-      isVerticalReverse && value
-        ? value.map(v => (max) - (v) + (min))
-        : value;
+      isVerticalReverse && value ? value.map(v => max - v + min) : value;
     const handleValueChange = (val: number[]) => {
       if (isVerticalReverse) {
-        const reversed = val.map(
-          v => (max) - (v) + (min)
-        );
+        const reversed = val.map(v => max - v + min);
         onValueChange?.(reversed);
       } else {
         onValueChange?.(val);

@@ -5,16 +5,17 @@ import type {
   SortingState,
   ColumnFiltersState,
   PaginationState,
-  RowSelectionState} from '@tanstack/react-table';
-import {
-  getCoreRowModel,
-  useReactTable
+  RowSelectionState,
 } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { BaseTable } from './BaseTable';
-import type { PaginationParams, PaginatedResponse } from '@/services/lib/pagination';
-import type { MultiSortParams} from '@/services/lib/sorting';
+import type {
+  PaginationParams,
+  PaginatedResponse,
+} from '@/services/lib/pagination';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { toMultiSortParams } from '@/services/lib/sorting';
-import type { FilterParams} from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { toFilterParams } from '@/services/lib/filtering';
 import type { TypedColumnDef } from './BaseTable';
 import type { ActionConfig, ActionGroup } from './ActionControls';

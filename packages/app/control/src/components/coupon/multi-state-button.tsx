@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import type {
-  Transition} from 'motion/react';
+import type { Transition } from 'motion/react';
 import {
   animate,
   AnimatePresence,
