@@ -11,26 +11,12 @@ export function CompletedPayoutsTable({ pageSize = 10 }: Props) {
   const [page, setPage] = useState(0);
 
   const { data, isLoading, isFetching } =
-    api.admin.payouts.listCompleted.useQuery({
+    api.admin.payouts.list.completed.useQuery({
       cursor: page,
       page_size: pageSize,
     });
 
   if (isLoading) return <div>Loading completed payouts...</div>;
-
-  const payouts = (data?.items ?? []) as Array<{
-    id: string;
-    amount: number;
-    createdAt: string;
-    type: string;
-    userEmail: string | null;
-    userName: string | null;
-    echoAppName: string | null;
-    recipientGithubUrl: string | null;
-    recipientAddress: string | null;
-    transactionId: string | null;
-    senderAddress: string | null;
-  }>;
 
   return (
     <div className="space-y-4">
@@ -55,7 +41,7 @@ export function CompletedPayoutsTable({ pageSize = 10 }: Props) {
             </tr>
           </thead>
           <tbody>
-            {payouts.map(p => (
+            {data?.items.map(p => (
               <tr key={p.id} className="border-t">
                 <td className="p-3 whitespace-nowrap">
                   {new Date(p.createdAt).toLocaleString()}
@@ -63,22 +49,22 @@ export function CompletedPayoutsTable({ pageSize = 10 }: Props) {
                 <td className="p-3 capitalize">{p.type}</td>
                 <td className="p-3">${p.amount.toFixed(2)}</td>
                 <td className="p-3">
-                  {p.userEmail ? (
+                  {p.user?.email ? (
                     <div className="flex flex-col">
-                      <span>{p.userName ?? '—'}</span>
+                      <span>{p.user.name ?? '—'}</span>
                       <span className="text-muted-foreground">
-                        {p.userEmail}
+                        {p.user.email}
                       </span>
                     </div>
                   ) : (
                     '—'
                   )}
                 </td>
-                <td className="p-3">{p.echoAppName ?? '—'}</td>
+                <td className="p-3">{p.echoApp?.name ?? '—'}</td>
                 <td className="p-3">
-                  {p.recipientGithubUrl ? (
+                  {p.recipientGithubLink?.githubUrl ? (
                     <a
-                      href={p.recipientGithubUrl}
+                      href={p.recipientGithubLink.githubUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="text-primary underline"
@@ -86,7 +72,7 @@ export function CompletedPayoutsTable({ pageSize = 10 }: Props) {
                       GitHub Link
                     </a>
                   ) : (
-                    (p.recipientAddress ?? '—')
+                    (p.recipientGithubLink?.githubUrl ?? '—')
                   )}
                 </td>
                 <td className="p-3">

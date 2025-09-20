@@ -1,41 +1,44 @@
-import { z } from 'zod';
-
 import {
   adminProcedure,
   createTRPCRouter,
   paginatedProcedure,
 } from '../../trpc';
 
-import { adminListPendingPayouts } from '@/services/db/ops/admin/pending-payouts';
-import { adminListCompletedPayouts } from '@/services/db/ops/admin/completed-payouts';
+import {
+  adminListPendingPayouts,
+  adminListCompletedPayouts,
+  adminGetPayoutSchema,
+} from '@/services/db/ops/admin/payouts';
 import {
   generateCheckoutUrlForPayout,
   pollMeritCheckout,
   syncPendingPayoutsOnce,
-} from '@/services/db/ops/payouts/merit';
+} from '@/services/merit';
 
 export const adminPayoutsRouter = createTRPCRouter({
-  listPending: paginatedProcedure
-    .concat(adminProcedure)
-    .query(async ({ ctx }) => {
-      return await adminListPendingPayouts(ctx.pagination);
-    }),
-  listCompleted: paginatedProcedure
-    .concat(adminProcedure)
-    .query(async ({ ctx }) => {
-      return await adminListCompletedPayouts(ctx.pagination);
-    }),
+  list: {
+    pending: paginatedProcedure
+      .concat(adminProcedure)
+      .query(async ({ ctx }) => {
+        return await adminListPendingPayouts(ctx.pagination);
+      }),
+    completed: paginatedProcedure
+      .concat(adminProcedure)
+      .query(async ({ ctx }) => {
+        return await adminListCompletedPayouts(ctx.pagination);
+      }),
+  },
   startMeritCheckout: adminProcedure
-    .input(z.object({ payoutId: z.string() }))
+    .input(adminGetPayoutSchema)
     .mutation(async ({ input }) => {
-      const checkoutUrl = await generateCheckoutUrlForPayout(input.payoutId);
+      const checkoutUrl = await generateCheckoutUrlForPayout(input);
       if (!checkoutUrl) {
         throw new Error('Checkout URL not found');
       }
       return { url: checkoutUrl.url };
     }),
   pollMeritCheckout: adminProcedure
-    .input(z.object({ payoutId: z.string() }))
+    .input(adminGetPayoutSchema)
     .mutation(async ({ input }) => {
       return await pollMeritCheckout(input.payoutId);
     }),

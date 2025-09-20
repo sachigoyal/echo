@@ -1,14 +1,14 @@
-import { db } from '@/services/db/client';
 import type { OutgoingPayment } from '@merit-systems/sdk';
-import { MeritSDK } from '@merit-systems/sdk';
-import { PayoutStatus } from '../referrals';
+import { PayoutStatus } from '@/types/payouts';
 import { env } from '@/env';
-
-const sdk = new MeritSDK({
-  apiKey: env.MERIT_API_KEY,
-  baseURL: env.MERIT_BASE_URL,
-  checkoutURL: env.MERIT_CHECKOUT_URL,
-});
+import { meritClient } from './client';
+import type { adminGetPayoutSchema } from '../db/ops/admin/payouts';
+import {
+  adminGetPayout,
+  adminListPendingPayouts,
+  adminUpdatePayout,
+} from '../db/ops/admin/payouts';
+import type z from 'zod';
 
 const SENDER_GITHUB_ID = Number(env.MERIT_SENDER_GITHUB_ID);
 
@@ -18,22 +18,17 @@ function generateCheckoutUrl(
   senderGithubId: number,
   payOutEchoId: string
 ) {
-  const checkoutUrl = sdk.checkout.generateCheckoutUrl({
+  return meritClient.checkout.generateCheckoutUrl({
     items: [{ type: 'user', id: payeeGithubId, amount: amount }],
     senderGithubId,
     groupId: payOutEchoId,
   });
-  return checkoutUrl;
 }
 
-export async function generateCheckoutUrlForPayout(payoutId: string) {
-  const payout = await db.payout.findUnique({
-    where: { id: payoutId },
-    include: {
-      recipientGithubLink: { select: { githubId: true } },
-      echoApp: { include: { githubLink: { select: { githubId: true } } } },
-    },
-  });
+export async function generateCheckoutUrlForPayout({
+  payoutId,
+}: z.infer<typeof adminGetPayoutSchema>) {
+  const payout = await adminGetPayout({ payoutId });
 
   if (!payout) {
     throw new Error('Payout not found');
@@ -44,10 +39,6 @@ export async function generateCheckoutUrlForPayout(payoutId: string) {
 
   const payeeGithubId = payout.recipientGithubLink.githubId;
   const amount = Number(payout.amount);
-  console.log('payeeGithubId', payeeGithubId);
-  console.log('amount', amount);
-  console.log('SENDER_GITHUB_ID', SENDER_GITHUB_ID);
-  console.log('payout.id', payout.id);
   const checkoutUrl = generateCheckoutUrl(
     payeeGithubId,
     amount,
@@ -61,11 +52,12 @@ async function pollForCompletedPayoutTransaction(
   senderGithubId: number,
   payOutEchoId: string
 ): Promise<OutgoingPayment[] | null> {
-  console.log('senderGithubId', senderGithubId);
-  console.log('payOutEchoId', payOutEchoId);
-  const payout = await sdk.payments.getPaymentsBySender(senderGithubId, {
-    group_id: payOutEchoId,
-  });
+  const payout = await meritClient.payments.getPaymentsBySender(
+    senderGithubId,
+    {
+      group_id: payOutEchoId,
+    }
+  );
   console.log('payout', payout);
   if (payout.items.length > 0) {
     return payout.items;
@@ -74,10 +66,7 @@ async function pollForCompletedPayoutTransaction(
 }
 
 async function logCompletedPayoutTransaction(payout: OutgoingPayment) {
-  const existing = await db.payout.findUnique({
-    where: { id: payout.group_id },
-    select: { status: true },
-  });
+  const existing = await adminGetPayout({ payoutId: payout.group_id! });
 
   if (!existing) {
     return;
@@ -87,23 +76,16 @@ async function logCompletedPayoutTransaction(payout: OutgoingPayment) {
     return;
   }
 
-  await db.payout.update({
-    where: { id: payout.group_id },
-    data: {
-      status: PayoutStatus.COMPLETED,
-      transactionId: payout.tx_hash,
-      senderAddress: payout.sender_id.toString(),
-    },
+  await adminUpdatePayout({
+    payoutId: payout.group_id!,
+    status: PayoutStatus.COMPLETED,
+    transactionId: payout.tx_hash,
+    senderAddress: payout.sender_id.toString(),
   });
 }
 
 export async function pollMeritCheckout(payoutId: string) {
-  const payout = await db.payout.findUnique({
-    where: { id: payoutId },
-    include: {
-      echoApp: { include: { githubLink: { select: { githubId: true } } } },
-    },
-  });
+  const payout = await adminGetPayout({ payoutId });
 
   if (!payout) {
     throw new Error('Payout not found');
@@ -132,14 +114,12 @@ export async function pollMeritCheckout(payoutId: string) {
 }
 
 export async function syncPendingPayoutsOnce() {
-  const pending = await db.payout.findMany({
-    where: { status: PayoutStatus.PENDING },
-    include: {
-      echoApp: { include: { githubLink: { select: { githubId: true } } } },
-    },
+  const pending = await adminListPendingPayouts({
+    page: 0,
+    page_size: 10000,
   });
 
-  for (const p of pending) {
+  for (const p of pending.items) {
     const senderGithubId = p.echoApp?.githubLink?.githubId ?? SENDER_GITHUB_ID;
     const results = await pollForCompletedPayoutTransaction(
       senderGithubId,
@@ -150,5 +130,5 @@ export async function syncPendingPayoutsOnce() {
     }
   }
 
-  return { scanned: pending.length };
+  return { scanned: pending.items.length };
 }

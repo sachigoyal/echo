@@ -112,9 +112,61 @@ export default tseslint.config(
           },
         },
       },
+      'no-db-client-outside-db': {
+        rules: {
+          'no-db-client-outside-db': {
+            meta: {
+              type: 'problem',
+              docs: {
+                description:
+                  'Disallow @/services/db/client imports outside of @db/ folder',
+                category: 'Best Practices',
+                recommended: true,
+              },
+              fixable: null,
+              schema: [],
+              messages: {
+                noDbClientOutsideDb:
+                  'Direct imports from @/services/db/client are not allowed outside of the @/services/db/ folder. Create a new operation in @/services/db/ops instead.',
+              },
+            },
+            create(context) {
+              const filename = context.getFilename();
+
+              // Allow imports within the @db/ folder structure
+              const isDbFolderFile = filename.includes('/services/db/');
+
+              // Allow imports in the client.ts file itself
+              const isClientFile = filename.includes('/services/db/client.ts');
+
+              if (isDbFolderFile || isClientFile) {
+                return {};
+              }
+
+              return {
+                ImportDeclaration(node) {
+                  // Check if the import source is @/services/db/client
+                  if (
+                    node.source &&
+                    node.source.type === 'Literal' &&
+                    typeof node.source.value === 'string' &&
+                    node.source.value === '@/services/db/client'
+                  ) {
+                    context.report({
+                      node,
+                      messageId: 'noDbClientOutsideDb',
+                    });
+                  }
+                },
+              };
+            },
+          },
+        },
+      },
     },
     rules: {
       'no-process-env-outside-env/no-process-env-outside-env': 'error',
+      'no-db-client-outside-db/no-db-client-outside-db': 'error',
     },
   }
 );

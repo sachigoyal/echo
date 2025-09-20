@@ -1,14 +1,6 @@
 import { db } from '@/services/db/client';
 
-export enum PayoutType {
-  REFERRAL = 'referral',
-  MARKUP = 'markup',
-}
-
-export enum PayoutStatus {
-  PENDING = 'pending',
-  COMPLETED = 'completed',
-}
+import { PayoutStatus, PayoutType } from '@/types/payouts';
 
 interface UserReferralEarnings {
   byApp: Record<string, number>;
@@ -22,6 +14,24 @@ interface UserReferralEarnings {
     }
   >;
 }
+
+export const listPendingReferralPayouts = async (userId: string) => {
+  return await db.payout.findMany({
+    where: {
+      userId,
+      type: PayoutType.REFERRAL,
+      status: PayoutStatus.PENDING,
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      echoAppId: true,
+      amount: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+};
 
 export async function calculateUserReferralEarnings(
   userId: string

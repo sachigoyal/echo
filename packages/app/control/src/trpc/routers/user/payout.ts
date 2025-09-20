@@ -6,16 +6,15 @@ import {
   calculateUserReferralEarningsForApp,
   claimAllReferralRewards,
   claimReferralRewardForApp,
-  PayoutStatus,
-  PayoutType,
-} from '@/services/db/ops/payouts/referrals';
-import { db } from '@/services/db/client';
+  listPendingReferralPayouts,
+} from '@/services/db/ops/user/payouts/referrals';
 import {
   calculateUserMarkupEarnings,
   calculateAppMarkupEarnings,
   claimAllMarkupRewards,
   claimMarkupRewardForApp,
-} from '@/services/db/ops/payouts/markup';
+  listPendingMarkupPayouts,
+} from '@/services/db/ops/user/payouts/markup';
 
 export const userPayoutRouter = createTRPCRouter({
   referral: {
@@ -24,21 +23,7 @@ export const userPayoutRouter = createTRPCRouter({
     }),
 
     pending: protectedProcedure.query(async ({ ctx }) => {
-      return await db.payout.findMany({
-        where: {
-          userId: ctx.session.user.id,
-          type: PayoutType.REFERRAL,
-          status: PayoutStatus.PENDING,
-        },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          echoAppId: true,
-          amount: true,
-          status: true,
-          createdAt: true,
-        },
-      });
+      return await listPendingReferralPayouts(ctx.session.user.id);
     }),
 
     claimForApp: protectedProcedure
@@ -69,35 +54,7 @@ export const userPayoutRouter = createTRPCRouter({
     }),
 
     pending: protectedProcedure.query(async ({ ctx }) => {
-      // Only show pending markup payouts for apps owned by the user
-      const ownedApps = await db.appMembership.findMany({
-        where: {
-          userId: ctx.session.user.id,
-          role: 'owner',
-          isArchived: false,
-        },
-        select: { echoAppId: true },
-      });
-
-      if (ownedApps.length === 0) return [];
-
-      const appIds = ownedApps.map(a => a.echoAppId);
-
-      return await db.payout.findMany({
-        where: {
-          type: PayoutType.MARKUP,
-          status: PayoutStatus.PENDING,
-          echoAppId: { in: appIds },
-        },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          echoAppId: true,
-          amount: true,
-          status: true,
-          createdAt: true,
-        },
-      });
+      return await listPendingMarkupPayouts(ctx.session.user.id);
     }),
 
     claimForApp: protectedProcedure

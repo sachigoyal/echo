@@ -1,5 +1,6 @@
 import { db } from '@/services/db/client';
-import { PayoutStatus, PayoutType } from '@/services/db/ops/payouts/referrals';
+
+import { PayoutStatus, PayoutType } from '@/types/payouts';
 
 interface AppMarkupEarnings {
   byApp: Record<string, number>;
@@ -19,6 +20,32 @@ interface AppMarkupEarnings {
     }
   >;
 }
+
+export const listPendingMarkupPayouts = async (userId: string) => {
+  return await db.payout.findMany({
+    where: {
+      type: PayoutType.MARKUP,
+      status: PayoutStatus.PENDING,
+      echoApp: {
+        appMemberships: {
+          some: {
+            userId,
+            role: 'owner',
+            isArchived: false,
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      echoAppId: true,
+      amount: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+};
 
 export async function calculateAppMarkupEarnings(
   echoAppId: string
