@@ -29,6 +29,10 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        working-directory: ./packages/app/control
+        run: pnpm run prisma:generate
+
       - name: Run CI checks
         working-directory: ./packages/app/control
         run: pnpm run ci-checks
