@@ -38,8 +38,9 @@ export function EchoTopUpButton({ echo }: { echo: EchoContextValue }) {
             className="flex-1"
             size="lg"
             variant="turbo"
-            disabled={isLoading}
+            disabled={isLoading || amount <= 0}
             onClick={() => {
+              if (amount <= 0) return;
               setIsLoading(true);
               createPaymentLink(amount)
                 .then(url => window.open(url, '_blank'))
