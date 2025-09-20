@@ -33,6 +33,18 @@ jobs:
         working-directory: ./packages/app/control
         run: pnpm run prisma:generate
 
-      - name: Run CI checks
+      - name: Check Formatting
         working-directory: ./packages/app/control
-        run: pnpm run ci-checks
+        run: pnpm run format:check
+
+      - name: Check Knip
+        working-directory: ./packages/app/control
+        run: pnpm run knip
+
+      - name: Check Types
+        working-directory: ./packages/app/control
+        run: pnpm run check-types
+
+      - name: Check Lint
+        working-directory: ./packages/app/control
+        run: pnpm run lint
