@@ -15,9 +15,9 @@ export const uploadRouter = createTRPCRouter({
 
       try {
         while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
+          const value = await reader.read();
+          if (value.done) break;
+          chunks.push(value.value as Uint8Array);
         }
       } finally {
         reader.releaseLock();
