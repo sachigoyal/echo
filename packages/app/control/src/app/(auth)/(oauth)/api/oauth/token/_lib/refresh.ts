@@ -1,25 +1,23 @@
 import z from 'zod';
 
-import { nanoid } from 'nanoid';
-
-import { addSeconds, subMilliseconds } from 'date-fns';
-
 import { tokenResponse } from './response';
 
-import { db } from '@/services/db/client';
-
 import { logger } from '@/logger';
-import { env } from '@/env';
 
 import { createEchoAccessJwt } from '@/lib/access-token';
 
-import type { Prisma } from '@/generated/prisma';
 import type { TokenMetadata } from './types';
 import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 import {
   OAuthError,
   OAuthErrorType,
 } from '@/app/(auth)/(oauth)/_lib/oauth-error';
+import {
+  archiveRefreshToken,
+  createRefreshToken,
+  findRefreshToken,
+} from '@/services/db/ops/auth/refresh';
+import { updateAppSession } from '@/services/db/ops/auth/session';
 
 export const handleRefreshTokenSchema = z.object({
   refresh_token: z.string({
@@ -42,32 +40,7 @@ export async function handleRefreshToken(
     },
   });
 
-  const refreshToken = await db.refreshToken.findUnique({
-    where: {
-      token,
-      OR: [
-        { isArchived: false, archivedAt: null },
-        {
-          isArchived: true,
-          archivedAt: {
-            lt: subMilliseconds(
-              new Date(),
-              env.OAUTH_REFRESH_TOKEN_ARCHIVE_GRACE_MS
-            ),
-          },
-          expiresAt: { lt: new Date() },
-        },
-      ],
-      session: { isArchived: false, revokedAt: null },
-      echoApp: { isArchived: false },
-      user: { isArchived: false },
-    },
-    include: {
-      user: true,
-      echoApp: true,
-      session: true,
-    },
-  });
+  const refreshToken = await findRefreshToken(token);
 
   if (!refreshToken) {
     throw new OAuthError({
@@ -101,37 +74,25 @@ export async function handleRefreshToken(
   const sessionId = session.id;
 
   // Deactivate old refresh token
-  await archiveRefreshToken(token);
 
-  const newRefreshToken = await db.$transaction(async tx => {
-    const [newRefreshToken] = await Promise.all([
-      await createRefreshToken(
-        {
-          userId: user.id,
-          echoAppId: app.id,
-          scope,
-          sessionId,
-        },
-        tx
-      ),
-      await db.appSession.update({
-        where: { id: sessionId },
-        data: {
-          lastSeenAt: new Date(),
-          ...(metadata?.userAgent ? { userAgent: metadata.userAgent } : {}),
-          ...(metadata?.ipAddress ? { ipAddress: metadata.ipAddress } : {}),
-          ...(metadata?.deviceName ? { deviceName: metadata.deviceName } : {}),
-        },
-      }),
-    ]);
-
-    return newRefreshToken;
-  });
+  const [newRefreshToken, updatedSession] = await Promise.all([
+    createRefreshToken({
+      userId: user.id,
+      echoAppId: app.id,
+      scope,
+      sessionId,
+    }),
+    updateAppSession({
+      sessionId,
+      metadata,
+    }),
+    archiveRefreshToken(token),
+  ]);
 
   const accessToken = await createEchoAccessJwt({
     user_id: user.id,
     app_id: app.id,
-    session_id: sessionId,
+    session_id: updatedSession.id,
     scope,
   });
 
@@ -142,45 +103,3 @@ export async function handleRefreshToken(
     refreshToken: newRefreshToken,
   });
 }
-
-const archiveRefreshToken = async (refreshToken: string) => {
-  await db.refreshToken.update({
-    where: { token: refreshToken },
-    data: { isArchived: true, archivedAt: new Date() },
-  });
-};
-
-const createRefreshTokenParamsSchema = z.object({
-  userId: z.uuid(),
-  echoAppId: z.uuid(),
-  scope: z.string().default(''),
-  sessionId: z.uuid(),
-});
-
-export const createRefreshToken = async (
-  params: z.input<typeof createRefreshTokenParamsSchema>,
-  tx?: Prisma.TransactionClient
-) => {
-  const client = tx ?? db;
-  const tokenData = createRefreshTokenParamsSchema.parse(params);
-  return client.refreshToken.create({
-    data: {
-      token: `refresh_${nanoid(48)}`,
-      expiresAt: createEchoRefreshTokenExpiry(),
-      ...tokenData,
-    },
-  });
-};
-
-const createEchoRefreshTokenExpiry = () => {
-  const expiry = addSeconds(new Date(), env.OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS);
-  logger.emit({
-    severityText: 'DEBUG',
-    body: 'Echo refresh token expiry calculated',
-    attributes: {
-      expiryTime: expiry.toISOString(),
-      function: 'createEchoRefreshTokenExpiry',
-    },
-  });
-  return expiry;
-};

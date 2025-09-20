@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 
+// eslint-disable-next-line no-db-client-outside-db/no-db-client-outside-db
 import { db } from '../src/services/db/client';
 import { faker } from '@faker-js/faker';
 import { addDays, subDays, format } from 'date-fns';
