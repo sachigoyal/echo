@@ -84,6 +84,7 @@ COPY packages/sdk/next/ ./packages/sdk/next/
 COPY packages/sdk/react/ ./packages/sdk/react/
 COPY packages/sdk/examples/next/ ./packages/sdk/examples/next/
 COPY packages/sdk/examples/vite/ ./packages/sdk/examples/vite/
+COPY packages/sdk/component-registry/ ./packages/sdk/component-registry/
 
 # Install all workspace dependencies
 WORKDIR /app
