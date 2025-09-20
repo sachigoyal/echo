@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@ai-sdk/openai':
-        specifier: ^2.0.26
-        version: 2.0.28(zod@4.1.8)
       '@ai-sdk/react':
         specifier: ^2.0.44
         version: 2.0.44(react@19.1.0)(zod@4.1.8)

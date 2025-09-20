@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-typescript-sdk",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "TypeScript SDK for Echo platform",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -29,9 +29,7 @@
     "update-models:gemini": "tsx scripts/update-gemini-models.ts",
     "update-models:openrouter": "tsx scripts/update-openrouter-models.ts",
     "update-all-models": "pnpm run update-models:openai && pnpm run update-models:anthropic && pnpm run update-models:gemini && pnpm run update-models:openrouter",
-    "prepublishOnly": "pnpm run build",
-    "publish:test": "pnpm publish --access public --dry-run",
-    "publish:real": "pnpm publish --access public"
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [
     "echo",
@@ -57,10 +55,10 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.6",
-    "@ai-sdk/google": "^2.0.7",
-    "@ai-sdk/openai": "^2.0.16",
-    "@openrouter/ai-sdk-provider": "^1.2.0",
-    "ai": "^5.0.18"
+    "@ai-sdk/anthropic": "2.0.17",
+    "@ai-sdk/google": "2.0.14",
+    "@ai-sdk/openai": "2.0.32",
+    "@openrouter/ai-sdk-provider": "1.2.0",
+    "ai": "5.0.47"
   }
 }
