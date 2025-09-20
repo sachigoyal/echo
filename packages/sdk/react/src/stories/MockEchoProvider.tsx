@@ -20,6 +20,7 @@ const mockUser: EchoUser = {
   email: 'demo@echo-systems.com',
   name: 'Demo User',
   image: 'https://avatars.githubusercontent.com/u/11855252?v=4',
+  picture: 'https://avatars.githubusercontent.com/u/11855252?v=4',
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
 };
