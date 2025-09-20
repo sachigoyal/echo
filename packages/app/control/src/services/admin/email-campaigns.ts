@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
-import { queueJob } from '@/services/email/emailer/queue-job';
-import { EmailCampaign } from '../email/emailer/types';
+import { queueJob } from '@/services/email/queue';
+import { EmailType } from '../email/emails/types';
 
 type CampaignLabel = {
   key: string;
@@ -9,12 +9,12 @@ type CampaignLabel = {
 };
 
 const AVAILABLE_EMAIL_CAMPAIGNS: CampaignLabel[] = [
-  { key: EmailCampaign.LIMBO_APP_REMINDER, label: 'Limbo App Reminder' },
-  { key: EmailCampaign.CREATE_APP_FOLLOW_UP, label: 'Create App Follow-Up' },
+  { key: EmailType.LIMBO_APP_REMINDER, label: 'Limbo App Reminder' },
+  { key: EmailType.CREATE_APP_FOLLOW_UP, label: 'Create App Follow-Up' },
 ];
 
-function isValidEmailCampaign(key: string): key is EmailCampaign {
-  return (Object.values(EmailCampaign) as string[]).includes(key);
+function isValidEmailCampaign(key: string): key is EmailType {
+  return (Object.values(EmailType) as string[]).includes(key);
 }
 
 export function listAvailableEmailCampaigns(): CampaignLabel[] {
