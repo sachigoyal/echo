@@ -37,7 +37,7 @@ import {
   getUserGlobalBalance,
 } from '@/services/db/ops/user/balance';
 import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
-import { getCustomerSpendInfoForApp } from '@/lib/spend-pools';
+import { getUserSpendInfoForApp } from '@/services/db/ops/user/app-spend-pool';
 
 import { userIdSchema } from '@/services/db/lib/schemas';
 import {
@@ -88,7 +88,7 @@ export const userRouter = createTRPCRouter({
       free: protectedProcedure
         .input(appIdSchema)
         .query(async ({ ctx, input }) => {
-          return getCustomerSpendInfoForApp(ctx.session.user.id, input);
+          return getUserSpendInfoForApp(ctx.session.user.id, input);
         }),
     }),
   },

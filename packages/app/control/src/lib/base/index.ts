@@ -1,7 +1,12 @@
-import type { NextRequest } from 'next/server';
 import { db } from '../../services/db/client';
-import { processPaymentUpdate, PaymentStatus } from '../payment-processing';
+
+import { processPaymentUpdate } from '@/services/db/ops/payments';
+
 import { logger } from '@/logger';
+
+import { PaymentStatus } from '@/types/payments';
+
+import type { NextRequest } from 'next/server';
 
 export const formatAmountFromQueryParams = (
   req: NextRequest

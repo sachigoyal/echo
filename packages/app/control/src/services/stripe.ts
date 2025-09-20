@@ -5,9 +5,10 @@ import { z } from 'zod';
 import { getAppWithOwnerCheck } from './db/ops/apps/get';
 import { createPayment } from './db/ops/payments';
 
-import { PaymentStatus } from '@/lib/payment-processing';
 import { logger } from '@/logger';
 import { env } from '@/env';
+
+import { PaymentStatus } from '@/types/payments';
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-05-28.basil',

@@ -2,6 +2,7 @@ import { db } from '@/services/db/client';
 import type { AppId } from './lib/schemas';
 import { AppRole } from '@/services/db/ops/apps/permissions';
 import z from 'zod';
+import type { Payment, Prisma } from '@/generated/prisma';
 
 export const getFreeTierSpendPool = async (appId: AppId, userId: string) => {
   const spendPool = await db.spendPool.findFirst({
@@ -68,3 +69,58 @@ export const updateFreeTierSpendPool = async (
     data: parsedInput.data,
   });
 };
+
+export async function updateSpendPoolFromPayment(
+  tx: Prisma.TransactionClient,
+  echoAppId: string,
+  paymentRecord: Payment,
+  amountInCents: number,
+  metadata: Record<string, string>
+): Promise<void> {
+  // Get or create the free tier spend pool for this app
+  let spendPool = await tx.spendPool.findFirst({
+    where: {
+      echoAppId,
+      isArchived: false,
+    },
+  });
+
+  spendPool ??= await tx.spendPool.create({
+    data: {
+      name:
+        metadata.poolName ??
+        `Free Tier Credits - ${new Date().toISOString().split('T')[0]}`,
+      description: 'Free tier credits pool for app users',
+      totalPaid: 0, // Will be funded by payments
+      echoAppId,
+    },
+  });
+
+  // Fund the spend pool with this payment
+  await tx.payment.update({
+    where: { id: paymentRecord.id },
+    data: {
+      spendPoolId: spendPool.id,
+    },
+  });
+
+  // Update the total amount in the spend pool
+  await tx.spendPool.update({
+    where: { id: spendPool.id },
+    data: {
+      totalPaid: {
+        increment: amountInCents,
+      },
+    },
+  });
+
+  // Set default spend limit if provided
+  if (metadata?.defaultSpendLimit) {
+    const defaultLimit = parseFloat(metadata.defaultSpendLimit);
+    if (!isNaN(defaultLimit) && defaultLimit > 0) {
+      console.log(
+        `Default spend limit of $${defaultLimit} will be applied to new users for pool ${spendPool.id}`
+      );
+    }
+  }
+}

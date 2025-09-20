@@ -1,14 +1,20 @@
 import z from 'zod';
 
-import { db } from '@/services/db/client';
-import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
-
-import type { Payment } from '@/generated/prisma';
-import { EnumPaymentSource, type Prisma } from '@/generated/prisma';
-import { logger } from '@/logger';
-import { updateSpendPoolFromPayment } from '@/lib/spend-pools';
 import { Decimal } from '@/generated/prisma/runtime/library';
+
+import { db } from '@/services/db/client';
+
+import { updateSpendPoolFromPayment } from '@/services/db/ops/apps/free-tier';
+import { processPaymentUpdate } from '@/services/db/ops/payments';
+
+import { logger } from '@/logger';
+
+import { PaymentStatus } from '@/types/payments';
+import { EnumPaymentSource } from '@/generated/prisma';
+
 import type { User } from '@auth/core/types';
+import type { Payment } from '@/generated/prisma';
+import type { Prisma } from '@/generated/prisma';
 
 export const mintCreditsToUserSchema = z.object({
   userId: z.uuid(),

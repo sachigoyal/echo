@@ -1,14 +1,19 @@
-import type { NextRequest } from 'next/server';
+import Stripe from 'stripe';
+
 import { NextResponse } from 'next/server';
 import { db } from '@/services/db/client';
+
 import {
   handlePaymentSuccess,
   processPaymentUpdate,
-  PaymentStatus,
-} from '@/lib/payment-processing';
-import Stripe from 'stripe';
+} from '@/services/db/ops/payments';
+
 import { logger } from '@/logger';
 import { env } from '@/env';
+
+import { PaymentStatus } from '@/types/payments';
+
+import type { NextRequest } from 'next/server';
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-05-28.basil',

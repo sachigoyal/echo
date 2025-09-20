@@ -1,14 +1,7 @@
-import type { Prisma } from '@/generated/prisma';
-import { db } from '../../services/db/client';
+import { db } from '../../client';
 
-export const getCustomerSpendInfoForApp = async (
-  userId: string,
-  appId: string,
-  tx?: Prisma.TransactionClient
-) => {
-  const client = tx ?? db;
-
-  const spendPool = await client.spendPool.findFirst({
+export const getUserSpendInfoForApp = async (userId: string, appId: string) => {
+  const spendPool = await db.spendPool.findFirst({
     where: {
       echoAppId: appId,
       isArchived: false,
