@@ -1,7 +1,7 @@
 'use client';
 
 import { TrendingUp } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import {
   Card,
@@ -54,6 +54,7 @@ interface ChartAreaLinearProps {
   xAxisDataKey: string;
   areaDataKey: string;
   xAxisTickFormatter?: (value: unknown) => string;
+  yAxisTickFormatter?: (value: unknown) => string;
   footerTrend?: {
     percentage: string;
     direction: 'up' | 'down';
@@ -70,6 +71,7 @@ export function ChartAreaLinear({
   xAxisDataKey,
   areaDataKey,
   xAxisTickFormatter = formatXAxisTick,
+  yAxisTickFormatter,
   footerTrend,
   footerDateRange,
 }: ChartAreaLinearProps) {
@@ -98,6 +100,12 @@ export function ChartAreaLinear({
               axisLine={false}
               tickMargin={8}
               tickFormatter={xAxisTickFormatter}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={yAxisTickFormatter}
             />
             <ChartTooltip
               cursor={false}

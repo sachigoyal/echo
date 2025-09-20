@@ -29,7 +29,7 @@ export async function getPaymentsOverviewMetrics(): Promise<
   const summaryQuery = `
     WITH p AS (
       SELECT 
-        COALESCE(SUM(p.amount), 0)::double precision AS total_amount,
+        COALESCE(SUM(CASE WHEN p.status = 'completed' THEN p.amount END), 0)::double precision AS total_amount,
         COALESCE(SUM(CASE WHEN p.source = 'stripe' and p.status = 'completed' THEN p.amount END), 0)::double precision AS stripe_amount,
         COALESCE(SUM(CASE WHEN p.source = 'admin' and p.status = 'completed' THEN p.amount END), 0)::double precision AS admin_amount,
         COALESCE(SUM(CASE WHEN p.source = 'signUpGift' and p.status = 'completed' THEN p.amount END), 0)::double precision AS signup_amount,
@@ -66,14 +66,14 @@ export async function getPaymentsOverviewMetrics(): Promise<
         (NOW()::date - INTERVAL '7 days') AS end_prev
     ), t AS (
       SELECT 
-        COALESCE(SUM(CASE WHEN p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS total_current,
-        COALESCE(SUM(CASE WHEN p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS total_prev,
-        COALESCE(SUM(CASE WHEN p.source = 'stripe' AND p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS stripe_current,
-        COALESCE(SUM(CASE WHEN p.source = 'stripe' AND p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS stripe_prev,
-        COALESCE(SUM(CASE WHEN p.source = 'admin' AND p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS admin_current,
-        COALESCE(SUM(CASE WHEN p.source = 'admin' AND p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS admin_prev,
-        COALESCE(SUM(CASE WHEN p.source = 'signUpGift' AND p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS signup_current,
-        COALESCE(SUM(CASE WHEN p.source = 'signUpGift' AND p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS signup_prev
+        COALESCE(SUM(CASE WHEN p.status = 'completed' AND p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS total_current,
+        COALESCE(SUM(CASE WHEN p.status = 'completed' AND p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS total_prev,
+        COALESCE(SUM(CASE WHEN p.source = 'stripe' AND p.status = 'completed' AND p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS stripe_current,
+        COALESCE(SUM(CASE WHEN p.source = 'stripe' AND p.status = 'completed' AND p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS stripe_prev,
+        COALESCE(SUM(CASE WHEN p.source = 'admin' AND p.status = 'completed' AND p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS admin_current,
+        COALESCE(SUM(CASE WHEN p.source = 'admin' AND p.status = 'completed' AND p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS admin_prev,
+        COALESCE(SUM(CASE WHEN p.source = 'signUpGift' AND p.status = 'completed' AND p."createdAt" >= r.start_current AND p."createdAt" < r.end_current THEN p.amount END), 0)::double precision AS signup_current,
+        COALESCE(SUM(CASE WHEN p.source = 'signUpGift' AND p.status = 'completed' AND p."createdAt" >= r.start_prev AND p."createdAt" < r.end_prev THEN p.amount END), 0)::double precision AS signup_prev
       FROM "payments" p, ranges r
       WHERE p."isArchived" = false
     ), u AS (
@@ -123,7 +123,7 @@ export async function getPaymentsOverviewMetrics(): Promise<
     {
       id: 'totalPaymentVolume',
       title: 'Total Payment Volume',
-      description: 'Total amount paid into the platform (all sources)',
+      description: 'Total completed payments on the platform (all sources)',
       displayType: 'currency',
       value: s.totalAmount,
       trendValue: percentChange(t.total_current, t.total_prev),

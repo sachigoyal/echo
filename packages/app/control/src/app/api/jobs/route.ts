@@ -9,8 +9,7 @@ const nextSigningKey =
   process.env.QSTASH_NEXT_SIGNING_KEY || 'qstash-signing-key-2';
 
 async function handler(request: Request) {
-  
-  const candidate = await request.json().catch((error) => {
+  const candidate = await request.json().catch(error => {
     logger.emit({
       severityText: 'ERROR',
       body: 'Failed to parse request JSON',
@@ -21,7 +20,7 @@ async function handler(request: Request) {
     });
     return null;
   });
-  
+
   if (!candidate) {
     return Response.json(
       { success: false, error: 'Invalid JSON' },
@@ -35,7 +34,7 @@ async function handler(request: Request) {
       severityText: 'ERROR',
       body: 'Schema validation failed',
       attributes: {
-      errors: parsed.error.format(),
+        errors: parsed.error.format(),
       },
     });
     return Response.json(
@@ -48,8 +47,7 @@ async function handler(request: Request) {
 
   switch (envelope.type) {
     case JobType.EMAIL: {
-      
-      const result = await processEmailJob(envelope.job).catch((error) => {
+      const result = await processEmailJob(envelope.job).catch(error => {
         logger.emit({
           severityText: 'ERROR',
           body: 'Email job processing failed',
@@ -59,7 +57,7 @@ async function handler(request: Request) {
         });
         return { success: false, error: error.message };
       });
-      
+
       if (result && 'success' in result && !result.success) {
         return Response.json(
           { success: false, error: result.error },
