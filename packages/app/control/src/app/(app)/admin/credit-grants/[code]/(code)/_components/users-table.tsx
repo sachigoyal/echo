@@ -48,7 +48,7 @@ export const CreditGrantUsersTable: React.FC<Props> = ({ code }) => {
     <BaseCreditGrantUsersTable
       pagination={{
         hasNext: hasNextPage,
-        fetchNextPage,
+        fetchNextPage: () => void fetchNextPage(),
         isFetchingNextPage,
       }}
     >

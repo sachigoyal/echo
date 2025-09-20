@@ -11,8 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import type { ChartConfig } from '@/components/ui/chart';
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -43,7 +43,7 @@ function parseDateLike(value: unknown): Date | null {
 
 function formatXAxisTick(value: unknown): string {
   const d = parseDateLike(value);
-  return d ? defaultDateFormatter.format(d) : String(value ?? '');
+  return d ? defaultDateFormatter.format(d) : String((value as string) ?? '');
 }
 
 interface ChartAreaLinearProps {
@@ -121,7 +121,7 @@ export function ChartAreaLinear({
           </AreaChart>
         </ChartContainer>
       </CardContent>
-      {(footerTrend || footerDateRange) && (
+      {(footerTrend ?? footerDateRange) && (
         <CardFooter>
           <div className="flex w-full items-start gap-2 text-sm">
             <div className="grid gap-2">

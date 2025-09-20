@@ -1,11 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import {
-  ColumnDef,
-  flexRender,
-  Table as TanStackTable,
-} from '@tanstack/react-table';
+import type { ColumnDef, Table as TanStackTable } from '@tanstack/react-table';
+import { flexRender } from '@tanstack/react-table';
 
 import {
   Table,
@@ -18,9 +15,10 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { PaginationControls } from './PaginationControls';
 import { MultiSortControls } from './SortControls';
-import { MultiFilterControls, ColumnType } from './FilterControls';
+import type { ColumnType } from './FilterControls';
+import { MultiFilterControls } from './FilterControls';
 import { TableHeader as CustomTableHeader } from './TableHeader';
-import { ActionConfig, ActionGroup } from './ActionControls';
+import type { ActionConfig, ActionGroup } from './ActionControls';
 import { SortableColumnHeader } from './SortableColumnHeader';
 import { getFilterableColumnConfigs, getSortableColumns } from './utils';
 

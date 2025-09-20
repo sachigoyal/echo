@@ -47,7 +47,7 @@ export async function scheduleLimboAppReminderEmail(
       severityText: 'ERROR',
       body: 'Email Error: Error sending limbo app reminder email',
       attributes: {
-        error: error instanceof Error ? error.message : String(error),
+        error: error instanceof Error ? error.message : 'Unknown error',
         function: 'scheduleLimboAppReminderEmail',
         userId,
       },

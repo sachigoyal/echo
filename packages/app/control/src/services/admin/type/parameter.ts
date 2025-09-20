@@ -1,4 +1,4 @@
-import { FilterValue } from '@/services/lib/filtering';
+import type { FilterValue } from '@/services/lib/filtering';
 
 // Values allowed as SQL query parameters
 export type SQLParameter = string | number | boolean | Date | null;

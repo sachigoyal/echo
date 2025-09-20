@@ -98,7 +98,7 @@ export default async function OAuthAuthorizePage(
       <NewUserAuthorize
         name={name}
         profilePictureUrl={profilePictureUrl}
-        userImage={user.image || null}
+        userImage={user.image ?? null}
         authParams={authParams}
       />
     );
@@ -108,7 +108,7 @@ export default async function OAuthAuthorizePage(
     <ExistingUserAuthorize
       name={name}
       profilePictureUrl={profilePictureUrl}
-      userImage={user.image || null}
+      userImage={user.image ?? null}
       ownerName={owner.name ?? ''}
       scopes={scopes}
       authParams={authParams}

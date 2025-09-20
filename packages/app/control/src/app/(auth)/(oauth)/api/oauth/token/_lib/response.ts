@@ -1,8 +1,8 @@
 import { differenceInSeconds } from 'date-fns';
 
-import { createEchoAccessJwt } from '@/lib/access-token';
+import type { createEchoAccessJwt } from '@/lib/access-token';
 
-import { createRefreshToken } from './refresh';
+import type { createRefreshToken } from './refresh';
 
 import type { EchoApp, User } from '@/generated/prisma';
 
@@ -31,11 +31,11 @@ export const tokenResponse = ({
   user: {
     id: user.id,
     email: user.email,
-    name: user.name || '',
+    name: user.name ?? '',
   },
   echo_app: {
     id: app.id,
     name: app.name,
-    description: app.description || '',
+    description: app.description ?? '',
   },
 });

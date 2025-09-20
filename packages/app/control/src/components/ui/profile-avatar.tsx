@@ -51,7 +51,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
           src={src}
           width={112}
           height={112}
-          alt={alt || `${name} profile`}
+          alt={alt ?? `${name} profile`}
           className={cn(
             sizeClasses.container,
             roundedClass,

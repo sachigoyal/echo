@@ -1,4 +1,4 @@
-import { ChartAreaLinear } from '@/components/overview-chart/LinearChart';
+import type { ChartAreaLinear } from '@/components/overview-chart/LinearChart';
 
 // Individual chart config (discriminated union)
 export type ChartItem = {

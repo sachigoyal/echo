@@ -49,14 +49,14 @@ export const POST = oauthRoute
     const metadata: TokenMetadata = {
       deviceName: undefined,
       userAgent:
-        req.headers.get('x-client-user-agent') ||
-        req.headers.get('user-agent') ||
+        req.headers.get('x-client-user-agent') ??
+        req.headers.get('user-agent') ??
         undefined,
       ipAddress:
-        req.headers.get('x-client-ip') ||
-        req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-        req.headers.get('x-real-ip') ||
-        req.headers.get('cf-connecting-ip') ||
+        req.headers.get('x-client-ip') ??
+        req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+        req.headers.get('x-real-ip') ??
+        req.headers.get('cf-connecting-ip') ??
         undefined,
     };
 

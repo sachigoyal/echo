@@ -4,7 +4,8 @@ import { mintCreditsToUser } from './mint';
 
 import { db } from '@/lib/db';
 
-import { EnumPaymentSource, Prisma } from '@/generated/prisma';
+import type { Prisma } from '@/generated/prisma';
+import { EnumPaymentSource } from '@/generated/prisma';
 import { getPublicUser } from '../user/get';
 
 export const creditGrantCodeSchema = z.object({

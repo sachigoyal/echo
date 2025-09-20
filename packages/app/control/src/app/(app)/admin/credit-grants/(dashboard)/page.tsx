@@ -16,7 +16,7 @@ export default async function AdminCodesPage(
 ) {
   await userOrRedirect('/admin/credit-grants', props);
 
-  api.admin.creditGrants.list.prefetchInfinite({});
+  void api.admin.creditGrants.list.prefetchInfinite({});
 
   return (
     <HydrateClient>

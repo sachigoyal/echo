@@ -26,7 +26,7 @@ import {
 } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Route } from 'next';
+import type { Route } from 'next';
 
 interface Props {
   appId: string;

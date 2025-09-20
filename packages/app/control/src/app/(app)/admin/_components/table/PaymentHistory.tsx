@@ -8,11 +8,11 @@ import {
   StringCell,
   toNumber,
 } from '@/components/server-side-data-table';
-import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import type { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
 import { api } from '@/trpc/client';
 import { UserLink } from '@/app/(app)/admin/_components';
-import { EnumPaymentSource } from '@/generated/prisma';
-import { RouterOutputs } from '@/trpc/client';
+import type { EnumPaymentSource } from '@/generated/prisma';
+import type { RouterOutputs } from '@/trpc/client';
 
 // Helper function to format payment source
 const formatPaymentSource = (source: EnumPaymentSource): string => {

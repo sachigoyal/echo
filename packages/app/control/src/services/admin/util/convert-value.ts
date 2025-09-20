@@ -1,4 +1,4 @@
-import { NonArrayFilterValue } from '../type/parameter';
+import type { NonArrayFilterValue } from '../type/parameter';
 
 // Convert filter value to appropriate type for numeric columns
 export const convertValue = (

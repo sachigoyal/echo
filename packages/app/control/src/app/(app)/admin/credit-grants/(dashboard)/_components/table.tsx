@@ -46,7 +46,7 @@ export const CreditGrantsTable = () => {
     <BaseCreditGrantTable
       pagination={{
         hasNext: hasNextPage,
-        fetchNextPage,
+        fetchNextPage: () => void fetchNextPage(),
         isFetchingNextPage,
       }}
     >
@@ -61,8 +61,8 @@ export const CreditGrantsTable = () => {
               <TableCell className="font-bold">
                 {formatCurrency(Number(creditGrant.grantAmount))}
               </TableCell>
-              <TableCell>{creditGrant.maxUses || 'Unlimited'}</TableCell>
-              <TableCell>{creditGrant.maxUsesPerUser || 'Unlimited'}</TableCell>
+              <TableCell>{creditGrant.maxUses ?? 'Unlimited'}</TableCell>
+              <TableCell>{creditGrant.maxUsesPerUser ?? 'Unlimited'}</TableCell>
               <TableCell>{creditGrant.uses}</TableCell>
               <TableCell>
                 {format(creditGrant.expiresAt, 'MM/dd/yyyy')}

@@ -49,7 +49,7 @@ export const useAppConnectionSetup = (appId: string) => {
 
   useEffect(() => {
     setShouldRefetchTransactions(!hasMadeTransactions);
-    utils.apps.app.stats.bucketed.invalidate({ appId });
+    void utils.apps.app.stats.bucketed.invalidate({ appId });
   }, [hasMadeTransactions, appId, utils]);
 
   const connectionSteps = useMemo(() => {

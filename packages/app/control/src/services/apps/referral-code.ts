@@ -3,7 +3,7 @@ import z from 'zod';
 import { db } from '@/lib/db';
 
 import { appIdSchema } from './lib/schemas';
-import { UserId } from '@/services/lib/schemas';
+import type { UserId } from '@/services/lib/schemas';
 
 import { env } from '@/env';
 
@@ -110,5 +110,5 @@ const getReferralLinkUrl = ({
   echoAppId: string;
   code: string;
 }) => {
-  return `${homePage || `${env.NEXT_PUBLIC_APP_URL}/app/${echoAppId}`}?referral_code=${code}`;
+  return `${homePage ?? `${env.NEXT_PUBLIC_APP_URL}/app/${echoAppId}`}?referral_code=${code}`;
 };

@@ -1,18 +1,45 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 /**
  * User Apps Service - Shows all apps owned by a specific user with comprehensive usage and financial data
  * This shows how to create a TRPC procedure that accepts standardized pagination,
  * sorting, and filtering parameters and returns user app data in the expected format.
  */
 
-import {
-  PaginationParams,
-  toPaginatedReponse,
-} from '@/services/lib/pagination';
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { PaginationParams } from '@/services/lib/pagination';
+import { toPaginatedReponse } from '@/services/lib/pagination';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
-import { FilterParams } from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
+
+interface UserAppRow {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+  totalUsers: number;
+  totalTransactions: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  totalSpent: number;
+  totalSpentFreeTier: number;
+  totalSpentUserBalances: number;
+  totalReferralProfitEarned: number;
+  totalMarkupProfitEarned: number;
+  totalTransactionCosts: number;
+  lastTransactionAt: Date;
+}
+
+interface PayoutData {
+  echoAppId: string;
+  userId: string;
+  type: string;
+  totalClaimed: number;
+}
 
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
@@ -55,16 +82,11 @@ const getPayoutInformation = async (appIds: string[]) => {
   // Extract user IDs from app ownership (we'll need to get this from the main query context)
   const userIds = appIds; // This is a simplification - in practice we'd need the actual user IDs
 
-  const payoutsData = (await db.$queryRawUnsafe(
+  const payoutsData = await db.$queryRawUnsafe<PayoutData[]>(
     payoutsQuery,
     appIds,
     userIds
-  )) as Array<{
-    echoAppId: string | null;
-    userId: string | null;
-    type: string;
-    totalClaimed: number;
-  }>;
+  );
 
   const referralPayouts = new Map<string, number>();
   const markupPayouts = new Map<string, number>();
@@ -74,13 +96,13 @@ const getPayoutInformation = async (appIds: string[]) => {
       // For referral payouts, we group by user (since referral profits are user-based)
       referralPayouts.set(
         row.userId,
-        (referralPayouts.get(row.userId) || 0) + row.totalClaimed
+        (referralPayouts.get(row.userId) ?? 0) + row.totalClaimed
       );
     } else if (row.type === 'markup' && row.echoAppId) {
       // For markup payouts, we group by app
       markupPayouts.set(
         row.echoAppId,
-        (markupPayouts.get(row.echoAppId) || 0) + row.totalClaimed
+        (markupPayouts.get(row.echoAppId) ?? 0) + row.totalClaimed
       );
     }
   });
@@ -201,28 +223,10 @@ export const getUserAppsWithPagination = async (
   ];
 
   // Execute the main query
-  const userApps = (await db.$queryRawUnsafe(
+  const userApps = await db.$queryRawUnsafe<UserAppRow[]>(
     baseQuery,
     ...queryParameters
-  )) as Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    totalUsers: number;
-    totalTransactions: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalTokens: number;
-    totalSpent: number;
-    totalSpentFreeTier: number;
-    totalSpentUserBalances: number;
-    totalReferralProfitEarned: number;
-    totalMarkupProfitEarned: number;
-    totalTransactionCosts: number;
-    lastTransactionAt: Date | null;
-  }>;
+  );
 
   // Get additional data for payouts
   const appIds = userApps.map(app => app.id);
@@ -267,10 +271,10 @@ export const getUserAppsWithPagination = async (
 
   const totalCountQuery = `SELECT COUNT(*) as count FROM (${countSourceQuery}) as filtered_results`;
 
-  const totalCount = (await db.$queryRawUnsafe(
+  const totalCount = await db.$queryRawUnsafe<{ count: number }[]>(
     totalCountQuery,
     ...parameters
-  )) as Array<{ count: bigint }>;
+  );
 
   // Transform the results to match the expected interface
   const transformedResults = userApps.map(app => ({
@@ -287,9 +291,9 @@ export const getUserAppsWithPagination = async (
     // Earnings information
     totalReferralProfitEarned: app.totalReferralProfitEarned,
     totalReferralProfitClaimed:
-      payoutInfo.referralPayouts.get(params.userId) || 0,
+      payoutInfo.referralPayouts.get(params.userId) ?? 0,
     totalMarkupProfitEarned: app.totalMarkupProfitEarned,
-    totalMarkupProfitClaimed: payoutInfo.markupPayouts.get(app.id) || 0,
+    totalMarkupProfitClaimed: payoutInfo.markupPayouts.get(app.id) ?? 0,
     totalTransactionCosts: app.totalTransactionCosts,
     // Usage statistics
     totalUsers: app.totalUsers,

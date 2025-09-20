@@ -1,9 +1,9 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import { getRepo } from './repo';
 import { getUser } from './users';
 
-import { githubLinkSchema } from './schema';
+import type { githubLinkSchema } from './schema';
 
 export const resolveGithubId = async (
   data: z.infer<typeof githubLinkSchema>

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { TypedColumnDef } from './BaseTable';
+import type { TypedColumnDef } from './BaseTable';
 
 export function createCheckboxColumn<TData>(): TypedColumnDef<TData, unknown> {
   return {

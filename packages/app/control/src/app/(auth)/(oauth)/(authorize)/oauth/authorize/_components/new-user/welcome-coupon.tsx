@@ -2,7 +2,7 @@
 
 import { WelcomeCoupon } from '@/app/(auth)/_components/welcome-coupon';
 
-import { AuthorizeParams } from '../../_actions/schema';
+import type { AuthorizeParams } from '../../_actions/schema';
 import { authorize } from '../../_actions/authorize';
 
 interface Props {

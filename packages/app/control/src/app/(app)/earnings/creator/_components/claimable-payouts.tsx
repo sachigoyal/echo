@@ -38,10 +38,10 @@ export const ClaimablePayouts = () => {
             <div className="space-y-2">
               {Object.entries(earnings.byApp).map(([appId, amount]) => {
                 const meta = earnings.appMeta?.[appId];
-                const appName = meta?.name || 'Unnamed App';
-                const avatarUrl = meta?.profilePictureUrl || null;
-                const githubLink = meta?.githubLink || null;
-                const githubUrl = githubLink?.githubUrl || null;
+                const appName = meta?.name ?? 'Unnamed App';
+                const avatarUrl = meta?.profilePictureUrl ?? null;
+                const githubLink = meta?.githubLink ?? null;
+                const githubUrl = githubLink?.githubUrl ?? null;
 
                 return (
                   <div
@@ -58,7 +58,7 @@ export const ClaimablePayouts = () => {
                       </div>
                       <div className="ml-3 mb-2 flex items-center justify-center">
                         <GithubAvatar
-                          pageUrl={githubUrl || undefined}
+                          pageUrl={githubUrl ?? undefined}
                           className="size-6"
                         />
                       </div>
@@ -89,11 +89,11 @@ const ClaimAllButton = () => {
         toast.success(
           `Created ${res.payouts.length} markup payout${res.payouts.length === 1 ? '' : 's'}.`
         );
-        utils.user.payout.markup.get.invalidate();
-        utils.user.payout.markup.pending.invalidate();
+        void utils.user.payout.markup.get.invalidate();
+        void utils.user.payout.markup.pending.invalidate();
       },
       onError: err => {
-        toast.error(err.message || 'Failed to claim markup rewards');
+        toast.error(err.message ?? 'Failed to claim markup rewards');
       },
     });
 
@@ -122,11 +122,11 @@ const ClaimAppButton = ({
       toast.success(
         `Created markup payout for app. Remaining: ${formatCurrency(res.remaining)}`
       );
-      utils.user.payout.markup.get.invalidate();
-      utils.user.payout.markup.pending.invalidate();
+      void utils.user.payout.markup.get.invalidate();
+      void utils.user.payout.markup.pending.invalidate();
     },
     onError: err => {
-      toast.error(err.message || 'Failed to claim markup reward');
+      toast.error(err.message ?? 'Failed to claim markup reward');
     },
   });
 
@@ -134,7 +134,7 @@ const ClaimAppButton = ({
     <Button
       variant="outline"
       size="sm"
-      disabled={disabled || claim.isPending}
+      disabled={disabled ?? claim.isPending}
       onClick={() => claim.mutate({ appId })}
     >
       {claim.isPending ? 'Claiming…' : 'Claim'}

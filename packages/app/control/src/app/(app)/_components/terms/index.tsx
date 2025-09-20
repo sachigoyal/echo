@@ -36,7 +36,7 @@ export default function TermsAgreement() {
     isSuccess: isAcceptedTerms,
   } = api.user.legal.accept.terms.useMutation({
     onSuccess: () => {
-      utils.user.legal.needs.terms.invalidate();
+      void utils.user.legal.needs.terms.invalidate();
     },
   });
 
@@ -46,7 +46,7 @@ export default function TermsAgreement() {
     isSuccess: isAcceptedPrivacy,
   } = api.user.legal.accept.privacy.useMutation({
     onSuccess: () => {
-      utils.user.legal.needs.privacy.invalidate();
+      void utils.user.legal.needs.privacy.invalidate();
     },
   });
 
@@ -69,7 +69,9 @@ export default function TermsAgreement() {
   };
 
   return (
-    <AlertDialog open={needsTerms?.needs || needsPrivacy?.needs}>
+    <AlertDialog
+      open={Boolean(needsTerms?.needs) || Boolean(needsPrivacy?.needs)}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>

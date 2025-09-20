@@ -33,7 +33,7 @@ export const DisableCreditGrantDialog: React.FC<Props> = ({
     isSuccess,
   } = api.admin.creditGrants.grant.update.useMutation({
     onSuccess: () => {
-      utils.admin.creditGrants.list.invalidate();
+      void utils.admin.creditGrants.list.invalidate();
       setIsOpen(false);
     },
   });
