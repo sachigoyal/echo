@@ -12,7 +12,7 @@ import { ProfileAvatar } from '@/components/ui/profile-avatar';
 
 import { api } from '@/trpc/client';
 
-import { formatCurrency } from '@/services/user/balance';
+import { formatCurrency } from '@/lib/utils';
 
 export const ClaimablePayouts = () => {
   const [earnings] = api.user.payout.markup.get.useSuspenseQuery();
