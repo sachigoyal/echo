@@ -57,5 +57,64 @@ export default tseslint.config(
         projectService: true,
       },
     },
+  },
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    plugins: {
+      'no-process-env-outside-env': {
+        rules: {
+          'no-process-env-outside-env': {
+            meta: {
+              type: 'problem',
+              docs: {
+                description: 'Disallow process.env usage outside of @/env',
+                category: 'Best Practices',
+                recommended: true,
+              },
+              fixable: null,
+              schema: [],
+              messages: {
+                noProcessEnvOutsideEnv:
+                  'Direct access to process.env is not allowed. Use the centralized env object from @/env instead.',
+              },
+            },
+            create(context) {
+              const filename = context.getFilename();
+              const isEnvFile =
+                filename.includes('/env.ts') || filename.includes('/env.js');
+
+              // Allow process.env usage in the env.ts file itself
+              if (isEnvFile) {
+                return {};
+              }
+
+              return {
+                MemberExpression(node) {
+                  // Check if the expression is process.env
+                  if (
+                    node.object &&
+                    node.object.type === 'MemberExpression' &&
+                    node.object.object &&
+                    node.object.object.type === 'Identifier' &&
+                    node.object.object.name === 'process' &&
+                    node.object.property &&
+                    node.object.property.type === 'Identifier' &&
+                    node.object.property.name === 'env'
+                  ) {
+                    context.report({
+                      node,
+                      messageId: 'noProcessEnvOutsideEnv',
+                    });
+                  }
+                },
+              };
+            },
+          },
+        },
+      },
+    },
+    rules: {
+      'no-process-env-outside-env/no-process-env-outside-env': 'error',
+    },
   }
 );
