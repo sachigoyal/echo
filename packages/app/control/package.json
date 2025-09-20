@@ -26,7 +26,7 @@
     "seed-referral-rewards": "tsx scripts/seed-referral-rewards.ts",
     "seed-markup-rewards": "tsx scripts/seed-markup-rewards.ts  --transactions 50 --days 14",
     "knip": "knip",
-    "ci-checks": "pnpm knip && pnpm lint && pnpm format:check && pnpm check-types"
+    "ci-checks": "pnpm format:check && pnpm knip && pnpm check-types && pnpm lint"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
