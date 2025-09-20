@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 
 import type { Payment } from '@/generated/prisma';

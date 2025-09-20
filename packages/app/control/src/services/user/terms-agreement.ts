@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import type { User } from '@/generated/prisma';
 import { env } from '@/env';
 

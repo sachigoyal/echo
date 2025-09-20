@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 import { appSelect } from './lib/select';
 import type { AppId } from './lib/schemas';

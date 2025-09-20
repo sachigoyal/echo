@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import { mintCreditsToUser } from '@/services/credits/mint';
 import type { User } from '@/generated/prisma';
 import { EnumPaymentSource } from '@/generated/prisma';

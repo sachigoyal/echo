@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import type { OutgoingPayment } from '@merit-systems/sdk';
 import { MeritSDK } from '@merit-systems/sdk';
 import { PayoutStatus } from '../referrals';

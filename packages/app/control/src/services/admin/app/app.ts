@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 export const getApp = async (appId: string) => {
   const app = await db.echoApp.findUnique({

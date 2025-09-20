@@ -9,7 +9,7 @@ import { toPaginatedReponse } from '@/services/lib/pagination';
 import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
 import type { FilterParams } from '@/services/lib/filtering';
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
 interface AppUsersRow {

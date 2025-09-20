@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import { PayoutStatus, PayoutType } from '@/services/payouts/referrals';
 
 interface AppMarkupEarnings {

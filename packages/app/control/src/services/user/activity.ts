@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 export const getUserCreatorActivitySchema = z.object({
   startDate: z.date(),

@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import type { PayoutType } from '@/services/payouts/referrals';
 import { PayoutStatus } from '@/services/payouts/referrals';
 import {

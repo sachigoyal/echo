@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { db } from '../../services/db/db';
+import { db } from '../../services/db/client';
 import { processPaymentUpdate, PaymentStatus } from '../payment-processing';
 import { logger } from '@/logger';
 

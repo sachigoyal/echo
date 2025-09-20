@@ -2,7 +2,7 @@ import { updateSpendPoolFromPayment } from './spend-pools';
 import { updateUserBalanceFromPayment } from '../services/user/balance';
 import type { Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
-import { db } from '../services/db/db';
+import { db } from '../services/db/client';
 import type Stripe from 'stripe';
 import { logger } from '@/logger';
 

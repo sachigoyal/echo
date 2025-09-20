@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { db } from '../src/services/db/db';
+import { db } from '../src/services/db/client';
 import { faker } from '@faker-js/faker';
 import { subDays, addDays, format } from 'date-fns';
 

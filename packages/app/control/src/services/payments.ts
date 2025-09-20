@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 import { type PaginationParams, toPaginatedReponse } from './lib/pagination';
 import type { Prisma } from '@/generated/prisma';

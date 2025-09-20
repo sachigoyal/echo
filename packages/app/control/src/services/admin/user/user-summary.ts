@@ -3,7 +3,7 @@
  * Combines earnings, spending, and app data into summary metrics for OverviewPanel
  */
 
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import type { OverviewMetricConfig } from '../type/overview-metric';
 import { percentChange } from '../util/percent-change';
 

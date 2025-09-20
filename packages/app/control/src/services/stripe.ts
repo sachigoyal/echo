@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 
 import { z } from 'zod';
 
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import { PaymentStatus } from '@/lib/payment-processing';
 import { logger } from '@/logger';
 import { env } from '@/env';

@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 export async function setUserReferrerForAppIfExists(
   userId: string,

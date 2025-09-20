@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 export const getUser = async (userId: string) => {
   const user = await db.user.findUnique({

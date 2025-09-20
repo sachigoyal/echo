@@ -6,7 +6,7 @@ import { getFullUser } from '@/services/user/get';
 import { countOwnerApps } from '@/services/apps/count';
 
 import { logger } from '@/logger';
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 export const createAppFollowUpEmailSchema = z.object({
   userId: z.uuid(),

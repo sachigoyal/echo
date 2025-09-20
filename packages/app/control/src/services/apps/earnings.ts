@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import z from 'zod';
 
 export const appEarningsSchema = z.object({

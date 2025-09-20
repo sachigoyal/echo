@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { ApiKey, Prisma } from '@/generated/prisma';
 
-import { db } from './db/db';
+import { db } from './db/client';
 import { AppRole, MembershipStatus } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
 import type { PaginationParams } from './lib/pagination';

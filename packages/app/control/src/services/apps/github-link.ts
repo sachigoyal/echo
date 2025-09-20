@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 import { resolveGithubId } from '../github/link';
 import { githubLinkSchema } from '../github/schema';

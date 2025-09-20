@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 import type { UserAppAccess } from './types';
 import { AppRole, MembershipStatus, Permission } from './types';
 import type { EchoApp, AppMembership } from '@/generated/prisma';

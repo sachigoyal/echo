@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { format } from 'date-fns';
 
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 import {
   toPaginatedReponse,

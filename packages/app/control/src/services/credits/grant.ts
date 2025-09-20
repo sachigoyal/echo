@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { mintCreditsToUser } from './mint';
 
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 import type { Prisma } from '@/generated/prisma';
 import { EnumPaymentSource } from '@/generated/prisma';

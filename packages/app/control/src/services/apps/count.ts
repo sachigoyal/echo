@@ -1,4 +1,4 @@
-import { db } from '@/services/db/db';
+import { db } from '@/services/db/client';
 
 import type { Prisma } from '@/generated/prisma';
 import { AppRole } from '@/lib/permissions';
