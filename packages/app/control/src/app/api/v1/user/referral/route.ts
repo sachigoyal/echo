@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { setUserReferrerForAppIfExists } from '@/lib/referral-codes';
 import { z } from 'zod';
 import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
 import { authRoute } from '../../../../../lib/api/auth-route';
+import { setAppMembershipReferrer } from '@/services/db/ops/apps/membership';
 
 const setUserReferrerForAppSchema = z.object({
   echoAppId: appIdSchema,
@@ -14,7 +14,7 @@ export const POST = authRoute
   .handler(async (_, context) => {
     const { echoAppId, code } = context.body;
 
-    const success = await setUserReferrerForAppIfExists(
+    const success = await setAppMembershipReferrer(
       context.ctx.userId,
       echoAppId,
       code

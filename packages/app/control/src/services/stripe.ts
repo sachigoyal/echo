@@ -2,7 +2,9 @@ import Stripe from 'stripe';
 
 import { z } from 'zod';
 
-import { db } from '@/services/db/client';
+import { getAppWithOwnerCheck } from './db/ops/apps/get';
+import { createPayment } from './db/ops/payments';
+
 import { PaymentStatus } from '@/lib/payment-processing';
 import { logger } from '@/logger';
 import { env } from '@/env';
@@ -98,15 +100,13 @@ export async function createPaymentLink(
   const paymentLink = await stripe.paymentLinks.create(paymentLinkConfig);
 
   // Create pending payment record
-  const payment = await db.payment.create({
-    data: {
-      paymentId: paymentLink.id,
-      amount: amount,
-      currency: 'usd',
-      status: PaymentStatus.PENDING,
-      description: description,
-      userId,
-    },
+  const payment = await createPayment({
+    paymentId: paymentLink.id,
+    amount: amount,
+    currency: 'usd',
+    status: PaymentStatus.PENDING,
+    description: description,
+    userId,
   });
 
   return {
@@ -157,24 +157,9 @@ export async function createFreeTierPaymentLink(
   }
 
   // Verify the app exists and user has access
-  const app = await db.echoApp.findFirst({
-    where: {
-      id: appId,
-      isArchived: false,
-    },
-    include: {
-      appMemberships: {
-        where: {
-          userId,
-          role: 'owner',
-          status: 'active',
-          isArchived: false,
-        },
-      },
-    },
-  });
+  const app = await getAppWithOwnerCheck(appId, userId);
 
-  if (!app || app.appMemberships.length === 0) {
+  if (!app) {
     throw new Error('App not found');
   }
 
@@ -228,15 +213,13 @@ export async function createFreeTierPaymentLink(
   const paymentLink = await stripe.paymentLinks.create(paymentLinkConfig);
 
   // Create pending payment record
-  const payment = await db.payment.create({
-    data: {
-      paymentId: paymentLink.id,
-      amount: amount,
-      currency: 'usd',
-      status: PaymentStatus.PENDING,
-      description: description,
-      userId,
-    },
+  const payment = await createPayment({
+    paymentId: paymentLink.id,
+    amount: amount,
+    currency: 'usd',
+    status: PaymentStatus.PENDING,
+    description: description,
+    userId,
   });
 
   return {

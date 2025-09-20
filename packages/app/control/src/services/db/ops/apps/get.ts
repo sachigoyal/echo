@@ -31,3 +31,16 @@ export const getAppOwner = async (appId: AppId) => {
 
   return owner?.user;
 };
+
+export const getAppWithOwnerCheck = async (appId: AppId, userId: string) => {
+  return await db.echoApp.findUnique({
+    where: {
+      id: appId,
+      isArchived: false,
+      appMemberships: {
+        some: { userId, role: AppRole.OWNER, isArchived: false },
+      },
+    },
+    select: appSelect,
+  });
+};

@@ -72,3 +72,9 @@ async function listPayments(
     total_count: totalCount,
   });
 }
+
+export const createPayment = async (data: Prisma.PaymentCreateArgs['data']) => {
+  return await db.payment.create({
+    data,
+  });
+};

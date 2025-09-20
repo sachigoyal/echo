@@ -145,17 +145,25 @@ export default tseslint.config(
 
               return {
                 ImportDeclaration(node) {
-                  // Check if the import source is @/services/db/client
+                  // Check if the import source is @/services/db/client or relative imports to services/db/client
                   if (
                     node.source &&
                     node.source.type === 'Literal' &&
-                    typeof node.source.value === 'string' &&
-                    node.source.value === '@/services/db/client'
+                    typeof node.source.value === 'string'
                   ) {
-                    context.report({
-                      node,
-                      messageId: 'noDbClientOutsideDb',
-                    });
+                    const importPath = node.source.value;
+                    const isDbClientImport =
+                      importPath === '@/services/db/client' ||
+                      importPath.endsWith('/db/client') ||
+                      importPath.endsWith('./services/db/client') ||
+                      importPath.endsWith('../services/db/client');
+
+                    if (isDbClientImport) {
+                      context.report({
+                        node,
+                        messageId: 'noDbClientOutsideDb',
+                      });
+                    }
                   }
                 },
               };

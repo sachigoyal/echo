@@ -6,7 +6,7 @@ import { getFullUser } from '@/services/db/ops/user/get';
 import { countOwnerApps } from '@/services/db/ops/apps/count';
 
 import { logger } from '@/logger';
-import { db } from '@/services/db/client';
+import { createEmail } from '@/services/db/ops/emails';
 
 export const createAppFollowUpEmailSchema = z.object({
   userId: z.uuid(),
@@ -63,13 +63,11 @@ export async function scheduleCreateAppFollowUpEmail(
     });
   }
 
-  await db.outboundEmailSent.create({
-    data: {
-      emailCampaignId: 'create-app-follow-up',
-      userId,
-      echoAppId: appId,
-      createdAt: new Date(),
-    },
+  await createEmail({
+    emailCampaignId: 'create-app-follow-up',
+    userId,
+    echoAppId: appId,
+    createdAt: new Date(),
   });
 
   return data;

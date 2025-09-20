@@ -157,3 +157,57 @@ const countAppMembershipsInternal = async (
 ) => {
   return await db.appMembership.count({ where });
 };
+
+export async function setAppMembershipReferrer(
+  userId: string,
+  echoAppId: string,
+  code: string
+): Promise<boolean> {
+  const appMembership = await db.appMembership.findUnique({
+    where: {
+      userId_echoAppId: {
+        userId,
+        echoAppId,
+      },
+      referrerId: null,
+    },
+  });
+
+  if (appMembership) {
+    // If the user already has a referrer, return false
+    return false;
+  }
+
+  const referralCode = await db.referralCode.findUnique({
+    where: {
+      code,
+    },
+  });
+
+  if (!referralCode) {
+    return false;
+  }
+
+  await db.$transaction(async tx => {
+    await tx.appMembership.update({
+      where: {
+        userId_echoAppId: {
+          userId,
+          echoAppId,
+        },
+      },
+      data: {
+        referrerId: referralCode.id,
+      },
+    });
+
+    await tx.referralCode.update({
+      where: { id: referralCode.id },
+      data: {
+        usedAt: new Date(),
+      },
+    });
+  });
+
+  return true;
+}
