@@ -46,11 +46,11 @@
     "swr": "^2.3.1"
   },
   "peerDependencies": {
-    "@ai-sdk/anthropic": "^2.0.17",
-    "@ai-sdk/google": "^2.0.14",
-    "@ai-sdk/openai": "^2.0.32",
-    "@openrouter/ai-sdk-provider": "^1.2.0",
-    "ai": "^5.0.47",
+    "@ai-sdk/anthropic": "^2.0.0",
+    "@ai-sdk/google": "^2.0.0",
+    "@ai-sdk/openai": "^2.0.0",
+    "@openrouter/ai-sdk-provider": "^1.0.0",
+    "ai": "^5.0.0",
     "next": ">=15.0.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"

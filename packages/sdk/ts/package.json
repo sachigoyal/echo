@@ -56,11 +56,11 @@
     "dist/**/*"
   ],
   "peerDependencies": {
-    "@ai-sdk/anthropic": "^2.0.17",
-    "@ai-sdk/google": "^2.0.14",
-    "@ai-sdk/openai": "^2.0.32",
-    "@openrouter/ai-sdk-provider": "^1.2.0",
-    "ai": "^5.0.47"
+    "@ai-sdk/anthropic": "^2.0.0",
+    "@ai-sdk/google": "^2.0.0",
+    "@ai-sdk/openai": "^2.0.0",
+    "@openrouter/ai-sdk-provider": "^1.0.0",
+    "ai": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@ai-sdk/anthropic": {
