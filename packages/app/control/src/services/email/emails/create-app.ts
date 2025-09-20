@@ -29,7 +29,7 @@ export async function scheduleCreateAppFollowUpEmail(
   const appCount = await countOwnerApps(userId);
 
   if (appCount > 2) {
-    return;
+    return null;
   }
 
   const { data, error } = await sendEmailWithRetry({
@@ -54,7 +54,7 @@ export async function scheduleCreateAppFollowUpEmail(
   if (error) {
     logger.emit({
       severityText: 'ERROR',
-      body: 'Error sending create app follow up email',
+      body: 'Email Error: Error sending create app follow up email',
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         function: 'scheduleCreateAppFollowUpEmail',
