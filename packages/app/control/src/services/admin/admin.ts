@@ -7,7 +7,7 @@ import { db } from '@/lib/db';
 
 import type { EchoApp, Prisma, User } from '@/generated/prisma';
 
-import type { PaginationParams} from '../lib/pagination';
+import type { PaginationParams } from '../lib/pagination';
 import { toPaginatedReponse } from '../lib/pagination';
 import type {
   adminCreateCreditGrantSchema,
@@ -193,7 +193,7 @@ export async function downloadUsersCsv(
     ['ID', 'Name', 'Email', 'Created At'],
     ...users.map(user => [
       user.id,
-      user.name || '',
+      user.name ?? '',
       user.email,
       user.createdAt.toISOString(),
     ]),

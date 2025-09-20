@@ -41,7 +41,7 @@ export const WelcomeCoupon: React.FC<Props> = ({
     isSuccess: isSignedPrivacy,
   } = api.user.legal.accept.privacy.useMutation({
     onSuccess: () => {
-      utils.user.legal.needs.privacy.invalidate();
+      void utils.user.legal.needs.privacy.invalidate();
     },
     onError: () => {
       toast.error('Failed to accept privacy policy');
@@ -54,7 +54,7 @@ export const WelcomeCoupon: React.FC<Props> = ({
     isSuccess: isSignedTerms,
   } = api.user.legal.accept.terms.useMutation({
     onSuccess: () => {
-      utils.user.legal.needs.terms.invalidate();
+      void utils.user.legal.needs.terms.invalidate();
     },
     onError: () => {
       toast.error('Failed to accept terms');
@@ -73,7 +73,7 @@ export const WelcomeCoupon: React.FC<Props> = ({
     isSuccess: isClaimedCoupon,
   } = api.user.initialFreeTier.issue.useMutation({
     onSuccess: () => {
-      utils.user.initialFreeTier.hasClaimed.invalidate();
+      void utils.user.initialFreeTier.hasClaimed.invalidate();
       toast.success('Credits Claimed!');
     },
     onError: () => {

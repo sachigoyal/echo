@@ -6,7 +6,13 @@
     "src/app/**/route.{js,jsx,ts,tsx}",
     "src/mdx-components.{js,jsx,ts,tsx}"
   ],
-  "ignoreDependencies": ["eslint-config-next", "husky", "tw-animate-css"],
+  "ignoreDependencies": [
+    "eslint-config-next",
+    "husky",
+    "tw-animate-css",
+    "@next/eslint-plugin-next",
+    "eslint-plugin-react-hooks"
+  ],
   "ignore": [
     "/scripts/**",
     "/source.config.ts",

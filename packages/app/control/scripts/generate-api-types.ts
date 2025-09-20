@@ -50,9 +50,10 @@ function generateTypeName(routePath: string, method: string): string {
     .replace(/^\//, '') // Remove leading slash
     .replace(
       /\{([^}]+)\}/g,
-      (_, param) => `By${param.charAt(0).toUpperCase() + param.slice(1)}`
+      (_, param) =>
+        `By${(param as string).charAt(0).toUpperCase() + (param as string).slice(1)}`
     ) // Convert {id} to ById
-    .replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()) // Convert kebab-case to camelCase
+    .replace(/-([a-z])/g, (_, letter) => (letter as string).toUpperCase()) // Convert kebab-case to camelCase
     .split('/')
     .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join('');
@@ -497,7 +498,7 @@ type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams,
           } catch (error) {
             console.warn(`⚠️  Error resolving ${exportName}:`, error);
             resolvedTypes.push(
-              `export type ${exportName} = any; // Resolution failed: ${error}`
+              `export type ${exportName} = any; // Resolution failed: ${error as string}`
             );
           }
         } else {

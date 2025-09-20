@@ -4,16 +4,36 @@
  * sorting, and filtering parameters and returns app user data in the expected format.
  */
 
-import type {
-  PaginationParams} from '@/services/lib/pagination';
-import {
-  toPaginatedReponse,
-} from '@/services/lib/pagination';
+import type { PaginationParams } from '@/services/lib/pagination';
+import { toPaginatedReponse } from '@/services/lib/pagination';
 import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
 import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
+
+interface AppUsersRow {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+  totalPaid: number;
+  userTotalSpent: number;
+  membershipRole: string;
+  membershipStatus: string;
+  membershipTotalSpent: number;
+  membershipCreatedAt: Date;
+  totalTransactions: number;
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  totalTokens: number;
+  totalSpent: number;
+  totalAppProfit: number;
+  totalMarkupProfit: number;
+  totalReferralProfit: number;
+  lastTransactionAt: Date;
+}
 
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
@@ -165,10 +185,10 @@ export const getAppUsersWithPagination = async (
   ];
 
   // Execute the main query
-  const appUsers = (await db.$queryRawUnsafe(
+  const appUsers = await db.$queryRawUnsafe<AppUsersRow[]>(
     baseQuery,
     ...queryParameters
-  ));
+  );
 
   // Build count query with same filters
   const countSourceQuery = `
@@ -216,10 +236,10 @@ export const getAppUsersWithPagination = async (
 
   const totalCountQuery = `SELECT COUNT(*) as count FROM (${countSourceQuery}) as filtered_results`;
 
-  const totalCount = (await db.$queryRawUnsafe(
+  const totalCount = await db.$queryRawUnsafe<{ count: number }[]>(
     totalCountQuery,
     ...parameters
-  ));
+  );
 
   // Transform the results to match the expected interface
   const transformedResults = appUsers.map(user => ({
@@ -252,6 +272,6 @@ export const getAppUsersWithPagination = async (
     items: transformedResults,
     page: params.page,
     page_size: params.page_size,
-    total_count: Number(totalCount[0].count),
+    total_count: Number((totalCount[0] as { count: number }).count),
   });
 };

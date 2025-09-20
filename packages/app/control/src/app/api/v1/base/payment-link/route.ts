@@ -12,7 +12,7 @@ export const GET = authRoute.query(querySchema).handler(async (_, context) => {
 
   const normalizedCentsAmount = amount * 100;
 
-  handlePaymentSuccessFromx402({
+  await handlePaymentSuccessFromx402({
     userId: context.ctx.userId,
     amount: normalizedCentsAmount,
     currency: 'usd',

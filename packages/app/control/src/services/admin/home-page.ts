@@ -52,7 +52,10 @@ export const getHomePageChart = async (
 
   // For non-cumulative mode, we need to fetch data in the date range for bucketing
   // For cumulative mode, we'll query directly per bucket
-  let transactions: { createdAt: Date; transactionMetadata: { totalTokens: number } | null }[] = [];
+  let transactions: {
+    createdAt: Date;
+    transactionMetadata: { totalTokens: number } | null;
+  }[] = [];
   let users: { createdAt: Date }[] = [];
   let apps: { createdAt: Date }[] = [];
   let refreshTokens: { createdAt: Date }[] = [];
@@ -145,7 +148,7 @@ export const getHomePageChart = async (
       });
 
       const totalTokens = transactions.reduce((sum, t) => {
-        return sum + Number(t.transactionMetadata?.totalTokens || 0);
+        return sum + Number(t.transactionMetadata?.totalTokens ?? 0);
       }, 0);
 
       return {
@@ -163,7 +166,7 @@ export const getHomePageChart = async (
         (t.createdAt.getTime() - startDate.getTime()) / bucketSizeMs
       );
       if (idx >= 0 && idx < numBuckets) {
-        const amt = Number(t.transactionMetadata?.totalTokens || 0);
+        const amt = Number(t.transactionMetadata?.totalTokens ?? 0);
         tokenBuckets[idx].tokens += amt;
       }
     }

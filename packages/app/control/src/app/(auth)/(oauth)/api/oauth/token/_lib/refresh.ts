@@ -78,7 +78,7 @@ export async function handleRefreshToken(
 
   if (refreshToken.expiresAt < new Date()) {
     // Deactivate expired token
-    archiveRefreshToken(token);
+    await archiveRefreshToken(token);
     throw new OAuthError({
       error: OAuthErrorType.INVALID_REQUEST,
       error_description: 'Refresh token expired',

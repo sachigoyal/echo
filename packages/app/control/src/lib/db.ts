@@ -10,9 +10,7 @@ let prisma: PrismaClient;
 if (env.NEXT_PUBLIC_NODE_ENV === 'production') {
   prisma = new PrismaClient();
 } else {
-  if (!globalThis.prisma) {
-    globalThis.prisma = new PrismaClient();
-  }
+  globalThis.prisma ??= new PrismaClient();
   prisma = globalThis.prisma;
 }
 

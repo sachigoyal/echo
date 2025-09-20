@@ -30,7 +30,7 @@ export const POST = queueRoute(
 
       switch (envelope.type) {
         case JobType.EMAIL: {
-          processEmailJob(envelope.job);
+          await processEmailJob(envelope.job);
           return NextResponse.json({ success: true });
         }
       }

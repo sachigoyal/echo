@@ -26,7 +26,7 @@ export default async function AdminCodePage(
 
   const creditGrant = await checkCreditGrant(code);
 
-  api.admin.creditGrants.grant.listUsers.prefetchInfinite({
+  void api.admin.creditGrants.grant.listUsers.prefetchInfinite({
     code,
   });
 

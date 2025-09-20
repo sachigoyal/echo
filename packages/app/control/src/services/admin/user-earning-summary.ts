@@ -57,10 +57,8 @@ export async function getUserEarningsOverviewMetrics(): Promise<
     FROM t, p, eu;
   `;
 
-  const summary = (await db.$queryRawUnsafe(
-    summaryQuery
-  ));
-  const s = summary[0] || {
+  const summary = await db.$queryRawUnsafe<EarningsOverviewRow[]>(summaryQuery);
+  const s = summary[0] ?? {
     totalRevenue: 0,
     totalAppProfit: 0,
     totalMarkupProfit: 0,
@@ -119,10 +117,8 @@ export async function getUserEarningsOverviewMetrics(): Promise<
     FROM txn, payouts, earning_users;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(
-    trendQuery
-  ));
-  const t = trendRows[0] || {
+  const trendRows = await db.$queryRawUnsafe<EarningsTrendRow[]>(trendQuery);
+  const t = trendRows[0] ?? {
     revenue_current: 0,
     revenue_prev: 0,
     app_profit_current: 0,

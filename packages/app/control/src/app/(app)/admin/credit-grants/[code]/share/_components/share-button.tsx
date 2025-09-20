@@ -17,12 +17,17 @@ export const ShareButton: React.FC<Props> = ({ url }) => {
   const onCopy = () => {
     setIsCopied(true);
 
-    navigator.clipboard.writeText(url);
-
-    toast.success('Copied to clipboard');
-    setTimeout(() => {
-      setIsCopied(false);
-    }, 2000);
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success('Copied to clipboard');
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 2000);
+      })
+      .catch(() => {
+        toast.error('Failed to copy to clipboard');
+      });
   };
 
   return (

@@ -4,16 +4,25 @@
  * sorting, and filtering parameters and returns spending data in the expected format.
  */
 
-import type {
-  PaginationParams} from '@/services/lib/pagination';
-import {
-  toPaginatedReponse,
-} from '@/services/lib/pagination';
+import type { PaginationParams } from '@/services/lib/pagination';
+import { toPaginatedReponse } from '@/services/lib/pagination';
 import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
 import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
+
+interface UserSpendingRow {
+  id: string;
+  name: string;
+  email: string;
+  totalSpent: number;
+  totalPaid: number;
+  balance: number;
+  freeTierUsage: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
@@ -81,10 +90,10 @@ export const getUserSpendingWithPagination = async (
   ];
 
   // Execute the main query
-  const usersWithSpending = (await db.$queryRawUnsafe(
+  const usersWithSpending = await db.$queryRawUnsafe<UserSpendingRow[]>(
     baseQuery,
     ...queryParameters
-  ));
+  );
 
   // Build count query with same filters
   const countQuery = `
@@ -102,10 +111,10 @@ export const getUserSpendingWithPagination = async (
     ? `SELECT COUNT(*) as count FROM (${countQuery}) as filtered_results`
     : countQuery;
 
-  const totalCount = (await db.$queryRawUnsafe(
+  const totalCount = await db.$queryRawUnsafe<{ count: number }[]>(
     totalCountQuery,
     ...parameters
-  ));
+  );
 
   // Return in the expected format
   return toPaginatedReponse({

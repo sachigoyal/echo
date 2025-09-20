@@ -22,8 +22,8 @@ export const EditCreditGrantForm: React.FC<Props> = ({ id, creditGrant }) => {
   const { mutate: editCreditGrant, isPending } =
     api.admin.creditGrants.grant.update.useMutation({
       onSuccess: ({ code }) => {
-        utils.admin.creditGrants.list.invalidate();
-        revalidateCodePage(code);
+        void utils.admin.creditGrants.list.invalidate();
+        void revalidateCodePage(code);
         toast.success('Credit grant updated');
       },
       onError: error => {

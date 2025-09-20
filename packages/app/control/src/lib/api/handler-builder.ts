@@ -9,10 +9,9 @@ import type {
   MiddlewareResult,
   NextFunction,
   OriginalRouteHandler,
-  ServerErrorBody} from './types';
-import {
-  InternalRouteHandlerError
+  ServerErrorBody,
 } from './types';
+import { InternalRouteHandlerError } from './types';
 import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
 
@@ -230,9 +229,10 @@ export class RouteHandlerBuilder<
   > {
     return async (request, context) => {
       try {
-        let params = context?.params
-          ? await context.params
-          : ({} as z.infer<TParams>);
+        let params =
+          context?.params !== undefined
+            ? await context.params
+            : ({} as z.infer<TParams>);
 
         const searchParams = request.nextUrl.searchParams;
         let query = Object.fromEntries(
@@ -240,14 +240,14 @@ export class RouteHandlerBuilder<
             const values = searchParams.getAll(key);
             return values.length === 1 ? [key, values[0]] : [key, values];
           })
-        );
+        ) as z.infer<TQuery>;
         let metadata = this.metadataValue;
 
         // Support both JSON and FormData parsing
         let body: unknown = {};
         if (request.method !== 'GET' && request.method !== 'DELETE') {
           try {
-            const contentType = request.headers.get('content-type') || '';
+            const contentType = request.headers.get('content-type') ?? '';
             if (
               contentType.includes('multipart/form-data') ||
               contentType.includes('application/x-www-form-urlencoded')
@@ -332,7 +332,7 @@ export class RouteHandlerBuilder<
             try {
               const result = await handler(request, {
                 params: params as z.infer<TParams>,
-                query: query as z.infer<TQuery>,
+                query: query,
                 body: body as z.infer<TBody>,
                 ctx: middlewareContext,
                 metadata: metadata!,

@@ -3,17 +3,19 @@ import GithubProvider from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 import Resend from 'next-auth/providers/resend';
 
-import type { OAuthProvider } from './types';
-import type { EmailConfig, Provider } from 'next-auth/providers';
 import { db } from '@/lib/db';
 import { env } from '@/env';
+
+import type { OAuthProvider } from './types';
+import type { EmailConfig, Provider } from 'next-auth/providers';
+import type { GoogleProfile } from 'next-auth/providers/google';
 
 export const oauthProviders: OAuthProvider[] = [
   GoogleProvider({
     clientId: env.AUTH_GOOGLE_ID,
     clientSecret: env.AUTH_GOOGLE_SECRET,
     allowDangerousEmailAccountLinking: true,
-    profile: profile => ({
+    profile: (profile: GoogleProfile) => ({
       id: profile.sub,
       name: profile.name,
       email: profile.email,

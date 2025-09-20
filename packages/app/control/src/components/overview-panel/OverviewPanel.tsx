@@ -73,16 +73,16 @@ export function OverviewPanel({
   const gridClassName = cn(
     'grid',
     grid.responsive
-      ? gridClasses.columns[grid.columns || 3]
-      : `grid-cols-${grid.columns || 3}`,
-    gridClasses.gap[grid.gap || 'md']
+      ? gridClasses.columns[grid.columns ?? 3]
+      : `grid-cols-${grid.columns ?? 3}`,
+    gridClasses.gap[grid.gap ?? 'md']
   );
 
   if (error) {
     return (
       <div className={containerClassName}>
         <Card className={cn('p-6 border-destructive', className)}>
-          {(title || description) && (
+          {(title ?? description) && (
             <CardHeader className="px-0 pt-0 pb-4">
               {title && (
                 <CardTitle className="text-lg font-semibold">{title}</CardTitle>
@@ -104,7 +104,7 @@ export function OverviewPanel({
   return (
     <div className={containerClassName}>
       <Card className={cn('p-6', className)}>
-        {(title || description) && (
+        {(title ?? description) && (
           <CardHeader className="px-0 pt-0 pb-4">
             {title && (
               <CardTitle className="text-lg font-semibold">{title}</CardTitle>
@@ -148,7 +148,7 @@ function MetricCard({ metric, isLoading }: MetricCardProps) {
   if (isLoading) {
     return (
       <Card className={cn(metric.className)}>
-        <CardContent className={cn(sizeClasses[metric.size || 'sm'])}>
+        <CardContent className={cn(sizeClasses[metric.size ?? 'sm'])}>
           <div className="space-y-1">
             <Skeleton className="h-3 w-16" />
             <Skeleton className="h-6 w-12" />
@@ -161,7 +161,7 @@ function MetricCard({ metric, isLoading }: MetricCardProps) {
 
   return (
     <Card className={cn(metric.className)}>
-      <CardContent className={cn(sizeClasses[metric.size || 'sm'])}>
+      <CardContent className={cn(sizeClasses[metric.size ?? 'sm'])}>
         <div className="space-y-0.5">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-muted-foreground">
@@ -225,7 +225,7 @@ function FormattedValue({ value, displayType, format }: FormattedValueProps) {
       case 'badge':
         return (
           <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-            {String(value)}
+            {String(value as string)}
           </span>
         );
 
@@ -254,7 +254,7 @@ function FormattedValue({ value, displayType, format }: FormattedValueProps) {
         );
 
       default:
-        return String(value);
+        return String(value as string);
     }
   };
 

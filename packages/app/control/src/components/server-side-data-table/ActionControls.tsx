@@ -22,9 +22,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import type { FilterParams} from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { toFilterParams } from '@/services/lib/filtering';
-import type { MultiSortParams} from '@/services/lib/sorting';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { toMultiSortParams } from '@/services/lib/sorting';
 import type { PaginationParams } from '@/services/lib/pagination';
 
@@ -120,7 +120,7 @@ export function ActionControls<TData>({
       setPendingAction(action);
       setIsConfirmationOpen(true);
     } else {
-      executeAction(action);
+      void executeAction(action);
     }
   };
 
@@ -141,7 +141,7 @@ export function ActionControls<TData>({
         .catch(error => {
           setExecutionResult({
             success: false,
-            message: `${action.label} failed: ${error.message || 'Unknown error'}`,
+            message: `${action.label} failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
           });
         })
         .finally(() => {
@@ -160,7 +160,7 @@ export function ActionControls<TData>({
 
   const handleConfirmAction = () => {
     if (pendingAction) {
-      executeAction(pendingAction);
+      void executeAction(pendingAction);
       setPendingAction(null);
       setIsConfirmationOpen(false);
     }
@@ -176,7 +176,7 @@ export function ActionControls<TData>({
     const groups: Record<string, ActionConfig[]> = {};
 
     allActions.forEach(action => {
-      const groupKey = action.group || 'General';
+      const groupKey = action.group ?? 'General';
       if (!groups[groupKey]) {
         groups[groupKey] = [];
       }
@@ -269,13 +269,13 @@ export function ActionControls<TData>({
                         )}
                         <div className="grid grid-cols-1 gap-2">
                           {groupActions.map(action => {
-                            const IconComponent = action.icon || Play;
-                            const isDisabled = action.disabled || isExecuting;
+                            const IconComponent = action.icon ?? Play;
+                            const isDisabled = action.disabled ?? isExecuting;
 
                             return (
                               <div key={action.id} className="relative">
                                 <Button
-                                  variant={action.variant || 'outline'}
+                                  variant={action.variant ?? 'outline'}
                                   size="sm"
                                   onClick={() => handleActionClick(action)}
                                   disabled={isDisabled}
@@ -357,12 +357,12 @@ export function ActionControls<TData>({
               >
                 <AlertCircle className="h-4 w-4" />
               </div>
-              {pendingAction?.confirmationTitle || 'Confirm Action'}
+              {pendingAction?.confirmationTitle ?? 'Confirm Action'}
             </DialogTitle>
-            {(pendingAction?.confirmationMessage ||
+            {(pendingAction?.confirmationMessage ??
               pendingAction?.description) && (
               <DialogDescription className="text-slate-600">
-                {pendingAction?.confirmationMessage ||
+                {pendingAction?.confirmationMessage ??
                   pendingAction?.description}
               </DialogDescription>
             )}
@@ -389,7 +389,7 @@ export function ActionControls<TData>({
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
             >
-              {pendingAction?.label || 'Confirm'}
+              {pendingAction?.label ?? 'Confirm'}
             </Button>
           </DialogFooter>
         </DialogContent>

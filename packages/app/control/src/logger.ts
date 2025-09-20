@@ -6,12 +6,10 @@ import {
   context,
   trace,
 } from '@opentelemetry/api';
-import type {
-  LogRecord,
-  LogRecordProcessor} from '@opentelemetry/sdk-logs';
+import type { LogRecord, LogRecordProcessor } from '@opentelemetry/sdk-logs';
 import {
   LoggerProvider,
-  BatchLogRecordProcessor
+  BatchLogRecordProcessor,
 } from '@opentelemetry/sdk-logs';
 import { Resource } from '@opentelemetry/resources';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
@@ -69,16 +67,16 @@ class ConsoleLogProcessor implements LogRecordProcessor {
     }
 
     const timestamp = new Date(timestampMs).toISOString();
-    const severity = logRecord.severityText || 'INFO';
+    const severity = logRecord.severityText ?? 'INFO';
     const body = logRecord.body;
 
     // Extract attributes for context
     const attributes = logRecord.attributes;
-    const traceId = attributes?.trace_id;
-    const spanId = attributes?.span_id;
+    const traceId = attributes?.trace_id as string;
+    const spanId = attributes?.span_id as string;
 
     // Format the log message
-    let message = `[${timestamp}] ${severity}: ${body}`;
+    let message = `[${timestamp}] ${severity}: ${typeof body === 'string' ? body : JSON.stringify(body)}`;
 
     if (traceId && spanId) {
       message += ` [trace_id=${traceId}, span_id=${spanId}]`;
@@ -88,7 +86,10 @@ class ConsoleLogProcessor implements LogRecordProcessor {
     if (attributes) {
       const otherAttrs = Object.entries(attributes)
         .filter(([key]) => !['trace_id', 'span_id'].includes(key))
-        .map(([key, value]) => `${key}=${value}`)
+        .map(
+          ([key, value]) =>
+            `${key}=${typeof value === 'string' ? value : JSON.stringify(value)}`
+        )
         .join(', ');
 
       if (otherAttrs) {

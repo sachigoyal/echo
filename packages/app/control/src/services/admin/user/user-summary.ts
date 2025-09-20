@@ -38,6 +38,24 @@ interface UserSummaryData {
   referredUsersCount: number;
   lastTransactionAt: Date | null;
 }
+
+interface TrendData {
+  revenue_current: number;
+  revenue_prev: number;
+  app_profit_current: number;
+  app_profit_prev: number;
+  markup_profit_current: number;
+  markup_profit_prev: number;
+  tx_count_current: number;
+  tx_count_prev: number;
+  tokens_current: number;
+  tokens_prev: number;
+  payouts_current: number;
+  payouts_prev: number;
+  referred_current: number;
+  referred_prev: number;
+}
+
 // Lightweight summary strictly for overview metrics to avoid fetching unnecessary data
 type UserOverviewSummary = Pick<
   UserSummaryData,
@@ -147,10 +165,10 @@ async function getUserOverviewSummary(
     LEFT JOIN user_referrals ur ON ue.id = ur.id
   `;
 
-  const result = (await db.$queryRawUnsafe(
+  const result = await db.$queryRawUnsafe<Record<string, unknown>[]>(
     query,
     userId
-  ));
+  );
   if (result.length === 0) {
     return {
       totalRevenue: 0,
@@ -165,7 +183,7 @@ async function getUserOverviewSummary(
       referredUsersCount: 0,
     };
   }
-  const row = result[0] as Record<string, unknown>;
+  const row = result[0];
   return {
     totalRevenue: Number(row.totalRevenue) || 0,
     totalAppProfit: Number(row.totalAppProfit) || 0,
@@ -239,9 +257,9 @@ export const getUserOverviewMetrics = async (
     FROM txn_user tu, payouts_user pu, referrals_user ru;
   `;
 
-  const trend = (await db.$queryRawUnsafe(trendQuery, userId));
+  const trend = await db.$queryRawUnsafe<TrendData[]>(trendQuery, userId);
 
-  const t = trend[0] || {
+  const defaultTrend: TrendData = {
     revenue_current: 0,
     revenue_prev: 0,
     app_profit_current: 0,
@@ -257,6 +275,8 @@ export const getUserOverviewMetrics = async (
     referred_current: 0,
     referred_prev: 0,
   };
+
+  const t = trend.length > 0 ? trend[0] : defaultTrend;
 
   const trendLabel = 'vs previous 7d';
 

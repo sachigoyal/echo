@@ -49,9 +49,8 @@ export async function getAppEarningsOverviewMetrics(): Promise<
     FROM t, a, avg_tx;
   `;
 
-  const summary = (await db.$queryRawUnsafe(
-    summaryQuery
-  ));
+  const summary =
+    await db.$queryRawUnsafe<AppEarningsOverviewRow[]>(summaryQuery);
   const s = summary[0] || {
     totalRevenue: 0,
     totalTransactions: 0,
@@ -97,9 +96,7 @@ export async function getAppEarningsOverviewMetrics(): Promise<
     FROM txn, apps;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(
-    trendQuery
-  ));
+  const trendRows = await db.$queryRawUnsafe<AppEarningsTrendRow[]>(trendQuery);
   const t = trendRows[0] || {
     spend_current: 0,
     spend_prev: 0,

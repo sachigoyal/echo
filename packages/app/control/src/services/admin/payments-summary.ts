@@ -46,9 +46,7 @@ export async function getPaymentsOverviewMetrics(): Promise<
     FROM p;
   `;
 
-  const summary = (await db.$queryRawUnsafe(
-    summaryQuery
-  ));
+  const summary = await db.$queryRawUnsafe<PaymentsOverviewRow[]>(summaryQuery);
   const s = summary[0] || {
     totalAmount: 0,
     stripeAmount: 0,
@@ -97,9 +95,7 @@ export async function getPaymentsOverviewMetrics(): Promise<
     FROM t, u;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(
-    trendQuery
-  ));
+  const trendRows = await db.$queryRawUnsafe<PaymentsTrendRow[]>(trendQuery);
   const t = trendRows[0] || {
     total_current: 0,
     total_prev: 0,

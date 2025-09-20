@@ -15,7 +15,7 @@ export function UserAppsOverview({ userId }: UserAppsOverviewProps) {
     <OverviewPanel
       title="User Overview"
       description="Summary statistics for this user's activity and performance"
-      metrics={data || []}
+      metrics={data ?? []}
       isLoading={isLoading}
       error={error}
       grid={{

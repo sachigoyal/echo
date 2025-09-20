@@ -27,8 +27,8 @@ const columns: TypedColumnDef<
     columnType: 'string',
     cell: ({ getValue, row }) => {
       const name = getValue() as string | null;
-      const email = row.original.email;
-      const userId = row.original.id;
+      const email = (row.original as { email: string }).email;
+      const userId = (row.original as { id: string }).id;
       return <UserLink userId={userId} name={name} email={email} />;
     },
   },
@@ -149,7 +149,7 @@ export default function UserEarningsTable() {
       columns={columns}
       trpcQuery={api.admin.earnings.getUserEarningsWithPagination.useQuery}
       showControls={true}
-      getRowId={row => row.id}
+      getRowId={row => (row as { id: string }).id}
       actions={[
         {
           id: 'view-details',

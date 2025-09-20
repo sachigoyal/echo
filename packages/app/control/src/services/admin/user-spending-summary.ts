@@ -2,15 +2,15 @@ import { db } from '@/lib/db';
 import type { OverviewMetricConfig } from './type/overview-metric';
 import { percentChange } from './util/percent-change';
 
-type SpendingOverviewRow = {
+interface SpendingOverviewRow {
   totalSpend: number;
   totalPayments: number;
   totalFreeTierUsage: number;
   totalOutstandingBalance: number;
   spendingUsers: number;
-};
+}
 
-type SpendingTrendRow = {
+interface SpendingTrendRow {
   spend_current: number;
   spend_prev: number;
   payments_current: number;
@@ -19,7 +19,7 @@ type SpendingTrendRow = {
   free_tier_prev: number;
   spending_users_current: number;
   spending_users_prev: number;
-};
+}
 
 export async function getUserSpendingOverviewMetrics(): Promise<
   OverviewMetricConfig[]
@@ -52,10 +52,8 @@ export async function getUserSpendingOverviewMetrics(): Promise<
     FROM t, p, b, su;
   `;
 
-  const summary = (await db.$queryRawUnsafe(
-    summaryQuery
-  ));
-  const s = summary[0] || {
+  const summary = await db.$queryRawUnsafe<SpendingOverviewRow[]>(summaryQuery);
+  const s = summary[0] ?? {
     totalSpend: 0,
     totalPayments: 0,
     totalFreeTierUsage: 0,
@@ -106,9 +104,7 @@ export async function getUserSpendingOverviewMetrics(): Promise<
     FROM txn, pay, su;
   `;
 
-  const trendRows = (await db.$queryRawUnsafe(
-    trendQuery
-  ));
+  const trendRows = await db.$queryRawUnsafe<SpendingTrendRow[]>(trendQuery);
   const t = trendRows[0] || {
     spend_current: 0,
     spend_prev: 0,

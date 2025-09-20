@@ -65,16 +65,16 @@ export function ChartPanel({
   const gridClassName = cn(
     'grid',
     grid.responsive
-      ? gridClasses.columns[grid.columns || 3]
-      : `grid-cols-${grid.columns || 3}`,
-    gridClasses.gap[grid.gap || 'md']
+      ? gridClasses.columns[grid.columns ?? 3]
+      : `grid-cols-${grid.columns ?? 3}`,
+    gridClasses.gap[grid.gap ?? 'md']
   );
 
   if (error) {
     return (
       <div className={containerClassName}>
         <Card className={cn('p-6 border-destructive', className)}>
-          {(title || description) && (
+          {(title ?? description) && (
             <CardHeader className="px-0 pt-0 pb-4">
               {title && (
                 <CardTitle className="text-lg font-semibold">{title}</CardTitle>
@@ -110,7 +110,7 @@ export function ChartPanel({
   return (
     <div className={containerClassName}>
       <Card className={cn('p-6', className)}>
-        {(title || description) && (
+        {(title ?? description) && (
           <CardHeader className="px-0 pt-0 pb-4">
             {title && (
               <CardTitle className="text-lg font-semibold">{title}</CardTitle>
@@ -137,7 +137,6 @@ interface ChartCardProps {
 }
 
 function ChartCard({ item, isLoading }: ChartCardProps) {
-
   if (isLoading) {
     return (
       <Card className={cn(item.className)}>

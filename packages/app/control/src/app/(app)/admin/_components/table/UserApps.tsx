@@ -26,7 +26,7 @@ const columns: TypedColumnDef<
     columnType: 'string',
     cell: ({ getValue, row }) => {
       const name = getValue() as string;
-      const appId = row.original.id;
+      const appId = (row.original as { id: string }).id;
       return (
         <AppLink
           appId={appId}
@@ -198,7 +198,7 @@ export default function UserAppsTable({ userId }: UserAppsTableProps) {
         })
       }
       showControls={true}
-      getRowId={row => row.id}
+      getRowId={row => (row as { id: string }).id}
       enableRowSelection={false}
     />
   );

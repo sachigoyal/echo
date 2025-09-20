@@ -4,7 +4,7 @@ import React, { memo, useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import { cn } from '@/lib/utils';
 import { SiGithub } from '@icons-pack/react-simple-icons';
-import { githubApi, type GitHubUser } from '@/lib/github-api';
+import { searchUser } from '@/services/github/users';
 
 export const MinimalGithubAvatar = memo(function MinimalGithubAvatar({
   login,
@@ -45,7 +45,9 @@ export const GithubAvatar = memo(function GithubAvatar({
   showName?: boolean;
   linkToProfile?: boolean;
 }) {
-  const [user, setUser] = useState<GitHubUser | null>(null);
+  const [user, setUser] = useState<
+    NonNullable<Awaited<ReturnType<typeof searchUser>>>['items'][number] | null
+  >(null);
 
   const owner = React.useMemo(() => {
     if (!pageUrl) return '';
@@ -66,11 +68,10 @@ export const GithubAvatar = memo(function GithubAvatar({
       return;
     }
     let isCurrent = true;
-    githubApi
-      .searchUserByUsername(owner)
+    searchUser(owner)
       .then(fetched => {
         if (!isCurrent) return;
-        setUser(fetched);
+        setUser(fetched?.items[0] ?? null);
       })
       .catch(() => {
         if (!isCurrent) return;
@@ -85,10 +86,7 @@ export const GithubAvatar = memo(function GithubAvatar({
     <Avatar className="size-10 rounded-full overflow-hidden border border-border/50 shadow-sm">
       {owner ? (
         <AvatarImage
-          src={
-            (user?.avatar_url) ??
-            `https://github.com/${owner}.png`
-          }
+          src={user?.avatar_url ?? `https://github.com/${owner}.png`}
           alt={user?.name ?? owner}
           className="object-cover transition-opacity duration-200"
         />
@@ -166,7 +164,7 @@ export const GithubAvatar = memo(function GithubAvatar({
     );
   }
 
-  const displayName = user?.name || owner;
+  const displayName = user?.name ?? owner;
   const profileUrl = pageUrl;
 
   return (

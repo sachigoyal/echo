@@ -11,3 +11,15 @@ export const getUser = async (username: string) => {
       return null;
     });
 };
+
+export const searchUser = async (query: string) => {
+  return githubClient.rest.search
+    .users({
+      q: query,
+    })
+    .then(res => res.data)
+    .catch(error => {
+      console.error('Error searching GitHub user:', error);
+      return null;
+    });
+};

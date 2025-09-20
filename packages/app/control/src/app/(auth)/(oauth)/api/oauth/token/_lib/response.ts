@@ -31,11 +31,11 @@ export const tokenResponse = ({
   user: {
     id: user.id,
     email: user.email,
-    name: user.name || '',
+    name: user.name ?? '',
   },
   echo_app: {
     id: app.id,
     name: app.name,
-    description: app.description || '',
+    description: app.description ?? '',
   },
 });

@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import {
@@ -181,9 +181,9 @@ async function handleCheckoutSessionCompleted(
           data: {
             paymentId: paymentId,
             amount: amount_total,
-            currency: currency || 'usd',
+            currency: currency ?? 'usd',
             status: PaymentStatus.COMPLETED,
-            description: description || 'Echo credits purchase',
+            description: description ?? 'Echo credits purchase',
             userId,
           },
         });
@@ -214,7 +214,7 @@ async function handleCheckoutSessionCompleted(
           userId,
           amountInCents: amount_total,
           paymentRecord,
-          metadata: metadata || {},
+          metadata: metadata ?? {},
           echoAppId,
         });
       }

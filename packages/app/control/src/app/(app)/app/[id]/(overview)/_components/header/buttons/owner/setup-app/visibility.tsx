@@ -46,7 +46,7 @@ export const Visibility: React.FC<Props> = ({ appId, isPublic }) => {
   } = api.apps.app.update.useMutation({
     onSuccess: () => {
       toast.success('App details updated');
-      utils.apps.app.get.invalidate({ appId });
+      void utils.apps.app.get.invalidate({ appId });
     },
     onError: () => {
       toast.error('Failed to update app details');

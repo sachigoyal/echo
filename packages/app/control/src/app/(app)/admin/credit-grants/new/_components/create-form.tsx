@@ -25,7 +25,7 @@ export const CreateCreditGrantForm = () => {
     isSuccess,
   } = api.admin.creditGrants.create.useMutation({
     onSuccess: ({ code }) => {
-      utils.admin.creditGrants.list.invalidate();
+      void utils.admin.creditGrants.list.invalidate();
       toast.success('Credit grant created');
       router.push(`/admin/credit-grants/${code}`);
     },
