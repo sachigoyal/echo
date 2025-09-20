@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import { z } from 'zod';
 
 import type { AppId } from './lib/schemas';

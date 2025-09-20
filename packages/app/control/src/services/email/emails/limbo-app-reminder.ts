@@ -5,7 +5,7 @@ import { sendEmailWithRetry } from '../lib/send';
 import { getFullUser } from '@/services/user/get';
 
 import { logger } from '@/logger';
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 export const limboAppReminderEmailSchema = z.object({
   userId: z.uuid(),

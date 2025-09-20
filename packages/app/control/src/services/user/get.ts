@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 export const getPublicUser = async (userId: string) => {
   return await db.user.findUnique({

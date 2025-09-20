@@ -6,7 +6,7 @@ import { addSeconds, subMilliseconds } from 'date-fns';
 
 import { tokenResponse } from './response';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 import { logger } from '@/logger';
 import { env } from '@/env';

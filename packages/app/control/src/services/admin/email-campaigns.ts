@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import { queueJob } from '@/services/email/queue';
 import { EmailType } from '../email/emails/types';
 

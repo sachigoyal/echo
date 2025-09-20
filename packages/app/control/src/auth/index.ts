@@ -4,7 +4,7 @@ import NextAuth from 'next-auth';
 
 import { PrismaAdapter } from '@auth/prisma-adapter';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 import { authConfig } from './config';
 import { emailProviders } from './providers';

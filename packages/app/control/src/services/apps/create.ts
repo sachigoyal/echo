@@ -6,7 +6,7 @@ import { queueJob } from '../email/queue';
 import { EmailType } from '../email/emails/types';
 
 import { logger } from '@/logger';
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import { AppRole, MembershipStatus } from '@/lib/permissions';
 
 export const createApp = async (

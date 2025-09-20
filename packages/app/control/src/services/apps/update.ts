@@ -3,7 +3,7 @@ import type z from 'zod';
 import type { AppId } from './lib/schemas';
 import { updateAppSchema } from './lib/schemas';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 import { AppRole } from '@/lib/permissions';
 

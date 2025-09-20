@@ -9,7 +9,7 @@ import {
   PayoutStatus,
   PayoutType,
 } from '@/services/payouts/referrals';
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import {
   calculateUserMarkupEarnings,
   calculateAppMarkupEarnings,

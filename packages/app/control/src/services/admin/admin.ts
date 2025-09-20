@@ -3,7 +3,7 @@ import z from 'zod';
 import type { mintCreditsToUserSchema } from '../credits/mint';
 import { mintCreditsToUser } from '../credits/mint';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 import type { EchoApp, Prisma, User } from '@/generated/prisma';
 

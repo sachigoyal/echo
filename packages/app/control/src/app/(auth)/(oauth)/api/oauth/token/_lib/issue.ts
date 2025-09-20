@@ -6,7 +6,7 @@ import { jwtVerify } from 'jose';
 import { authCodeJwtPayloadSchema } from '@/app/(auth)/(oauth)/(authorize)/_lib/code';
 import { isValidRedirectUri } from '@/app/(auth)/(oauth)/_lib/redirect-uri';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import { PermissionService } from '@/lib/permissions/service';
 import { AppRole, MembershipStatus } from '@/lib/permissions/types';
 

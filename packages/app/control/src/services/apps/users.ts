@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import {
   type PaginationParams,
   toPaginatedReponse,

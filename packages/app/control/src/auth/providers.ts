@@ -3,7 +3,7 @@ import GithubProvider from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 import Resend from 'next-auth/providers/resend';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import { env } from '@/env';
 
 import type { OAuthProvider } from './types';

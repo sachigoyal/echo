@@ -1,4 +1,4 @@
-import { db } from '../../lib/db';
+import { db } from '../db/db';
 import type { PrismaClient } from '@/generated/prisma';
 
 export const getUserGlobalBalance = async (userId: string) => {

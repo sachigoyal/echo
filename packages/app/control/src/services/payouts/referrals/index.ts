@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 export enum PayoutType {
   REFERRAL = 'referral',

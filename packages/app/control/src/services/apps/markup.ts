@@ -1,6 +1,6 @@
 import type z from 'zod';
 
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 import { updateMarkupSchema } from './lib/schemas';
 import { AppRole } from '@/lib/permissions';

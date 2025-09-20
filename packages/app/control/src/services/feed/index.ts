@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import type { UserId } from '../lib/schemas';
 import type { FeedActivity } from './types';
 import { FeedActivityType } from './types';

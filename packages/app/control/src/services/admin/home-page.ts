@@ -1,6 +1,6 @@
 import type { ChartItem } from '@/services/admin/type/chart';
 import type { ChartConfig } from '@/components/ui/chart';
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 
 interface GetHomePageChartInput {
   startDate?: Date;

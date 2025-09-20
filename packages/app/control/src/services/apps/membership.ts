@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import { appSelect } from './lib/select';
 import { AppRole, MembershipStatus } from '@/lib/permissions';
 

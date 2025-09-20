@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db } from '@/services/db/db';
 import {
   handlePaymentSuccess,
   processPaymentUpdate,

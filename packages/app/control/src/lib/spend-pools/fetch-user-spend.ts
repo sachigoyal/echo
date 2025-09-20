@@ -1,5 +1,5 @@
 import type { Prisma } from '@/generated/prisma';
-import { db } from '../db';
+import { db } from '../../services/db/db';
 
 export const getCustomerSpendInfoForApp = async (
   userId: string,
