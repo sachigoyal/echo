@@ -9,7 +9,7 @@ import {
   scheduleCreateAppFollowUpEmail,
 } from './emails/create-app';
 
-import { qstashClient } from '@/lib/qstash';
+import { queueClient } from '@/services/queue/client';
 
 import { env } from '@/env';
 
@@ -27,7 +27,7 @@ export const emailJobSchema = z.discriminatedUnion('campaign', [
 ]);
 
 export const queueJob = async (body: z.infer<typeof emailJobSchema>) => {
-  await qstashClient.publishJSON({
+  await queueClient.publishJSON({
     url: `${env.NEXT_PUBLIC_APP_URL}/api/jobs`,
     body,
     flowControl: {
