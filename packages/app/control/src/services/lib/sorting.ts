@@ -1,12 +1,7 @@
 import { SortingState } from '@tanstack/react-table';
 import z from 'zod';
 
-export type SortDirection = 'asc' | 'desc';
-
-export type SortParams = {
-  sort_by?: string;
-  sort_direction?: SortDirection;
-};
+type SortDirection = 'asc' | 'desc';
 
 export type MultiSortParams = {
   sorts?: Array<{

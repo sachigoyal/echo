@@ -4,7 +4,7 @@ import { Button } from '@/registry/echo/ui/echo-button';
 import { useState } from 'react';
 import { CopyCommand } from './copy-command';
 
-const REGISTRY_HOMEPAGE = 'https://www.echo-components.com/';
+const REGISTRY_HOMEPAGE = 'https://echo-components.com';
 
 const PACKAGE_MANAGERS = [
   {

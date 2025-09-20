@@ -1,19 +1,23 @@
 import { db } from '@/lib/db';
-import { scheduleCreateAppFollowUpEmail } from '@/services/email/create-app';
-import { scheduleLimboAppReminderEmail } from '@/services/email/limbo-app-reminder';
+import { queueJob } from '@/services/email/queue';
+import { EmailType } from '../email/emails/types';
 
-type EmailCampaign = {
+type CampaignLabel = {
   key: string;
   label: string;
   description?: string;
 };
 
-const AVAILABLE_EMAIL_CAMPAIGNS: EmailCampaign[] = [
-  { key: 'limbo-app-reminder', label: 'Limbo App Reminder' },
-  { key: 'create-app-follow-up', label: 'Create App Follow-Up' },
+const AVAILABLE_EMAIL_CAMPAIGNS: CampaignLabel[] = [
+  { key: EmailType.LIMBO_APP_REMINDER, label: 'Limbo App Reminder' },
+  { key: EmailType.CREATE_APP_FOLLOW_UP, label: 'Create App Follow-Up' },
 ];
 
-export function listAvailableEmailCampaigns(): EmailCampaign[] {
+function isValidEmailCampaign(key: string): key is EmailType {
+  return (Object.values(EmailType) as string[]).includes(key);
+}
+
+export function listAvailableEmailCampaigns(): CampaignLabel[] {
   return AVAILABLE_EMAIL_CAMPAIGNS;
 }
 
@@ -68,19 +72,7 @@ export async function scheduleCampaignForApps(params: {
     }
 
     try {
-      if (campaignKey === 'limbo-app-reminder') {
-        await scheduleLimboAppReminderEmail(
-          membership.user.id,
-          membership.echoApp.name,
-          appId
-        );
-      } else if (campaignKey === 'create-app-follow-up') {
-        await scheduleCreateAppFollowUpEmail(
-          membership.user.id,
-          membership.echoApp.name,
-          appId
-        );
-      } else {
+      if (!isValidEmailCampaign(campaignKey)) {
         results.push({
           appId,
           status: 'error',
@@ -88,6 +80,15 @@ export async function scheduleCampaignForApps(params: {
         });
         continue;
       }
+
+      await queueJob({
+        campaign: campaignKey,
+        payload: {
+          userId: membership.user.id,
+          appName: membership.echoApp.name,
+          appId,
+        },
+      });
 
       results.push({ appId, status: 'scheduled' });
     } catch (err) {

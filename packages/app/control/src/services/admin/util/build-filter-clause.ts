@@ -5,7 +5,7 @@ import {
 } from '@/services/admin/type/parameter';
 import { convertValue } from './convert-value';
 
-export type BuildFilterConfig = {
+type BuildFilterConfig = {
   columnMappings: Record<string, string>;
   defaultWhere: string;
   aggregatedColumns?: string[];
