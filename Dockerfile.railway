@@ -82,14 +82,18 @@ COPY packages/app/server/ ./packages/app/server/
 COPY packages/sdk/ts/ ./packages/sdk/ts/
 COPY packages/sdk/next/ ./packages/sdk/next/
 COPY packages/sdk/react/ ./packages/sdk/react/
+# we are now also copy the examples because pnpm install needs it
+COPY packages/sdk/examples/next/ ./packages/sdk/examples/next/
+COPY packages/sdk/examples/vite/ ./packages/sdk/examples/vite/
+COPY packages/sdk/component-registry/ ./packages/sdk/component-registry/
 
 # Install all workspace dependencies
 WORKDIR /app
 RUN pnpm install
 
-# Build all packages in correct dependency order using Turbo
+# Build only what's needed for the server
 WORKDIR /app
-RUN pnpm run build
+RUN SKIP_ENV_VALIDATION=true pnpm exec turbo run build --filter=echo-server
 
 # Generate Prisma client and copy schema for server
 WORKDIR /app/packages/app/control
