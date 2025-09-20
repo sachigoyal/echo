@@ -1,18 +1,25 @@
-import { qstashClient } from "@/lib/qstash"
-import { EmailJobPayload } from "./types"
+import { qstashClient } from '@/lib/qstash';
+import { EmailJobPayload, JobEnvelope, JobType } from './types';
 
-const ECHO_CONTROL_APP_BASE_URL = process.env.ECHO_CONTROL_APP_BASE_URL || 'http://localhost:3000'
+const ECHO_CONTROL_APP_BASE_URL =
+process.env.ECHO_CONTROL_APP_BASE_URL || 'http://localhost:3000';
 
-const RESEND_FLOW_CONTROL_KEY = process.env.RESEND_FLOW_CONTROL_KEY || 'resend-flow-control-key'
+const RESEND_FLOW_CONTROL_KEY =
+  process.env.RESEND_FLOW_CONTROL_KEY || 'resend-flow-control-key';
 
 export async function queueJob(body: EmailJobPayload) {
+  const jobEnvelope: JobEnvelope = {
+    type: JobType.EMAIL,
+    job: body,
+  };
+
   await qstashClient.publishJSON({
-    url: `${ ECHO_CONTROL_APP_BASE_URL }/api/jobs`,
-    body,
+    url: `${ECHO_CONTROL_APP_BASE_URL}/api/jobs`,
+    body: jobEnvelope,
     flowControl: {
       key: RESEND_FLOW_CONTROL_KEY,
       rate: 2,
       period: '1m',
-    }
-  })
+    },
+  });
 }

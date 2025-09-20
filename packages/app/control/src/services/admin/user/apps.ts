@@ -98,7 +98,7 @@ export const getUserAppsWithPagination = async (
     {
       columnMappings: COLUMN_MAPPINGS,
       defaultWhere:
-        "WHERE EXISTS (SELECT 1 FROM \"app_memberships\" owner_am WHERE owner_am.\"echoAppId\" = a.id AND owner_am.\"userId\" = $1::uuid AND owner_am.role = 'owner')",
+        'WHERE EXISTS (SELECT 1 FROM "app_memberships" owner_am WHERE owner_am."echoAppId" = a.id AND owner_am."userId" = $1::uuid AND owner_am.role = \'owner\')',
       aggregatedColumns: [
         'totalUsers',
         'totalTransactions',
