@@ -9,7 +9,6 @@
     "lint": "biome check --write"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.26",
     "@ai-sdk/react": "^2.0.44",
     "@merit-systems/echo-next-sdk": "^0.0.20",
     "@merit-systems/echo-react-sdk": "^1.0.29",
