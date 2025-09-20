@@ -1,4 +1,4 @@
-import { CreateEmailOptions, Resend } from 'resend';
+import { CreateEmailOptions, CreateEmailResponseSuccess, Resend } from 'resend';
 import { sendEmailWithRetry } from './emailer/retry-wrapper';
 import { logger } from '@/logger';
 import { db } from '@/lib/db';
@@ -11,7 +11,9 @@ export const createAppFollowUpEmailSchema = z.object({
 });
 
 // When user performs action, schedule email for 1 hour later
-export async function scheduleCreateAppFollowUpEmail(params: z.infer<typeof createAppFollowUpEmailSchema>) {
+export async function scheduleCreateAppFollowUpEmail(
+  params: z.infer<typeof createAppFollowUpEmailSchema>
+): Promise<CreateEmailResponseSuccess | null> {
   const { userId, appName, appId } = params;
 
   const resend = new Resend(process.env.AUTH_RESEND_KEY!);
@@ -37,7 +39,7 @@ export async function scheduleCreateAppFollowUpEmail(params: z.infer<typeof crea
   }
 
   if (appCount > 2) {
-    return;
+    return null;
   }
 
   const emailPayload: CreateEmailOptions = {
@@ -65,7 +67,7 @@ export async function scheduleCreateAppFollowUpEmail(params: z.infer<typeof crea
   if (error) {
     logger.emit({
       severityText: 'ERROR',
-      body: 'Error sending create app follow up email',
+      body: 'Email Error: Error sending create app follow up email',
       attributes: {
         error: error instanceof Error ? error.message : String(error),
         function: 'scheduleCreateAppFollowUpEmail',

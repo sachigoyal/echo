@@ -31,4 +31,4 @@ export const JobEnvelopeSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-
+export type JobEnvelope = z.infer<typeof JobEnvelopeSchema>;

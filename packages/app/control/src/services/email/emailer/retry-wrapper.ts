@@ -1,7 +1,15 @@
-import { Resend, type ErrorResponse, type CreateEmailOptions, type CreateEmailRequestOptions, type CreateEmailResponse } from 'resend';
+import {
+  Resend,
+  type ErrorResponse,
+  type CreateEmailOptions,
+  type CreateEmailRequestOptions,
+  type CreateEmailResponse,
+} from 'resend';
 import { randomUUID } from 'crypto';
 
-type ResendResult<T> = { data: T; error: null } | { data: null; error: ErrorResponse };
+type ResendResult<T> =
+  | { data: T; error: null }
+  | { data: null; error: ErrorResponse };
 
 type RetryConfig = {
   maxAttempts: number;
@@ -31,7 +39,7 @@ function isRetryable(error: ErrorResponse): boolean {
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function computeBackoffDelayMs(attemptIndex: number, cfg: RetryConfig): number {
@@ -51,7 +59,7 @@ async function resendRetry<T>(
   let lastError: ErrorResponse | null = null;
 
   for (let attempt = 0; attempt < cfg.maxAttempts; attempt++) {
-    const { data, error } = await operation()
+    const { data, error } = await operation();
 
     if (error === null) {
       return { data, error };
@@ -77,9 +85,10 @@ export function sendEmailWithRetry(
   config?: Partial<RetryConfig>
 ): Promise<CreateEmailResponse> {
   const idempotencyKey = options?.idempotencyKey ?? randomUUID();
-  const stableOptions: CreateEmailRequestOptions = { ...options, idempotencyKey };
+  const stableOptions: CreateEmailRequestOptions = {
+    ...options,
+    idempotencyKey,
+  };
 
   return resendRetry(() => resend.emails.send(payload, stableOptions), config);
 }
-
-

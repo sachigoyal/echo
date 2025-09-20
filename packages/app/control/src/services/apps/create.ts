@@ -70,15 +70,14 @@ export const createApp = async (
       },
     });
 
-    await queueJob(
-      {
-        campaign: EmailCampaign.CREATE_APP_FOLLOW_UP,
-        payload: {
-          userId,
-          appName: app.name,
-          appId: app.id,
-        },
-      }); 
+    await queueJob({
+      campaign: EmailCampaign.CREATE_APP_FOLLOW_UP,
+      payload: {
+        userId,
+        appName: app.name,
+        appId: app.id,
+      },
+    });
 
     return app;
   } catch (error) {
