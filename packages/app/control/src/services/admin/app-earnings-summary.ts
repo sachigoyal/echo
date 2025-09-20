@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { OverviewMetricConfig } from './type/overview-metric';
+import type { OverviewMetricConfig } from './type/overview-metric';
 import { percentChange } from './util/percent-change';
 
 type AppEarningsOverviewRow = {
@@ -51,7 +51,7 @@ export async function getAppEarningsOverviewMetrics(): Promise<
 
   const summary = (await db.$queryRawUnsafe(
     summaryQuery
-  )) as Array<AppEarningsOverviewRow>;
+  ));
   const s = summary[0] || {
     totalRevenue: 0,
     totalTransactions: 0,
@@ -99,7 +99,7 @@ export async function getAppEarningsOverviewMetrics(): Promise<
 
   const trendRows = (await db.$queryRawUnsafe(
     trendQuery
-  )) as Array<AppEarningsTrendRow>;
+  ));
   const t = trendRows[0] || {
     spend_current: 0,
     spend_prev: 0,

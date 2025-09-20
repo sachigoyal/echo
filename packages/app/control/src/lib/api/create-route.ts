@@ -1,5 +1,5 @@
 import { RouteHandlerBuilder } from './handler-builder';
-import {
+import type {
   HandleInternalErrorFn,
   HandlerServerErrorFn,
   InternalErrorBody,

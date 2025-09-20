@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { Table as TanStackTable } from '@tanstack/react-table';
+import type { Table as TanStackTable } from '@tanstack/react-table';
 import { Filter, X, Plus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { FilterOperator } from '@/services/lib/filtering';
+import type { FilterOperator } from '@/services/lib/filtering';
 
 // Enhanced filter structure to support operators
 interface FilterConfig {

@@ -101,5 +101,5 @@ async function resendRetry<T>(
     await sleep(delay);
   }
 
-  return { data: null, error: lastError as ErrorResponse };
+  return { data: null, error: lastError! };
 }

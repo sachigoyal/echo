@@ -2,10 +2,10 @@
 
 import { getAuthorizationRedirect } from '@/app/(auth)/(oauth)/(authorize)/_lib/authorize';
 import { api } from '@/trpc/server';
-import { Route } from 'next';
+import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 
-import { AuthorizeParams } from './schema';
+import type { AuthorizeParams } from './schema';
 
 export const authorize = async (params: AuthorizeParams) => {
   if (params.referral_code) {

@@ -4,13 +4,14 @@
  * sorting, and filtering parameters and returns user app data in the expected format.
  */
 
+import type {
+  PaginationParams} from '@/services/lib/pagination';
 import {
-  PaginationParams,
   toPaginatedReponse,
 } from '@/services/lib/pagination';
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
-import { FilterParams } from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
@@ -59,12 +60,7 @@ const getPayoutInformation = async (appIds: string[]) => {
     payoutsQuery,
     appIds,
     userIds
-  )) as Array<{
-    echoAppId: string | null;
-    userId: string | null;
-    type: string;
-    totalClaimed: number;
-  }>;
+  ));
 
   const referralPayouts = new Map<string, number>();
   const markupPayouts = new Map<string, number>();
@@ -204,25 +200,7 @@ export const getUserAppsWithPagination = async (
   const userApps = (await db.$queryRawUnsafe(
     baseQuery,
     ...queryParameters
-  )) as Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    totalUsers: number;
-    totalTransactions: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalTokens: number;
-    totalSpent: number;
-    totalSpentFreeTier: number;
-    totalSpentUserBalances: number;
-    totalReferralProfitEarned: number;
-    totalMarkupProfitEarned: number;
-    totalTransactionCosts: number;
-    lastTransactionAt: Date | null;
-  }>;
+  ));
 
   // Get additional data for payouts
   const appIds = userApps.map(app => app.id);
@@ -270,7 +248,7 @@ export const getUserAppsWithPagination = async (
   const totalCount = (await db.$queryRawUnsafe(
     totalCountQuery,
     ...parameters
-  )) as Array<{ count: bigint }>;
+  ));
 
   // Transform the results to match the expected interface
   const transformedResults = userApps.map(app => ({

@@ -9,11 +9,11 @@ import {
   toNumber,
   IntCell,
 } from '@/components/server-side-data-table';
-import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
-import { TableState } from '@/components/server-side-data-table/ActionControls';
+import type { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import type { TableState } from '@/components/server-side-data-table/ActionControls';
 import { api } from '@/trpc/client';
 import { AppLink, UserLink } from '@/app/(app)/admin/_components';
-import { RouterOutputs } from '@/trpc/client';
+import type { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the app earnings table
 const columns: TypedColumnDef<

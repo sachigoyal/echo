@@ -4,7 +4,7 @@
  */
 
 import { db } from '@/lib/db';
-import { OverviewMetricConfig } from '../type/overview-metric';
+import type { OverviewMetricConfig } from '../type/overview-metric';
 import { percentChange } from '../util/percent-change';
 
 interface UserSummaryData {
@@ -150,7 +150,7 @@ async function getUserOverviewSummary(
   const result = (await db.$queryRawUnsafe(
     query,
     userId
-  )) as Array<UserOverviewSummary>;
+  ));
   if (result.length === 0) {
     return {
       totalRevenue: 0,
@@ -239,22 +239,7 @@ export const getUserOverviewMetrics = async (
     FROM txn_user tu, payouts_user pu, referrals_user ru;
   `;
 
-  const trend = (await db.$queryRawUnsafe(trendQuery, userId)) as Array<{
-    revenue_current: number;
-    revenue_prev: number;
-    app_profit_current: number;
-    app_profit_prev: number;
-    markup_profit_current: number;
-    markup_profit_prev: number;
-    tx_count_current: number;
-    tx_count_prev: number;
-    tokens_current: number;
-    tokens_prev: number;
-    payouts_current: number;
-    payouts_prev: number;
-    referred_current: number;
-    referred_prev: number;
-  }>;
+  const trend = (await db.$queryRawUnsafe(trendQuery, userId));
 
   const t = trend[0] || {
     revenue_current: 0,

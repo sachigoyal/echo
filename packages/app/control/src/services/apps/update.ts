@@ -1,6 +1,7 @@
-import z from 'zod';
+import type z from 'zod';
 
-import { AppId, updateAppSchema } from './lib/schemas';
+import type { AppId} from './lib/schemas';
+import { updateAppSchema } from './lib/schemas';
 
 import { db } from '@/lib/db';
 

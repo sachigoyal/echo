@@ -12,7 +12,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { ChartAreaLinear } from './LinearChart';
-import { ChartItem } from '@/services/admin/type/chart';
+import type { ChartItem } from '@/services/admin/type/chart';
 
 // Grid layout configuration (mirrors OverviewPanel)
 interface GridConfig {

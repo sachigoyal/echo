@@ -1,16 +1,17 @@
-import z from 'zod';
+import type z from 'zod';
 
-import {
+import type {
   HandleInternalErrorFn,
   HandlerFunction,
   HandlerServerErrorFn,
   InternalErrorBody,
-  InternalRouteHandlerError,
   MiddlewareFunction,
   MiddlewareResult,
   NextFunction,
   OriginalRouteHandler,
-  ServerErrorBody,
+  ServerErrorBody} from './types';
+import {
+  InternalRouteHandlerError
 } from './types';
 import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
@@ -69,7 +70,7 @@ export class RouteHandlerBuilder<
     this.middlewares = middlewares;
     this.handleServerError = handleServerError;
     this.handleInternalError = handleInternalError;
-    this.contextType = contextType as TContext;
+    this.contextType = contextType;
     this.metadataValue = metadataValue;
   }
 
@@ -334,7 +335,7 @@ export class RouteHandlerBuilder<
                 query: query as z.infer<TQuery>,
                 body: body as z.infer<TBody>,
                 ctx: middlewareContext,
-                metadata: metadata as z.infer<TMetadata>,
+                metadata: metadata!,
               });
 
               return result;
@@ -427,7 +428,7 @@ const handleError = <
   });
 
   if (handleServerError) {
-    return handleServerError(error as Error);
+    return handleServerError(error);
   }
 
   return NextResponse.json(

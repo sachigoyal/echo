@@ -1,5 +1,5 @@
-import { FilterParams } from '@/services/lib/filtering';
-import {
+import type { FilterParams } from '@/services/lib/filtering';
+import type {
   SQLParameter,
   NonArrayFilterValue,
 } from '@/services/admin/type/parameter';

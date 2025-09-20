@@ -1,10 +1,10 @@
-import z from 'zod';
+import type z from 'zod';
 
 import { db } from '@/lib/db';
 
 import { updateMarkupSchema } from './lib/schemas';
 import { AppRole } from '@/lib/permissions';
-import { AppId } from './lib/schemas';
+import type { AppId } from './lib/schemas';
 
 export const getAppMarkup = async (appId: AppId) => {
   return await db.markUp.findUnique({

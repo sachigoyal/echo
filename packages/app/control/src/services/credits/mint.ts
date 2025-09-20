@@ -3,11 +3,12 @@ import z from 'zod';
 import { db } from '@/lib/db';
 import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 
-import { EnumPaymentSource, Payment, type Prisma } from '@/generated/prisma';
+import type { Payment} from '@/generated/prisma';
+import { EnumPaymentSource, type Prisma } from '@/generated/prisma';
 import { logger } from '@/logger';
 import { updateSpendPoolFromPayment } from '@/lib/spend-pools';
 import { Decimal } from '@/generated/prisma/runtime/library';
-import { User } from '@auth/core/types';
+import type { User } from '@auth/core/types';
 
 export const mintCreditsToUserSchema = z.object({
   userId: z.uuid(),

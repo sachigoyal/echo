@@ -1,8 +1,8 @@
 import { differenceInSeconds } from 'date-fns';
 
-import { createEchoAccessJwt } from '@/lib/access-token';
+import type { createEchoAccessJwt } from '@/lib/access-token';
 
-import { createRefreshToken } from './refresh';
+import type { createRefreshToken } from './refresh';
 
 import type { EchoApp, User } from '@/generated/prisma';
 

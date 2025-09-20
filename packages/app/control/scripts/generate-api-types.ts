@@ -524,7 +524,7 @@ type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams,
 
   for (const typeDef of resolvedTypes) {
     // Extract type name from the resolved type definition
-    const match = typeDef.match(/export (?:interface|type) (\w+)/);
+    const match = /export (?:interface|type) (\w+)/.exec(typeDef);
     if (!match) continue;
 
     const typeName = match[1];

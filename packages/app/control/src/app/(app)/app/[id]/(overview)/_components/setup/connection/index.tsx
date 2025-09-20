@@ -28,7 +28,7 @@ import { TEMPLATES } from './data';
 import { api } from '@/trpc/client';
 
 import { cn } from '@/lib/utils';
-import { Route } from 'next';
+import type { Route } from 'next';
 import { Button } from '@/components/ui/button';
 import {
   SiNextdotjs,

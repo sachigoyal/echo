@@ -4,13 +4,14 @@
  * sorting, and filtering parameters and returns spending data in the expected format.
  */
 
+import type {
+  PaginationParams} from '@/services/lib/pagination';
 import {
-  PaginationParams,
   toPaginatedReponse,
 } from '@/services/lib/pagination';
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
-import { FilterParams } from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
@@ -83,16 +84,7 @@ export const getUserSpendingWithPagination = async (
   const usersWithSpending = (await db.$queryRawUnsafe(
     baseQuery,
     ...queryParameters
-  )) as Array<{
-    id: string;
-    name: string | null;
-    email: string;
-    totalSpent: number;
-    balance: number;
-    freeTierUsage: number;
-    createdAt: Date;
-    updatedAt: Date;
-  }>;
+  ));
 
   // Build count query with same filters
   const countQuery = `
@@ -113,7 +105,7 @@ export const getUserSpendingWithPagination = async (
   const totalCount = (await db.$queryRawUnsafe(
     totalCountQuery,
     ...parameters
-  )) as Array<{ count: bigint }>;
+  ));
 
   // Return in the expected format
   return toPaginatedReponse({

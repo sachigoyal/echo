@@ -1,4 +1,4 @@
-import { ColumnFiltersState } from '@tanstack/react-table';
+import type { ColumnFiltersState } from '@tanstack/react-table';
 import z from 'zod';
 
 export type FilterOperator =

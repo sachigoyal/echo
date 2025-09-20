@@ -1,11 +1,12 @@
 import { z } from 'zod';
 
-import { ApiKey, Prisma } from '@/generated/prisma';
+import type { ApiKey, Prisma } from '@/generated/prisma';
 
 import { db } from '../lib/db';
 import { AppRole, MembershipStatus } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
-import { PaginationParams, toPaginatedReponse } from './lib/pagination';
+import type { PaginationParams} from './lib/pagination';
+import { toPaginatedReponse } from './lib/pagination';
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { env } from '@/env';
 

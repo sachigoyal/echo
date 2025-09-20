@@ -1,12 +1,13 @@
 'use client';
 
-import z from 'zod';
+import type z from 'zod';
 
 import { CalendarDays, Check, Loader2 } from 'lucide-react';
 
 import { format } from 'date-fns';
 
-import { DefaultValues, useForm } from 'react-hook-form';
+import type { DefaultValues} from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';

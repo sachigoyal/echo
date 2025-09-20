@@ -4,13 +4,14 @@
  * sorting, and filtering parameters and returns app user data in the expected format.
  */
 
+import type {
+  PaginationParams} from '@/services/lib/pagination';
 import {
-  PaginationParams,
   toPaginatedReponse,
 } from '@/services/lib/pagination';
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
-import { FilterParams } from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
@@ -167,28 +168,7 @@ export const getAppUsersWithPagination = async (
   const appUsers = (await db.$queryRawUnsafe(
     baseQuery,
     ...queryParameters
-  )) as Array<{
-    id: string;
-    name: string | null;
-    email: string;
-    createdAt: Date;
-    updatedAt: Date;
-    totalPaid: number;
-    userTotalSpent: number;
-    membershipRole: string;
-    membershipStatus: string;
-    membershipTotalSpent: number;
-    membershipCreatedAt: Date;
-    totalTransactions: number;
-    totalInputTokens: number;
-    totalOutputTokens: number;
-    totalTokens: number;
-    totalSpent: number;
-    totalAppProfit: number;
-    totalMarkupProfit: number;
-    totalReferralProfit: number;
-    lastTransactionAt: Date | null;
-  }>;
+  ));
 
   // Build count query with same filters
   const countSourceQuery = `
@@ -239,7 +219,7 @@ export const getAppUsersWithPagination = async (
   const totalCount = (await db.$queryRawUnsafe(
     totalCountQuery,
     ...parameters
-  )) as Array<{ count: bigint }>;
+  ));
 
   // Transform the results to match the expected interface
   const transformedResults = appUsers.map(user => ({

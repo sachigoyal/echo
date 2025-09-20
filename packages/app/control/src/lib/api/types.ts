@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import z from 'zod';
+import type { NextRequest, NextResponse } from 'next/server';
+import type z from 'zod';
 
 /**
  * Function that is called when the route handler is executed and all the middleware has been executed
@@ -33,11 +33,9 @@ export type HandlerFunction<
  * @param options - Optional configuration object
  * @returns Promise resolving to the response from the next middleware or handler
  */
-export type NextFunction<TContext> = {
-  <NC extends object = object>(opts?: {
+export type NextFunction<TContext> = <NC extends object = object>(opts?: {
     ctx?: NC;
-  }): Promise<MiddlewareResult<NC & TContext>>;
-};
+  }) => Promise<MiddlewareResult<NC & TContext>>;
 
 /**
  * Middleware function that can:

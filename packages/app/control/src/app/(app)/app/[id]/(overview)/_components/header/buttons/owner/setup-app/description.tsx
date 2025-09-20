@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/trpc/client';
-import { EchoApp } from '@/generated/prisma';
+import type { EchoApp } from '@/generated/prisma';
 
 const descriptionSchema = z.object({
   description: z.string().min(1).max(250),

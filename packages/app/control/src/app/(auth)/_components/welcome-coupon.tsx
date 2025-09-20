@@ -12,7 +12,7 @@ import {
   CouponTitle,
   CouponValue,
 } from '@/components/coupon';
-import { STATES } from '@/components/coupon/multi-state-button';
+import type { STATES } from '@/components/coupon/multi-state-button';
 import { api } from '@/trpc/client';
 import { toast } from 'sonner';
 

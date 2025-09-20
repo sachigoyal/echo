@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { Table as TanStackTable } from '@tanstack/react-table';
+import type { Table as TanStackTable } from '@tanstack/react-table';
 import {
   Settings,
   X,
@@ -22,9 +22,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { FilterParams, toFilterParams } from '@/services/lib/filtering';
-import { MultiSortParams, toMultiSortParams } from '@/services/lib/sorting';
-import { PaginationParams } from '@/services/lib/pagination';
+import type { FilterParams} from '@/services/lib/filtering';
+import { toFilterParams } from '@/services/lib/filtering';
+import type { MultiSortParams} from '@/services/lib/sorting';
+import { toMultiSortParams } from '@/services/lib/sorting';
+import type { PaginationParams } from '@/services/lib/pagination';
 
 // Table state interface for passing to actions
 export interface TableState {
@@ -171,7 +173,7 @@ export function ActionControls<TData>({
 
   // Group actions by their group property
   const groupedActionsList = React.useMemo(() => {
-    const groups: { [key: string]: ActionConfig[] } = {};
+    const groups: Record<string, ActionConfig[]> = {};
 
     allActions.forEach(action => {
       const groupKey = action.group || 'General';

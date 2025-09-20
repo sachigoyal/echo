@@ -1,12 +1,13 @@
 'use client';
 
-import z from 'zod';
+import type z from 'zod';
 
 import { toast } from 'sonner';
 
-import { api, RouterOutputs } from '@/trpc/client';
+import type { RouterOutputs } from '@/trpc/client';
+import { api } from '@/trpc/client';
 
-import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import type { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
 import { CreditGrantForm } from '../../../_components/form';
 import { revalidateCodePage } from '../_actions/revalidate';
 

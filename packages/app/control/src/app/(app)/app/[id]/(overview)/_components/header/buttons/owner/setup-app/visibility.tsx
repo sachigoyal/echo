@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 
 import { toast } from 'sonner';
 import { api } from '@/trpc/client';
-import { EchoApp } from '@/generated/prisma';
+import type { EchoApp } from '@/generated/prisma';
 
 const visibilitySchema = z.object({
   isPublic: z.boolean(),

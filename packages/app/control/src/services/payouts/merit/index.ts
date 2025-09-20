@@ -1,15 +1,16 @@
 import { db } from '@/lib/db';
-import { MeritSDK, OutgoingPayment } from '@merit-systems/sdk';
+import type { OutgoingPayment } from '@merit-systems/sdk';
+import { MeritSDK } from '@merit-systems/sdk';
 import { PayoutStatus } from '../referrals';
 import { env } from '@/env';
 
 const sdk = new MeritSDK({
-  apiKey: env.MERIT_API_KEY!,
-  baseURL: env.MERIT_BASE_URL!,
-  checkoutURL: env.MERIT_CHECKOUT_URL!,
+  apiKey: env.MERIT_API_KEY,
+  baseURL: env.MERIT_BASE_URL,
+  checkoutURL: env.MERIT_CHECKOUT_URL,
 });
 
-const SENDER_GITHUB_ID = Number(env.MERIT_SENDER_GITHUB_ID!);
+const SENDER_GITHUB_ID = Number(env.MERIT_SENDER_GITHUB_ID);
 
 function generateCheckoutUrl(
   payeeGithubId: number,

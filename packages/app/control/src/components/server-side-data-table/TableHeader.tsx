@@ -1,11 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { Table as TanStackTable } from '@tanstack/react-table';
+import type { Table as TanStackTable } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SortAsc, Filter, Settings } from 'lucide-react';
-import { ActionControls, ActionConfig, ActionGroup } from './ActionControls';
+import type { ActionConfig, ActionGroup } from './ActionControls';
+import { ActionControls } from './ActionControls';
 
 interface TableHeaderProps<TData> {
   title: string;

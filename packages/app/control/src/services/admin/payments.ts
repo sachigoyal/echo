@@ -4,15 +4,16 @@
  * sorting, and filtering parameters and returns payment data in the expected format.
  */
 
+import type {
+  PaginationParams} from '@/services/lib/pagination';
 import {
-  PaginationParams,
   toPaginatedReponse,
 } from '@/services/lib/pagination';
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
-import { FilterParams } from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
-import { EnumPaymentSource } from '@/generated/prisma';
+import type { EnumPaymentSource } from '@/generated/prisma';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
 // Map frontend column names to SQL expressions
@@ -99,29 +100,7 @@ export const getPaymentsWithPagination = async (
   const payments = (await db.$queryRawUnsafe(
     baseQuery,
     ...queryParameters
-  )) as Array<{
-    id: string;
-    paymentId: string;
-    amount: number;
-    currency: string;
-    status: string;
-    source: EnumPaymentSource;
-    description: string | null;
-    isArchived: boolean;
-    archivedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string;
-    spendPoolId: string | null;
-    user_id: string;
-    user_name: string | null;
-    user_email: string;
-    spendPool_id: string | null;
-    spendPool_name: string | null;
-    spendPool_description: string | null;
-    app_id: string | null;
-    app_name: string | null;
-  }>;
+  ));
 
   // Build count query with same filters
   const countQuery = `
@@ -136,7 +115,7 @@ export const getPaymentsWithPagination = async (
   const totalCount = (await db.$queryRawUnsafe(
     countQuery,
     ...parameters
-  )) as Array<{ count: bigint }>;
+  ));
 
   // Transform the results to match the expected interface
   const transformedResults = payments.map(payment => ({

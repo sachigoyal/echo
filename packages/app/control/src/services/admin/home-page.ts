@@ -1,5 +1,5 @@
-import { ChartItem } from '@/services/admin/type/chart';
-import { ChartConfig } from '@/components/ui/chart';
+import type { ChartItem } from '@/services/admin/type/chart';
+import type { ChartConfig } from '@/components/ui/chart';
 import { db } from '@/lib/db';
 
 interface GetHomePageChartInput {

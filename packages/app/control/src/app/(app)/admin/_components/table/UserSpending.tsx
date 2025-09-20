@@ -7,11 +7,11 @@ import {
   MoneyCell,
   toNumber,
 } from '@/components/server-side-data-table';
-import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
-import { TableState } from '@/components/server-side-data-table/ActionControls';
+import type { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import type { TableState } from '@/components/server-side-data-table/ActionControls';
 import { api } from '@/trpc/client';
 import { UserLink } from '@/app/(app)/admin/_components';
-import { RouterOutputs } from '@/trpc/client';
+import type { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the user spending table
 const columns: TypedColumnDef<
