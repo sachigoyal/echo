@@ -3,7 +3,9 @@ import GithubProvider from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 import Resend from 'next-auth/providers/resend';
 
-import { db } from '@/services/db/client';
+import { getUserByEmail } from '@/services/db/ops/user/get';
+import { createUser } from '@/services/db/ops/user/create';
+
 import { env } from '@/env';
 
 import type { OAuthProvider } from './types';
@@ -42,11 +44,7 @@ export const testProviders: Provider[] = [
     name: 'Test1',
     credentials: {},
     authorize: async () => {
-      const existingUser = await db.user.findUnique({
-        where: {
-          email: 'test@example.com',
-        },
-      });
+      const existingUser = await getUserByEmail('test@example.com');
 
       if (existingUser) {
         return {
@@ -57,13 +55,11 @@ export const testProviders: Provider[] = [
         };
       }
 
-      const user = await db.user.create({
-        data: {
-          id: '11111111-1111-1111-1111-111111111111',
-          name: 'Integration Test User',
-          email: 'test@example.com',
-          image: 'http://echo.merit.systems/logo/light.svg',
-        },
+      const user = await createUser({
+        id: '11111111-1111-1111-1111-111111111111',
+        name: 'Integration Test User',
+        email: 'test@example.com',
+        image: 'http://echo.merit.systems/logo/light.svg',
       });
 
       return {
@@ -79,11 +75,7 @@ export const testProviders: Provider[] = [
     name: 'Second Test User',
     credentials: {},
     authorize: async () => {
-      const existingUser = await db.user.findUnique({
-        where: {
-          email: 'test2@example.com',
-        },
-      });
+      const existingUser = await getUserByEmail('test2@example.com');
 
       if (existingUser) {
         return {
@@ -94,13 +86,11 @@ export const testProviders: Provider[] = [
         };
       }
 
-      const user = await db.user.create({
-        data: {
-          id: '33333333-3333-3333-3333-333333333333',
-          name: 'Integration Test User',
-          email: 'test2@example.com',
-          image: 'http://echo.merit.systems/logo/light.svg',
-        },
+      const user = await createUser({
+        id: '33333333-3333-3333-3333-333333333333',
+        name: 'Integration Test User',
+        email: 'test2@example.com',
+        image: 'http://echo.merit.systems/logo/light.svg',
       });
 
       return {
@@ -116,11 +106,7 @@ export const testProviders: Provider[] = [
     name: 'Third Test User',
     credentials: {},
     authorize: async () => {
-      const existingUser = await db.user.findUnique({
-        where: {
-          email: 'test3@example.com',
-        },
-      });
+      const existingUser = await getUserByEmail('test3@example.com');
 
       if (existingUser) {
         return {
@@ -131,13 +117,11 @@ export const testProviders: Provider[] = [
         };
       }
 
-      const user = await db.user.create({
-        data: {
-          id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-          name: 'Third Test User',
-          email: 'test3@example.com',
-          image: 'http://echo.merit.systems/logo/light.svg',
-        },
+      const user = await createUser({
+        id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+        name: 'Third Test User',
+        email: 'test3@example.com',
+        image: 'http://echo.merit.systems/logo/light.svg',
       });
 
       return {
