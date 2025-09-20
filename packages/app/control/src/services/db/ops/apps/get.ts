@@ -3,7 +3,7 @@ import { db } from '@/services/db/client';
 import { appSelect } from './lib/select';
 import type { AppId } from './lib/schemas';
 
-import { AppRole } from '@/lib/permissions';
+import { AppRole } from '@/services/db/ops/apps/permissions';
 
 export const getApp = async (appId: AppId) => {
   return await db.echoApp.findUnique({

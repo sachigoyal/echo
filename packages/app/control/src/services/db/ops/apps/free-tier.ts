@@ -1,6 +1,6 @@
 import { db } from '@/services/db/client';
 import type { AppId } from './lib/schemas';
-import { AppRole } from '@/lib/permissions';
+import { AppRole } from '@/services/db/ops/apps/permissions';
 import z from 'zod';
 
 export const getFreeTierSpendPool = async (appId: AppId, userId: string) => {

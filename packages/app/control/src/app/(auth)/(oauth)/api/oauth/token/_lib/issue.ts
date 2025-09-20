@@ -6,8 +6,8 @@ import { jwtVerify } from 'jose';
 import { authCodeJwtPayloadSchema } from '@/app/(auth)/(oauth)/(authorize)/_lib/code';
 import { isValidRedirectUri } from '@/app/(auth)/(oauth)/_lib/redirect-uri';
 
-import { PermissionService } from '@/lib/permissions/service';
-import { AppRole } from '@/lib/permissions/types';
+import { PermissionService } from '@/services/db/ops/apps/permissions/service';
+import { AppRole } from '@/services/db/ops/apps/permissions/types';
 
 import { createEchoAccessJwt } from '@/lib/access-token';
 import { tokenResponse } from './response';

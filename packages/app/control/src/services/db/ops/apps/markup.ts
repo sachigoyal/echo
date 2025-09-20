@@ -3,7 +3,7 @@ import type z from 'zod';
 import { db } from '@/services/db/client';
 
 import { updateMarkupSchema } from './lib/schemas';
-import { AppRole } from '@/lib/permissions';
+import { AppRole } from '@/services/db/ops/apps/permissions';
 import type { AppId } from './lib/schemas';
 
 export const getAppMarkup = async (appId: AppId) => {

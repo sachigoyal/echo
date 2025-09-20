@@ -3,8 +3,8 @@ import { z } from 'zod';
 import type { ApiKey, Prisma } from '@/generated/prisma';
 
 import { db } from '../client';
-import { AppRole, MembershipStatus } from '../../../lib/permissions/types';
-import { PermissionService } from '../../../lib/permissions';
+import { AppRole, MembershipStatus } from './apps/permissions/types';
+import { PermissionService } from './apps/permissions';
 import type { PaginationParams } from '../lib/pagination';
 import { toPaginatedReponse } from '../lib/pagination';
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';

@@ -5,7 +5,7 @@ import { updateAppSchema } from './lib/schemas';
 
 import { db } from '@/services/db/client';
 
-import { AppRole } from '@/lib/permissions';
+import { AppRole } from '@/services/db/ops/apps/permissions';
 
 export const updateApp = async (
   appId: AppId,

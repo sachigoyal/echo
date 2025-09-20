@@ -1,6 +1,6 @@
 import { db } from '@/services/db/client';
 import { appSelect } from './lib/select';
-import { AppRole, MembershipStatus } from '@/lib/permissions';
+import { AppRole, MembershipStatus } from '@/services/db/ops/apps/permissions';
 
 import type { AppId } from './lib/schemas';
 import { z } from 'zod';

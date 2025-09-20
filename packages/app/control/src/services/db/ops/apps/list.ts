@@ -12,7 +12,7 @@ import {
 import { appSelect } from './lib/select';
 
 import type { Prisma } from '@/generated/prisma';
-import { AppRole, MembershipStatus } from '@/lib/permissions';
+import { AppRole, MembershipStatus } from '@/services/db/ops/apps/permissions';
 
 export const listAppsSchema = z.object({
   search: z.string().optional(),

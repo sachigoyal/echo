@@ -7,7 +7,7 @@ import { EmailType } from '../../../email/emails/types';
 
 import { logger } from '@/logger';
 import { db } from '@/services/db/client';
-import { AppRole, MembershipStatus } from '@/lib/permissions';
+import { AppRole, MembershipStatus } from '@/services/db/ops/apps/permissions';
 
 export const createApp = async (
   userId: string,
