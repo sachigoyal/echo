@@ -965,7 +965,7 @@ importers:
         specifier: 1.2.0
         version: 1.2.0(ai@5.0.47(zod@4.1.7))(zod@4.1.7)
       ai:
-        specifier: ^5.0.0
+        specifier: 5.0.47
         version: 5.0.47(zod@4.1.7)
     devDependencies:
       '@ai-sdk/gateway':

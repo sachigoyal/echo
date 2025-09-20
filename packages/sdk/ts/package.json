@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/echo-typescript-sdk",
-  "version": "1.0.15",
+  "version": "1.0.14",
   "description": "TypeScript SDK for Echo platform",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -28,9 +28,7 @@
     "update-models:gemini": "tsx scripts/update-gemini-models.ts",
     "update-models:openrouter": "tsx scripts/update-openrouter-models.ts",
     "update-all-models": "pnpm run update-models:openai && pnpm run update-models:anthropic && pnpm run update-models:gemini && pnpm run update-models:openrouter",
-    "prepublishOnly": "pnpm run build",
-    "publish:test": "pnpm publish --access public --dry-run",
-    "publish:real": "pnpm publish --access public"
+    "prepublishOnly": "pnpm run build"
   },
   "keywords": [
     "echo",
@@ -55,26 +53,11 @@
   "files": [
     "dist/**/*"
   ],
-  "peerDependencies": {
-    "@ai-sdk/anthropic": "^2.0.0",
-    "@ai-sdk/google": "^2.0.0",
-    "@ai-sdk/openai": "^2.0.0",
-    "@openrouter/ai-sdk-provider": "^1.0.0",
-    "ai": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@ai-sdk/anthropic": {
-      "optional": true
-    },
-    "@ai-sdk/google": {
-      "optional": true
-    },
-    "@ai-sdk/openai": {
-      "optional": true
-    },
-    "@openrouter/ai-sdk-provider": {
-      "optional": true
-    }
-  },
-  "dependencies": {}
+  "dependencies": {
+    "@ai-sdk/anthropic": "2.0.17",
+    "@ai-sdk/google": "2.0.14",
+    "@ai-sdk/openai": "2.0.32",
+    "@openrouter/ai-sdk-provider": "1.2.0",
+    "ai": "5.0.47"
+  }
 }
