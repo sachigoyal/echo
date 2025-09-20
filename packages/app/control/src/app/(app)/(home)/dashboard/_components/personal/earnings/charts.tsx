@@ -17,11 +17,12 @@ interface Props {
 export const EarningsCharts: React.FC<Props> = ({ numAppsPromise }) => {
   const numApps = use(numAppsPromise);
 
-  const { startDate, endDate } = useActivityContext();
+  const { startDate, endDate, isCumulative } = useActivityContext();
 
   const [activity] = api.user.creatorActivity.useSuspenseQuery({
     startDate,
     endDate,
+    isCumulative,
   });
 
   const hasApps = useMemo(() => {
