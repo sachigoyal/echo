@@ -63,7 +63,15 @@ export const ActivityContextProvider = ({
 
   return (
     <ActivityContext.Provider
-      value={{ startDate, endDate, timeframe, setTimeframe, setDateRange, isCumulative, setIsCumulative }}
+      value={{
+        startDate,
+        endDate,
+        timeframe,
+        setTimeframe,
+        setDateRange,
+        isCumulative,
+        setIsCumulative,
+      }}
     >
       {children}
     </ActivityContext.Provider>

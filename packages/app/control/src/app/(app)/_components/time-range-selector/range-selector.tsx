@@ -23,8 +23,15 @@ import { ActivityTimeframe } from '@/types/timeframes';
 import { cn } from '@/lib/utils';
 
 export const RangeSelector = () => {
-  const { startDate, endDate, setDateRange, timeframe, setTimeframe, isCumulative, setIsCumulative } =
-    useActivityContext();
+  const {
+    startDate,
+    endDate,
+    setDateRange,
+    timeframe,
+    setTimeframe,
+    isCumulative,
+    setIsCumulative,
+  } = useActivityContext();
 
   // Get only the numeric enum values
   const timeframeValues = Object.values(ActivityTimeframe).filter(
@@ -113,13 +120,22 @@ export const RangeSelector = () => {
         </SelectContent>
       </Select>
       <div className="h-4 w-[1px] bg-border" />
-      <Button 
-        variant={"ghost"} 
-        className={cn("-ml-2 hover:bg-transparent")} 
-        size="icon" 
+      <Button
+        variant={'ghost'}
+        className={cn(
+          '-ml-2 mr-1 hover:bg-transparent focus:outline-none focus:ring-0 focus:ring-offset-0'
+        )}
+        size="icon"
         onClick={() => setIsCumulative(!isCumulative)}
       >
-        <BarChart4 className={cn("size-4 transition-colors", isCumulative ? "text-primary" : "text-foreground/50 hover:text-foreground")} />
+        <BarChart4
+          className={cn(
+            'size-4 transition-colors',
+            isCumulative
+              ? 'text-primary'
+              : 'text-foreground/50 hover:text-foreground'
+          )}
+        />
       </Button>
     </div>
   );

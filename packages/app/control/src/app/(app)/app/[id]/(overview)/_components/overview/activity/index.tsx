@@ -53,7 +53,6 @@ export const Activity: React.FC<Props> = async ({ appId }) => {
   return (
     <HydrateClient>
       <ActivityContextProvider
-        initialStartDate={defaultStartDate}
         creationDate={app.createdAt}
       >
         <ActivityContainer>

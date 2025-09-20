@@ -137,7 +137,6 @@ interface ChartCardProps {
 }
 
 function ChartCard({ item, isLoading }: ChartCardProps) {
-
   if (isLoading) {
     return (
       <Card className={cn(item.className)}>
