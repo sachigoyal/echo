@@ -1,33 +1,31 @@
-import { CreateEmailOptions, Resend } from 'resend';
-import { sendEmailWithRetry } from './emailer/retry-wrapper';
-import { logger } from '@/logger';
-import { db } from '@/lib/db';
-import { env } from '@/env';
 import { z } from 'zod';
 
+import { sendEmailWithRetry } from '../lib/send';
+
+import { getFullUser } from '@/services/user/get';
+
+import { logger } from '@/logger';
+import { db } from '@/lib/db';
+
 export const limboAppReminderEmailSchema = z.object({
-  userId: z.string(),
+  userId: z.uuid(),
+  appId: z.uuid(),
   appName: z.string(),
-  appId: z.string(),
 });
+
 // When user performs action, schedule email for 1 hour later
 export async function scheduleLimboAppReminderEmail(
   params: z.infer<typeof limboAppReminderEmailSchema>
 ) {
   const { userId, appName, appId } = params;
 
-  const resend = new Resend(env.AUTH_RESEND_KEY);
-  const fromEmail = env.AUTH_RESEND_FROM_EMAIL;
-  const user = await db.user.findUnique({
-    where: { id: userId },
-  });
+  const user = await getFullUser(userId);
 
   if (!user) {
     throw new Error('User not found');
   }
 
-  const emailPayload: CreateEmailOptions = {
-    from: `Sam Ragsdale <${fromEmail}>`,
+  const { data, error } = await sendEmailWithRetry({
     to: [user.email],
     subject: 'Need help getting started with Echo?',
     html: `
@@ -42,9 +40,7 @@ export async function scheduleLimboAppReminderEmail(
     </div>
     `,
     scheduledAt: 'in 1 hour', // Natural language scheduling
-  };
-
-  const { data, error } = await sendEmailWithRetry(resend, emailPayload);
+  });
 
   if (error) {
     logger.emit({

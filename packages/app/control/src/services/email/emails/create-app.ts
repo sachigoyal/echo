@@ -1,50 +1,38 @@
-import { CreateEmailOptions, Resend } from 'resend';
-import { sendEmailWithRetry } from './emailer/retry-wrapper';
+import { z } from 'zod';
+
+import { sendEmailWithRetry } from '../lib/send';
+
+import { getFullUser } from '@/services/user/get';
+import { countOwnerApps } from '@/services/apps/count';
+
 import { logger } from '@/logger';
 import { db } from '@/lib/db';
-import { z } from 'zod';
-import { env } from '@/env';
 
 export const createAppFollowUpEmailSchema = z.object({
-  userId: z.string(),
+  userId: z.uuid(),
+  appId: z.uuid(),
   appName: z.string(),
-  appId: z.string(),
 });
 
-// When user performs action, schedule email for 1 hour later
 export async function scheduleCreateAppFollowUpEmail(
   params: z.infer<typeof createAppFollowUpEmailSchema>
 ) {
   const { userId, appName, appId } = params;
 
-  const resend = new Resend(env.AUTH_RESEND_KEY);
-  const fromEmail = env.AUTH_RESEND_FROM_EMAIL;
-  const user = await db.user.findUnique({
-    where: { id: userId },
-  });
-
-  // Get count of apps the user has created (where they are the owner)
-  const appCount = await db.appMembership.count({
-    where: {
-      userId: userId,
-      role: 'owner',
-      isArchived: false,
-      echoApp: {
-        isArchived: false,
-      },
-    },
-  });
+  const user = await getFullUser(userId);
 
   if (!user) {
     throw new Error('User not found');
   }
 
+  // Get count of apps the user has created (where they are the owner)
+  const appCount = await countOwnerApps(userId);
+
   if (appCount > 2) {
     return;
   }
 
-  const emailPayload: CreateEmailOptions = {
-    from: `Sam Ragsdale <${fromEmail}>`,
+  const { data, error } = await sendEmailWithRetry({
     to: [user.email],
     subject: 'Thanks for launching your app with Echo!',
     html: `
@@ -61,9 +49,7 @@ export async function scheduleCreateAppFollowUpEmail(
     </div>
     `,
     scheduledAt: 'in 1 hour', // Natural language scheduling
-  };
-
-  const { data, error } = await sendEmailWithRetry(resend, emailPayload);
+  });
 
   if (error) {
     logger.emit({
@@ -85,5 +71,6 @@ export async function scheduleCreateAppFollowUpEmail(
       createdAt: new Date(),
     },
   });
+
   return data;
 }

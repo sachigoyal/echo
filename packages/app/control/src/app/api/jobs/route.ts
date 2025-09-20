@@ -1,41 +1,40 @@
+import { NextResponse } from 'next/server';
+
+import z from 'zod';
+
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
-import { JobEnvelopeSchema, JobType } from '@/services/email/emailer/types';
-import { processJob as processEmailJob } from '@/services/email/emailer/process-job';
+
+import {
+  processJob as processEmailJob,
+  emailJobSchema,
+} from '@/services/email/queue';
 
 import { env } from '@/env';
+import { createZodRoute } from '@/lib/api/create-route';
 
-async function handler(request: Request) {
-  const candidate = await request.json().catch(() => null);
-  if (!candidate) {
-    return Response.json(
-      { success: false, error: 'Invalid JSON' },
-      { status: 400 }
-    );
-  }
-
-  const parsed = JobEnvelopeSchema.safeParse(candidate);
-  if (!parsed.success) {
-    return Response.json(
-      { success: false, error: parsed.error.format() },
-      { status: 400 }
-    );
-  }
-
-  const envelope = parsed.data;
-
-  switch (envelope.type) {
-    case JobType.EMAIL: {
-      processEmailJob(envelope.job);
-      return Response.json({ success: true });
-    }
-    default: {
-      return Response.json(
-        { success: false, error: 'Unsupported job type' },
-        { status: 400 }
-      );
-    }
-  }
+enum JobType {
+  EMAIL = 'email',
 }
+
+export const jobBodySchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal(JobType.EMAIL),
+    job: emailJobSchema,
+  }),
+]);
+
+const handler = createZodRoute()
+  .body(jobBodySchema)
+  .handler(async (_, { body }) => {
+    const envelope = body;
+
+    switch (envelope.type) {
+      case JobType.EMAIL: {
+        processEmailJob(envelope.job);
+        return NextResponse.json({ success: true });
+      }
+    }
+  });
 
 export const POST = verifySignatureAppRouter(handler, {
   currentSigningKey: env.QSTASH_CURRENT_SIGNING_KEY,

@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
+import { createAppSchema } from './lib/schemas';
+
+import { queueJob } from '../email/queue';
+import { EmailType } from '../email/emails/types';
+
+import { logger } from '@/logger';
 import { db } from '@/lib/db';
 import { AppRole, MembershipStatus } from '@/lib/permissions';
-import { logger } from '@/logger';
-import { createAppSchema } from './lib/schemas';
-import { EmailCampaign } from '../email/emailer/types';
-import { queueJob } from '../email/emailer/queue-job';
 
 export const createApp = async (
   userId: string,
@@ -61,7 +63,7 @@ export const createApp = async (
     });
 
     await queueJob({
-      campaign: EmailCampaign.CREATE_APP_FOLLOW_UP,
+      campaign: EmailType.CREATE_APP_FOLLOW_UP,
       payload: {
         userId,
         appName: app.name,

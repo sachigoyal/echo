@@ -1,0 +1,52 @@
+import z from 'zod';
+
+import {
+  limboAppReminderEmailSchema,
+  scheduleLimboAppReminderEmail,
+} from './emails/limbo-app-reminder';
+import {
+  createAppFollowUpEmailSchema,
+  scheduleCreateAppFollowUpEmail,
+} from './emails/create-app';
+
+import { qstashClient } from '@/lib/qstash';
+
+import { env } from '@/env';
+
+import { EmailType } from './emails/types';
+
+export const emailJobSchema = z.discriminatedUnion('campaign', [
+  z.object({
+    campaign: z.literal(EmailType.LIMBO_APP_REMINDER),
+    payload: limboAppReminderEmailSchema,
+  }),
+  z.object({
+    campaign: z.literal(EmailType.CREATE_APP_FOLLOW_UP),
+    payload: createAppFollowUpEmailSchema,
+  }),
+]);
+
+export const queueJob = async (body: z.infer<typeof emailJobSchema>) => {
+  await qstashClient.publishJSON({
+    url: `${env.NEXT_PUBLIC_APP_URL}/api/jobs`,
+    body,
+    flowControl: {
+      key: env.RESEND_FLOW_CONTROL_KEY,
+      rate: 2,
+      period: '1m',
+    },
+  });
+};
+
+export function processJob(input: z.infer<typeof emailJobSchema>) {
+  const parsed = emailJobSchema.parse(input);
+
+  switch (parsed.campaign) {
+    case EmailType.LIMBO_APP_REMINDER: {
+      return scheduleLimboAppReminderEmail(parsed.payload);
+    }
+    case EmailType.CREATE_APP_FOLLOW_UP: {
+      return scheduleCreateAppFollowUpEmail(parsed.payload);
+    }
+  }
+}
