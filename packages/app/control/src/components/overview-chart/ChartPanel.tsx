@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -92,6 +93,20 @@ export function ChartPanel({
     );
   }
 
+  if (isLoading) {
+    return (
+      <Card className={cn('p-6', className)}>
+        <CardContent className="px-0 pb-0">
+          <div className={gridClassName}>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-84 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className={containerClassName}>
       <Card className={cn('p-6', className)}>
@@ -122,22 +137,25 @@ interface ChartCardProps {
 }
 
 function ChartCard({ item, isLoading }: ChartCardProps) {
-  const sizeClasses = {
-    sm: 'p-2',
-    md: 'p-3',
-    lg: 'p-4',
-  } as const;
 
   if (isLoading) {
     return (
       <Card className={cn(item.className)}>
-        <CardContent className={cn(sizeClasses[item.size || 'sm'])}>
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-40" />
-            <Skeleton className="h-32 w-full" />
-          </div>
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="w-full aspect-video" />
         </CardContent>
+        <CardFooter>
+          <div className="flex w-full items-start gap-2">
+            <div className="grid gap-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+        </CardFooter>
       </Card>
     );
   }
