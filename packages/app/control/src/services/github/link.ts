@@ -1,13 +1,8 @@
-import type { z } from 'zod';
-
+import { getUser } from '@/services/github/users';
 import { getRepo } from './repo';
-import { getUser } from './users';
+import type { GithubLink } from './schema';
 
-import type { githubLinkSchema } from './schema';
-
-export const resolveGithubId = async (
-  data: z.infer<typeof githubLinkSchema>
-) => {
+export const resolveGithubId = async (data: GithubLink): Promise<number> => {
   if (data.type === 'user') {
     const username = data.url.split('/').pop();
     if (!username) {
