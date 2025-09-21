@@ -1,4 +1,3 @@
-import 'server-only';
 import { githubClient } from './client';
 
 export type SearchUsersResponse = Awaited<
