@@ -26,7 +26,9 @@ export default function Home() {
             <EchoAccount />
           </div>
           <div className="border-t pt-4">
-            <h3 className="text-sm font-medium mb-2">Use in your next app</h3>
+            <h3 className="text-sm font-medium mb-2">
+              Use in your Next.js app
+            </h3>
             <PackageManagerTabs componentName="echo-account-next" />
           </div>
         </div>

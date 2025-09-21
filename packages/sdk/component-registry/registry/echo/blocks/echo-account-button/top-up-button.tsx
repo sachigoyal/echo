@@ -38,11 +38,36 @@ export function EchoTopUpButton({ echo }: { echo: EchoContextValue }) {
             className="flex-1"
             size="lg"
             variant="turbo"
-            disabled={isLoading}
-            onClick={() => {
+            disabled={isLoading || amount <= 0}
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (amount <= 0) return;
               setIsLoading(true);
+              // Try popup first, fall back to new tab
+              const width = 500;
+              const height = 700;
+              const left = (window.innerWidth - width) / 2;
+              const top = (window.innerHeight - height) / 2;
+              const popup = window.open(
+                'about:blank',
+                'payment',
+                `width=${width},height=${height},left=${left},top=${top}`
+              );
+
               createPaymentLink(amount)
-                .then(url => window.open(url, '_blank'))
+                .then(url => {
+                  // If popup was blocked or we're on mobile, open in new tab
+                  if (
+                    !popup ||
+                    popup.closed ||
+                    typeof popup.closed === 'undefined'
+                  ) {
+                    window.open(url, '_blank');
+                  } else {
+                    popup.location.href = url;
+                  }
+                })
                 .finally(() => setIsLoading(false));
             }}
           >
