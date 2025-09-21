@@ -10,7 +10,9 @@
   "registryDependencies": [
     "popover",
     "skeleton",
-    "avatar"
+    "avatar",
+    "input",
+    "tooltip"
   ],
   "files": [
     {
