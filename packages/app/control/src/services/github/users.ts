@@ -1,9 +1,9 @@
 import { githubClient } from './client';
 
-export type SearchUsersResponse = Awaited<
+type SearchUsersResponse = Awaited<
   ReturnType<typeof githubClient.rest.search.users>
 >['data'];
-export type SearchedUser = SearchUsersResponse['items'][number];
+type SearchedUser = SearchUsersResponse['items'][number];
 
 export const searchUsers = async (
   q: string
