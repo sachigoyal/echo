@@ -10,7 +10,9 @@
   "registryDependencies": [
     "popover",
     "skeleton",
-    "avatar"
+    "avatar",
+    "input",
+    "tooltip"
   ],
   "files": [
     {
@@ -55,7 +57,7 @@
     },
     {
       "path": "registry/echo/ui/logo.tsx",
-      "content": "import Image from 'next/image';\nimport React from 'react';\n\nimport { cn } from '@/lib/utils';\n\ninterface LogoProps extends React.HTMLAttributes<HTMLDivElement> {\n  className?: string;\n  containerClassName?: string;\n  onClick?: () => void;\n  priority?: boolean;\n}\nexport const Logo = React.forwardRef<HTMLDivElement, LogoProps>(\n  ({ className, containerClassName, onClick, priority, ...props }, ref) => {\n    return (\n      <div\n        ref={ref}\n        onClick={onClick}\n        className={containerClassName}\n        {...props}\n      >\n        <Image\n          src=\"/logo/light.svg\"\n          alt=\"Merit Systems Logo\"\n          width={200}\n          height={200}\n          className={cn('dark:hidden size-6', className)}\n          priority={priority}\n        />\n        <Image\n          src=\"/logo/dark.svg\"\n          alt=\"Merit Systems Logo\"\n          width={200}\n          height={200}\n          className={cn('hidden dark:block size-6', className)}\n          priority={priority}\n        />\n      </div>\n    );\n  }\n);\n\nLogo.displayName = 'Logo';\n",
+      "content": "import React from 'react';\n\nimport { cn } from '@/lib/utils';\n\ninterface LogoProps extends React.HTMLAttributes<HTMLDivElement> {\n  className?: string;\n  containerClassName?: string;\n  onClick?: () => void;\n  priority?: boolean;\n}\nexport const Logo = React.forwardRef<HTMLDivElement, LogoProps>(\n  ({ className, containerClassName, onClick, priority, ...props }, ref) => {\n    return (\n      <div\n        ref={ref}\n        onClick={onClick}\n        className={containerClassName}\n        {...props}\n      >\n        <img\n          src=\"/logo/light.svg\"\n          alt=\"Merit Systems Logo\"\n          width={200}\n          height={200}\n          className={cn('dark:hidden size-6', className)}\n          loading={priority ? 'eager' : undefined}\n        />\n        <img\n          src=\"/logo/dark.svg\"\n          alt=\"Merit Systems Logo\"\n          width={200}\n          height={200}\n          className={cn('hidden dark:block size-6', className)}\n          loading={priority ? 'eager' : undefined}\n        />\n      </div>\n    );\n  }\n);\n\nLogo.displayName = 'Logo';\n",
       "type": "registry:component"
     },
     {

@@ -24,6 +24,7 @@ import ImageGenerator from '@/components/image-generator';
 import { EchoWidget } from '@/components/echo-tokens';
 
 import { EchoSignIn } from '@merit-systems/echo-next-sdk/client';
+import { EchoAccount } from '@/components/echo-account-next';
 
 /**
  * Main application page
@@ -47,7 +48,8 @@ export default async function Home() {
         </div>
         <div className="flex items-center gap-3">
           {/* Echo token display widget */}
-          {_isSignedIn && <EchoWidget />}
+          {/* {_isSignedIn && <EchoWidget />} */}
+          <EchoAccount />
         </div>
       </header>
 
