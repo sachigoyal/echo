@@ -9,6 +9,7 @@
       "title": "Echo Account (React)",
       "description": "React variant of Echo Account",
       "registryDependencies": ["popover", "skeleton", "avatar"],
+      "dependencies": ["autonumeric"],
       "files": [
         {
           "path": "registry/echo/blocks/echo-account-button/echo-account-react.tsx",
@@ -61,6 +62,7 @@
       "title": "Echo Account (Next)",
       "description": "Next.js variant of Echo Account",
       "registryDependencies": ["popover", "skeleton", "avatar"],
+      "dependencies": ["autonumeric"],
       "files": [
         {
           "path": "registry/echo/blocks/echo-account-button/echo-account-next.tsx",
