@@ -4,16 +4,37 @@
  * sorting, and filtering parameters and returns payment data in the expected format.
  */
 
-import {
-  PaginationParams,
-  toPaginatedReponse,
-} from '@/services/lib/pagination';
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { PaginationParams } from '@/services/lib/pagination';
+import { toPaginatedReponse } from '@/services/lib/pagination';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
-import { FilterParams } from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
-import { EnumPaymentSource } from '@/generated/prisma';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
+
+interface PaymentRow {
+  id: string;
+  paymentId: string;
+  amount: number;
+  currency: string;
+  status: string;
+  source: string;
+  description: string;
+  isArchived: boolean;
+  archivedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  spendPoolId: string | null;
+  user_id: string;
+  user_name: string | null;
+  user_email: string;
+  spendPool_id: string | null;
+  spendPool_name: string | null;
+  spendPool_description: string | null;
+  app_id: string | null;
+  app_name: string | null;
+}
 
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
@@ -96,32 +117,10 @@ export const getPaymentsWithPagination = async (
   ];
 
   // Execute the main query
-  const payments = (await db.$queryRawUnsafe(
+  const payments = await db.$queryRawUnsafe<PaymentRow[]>(
     baseQuery,
     ...queryParameters
-  )) as Array<{
-    id: string;
-    paymentId: string;
-    amount: number;
-    currency: string;
-    status: string;
-    source: EnumPaymentSource;
-    description: string | null;
-    isArchived: boolean;
-    archivedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-    userId: string;
-    spendPoolId: string | null;
-    user_id: string;
-    user_name: string | null;
-    user_email: string;
-    spendPool_id: string | null;
-    spendPool_name: string | null;
-    spendPool_description: string | null;
-    app_id: string | null;
-    app_name: string | null;
-  }>;
+  );
 
   // Build count query with same filters
   const countQuery = `
@@ -133,10 +132,10 @@ export const getPaymentsWithPagination = async (
     ${whereClause}
   `;
 
-  const totalCount = (await db.$queryRawUnsafe(
+  const totalCount = await db.$queryRawUnsafe<{ count: number }[]>(
     countQuery,
     ...parameters
-  )) as Array<{ count: bigint }>;
+  );
 
   // Transform the results to match the expected interface
   const transformedResults = payments.map(payment => ({

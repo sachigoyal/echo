@@ -49,7 +49,7 @@ export const ClaimCreditsCoupon: React.FC<Props> = ({
   } = api.credits.grant.redeem.useMutation({
     onSuccess: () => {
       toast.success('Credits claimed');
-      utils.user.balance.get.invalidate();
+      void utils.user.balance.get.invalidate();
       setTimeout(() => {
         router.push('/credits');
       }, 2000);

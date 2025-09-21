@@ -23,8 +23,8 @@ export const CardStack: React.FC<CardStackProps> = ({
   scaleFactor,
   className,
 }) => {
-  const CARD_OFFSET = offset || 10;
-  const SCALE_FACTOR = scaleFactor || 0.06;
+  const CARD_OFFSET = offset ?? 10;
+  const SCALE_FACTOR = scaleFactor ?? 0.06;
   const [cards, setCards] = useState<
     {
       key: string;

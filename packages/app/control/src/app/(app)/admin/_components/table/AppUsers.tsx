@@ -8,10 +8,10 @@ import {
   IntCell,
   toNumber,
 } from '@/components/server-side-data-table';
-import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import type { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
 import { api } from '@/trpc/client';
 import { UserLink } from '@/app/(app)/admin/_components';
-import { RouterOutputs } from '@/trpc/client';
+import type { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the app users table
 const columns: TypedColumnDef<

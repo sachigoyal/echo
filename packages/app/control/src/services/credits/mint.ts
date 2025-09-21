@@ -3,11 +3,12 @@ import z from 'zod';
 import { db } from '@/lib/db';
 import { processPaymentUpdate, PaymentStatus } from '@/lib/payment-processing';
 
-import { EnumPaymentSource, Payment, type Prisma } from '@/generated/prisma';
+import type { Payment } from '@/generated/prisma';
+import { EnumPaymentSource, type Prisma } from '@/generated/prisma';
 import { logger } from '@/logger';
 import { updateSpendPoolFromPayment } from '@/lib/spend-pools';
 import { Decimal } from '@/generated/prisma/runtime/library';
-import { User } from '@auth/core/types';
+import type { User } from '@auth/core/types';
 
 export const mintCreditsToUserSchema = z.object({
   userId: z.uuid(),
@@ -36,7 +37,7 @@ export const mintCreditsToUser = async (
   input: z.infer<typeof mintCreditsToUserSchema>,
   tx?: Prisma.TransactionClient
 ) => {
-  tx = tx || db;
+  const client = tx ?? db;
 
   const result = mintCreditsToUserSchema.safeParse(input);
 
@@ -74,7 +75,7 @@ export const mintCreditsToUser = async (
   const paymentId = `mint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   // Create payment record
-  const paymentRecord = await tx.payment.create({
+  const paymentRecord = await client.payment.create({
     data: {
       paymentId: paymentId,
       amount: amountInDollars,
@@ -86,7 +87,7 @@ export const mintCreditsToUser = async (
     },
   });
 
-  await processPaymentUpdate(tx, {
+  await processPaymentUpdate(client, {
     userId,
     amountInCents,
     paymentRecord,
@@ -176,9 +177,9 @@ export async function createFreeTierPaymentFromBalance(
 
   const freeTierPaymentId = `free_tier_from_balance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-  const result = await db.$transaction(async tx => {
+  const result = await db.$transaction(async client => {
     // check if the user has enough balance
-    const user = await tx.user.findUnique({
+    const user = await client.user.findUnique({
       where: { id: userId },
     });
 
@@ -200,7 +201,7 @@ export async function createFreeTierPaymentFromBalance(
       };
     }
 
-    const freeTierPayment = await tx.payment.create({
+    const freeTierPayment = await client.payment.create({
       data: {
         paymentId: freeTierPaymentId,
         userId: userId,
@@ -213,7 +214,7 @@ export async function createFreeTierPaymentFromBalance(
     });
 
     await updateSpendPoolFromPayment(
-      tx,
+      client,
       echoAppId.id,
       freeTierPayment,
       Number(amountInCentsDecimal),
@@ -221,7 +222,7 @@ export async function createFreeTierPaymentFromBalance(
     );
 
     // decrement the user's balance
-    await tx.user.update({
+    await client.user.update({
       where: { id: userId },
       data: {
         totalSpent: {
@@ -229,7 +230,7 @@ export async function createFreeTierPaymentFromBalance(
         },
       },
     });
-    const transactionMetadata = await tx.transactionMetadata.create({
+    const transactionMetadata = await client.transactionMetadata.create({
       data: {
         providerId: freeTierPaymentId,
         provider: 'balance_transfer',
@@ -239,7 +240,7 @@ export async function createFreeTierPaymentFromBalance(
         totalTokens: 0,
       },
     });
-    await tx.transaction.create({
+    await client.transaction.create({
       data: {
         userId,
         totalCost: amountInDollarsDecimal,

@@ -1,4 +1,4 @@
-import { SortingState } from '@tanstack/react-table';
+import type { SortingState } from '@tanstack/react-table';
 import z from 'zod';
 
 type SortDirection = 'asc' | 'desc';

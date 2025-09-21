@@ -12,6 +12,7 @@ export const adminTokensRouter = createTRPCRouter({
           startDate: z.date().optional(),
           endDate: z.date().optional(),
           numBuckets: z.number().int().positive().optional(),
+          isCumulative: z.boolean().optional(),
         })
         .optional()
     )

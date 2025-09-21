@@ -4,8 +4,9 @@ import { mintCreditsToUser } from './mint';
 
 import { db } from '@/lib/db';
 
-import { EnumPaymentSource, Prisma } from '@/generated/prisma';
-import { getUser } from '../user/get';
+import type { Prisma } from '@/generated/prisma';
+import { EnumPaymentSource } from '@/generated/prisma';
+import { getPublicUser } from '../user/get';
 
 export const creditGrantCodeSchema = z.object({
   code: z.string(),
@@ -71,7 +72,7 @@ export const redeemCreditGrantCode = async (
   userId: string,
   { code, freeTier, echoAppId }: z.infer<typeof redeemCreditGrantCodeSchema>
 ) => {
-  const user = await getUser(userId);
+  const user = await getPublicUser(userId);
 
   if (!user) {
     throw new Error('User not found');

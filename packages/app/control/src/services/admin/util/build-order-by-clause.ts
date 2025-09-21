@@ -1,4 +1,4 @@
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { MultiSortParams } from '@/services/lib/sorting';
 
 type OrderByColumnMappings = Record<string, string>;
 

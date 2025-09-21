@@ -1,5 +1,5 @@
 import React from 'react';
-import { Template, TemplateOption } from './types';
+import type { Template, TemplateOption } from './types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';

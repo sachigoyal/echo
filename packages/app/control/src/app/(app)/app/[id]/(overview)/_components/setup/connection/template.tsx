@@ -1,6 +1,6 @@
 'use client';
 
-import { Template as TemplateType } from './types';
+import type { Template as TemplateType } from './types';
 import { motion } from 'motion/react';
 import { CodeTabs } from '@/components/ui/shadcn-io/code-tabs';
 import { api } from '@/trpc/client';

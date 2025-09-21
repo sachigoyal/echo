@@ -1,7 +1,7 @@
 'use client';
 
 import { TrendingUp } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import {
   Card,
@@ -11,8 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import type { ChartConfig } from '@/components/ui/chart';
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -43,7 +43,7 @@ function parseDateLike(value: unknown): Date | null {
 
 function formatXAxisTick(value: unknown): string {
   const d = parseDateLike(value);
-  return d ? defaultDateFormatter.format(d) : String(value ?? '');
+  return d ? defaultDateFormatter.format(d) : String((value as string) ?? '');
 }
 
 interface ChartAreaLinearProps {
@@ -54,6 +54,7 @@ interface ChartAreaLinearProps {
   xAxisDataKey: string;
   areaDataKey: string;
   xAxisTickFormatter?: (value: unknown) => string;
+  yAxisTickFormatter?: (value: unknown) => string;
   footerTrend?: {
     percentage: string;
     direction: 'up' | 'down';
@@ -70,6 +71,7 @@ export function ChartAreaLinear({
   xAxisDataKey,
   areaDataKey,
   xAxisTickFormatter = formatXAxisTick,
+  yAxisTickFormatter,
   footerTrend,
   footerDateRange,
 }: ChartAreaLinearProps) {
@@ -99,6 +101,12 @@ export function ChartAreaLinear({
               tickMargin={8}
               tickFormatter={xAxisTickFormatter}
             />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={yAxisTickFormatter}
+            />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="dot" hideLabel />}
@@ -113,7 +121,7 @@ export function ChartAreaLinear({
           </AreaChart>
         </ChartContainer>
       </CardContent>
-      {(footerTrend || footerDateRange) && (
+      {(footerTrend ?? footerDateRange) && (
         <CardFooter>
           <div className="flex w-full items-start gap-2 text-sm">
             <div className="grid gap-2">

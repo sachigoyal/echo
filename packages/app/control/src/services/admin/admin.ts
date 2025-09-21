@@ -1,13 +1,15 @@
 import z from 'zod';
 
-import { mintCreditsToUser, mintCreditsToUserSchema } from '../credits/mint';
+import type { mintCreditsToUserSchema } from '../credits/mint';
+import { mintCreditsToUser } from '../credits/mint';
 
 import { db } from '@/lib/db';
 
 import type { EchoApp, Prisma, User } from '@/generated/prisma';
 
-import { PaginationParams, toPaginatedReponse } from '../lib/pagination';
-import {
+import type { PaginationParams } from '../lib/pagination';
+import { toPaginatedReponse } from '../lib/pagination';
+import type {
   adminCreateCreditGrantSchema,
   adminUpdateCreditGrantSchema,
 } from './schemas';
@@ -191,7 +193,7 @@ export async function downloadUsersCsv(
     ['ID', 'Name', 'Email', 'Created At'],
     ...users.map(user => [
       user.id,
-      user.name || '',
+      user.name ?? '',
       user.email,
       user.createdAt.toISOString(),
     ]),

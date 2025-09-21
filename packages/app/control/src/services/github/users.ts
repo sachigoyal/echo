@@ -7,9 +7,19 @@ export const getUser = async (username: string) => {
     })
     .then(res => res.data)
     .catch(error => {
-      if (error.status === 404) {
-        return null;
-      }
-      throw error;
+      console.error('Error getting GitHub user:', error);
+      return null;
+    });
+};
+
+export const searchUser = async (query: string) => {
+  return githubClient.rest.search
+    .users({
+      q: query,
+    })
+    .then(res => res.data)
+    .catch(error => {
+      console.error('Error searching GitHub user:', error);
+      return null;
     });
 };
