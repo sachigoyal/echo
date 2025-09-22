@@ -35,6 +35,7 @@ export const getUserAppsCharts = async (
     startDate,
     endDate,
     numBuckets,
+    isCumulative: true,
   });
 
   const dataWithLabels = activity.map(b => ({

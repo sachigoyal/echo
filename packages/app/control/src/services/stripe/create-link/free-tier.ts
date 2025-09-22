@@ -42,6 +42,7 @@ export const createFreeTierPaymentLink = async (
       echoAppId: appId,
       description,
       poolName,
+      type: 'free-tier-credits',
       defaultSpendLimit: defaultSpendLimit.toString(),
     },
   });

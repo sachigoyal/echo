@@ -29,3 +29,5 @@ export const githubLinkSchema = z.discriminatedUnion('type', [
       ),
   }),
 ]);
+
+export type GithubLink = z.infer<typeof githubLinkSchema>;

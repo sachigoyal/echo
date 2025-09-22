@@ -116,7 +116,7 @@ export async function updateSpendPoolFromPayment(
     where: { id: spendPool.id },
     data: {
       totalPaid: {
-        increment: amountInCents,
+        increment: amountInCents / 100,
       },
     },
   });
