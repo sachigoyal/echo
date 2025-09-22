@@ -24,7 +24,7 @@ export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
     throw new Error('User not found');
   }
 
-  api.user.creatorActivity.prefetch({
+  await api.user.creatorActivity.prefetch({
     startDate: user.createdAt,
     isCumulative: false,
   });
