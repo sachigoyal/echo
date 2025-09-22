@@ -256,8 +256,6 @@ export class RouteHandlerBuilder<
               body = Object.fromEntries(formData.entries());
             } else if (contentType.includes('application/json')) {
               body = await request.json();
-            } else if (contentType.includes('text/plain')) {
-              body = await request.text();
             } else {
               throw new InternalRouteHandlerError({
                 message: 'Invalid content-type',
