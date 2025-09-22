@@ -5,7 +5,8 @@ import { Decimal } from '@/generated/prisma/runtime/library';
 import { db } from '@/services/db/client';
 
 import { updateSpendPoolFromPayment } from '@/services/db/ops/apps/free-tier';
-import { processPaymentUpdate } from '@/services/db/ops/payments';
+
+import { handlePaymentSuccess } from '../payments/success';
 
 import { logger } from '@/logger';
 
@@ -43,8 +44,6 @@ export const mintCreditsToUser = async (
   input: z.infer<typeof mintCreditsToUserSchema>,
   tx?: Prisma.TransactionClient
 ) => {
-  const client = tx ?? db;
-
   const result = mintCreditsToUserSchema.safeParse(input);
 
   if (!result.success) {
@@ -80,34 +79,27 @@ export const mintCreditsToUser = async (
   // Generate a unique payment ID for tracking
   const paymentId = `mint_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-  // Create payment record
-  const paymentRecord = await client.payment.create({
-    data: {
-      paymentId: paymentId,
-      amount: amountInDollars,
-      currency: 'usd',
-      status: PaymentStatus.COMPLETED,
-      source: source,
-      description,
+  await handlePaymentSuccess(
+    {
       userId,
+      amountInCents,
+      currency: 'usd',
+      paymentId,
+      metadata: {
+        ...metadata,
+        type: isFreeTier ? 'free-tier-credits' : 'admin-issued',
+        mintedAt: new Date().toISOString(),
+        ...(poolName && { poolName }),
+        ...(defaultSpendLimit && {
+          defaultSpendLimit: defaultSpendLimit.toString(),
+        }),
+      },
+      echoAppId,
+      description,
+      source,
     },
-  });
-
-  await processPaymentUpdate(client, {
-    userId,
-    amountInCents,
-    paymentId: paymentRecord.paymentId,
-    metadata: {
-      ...metadata,
-      type: isFreeTier ? 'free-tier-credits' : 'admin-issued',
-      mintedAt: new Date().toISOString(),
-      ...(poolName && { poolName }),
-      ...(defaultSpendLimit && {
-        defaultSpendLimit: defaultSpendLimit.toString(),
-      }),
-    },
-    echoAppId: isFreeTier ? echoAppId : undefined,
-  });
+    tx
+  );
 
   logger.emit({
     severityText: 'INFO',
