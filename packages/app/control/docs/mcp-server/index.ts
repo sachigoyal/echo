@@ -16,18 +16,20 @@ const sessionManager = new SessionManager(createServer);
 const app = setupMCPRoutes(sessionManager);
 
 // Start the server
-const PORT = process.env.PORT || 3059;
+const PORT = process.env.PORT ?? 3059;
 app.listen(PORT, () => {
   console.error(`Echo Docs MCP Server listening on port ${PORT}`);
 });
 
 // Handle server shutdown
-process.on('SIGINT', async () => {
-  console.error('Shutting down server...');
+process.on('SIGINT', () => {
+  void (async () => {
+    console.error('Shutting down server...');
 
-  // Close all active sessions to properly clean up resources
-  await sessionManager.closeAllSessions();
+    // Close all active sessions to properly clean up resources
+    await sessionManager.closeAllSessions();
 
-  console.error('Server shutdown complete');
-  process.exit(0);
+    console.error('Server shutdown complete');
+    process.exit(0);
+  })();
 });

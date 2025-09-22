@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { db } from '@/lib/db';
-import { TransactionMetadata } from '@/generated/prisma';
+import type { TransactionMetadata } from '@/generated/prisma';
 
 export const getUserCreatorActivitySchema = z.object({
   startDate: z.date(),

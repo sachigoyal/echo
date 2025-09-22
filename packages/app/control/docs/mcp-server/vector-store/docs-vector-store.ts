@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { Index } from '@upstash/vector';
 import dotenv from 'dotenv';
-import { DocumentChunk, SearchResult } from './types';
+import type { DocumentChunk, SearchResult } from './types';
 import { loadDocuments } from './chunker';
 
 dotenv.config({ path: join(process.cwd(), '.env') });
@@ -9,8 +9,7 @@ dotenv.config({ path: join(process.cwd(), '.env') });
 class DocsVectorStore {
   private index: Index;
   private documents: DocumentChunk[] = [];
-  private docsPath: string; 
-
+  private docsPath: string;
 
   constructor(docsPath: string = join(process.cwd(), 'docs')) {
     this.index = new Index({
@@ -26,7 +25,7 @@ class DocsVectorStore {
   async loadDocs(): Promise<void> {
     console.log('Clearing existing vectors from database...');
     await this.clearAllVectors();
-    
+
     this.documents = await loadDocuments(this.docsPath);
     await this.upsertDocuments();
   }
@@ -48,8 +47,10 @@ class DocsVectorStore {
    * Upsert all documents to Upstash Vector
    */
   async upsertDocuments(): Promise<void> {
-    console.log(`Upserting ${this.documents.length} documents to Upstash Vector...`);
-    
+    console.log(
+      `Upserting ${this.documents.length} documents to Upstash Vector...`
+    );
+
     const vectors = this.documents.map(doc => ({
       id: doc.id,
       data: doc.content,
@@ -61,30 +62,33 @@ class DocsVectorStore {
     for (let i = 0; i < vectors.length; i += batchSize) {
       const batch = vectors.slice(i, i + batchSize);
       await this.index.upsert(batch);
-      console.log(`Upserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(vectors.length / batchSize)}`);
+      console.log(
+        `Upserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(vectors.length / batchSize)}`
+      );
     }
 
     console.log('All documents upserted successfully!');
   }
 
-
   /**
    * Search using Upstash Vector semantic search
    */
-  async search(query: string, limit: number = 10): Promise<SearchResult[]> {
+  async search(query: string, limit = 10): Promise<SearchResult[]> {
     const results = await this.index.query({
       data: query,
       topK: limit,
       includeMetadata: true,
       includeData: true,
     });
-    
-    return results.map((result): SearchResult => ({
-      id: result.id as string,
-      score: result.score,
-      metadata: result.metadata as SearchResult['metadata'],
-      data: result.data as string,
-    }));
+
+    return results.map(
+      (result): SearchResult => ({
+        id: result.id as string,
+        score: result.score,
+        metadata: result.metadata as SearchResult['metadata'],
+        data: result.data!,
+      })
+    );
   }
 }
 

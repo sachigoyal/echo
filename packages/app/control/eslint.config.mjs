@@ -116,5 +116,11 @@ export default tseslint.config(
     rules: {
       'no-process-env-outside-env/no-process-env-outside-env': 'error',
     },
+  },
+  {
+    files: ['docs/mcp-server/**/*.ts'],
+    rules: {
+      'no-process-env-outside-env/no-process-env-outside-env': 'off',
+    },
   }
 );

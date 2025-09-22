@@ -1,21 +1,26 @@
-import express, { Request, Response } from "express";
+import express from 'express';
+import type { Request, Response } from 'express';
 import cors from 'cors';
-import { SessionManager } from './session-manager';
+import type { SessionManager } from './session-manager';
 
-export function setupMCPRoutes(sessionManager: SessionManager): express.Application {
+export function setupMCPRoutes(
+  sessionManager: SessionManager
+): express.Application {
   const app = express();
-  
-  app.use(cors({
-    "origin": "*", // use "*" with caution in production
-    "methods": "GET,POST,DELETE",
-    "preflightContinue": false,
-    "optionsSuccessStatus": 204,
-    "exposedHeaders": [
-      'mcp-session-id',
-      'last-event-id',
-      'mcp-protocol-version'
-    ]
-  })); // Enable CORS for all routes so Inspector can connect
+
+  app.use(
+    cors({
+      origin: '*', // use "*" with caution in production
+      methods: 'GET,POST,DELETE',
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+      exposedHeaders: [
+        'mcp-session-id',
+        'last-event-id',
+        'mcp-protocol-version',
+      ],
+    })
+  ); // Enable CORS for all routes so Inspector can connect
 
   // Handle MCP POST requests (initialization and regular requests)
   app.post('/mcp', async (req: Request, res: Response) => {
@@ -41,7 +46,7 @@ export function setupMCPRoutes(sessionManager: SessionManager): express.Applicat
             code: -32000,
             message: 'Bad Request: Session not found or invalid',
           },
-          id: req?.body?.id,
+          id: (req.body as { id?: string })?.id,
         });
         return;
       }
@@ -54,7 +59,7 @@ export function setupMCPRoutes(sessionManager: SessionManager): express.Applicat
             code: -32603,
             message: 'Internal server error',
           },
-          id: req?.body?.id,
+          id: (req.body as { id?: string })?.id,
         });
       }
     }
@@ -71,7 +76,7 @@ export function setupMCPRoutes(sessionManager: SessionManager): express.Applicat
           code: -32000,
           message: 'Bad Request: No valid session ID provided',
         },
-        id: req?.body?.id,
+        id: (req.body as { id?: string })?.id,
       });
       return;
     }
@@ -98,16 +103,20 @@ export function setupMCPRoutes(sessionManager: SessionManager): express.Applicat
           code: -32000,
           message: 'Bad Request: No valid session ID provided',
         },
-        id: req?.body?.id,
+        id: (req.body as { id?: string })?.id,
       });
       return;
     }
 
-    console.error(`Received session termination request for session ${sessionId}`);
+    console.error(
+      `Received session termination request for session ${sessionId}`
+    );
 
     try {
-      const transport = sessionManager.getSession(sessionId)!.transport;
-      await transport!.handleRequest(req, res);
+      const session = sessionManager.getSession(sessionId);
+      if (session) {
+        await session.transport.handleRequest(req, res);
+      }
     } catch (error) {
       console.error('Error handling session termination:', error);
       if (!res.headersSent) {
@@ -117,7 +126,7 @@ export function setupMCPRoutes(sessionManager: SessionManager): express.Applicat
             code: -32603,
             message: 'Error handling session termination',
           },
-          id: req?.body?.id,
+          id: (req.body as { id?: string })?.id,
         });
         return;
       }

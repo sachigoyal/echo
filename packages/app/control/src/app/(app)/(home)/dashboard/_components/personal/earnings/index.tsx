@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
-import { subDays } from 'date-fns';
 
 import { Card } from '@/components/ui/card';
 
@@ -20,18 +19,12 @@ interface Props {
 }
 
 export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
-  const defaultStartDate = subDays(new Date(), 7);
-
-  void api.user.creatorActivity.prefetch({
-    startDate: defaultStartDate,
-  });
-
   const user = await api.user.current();
   if (!user) {
     throw new Error('User not found');
   }
 
-  api.user.creatorActivity.prefetch({
+  await api.user.creatorActivity.prefetch({
     startDate: user.createdAt,
   });
 

@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, extname, relative } from 'path';
-import { DocumentChunk } from './types';
+import type { DocumentChunk } from './types';
 
 class DocumentChunker {
   private docsPath: string;
@@ -32,13 +32,13 @@ class DocumentChunker {
    */
   private findMdxFiles(dir: string): string[] {
     const files: string[] = [];
-    
+
     const items = readdirSync(dir);
-    
+
     for (const item of items) {
       const fullPath = join(dir, item);
       const stat = statSync(fullPath);
-      
+
       if (stat.isDirectory()) {
         // Skip mcp-server directory to avoid loading this file itself
         if (item === 'mcp-server') continue;
@@ -47,7 +47,7 @@ class DocumentChunker {
         files.push(fullPath);
       }
     }
-    
+
     return files;
   }
 
@@ -57,7 +57,7 @@ class DocumentChunker {
   private async loadDocument(filepath: string): Promise<void> {
     const content = readFileSync(filepath, 'utf-8');
     const relativePath = relative(this.docsPath, filepath);
-    
+
     const documentChunk: DocumentChunk = {
       id: relativePath,
       content: content,
@@ -68,14 +68,15 @@ class DocumentChunker {
         totalChunks: 1,
       },
     };
-    
+
     this.documents.push(documentChunk);
   }
-
 }
 
 // Export a convenience function for easy use
-export async function loadDocuments(docsPath?: string): Promise<DocumentChunk[]> {
+export async function loadDocuments(
+  docsPath?: string
+): Promise<DocumentChunk[]> {
   const chunker = new DocumentChunker(docsPath);
   return chunker.loadDocs();
 }
