@@ -15,7 +15,7 @@ import { tokenResponse } from './response';
 import { logger } from '@/logger';
 import { env } from '@/env';
 
-import type { TokenMetadata } from './types';
+import type { TokenMetadata } from '../../../../../../../types/token-metadata';
 import {
   OAuthError,
   OAuthErrorType,
@@ -24,8 +24,8 @@ import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 import { getUser } from '@/services/db/admin/user/user';
 import { getApp } from '@/services/db/apps/get';
 import { createAppMembership } from '@/services/db/apps/membership';
-import { createAppSession } from '@/services/db/auth/session';
-import { createRefreshToken } from '@/services/db/auth/refresh';
+
+import { issueOAuthToken } from '@/services/db/auth/oauth-token';
 
 export const handleIssueTokenSchema = z.object({
   redirect_uri: z.url({
@@ -177,17 +177,11 @@ export async function handleIssueToken(
     }
   }
 
-  const session = await createAppSession({
+  const { session, refreshToken } = await issueOAuthToken({
     userId: user.id,
     appId: app.id,
-    metadata,
-  });
-
-  const refreshToken = await createRefreshToken({
-    userId: user.id,
-    echoAppId: app.id,
     scope,
-    sessionId: session.id,
+    metadata,
   });
 
   const accessToken = await createEchoAccessJwt({

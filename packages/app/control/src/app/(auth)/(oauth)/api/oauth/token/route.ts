@@ -11,7 +11,7 @@ import {
   oauthValidationError,
 } from '../../../_lib/oauth-route';
 
-import type { TokenMetadata } from './_lib/types';
+import type { TokenMetadata } from '../../../../../../types/token-metadata';
 import { OAuthError, OAuthErrorType } from '../../../_lib/oauth-error';
 
 const invalidGrantError = oauthValidationError({

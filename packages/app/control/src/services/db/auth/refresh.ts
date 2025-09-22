@@ -65,8 +65,12 @@ export const createRefreshToken = async (
   });
 };
 
-export const archiveRefreshToken = async (refreshToken: string) => {
-  await db.refreshToken.update({
+export const archiveRefreshToken = async (
+  refreshToken: string,
+  tx?: Prisma.TransactionClient
+) => {
+  const client = tx ?? db;
+  await client.refreshToken.update({
     where: { token: refreshToken },
     data: { isArchived: true, archivedAt: new Date() },
   });

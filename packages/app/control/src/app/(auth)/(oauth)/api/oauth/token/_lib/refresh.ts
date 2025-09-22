@@ -6,7 +6,7 @@ import { logger } from '@/logger';
 
 import { createEchoAccessJwt } from '@/lib/access-token';
 
-import type { TokenMetadata } from './types';
+import type { TokenMetadata } from '../../../../../../../types/token-metadata';
 import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 import {
   OAuthError,
@@ -14,10 +14,9 @@ import {
 } from '@/app/(auth)/(oauth)/_lib/oauth-error';
 import {
   archiveRefreshToken,
-  createRefreshToken,
   findRefreshToken,
 } from '@/services/db/auth/refresh';
-import { updateAppSession } from '@/services/db/auth/session';
+import { refreshOAuthToken } from '@/services/db/auth/oauth-token';
 
 export const handleRefreshTokenSchema = z.object({
   refresh_token: z.string({
@@ -75,19 +74,14 @@ export async function handleRefreshToken(
 
   // Deactivate old refresh token
 
-  const [newRefreshToken, updatedSession] = await Promise.all([
-    createRefreshToken({
-      userId: user.id,
-      echoAppId: app.id,
-      scope,
-      sessionId,
-    }),
-    updateAppSession({
-      sessionId,
-      metadata,
-    }),
-    archiveRefreshToken(token),
-  ]);
+  const { newRefreshToken, updatedSession } = await refreshOAuthToken({
+    userId: user.id,
+    appId: app.id,
+    scope,
+    metadata,
+    sessionId,
+    token,
+  });
 
   const accessToken = await createEchoAccessJwt({
     user_id: user.id,
