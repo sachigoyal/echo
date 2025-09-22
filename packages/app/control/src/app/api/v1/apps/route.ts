@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { logger } from '@/logger';
 import { authRoute } from '../../../../lib/api/auth-route';
-import { listAppsSchema, listOwnerApps } from '@/services/apps/list';
-import { paginationSchema } from '@/services/lib/pagination';
+import { listAppsSchema, listOwnerApps } from '@/services/db/apps/list';
+import { paginationSchema } from '@/services/db/_lib/pagination';
 
 const querySchema = paginationSchema.extend(listAppsSchema.shape);
 

@@ -6,23 +6,27 @@ import { jwtVerify } from 'jose';
 import { authCodeJwtPayloadSchema } from '@/app/(auth)/(oauth)/(authorize)/_lib/code';
 import { isValidRedirectUri } from '@/app/(auth)/(oauth)/_lib/redirect-uri';
 
-import { db } from '@/lib/db';
-import { PermissionService } from '@/lib/permissions/service';
-import { AppRole, MembershipStatus } from '@/lib/permissions/types';
+import { PermissionService } from '@/services/db/apps/permissions/service';
+import { AppRole } from '@/services/db/apps/permissions/types';
 
 import { createEchoAccessJwt } from '@/lib/access-token';
-import { createRefreshToken } from './refresh';
 import { tokenResponse } from './response';
 
 import { logger } from '@/logger';
 import { env } from '@/env';
 
-import type { TokenMetadata } from './types';
 import {
   OAuthError,
   OAuthErrorType,
 } from '@/app/(auth)/(oauth)/_lib/oauth-error';
 import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
+import { getUser } from '@/services/db/admin/user/user';
+import { getApp } from '@/services/db/apps/get';
+import { createAppMembership } from '@/services/db/apps/membership';
+
+import { issueOAuthToken } from '@/services/db/auth/oauth-token';
+
+import type { TokenMetadata } from '@/types/token-metadata';
 
 export const handleIssueTokenSchema = z.object({
   redirect_uri: z.url({
@@ -122,9 +126,7 @@ export async function handleIssueToken(
     });
   }
 
-  const user = await db.user.findUnique({
-    where: { id: user_id, isArchived: false },
-  });
+  const user = await getUser(user_id);
 
   if (!user) {
     throw new OAuthError({
@@ -134,12 +136,7 @@ export async function handleIssueToken(
   }
 
   /* 7️⃣ Find and validate the Echo app (client) */
-  const app = await db.echoApp.findUnique({
-    where: {
-      id: client_id,
-      isArchived: false,
-    },
-  });
+  const app = await getApp(client_id);
 
   if (!app) {
     throw new OAuthError({
@@ -171,15 +168,7 @@ export async function handleIssueToken(
         },
       });
       // User needs to join the app
-      await db.appMembership.create({
-        data: {
-          userId: user.id,
-          echoAppId: app.id,
-          status: MembershipStatus.ACTIVE,
-          role: AppRole.CUSTOMER,
-          totalSpent: 0,
-        },
-      });
+      await createAppMembership(user.id, app.id, {});
       userRole = AppRole.CUSTOMER;
     } catch {
       throw new OAuthError({
@@ -189,28 +178,11 @@ export async function handleIssueToken(
     }
   }
 
-  const [session, refreshToken] = await db.$transaction(async tx => {
-    const appSession = await tx.appSession.create({
-      data: {
-        userId: user.id,
-        echoAppId: app.id,
-        deviceName: metadata?.deviceName,
-        userAgent: metadata?.userAgent,
-        ipAddress: metadata?.ipAddress,
-      },
-    });
-
-    const newEchoRefreshToken = await createRefreshToken(
-      {
-        userId: user.id,
-        echoAppId: app.id,
-        scope,
-        sessionId: appSession.id,
-      },
-      tx
-    );
-
-    return [appSession, newEchoRefreshToken];
+  const { session, refreshToken } = await issueOAuthToken({
+    userId: user.id,
+    appId: app.id,
+    scope,
+    metadata,
   });
 
   const accessToken = await createEchoAccessJwt({
@@ -231,8 +203,6 @@ export async function handleIssueToken(
   });
 
   return tokenResponse({
-    user,
-    app,
     accessToken,
     refreshToken,
   });

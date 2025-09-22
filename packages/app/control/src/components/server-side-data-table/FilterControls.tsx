@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import type { FilterOperator } from '@/services/lib/filtering';
+import type { FilterOperator } from '@/services/db/_lib/filtering';
 
 // Enhanced filter structure to support operators
 interface FilterConfig {

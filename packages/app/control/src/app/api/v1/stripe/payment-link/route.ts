@@ -2,15 +2,21 @@ import Stripe from 'stripe';
 
 import { NextResponse } from 'next/server';
 
-import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
+import {
+  createCreditsPaymentLink,
+  createCreditsPaymentLinkSchema,
+} from '@/services/stripe/create-link/credits';
 
 import { authRoute } from '../../../../../lib/api/auth-route';
 
 export const POST = authRoute
-  .body(createPaymentLinkSchema)
+  .body(createCreditsPaymentLinkSchema)
   .handler(async (_, context) => {
     try {
-      const result = await createPaymentLink(context.ctx.userId, context.body);
+      const result = await createCreditsPaymentLink(
+        context.ctx.userId,
+        context.body
+      );
       return NextResponse.json(result);
     } catch (error) {
       if (error instanceof Stripe.errors.StripeError) {

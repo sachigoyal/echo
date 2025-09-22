@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { handlePaymentSuccessFromx402 } from '@/lib/base';
 import z from 'zod';
 import { authRoute } from '../../../../../lib/api/auth-route';
+import { handlePaymentSuccess } from '@/services/db/payments/success';
+import { logger } from '@/logger';
 
 const querySchema = z.object({
   amount: z.number().positive(),
@@ -10,17 +11,55 @@ const querySchema = z.object({
 export const GET = authRoute.query(querySchema).handler(async (_, context) => {
   const { amount } = context.query;
 
-  const normalizedCentsAmount = amount * 100;
+  const userId = context.ctx.userId;
+  const amountInCents = amount * 100;
 
-  await handlePaymentSuccessFromx402({
-    userId: context.ctx.userId,
-    amount: normalizedCentsAmount,
+  const metadata = {
+    'payment-type': 'x402',
+    'transaction-id': 'x402_' + crypto.randomUUID(),
+    amount: amount.toString(),
     currency: 'usd',
-    metadata: {},
-  });
+  };
 
-  return NextResponse.json(
-    { message: 'Payment created successfully' },
-    { status: 201 }
-  );
+  try {
+    await handlePaymentSuccess({
+      userId,
+      amountInCents,
+      currency: 'usd',
+      paymentId: metadata['transaction-id'],
+      metadata,
+      description: 'Echo credits purchase with x402',
+    });
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Payment succeeded',
+      attributes: {
+        transactionId: metadata['transaction-id'],
+        isFreeTier: false,
+        userId,
+        function: 'handlePaymentSuccessFromx402',
+      },
+    });
+
+    return NextResponse.json(
+      { message: 'Payment created successfully' },
+      { status: 201 }
+    );
+  } catch (error) {
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error handling payment success',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        function: 'handlePaymentSuccessFromx402',
+      },
+    });
+    return NextResponse.json(
+      { message: 'Payment creation failed' },
+      { status: 500 }
+    );
+  }
 });

@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, formatCurrency } from '@/lib/utils';
-import type { OverviewMetricConfig } from '@/services/admin/type/overview-metric';
+import type { OverviewMetricConfig } from '@/services/db/admin/type/overview-metric';
 
 // Metric display types
 type MetricDisplayType =

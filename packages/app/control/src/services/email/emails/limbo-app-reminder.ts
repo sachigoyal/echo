@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 import { sendEmailWithRetry } from '../lib/send';
 
-import { getFullUser } from '@/services/user/get';
+import { getFullUser } from '@/services/db/user/get';
 
 import { logger } from '@/logger';
-import { db } from '@/lib/db';
+import { createEmail } from '@/services/db/emails';
 
 export const limboAppReminderEmailSchema = z.object({
   userId: z.uuid(),
@@ -54,13 +54,11 @@ export async function scheduleLimboAppReminderEmail(
     });
   }
 
-  await db.outboundEmailSent.create({
-    data: {
-      emailCampaignId: 'limbo-app-reminder',
-      userId,
-      echoAppId: appId,
-      createdAt: new Date(),
-    },
+  await createEmail({
+    emailCampaignId: 'limbo-app-reminder',
+    userId,
+    echoAppId: appId,
+    createdAt: new Date(),
   });
   return data;
 }

@@ -5,13 +5,12 @@ import { z } from 'zod';
 
 import { NextResponse } from 'next/server';
 
-import { appIdSchema } from '@/services/apps/lib/schemas';
+import { getUserSpendInfoForApp } from '@/services/db/user/app-spend-pool';
 
-import { getCustomerSpendInfoForApp } from '@/lib/spend-pools/fetch-user-spend';
 import { authRoute } from '@/lib/api/auth-route';
 
 const getFreeBalanceBodySchema = z.object({
-  echoAppId: appIdSchema,
+  echoAppId: z.uuid(),
 });
 
 export const POST = authRoute
@@ -19,7 +18,7 @@ export const POST = authRoute
   .handler(async (_, context) => {
     const { echoAppId } = context.body;
 
-    const spendPoolInfo = await getCustomerSpendInfoForApp(
+    const spendPoolInfo = await getUserSpendInfoForApp(
       context.ctx.userId,
       echoAppId
     );

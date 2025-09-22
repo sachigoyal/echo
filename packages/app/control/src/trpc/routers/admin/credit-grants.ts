@@ -12,11 +12,11 @@ import {
   adminListCreditGrantUsages,
   adminListCreditGrantUsagesSchema,
   adminUpdateCreditGrant,
-} from '@/services/admin/admin';
+} from '@/services/db/admin/admin';
 import {
   adminCreateCreditGrantSchema,
   adminUpdateCreditGrantSchema,
-} from '@/services/admin/schemas';
+} from '@/services/db/admin/schemas';
 
 import { TRPCError } from '@trpc/server';
 

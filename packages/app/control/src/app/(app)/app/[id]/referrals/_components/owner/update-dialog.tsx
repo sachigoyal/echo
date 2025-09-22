@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { PercentInput } from '@/components/ui/percent-input';
 
-import { setAppReferralRewardSchema } from '@/services/apps/referral-reward';
+import { setAppReferralRewardSchema } from '@/services/db/apps/referral-reward';
 
 import { api } from '@/trpc/client';
 

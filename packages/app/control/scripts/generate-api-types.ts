@@ -201,9 +201,9 @@ import { z } from 'zod';
 // Utility type to extract types from route handlers
 type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams, infer TQuery, infer TBody, infer TResponse, infer TServerErrorBody, infer TInternalErrorBody> 
   ? { 
-      params: TParams extends z.Schema ? z.infer<TParams> : TParams; 
-      query: TQuery extends z.Schema ? z.infer<TQuery> : TQuery; 
-      body: TBody extends z.Schema ? z.infer<TBody> : TBody; 
+      params: TParams extends z.Schema ? z.input<TParams> : TParams; 
+      query: TQuery extends z.Schema ? z.input<TQuery> : TQuery; 
+      body: TBody extends z.Schema ? z.input<TBody> : TBody; 
       response: TResponse;
       serverErrorBody: TServerErrorBody;
       internalErrorBody: TInternalErrorBody;
@@ -385,9 +385,9 @@ import { z } from 'zod';
 // Utility type to extract types from route handlers
 type ExtractRouteHandlerTypes<T> = T extends OriginalRouteHandler<infer TParams, infer TQuery, infer TBody, infer TResponse, infer TServerErrorBody, infer TInternalErrorBody> 
   ? { 
-      params: TParams extends z.Schema ? z.infer<TParams> : TParams; 
-      query: TQuery extends z.Schema ? z.infer<TQuery> : TQuery; 
-      body: TBody extends z.Schema ? z.infer<TBody> : TBody; 
+      params: TParams extends z.Schema ? z.input<TParams> : TParams; 
+      query: TQuery extends z.Schema ? z.input<TQuery> : TQuery; 
+      body: TBody extends z.Schema ? z.input<TBody> : TBody; 
       response: TResponse;
       serverErrorBody: TServerErrorBody;
       internalErrorBody: TInternalErrorBody;
