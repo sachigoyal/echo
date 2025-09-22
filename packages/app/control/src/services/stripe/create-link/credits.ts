@@ -6,7 +6,7 @@ import { createPaymentLink } from './lib';
 
 export const createCreditsPaymentLinkSchema = z.object({
   amount: z.number().min(1),
-  name: z.string().default('Echo Credits'),
+  description: z.string().default('Echo Credits'),
   successUrl: z
     .url()
     .default(`${env.NEXT_PUBLIC_APP_URL}/credits?payment=success`),
@@ -14,7 +14,12 @@ export const createCreditsPaymentLinkSchema = z.object({
 
 export const createCreditsPaymentLink = async (
   userId: string,
-  { amount, name, successUrl }: z.infer<typeof createCreditsPaymentLinkSchema>
+  {
+    amount,
+    // wonky cuz sdk expects description
+    description: name,
+    successUrl,
+  }: z.infer<typeof createCreditsPaymentLinkSchema>
 ) => {
   const description = `${name} - ${amount} USD`;
   return createPaymentLink(userId, {
