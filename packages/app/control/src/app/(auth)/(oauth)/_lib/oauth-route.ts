@@ -39,6 +39,11 @@ const handleOAuthInternalError: HandleInternalErrorFn<OAuthErrorBody> = (
 export const oauthRoute = createZodRoute({
   handleServerError: handleOAuthServerError,
   handleInternalError: handleOAuthInternalError,
+  allowedContentTypes: [
+    'application/json',
+    'application/x-www-form-urlencoded',
+    'multipart/form-data',
+  ],
 });
 
 export const OAuthRouteError = (error: OAuthErrorBody) => {
