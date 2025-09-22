@@ -3,7 +3,6 @@ import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
 
 import { handlePaymentFailure } from '@/services/stripe/webhook/payment-failure';
-import { handlePaymentSuccess } from '@/services/stripe/webhook/payment-success';
 import { handleInvoicePayment } from '@/services/stripe/webhook/invoice-payment';
 import { handleCheckoutSessionCompleted } from '@/services/stripe/webhook/checkout-completed';
 
@@ -58,9 +57,6 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutSessionCompleted(event.data.object);
-        break;
-      case 'payment_intent.succeeded':
-        await handlePaymentSuccess(event.data.object);
         break;
       case 'payment_intent.payment_failed':
         await handlePaymentFailure(event.data.object);

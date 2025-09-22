@@ -10,6 +10,7 @@ import { PaymentStatus } from '@/types/payments';
 export const handleCheckoutSessionCompleted = async (
   session: Stripe.Checkout.Session
 ) => {
+  console.log('handleCheckoutSessionCompleted');
   try {
     const { metadata, amount_total, currency, payment_link, payment_intent } =
       session;
