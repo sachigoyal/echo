@@ -13,7 +13,10 @@ import { userPayoutRouter } from './payout';
 import { getPublicUser, getFullUser } from '@/services/db/ops/user/get';
 import { getUserFeed, userFeedSchema } from '@/services/db/ops/feed';
 import { listCreditPayments } from '@/services/db/ops/payments/list';
-import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
+import {
+  createCreditsPaymentLink,
+  createCreditsPaymentLinkSchema,
+} from '@/services/stripe/create-link/credits';
 import {
   countApiKeys,
   createApiKey,
@@ -101,9 +104,9 @@ export const userRouter = createTRPCRouter({
       }),
 
     create: protectedProcedure
-      .input(createPaymentLinkSchema)
+      .input(createCreditsPaymentLinkSchema)
       .mutation(async ({ ctx, input }) => {
-        return await createPaymentLink(ctx.session.user.id, input);
+        return await createCreditsPaymentLink(ctx.session.user.id, input);
       }),
   },
 

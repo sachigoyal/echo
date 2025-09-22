@@ -43,7 +43,7 @@ export async function listFreeTierPayments(
   );
 }
 
-export async function listPayments(
+async function listPayments(
   where: Prisma.PaymentWhereInput,
   { page, page_size }: PaginationParams
 ) {

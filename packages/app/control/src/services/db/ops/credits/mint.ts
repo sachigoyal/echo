@@ -96,7 +96,7 @@ export const mintCreditsToUser = async (
   await processPaymentUpdate(client, {
     userId,
     amountInCents,
-    paymentRecord,
+    paymentId: paymentRecord.paymentId,
     metadata: {
       ...metadata,
       type: isFreeTier ? 'free-tier-credits' : 'admin-issued',
@@ -219,13 +219,12 @@ export async function createFreeTierPaymentFromBalance(
       },
     });
 
-    await updateSpendPoolFromPayment(
-      client,
-      echoAppId.id,
-      freeTierPayment,
-      Number(amountInCentsDecimal),
-      {}
-    );
+    await updateSpendPoolFromPayment(client, {
+      echoAppId: echoAppId.id,
+      paymentId: freeTierPayment.paymentId,
+      amountInCents: Number(amountInCentsDecimal),
+      metadata: {},
+    });
 
     // decrement the user's balance
     await client.user.update({

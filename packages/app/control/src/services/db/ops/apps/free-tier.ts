@@ -1,10 +1,11 @@
-import { db } from '@/services/db/client';
-import type { AppId } from './lib/schemas';
-import { AppRole } from '@/services/db/ops/apps/permissions';
 import z from 'zod';
-import type { Payment, Prisma } from '@/generated/prisma';
 
-export const getFreeTierSpendPool = async (appId: AppId, userId: string) => {
+import { db } from '@/services/db/client';
+import { AppRole } from '@/services/db/ops/apps/permissions';
+
+import type { Prisma } from '@/generated/prisma';
+
+export const getFreeTierSpendPool = async (appId: string, userId: string) => {
   const spendPool = await db.spendPool.findFirst({
     where: {
       echoAppId: appId,
@@ -70,13 +71,19 @@ export const updateFreeTierSpendPool = async (
   });
 };
 
+interface UpdateSpendPoolFromPaymentData {
+  echoAppId: string;
+  paymentId: string;
+  amountInCents: number;
+  metadata: Record<string, string>;
+}
+
 export async function updateSpendPoolFromPayment(
   tx: Prisma.TransactionClient,
-  echoAppId: string,
-  paymentRecord: Payment,
-  amountInCents: number,
-  metadata: Record<string, string>
+  data: UpdateSpendPoolFromPaymentData
 ): Promise<void> {
+  const { echoAppId, paymentId, amountInCents, metadata } = data;
+
   // Get or create the free tier spend pool for this app
   let spendPool = await tx.spendPool.findFirst({
     where: {
@@ -98,7 +105,7 @@ export async function updateSpendPoolFromPayment(
 
   // Fund the spend pool with this payment
   await tx.payment.update({
-    where: { id: paymentRecord.id },
+    where: { paymentId },
     data: {
       spendPoolId: spendPool.id,
     },

@@ -42,7 +42,7 @@ import {
 import {
   createFreeTierPaymentLink,
   createFreeTierPaymentLinkSchema,
-} from '@/services/stripe';
+} from '@/services/stripe/create-link/free-tier';
 import {
   getFreeTierSpendPool,
   updateFreeTierSpendPool,
