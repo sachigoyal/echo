@@ -11,8 +11,9 @@ import {
   oauthValidationError,
 } from '../../../_lib/oauth-route';
 
-import type { TokenMetadata } from '../../../../../../types/token-metadata';
 import { OAuthError, OAuthErrorType } from '../../../_lib/oauth-error';
+
+import type { TokenMetadata } from '@/types/token-metadata';
 
 const invalidGrantError = oauthValidationError({
   error: OAuthErrorType.UNSUPPORTED_GRANT_TYPE,

@@ -15,7 +15,6 @@ import { tokenResponse } from './response';
 import { logger } from '@/logger';
 import { env } from '@/env';
 
-import type { TokenMetadata } from '../../../../../../../types/token-metadata';
 import {
   OAuthError,
   OAuthErrorType,
@@ -26,6 +25,8 @@ import { getApp } from '@/services/db/apps/get';
 import { createAppMembership } from '@/services/db/apps/membership';
 
 import { issueOAuthToken } from '@/services/db/auth/oauth-token';
+
+import type { TokenMetadata } from '@/types/token-metadata';
 
 export const handleIssueTokenSchema = z.object({
   redirect_uri: z.url({

@@ -6,7 +6,6 @@ import { logger } from '@/logger';
 
 import { createEchoAccessJwt } from '@/lib/access-token';
 
-import type { TokenMetadata } from '../../../../../../../types/token-metadata';
 import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
 import {
   OAuthError,
@@ -17,6 +16,8 @@ import {
   findRefreshToken,
 } from '@/services/db/auth/refresh';
 import { refreshOAuthToken } from '@/services/db/auth/oauth-token';
+
+import type { TokenMetadata } from '@/types/token-metadata';
 
 export const handleRefreshTokenSchema = z.object({
   refresh_token: z.string({
