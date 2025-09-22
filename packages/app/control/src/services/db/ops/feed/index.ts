@@ -1,10 +1,10 @@
 import { db } from '@/services/db/client';
-import type { UserId } from '../../lib/schemas';
+import type { UserId } from '../../_lib/schemas';
 import type { FeedActivity } from './types';
 import { FeedActivityType } from './types';
 import z from 'zod';
-import type { TimeBasedPaginationParams } from '../../lib/pagination';
-import { toTimeBasedPaginatedReponse } from '../../lib/pagination';
+import type { TimeBasedPaginationParams } from '../../_lib/pagination';
+import { toTimeBasedPaginatedReponse } from '../../_lib/pagination';
 import { appIdSchema } from '../apps/lib/schemas';
 
 export const userFeedSchema = z.object({

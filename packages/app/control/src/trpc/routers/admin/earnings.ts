@@ -4,9 +4,9 @@ import { getUserEarningsWithPagination } from '@/services/db/ops/admin/user-earn
 import { getAppEarningsWithPagination } from '@/services/db/ops/admin/app-earnings';
 import { getUserEarningsOverviewMetrics } from '@/services/db/ops/admin/user-earning-summary';
 import { getAppEarningsOverviewMetrics } from '@/services/db/ops/admin/app-earnings-summary';
-import { paginationParamsSchema } from '@/services/db/lib/pagination';
-import { multiSortParamsSchema } from '@/services/db/lib/sorting';
-import { filterParamsSchema } from '@/services/db/lib/filtering';
+import { paginationParamsSchema } from '@/services/db/_lib/pagination';
+import { multiSortParamsSchema } from '@/services/db/_lib/sorting';
+import { filterParamsSchema } from '@/services/db/_lib/filtering';
 
 export const adminEarningsRouter = createTRPCRouter({
   getUserEarningsWithPagination: adminProcedure

@@ -3,7 +3,7 @@ import { db } from '@/services/db/client';
 import {
   type PaginationParams,
   toPaginatedReponse,
-} from '@/services/db/lib/pagination';
+} from '@/services/db/_lib/pagination';
 
 import type { Prisma } from '@/generated/prisma';
 

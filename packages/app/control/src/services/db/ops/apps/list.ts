@@ -7,7 +7,7 @@ import { countApps } from './count';
 import {
   type PaginationParams,
   toPaginatedReponse,
-} from '../../lib/pagination';
+} from '../../_lib/pagination';
 
 import { appSelect } from './lib/select';
 

@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { db } from '@/services/db/client';
 
-import { userIdSchema } from '../../lib/schemas';
+import { userIdSchema } from '../../_lib/schemas';
 import { appIdSchema } from './lib/schemas';
 
 export const getBucketedAppStatsSchema = z.object({

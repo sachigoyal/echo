@@ -3,7 +3,7 @@ import { PayoutStatus } from '@/types/payouts';
 import {
   type PaginationParams,
   toPaginatedReponse,
-} from '@/services/db/lib/pagination';
+} from '@/services/db/_lib/pagination';
 
 import type { PayoutType } from '@/types/payouts';
 import { z } from 'zod';

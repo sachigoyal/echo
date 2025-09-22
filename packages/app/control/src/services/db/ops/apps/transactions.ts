@@ -7,7 +7,7 @@ import { db } from '@/services/db/client';
 import {
   toPaginatedReponse,
   type PaginationParams,
-} from '@/services/db/lib/pagination';
+} from '@/services/db/_lib/pagination';
 
 export const listAppTransactionsSchema = z.object({
   appId: z.uuid(),

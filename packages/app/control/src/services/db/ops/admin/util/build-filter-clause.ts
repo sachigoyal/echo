@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import type { FilterParams } from '@/services/db/lib/filtering';
+import type { FilterParams } from '@/services/db/_lib/filtering';
 import type {
   SQLParameter,
   NonArrayFilterValue,

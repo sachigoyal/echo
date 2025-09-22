@@ -3,7 +3,7 @@ import z from 'zod';
 import { db } from '@/services/db/client';
 
 import { appIdSchema } from './lib/schemas';
-import type { UserId } from '@/services/db/lib/schemas';
+import type { UserId } from '@/services/db/_lib/schemas';
 
 import { env } from '@/env';
 

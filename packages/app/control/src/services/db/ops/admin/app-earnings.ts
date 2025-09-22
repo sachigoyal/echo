@@ -4,11 +4,11 @@
  * sorting, and filtering parameters and returns app earnings data in the expected format.
  */
 
-import type { PaginationParams } from '@/services/db/lib/pagination';
-import { toPaginatedReponse } from '@/services/db/lib/pagination';
-import type { MultiSortParams } from '@/services/db/lib/sorting';
+import type { PaginationParams } from '@/services/db/_lib/pagination';
+import { toPaginatedReponse } from '@/services/db/_lib/pagination';
+import type { MultiSortParams } from '@/services/db/_lib/sorting';
 import { buildOrderByClause } from '@/services/db/ops/admin/util/build-order-by-clause';
-import type { FilterParams } from '@/services/db/lib/filtering';
+import type { FilterParams } from '@/services/db/_lib/filtering';
 import { db } from '@/services/db/client';
 import { buildFilterClauses } from '@/services/db/ops/admin/util/build-filter-clause';
 

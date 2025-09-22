@@ -7,8 +7,8 @@ import { db } from '@/services/db/client';
 
 import type { EchoApp, Prisma, User } from '@/generated/prisma';
 
-import type { PaginationParams } from '../../lib/pagination';
-import { toPaginatedReponse } from '../../lib/pagination';
+import type { PaginationParams } from '../../_lib/pagination';
+import { toPaginatedReponse } from '../../_lib/pagination';
 import type {
   adminCreateCreditGrantSchema,
   adminUpdateCreditGrantSchema,

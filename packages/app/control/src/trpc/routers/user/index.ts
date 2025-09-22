@@ -42,7 +42,7 @@ import {
 import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
 import { getUserSpendInfoForApp } from '@/services/db/ops/user/app-spend-pool';
 
-import { userIdSchema } from '@/services/db/lib/schemas';
+import { userIdSchema } from '@/services/db/_lib/schemas';
 import {
   hasClaimedInitialFreeTierCredits,
   issueInitialFreeTierCredits,

@@ -12,11 +12,11 @@ import { BaseTable } from './BaseTable';
 import type {
   PaginationParams,
   PaginatedResponse,
-} from '@/services/db/lib/pagination';
-import type { MultiSortParams } from '@/services/db/lib/sorting';
-import { toMultiSortParams } from '@/services/db/lib/sorting';
-import type { FilterParams } from '@/services/db/lib/filtering';
-import { toFilterParams } from '@/services/db/lib/filtering';
+} from '@/services/db/_lib/pagination';
+import type { MultiSortParams } from '@/services/db/_lib/sorting';
+import { toMultiSortParams } from '@/services/db/_lib/sorting';
+import type { FilterParams } from '@/services/db/_lib/filtering';
+import { toFilterParams } from '@/services/db/_lib/filtering';
 import type { TypedColumnDef } from './BaseTable';
 import type { ActionConfig, ActionGroup } from './ActionControls';
 import { createCheckboxColumn } from './CheckBoxColumn';

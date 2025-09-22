@@ -22,11 +22,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import type { FilterParams } from '@/services/db/lib/filtering';
-import { toFilterParams } from '@/services/db/lib/filtering';
-import type { MultiSortParams } from '@/services/db/lib/sorting';
-import { toMultiSortParams } from '@/services/db/lib/sorting';
-import type { PaginationParams } from '@/services/db/lib/pagination';
+import type { FilterParams } from '@/services/db/_lib/filtering';
+import { toFilterParams } from '@/services/db/_lib/filtering';
+import type { MultiSortParams } from '@/services/db/_lib/sorting';
+import { toMultiSortParams } from '@/services/db/_lib/sorting';
+import type { PaginationParams } from '@/services/db/_lib/pagination';
 
 // Table state interface for passing to actions
 export interface TableState {

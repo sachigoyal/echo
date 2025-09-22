@@ -4,8 +4,8 @@ import { AppRole, MembershipStatus } from '@/services/db/ops/apps/permissions';
 
 import type { AppId } from './lib/schemas';
 import { z } from 'zod';
-import type { PaginationParams } from '../../lib/pagination';
-import { toPaginatedReponse } from '../../lib/pagination';
+import type { PaginationParams } from '../../_lib/pagination';
+import { toPaginatedReponse } from '../../_lib/pagination';
 import type { Prisma } from '@/generated/prisma';
 
 export const getAppMembership = async (userId: string, appId: AppId) => {

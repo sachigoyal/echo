@@ -5,8 +5,8 @@ import type { ApiKey, Prisma } from '@/generated/prisma';
 import { db } from '../client';
 import { AppRole, MembershipStatus } from './apps/permissions/types';
 import { PermissionService } from './apps/permissions';
-import type { PaginationParams } from '../lib/pagination';
-import { toPaginatedReponse } from '../lib/pagination';
+import type { PaginationParams } from '../_lib/pagination';
+import { toPaginatedReponse } from '../_lib/pagination';
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { env } from '@/env';
 
