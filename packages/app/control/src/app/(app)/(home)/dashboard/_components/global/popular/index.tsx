@@ -1,6 +1,9 @@
 import React, { Suspense } from 'react';
 
-import { AppCard, LoadingAppCard } from '@/app/(app)/_components/apps/card';
+import {
+  AppCard,
+  LoadingAppCard,
+} from '@/app/(app)/_components/apps/card/compact';
 
 import { api } from '@/trpc/server';
 import { SubSection } from '../../utils';
