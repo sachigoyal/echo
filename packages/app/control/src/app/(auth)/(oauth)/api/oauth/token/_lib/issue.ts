@@ -203,8 +203,6 @@ export async function handleIssueToken(
   });
 
   return tokenResponse({
-    user: refreshToken.user,
-    app: refreshToken.echoApp,
     accessToken,
     refreshToken,
   });

@@ -4,18 +4,12 @@ import type { createEchoAccessJwt } from '@/lib/access-token';
 
 import type { createRefreshToken } from '@/services/db/auth/refresh';
 
-import type { EchoApp, User } from '@/generated/prisma';
-
 interface TokenResponseParams {
-  user: User;
-  app: EchoApp;
   accessToken: Awaited<ReturnType<typeof createEchoAccessJwt>>;
   refreshToken: Awaited<ReturnType<typeof createRefreshToken>>;
 }
 
 export const tokenResponse = ({
-  user,
-  app,
   accessToken,
   refreshToken,
 }: TokenResponseParams) => ({
@@ -29,13 +23,13 @@ export const tokenResponse = ({
   ),
   scope: accessToken.scope,
   user: {
-    id: user.id,
-    email: user.email,
-    name: user.name ?? '',
+    id: refreshToken.user.id,
+    email: refreshToken.user.email,
+    name: refreshToken.user.name ?? '',
   },
   echo_app: {
-    id: app.id,
-    name: app.name,
-    description: app.description ?? '',
+    id: refreshToken.echoApp.id,
+    name: refreshToken.echoApp.name,
+    description: refreshToken.echoApp.description ?? '',
   },
 });

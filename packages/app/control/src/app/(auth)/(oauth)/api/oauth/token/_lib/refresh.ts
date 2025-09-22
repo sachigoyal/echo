@@ -92,8 +92,6 @@ export async function handleRefreshToken(
   });
 
   return tokenResponse({
-    user,
-    app,
     accessToken,
     refreshToken: newRefreshToken,
   });
