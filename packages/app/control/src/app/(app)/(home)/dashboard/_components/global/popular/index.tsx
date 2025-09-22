@@ -10,7 +10,7 @@ import { SubSection } from '../../utils';
 
 const PopularAppsContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SubSection title="Popular Apps">
+    <SubSection title="Top Apps" href="/top-apps">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-3">
         {children}
       </div>
