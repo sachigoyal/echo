@@ -9,6 +9,7 @@ export const createCreditsPaymentLinkSchema = z.object({
   description: z.string().default('Echo Credits'),
   successUrl: z
     .url()
+    .optional()
     .default(`${env.NEXT_PUBLIC_APP_URL}/credits?payment=success`),
 });
 
