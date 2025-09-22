@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { z } from 'zod';
 
 import { getAppWithOwnerCheck } from './db/ops/apps/get';
-import { createPayment } from './db/ops/payments';
+import { createPayment } from './db/ops/payments/create';
 
 import { logger } from '@/logger';
 import { env } from '@/env';

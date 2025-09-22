@@ -1,12 +1,14 @@
 import Stripe from 'stripe';
 
 import { NextResponse } from 'next/server';
-import { db } from '@/services/db/client';
 
 import {
   handlePaymentSuccess,
   processPaymentUpdate,
+  updatePaymentStatus,
 } from '@/services/db/ops/payments';
+import { listPayments } from '@/services/db/ops/payments/list';
+import { createPayment } from '@/services/db/ops/payments/create';
 
 import { logger } from '@/logger';
 import { env } from '@/env';
@@ -161,6 +163,51 @@ async function handleCheckoutSessionCompleted(
       return;
     }
 
+    const { items: payments } = await listPayments(
+      {
+        paymentId,
+        status: PaymentStatus.PENDING,
+      },
+      {
+        page: 0,
+        page_size: 1000,
+      }
+    );
+
+    let paymentRecord;
+    if (payments.length === 0) {
+      logger.emit({
+        severityText: 'WARN',
+        body: 'Payment already exists for payment ID',
+        attributes: {
+          paymentId,
+          handler: 'handleCheckoutSessionCompleted',
+        },
+      });
+      paymentRecord = await createPayment({
+        paymentId,
+        amount: amount_total,
+        currency: currency ?? 'usd',
+        status: PaymentStatus.COMPLETED,
+        description: description ?? 'Echo credits purchase',
+        userId,
+      });
+      logger.emit({
+        severityText: 'INFO',
+        body: 'Created new payment record',
+        attributes: {
+          paymentId,
+          userId,
+          handler: 'handleCheckoutSessionCompleted',
+        },
+      });
+    } else {
+      paymentRecord = await updatePaymentStatus(
+        paymentId,
+        PaymentStatus.COMPLETED
+      );
+    }
+
     // Use a database transaction to atomically update payment status and user balance
     await db.$transaction(async tx => {
       // Update payment in database
@@ -255,10 +302,7 @@ async function handlePaymentFailure(paymentIntent: Stripe.PaymentIntent) {
   try {
     const { id } = paymentIntent;
 
-    await db.payment.updateMany({
-      where: { paymentId: id },
-      data: { status: PaymentStatus.FAILED },
-    });
+    await updatePaymentStatus(id, PaymentStatus.FAILED);
 
     logger.emit({
       severityText: 'WARN',

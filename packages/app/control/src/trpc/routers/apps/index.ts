@@ -48,7 +48,7 @@ import {
   updateFreeTierSpendPool,
   updateFreeTierSpendPoolSchema,
 } from '@/services/db/ops/apps/free-tier';
-import { listFreeTierPayments } from '@/services/db/ops/payments';
+import { listFreeTierPayments } from '@/services/db/ops/payments/list';
 import { countAppTokens } from '@/services/db/ops/apps/tokens';
 import {
   countAppTransactions,

@@ -12,7 +12,7 @@ import { userPayoutRouter } from './payout';
 
 import { getPublicUser, getFullUser } from '@/services/db/ops/user/get';
 import { getUserFeed, userFeedSchema } from '@/services/db/ops/feed';
-import { listCreditPayments } from '@/services/db/ops/payments';
+import { listCreditPayments } from '@/services/db/ops/payments/list';
 import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
 import {
   countApiKeys,
