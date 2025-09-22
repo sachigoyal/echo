@@ -39,12 +39,6 @@ export async function adminGetAppsForUser(userId: string): Promise<EchoApp[]> {
   });
 }
 
-export async function adminMintCreditsToUser(
-  input: z.infer<typeof mintCreditsToUserSchema>
-) {
-  return await mintCreditsToUser(input);
-}
-
 export const adminGetCreditGrantSchema = z.object({
   code: z.string(),
 });
