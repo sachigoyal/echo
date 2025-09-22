@@ -1,8 +1,8 @@
 import { SiNextdotjs, SiReact } from '@icons-pack/react-simple-icons';
 import { AppWindow, BotMessageSquare, Image } from 'lucide-react';
-import { Route } from 'next';
+import type { Route } from 'next';
 import Link from 'next/link';
-import { TemplateGroup } from './types';
+import type { TemplateGroup } from './types';
 
 export const TEMPLATES: TemplateGroup = {
   id: 'frameworks',

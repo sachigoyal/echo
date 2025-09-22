@@ -6,7 +6,8 @@ import Image from 'next/image';
 
 import { Gift } from 'lucide-react';
 
-import { MultiStateCouponButton, STATES } from './multi-state-button';
+import type { STATES } from './multi-state-button';
+import { MultiStateCouponButton } from './multi-state-button';
 import { Marquee } from '../magicui/marquee';
 
 import { cn } from '@/lib/utils';

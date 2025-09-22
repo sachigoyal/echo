@@ -12,7 +12,7 @@ export function PaymentsOverview() {
     <OverviewPanel
       title="Payments Overview"
       description="How users are paying into the platform"
-      metrics={data || []}
+      metrics={data ?? []}
       isLoading={isLoading}
       error={error}
       grid={{ columns: 3, gap: 'md', responsive: true }}

@@ -69,7 +69,7 @@ export const ProfitChart: React.FC<Props> = ({ markup }) => {
             domain={['0', 'dataMax']}
             orientation="right"
             tickFormatter={value =>
-              `$${value.toLocaleString(undefined, {
+              `$${(value as number).toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}`
@@ -143,7 +143,7 @@ export const LoadingProfitChart = () => {
             domain={['0', 'dataMax']}
             orientation="right"
             tickFormatter={value =>
-              `$${value.toLocaleString(undefined, {
+              `$${(value as number).toLocaleString(undefined, {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}`

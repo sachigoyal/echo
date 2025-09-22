@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
-import { ApiKey, Prisma } from '@/generated/prisma';
+import type { ApiKey, Prisma } from '@/generated/prisma';
 
 import { db } from '../lib/db';
 import { AppRole, MembershipStatus } from '../lib/permissions/types';
 import { PermissionService } from '../lib/permissions';
-import { generateApiKey, hashApiKey } from '../lib/crypto';
-import { PaginationParams, toPaginatedReponse } from './lib/pagination';
+import type { PaginationParams } from './lib/pagination';
+import { toPaginatedReponse } from './lib/pagination';
+import { createHmac, randomBytes, randomUUID } from 'node:crypto';
+import { env } from '@/env';
 
 export const getApiKeySchema = z.string();
 
@@ -82,6 +84,22 @@ export const listApiKeys = async (
   });
 };
 
+export const findApiKeyByHash = async (apiKey: string) => {
+  const keyHash = hashApiKey(apiKey);
+  return db.apiKey.findUnique({
+    where: {
+      keyHash,
+      isArchived: false,
+      user: { isArchived: false },
+      echoApp: { isArchived: false },
+    },
+    include: {
+      user: true,
+      echoApp: true,
+    },
+  });
+};
+
 export const countApiKeys = async (
   userId: string,
   { appId }: z.infer<typeof listApiKeysSchema>
@@ -114,8 +132,9 @@ export async function createApiKey(
     ? 'owner'
     : 'customer';
 
-  // Generate a new API key
-  const generatedKey = generateApiKey();
+  const uuidPart = randomUUID().replace(/-/g, '');
+  const entropyPart = randomBytes(16).toString('hex');
+  const generatedKey = `${env.API_KEY_PREFIX}${uuidPart}${entropyPart}`;
 
   // Hash the API key for secure storage (deterministic for O(1) lookup)
   const keyHash = hashApiKey(generatedKey);
@@ -124,7 +143,7 @@ export async function createApiKey(
   const apiKey = await db.apiKey.create({
     data: {
       keyHash,
-      name: name || 'API Key',
+      name: name ?? 'API Key',
       userId,
       echoAppId,
       scope,
@@ -172,3 +191,13 @@ export async function deleteApiKey(
     },
   });
 }
+
+const hashApiKey = (apiKey: string) => {
+  if (apiKey.length === 0) {
+    throw new Error('API key must be a non-empty string');
+  }
+
+  return createHmac('sha256', env.API_KEY_HASH_SECRET)
+    .update(apiKey)
+    .digest('hex');
+};

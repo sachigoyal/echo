@@ -49,7 +49,7 @@ export default function HomePageChart() {
         </div>
       </Card>
       <ChartPanel
-        charts={data || []}
+        charts={data ?? []}
         isLoading={isLoading}
         error={error}
         grid={{ columns: 2, gap: 'md', responsive: true }}

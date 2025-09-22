@@ -1,6 +1,6 @@
-import { ChartItem } from '../type/chart';
+import type { ChartItem } from '../type/chart';
 import { getUserCreatorActivity } from '@/services/user/activity';
-import { ChartConfig } from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
 
 interface GetUserAppsChartsInput {
   userId: string;

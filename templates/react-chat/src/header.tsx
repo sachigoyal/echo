@@ -1,5 +1,5 @@
-import { EchoTokens } from '@merit-systems/echo-react-sdk';
 import type { FC } from 'react';
+import { EchoAccount } from '@/components/echo-account-react';
 
 interface HeaderProps {
   title?: string;
@@ -18,7 +18,7 @@ const Header: FC<HeaderProps> = ({ title = 'My App', className = '' }) => {
           </div>
 
           <nav className="flex items-center space-x-4">
-            <EchoTokens />
+            <EchoAccount />
           </nav>
         </div>
       </div>

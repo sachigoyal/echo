@@ -11,7 +11,7 @@ export function UserEarningsOverview() {
     <OverviewPanel
       title="User Earnings Overview"
       description="Summary statistics for user earnings"
-      metrics={data || []}
+      metrics={data ?? []}
       isLoading={isLoading}
       error={error}
       grid={{

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { Table as TanStackTable } from '@tanstack/react-table';
+import type { Table as TanStackTable } from '@tanstack/react-table';
 import { SortAsc, ArrowUp, ArrowDown, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';

@@ -1,8 +1,9 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import { db } from '@/lib/db';
 
-import { githubLinkSchema, resolveGithubId } from '../github/link';
+import { resolveGithubId } from '../github/link';
+import { githubLinkSchema } from '../github/schema';
 
 export const getGithubLinkForUser = async (userId: string) => {
   return await db.githubLink.findUnique({

@@ -9,7 +9,10 @@ export const AppVisibility = () => {
     <AppField name="isPublic">
       {field => (
         <div className="flex items-center gap-2">
-          <Switch checked={field.value} onCheckedChange={field.onChange} />
+          <Switch
+            checked={field.value as boolean}
+            onCheckedChange={field.onChange}
+          />
           <Label>{field.value ? 'Public' : 'Private'}</Label>
         </div>
       )}

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import {
   handlePaymentSuccess,
@@ -7,16 +8,13 @@ import {
 } from '@/lib/payment-processing';
 import Stripe from 'stripe';
 import { logger } from '@/logger';
+import { env } from '@/env';
 
-const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY || 'test_secret_stripe_key',
-  {
-    apiVersion: '2025-05-28.basil',
-  }
-);
+const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+  apiVersion: '2025-05-28.basil',
+});
 
-const webhookSecret =
-  process.env.STRIPE_WEBHOOK_SECRET || 'test_webhook_secret';
+const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
 
 // POST /api/stripe/webhook - Handle Stripe webhooks
 export async function POST(request: NextRequest) {
@@ -183,9 +181,9 @@ async function handleCheckoutSessionCompleted(
           data: {
             paymentId: paymentId,
             amount: amount_total,
-            currency: currency || 'usd',
+            currency: currency ?? 'usd',
             status: PaymentStatus.COMPLETED,
-            description: description || 'Echo credits purchase',
+            description: description ?? 'Echo credits purchase',
             userId,
           },
         });
@@ -216,7 +214,7 @@ async function handleCheckoutSessionCompleted(
           userId,
           amountInCents: amount_total,
           paymentRecord,
-          metadata: metadata || {},
+          metadata: metadata ?? {},
           echoAppId,
         });
       }

@@ -7,11 +7,12 @@ import { Logo } from '@/registry/echo/ui/logo';
 import { Popover, PopoverTrigger } from '@/registry/echo/ui/popover';
 import { Skeleton } from '@/registry/echo/ui/skeleton';
 import { type EchoContextValue } from '@merit-systems/echo-react-sdk';
-import { Gift } from 'lucide-react';
+import { Gift, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export function EchoAccountButton({ echo }: { echo: EchoContextValue }) {
   const { user, balance, freeTierBalance, signIn, isLoading } = echo;
-
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const totalBalance =
     (balance?.balance || 0) + (freeTierBalance?.userSpendInfo.amountLeft || 0);
   const hasFreeCredits = freeTierBalance?.userSpendInfo.amountLeft ?? 0 > 0;
@@ -21,13 +22,19 @@ export function EchoAccountButton({ echo }: { echo: EchoContextValue }) {
       <Skeleton className="h-4 w-14" />
     </>
   ) : !user ? (
-    <>
-      <Logo className="size-6" />
-      <span>Sign In</span>
-    </>
+    <div className="flex items-center gap-2">
+      {isSigningIn ? (
+        <Loader2 className="size-3 animate-spin" />
+      ) : (
+        <Logo className="size-5" />
+      )}
+      <span className="text-xs">
+        {isSigningIn ? 'Connecting...' : 'Connect'}
+      </span>
+    </div>
   ) : (
     <>
-      <Logo className="size-6" />
+      <Logo className="size-5" />
       <span>{formatCurrency(totalBalance)}</span>
     </>
   );
@@ -36,9 +43,16 @@ export function EchoAccountButton({ echo }: { echo: EchoContextValue }) {
     <div className="relative inline-flex">
       <Button
         variant="outline"
-        onClick={!user ? signIn : undefined}
-        disabled={isLoading}
-        className="w-[100px] justify-start gap-2"
+        onClick={
+          !user
+            ? () => {
+                setIsSigningIn(true);
+                signIn();
+              }
+            : undefined
+        }
+        disabled={isLoading || isSigningIn}
+        className="w-[108px] px-2.5"
       >
         {buttonContent}
       </Button>

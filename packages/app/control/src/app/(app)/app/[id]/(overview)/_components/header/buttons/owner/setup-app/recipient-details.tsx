@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 import { Check, Loader2 } from 'lucide-react';
 
-import z from 'zod';
+import type z from 'zod';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,9 +23,9 @@ import {
 } from '@/components/ui/form';
 import { MinimalGithubAvatar } from '@/components/ui/github-avatar';
 
-import { updateGithubLinkSchema } from '@/services/apps/github-link';
+import { githubLinkSchema } from '@/services/github/schema';
 
-import { GithubType } from '@/generated/prisma';
+import type { GithubType } from '@/generated/prisma';
 
 import { api } from '@/trpc/client';
 
@@ -51,22 +51,22 @@ export const RecipientDetails: React.FC<Props> = ({ githubLink, appId }) => {
     isSuccess,
   } = api.apps.app.githubLink.update.useMutation({
     onSuccess: () => {
-      utils.apps.app.githubLink.get.invalidate(appId);
+      void utils.apps.app.githubLink.get.invalidate(appId);
       toast.success('Github link updated');
     },
   });
 
   const [avatarLogin, setAvatarLogin] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof updateGithubLinkSchema>>({
-    resolver: zodResolver(updateGithubLinkSchema),
+  const form = useForm<z.infer<typeof githubLinkSchema>>({
+    resolver: zodResolver(githubLinkSchema),
     defaultValues: {
       type: githubLink?.type ?? 'user',
       url: githubLink?.githubUrl ?? '',
     },
   });
 
-  const onSubmit = (data: z.infer<typeof updateGithubLinkSchema>) => {
+  const onSubmit = (data: z.infer<typeof githubLinkSchema>) => {
     updateGithubLink({
       appId,
       ...data,
