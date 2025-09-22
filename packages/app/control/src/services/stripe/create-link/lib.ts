@@ -10,7 +10,7 @@ import { PaymentStatus } from '@/types/payments';
 
 import type Stripe from 'stripe';
 
-export const createPaymentLinkSchema = z.object({
+const createPaymentLinkSchema = z.object({
   amount: z.number().min(1),
   name: z.string(),
   description: z.string(),

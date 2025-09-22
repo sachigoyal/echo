@@ -2,17 +2,14 @@ import z from 'zod';
 
 import { getAppWithOwnerCheck } from '@/services/db/apps/get';
 import { env } from '@/env';
-import { createPaymentLink, createPaymentLinkSchema } from './lib';
+import { createPaymentLink } from './lib';
 
-export const createFreeTierPaymentLinkSchema = createPaymentLinkSchema
-  .pick({
-    amount: true,
-  })
-  .extend({
-    appId: z.uuid(),
-    poolName: z.string().optional().default('Free Tier Credits'),
-    defaultSpendLimit: z.number().optional().default(100),
-  });
+export const createFreeTierPaymentLinkSchema = z.object({
+  amount: z.number().min(1),
+  appId: z.uuid(),
+  poolName: z.string().optional().default('Free Tier Credits'),
+  defaultSpendLimit: z.number().optional().default(100),
+});
 
 export const createFreeTierPaymentLink = async (
   userId: string,
