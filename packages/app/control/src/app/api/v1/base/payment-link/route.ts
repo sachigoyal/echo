@@ -57,5 +57,9 @@ export const GET = authRoute.query(querySchema).handler(async (_, context) => {
         function: 'handlePaymentSuccessFromx402',
       },
     });
+    return NextResponse.json(
+      { message: 'Payment creation failed' },
+      { status: 500 }
+    );
   }
 });
