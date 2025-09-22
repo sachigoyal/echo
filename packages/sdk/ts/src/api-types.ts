@@ -38,8 +38,8 @@ export type GetAppsResponse = {
 };
 
 export type GetAppsQuery = {
-  page: number;
-  page_size: number;
+  page?: number | undefined;
+  page_size?: number | undefined;
   search?: string | undefined;
 };
 
@@ -134,9 +134,9 @@ export type GetOauthAuthorizeQuery = {
   redirect_uri: string;
   code_challenge: string;
   code_challenge_method: 'S256';
-  scope: string;
-  state: string;
-  response_type: 'code';
+  scope?: string | undefined;
+  state?: string | undefined;
+  response_type?: 'code' | undefined;
   prompt?: 'none' | undefined;
   new_user?: 'true' | undefined;
   referral_code?: string | undefined;
