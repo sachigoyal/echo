@@ -1,5 +1,5 @@
-import { ChartItem } from '@/services/admin/type/chart';
-import { ChartConfig } from '@/components/ui/chart';
+import type { ChartItem } from '@/services/admin/type/chart';
+import type { ChartConfig } from '@/components/ui/chart';
 import { db } from '@/lib/db';
 
 interface GetHomePageChartInput {
@@ -148,7 +148,7 @@ export const getHomePageChart = async (
       });
 
       const totalTokens = transactions.reduce((sum, t) => {
-        return sum + Number(t.transactionMetadata?.totalTokens || 0);
+        return sum + Number(t.transactionMetadata?.totalTokens ?? 0);
       }, 0);
 
       return {
@@ -166,7 +166,7 @@ export const getHomePageChart = async (
         (t.createdAt.getTime() - startDate.getTime()) / bucketSizeMs
       );
       if (idx >= 0 && idx < numBuckets) {
-        const amt = Number(t.transactionMetadata?.totalTokens || 0);
+        const amt = Number(t.transactionMetadata?.totalTokens ?? 0);
         tokenBuckets[idx].tokens += amt;
       }
     }

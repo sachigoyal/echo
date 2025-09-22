@@ -1,9 +1,5 @@
 import type { SpendPool, Payment } from '@/generated/prisma';
 import type { PrismaClient } from '@/generated/prisma';
-import { UserSpendInfo } from './types';
-
-// Export types
-export type { UserSpendInfo };
 
 // Export functions from fetch-user-spend.ts
 export { getCustomerSpendInfoForApp } from './fetch-user-spend';
@@ -98,19 +94,16 @@ async function getOrCreateFreeTierSpendPoolInternal(
     },
   });
 
-  // If no free tier pool exists, create one
-  if (!spendPool) {
-    spendPool = await tx.spendPool.create({
-      data: {
-        name:
-          poolName ||
-          `Free Tier Credits - ${new Date().toISOString().split('T')[0]}`,
-        description: 'Free tier credits pool for app users',
-        totalPaid: 0, // Will be funded by payments
-        echoAppId: appId,
-      },
-    });
-  }
+  spendPool ??= await tx.spendPool.create({
+    data: {
+      name:
+        poolName ??
+        `Free Tier Credits - ${new Date().toISOString().split('T')[0]}`,
+      description: 'Free tier credits pool for app users',
+      totalPaid: 0, // Will be funded by payments
+      echoAppId: appId,
+    },
+  });
 
   return spendPool;
 }

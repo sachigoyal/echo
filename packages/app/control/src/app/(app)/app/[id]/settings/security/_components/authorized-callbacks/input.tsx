@@ -25,22 +25,23 @@ export const AuthorizedCallbackUrlsInput = () => {
       control={form.control}
       name="authorizedCallbackUrls"
       render={({ field }) => {
+        const typedField = field as { value: string[] };
         const handleAddUrl = (url: string) => {
           if (!z.url().safeParse(url).success) {
             toast.error('Invalid URL');
             return;
           }
 
-          if (field.value.includes(url)) {
+          if (typedField.value.includes(url)) {
             toast.error('URL already added');
             return;
           }
-          field.onChange([...field.value, url]);
+          field.onChange([...typedField.value, url]);
           setInput('');
         };
 
         const handleRemoveUrl = (url: string) => {
-          field.onChange(field.value.filter((u: string) => u !== url));
+          field.onChange(typedField.value.filter((u: string) => u !== url));
         };
 
         return (
@@ -83,7 +84,7 @@ export const AuthorizedCallbackUrlsInput = () => {
               </Button>
             </div>
             <div className="flex flex-wrap gap-1">
-              {field.value.map((url: string) => (
+              {typedField.value.map((url: string) => (
                 <Badge
                   key={url}
                   variant="muted"

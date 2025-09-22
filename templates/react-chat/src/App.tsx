@@ -3,8 +3,9 @@ import {
   EchoProvider,
   useEcho,
   useEchoModelProviders,
+  type ChatSendParams,
 } from '@merit-systems/echo-react-sdk';
-import { streamText, type ModelMessage } from 'ai';
+import { convertToModelMessages, streamText } from 'ai';
 import Chat from './chat';
 import Header from './header';
 
@@ -29,10 +30,11 @@ export function ChatWrapper() {
   const { openai } = useEchoModelProviders();
   const { user } = useEcho();
 
-  async function doChat({ modelMessages }: { modelMessages: ModelMessage[] }) {
+  async function doChat(params: ChatSendParams) {
+    const modelMessages = params.messages;
     const result = streamText({
       model: openai('gpt-5'),
-      messages: modelMessages,
+      messages: convertToModelMessages(modelMessages),
     });
     return result.toUIMessageStream(); // in-memory UI chunk stream
   }

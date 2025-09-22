@@ -1,4 +1,4 @@
-import { ColumnFiltersState } from '@tanstack/react-table';
+import type { ColumnFiltersState } from '@tanstack/react-table';
 import z from 'zod';
 
 export type FilterOperator =
@@ -77,7 +77,8 @@ export const toFilterParams = (
   return {
     filters: columnFilters.map(filter => {
       // Parse structured filter value: "operator:value" or just "operator" for null checks
-      const filterValue = String(filter.value || '');
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      const filterValue = String(filter.value ?? '');
       const [operator, ...valueParts] = filterValue.split(':');
       const value = valueParts.join(':'); // Rejoin in case value contains colons
 

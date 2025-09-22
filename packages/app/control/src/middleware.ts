@@ -1,9 +1,11 @@
 import { createPathMatcher } from 'next-path-matcher';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-import { Address } from 'viem';
-import { paymentMiddleware, Network } from 'x402-next';
+import type { Address } from 'viem';
+import type { Network } from 'x402-next';
+import { paymentMiddleware } from 'x402-next';
 import { facilitator } from '@coinbase/x402';
 
 import { middleware } from '@/auth/middleware';
@@ -11,6 +13,7 @@ import {
   formatAmountFromQueryParams,
   formatPriceForMiddleware,
 } from '@/lib/base';
+import { env } from './env';
 
 export const config = {
   matcher: [
@@ -31,11 +34,11 @@ export const x402MiddlewareGenerator = (req: NextRequest) => {
   const paymentAmount = formatPriceForMiddleware(amount);
 
   return paymentMiddleware(
-    process.env.RESOURCE_WALLET_ADDRESS as Address,
+    env.RESOURCE_WALLET_ADDRESS as Address,
     {
       '/api/v1/base/payment-link': {
         price: paymentAmount,
-        network: process.env.NETWORK as Network,
+        network: env.NETWORK as Network,
         config: {
           description: 'Access to protected content',
         },

@@ -1,81 +1,8 @@
-import {
-  EchoProvider,
-  EchoSignIn,
-  EchoTokens,
-  useEcho,
-} from '@merit-systems/echo-react-sdk';
+import { EchoProvider } from '@merit-systems/echo-react-sdk';
 import { ImageGeneration } from './components/ImageGeneration';
+import { EchoAccount } from './components/echo-account-react';
 
 function Dashboard() {
-  const { user, balance, error, isLoading } = useEcho();
-
-  // Show loading state
-  if (!user && isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <h1 className="text-xl font-semibold text-gray-700">
-            Processing authentication...
-          </h1>
-          <p className="text-gray-500">
-            Please wait while we complete the OAuth flow.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-6xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Authentication Error
-          </h1>
-          <p className="text-red-600 mb-6">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Not signed in - show sign in button
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800 mb-8">
-            Welcome to Echo
-          </h1>
-          <EchoSignIn />
-        </div>
-      </div>
-    );
-  }
-
-  // Signed in but no balance - show token purchase
-  if (balance?.balance === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            Hi {user?.name}!
-          </h1>
-          <p className="text-gray-600 mb-6">You need tokens to get started.</p>
-          <EchoTokens amount={100} />
-        </div>
-      </div>
-    );
-  }
-
   // Main dashboard
   return (
     <div className="min-h-screen bg-gray-50">
@@ -91,7 +18,7 @@ function Dashboard() {
 
             {/* User info */}
             <div className="flex items-center space-x-4">
-              <EchoTokens amount={100} />
+              <EchoAccount />
             </div>
           </div>
         </div>
@@ -105,24 +32,6 @@ function Dashboard() {
         <div className="bg-white rounded-lg shadow-sm p-6 min-h-[600px]">
           <ImageGeneration />
         </div>
-
-        {/* Low balance warning */}
-        {balance && balance.balance < 5 && (
-          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-yellow-800">
-                  Low Balance Warning
-                </h3>
-                <p className="text-sm text-yellow-700">
-                  You have ${balance.balance.toFixed(2)} remaining. Consider
-                  adding more credits.
-                </p>
-              </div>
-              <EchoTokens amount={100} />
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );

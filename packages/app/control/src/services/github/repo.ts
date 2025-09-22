@@ -8,9 +8,7 @@ export const getRepo = async (owner: string, repo: string) => {
     })
     .then(res => res.data)
     .catch(error => {
-      if (error.status === 404) {
-        return null;
-      }
-      throw error;
+      console.error('Error getting GitHub repo:', error);
+      return null;
     });
 };

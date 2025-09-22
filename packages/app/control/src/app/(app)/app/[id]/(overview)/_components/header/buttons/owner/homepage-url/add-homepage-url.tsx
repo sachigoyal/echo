@@ -58,7 +58,7 @@ export const AddHomepageUrl: React.FC<Props> = ({ appId }) => {
         onSuccess: () => {
           toast.success('App details updated');
           setIsOpen(false);
-          utils.apps.app.get.invalidate({ appId });
+          void utils.apps.app.get.invalidate({ appId });
         },
       }
     );
@@ -110,7 +110,7 @@ export const AddHomepageUrl: React.FC<Props> = ({ appId }) => {
                 type="submit"
                 disabled={isUpdating || isSuccess || !form.formState.isValid}
                 onClick={() => {
-                  form.handleSubmit(handleSubmit)();
+                  void form.handleSubmit(handleSubmit)();
                 }}
               >
                 {isUpdating ? (

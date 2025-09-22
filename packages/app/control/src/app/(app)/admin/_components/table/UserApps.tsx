@@ -8,10 +8,10 @@ import {
   IntCell,
   toNumber,
 } from '@/components/server-side-data-table';
-import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import type { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
 import { api } from '@/trpc/client';
 import { AppLink } from '@/app/(app)/admin/_components';
-import { RouterOutputs } from '@/trpc/client';
+import type { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the user apps table
 const columns: TypedColumnDef<
@@ -26,7 +26,7 @@ const columns: TypedColumnDef<
     columnType: 'string',
     cell: ({ getValue, row }) => {
       const name = getValue() as string;
-      const appId = row.original.id;
+      const appId = (row.original as { id: string }).id;
       return (
         <AppLink
           appId={appId}
@@ -198,7 +198,7 @@ export default function UserAppsTable({ userId }: UserAppsTableProps) {
         })
       }
       showControls={true}
-      getRowId={row => row.id}
+      getRowId={row => (row as { id: string }).id}
       enableRowSelection={false}
     />
   );

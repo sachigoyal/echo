@@ -1,12 +1,12 @@
 'use client';
 
-import { updateMarkupSchema } from '@/services/apps/markup';
+import { updateMarkupSchema } from '@/services/apps/lib/schemas';
 import {
   FormProvider,
   type FormProviderProps,
 } from '../../../_components/form/context';
 import { toast } from 'sonner';
-import z from 'zod';
+import type z from 'zod';
 
 type Props = Omit<
   FormProviderProps<z.infer<typeof updateMarkupSchema>>,

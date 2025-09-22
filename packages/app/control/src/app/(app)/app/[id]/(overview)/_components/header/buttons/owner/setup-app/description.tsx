@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/trpc/client';
-import { EchoApp } from '@/generated/prisma';
+import type { EchoApp } from '@/generated/prisma';
 
 const descriptionSchema = z.object({
   description: z.string().min(1).max(250),
@@ -50,7 +50,7 @@ export const Description: React.FC<Props> = ({ appId, description }) => {
   } = api.apps.app.update.useMutation({
     onSuccess: () => {
       toast.success('App details updated');
-      utils.apps.app.get.invalidate({ appId });
+      void utils.apps.app.get.invalidate({ appId });
     },
     onError: () => {
       toast.error('Failed to update app details');
@@ -88,7 +88,7 @@ export const Description: React.FC<Props> = ({ appId, description }) => {
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      form.handleSubmit(handleSubmit)();
+                      void form.handleSubmit(handleSubmit)();
                     }
 
                     if (

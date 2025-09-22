@@ -17,7 +17,7 @@ import {
 
 import { LoadingPaymentStatus, PaymentStatus } from './status';
 
-import { formatCurrency } from '@/lib/balance';
+import { formatCurrency } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface MinimalPayment {
@@ -75,7 +75,7 @@ const PaymentRow = ({ payment }: { payment: MinimalPayment }) => {
       <TableCell>
         {format(new Date(payment.createdAt), 'MMM d, yyyy')}
       </TableCell>
-      <TableCell>{payment.description || 'Echo Credits Purchase'}</TableCell>
+      <TableCell>{payment.description ?? 'Echo Credits Purchase'}</TableCell>
       <TableCell>
         <PaymentStatus status={payment.status} />
       </TableCell>

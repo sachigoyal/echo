@@ -41,16 +41,16 @@ export const AddCredits: React.FC<Props> = ({ appId }) => {
   } = api.apps.app.freeTier.payments.createFromBalance.useMutation({
     onSuccess: data => {
       if (!data.success) {
-        setError(data.error_message || 'Payment failed');
+        setError(data.error_message ?? 'Payment failed');
         return;
       }
       setError(null);
       setIsSuccessFromBalance(true);
 
       // Invalidate balance queries
-      utils.user.balance.get.invalidate();
-      utils.user.balance.app.free.invalidate(appId);
-      utils.apps.app.freeTier.get.invalidate({ appId });
+      void utils.user.balance.get.invalidate();
+      void utils.user.balance.app.free.invalidate(appId);
+      void utils.apps.app.freeTier.get.invalidate({ appId });
     },
     onError: error => {
       setError(error.message || 'Failed to process payment from balance');

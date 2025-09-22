@@ -1,7 +1,7 @@
 import { AnthropicModels } from '../../../../../sdk/ts/src/supported-models/chat/anthropic';
 import { GeminiModels } from '../../../../../sdk/ts/src/supported-models/chat/gemini';
 import { OpenAIModels } from '../../../../../sdk/ts/src/supported-models/chat/openai';
-import { SupportedModel } from '../../../../../sdk/ts/src/supported-models/types';
+import type { SupportedModel } from '../../../../../sdk/ts/src/supported-models/types';
 
 interface ModelTableProps {
   path: string;

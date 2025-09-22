@@ -4,16 +4,33 @@
  * sorting, and filtering parameters and returns app earnings data in the expected format.
  */
 
-import {
-  PaginationParams,
-  toPaginatedReponse,
-} from '@/services/lib/pagination';
-import { MultiSortParams } from '@/services/lib/sorting';
+import type { PaginationParams } from '@/services/lib/pagination';
+import { toPaginatedReponse } from '@/services/lib/pagination';
+import type { MultiSortParams } from '@/services/lib/sorting';
 import { buildOrderByClause } from '@/services/admin/util/build-order-by-clause';
-import { FilterParams } from '@/services/lib/filtering';
+import type { FilterParams } from '@/services/lib/filtering';
 import { db } from '@/lib/db';
 import { buildFilterClauses } from '@/services/admin/util/build-filter-clause';
 
+interface AppEarningsRow {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+  creatorUserId: string;
+  creatorUserName: string;
+  creatorUserEmail: string;
+  totalTransactions: number;
+  totalRevenue: number;
+  totalAppProfit: number;
+  totalMarkupProfit: number;
+  totalReferralProfit: number;
+  totalReferralCodes: number;
+  totalUsers: number;
+  appEmailCampaigns: string[];
+  ownerEmailCampaigns: string[];
+}
 // Map frontend column names to SQL expressions
 const COLUMN_MAPPINGS: Record<string, string> = {
   id: 'a.id',
@@ -140,28 +157,10 @@ export const getAppEarningsWithPagination = async (
   ];
 
   // Execute the main query
-  const appsWithEarnings = (await db.$queryRawUnsafe(
+  const appsWithEarnings = await db.$queryRawUnsafe<AppEarningsRow[]>(
     baseQuery,
     ...queryParameters
-  )) as Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    creatorUserId: string;
-    creatorUserName: string | null;
-    creatorUserEmail: string;
-    appEmailCampaigns: string[];
-    ownerEmailCampaigns: string[];
-    totalTransactions: number;
-    totalRevenue: number;
-    totalAppProfit: number;
-    totalMarkupProfit: number;
-    totalReferralProfit: number;
-    totalReferralCodes: number;
-    totalUsers: number;
-  }>;
+  );
 
   // Build count query with same filters
   const countQuery = `
@@ -201,10 +200,10 @@ export const getAppEarningsWithPagination = async (
     ? `SELECT COUNT(*) as count FROM (${countQuery}) as filtered_results`
     : countQuery;
 
-  const totalCount = (await db.$queryRawUnsafe(
+  const totalCount = await db.$queryRawUnsafe<{ count: number }[]>(
     totalCountQuery,
     ...parameters
-  )) as Array<{ count: bigint }>;
+  );
 
   // Transform the results to match the expected interface
   const transformedResults = appsWithEarnings.map(app => ({

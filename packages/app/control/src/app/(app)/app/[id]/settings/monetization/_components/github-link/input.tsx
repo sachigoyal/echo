@@ -27,7 +27,7 @@ export const GithubLinkInput = () => {
 
   return (
     <Tabs
-      value={form.watch('type') ?? 'repo'}
+      value={(form.watch('type') as 'user' | 'repo') ?? 'repo'}
       onValueChange={value => {
         form.setValue('type', value as 'user' | 'repo');
 
@@ -42,35 +42,37 @@ export const GithubLinkInput = () => {
       <FormField
         control={form.control}
         name="type"
-        render={() => (
-          <FormItem className="">
-            <FormControl>
-              <TabsList className="flex items-center gap-2 w-fit p-0 bg-transparent h-fit">
-                <TabsTrigger
-                  value="repo"
-                  onClick={() => {
-                    form.setValue('type', 'repo');
-                  }}
-                  className={tabsTriggerClassName}
-                >
-                  Pay to Repo
-                </TabsTrigger>
-                <span className="text-xs text-muted-foreground leading-none">
-                  or
-                </span>
-                <TabsTrigger
-                  value="user"
-                  onClick={() => {
-                    form.setValue('type', 'user');
-                  }}
-                  className={tabsTriggerClassName}
-                >
-                  Pay to User
-                </TabsTrigger>
-              </TabsList>
-            </FormControl>
-          </FormItem>
-        )}
+        render={() => {
+          return (
+            <FormItem className="">
+              <FormControl>
+                <TabsList className="flex items-center gap-2 w-fit p-0 bg-transparent h-fit">
+                  <TabsTrigger
+                    value="repo"
+                    onClick={() => {
+                      form.setValue('type', 'repo');
+                    }}
+                    className={tabsTriggerClassName}
+                  >
+                    Pay to Repo
+                  </TabsTrigger>
+                  <span className="text-xs text-muted-foreground leading-none">
+                    or
+                  </span>
+                  <TabsTrigger
+                    value="user"
+                    onClick={() => {
+                      form.setValue('type', 'user');
+                    }}
+                    className={tabsTriggerClassName}
+                  >
+                    Pay to User
+                  </TabsTrigger>
+                </TabsList>
+              </FormControl>
+            </FormItem>
+          );
+        }}
       />
 
       <TabsContent value="user" className="flex flex-col gap-3">
@@ -83,7 +85,10 @@ export const GithubLinkInput = () => {
                 <Input
                   placeholder="richardhendricks"
                   {...field}
-                  value={field.value.replace('https://github.com/', '')}
+                  value={(field.value as string).replace(
+                    'https://github.com/',
+                    ''
+                  )}
                   onChange={e => {
                     field.onChange(`https://github.com/${e.target.value}`);
                   }}
@@ -108,7 +113,10 @@ export const GithubLinkInput = () => {
                 <Input
                   placeholder="facebook/react"
                   {...field}
-                  value={field.value.replace('https://github.com/', '')}
+                  value={(field.value as string).replace(
+                    'https://github.com/',
+                    ''
+                  )}
                   onChange={e => {
                     field.onChange(`https://github.com/${e.target.value}`);
                   }}

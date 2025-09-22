@@ -26,7 +26,7 @@ export function AppLink({
         <Link
           href={`/admin/dashboard/app/app-users/${appId}`}
           className={`${className} block truncate ${maxWidth}`}
-          title={title || name}
+          title={title ?? name}
         >
           {name}
         </Link>
@@ -44,7 +44,7 @@ export function AppLink({
     <Link
       href={`/admin/dashboard/app/app-users/${appId}`}
       className={`${className} block truncate ${maxWidth}`}
-      title={title || name}
+      title={title ?? name}
     >
       {name}
     </Link>

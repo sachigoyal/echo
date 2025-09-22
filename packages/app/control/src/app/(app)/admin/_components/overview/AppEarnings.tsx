@@ -11,7 +11,7 @@ export function AppEarningsOverview() {
     <OverviewPanel
       title="App Earnings Overview"
       description="Summary statistics for app revenues and usage"
-      metrics={data || []}
+      metrics={data ?? []}
       isLoading={isLoading}
       error={error}
       grid={{

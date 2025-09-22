@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 
 import { api } from '@/trpc/client';
 
-import { updateAppSchema } from '@/services/apps/update';
+import type { updateAppSchema } from '@/services/apps/lib/schemas';
 
 const profilePictureSchema = z.object({
   profilePictureUrl: z.url(),
@@ -53,7 +53,7 @@ export const AppIcon: React.FC<Props> = ({ appId, profilePictureUrl }) => {
   } = api.apps.app.update.useMutation({
     onSuccess: () => {
       toast.success('App details updated');
-      utils.apps.app.get.invalidate({ appId });
+      void utils.apps.app.get.invalidate({ appId });
     },
   });
   const { mutate: uploadImage, isPending: isUploading } =
