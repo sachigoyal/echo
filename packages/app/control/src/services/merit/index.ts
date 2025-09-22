@@ -2,12 +2,12 @@ import type { OutgoingPayment } from '@merit-systems/sdk';
 import { PayoutStatus } from '@/types/payouts';
 import { env } from '@/env';
 import { meritClient } from './client';
-import type { adminGetPayoutSchema } from '../db/ops/admin/payouts';
+import type { adminGetPayoutSchema } from '../db/admin/payouts';
 import {
   adminGetPayout,
   adminListPendingPayouts,
   adminUpdatePayout,
-} from '../db/ops/admin/payouts';
+} from '../db/admin/payouts';
 import type z from 'zod';
 
 const SENDER_GITHUB_ID = Number(env.MERIT_SENDER_GITHUB_ID);

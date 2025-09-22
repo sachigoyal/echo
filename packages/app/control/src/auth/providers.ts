@@ -3,8 +3,8 @@ import GithubProvider from 'next-auth/providers/github';
 import Credentials from 'next-auth/providers/credentials';
 import Resend from 'next-auth/providers/resend';
 
-import { getUserByEmail } from '@/services/db/ops/user/get';
-import { createUser } from '@/services/db/ops/user/create';
+import { getUserByEmail } from '@/services/db/user/get';
+import { createUser } from '@/services/db/user/create';
 
 import { env } from '@/env';
 

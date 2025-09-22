@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import z from 'zod';
 import { authRoute } from '../../../../../lib/api/auth-route';
-import { handlePaymentSuccess } from '@/services/db/ops/payments/success';
+import { handlePaymentSuccess } from '@/services/db/payments/success';
 import { logger } from '@/logger';
 
 const querySchema = z.object({

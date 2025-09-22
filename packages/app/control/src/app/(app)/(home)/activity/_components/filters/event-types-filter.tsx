@@ -15,7 +15,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { useFiltersContext } from '../../contexts/filters-context';
-import { FeedActivityType } from '@/services/db/ops/feed/types';
+import { FeedActivityType } from '@/services/db/feed/types';
 
 export const EventTypesFilter = () => {
   const { eventType, setEventType } = useFiltersContext();

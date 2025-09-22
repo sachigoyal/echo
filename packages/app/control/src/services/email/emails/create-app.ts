@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 import { sendEmailWithRetry } from '../lib/send';
 
-import { getFullUser } from '@/services/db/ops/user/get';
-import { countOwnerApps } from '@/services/db/ops/apps/count';
+import { getFullUser } from '@/services/db/user/get';
+import { countOwnerApps } from '@/services/db/apps/count';
 
 import { logger } from '@/logger';
-import { createEmail } from '@/services/db/ops/emails';
+import { createEmail } from '@/services/db/emails';
 
 export const createAppFollowUpEmailSchema = z.object({
   userId: z.uuid(),

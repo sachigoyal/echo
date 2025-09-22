@@ -65,7 +65,7 @@ List all Echo apps owned by the authenticated user.
 ```
 
 <AutoTypeTable
-  path="src/services/apps/list.ts"
+  path="src/services/db/apps/list.ts"
   type={`Awaited<ReturnType<typeof listOwnerApps>>["items"][number]`}
 />
 
@@ -83,7 +83,7 @@ Get detailed app information for programmatic access.
 **Response Type:**
 
 <AutoTypeTable
-  path="src/services/user/balance.ts"
+  path="src/services/db/user/balance.ts"
   type={`Awaited<ReturnType<typeof getUserGlobalBalance>>`}
 />
 
@@ -105,7 +105,7 @@ Get authenticated user's credit balance.
 **Response Type:**
 
 <AutoTypeTable
-  path="src/services/user/balance.ts"
+  path="src/services/db/user/balance.ts"
   type={`Awaited<ReturnType<typeof getUserGlobalBalance>>`}
 />
 
@@ -129,8 +129,8 @@ Get user's free tier spending information for a specific app.
 ```
 
 <AutoTypeTable
-  path="src/lib/spend-pools/fetch-user-spend.ts"
-  type={`Awaited<ReturnType<typeof getCustomerSpendInfoForApp>>["userSpendInfo"]`}
+  path="src/services/db/user/app-spend-pool.ts"
+  type={`Awaited<ReturnType<typeof getUserSpendInfoForApp>>["userSpendInfo"]`}
 />
 
 ## Payments

@@ -7,7 +7,7 @@ import {
   getCreditGrantCodeWithUsages,
   redeemCreditGrantCode,
   redeemCreditGrantCodeSchema,
-} from '@/services/db/ops/credits/grant';
+} from '@/services/db/credits/grant';
 
 export const creditsRouter = createTRPCRouter({
   grant: {

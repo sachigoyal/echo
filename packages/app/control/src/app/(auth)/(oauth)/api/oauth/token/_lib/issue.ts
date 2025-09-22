@@ -6,8 +6,8 @@ import { jwtVerify } from 'jose';
 import { authCodeJwtPayloadSchema } from '@/app/(auth)/(oauth)/(authorize)/_lib/code';
 import { isValidRedirectUri } from '@/app/(auth)/(oauth)/_lib/redirect-uri';
 
-import { PermissionService } from '@/services/db/ops/apps/permissions/service';
-import { AppRole } from '@/services/db/ops/apps/permissions/types';
+import { PermissionService } from '@/services/db/apps/permissions/service';
+import { AppRole } from '@/services/db/apps/permissions/types';
 
 import { createEchoAccessJwt } from '@/lib/access-token';
 import { tokenResponse } from './response';
@@ -21,11 +21,11 @@ import {
   OAuthErrorType,
 } from '@/app/(auth)/(oauth)/_lib/oauth-error';
 import { oauthValidationError } from '@/app/(auth)/(oauth)/_lib/oauth-route';
-import { getUser } from '@/services/db/ops/admin/user/user';
-import { getApp } from '@/services/db/ops/apps/get';
-import { createAppMembership } from '@/services/db/ops/apps/membership';
-import { createAppSession } from '@/services/db/ops/auth/session';
-import { createRefreshToken } from '@/services/db/ops/auth/refresh';
+import { getUser } from '@/services/db/admin/user/user';
+import { getApp } from '@/services/db/apps/get';
+import { createAppMembership } from '@/services/db/apps/membership';
+import { createAppSession } from '@/services/db/auth/session';
+import { createRefreshToken } from '@/services/db/auth/refresh';
 
 export const handleIssueTokenSchema = z.object({
   redirect_uri: z.url({

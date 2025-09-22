@@ -1,7 +1,7 @@
 import type Stripe from 'stripe';
 
-import { getPaymentById } from '@/services/db/ops/payments/get';
-import { handlePaymentSuccess } from '@/services/db/ops/payments/success';
+import { getPaymentById } from '@/services/db/payments/get';
+import { handlePaymentSuccess } from '@/services/db/payments/success';
 
 import { logger } from '@/logger';
 

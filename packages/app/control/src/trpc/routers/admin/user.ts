@@ -2,13 +2,13 @@ import { z } from 'zod';
 
 import { adminProcedure, createTRPCRouter } from '../../trpc';
 
-import { getUserAppsWithPagination } from '@/services/db/ops/admin/user/apps';
-import { getUserOverviewMetrics } from '@/services/db/ops/admin/user/user-summary';
+import { getUserAppsWithPagination } from '@/services/db/admin/user/apps';
+import { getUserOverviewMetrics } from '@/services/db/admin/user/user-summary';
 import { paginationParamsSchema } from '@/services/db/_lib/pagination';
 import { multiSortParamsSchema } from '@/services/db/_lib/sorting';
 import { filterParamsSchema } from '@/services/db/_lib/filtering';
-import { getUser } from '@/services/db/ops/admin/user/user';
-import { getUserAppsCharts } from '@/services/db/ops/admin/user/user-charts';
+import { getUser } from '@/services/db/admin/user/user';
+import { getUserAppsCharts } from '@/services/db/admin/user/user-charts';
 
 export const adminUserRouter = createTRPCRouter({
   getUserAppsWithPagination: adminProcedure

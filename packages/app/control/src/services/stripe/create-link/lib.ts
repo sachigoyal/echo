@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { stripe } from '../client';
 
-import { createPayment } from '@/services/db/ops/payments/create';
+import { createPayment } from '@/services/db/payments/create';
 
 import { logger } from '@/logger';
 

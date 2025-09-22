@@ -16,8 +16,8 @@ import {
   archiveRefreshToken,
   createRefreshToken,
   findRefreshToken,
-} from '@/services/db/ops/auth/refresh';
-import { updateAppSession } from '@/services/db/ops/auth/session';
+} from '@/services/db/auth/refresh';
+import { updateAppSession } from '@/services/db/auth/session';
 
 export const handleRefreshTokenSchema = z.object({
   refresh_token: z.string({

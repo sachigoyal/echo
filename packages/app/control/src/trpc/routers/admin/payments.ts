@@ -1,7 +1,7 @@
 import { adminProcedure, createTRPCRouter } from '../../trpc';
 
-import { getPaymentsWithPagination } from '@/services/db/ops/admin/payments';
-import { getPaymentsOverviewMetrics } from '@/services/db/ops/admin/payments-summary';
+import { getPaymentsWithPagination } from '@/services/db/admin/payments';
+import { getPaymentsOverviewMetrics } from '@/services/db/admin/payments-summary';
 import { paginationParamsSchema } from '@/services/db/_lib/pagination';
 import { multiSortParamsSchema } from '@/services/db/_lib/sorting';
 import { filterParamsSchema } from '@/services/db/_lib/filtering';

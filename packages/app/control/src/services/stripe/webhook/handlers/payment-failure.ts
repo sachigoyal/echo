@@ -1,6 +1,6 @@
 import type Stripe from 'stripe';
 
-import { updatePaymentStatus } from '@/services/db/ops/payments/update';
+import { updatePaymentStatus } from '@/services/db/payments/update';
 import { PaymentStatus } from '@/types/payments';
 import { logger } from '@/logger';
 

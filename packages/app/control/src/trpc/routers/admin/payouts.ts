@@ -8,7 +8,7 @@ import {
   adminListPendingPayouts,
   adminListCompletedPayouts,
   adminGetPayoutSchema,
-} from '@/services/db/ops/admin/payouts';
+} from '@/services/db/admin/payouts';
 import {
   generateCheckoutUrlForPayout,
   pollMeritCheckout,

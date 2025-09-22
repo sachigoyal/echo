@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { appIdSchema } from '@/services/db/ops/apps/lib/schemas';
+import { appIdSchema } from '@/services/db/apps/lib/schemas';
 import { authRoute } from '../../../../../lib/api/auth-route';
-import { setAppMembershipReferrer } from '@/services/db/ops/apps/membership';
+import { setAppMembershipReferrer } from '@/services/db/apps/membership';
 
 const setUserReferrerForAppSchema = z.object({
   echoAppId: appIdSchema,

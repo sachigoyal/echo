@@ -1,4 +1,4 @@
-import type { SignInEventData } from '@/services/db/ops/feed/types';
+import type { SignInEventData } from '@/services/db/feed/types';
 
 interface Props {
   activity: SignInEventData;

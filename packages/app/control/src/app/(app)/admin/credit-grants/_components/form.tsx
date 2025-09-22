@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 
-import { adminCreateCreditGrantSchema } from '@/services/db/ops/admin/schemas';
+import { adminCreateCreditGrantSchema } from '@/services/db/admin/schemas';
 import { useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 

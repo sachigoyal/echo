@@ -4,7 +4,7 @@ import z, { ZodError } from 'zod';
 import { auth } from '@/auth';
 import type { Session } from 'next-auth';
 import { timeBasedPaginationSchema } from '@/services/db/_lib/pagination';
-import { isAdmin as getIsAdmin } from '@/services/db/ops/admin/admin';
+import { isAdmin as getIsAdmin } from '@/services/db/admin/admin';
 
 /**
  * Context that is passed to all TRPC procedures

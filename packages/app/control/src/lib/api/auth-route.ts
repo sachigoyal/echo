@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { createZodRoute } from './create-route';
 
-import { findApiKeyByHash } from '@/services/db/ops/api-keys';
+import { findApiKeyByHash } from '@/services/db/api-keys';
 
 import { authenticateEchoAccessJwt } from '@/lib/access-token';
 

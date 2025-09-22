@@ -127,7 +127,7 @@ export default tseslint.config(
               schema: [],
               messages: {
                 noDbClientOutsideDb:
-                  'Direct imports from @/services/db/client are not allowed outside of the @/services/db/ folder. Create a new operation in @/services/db/ops instead.',
+                  'Direct imports from @/services/db/client are not allowed outside of the @/services/db/ folder. Create a new service in @/services/db instead.',
               },
             },
             create(context) {

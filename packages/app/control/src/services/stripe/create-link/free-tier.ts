@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { getAppWithOwnerCheck } from '@/services/db/ops/apps/get';
+import { getAppWithOwnerCheck } from '@/services/db/apps/get';
 import { env } from '@/env';
 import { createPaymentLink, createPaymentLinkSchema } from './lib';
 

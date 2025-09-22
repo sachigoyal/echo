@@ -7,14 +7,14 @@ import {
   claimAllReferralRewards,
   claimReferralRewardForApp,
   listPendingReferralPayouts,
-} from '@/services/db/ops/user/payouts/referrals';
+} from '@/services/db/user/payouts/referrals';
 import {
   calculateUserMarkupEarnings,
   calculateAppMarkupEarnings,
   claimAllMarkupRewards,
   claimMarkupRewardForApp,
   listPendingMarkupPayouts,
-} from '@/services/db/ops/user/payouts/markup';
+} from '@/services/db/user/payouts/markup';
 
 export const userPayoutRouter = createTRPCRouter({
   referral: {

@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 
 import { api } from '@/trpc/client';
 import { MarkupInput } from '../../../_components/markup/input';
-import { createAppSchema } from '@/services/db/ops/apps/lib/schemas';
+import { createAppSchema } from '@/services/db/apps/lib/schemas';
 
 export const CreateAppForm = () => {
   const form = useForm<z.infer<typeof createAppSchema>>({

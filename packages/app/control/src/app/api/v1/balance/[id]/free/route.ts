@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { NextResponse } from 'next/server';
 
-import { getUserSpendInfoForApp } from '@/services/db/ops/user/app-spend-pool';
+import { getUserSpendInfoForApp } from '@/services/db/user/app-spend-pool';
 
 import { authRoute } from '@/lib/api/auth-route';
 

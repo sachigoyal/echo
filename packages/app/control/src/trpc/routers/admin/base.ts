@@ -9,8 +9,8 @@ import {
   downloadUsersCsv,
   downloadUsersCsvSchema,
   isAdmin,
-} from '@/services/db/ops/admin/admin';
-import { mintCreditsToUserSchema } from '@/services/db/ops/credits/mint';
+} from '@/services/db/admin/admin';
+import { mintCreditsToUserSchema } from '@/services/db/credits/mint';
 
 export const adminBaseProcedures = {
   isAdmin: protectedProcedure.query(async ({ ctx }) => {

@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { subDays } from 'date-fns';
 
 import { ActivityTimeframe } from '@/types/timeframes';
-import type { FeedActivityType } from '@/services/db/ops/feed/types';
+import type { FeedActivityType } from '@/services/db/feed/types';
 
 interface FiltersContextType {
   appId: string | undefined;
