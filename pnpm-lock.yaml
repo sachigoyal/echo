@@ -782,12 +782,24 @@ importers:
 
   packages/sdk/next:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: 2.0.17
+        version: 2.0.17(zod@4.1.7)
+      '@ai-sdk/google':
+        specifier: 2.0.14
+        version: 2.0.14(zod@4.1.7)
+      '@ai-sdk/openai':
+        specifier: 2.0.32
+        version: 2.0.32(zod@4.1.7)
       '@merit-systems/echo-react-sdk':
         specifier: workspace:*
         version: link:../react
       '@merit-systems/echo-typescript-sdk':
         specifier: workspace:*
         version: link:../ts
+      '@openrouter/ai-sdk-provider':
+        specifier: 1.2.0
+        version: 1.2.0(ai@5.0.47(zod@4.1.7))(zod@4.1.7)
       ai:
         specifier: ^5.0.17
         version: 5.0.47(zod@4.1.7)
@@ -955,9 +967,16 @@ importers:
 
   packages/sdk/ts:
     dependencies:
+      ai:
+        specifier: 5.0.47
+        version: 5.0.47(zod@4.1.7)
+    devDependencies:
       '@ai-sdk/anthropic':
         specifier: 2.0.17
         version: 2.0.17(zod@4.1.7)
+      '@ai-sdk/gateway':
+        specifier: ^1.0.12
+        version: 1.0.24(zod@4.1.7)
       '@ai-sdk/google':
         specifier: 2.0.14
         version: 2.0.14(zod@4.1.7)
@@ -967,13 +986,6 @@ importers:
       '@openrouter/ai-sdk-provider':
         specifier: 1.2.0
         version: 1.2.0(ai@5.0.47(zod@4.1.7))(zod@4.1.7)
-      ai:
-        specifier: 5.0.47
-        version: 5.0.47(zod@4.1.7)
-    devDependencies:
-      '@ai-sdk/gateway':
-        specifier: ^1.0.12
-        version: 1.0.24(zod@4.1.7)
       '@types/node':
         specifier: ^24.0.3
         version: 24.3.1
