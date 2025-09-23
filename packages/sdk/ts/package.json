@@ -42,11 +42,13 @@
   "dependencies": {
     "ai": "5.0.47"
   },
+  "bundledDependencies": [
+    "ai-sdk/openai",
+    "ai-sdk/anthropic",
+    "ai-sdk/google",
+    "ai-sdk/openrouter"
+  ],
   "devDependencies": {
-    "@ai-sdk/anthropic": "2.0.17",
-    "@ai-sdk/google": "2.0.14",
-    "@ai-sdk/openai": "2.0.32",
-    "@openrouter/ai-sdk-provider": "1.2.0",
     "@ai-sdk/gateway": "^1.0.12",
     "@types/node": "^24.0.3",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
