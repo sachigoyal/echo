@@ -89,7 +89,7 @@ jobs:
             fi
           else
             echo "🚀 Publishing $PACKAGE_NAME to npm..."
-            npm publish --access public
+            pnpm publish --access public --no-git-checks
             echo "published=true" >> $GITHUB_OUTPUT
             echo "✅ Successfully published $PACKAGE_NAME"
           fi
@@ -135,7 +135,7 @@ jobs:
             fi
           else
             echo "🚀 Publishing $PACKAGE_NAME to npm..."
-            npm publish --access public
+            pnpm publish --access public --no-git-checks
             echo "published=true" >> $GITHUB_OUTPUT
             echo "✅ Successfully published $PACKAGE_NAME"
           fi
@@ -179,7 +179,7 @@ jobs:
             fi
           else
             echo "🚀 Publishing $PACKAGE_NAME to npm..."
-            npm publish --access public
+            pnpm publish --access public --no-git-checks
             echo "published=true" >> $GITHUB_OUTPUT
             echo "✅ Successfully published $PACKAGE_NAME"
           fi
@@ -223,7 +223,7 @@ jobs:
             fi
           else
             echo "🚀 Publishing $PACKAGE_NAME to npm..."
-            npm publish --access public
+            pnpm publish --access public --no-git-checks
             echo "published=true" >> $GITHUB_OUTPUT
             echo "✅ Successfully published $PACKAGE_NAME"
           fi
