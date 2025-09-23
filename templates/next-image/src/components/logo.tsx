@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -18,21 +17,21 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
         className={containerClassName}
         {...props}
       >
-        <Image
+        <img
           src="/logo/light.svg"
           alt="Merit Systems Logo"
           width={200}
           height={200}
           className={cn('dark:hidden size-6', className)}
-          priority={priority}
+          loading={priority ? 'eager' : undefined}
         />
-        <Image
+        <img
           src="/logo/dark.svg"
           alt="Merit Systems Logo"
           width={200}
           height={200}
           className={cn('hidden dark:block size-6', className)}
-          priority={priority}
+          loading={priority ? 'eager' : undefined}
         />
       </div>
     );
