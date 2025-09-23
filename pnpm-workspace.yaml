@@ -3,6 +3,9 @@ packages:
   - packages/sdk/*
   - packages/sdk/examples/*
   - packages/tests/*
+
+nodeLinker: hoisted
+
 allowBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
