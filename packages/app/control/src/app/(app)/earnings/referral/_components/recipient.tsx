@@ -19,7 +19,7 @@ export const UserPayoutRecipient = () => {
     api.user.githubLink.update.useMutation({
       onSuccess: () => {
         toast.success('Recipient GitHub updated');
-        utils.user.githubLink.get.invalidate();
+        void utils.user.githubLink.get.invalidate();
       },
     });
 
@@ -29,10 +29,7 @@ export const UserPayoutRecipient = () => {
         <div className="flex items-center gap-3">
           <CardTitle>Payout Recipient</CardTitle>
           <div className="mb-3 flex items-center justify-center">
-            <GithubAvatar
-              pageUrl={recipient?.githubUrl || undefined}
-              className="size-6"
-            />
+            <GithubAvatar pageUrl={recipient?.githubUrl} className="size-6" />
           </div>
         </div>
       </CardHeader>

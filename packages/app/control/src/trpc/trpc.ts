@@ -2,9 +2,9 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import z, { ZodError } from 'zod';
 import { auth } from '@/auth';
-import { Session } from 'next-auth';
-import { timeBasedPaginationSchema } from '@/services/lib/pagination';
-import { isAdmin as getIsAdmin } from '@/services/admin/admin';
+import type { Session } from 'next-auth';
+import { timeBasedPaginationSchema } from '@/services/db/_lib/pagination';
+import { isAdmin as getIsAdmin } from '@/services/db/admin/admin';
 
 /**
  * Context that is passed to all TRPC procedures

@@ -7,28 +7,15 @@ import {
   MoneyCell,
   toNumber,
 } from '@/components/server-side-data-table';
-import {
-  TableState,
-  TypedColumnDef,
-} from '@/components/server-side-data-table/BaseTable';
+import type { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import type { TableState } from '@/components/server-side-data-table/ActionControls';
 import { api } from '@/trpc/client';
 import { UserLink } from '@/app/(app)/admin/_components';
-
-// Define UserSpending type based on the service function
-export interface UserSpending {
-  id: string;
-  name: string | null;
-  email: string;
-  totalSpent: number;
-  balance: number;
-  totalPaid: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the user spending table
 const columns: TypedColumnDef<
-  UserSpending,
+  RouterOutputs['admin']['spending']['getUserSpendingWithPagination']['items'][number],
   string | number | boolean | Date
 >[] = [
   {
@@ -39,8 +26,8 @@ const columns: TypedColumnDef<
     columnType: 'string',
     cell: ({ getValue, row }) => {
       const name = getValue() as string | null;
-      const email = row.original.email;
-      const userId = row.original.id;
+      const email = (row.original as { email: string }).email;
+      const userId = (row.original as { id: string }).id;
       return <UserLink userId={userId} name={name} email={email} />;
     },
   },
@@ -107,7 +94,7 @@ export default function UserSpendingTable() {
       columns={columns}
       trpcQuery={api.admin.spending.getUserSpendingWithPagination.useQuery}
       showControls={true}
-      getRowId={row => row.id}
+      getRowId={row => (row as { id: string }).id}
       actions={[
         {
           id: 'view-details',

@@ -8,46 +8,16 @@ import {
   IntCell,
   toNumber,
 } from '@/components/server-side-data-table';
-import { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
+import type { TypedColumnDef } from '@/components/server-side-data-table/BaseTable';
 import { api } from '@/trpc/client';
 import { AppLink } from '@/app/(app)/admin/_components';
-
-// Define UserApp type based on the service function
-export interface UserApp {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  // Spending information
-  totalSpentAcrossApps: number;
-  totalSpentFreeTier: number;
-  totalSpentUserBalances: number;
-  totalSpent: number;
-  // Earnings information
-  totalReferralProfitEarned: number;
-  totalReferralProfitClaimed: number;
-  totalMarkupProfitEarned: number;
-  totalMarkupProfitClaimed: number;
-  totalTransactionCosts: number;
-  // Usage statistics
-  totalUsers: number;
-  totalTransactions: number;
-  totalInputTokens: number;
-  totalOutputTokens: number;
-  totalTokens: number;
-  // Popular models
-  mostPopularModels: Array<{
-    model: string;
-    provider: string;
-    transactionCount: number;
-    totalTokens: number;
-  }>;
-  lastTransactionAt: Date | null;
-}
+import type { RouterOutputs } from '@/trpc/client';
 
 // Define columns for the user apps table
-const columns: TypedColumnDef<UserApp, string | number | boolean | Date>[] = [
+const columns: TypedColumnDef<
+  RouterOutputs['admin']['user']['getUserAppsWithPagination']['items'][number],
+  string | number | boolean | Date
+>[] = [
   {
     accessorKey: 'name',
     header: 'App Name',
@@ -56,7 +26,7 @@ const columns: TypedColumnDef<UserApp, string | number | boolean | Date>[] = [
     columnType: 'string',
     cell: ({ getValue, row }) => {
       const name = getValue() as string;
-      const appId = row.original.id;
+      const appId = (row.original as { id: string }).id;
       return (
         <AppLink
           appId={appId}
@@ -228,7 +198,7 @@ export default function UserAppsTable({ userId }: UserAppsTableProps) {
         })
       }
       showControls={true}
-      getRowId={row => row.id}
+      getRowId={row => (row as { id: string }).id}
       enableRowSelection={false}
     />
   );

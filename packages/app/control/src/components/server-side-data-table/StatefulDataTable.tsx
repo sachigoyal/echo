@@ -1,24 +1,28 @@
 'use client';
 
 import * as React from 'react';
-import {
-  getCoreRowModel,
-  useReactTable,
+import type {
   SortingState,
   ColumnFiltersState,
   PaginationState,
   RowSelectionState,
 } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { BaseTable } from './BaseTable';
-import { PaginationParams, PaginatedResponse } from '@/services/lib/pagination';
-import { MultiSortParams, toMultiSortParams } from '@/services/lib/sorting';
-import { FilterParams, toFilterParams } from '@/services/lib/filtering';
-import { TypedColumnDef } from './BaseTable';
-import { ActionConfig, ActionGroup } from './ActionControls';
+import type {
+  PaginationParams,
+  PaginatedResponse,
+} from '@/services/db/_lib/pagination';
+import type { MultiSortParams } from '@/services/db/_lib/sorting';
+import { toMultiSortParams } from '@/services/db/_lib/sorting';
+import type { FilterParams } from '@/services/db/_lib/filtering';
+import { toFilterParams } from '@/services/db/_lib/filtering';
+import type { TypedColumnDef } from './BaseTable';
+import type { ActionConfig, ActionGroup } from './ActionControls';
 import { createCheckboxColumn } from './CheckBoxColumn';
 
 // TRPC useQuery hook type - accepts the raw TRPC useQuery function
-export type TRPCUseQuery<TData> = (
+type TRPCUseQuery<TData> = (
   params: PaginationParams & MultiSortParams & FilterParams
 ) => {
   data?: PaginatedResponse<TData>;

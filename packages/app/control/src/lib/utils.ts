@@ -1,14 +1,9 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import z from 'zod';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-export const isValidUrl = (string: string) => {
-  return z.url().safeParse(string).success;
-};
 
 export const formatCurrency = (
   value: number,
@@ -26,11 +21,4 @@ export const formatCurrency = (
     maximumFractionDigits: 2,
     ...options,
   });
-};
-
-export const formatNumber = (value: number | null | undefined): string => {
-  if (value === null || value === undefined || isNaN(value)) {
-    return '0';
-  }
-  return value.toLocaleString();
 };

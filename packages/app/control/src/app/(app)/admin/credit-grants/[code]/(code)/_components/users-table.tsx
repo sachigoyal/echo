@@ -13,7 +13,6 @@ import {
   TableEmpty,
 } from '@/components/ui/table';
 
-import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/trpc/client';
 import {
   Card,
@@ -49,7 +48,7 @@ export const CreditGrantUsersTable: React.FC<Props> = ({ code }) => {
     <BaseCreditGrantUsersTable
       pagination={{
         hasNext: hasNextPage,
-        fetchNextPage,
+        fetchNextPage: () => void fetchNextPage(),
         isFetchingNextPage,
       }}
     >
@@ -86,37 +85,6 @@ export const CreditGrantUsersTable: React.FC<Props> = ({ code }) => {
         </TableEmpty>
       )}
     </BaseCreditGrantUsersTable>
-  );
-};
-
-export const LoadingCreditGrantUsersTable = () => {
-  return (
-    <BaseCreditGrantUsersTable>
-      <LoadingCreditGrantUsersRow />
-      <LoadingCreditGrantUsersRow />
-    </BaseCreditGrantUsersTable>
-  );
-};
-
-const LoadingCreditGrantUsersRow = () => {
-  return (
-    <TableRow>
-      <TableCell className="pl-4 font-bold">
-        <div className="flex items-center gap-2">
-          <Skeleton className="size-4" />
-          <Skeleton className="h-4 w-20" />
-        </div>
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 w-20" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 w-20" />
-      </TableCell>
-      <TableCell>
-        <Skeleton className="h-4 w-24" />
-      </TableCell>
-    </TableRow>
   );
 };
 

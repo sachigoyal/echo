@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Route } from 'next';
+import type { Route } from 'next';
 import { usePathname } from 'next/navigation';
 
 interface Props<T extends string> {
@@ -20,12 +20,10 @@ export const DashboardNavButton = <T extends string>({
     <Button
       variant="ghost"
       className={cn(
-        'w-full justify-start text-base',
-        pathname === href ||
-          (href === '/admin/dashboard/user-earnings' &&
-            pathname === '/admin/dashboard')
-          ? 'text-foreground font-medium'
-          : 'text-muted-foreground/80 font-normal'
+        'lg:w-full lg:justify-start text-sm lg:text-base whitespace-nowrap px-3 lg:px-4 py-2 lg:py-2 min-h-[36px] lg:min-h-[40px]',
+        pathname === href
+          ? 'text-foreground font-medium bg-accent/50'
+          : 'text-muted-foreground/80 font-normal hover:text-foreground hover:bg-accent/30'
       )}
     >
       {children}

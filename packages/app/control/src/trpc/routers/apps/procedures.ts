@@ -1,9 +1,9 @@
-import { getAppOwner } from '@/services/apps/get';
+import { getAppOwner } from '@/services/db/apps/get';
 import { protectedProcedure, publicProcedure } from '../../trpc';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { appIdSchema } from '@/services/apps/lib/schemas';
-import { getApp } from '@/services/apps/get';
+import { appIdSchema } from '@/services/db/apps/lib/schemas';
+import { getApp } from '@/services/db/apps/get';
 
 const appIdInput = z.object({ appId: appIdSchema });
 

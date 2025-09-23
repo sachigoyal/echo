@@ -1,12 +1,13 @@
 'use client';
 
-import z from 'zod';
+import type z from 'zod';
 
 import { CalendarDays, Check, Loader2 } from 'lucide-react';
 
 import { format } from 'date-fns';
 
-import { DefaultValues, useForm } from 'react-hook-form';
+import type { DefaultValues } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 
-import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import { adminCreateCreditGrantSchema } from '@/services/db/admin/schemas';
 import { useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -233,7 +234,7 @@ export const CreditGrantForm: React.FC<Props> = ({
               }
               disabled={
                 isSubmitting ||
-                isSuccess ||
+                Boolean(isSuccess) ||
                 !form.formState.isValid ||
                 !form.formState.isDirty
               }

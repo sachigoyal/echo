@@ -8,7 +8,7 @@ import { api } from '@/trpc/client';
 import { UserAvatar } from '@/components/utils/user-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { formatCurrency } from '@/lib/balance';
+import { formatCurrency } from '@/lib/utils';
 
 interface UserHeaderProps {
   userId: string;
@@ -116,5 +116,3 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     </div>
   );
 };
-
-export default UserHeader;

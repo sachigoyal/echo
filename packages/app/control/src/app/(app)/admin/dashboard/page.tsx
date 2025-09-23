@@ -1,5 +1,6 @@
 import { userOrRedirect } from '@/auth/user-or-redirect';
-import TotalTokensChart from '@/app/(app)/admin/_components/chart/TotalTokens';
+import HomePageChart from '@/app/(app)/admin/_components/chart/HomePage';
+import { TableLayout } from '@/app/(app)/admin/_components';
 
 export default async function AdminDashboard(
   props: PageProps<'/admin/dashboard'>
@@ -7,6 +8,8 @@ export default async function AdminDashboard(
   await userOrRedirect('/admin/dashboard', props);
 
   return (
-    <TotalTokensChart />
+    <TableLayout title="Admin Dashboard">
+      <HomePageChart />
+    </TableLayout>
   );
 }

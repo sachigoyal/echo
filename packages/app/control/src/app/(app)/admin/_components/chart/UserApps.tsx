@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import ChartPanel from '@/components/overview-chart/ChartPanel';
+import { ChartPanel } from '@/components/overview-chart/ChartPanel';
 import { api } from '@/trpc/client';
 
 interface UserAppsChartProps {
@@ -17,7 +17,7 @@ export function UserAppsChart({ userId }: UserAppsChartProps) {
     <ChartPanel
       title="User App Charts"
       description="Time series for markup profit and transactions across this user's apps"
-      charts={data || []}
+      charts={data ?? []}
       isLoading={isLoading}
       error={error}
       grid={{ columns: 2, gap: 'md', responsive: true }}

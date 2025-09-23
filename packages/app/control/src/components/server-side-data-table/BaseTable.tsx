@@ -1,11 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import {
-  ColumnDef,
-  flexRender,
-  Table as TanStackTable,
-} from '@tanstack/react-table';
+import type { ColumnDef, Table as TanStackTable } from '@tanstack/react-table';
+import { flexRender } from '@tanstack/react-table';
 
 import {
   Table,
@@ -18,14 +15,12 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { PaginationControls } from './PaginationControls';
 import { MultiSortControls } from './SortControls';
-import { MultiFilterControls, ColumnType } from './FilterControls';
+import type { ColumnType } from './FilterControls';
+import { MultiFilterControls } from './FilterControls';
 import { TableHeader as CustomTableHeader } from './TableHeader';
-import { ActionConfig, ActionGroup, TableState } from './ActionControls';
+import type { ActionConfig, ActionGroup } from './ActionControls';
 import { SortableColumnHeader } from './SortableColumnHeader';
 import { getFilterableColumnConfigs, getSortableColumns } from './utils';
-
-// Re-export for convenience
-export type { ActionConfig, ActionGroup, TableState };
 
 // Define TypedColumnDef as an intersection type to guarantee columnType exists
 export type TypedColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {

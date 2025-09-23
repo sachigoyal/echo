@@ -45,17 +45,14 @@ export const Activity: React.FC<Props> = async ({ appId }) => {
 
   const defaultStartDate = subDays(new Date(), 7);
 
-  api.apps.app.stats.bucketed.prefetch({
+  void api.apps.app.stats.bucketed.prefetch({
     appId,
     startDate: defaultStartDate,
   });
 
   return (
     <HydrateClient>
-      <ActivityContextProvider
-        initialStartDate={defaultStartDate}
-        creationDate={app.createdAt}
-      >
+      <ActivityContextProvider creationDate={app.createdAt}>
         <ActivityContainer>
           <ErrorBoundary
             fallback={<p>There was an error loading the activity data</p>}

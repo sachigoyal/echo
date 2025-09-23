@@ -1,12 +1,13 @@
 'use client';
 
-import z from 'zod';
+import type z from 'zod';
 
 import { toast } from 'sonner';
 
-import { api, RouterOutputs } from '@/trpc/client';
+import type { RouterOutputs } from '@/trpc/client';
+import { api } from '@/trpc/client';
 
-import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import type { adminCreateCreditGrantSchema } from '@/services/db/admin/schemas';
 import { CreditGrantForm } from '../../../_components/form';
 import { revalidateCodePage } from '../_actions/revalidate';
 
@@ -21,8 +22,8 @@ export const EditCreditGrantForm: React.FC<Props> = ({ id, creditGrant }) => {
   const { mutate: editCreditGrant, isPending } =
     api.admin.creditGrants.grant.update.useMutation({
       onSuccess: ({ code }) => {
-        utils.admin.creditGrants.list.invalidate();
-        revalidateCodePage(code);
+        void utils.admin.creditGrants.list.invalidate();
+        void revalidateCodePage(code);
         toast.success('Credit grant updated');
       },
       onError: error => {

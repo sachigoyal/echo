@@ -10,10 +10,13 @@ import {
 
 import { userPayoutRouter } from './payout';
 
-import { getUser } from '@/services/user/get';
-import { getUserFeed, userFeedSchema } from '@/services/feed';
-import { listCreditPayments } from '@/services/payments';
-import { createPaymentLink, createPaymentLinkSchema } from '@/services/stripe';
+import { getPublicUser, getFullUser } from '@/services/db/user/get';
+import { getUserFeed, userFeedSchema } from '@/services/db/feed';
+import { listCreditPayments } from '@/services/db/payments/list';
+import {
+  createCreditsPaymentLink,
+  createCreditsPaymentLinkSchema,
+} from '@/services/stripe/create-link/credits';
 import {
   countApiKeys,
   createApiKey,
@@ -26,41 +29,44 @@ import {
   listApiKeysSchema,
   updateApiKey,
   updateApiKeySchema,
-} from '@/services/api-keys';
+} from '@/services/db/api-keys';
 import {
   getGithubLinkForUser,
   updateGithubLinkForUser,
   updateUserGithubLinkSchema,
-} from '@/services/user/github-link';
-import { getUserAppBalance, getUserGlobalBalance } from '@/lib/balance';
-import { appIdSchema } from '@/services/apps/lib/schemas';
-import { getCustomerSpendInfoForApp } from '@/lib/spend-pools';
+} from '@/services/db/user/github-link';
+import {
+  getUserAppBalance,
+  getUserGlobalBalance,
+} from '@/services/db/user/balance';
+import { appIdSchema } from '@/services/db/apps/lib/schemas';
+import { getUserSpendInfoForApp } from '@/services/db/user/app-spend-pool';
 
-import { userIdSchema } from '@/services/lib/schemas';
+import { userIdSchema } from '@/services/db/_lib/schemas';
 import {
   hasClaimedInitialFreeTierCredits,
   issueInitialFreeTierCredits,
-} from '@/services/user/initial-free-tier';
+} from '@/services/db/user/initial-free-tier';
 import {
   acceptLatestPrivacyPolicy,
   acceptLatestTermsAndServices,
   needsLatestPrivacyPolicy,
   needsLatestTermsAndServices,
-} from '@/services/user/terms-agreement';
+} from '@/services/db/user/terms-agreement';
 import {
   getUserCreatorActivity,
   getUserCreatorActivitySchema,
-} from '@/services/user/activity';
+} from '@/services/db/user/activity';
 
 export const userRouter = createTRPCRouter({
   payout: userPayoutRouter,
 
   current: protectedProcedure.query(async ({ ctx }) => {
-    return getUser(ctx.session.user.id);
+    return getFullUser(ctx.session.user.id);
   }),
 
   get: publicProcedure.input(userIdSchema).query(async ({ input }) => {
-    const user = await getUser(input);
+    const user = await getPublicUser(input);
     if (!user) {
       throw new TRPCError({
         code: 'NOT_FOUND',
@@ -85,7 +91,7 @@ export const userRouter = createTRPCRouter({
       free: protectedProcedure
         .input(appIdSchema)
         .query(async ({ ctx, input }) => {
-          return getCustomerSpendInfoForApp(ctx.session.user.id, input);
+          return getUserSpendInfoForApp(ctx.session.user.id, input);
         }),
     }),
   },
@@ -98,9 +104,9 @@ export const userRouter = createTRPCRouter({
       }),
 
     create: protectedProcedure
-      .input(createPaymentLinkSchema)
+      .input(createCreditsPaymentLinkSchema)
       .mutation(async ({ ctx, input }) => {
-        return await createPaymentLink(ctx.session.user.id, input);
+        return await createCreditsPaymentLink(ctx.session.user.id, input);
       }),
   },
 

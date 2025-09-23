@@ -40,12 +40,12 @@ import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 
 const models = [
   {
-    name: 'GPT 5 nano',
-    value: 'gpt-5-nano',
-  },
-  {
     name: 'GPT 4o',
     value: 'gpt-4o',
+  },
+  {
+    name: 'GPT 5',
+    value: 'gpt-5',
   },
 ];
 

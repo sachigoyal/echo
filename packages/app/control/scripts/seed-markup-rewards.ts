@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
-import { db } from '../src/lib/db';
+// eslint-disable-next-line no-db-client-outside-db/no-db-client-outside-db
+import { db } from '../src/services/db/client';
 import { faker } from '@faker-js/faker';
 import { addDays, subDays, format } from 'date-fns';
 
@@ -187,7 +188,7 @@ async function ensureMarkUp(appId: string, quiet?: boolean) {
   if (existing) {
     if (!quiet)
       console.log(
-        `🏷️ Using existing MarkUp ${existing.id} amount ${existing.amount}`
+        `🏷️ Using existing MarkUp ${existing.id} amount ${existing.amount.toString()}`
       );
     return existing.id;
   }

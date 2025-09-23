@@ -6,20 +6,43 @@ import type { Route } from 'next';
 
 export const DashboardNav: React.FC = () => {
   return (
-    <div className="w-full flex flex-col gap-2">
-      <DashboardNavLink href="/admin/dashboard/user-earnings">
-        User Earnings
-      </DashboardNavLink>
-      <DashboardNavLink href="/admin/dashboard/user-spending">
-        User Spending
-      </DashboardNavLink>
-      <DashboardNavLink href="/admin/dashboard/app-earnings">
-        App Earnings
-      </DashboardNavLink>
-      <DashboardNavLink href="/admin/dashboard/payments">
-        Payment History
-      </DashboardNavLink>
-    </div>
+    <>
+      {/* Mobile horizontal scrollable nav */}
+      <div className="lg:hidden w-full overflow-x-auto">
+        <div className="flex gap-2 min-w-max pb-1">
+          <DashboardNavLink href="/admin/dashboard">Home</DashboardNavLink>
+          <DashboardNavLink href="/admin/dashboard/user-earnings">
+            User Earnings
+          </DashboardNavLink>
+          <DashboardNavLink href="/admin/dashboard/user-spending">
+            User Spending
+          </DashboardNavLink>
+          <DashboardNavLink href="/admin/dashboard/app-earnings">
+            App Earnings
+          </DashboardNavLink>
+          <DashboardNavLink href="/admin/dashboard/payments">
+            Payment History
+          </DashboardNavLink>
+        </div>
+      </div>
+
+      {/* Desktop vertical nav */}
+      <div className="hidden lg:flex w-full flex-col gap-2">
+        <DashboardNavLink href="/admin/dashboard">Home</DashboardNavLink>
+        <DashboardNavLink href="/admin/dashboard/user-earnings">
+          User Earnings
+        </DashboardNavLink>
+        <DashboardNavLink href="/admin/dashboard/user-spending">
+          User Spending
+        </DashboardNavLink>
+        <DashboardNavLink href="/admin/dashboard/app-earnings">
+          App Earnings
+        </DashboardNavLink>
+        <DashboardNavLink href="/admin/dashboard/payments">
+          Payment History
+        </DashboardNavLink>
+      </div>
+    </>
   );
 };
 

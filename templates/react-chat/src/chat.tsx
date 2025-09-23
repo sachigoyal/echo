@@ -26,9 +26,10 @@ import {
   SourcesTrigger,
 } from '@/components/ai-elements/sources';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
-import { EchoSignIn, useChat, useEcho } from '@merit-systems/echo-react-sdk';
+import { useChat, useEcho } from '@merit-systems/echo-react-sdk';
 import { CopyIcon, MessageSquare } from 'lucide-react';
 import { Fragment, useState } from 'react';
+import { EchoAccount } from './components/echo-account-react';
 
 const suggestions = [
   'Can you explain how to play tennis?',
@@ -151,7 +152,7 @@ const ChatBotDemo = () => {
         <div className="relative mt-4 flex-shrink-0 ">
           {!isSignedIn && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60 backdrop-blur-sm">
-              <EchoSignIn />
+              <EchoAccount />
             </div>
           )}
 

@@ -49,7 +49,7 @@ export const ClaimCreditsCoupon: React.FC<Props> = ({
   } = api.credits.grant.redeem.useMutation({
     onSuccess: () => {
       toast.success('Credits claimed');
-      utils.user.balance.get.invalidate();
+      void utils.user.balance.get.invalidate();
       setTimeout(() => {
         router.push('/credits');
       }, 2000);
@@ -63,7 +63,7 @@ export const ClaimCreditsCoupon: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 w-full">
       <CouponContainer>
         <CouponHeader>
           <CouponTitle>
@@ -105,7 +105,7 @@ export const ClaimCreditsCoupon: React.FC<Props> = ({
 
 export const LoadingCoupon = () => {
   return (
-    <CouponContainer>
+    <CouponContainer className="w-full">
       <CouponHeader>
         <CouponTitle>
           <div className="opacity-50">

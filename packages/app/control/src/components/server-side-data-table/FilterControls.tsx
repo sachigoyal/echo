@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { Table as TanStackTable } from '@tanstack/react-table';
+import type { Table as TanStackTable } from '@tanstack/react-table';
 import { Filter, X, Plus } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -22,10 +22,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { FilterOperator } from '@/services/lib/filtering';
+import type { FilterOperator } from '@/services/db/_lib/filtering';
 
 // Enhanced filter structure to support operators
-export interface FilterConfig {
+interface FilterConfig {
   id: string;
   column: string;
   operator: FilterOperator;
@@ -35,7 +35,7 @@ export interface FilterConfig {
 // Column type definitions for input validation
 export type ColumnType = 'string' | 'number' | 'boolean' | 'date';
 
-export interface ColumnConfig {
+interface ColumnConfig {
   name: string;
   type: ColumnType;
 }
@@ -184,7 +184,7 @@ export function MultiFilterControls<TData>({
   const filters = React.useMemo<FilterConfig[]>(() => {
     return columnFilters.map((columnFilter, index) => {
       // Parse structured filter value: "operator:value" or just "operator" for null checks
-      const filterValue = String(columnFilter.value || '');
+      const filterValue = String((columnFilter.value as string) ?? '');
       const [operator, ...valueParts] = filterValue.split(':');
       const value = valueParts.join(':'); // Rejoin in case value contains colons
 
@@ -200,17 +200,17 @@ export function MultiFilterControls<TData>({
   // Get column type helper
   const getColumnType = (columnName: string): ColumnType => {
     const config = columnConfigs.find(c => c.name === columnName);
-    return config?.type || 'string';
+    return config?.type ?? 'string';
   };
 
   const openAddFilterModal = () => {
     const availableColumn =
       availableColumns.find(
         col => !filters.some(filter => filter.column === col)
-      ) || availableColumns[0];
+      ) ?? availableColumns[0];
 
     setNewFilter({
-      column: availableColumn || '',
+      column: availableColumn ?? '',
       operator: 'contains',
       value: '',
     });

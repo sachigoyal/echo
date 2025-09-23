@@ -18,7 +18,7 @@ export function UserLink({
   showEmail = true,
   title,
 }: UserLinkProps) {
-  const displayName = name || (
+  const displayName = name ?? (
     <span className="text-gray-400 italic">No name</span>
   );
 
@@ -29,8 +29,8 @@ export function UserLink({
           href={`/admin/dashboard/user/user-apps/${userId}`}
           className={className}
           title={
-            title ||
-            (typeof displayName === 'string' ? displayName : name || email)
+            title ??
+            (typeof displayName === 'string' ? displayName : (name ?? email))
           }
         >
           <span className="block w-xxs truncate">{displayName}</span>
@@ -45,8 +45,8 @@ export function UserLink({
       href={`/admin/dashboard/user/user-apps/${userId}`}
       className={className}
       title={
-        title ||
-        (typeof displayName === 'string' ? displayName : name || userId)
+        title ??
+        (typeof displayName === 'string' ? displayName : (name ?? userId))
       }
     >
       <span className="block w-[36px] truncate">{displayName}</span>

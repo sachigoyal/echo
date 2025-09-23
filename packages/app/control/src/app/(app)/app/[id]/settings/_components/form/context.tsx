@@ -1,13 +1,9 @@
 'use client';
 
-import z from 'zod';
+import type z from 'zod';
 
-import {
-  DefaultValues,
-  useForm,
-  Resolver,
-  UseFormProps,
-} from 'react-hook-form';
+import type { DefaultValues, Resolver, UseFormProps } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { Form } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,8 +41,8 @@ export const FormProvider = <T, Schema extends z.ZodType<T, any, any>>({
 
   const onSubmit = form.handleSubmit(async values => {
     try {
-      await action(values as z.core.output<Schema>);
-      form.reset(values as z.core.output<Schema>);
+      await action(values);
+      form.reset(values);
       onSuccess?.();
     } catch {
       onError?.();

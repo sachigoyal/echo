@@ -1,6 +1,6 @@
 'use client';
 
-import z from 'zod';
+import type z from 'zod';
 
 import { addYears } from 'date-fns';
 
@@ -12,7 +12,7 @@ import { CreditGrantForm } from '../../_components/form';
 
 import { api } from '@/trpc/client';
 
-import { adminCreateCreditGrantSchema } from '@/services/admin/schemas';
+import type { adminCreateCreditGrantSchema } from '@/services/db/admin/schemas';
 
 export const CreateCreditGrantForm = () => {
   const utils = api.useUtils();
@@ -25,7 +25,7 @@ export const CreateCreditGrantForm = () => {
     isSuccess,
   } = api.admin.creditGrants.create.useMutation({
     onSuccess: ({ code }) => {
-      utils.admin.creditGrants.list.invalidate();
+      void utils.admin.creditGrants.list.invalidate();
       toast.success('Credit grant created');
       router.push(`/admin/credit-grants/${code}`);
     },

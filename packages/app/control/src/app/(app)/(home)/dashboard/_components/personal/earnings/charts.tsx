@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns';
 import { Charts, LoadingCharts } from '@/app/(app)/_components/charts';
-import { ChartData } from '@/app/(app)/_components/charts/base-chart';
+import type { ChartData } from '@/app/(app)/_components/charts/base-chart';
 
 import { api } from '@/trpc/client';
 import { useActivityContext } from '@/app/(app)/_components/time-range-selector/context';
@@ -17,11 +17,12 @@ interface Props {
 export const EarningsCharts: React.FC<Props> = ({ numAppsPromise }) => {
   const numApps = use(numAppsPromise);
 
-  const { startDate, endDate } = useActivityContext();
+  const { startDate, endDate, isCumulative } = useActivityContext();
 
   const [activity] = api.user.creatorActivity.useSuspenseQuery({
     startDate,
     endDate,
+    isCumulative,
   });
 
   const hasApps = useMemo(() => {
@@ -52,18 +53,17 @@ export const EarningsCharts: React.FC<Props> = ({ numAppsPromise }) => {
       }));
     }, [activity, hasApps]);
 
-  const totalProfit = chartData.reduce(
-    (acc, item) => acc + item.totalProfit,
-    0
-  );
-  const totalTokens = chartData.reduce(
-    (acc, item) => acc + item.totalTokens,
-    0
-  );
-  const totalTransactions = chartData.reduce(
-    (acc, item) => acc + item.transactionCount,
-    0
-  );
+  const totalProfit = isCumulative
+    ? (chartData[chartData.length - 1]?.totalProfit ?? 0)
+    : chartData.reduce((acc, item) => acc + item.totalProfit, 0);
+
+  const totalTokens = isCumulative
+    ? (chartData[chartData.length - 1]?.totalTokens ?? 0)
+    : chartData.reduce((acc, item) => acc + item.totalTokens, 0);
+
+  const totalTransactions = isCumulative
+    ? (chartData[chartData.length - 1]?.transactionCount ?? 0)
+    : chartData.reduce((acc, item) => acc + item.transactionCount, 0);
 
   return (
     <Charts

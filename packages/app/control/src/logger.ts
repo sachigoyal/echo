@@ -6,23 +6,22 @@ import {
   context,
   trace,
 } from '@opentelemetry/api';
+import type { LogRecord, LogRecordProcessor } from '@opentelemetry/sdk-logs';
 import {
   LoggerProvider,
   BatchLogRecordProcessor,
-  LogRecord,
-  LogRecordProcessor,
 } from '@opentelemetry/sdk-logs';
 import { Resource } from '@opentelemetry/resources';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { logs } from '@opentelemetry/api-logs';
+import { env } from './env';
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
 
-const SIGNOZ_INGESTION_KEY = process.env.SIGNOZ_INGESTION_KEY;
-const OTEL_EXPORTER_OTLP_ENDPOINT =
-  process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'https://ingest.signoz.io';
-const SIGNOZ_SERVICE_NAME = process.env.SIGNOZ_SERVICE_NAME || 'echo-control';
-const NODE_ENV = process.env.NODE_ENV || 'development';
+const SIGNOZ_INGESTION_KEY = env.SIGNOZ_INGESTION_KEY;
+const OTEL_EXPORTER_OTLP_ENDPOINT = env.OTEL_EXPORTER_OTLP_ENDPOINT;
+const SIGNOZ_SERVICE_NAME = env.SIGNOZ_SERVICE_NAME;
+const NODE_ENV = env.NODE_ENV;
 
 // --- Custom processor to inject trace/span IDs ---
 class TraceContextLogProcessor implements LogRecordProcessor {
@@ -68,16 +67,16 @@ class ConsoleLogProcessor implements LogRecordProcessor {
     }
 
     const timestamp = new Date(timestampMs).toISOString();
-    const severity = logRecord.severityText || 'INFO';
+    const severity = logRecord.severityText ?? 'INFO';
     const body = logRecord.body;
 
     // Extract attributes for context
     const attributes = logRecord.attributes;
-    const traceId = attributes?.['trace_id'];
-    const spanId = attributes?.['span_id'];
+    const traceId = attributes?.trace_id as string;
+    const spanId = attributes?.span_id as string;
 
     // Format the log message
-    let message = `[${timestamp}] ${severity}: ${body}`;
+    let message = `[${timestamp}] ${severity}: ${typeof body === 'string' ? body : JSON.stringify(body)}`;
 
     if (traceId && spanId) {
       message += ` [trace_id=${traceId}, span_id=${spanId}]`;
@@ -87,7 +86,10 @@ class ConsoleLogProcessor implements LogRecordProcessor {
     if (attributes) {
       const otherAttrs = Object.entries(attributes)
         .filter(([key]) => !['trace_id', 'span_id'].includes(key))
-        .map(([key, value]) => `${key}=${value}`)
+        .map(
+          ([key, value]) =>
+            `${key}=${typeof value === 'string' ? value : JSON.stringify(value)}`
+        )
         .join(', ');
 
       if (otherAttrs) {
