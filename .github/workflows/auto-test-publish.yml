@@ -84,7 +84,7 @@ jobs:
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
           echo "🚀 Publishing $PACKAGE_NAME@$PACKAGE_VERSION to test tag..."
-          npm publish --access public --tag test
+          pnpm publish --access public --tag test --no-git-checks
           echo "published=true" >> $GITHUB_OUTPUT
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
@@ -126,7 +126,7 @@ jobs:
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
           echo "🚀 Publishing $PACKAGE_NAME@$PACKAGE_VERSION to test tag..."
-          npm publish --access public --tag test
+          pnpm publish --access public --tag test --no-git-checks
           echo "published=true" >> $GITHUB_OUTPUT
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
@@ -168,7 +168,7 @@ jobs:
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
           echo "🚀 Publishing $PACKAGE_NAME@$PACKAGE_VERSION to test tag..."
-          npm publish --access public --tag test
+          pnpm publish --access public --tag test --no-git-checks
           echo "published=true" >> $GITHUB_OUTPUT
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
@@ -210,7 +210,7 @@ jobs:
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
           echo "🚀 Publishing $PACKAGE_NAME@$PACKAGE_VERSION to test tag..."
-          npm publish --access public --tag test
+          pnpm publish --access public --tag test --no-git-checks
           echo "published=true" >> $GITHUB_OUTPUT
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
