@@ -6,7 +6,7 @@ import {
   listAvailableEmailCampaigns,
   getSentCampaignsForApps,
   scheduleCampaignForApps,
-} from '@/services/admin/email-campaigns';
+} from '@/services/db/admin/email-campaigns';
 
 export const adminEmailCampaignsRouter = createTRPCRouter({
   list: adminProcedure.query(async () => {

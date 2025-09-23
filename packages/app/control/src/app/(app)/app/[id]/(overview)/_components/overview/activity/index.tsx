@@ -52,10 +52,7 @@ export const Activity: React.FC<Props> = async ({ appId }) => {
 
   return (
     <HydrateClient>
-      <ActivityContextProvider
-        initialStartDate={defaultStartDate}
-        creationDate={app.createdAt}
-      >
+      <ActivityContextProvider creationDate={app.createdAt}>
         <ActivityContainer>
           <ErrorBoundary
             fallback={<p>There was an error loading the activity data</p>}

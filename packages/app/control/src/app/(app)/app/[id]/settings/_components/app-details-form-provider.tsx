@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { FormProvider, type FormProviderProps } from './form/context';
 
-import { updateAppSchema } from '@/services/apps/lib/schemas';
+import { updateAppSchema } from '@/services/db/apps/lib/schemas';
 
 interface Props
   extends Omit<FormProviderProps<z.infer<typeof updateAppSchema>>, 'schema'> {

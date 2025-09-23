@@ -4,7 +4,8 @@ import NextAuth from 'next-auth';
 
 import { PrismaAdapter } from '@auth/prisma-adapter';
 
-import { db } from '@/lib/db';
+// eslint-disable-next-line no-db-client-outside-db/no-db-client-outside-db
+import { db } from '@/services/db/client';
 
 import { authConfig } from './config';
 import { emailProviders } from './providers';

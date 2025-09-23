@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 import { sendEmailWithRetry } from '../lib/send';
 
-import { getFullUser } from '@/services/user/get';
-import { countOwnerApps } from '@/services/apps/count';
+import { getFullUser } from '@/services/db/user/get';
+import { countOwnerApps } from '@/services/db/apps/count';
 
 import { logger } from '@/logger';
-import { db } from '@/lib/db';
+import { createEmail } from '@/services/db/emails';
 
 export const createAppFollowUpEmailSchema = z.object({
   userId: z.uuid(),
@@ -63,13 +63,11 @@ export async function scheduleCreateAppFollowUpEmail(
     });
   }
 
-  await db.outboundEmailSent.create({
-    data: {
-      emailCampaignId: 'create-app-follow-up',
-      userId,
-      echoAppId: appId,
-      createdAt: new Date(),
-    },
+  await createEmail({
+    emailCampaignId: 'create-app-follow-up',
+    userId,
+    echoAppId: appId,
+    createdAt: new Date(),
   });
 
   return data;

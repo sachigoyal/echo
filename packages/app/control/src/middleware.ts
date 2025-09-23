@@ -9,10 +9,6 @@ import { paymentMiddleware } from 'x402-next';
 import { facilitator } from '@coinbase/x402';
 
 import { middleware } from '@/auth/middleware';
-import {
-  formatAmountFromQueryParams,
-  formatPriceForMiddleware,
-} from '@/lib/base';
 import { env } from './env';
 
 export const config = {
@@ -23,15 +19,15 @@ export const config = {
 };
 
 export const x402MiddlewareGenerator = (req: NextRequest) => {
-  const amount = formatAmountFromQueryParams(req);
+  const amount = parseFloat(req.nextUrl.searchParams.get('amount') ?? '1');
 
-  if (!amount) {
+  if (!amount || isNaN(amount)) {
     return async () => {
       return NextResponse.json({ error: `Invalid amount` }, { status: 400 });
     };
   }
 
-  const paymentAmount = formatPriceForMiddleware(amount);
+  const paymentAmount = `$${amount}`;
 
   return paymentMiddleware(
     env.RESOURCE_WALLET_ADDRESS as Address,
