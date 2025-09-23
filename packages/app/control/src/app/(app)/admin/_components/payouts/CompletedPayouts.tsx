@@ -43,21 +43,56 @@ export function CompletedPayoutsTable({ pageSize = 10 }: Props) {
   ];
 
   const innerColumns: CollapsibleTableColumn<InnerRow>[] = [
-    { id: 'payout-id', header: 'Payout ID', cell: r => <span className="font-mono text-xs">{r.id}</span> },
-    { id: 'echo-app', header: 'Echo App', cell: r => <span className="font-mono text-xs">{r.echoApp.name}</span> },
-    { id: 'amount', header: 'Amount', className: 'text-right', cell: r => <span>${r.amount.toFixed(2)}</span> },
-    { id: 'github-type', header: 'GitHub Type', cell: r => <span className="capitalize">{r.recipientGithubLink.githubType.toLowerCase()}</span> },
-    { id: 'github-id', header: 'GitHub ID', cell: r => <span className="font-mono text-xs">{r.recipientGithubLink.githubId}</span> },
+    {
+      id: 'payout-id',
+      header: 'Payout ID',
+      cell: r => <span className="font-mono text-xs">{r.id}</span>,
+    },
+    {
+      id: 'echo-app',
+      header: 'Echo App',
+      cell: r => <span className="font-mono text-xs">{r.echoApp.name}</span>,
+    },
+    {
+      id: 'amount',
+      header: 'Amount',
+      className: 'text-right',
+      cell: r => <span>${r.amount.toFixed(2)}</span>,
+    },
+    {
+      id: 'github-type',
+      header: 'GitHub Type',
+      cell: r => (
+        <span className="capitalize">
+          {r.recipientGithubLink.githubType.toLowerCase()}
+        </span>
+      ),
+    },
+    {
+      id: 'github-id',
+      header: 'GitHub ID',
+      cell: r => (
+        <span className="font-mono text-xs">
+          {r.recipientGithubLink.githubId}
+        </span>
+      ),
+    },
     {
       id: 'github-url',
       header: 'GitHub URL',
-      cell: r => (
+      cell: r =>
         r.recipientGithubLink.githubUrl ? (
-          <a href={r.recipientGithubLink.githubUrl} target="_blank" rel="noreferrer" className="text-primary underline">Link</a>
+          <a
+            href={r.recipientGithubLink.githubUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary underline"
+          >
+            Link
+          </a>
         ) : (
           <span>—</span>
-        )
-      ),
+        ),
     },
   ];
 
@@ -87,7 +122,7 @@ export function CompletedPayoutsTable({ pageSize = 10 }: Props) {
           row: group,
           innerTable: { columns: innerColumns, rows: group.payouts },
         }))}
-        getRowId={(row) => row.user.id}
+        getRowId={row => row.user.id}
         emptyState={isLoading ? 'Loading…' : 'No completed payouts.'}
       />
 

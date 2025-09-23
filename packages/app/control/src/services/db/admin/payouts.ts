@@ -1,13 +1,13 @@
 import { db } from '@/services/db/client';
 import {
-  PaginatedResponse,
+  type PaginatedResponse,
   type PaginationParams,
   toPaginatedReponse,
 } from '@/services/db/_lib/pagination';
 import { z } from 'zod';
 import { EnumPayoutStatus, GithubType } from '@/generated/prisma';
 
-export const payoutSchema = z.object({
+const payoutSchema = z.object({
   id: z.string(),
   recipientGithubLink: z.object({
     githubId: z.number(),
@@ -31,20 +31,21 @@ export const adminGroupedUserPayoutSchema = z.object({
   payouts: z.array(payoutSchema),
 });
 
-export const adminGroupedUserPayoutsSchema = z.array(
-  adminGroupedUserPayoutSchema
-);
-
 export async function adminListPendingPayouts(
   pagination: PaginationParams
 ): Promise<PaginatedResponse<z.infer<typeof adminGroupedUserPayoutSchema>>> {
-  return await fetchGroupedUserPayouts(pagination, [EnumPayoutStatus.PENDING, EnumPayoutStatus.STARTED]);
+  return await fetchGroupedUserPayouts(pagination, [
+    EnumPayoutStatus.PENDING,
+    EnumPayoutStatus.STARTED,
+  ]);
 }
 
 export async function adminListCompletedPayouts(
   pagination: PaginationParams
 ): Promise<PaginatedResponse<z.infer<typeof adminGroupedUserPayoutSchema>>> {
-  return await fetchGroupedUserPayouts(pagination, [EnumPayoutStatus.COMPLETED]);
+  return await fetchGroupedUserPayouts(pagination, [
+    EnumPayoutStatus.COMPLETED,
+  ]);
 }
 
 export async function adminListStartedPayoutBatches(): Promise<string[]> {
@@ -57,7 +58,11 @@ export async function adminListStartedPayoutBatches(): Promise<string[]> {
     select: { payoutBatchId: true },
     orderBy: { payoutBatchId: 'asc' },
   });
-  const uniquePayoutBatchIds = Array.from(new Set(rows.map(r => r.payoutBatchId!).filter((id): id is string => Boolean(id))));
+  const uniquePayoutBatchIds = Array.from(
+    new Set(
+      rows.map(r => r.payoutBatchId!).filter((id): id is string => Boolean(id))
+    )
+  );
   return uniquePayoutBatchIds;
 }
 
@@ -111,7 +116,7 @@ async function findUsersByIds(userIds: string[]) {
   });
 }
 
-export async function fetchGroupedUserPayouts(
+async function fetchGroupedUserPayouts(
   pagination: PaginationParams,
   payoutStatus: EnumPayoutStatus[]
 ): Promise<PaginatedResponse<z.infer<typeof adminGroupedUserPayoutSchema>>> {
@@ -134,7 +139,7 @@ export async function fetchGroupedUserPayouts(
   // Fetch only payouts for the paginated userIds
   const payouts = await findPayoutsForUsersByStatus(
     userIdsOnPage,
-    payoutStatus,
+    payoutStatus
   );
 
   const userInfo = await findUsersByIds(userIdsOnPage);
@@ -183,16 +188,6 @@ export async function adminMarkPayoutsStarted(
   await db.payout.updateMany({
     where: { id: { in: payoutIds } },
     data: { payoutBatchId, status: EnumPayoutStatus.STARTED },
-  });
-}
-
-export async function adminFindPayoutsForBatch(payoutBatchId: string) {
-  return await db.payout.findMany({
-    where: { payoutBatchId },
-    select: {
-      recipientGithubLink: { select: { githubType: true, githubId: true } },
-      amount: true,
-    },
   });
 }
 

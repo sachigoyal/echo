@@ -1,4 +1,3 @@
-import z from 'zod';
 import {
   adminProcedure,
   createTRPCRouter,
@@ -12,8 +11,10 @@ import {
   adminGroupedUserPayoutSchema,
 } from '@/services/db/admin/payouts';
 
-import { startPayoutBatch, pollAvailablePaymentBatches } from '@/services/merit';
-
+import {
+  startPayoutBatch,
+  pollAvailablePaymentBatches,
+} from '@/services/merit';
 
 export const adminPayoutsRouter = createTRPCRouter({
   list: {
@@ -27,19 +28,16 @@ export const adminPayoutsRouter = createTRPCRouter({
       .query(async ({ ctx }) => {
         return await adminListCompletedPayouts(ctx.pagination);
       }),
-    started: paginatedProcedure
-      .concat(adminProcedure)
-      .query(async () => {
-        return await adminListStartedPayoutBatches();
-      }),
+    started: paginatedProcedure.concat(adminProcedure).query(async () => {
+      return await adminListStartedPayoutBatches();
+    }),
   },
   startPayoutBatch: adminProcedure
     .input(adminGroupedUserPayoutSchema)
     .mutation(async ({ input }) => {
       return await startPayoutBatch(input);
     }),
-    pollForPayoutBatchCompletion: adminProcedure
-      .query(async () => {
-        return await pollAvailablePaymentBatches();
-      }),
+  pollForPayoutBatchCompletion: adminProcedure.query(async () => {
+    return await pollAvailablePaymentBatches();
+  }),
 });

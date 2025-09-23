@@ -1,7 +1,6 @@
 import { db } from '@/services/db/client';
 import { EnumPayoutStatus, EnumPayoutType } from '@/generated/prisma';
 
-
 interface AppMarkupEarnings {
   byApp: Record<string, number>;
   total: number;

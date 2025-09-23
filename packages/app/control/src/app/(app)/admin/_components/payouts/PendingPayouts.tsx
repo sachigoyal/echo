@@ -23,33 +23,39 @@ export function PendingPayoutsTable({ pageSize = 10 }: Props) {
       page_size: pageSize,
     });
 
-  const startPayoutBatchMutation = api.admin.payouts.startPayoutBatch.useMutation();
+  const startPayoutBatchMutation =
+    api.admin.payouts.startPayoutBatch.useMutation();
 
-  const { data: pollForPayoutBatchCompletionData } = api.admin.payouts.pollForPayoutBatchCompletion.useQuery(
-    undefined,
-    {
+  const { data: pollForPayoutBatchCompletionData } =
+    api.admin.payouts.pollForPayoutBatchCompletion.useQuery(undefined, {
       refetchInterval: 10000, // Poll every 10 seconds
       refetchIntervalInBackground: true,
-    }
-  );
+    });
 
   // Show toast when payments are detected
   useEffect(() => {
     if (pollForPayoutBatchCompletionData !== undefined) {
       const currentCount = pollForPayoutBatchCompletionData;
       const previousCount = previousPaymentCountRef.current;
-      
+
       if (previousCount === 0 && currentCount > 0) {
-        toast.success(`${currentCount} payment${currentCount === 1 ? '' : 's'} detected!`);
+        toast.success(
+          `${currentCount} payment${currentCount === 1 ? '' : 's'} detected!`
+        );
       }
-      
+
       previousPaymentCountRef.current = currentCount;
       void utils.admin.payouts.pollForPayoutBatchCompletion.invalidate();
       void utils.admin.payouts.list.pending.invalidate();
       void utils.admin.payouts.list.completed.invalidate();
     }
-  }, [pollForPayoutBatchCompletionData]);
- 
+  }, [
+    pollForPayoutBatchCompletionData,
+    utils.admin.payouts.list.completed,
+    utils.admin.payouts.list.pending,
+    utils.admin.payouts.pollForPayoutBatchCompletion,
+  ]);
+
   type Row = NonNullable<typeof data>['items'][number];
   type InnerRow = Row['payouts'][number];
 
@@ -84,7 +90,9 @@ export function PendingPayoutsTable({ pageSize = 10 }: Props) {
             }
             await refetch();
           }}
-          disabled={startPayoutBatchMutation.isPending || row.payouts.length === 0}
+          disabled={
+            startPayoutBatchMutation.isPending || row.payouts.length === 0
+          }
         >
           {startPayoutBatchMutation.isPending ? 'Starting…' : 'Start Payout'}
         </button>
@@ -112,17 +120,25 @@ export function PendingPayoutsTable({ pageSize = 10 }: Props) {
     {
       id: 'github-type',
       header: 'GitHub Type',
-      cell: r => <span className="capitalize">{r.recipientGithubLink.githubType.toLowerCase()}</span>,
+      cell: r => (
+        <span className="capitalize">
+          {r.recipientGithubLink.githubType.toLowerCase()}
+        </span>
+      ),
     },
     {
       id: 'github-id',
       header: 'GitHub ID',
-      cell: r => <span className="font-mono text-xs">{r.recipientGithubLink.githubId}</span>,
+      cell: r => (
+        <span className="font-mono text-xs">
+          {r.recipientGithubLink.githubId}
+        </span>
+      ),
     },
     {
       id: 'github-url',
       header: 'GitHub URL',
-      cell: r => (
+      cell: r =>
         r.recipientGithubLink.githubUrl ? (
           <a
             href={r.recipientGithubLink.githubUrl}
@@ -134,8 +150,7 @@ export function PendingPayoutsTable({ pageSize = 10 }: Props) {
           </a>
         ) : (
           <span>—</span>
-        )
-      ),
+        ),
     },
   ];
 
@@ -167,7 +182,7 @@ export function PendingPayoutsTable({ pageSize = 10 }: Props) {
             rows: group.payouts,
           },
         }))}
-        getRowId={(row) => row.user.id}
+        getRowId={row => row.user.id}
         emptyState={isLoading ? 'Loading…' : 'No pending payouts.'}
       />
 

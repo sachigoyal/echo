@@ -23,19 +23,19 @@ export interface CollapsibleTableColumn<TData> {
   className?: string;
 }
 
-export interface InnerTableDefinition<TInnerData> {
+interface InnerTableDefinition<TInnerData> {
   columns: CollapsibleTableColumn<TInnerData>[];
   rows: TInnerData[];
 }
 
-export interface CollapsibleTableItem<TData, TInnerData = never> {
+interface CollapsibleTableItem<TData, TInnerData = never> {
   id?: string;
   row: TData;
   innerTable?: InnerTableDefinition<TInnerData>;
   defaultOpen?: boolean;
 }
 
-export interface CollapsibleTableProps<TData, TInnerData = never> {
+interface CollapsibleTableProps<TData, TInnerData = never> {
   title?: string;
   columns: CollapsibleTableColumn<TData>[];
   items: CollapsibleTableItem<TData, TInnerData>[];
@@ -46,11 +46,16 @@ export interface CollapsibleTableProps<TData, TInnerData = never> {
 }
 
 // Swallows props from Radix asChild to avoid applying them to a Fragment
-function CollapsibleRows({ children, ..._ignored }: { children: React.ReactNode }) {
+function CollapsibleRows({
+  children,
+  ..._ignored
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }
 
-export function InnerTable<TInnerData>({
+function InnerTable<TInnerData>({
   definition,
 }: {
   definition: InnerTableDefinition<TInnerData> | undefined;
@@ -83,7 +88,7 @@ export function CollapsibleTable<TData, TInnerData = never>({
   getRowId,
   emptyState = 'No results.',
   includeLeadingExpandColumn = true,
-  renderTrigger,
+  renderTrigger: _renderTrigger,
 }: CollapsibleTableProps<TData, TInnerData>) {
   const getId = React.useCallback(
     (row: TData, index: number) =>

@@ -73,7 +73,9 @@ export async function calculateUserReferralEarnings(
   const claimedMap: Record<string, number> = {};
   for (const row of claimedByApp) {
     if (row.echoAppId) {
-      claimedMap[row.echoAppId] = row._sum?.amount ? Number(row._sum.amount) : 0;
+      claimedMap[row.echoAppId] = row._sum?.amount
+        ? Number(row._sum.amount)
+        : 0;
     }
   }
 
@@ -138,7 +140,7 @@ export async function calculateUserReferralEarningsForApp(
 
   const claimed = await db.payout.aggregate({
     where: {
-      type: 'referral',
+      type: EnumPayoutType.REFERRAL,
       userId,
       echoAppId,
     },
