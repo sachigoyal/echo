@@ -37,7 +37,7 @@ export const listPublicApps = async (
       take: page_size,
       select: appSelect,
       orderBy: {
-        Transactions: {
+        appMemberships: {
           _count: 'desc',
         },
       },

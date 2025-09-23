@@ -4,13 +4,16 @@ import { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { AppCard, LoadingAppCard } from './card';
+import {
+  AppCard,
+  LoadingAppCard,
+} from '@/app/(app)/_components/apps/card/horizontal';
 
 import { api } from '@/trpc/client';
 import { Button } from '@/components/ui/button';
 import { Info, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { NewAppButton } from '../new-app-button';
+import { NewAppButton } from './new-app-button';
 
 export const MyApps = () => {
   return (

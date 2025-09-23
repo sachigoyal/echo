@@ -39,7 +39,7 @@ export const AppCard = ({
               fallback={<Code className="size-4" />}
             />
             <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-              <h2 className="text-ellipsis whitespace-nowrap overflow-x-hidden font-bold text-xl leading-tight">
+              <h2 className="text-ellipsis whitespace-nowrap overflow-hidden font-bold text-xl leading-tight">
                 {name}
               </h2>
               <p
