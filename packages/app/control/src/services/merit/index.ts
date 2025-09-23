@@ -1,134 +1,129 @@
-import type { OutgoingPayment } from '@merit-systems/sdk';
-import { PayoutStatus } from '@/types/payouts';
 import { env } from '@/env';
 import { meritClient } from './client';
-import type { adminGetPayoutSchema } from '../db/admin/payouts';
-import {
-  adminGetPayout,
-  adminListPendingPayouts,
-  adminUpdatePayout,
-} from '../db/admin/payouts';
+import type { adminGroupedUserPayoutSchema } from '../db/admin/payouts';
+import { adminListStartedPayoutBatches } from '../db/admin/payouts';
 import type z from 'zod';
+import { randomUUID } from 'crypto';
+import {
+  adminMarkPayoutBatchCompleted,
+  adminMarkPayoutsStarted,
+} from '../db/admin/payouts';
 
 const SENDER_GITHUB_ID = Number(env.MERIT_SENDER_GITHUB_ID);
 
-function generateCheckoutUrl(
-  payeeGithubId: number,
-  amount: number,
-  senderGithubId: number,
-  payOutEchoId: string
-) {
+function isRateLimitError(error: unknown): boolean {
+  if (typeof error !== 'object' || !error) return false;
+
+  const errorObj = error as Record<string, unknown>;
+
+  // Check for common rate limit indicators
+  if (typeof errorObj.message === 'string') {
+    const message = errorObj.message.toLowerCase();
+    if (
+      message.includes('rate limit') ||
+      message.includes('too many requests') ||
+      message.includes('429')
+    ) {
+      return true;
+    }
+  }
+
+  // Check for HTTP status code
+  if (typeof errorObj.statusCode === 'number' && errorObj.statusCode === 429) {
+    return true;
+  }
+
+  // Check for status in the error message (e.g., "HTTP 429: ...")
+  if (
+    typeof errorObj.message === 'string' &&
+    errorObj.message.includes('HTTP 429')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+export async function startPayoutBatch(
+  payoutBatch: z.infer<typeof adminGroupedUserPayoutSchema>,
+  senderGithubId: number = SENDER_GITHUB_ID
+): Promise<string> {
+  const payoutBatchId = randomUUID();
+
+  await adminMarkPayoutsStarted(
+    payoutBatch.payouts.map(payout => payout.id),
+    payoutBatchId
+  );
+
+  const items = groupPayoutsByGithubIdAndType(payoutBatch.payouts);
   return meritClient.checkout.generateCheckoutUrl({
-    items: [{ type: 'user', id: payeeGithubId, amount: amount }],
+    items,
     senderGithubId,
-    groupId: payOutEchoId,
+    groupId: payoutBatchId,
   });
 }
 
-export async function generateCheckoutUrlForPayout({
-  payoutId,
-}: z.infer<typeof adminGetPayoutSchema>) {
-  const payout = await adminGetPayout({ payoutId });
+async function attemptPayoutBatchCompletion(
+  payoutBatchId: string
+): Promise<number> {
+  const payout = await meritClient.payments
+    .getPaymentsBySender(SENDER_GITHUB_ID, {
+      group_id: payoutBatchId,
+    })
+    .catch(error => {
+      // Handle rate limits and other API errors gracefully
+      if (isRateLimitError(error)) {
+        console.log(
+          `Rate limit hit for payout batch ${payoutBatchId}, will retry on next poll`
+        );
+        return { items: [] }; // Return empty result to indicate no payouts processed yet
+      }
+      // Log other errors but don't throw to prevent Internal Server Error
+      console.error(
+        `Merit API error for payout batch ${payoutBatchId}:`,
+        error instanceof Error ? error.message : error
+      );
+      return { items: [] }; // Return empty result to indicate no payouts processed yet
+    });
 
-  if (!payout) {
-    throw new Error('Payout not found');
-  }
-  if (!payout.recipientGithubLink) {
-    throw new Error('Recipient GitHub link not found for payout');
-  }
-
-  const payeeGithubId = payout.recipientGithubLink.githubId;
-  const amount = Number(payout.amount);
-  const checkoutUrl = generateCheckoutUrl(
-    payeeGithubId,
-    amount,
-    SENDER_GITHUB_ID,
-    payout.id
-  );
-  return { url: checkoutUrl };
-}
-
-async function pollForCompletedPayoutTransaction(
-  senderGithubId: number,
-  payOutEchoId: string
-): Promise<OutgoingPayment[] | null> {
-  const payout = await meritClient.payments.getPaymentsBySender(
-    senderGithubId,
-    {
-      group_id: payOutEchoId,
-    }
-  );
-  console.log('payout', payout);
+  // If any of the payouts are completed, update the status of the payout batch to completed
   if (payout.items.length > 0) {
-    return payout.items;
+    return await adminMarkPayoutBatchCompleted(payoutBatchId);
   }
-  return null;
+  return 0;
 }
 
-async function logCompletedPayoutTransaction(payout: OutgoingPayment) {
-  const existing = await adminGetPayout({ payoutId: payout.group_id! });
-
-  if (!existing) {
-    return;
+export async function pollAvailablePaymentBatches(): Promise<number> {
+  const payoutBatches = await adminListStartedPayoutBatches();
+  for (const payoutBatchId of payoutBatches) {
+    const updated = await attemptPayoutBatchCompletion(payoutBatchId);
+    if (updated > 0) {
+      return updated;
+    }
   }
-
-  if (existing.status === (PayoutStatus.COMPLETED as string)) {
-    return;
-  }
-
-  await adminUpdatePayout({
-    payoutId: payout.group_id!,
-    status: PayoutStatus.COMPLETED,
-    transactionId: payout.tx_hash,
-    senderAddress: payout.sender_id.toString(),
-  });
+  return 0;
 }
 
-export async function pollMeritCheckout(payoutId: string) {
-  const payout = await adminGetPayout({ payoutId });
+function groupPayoutsByGithubIdAndType(
+  payouts: z.infer<typeof adminGroupedUserPayoutSchema>['payouts']
+) {
+  const grouped = payouts.reduce(
+    (acc, payout) => {
+      const key = `${payout.recipientGithubLink.githubId}`;
+      const amount = Number(payout.amount);
 
-  if (!payout) {
-    throw new Error('Payout not found');
-  }
+      acc[key] = acc[key]
+        ? { ...acc[key], amount: acc[key].amount + amount }
+        : {
+            type: payout.recipientGithubLink.githubType,
+            id: payout.recipientGithubLink.githubId,
+            amount,
+          };
 
-  const senderGithubId = SENDER_GITHUB_ID;
+      return acc;
+    },
+    {} as Record<string, { type: 'user' | 'repo'; id: number; amount: number }>
+  );
 
-  // poll every 10 seconds, up to 1 minute (max 6 attempts)
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const results = await pollForCompletedPayoutTransaction(
-      senderGithubId,
-      payout.id
-    );
-
-    if (results && results.length > 0) {
-      await Promise.all(results.map(r => logCompletedPayoutTransaction(r)));
-      return { completed: true, count: results.length };
-    }
-
-    if (attempt < 5) {
-      await new Promise(resolve => setTimeout(resolve, 10000));
-    }
-  }
-
-  return { completed: false };
-}
-
-export async function syncPendingPayoutsOnce() {
-  const pending = await adminListPendingPayouts({
-    page: 0,
-    page_size: 10000,
-  });
-
-  for (const p of pending.items) {
-    const senderGithubId = p.echoApp?.githubLink?.githubId ?? SENDER_GITHUB_ID;
-    const results = await pollForCompletedPayoutTransaction(
-      senderGithubId,
-      p.id
-    );
-    if (results && results.length > 0) {
-      await Promise.all(results.map(r => logCompletedPayoutTransaction(r)));
-    }
-  }
-
-  return { scanned: pending.items.length };
+  return Object.values(grouped).filter(item => item.amount > 0);
 }

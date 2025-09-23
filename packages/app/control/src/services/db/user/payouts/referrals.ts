@@ -1,6 +1,6 @@
 import { db } from '@/services/db/client';
 
-import { PayoutStatus, PayoutType } from '@/types/payouts';
+import { EnumPayoutStatus, EnumPayoutType } from '@/generated/prisma';
 
 interface UserReferralEarnings {
   byApp: Record<string, number>;
@@ -19,8 +19,8 @@ export const listPendingReferralPayouts = async (userId: string) => {
   return await db.payout.findMany({
     where: {
       userId,
-      type: PayoutType.REFERRAL,
-      status: PayoutStatus.PENDING,
+      type: EnumPayoutType.REFERRAL,
+      status: EnumPayoutStatus.PENDING,
     },
     orderBy: { createdAt: 'desc' },
     select: {
@@ -63,7 +63,7 @@ export async function calculateUserReferralEarnings(
   const claimedByApp = await db.payout.groupBy({
     by: ['echoAppId'],
     where: {
-      type: 'referral',
+      type: EnumPayoutType.REFERRAL,
       userId,
       echoAppId: { not: null },
     },
@@ -73,7 +73,9 @@ export async function calculateUserReferralEarnings(
   const claimedMap: Record<string, number> = {};
   for (const row of claimedByApp) {
     if (row.echoAppId) {
-      claimedMap[row.echoAppId] = row._sum.amount ? Number(row._sum.amount) : 0;
+      claimedMap[row.echoAppId] = row._sum?.amount
+        ? Number(row._sum.amount)
+        : 0;
     }
   }
 
@@ -138,7 +140,7 @@ export async function calculateUserReferralEarningsForApp(
 
   const claimed = await db.payout.aggregate({
     where: {
-      type: 'referral',
+      type: EnumPayoutType.REFERRAL,
       userId,
       echoAppId,
     },
@@ -181,8 +183,8 @@ export async function claimReferralRewardForApp(
   const payout = await db.payout.create({
     data: {
       amount: amountToClaim,
-      status: PayoutStatus.PENDING,
-      type: PayoutType.REFERRAL,
+      status: EnumPayoutStatus.PENDING,
+      type: EnumPayoutType.REFERRAL,
       description: 'Referral payout claim',
       recipientGithubLinkId: githubLink.id,
       userId,
@@ -226,8 +228,8 @@ export async function claimAllReferralRewards(
       db.payout.create({
         data: {
           amount,
-          status: PayoutStatus.PENDING,
-          type: PayoutType.REFERRAL,
+          status: EnumPayoutStatus.PENDING,
+          type: EnumPayoutType.REFERRAL,
           description: 'Referral payout claim (bulk)',
           recipientGithubLinkId: githubLink.id,
           userId,
