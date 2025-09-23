@@ -1,6 +1,6 @@
 import { db } from '@/services/db/client';
+import { EnumPayoutStatus, EnumPayoutType } from '@/generated/prisma';
 
-import { PayoutStatus, PayoutType } from '@/types/payouts';
 
 interface AppMarkupEarnings {
   byApp: Record<string, number>;
@@ -24,8 +24,8 @@ interface AppMarkupEarnings {
 export const listPendingMarkupPayouts = async (userId: string) => {
   return await db.payout.findMany({
     where: {
-      type: PayoutType.MARKUP,
-      status: PayoutStatus.PENDING,
+      type: EnumPayoutType.MARKUP,
+      status: EnumPayoutStatus.PENDING,
       echoApp: {
         appMemberships: {
           some: {
@@ -64,7 +64,7 @@ export async function calculateAppMarkupEarnings(
 
   const claimedResult = await db.payout.aggregate({
     where: {
-      type: PayoutType.MARKUP,
+      type: EnumPayoutType.MARKUP,
       echoAppId,
     },
     _sum: { amount: true },
@@ -110,7 +110,7 @@ export async function calculateUserMarkupEarnings(
   const claimedByApp = await db.payout.groupBy({
     by: ['echoAppId'],
     where: {
-      type: PayoutType.MARKUP,
+      type: EnumPayoutType.MARKUP,
       echoAppId: { in: appIds },
     },
     _sum: { amount: true },
@@ -201,8 +201,8 @@ export async function claimMarkupRewardForApp(
   const payout = await db.payout.create({
     data: {
       amount: amountToClaim,
-      status: PayoutStatus.PENDING,
-      type: PayoutType.MARKUP,
+      status: EnumPayoutStatus.PENDING,
+      type: EnumPayoutType.MARKUP,
       description: 'Markup payout claim',
       recipientGithubLinkId: githubLink.id,
       userId,
@@ -262,8 +262,8 @@ export async function claimAllMarkupRewards(
       return db.payout.create({
         data: {
           amount,
-          status: PayoutStatus.PENDING,
-          type: PayoutType.MARKUP,
+          status: EnumPayoutStatus.PENDING,
+          type: EnumPayoutType.MARKUP,
           description: 'Markup payout claim (bulk)',
           recipientGithubLinkId: linkId,
           userId,

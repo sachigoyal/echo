@@ -1,110 +1,207 @@
 import { db } from '@/services/db/client';
-import { PayoutStatus } from '@/types/payouts';
 import {
+  PaginatedResponse,
   type PaginationParams,
   toPaginatedReponse,
 } from '@/services/db/_lib/pagination';
-
-import type { PayoutType } from '@/types/payouts';
 import { z } from 'zod';
+import { EnumPayoutStatus, GithubType } from '@/generated/prisma';
 
-export const adminGetPayoutSchema = z.object({
-  payoutId: z.uuid(),
+export const payoutSchema = z.object({
+  id: z.string(),
+  recipientGithubLink: z.object({
+    githubId: z.number(),
+    githubType: z.enum(GithubType),
+    githubUrl: z.string(),
+  }),
+  echoApp: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  amount: z.number(),
 });
 
-export const adminGetPayout = async ({
-  payoutId,
-}: z.infer<typeof adminGetPayoutSchema>) => {
-  return await db.payout.findUnique({
-    where: { id: payoutId },
-    include: {
-      recipientGithubLink: { select: { githubId: true } },
-      echoApp: { include: { githubLink: { select: { githubId: true } } } },
+export const adminGroupedUserPayoutSchema = z.object({
+  totalOutstanding: z.number(),
+  user: z.object({
+    id: z.string(),
+    email: z.string(),
+    name: z.string(),
+  }),
+  payouts: z.array(payoutSchema),
+});
+
+export const adminGroupedUserPayoutsSchema = z.array(
+  adminGroupedUserPayoutSchema
+);
+
+export async function adminListPendingPayouts(
+  pagination: PaginationParams
+): Promise<PaginatedResponse<z.infer<typeof adminGroupedUserPayoutSchema>>> {
+  return await fetchGroupedUserPayouts(pagination, [EnumPayoutStatus.PENDING, EnumPayoutStatus.STARTED]);
+}
+
+export async function adminListCompletedPayouts(
+  pagination: PaginationParams
+): Promise<PaginatedResponse<z.infer<typeof adminGroupedUserPayoutSchema>>> {
+  return await fetchGroupedUserPayouts(pagination, [EnumPayoutStatus.COMPLETED]);
+}
+
+export async function adminListStartedPayoutBatches(): Promise<string[]> {
+  const rows = await db.payout.findMany({
+    where: {
+      status: EnumPayoutStatus.STARTED,
+      payoutBatchId: { not: null },
+    },
+    distinct: ['payoutBatchId'],
+    select: { payoutBatchId: true },
+    orderBy: { payoutBatchId: 'asc' },
+  });
+  const uniquePayoutBatchIds = Array.from(new Set(rows.map(r => r.payoutBatchId!).filter((id): id is string => Boolean(id))));
+  return uniquePayoutBatchIds;
+}
+
+async function groupPayoutsByUserPaginated(
+  payoutStatus: EnumPayoutStatus[],
+  offset: number,
+  pageSize: number
+) {
+  return await db.payout.groupBy({
+    by: ['userId'],
+    where: { status: { in: payoutStatus }, userId: { not: null } },
+    _sum: { amount: true },
+    orderBy: { userId: 'asc' },
+    skip: offset,
+    take: pageSize,
+  });
+}
+
+async function findPayoutsForUsersByStatus(
+  userIds: string[],
+  payoutStatus: EnumPayoutStatus[]
+) {
+  return await db.payout.findMany({
+    where: {
+      userId: { in: userIds },
+      status: { in: payoutStatus },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      userId: true,
+      amount: true,
+      echoApp: {
+        select: {
+          id: true,
+          name: true,
+          githubLink: { select: { githubId: true } },
+        },
+      },
+      recipientGithubLink: {
+        select: { githubId: true, githubType: true, githubUrl: true },
+      },
     },
   });
-};
+}
 
-export const adminUpdatePayoutSchema = z.object({
-  payoutId: z.uuid(),
-  status: z.enum(PayoutStatus),
-  transactionId: z.string(),
-  senderAddress: z.string(),
-});
-
-export const adminUpdatePayout = async (
-  input: z.infer<typeof adminUpdatePayoutSchema>
-) => {
-  const { payoutId, ...data } = adminUpdatePayoutSchema.parse(input);
-  return await db.payout.update({
-    where: { id: payoutId },
-    data,
+async function findUsersByIds(userIds: string[]) {
+  return await db.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, email: true, name: true },
   });
-};
+}
 
-export async function adminListPendingPayouts(pagination: PaginationParams) {
+export async function fetchGroupedUserPayouts(
+  pagination: PaginationParams,
+  payoutStatus: EnumPayoutStatus[]
+): Promise<PaginatedResponse<z.infer<typeof adminGroupedUserPayoutSchema>>> {
   const { page, page_size } = pagination;
-  const skip = page * page_size;
+  const offset = page * page_size;
 
-  const [items, totalCount] = await Promise.all([
-    db.payout.findMany({
-      where: { status: PayoutStatus.PENDING },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: page_size,
-      include: {
-        user: { select: { id: true, email: true, name: true } },
-        echoApp: {
-          select: {
-            id: true,
-            name: true,
-            githubLink: { select: { githubId: true } },
-          },
+  // Page the users via groupBy and compute total distinct user count
+  const groupedPage = await groupPayoutsByUserPaginated(
+    payoutStatus,
+    offset,
+    page_size
+  );
+
+  const totalCount = groupedPage.length;
+
+  const userIdsOnPage = groupedPage
+    .map(g => g.userId)
+    .filter((id): id is string => Boolean(id));
+
+  // Fetch only payouts for the paginated userIds
+  const payouts = await findPayoutsForUsersByStatus(
+    userIdsOnPage,
+    payoutStatus,
+  );
+
+  const userInfo = await findUsersByIds(userIdsOnPage);
+  const userById = new Map(userInfo.map(u => [u.id, u]));
+
+  const totalOutstandingByUserId = new Map(
+    groupedPage.map(group => [group.userId, Number(group._sum.amount ?? 0)])
+  );
+
+  const items = groupedPage.flatMap(group => {
+    const user = userById.get(group.userId!);
+    if (!user) return [];
+    return [
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name ?? '',
         },
-        recipientGithubLink: { select: { id: true, githubUrl: true } },
+        totalOutstanding: totalOutstandingByUserId.get(group.userId) ?? 0,
+        payouts: payouts
+          .filter(p => p.userId === group.userId)
+          .map(p => ({
+            id: p.id,
+            recipientGithubLink: p.recipientGithubLink!,
+            echoApp: p.echoApp!,
+            amount: Number(p.amount),
+          })),
       },
-    }),
-    db.payout.count({ where: { status: PayoutStatus.PENDING } }),
-  ]);
+    ];
+  });
 
   return toPaginatedReponse({
-    items: items.map(item => ({
-      ...item,
-      type: item.type as PayoutType,
-      amount: Number(item.amount),
-    })),
+    items,
     page,
     page_size,
     total_count: totalCount,
   });
 }
 
-export async function adminListCompletedPayouts(pagination: PaginationParams) {
-  const { page, page_size } = pagination;
-  const skip = page * page_size;
-
-  const [items, totalCount] = await Promise.all([
-    db.payout.findMany({
-      where: { status: PayoutStatus.COMPLETED },
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: page_size,
-      include: {
-        user: { select: { id: true, email: true, name: true } },
-        echoApp: { select: { id: true, name: true } },
-        recipientGithubLink: { select: { id: true, githubUrl: true } },
-      },
-    }),
-    db.payout.count({ where: { status: PayoutStatus.COMPLETED } }),
-  ]);
-
-  return toPaginatedReponse({
-    items: items.map(item => ({
-      ...item,
-      type: item.type as PayoutType,
-      amount: Number(item.amount),
-    })),
-    page,
-    page_size,
-    total_count: totalCount,
+// Helper functions used by merit payout flow
+export async function adminMarkPayoutsStarted(
+  payoutIds: string[],
+  payoutBatchId: string
+): Promise<void> {
+  await db.payout.updateMany({
+    where: { id: { in: payoutIds } },
+    data: { payoutBatchId, status: EnumPayoutStatus.STARTED },
   });
+}
+
+export async function adminFindPayoutsForBatch(payoutBatchId: string) {
+  return await db.payout.findMany({
+    where: { payoutBatchId },
+    select: {
+      recipientGithubLink: { select: { githubType: true, githubId: true } },
+      amount: true,
+    },
+  });
+}
+
+export async function adminMarkPayoutBatchCompleted(
+  payoutBatchId: string
+): Promise<number> {
+  const updated = await db.payout.updateMany({
+    where: { payoutBatchId },
+    data: { status: EnumPayoutStatus.COMPLETED },
+  });
+  return updated.count;
 }
