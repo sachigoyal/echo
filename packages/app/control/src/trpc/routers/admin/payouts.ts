@@ -7,12 +7,13 @@ import {
 import {
   adminListPendingPayouts,
   adminListCompletedPayouts,
-  adminGetPayoutSchema,
+  adminListStartedPayoutBatches,
+  adminGroupedUserPayoutSchema,
 } from '@/services/db/admin/payouts';
+
 import {
-  generateCheckoutUrlForPayout,
-  pollMeritCheckout,
-  syncPendingPayoutsOnce,
+  startPayoutBatch,
+  pollAvailablePaymentBatches,
 } from '@/services/merit';
 
 export const adminPayoutsRouter = createTRPCRouter({
@@ -27,22 +28,16 @@ export const adminPayoutsRouter = createTRPCRouter({
       .query(async ({ ctx }) => {
         return await adminListCompletedPayouts(ctx.pagination);
       }),
+    started: paginatedProcedure.concat(adminProcedure).query(async () => {
+      return await adminListStartedPayoutBatches();
+    }),
   },
-  startMeritCheckout: adminProcedure
-    .input(adminGetPayoutSchema)
+  startPayoutBatch: adminProcedure
+    .input(adminGroupedUserPayoutSchema)
     .mutation(async ({ input }) => {
-      const checkoutUrl = await generateCheckoutUrlForPayout(input);
-      if (!checkoutUrl) {
-        throw new Error('Checkout URL not found');
-      }
-      return { url: checkoutUrl.url };
+      return await startPayoutBatch(input);
     }),
-  pollMeritCheckout: adminProcedure
-    .input(adminGetPayoutSchema)
-    .mutation(async ({ input }) => {
-      return await pollMeritCheckout(input.payoutId);
-    }),
-  syncPending: adminProcedure.mutation(async () => {
-    return await syncPendingPayoutsOnce();
+  pollForPayoutBatchCompletion: adminProcedure.query(async () => {
+    return await pollAvailablePaymentBatches();
   }),
 });

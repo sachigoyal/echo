@@ -1,5 +1,5 @@
-export { PendingPayoutsTable } from './pendingPayouts';
-export { CompletedPayoutsTable } from './completedPayouts';
+export { CompletedPayoutsTable } from './payouts/CompletedPayouts';
+export { PendingPayoutsTable } from './payouts/PendingPayouts';
 export { UserLink } from './UserLink';
 export { AppLink } from './AppLink';
 export { UserAppsOverview } from './overview/UserApps';
