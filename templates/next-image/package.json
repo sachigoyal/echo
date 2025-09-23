@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "2.0.16",
-    "@merit-systems/echo-next-sdk": "0.0.23",
+    "@merit-systems/echo-next-sdk": "0.0.24",
     "@merit-systems/echo-react-sdk": "^1.0.31",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.15",
