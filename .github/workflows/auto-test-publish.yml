@@ -38,7 +38,9 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Version with commit hash
+      # TypeScript SDK
+      - name: Version and build TypeScript SDK
+        working-directory: ./packages/sdk/ts
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
 
@@ -49,41 +51,9 @@ jobs:
             PREID="test.${SHORT_SHA}"
           fi
 
-          echo "PREID=${PREID}" >> $GITHUB_ENV
-          echo "📦 Versioning with preid: ${PREID}"
+          echo "📦 Versioning TypeScript SDK with preid: ${PREID}"
+          pnpm version prerelease --preid="${PREID}" --no-git-tag-version
 
-          # Version each package individually with the preid
-          echo "🔄 Updating @merit-systems/echo-typescript-sdk version..."
-          pnpm --filter @merit-systems/echo-typescript-sdk version prerelease --preid="${PREID}" --no-git-tag-version
-
-          echo "🔄 Updating @merit-systems/echo-react-sdk version..."
-          pnpm --filter @merit-systems/echo-react-sdk version prerelease --preid="${PREID}" --no-git-tag-version
-
-          echo "🔄 Updating @merit-systems/echo-next-sdk version..."
-          pnpm --filter @merit-systems/echo-next-sdk version prerelease --preid="${PREID}" --no-git-tag-version
-
-          echo "🔄 Updating echo-start version..."
-          pnpm --filter echo-start version prerelease --preid="${PREID}" --no-git-tag-version
-
-          # Verify versions were updated
-          echo "📋 Verifying version updates..."
-          echo "TypeScript SDK: $(node -p "require('./packages/sdk/ts/package.json').version")"
-          echo "React SDK: $(node -p "require('./packages/sdk/react/package.json').version")"
-          echo "Next SDK: $(node -p "require('./packages/sdk/next/package.json').version")"
-          echo "Echo Start: $(node -p "require('./packages/sdk/echo-start/package.json').version")"
-
-      - name: Get version from TypeScript SDK
-        id: get-version
-        working-directory: ./packages/sdk/ts
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Release version: $PACKAGE_VERSION"
-
-      # TypeScript SDK
-      - name: Build TypeScript SDK
-        working-directory: ./packages/sdk/ts
-        run: |
           echo "🔨 Building TypeScript SDK..."
           pnpm run build
           echo "✅ TypeScript SDK built"
@@ -95,6 +65,14 @@ jobs:
           pnpm run test
           pnpm run type-check
           echo "✅ TypeScript SDK tests passed"
+
+      - name: Get version from TypeScript SDK
+        id: get-version
+        working-directory: ./packages/sdk/ts
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Release version: $PACKAGE_VERSION"
 
       - name: Publish TypeScript SDK to test tag
         id: publish-typescript
@@ -111,9 +89,21 @@ jobs:
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
       # React SDK
-      - name: Build React SDK
+      - name: Version and build React SDK
         working-directory: ./packages/sdk/react
         run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUM="${{ github.event.number }}"
+            PREID="test-pr${PR_NUM}.${SHORT_SHA}"
+          else
+            PREID="test.${SHORT_SHA}"
+          fi
+
+          echo "📦 Versioning React SDK with preid: ${PREID}"
+          pnpm version prerelease --preid="${PREID}" --no-git-tag-version
+
           echo "🔨 Building React SDK..."
           pnpm run build
           echo "✅ React SDK built"
@@ -141,9 +131,21 @@ jobs:
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
       # Next.js SDK
-      - name: Build Next.js SDK
+      - name: Version and build Next.js SDK
         working-directory: ./packages/sdk/next
         run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUM="${{ github.event.number }}"
+            PREID="test-pr${PR_NUM}.${SHORT_SHA}"
+          else
+            PREID="test.${SHORT_SHA}"
+          fi
+
+          echo "📦 Versioning Next.js SDK with preid: ${PREID}"
+          pnpm version prerelease --preid="${PREID}" --no-git-tag-version
+
           echo "🔨 Building Next.js SDK..."
           pnpm run build
           echo "✅ Next.js SDK built"
@@ -171,9 +173,21 @@ jobs:
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
       # Echo Start CLI
-      - name: Build Echo Start CLI
+      - name: Version and build Echo Start CLI
         working-directory: ./packages/sdk/echo-start
         run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUM="${{ github.event.number }}"
+            PREID="test-pr${PR_NUM}.${SHORT_SHA}"
+          else
+            PREID="test.${SHORT_SHA}"
+          fi
+
+          echo "📦 Versioning Echo Start CLI with preid: ${PREID}"
+          pnpm version prerelease --preid="${PREID}" --no-git-tag-version
+
           echo "🔨 Building Echo Start CLI..."
           pnpm run build
           echo "✅ Echo Start CLI built"
@@ -206,7 +220,6 @@ jobs:
         with:
           script: |
             const version = '${{ steps.get-version.outputs.version }}';
-            const preid = process.env.PREID;
 
             const comment = `🧪 **Test Version Published**
 
