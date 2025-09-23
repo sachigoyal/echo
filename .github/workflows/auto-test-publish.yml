@@ -214,38 +214,6 @@ jobs:
           echo "published=true" >> $GITHUB_OUTPUT
           echo "✅ Successfully published $PACKAGE_NAME to test tag"
 
-      - name: Comment PR with test instructions
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const version = '${{ steps.get-version.outputs.version }}';
-
-            const comment = `🧪 **Test Version Published**
-
-            Install this PR's test version:
-            \`\`\`bash
-            npm install @merit-systems/echo-typescript-sdk@test
-            # or specific version:
-            npm install @merit-systems/echo-typescript-sdk@${version}
-            \`\`\`
-
-            This version includes the bundled AI SDK packages to test our version conflict fixes.
-
-            **Test checklist:**
-            - [ ] Authentication works correctly
-            - [ ] No separate @ai-sdk/openai packages in node_modules
-            - [ ] Echo token injection works as expected
-
-            _Version: \`${version}\` (commit: \`${process.env.GITHUB_SHA.substring(0, 7)}\`)_`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
       - name: Summary
         run: |
           echo "✅ Test version published successfully!"
