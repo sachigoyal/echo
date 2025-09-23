@@ -53,10 +53,24 @@ jobs:
           echo "📦 Versioning with preid: ${PREID}"
 
           # Version each package individually with the preid
-          pnpm --filter @merit-systems/echo-typescript-sdk version prerelease --preid="${PREID}"
-          pnpm --filter @merit-systems/echo-react-sdk version prerelease --preid="${PREID}"
-          pnpm --filter @merit-systems/echo-next-sdk version prerelease --preid="${PREID}"
-          pnpm --filter echo-start version prerelease --preid="${PREID}"
+          echo "🔄 Updating @merit-systems/echo-typescript-sdk version..."
+          pnpm --filter @merit-systems/echo-typescript-sdk version prerelease --preid="${PREID}" --no-git-tag-version
+
+          echo "🔄 Updating @merit-systems/echo-react-sdk version..."
+          pnpm --filter @merit-systems/echo-react-sdk version prerelease --preid="${PREID}" --no-git-tag-version
+
+          echo "🔄 Updating @merit-systems/echo-next-sdk version..."
+          pnpm --filter @merit-systems/echo-next-sdk version prerelease --preid="${PREID}" --no-git-tag-version
+
+          echo "🔄 Updating echo-start version..."
+          pnpm --filter echo-start version prerelease --preid="${PREID}" --no-git-tag-version
+
+          # Verify versions were updated
+          echo "📋 Verifying version updates..."
+          echo "TypeScript SDK: $(node -p "require('./packages/sdk/ts/package.json').version")"
+          echo "React SDK: $(node -p "require('./packages/sdk/react/package.json').version")"
+          echo "Next SDK: $(node -p "require('./packages/sdk/next/package.json').version")"
+          echo "Echo Start: $(node -p "require('./packages/sdk/echo-start/package.json').version")"
 
       - name: Get version from TypeScript SDK
         id: get-version
