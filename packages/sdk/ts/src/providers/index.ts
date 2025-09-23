@@ -9,23 +9,39 @@ export function echoFetch(
   onInsufficientFunds?: () => void
 ): typeof fetch {
   return async (input: RequestInfo | URL, init?: RequestInit) => {
-    const token = await getTokenFn();
-    if (init)
-      init.headers = { ...init.headers, Authorization: `Bearer ${token}` };
+    const initialToken = await getTokenFn();
 
+    const mergeHeaders = (
+      first?: HeadersInit,
+      second?: HeadersInit
+    ): Headers => {
+      const merged = new Headers(first || {});
+      if (second) new Headers(second).forEach((v, k) => merged.set(k, v));
+      return merged;
+    };
+
+    const composeRequest = (token: string | null): Request => {
+      if (input instanceof Request) {
+        const base = input.clone();
+        const merged = mergeHeaders(base.headers, init?.headers);
+        merged.delete('Authorization');
+        if (token) merged.set('Authorization', `Bearer ${token}`);
+        return new Request(base, { ...init, headers: merged });
+      }
+      const headers = mergeHeaders(undefined, init?.headers);
+      headers.delete('Authorization');
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+      return new Request(input, { ...init, headers });
+    };
+
+    let request = composeRequest(initialToken);
     // Do the actual fetch
-    let response = await originalFetch(input, init);
+    let response = await originalFetch(request);
     if (response.status === 401) {
       // Hard Refresh of the token, and do a request once more with the new token
       const token = await getTokenFn();
-
-      if (init)
-        init.headers = {
-          ...init.headers,
-          ...(token && { Authorization: `Bearer ${token}` }),
-        };
-
-      const newResponse = await originalFetch(input, init);
+      request = composeRequest(token);
+      const newResponse = await originalFetch(request);
       response = newResponse;
     }
 

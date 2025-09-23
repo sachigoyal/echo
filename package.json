@@ -18,7 +18,9 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "publish:test": "pnpm -r publish --dry-run --no-git-checks",
     "publish:sdks": "pnpm --filter @merit-systems/echo-typescript-sdk publish --no-git-checks && pnpm --filter @merit-systems/echo-react-sdk publish --no-git-checks && pnpm --filter @merit-systems/echo-next-sdk publish --no-git-checks && pnpm --filter echo-start publish --no-git-checks",
-    "publish:sdks:test": "pnpm --filter @merit-systems/echo-typescript-sdk publish --dry-run --no-git-checks && pnpm --filter @merit-systems/echo-react-sdk publish --dry-run --no-git-checks && pnpm --filter @merit-systems/echo-next-sdk publish --dry-run --no-git-checks && pnpm --filter echo-start publish --dry-run --no-git-checks"
+    "publish:sdks:test": "pnpm --filter @merit-systems/echo-typescript-sdk publish --dry-run --no-git-checks && pnpm --filter @merit-systems/echo-react-sdk publish --dry-run --no-git-checks && pnpm --filter @merit-systems/echo-next-sdk publish --dry-run --no-git-checks && pnpm --filter echo-start publish --dry-run --no-git-checks",
+    "version:sdks:test": "pnpm --filter @merit-systems/echo-typescript-sdk version prerelease --preid=test && pnpm --filter @merit-systems/echo-react-sdk version prerelease --preid=test && pnpm --filter @merit-systems/echo-next-sdk version prerelease --preid=test && pnpm --filter echo-start version prerelease --preid=test",
+    "publish:sdks:test-live": "pnpm --filter @merit-systems/echo-typescript-sdk publish --tag test --no-git-checks && pnpm --filter @merit-systems/echo-react-sdk publish --tag test --no-git-checks && pnpm --filter @merit-systems/echo-next-sdk publish --tag test --no-git-checks && pnpm --filter echo-start publish --tag test --no-git-checks"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
