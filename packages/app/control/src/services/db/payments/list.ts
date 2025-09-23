@@ -48,10 +48,31 @@ async function listPayments(
   { page, page_size }: PaginationParams
 ) {
   const skip = page * page_size;
+  const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
+
+  // Add filter to exclude pending payments older than 5 hours
+  const enhancedWhere: Prisma.PaymentWhereInput = {
+    ...where,
+    OR: [
+      // Include all non-pending payments
+      {
+        status: {
+          not: 'pending',
+        },
+      },
+      // Include pending payments that are less than 5 hours old
+      {
+        status: 'pending',
+        createdAt: {
+          gte: fiveHoursAgo,
+        },
+      },
+    ],
+  };
 
   const [payments, totalCount] = await Promise.all([
     db.payment.findMany({
-      where,
+      where: enhancedWhere,
       orderBy: {
         createdAt: 'desc',
       },
@@ -59,7 +80,7 @@ async function listPayments(
       take: page_size,
     }),
     db.payment.count({
-      where,
+      where: enhancedWhere,
     }),
   ]);
 
