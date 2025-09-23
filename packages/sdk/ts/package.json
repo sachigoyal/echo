@@ -40,13 +40,17 @@
   "author": "Merit Systems",
   "license": "MIT",
   "dependencies": {
-    "ai": "5.0.47"
+    "ai": "5.0.47",
+    "@ai-sdk/openai": "2.0.32",
+    "@ai-sdk/anthropic": "2.0.17",
+    "@ai-sdk/google": "2.0.14",
+    "@ai-sdk/openrouter": "1.2.0"
   },
   "bundledDependencies": [
-    "ai-sdk/openai",
-    "ai-sdk/anthropic",
-    "ai-sdk/google",
-    "ai-sdk/openrouter"
+    "@ai-sdk/openai",
+    "@ai-sdk/anthropic",
+    "@ai-sdk/google",
+    "@ai-sdk/openrouter"
   ],
   "devDependencies": {
     "@ai-sdk/gateway": "^1.0.12",
