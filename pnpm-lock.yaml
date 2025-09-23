@@ -679,8 +679,8 @@ importers:
         specifier: ^2.0.47
         version: 2.0.47(react@19.1.0)(zod@4.1.7)
       '@merit-systems/echo-next-sdk':
-        specifier: workspace:*
-        version: link:../../next
+        specifier: test
+        version: 0.0.23-test-pr466.aaeebf86.0(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.7)
       ai:
         specifier: ^5.0.47
         version: 5.0.47(zod@4.1.7)
@@ -955,16 +955,9 @@ importers:
 
   packages/sdk/ts:
     dependencies:
-      ai:
-        specifier: 5.0.47
-        version: 5.0.47(zod@4.1.7)
-    devDependencies:
       '@ai-sdk/anthropic':
         specifier: 2.0.17
         version: 2.0.17(zod@4.1.7)
-      '@ai-sdk/gateway':
-        specifier: ^1.0.12
-        version: 1.0.24(zod@4.1.7)
       '@ai-sdk/google':
         specifier: 2.0.14
         version: 2.0.14(zod@4.1.7)
@@ -974,6 +967,13 @@ importers:
       '@openrouter/ai-sdk-provider':
         specifier: 1.2.0
         version: 1.2.0(ai@5.0.47(zod@4.1.7))(zod@4.1.7)
+      ai:
+        specifier: 5.0.47
+        version: 5.0.47(zod@4.1.7)
+    devDependencies:
+      '@ai-sdk/gateway':
+        specifier: ^1.0.12
+        version: 1.0.24(zod@4.1.7)
       '@types/node':
         specifier: ^24.0.3
         version: 24.3.1
@@ -2115,6 +2115,13 @@ packages:
     peerDependencies:
       '@types/react': 19.1.10
       react: '>=16'
+
+  '@merit-systems/echo-next-sdk@0.0.23-test-pr466.aaeebf86.0':
+    resolution: {integrity: sha512-td4FaXNqcqiLahG+UBMdwYfIBpDgPJuThXZZMLkD9BRizLunBWsFXALnmZLW7LxgsxIoKtL/hkXxzrRog1uWtg==}
+    peerDependencies:
+      next: '>=15.0.0'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
 
   '@merit-systems/echo-typescript-sdk@1.0.14':
     resolution: {integrity: sha512-tpN6KIhWIUXJvQwYFrdwjagfU/wuefh6O/5JQ4r1/0NtDeyF9EBe7oJlpyuPxQNUAt1toiZ+f4nB+KI0HT/CSg==}
@@ -11740,6 +11747,19 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.1.10
       react: 19.1.1
+
+  '@merit-systems/echo-next-sdk@0.0.23-test-pr466.aaeebf86.0(next@15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(zod@4.1.7)':
+    dependencies:
+      '@merit-systems/echo-react-sdk': link:packages/sdk/react
+      '@merit-systems/echo-typescript-sdk': link:packages/sdk/ts
+      ai: 5.0.47(zod@4.1.7)
+      jwt-decode: 4.0.0
+      next: 15.4.7(@opentelemetry/api@1.9.0)(@playwright/test@1.53.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      swr: 2.3.6(react@19.1.0)
+    transitivePeerDependencies:
+      - zod
 
   '@merit-systems/echo-typescript-sdk@1.0.14(zod@3.25.76)':
     dependencies:

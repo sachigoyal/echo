@@ -44,13 +44,13 @@
     "@ai-sdk/openai": "2.0.32",
     "@ai-sdk/anthropic": "2.0.17",
     "@ai-sdk/google": "2.0.14",
-    "@ai-sdk/openrouter": "1.2.0"
+    "@openrouter/ai-sdk-provider": "1.2.0"
   },
   "bundledDependencies": [
     "@ai-sdk/openai",
     "@ai-sdk/anthropic",
     "@ai-sdk/google",
-    "@ai-sdk/openrouter"
+    "@openrouter/ai-sdk-provider"
   ],
   "devDependencies": {
     "@ai-sdk/gateway": "^1.0.12",
