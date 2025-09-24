@@ -21,6 +21,7 @@ export async function getRequestMaxCost(
 
   if (!maxContextWindow) {
     // TODO handle this separately this should probably return
+    return { cost: 1.00 };
   }
   return {
     cost: new Decimal(maxContextWindow)
