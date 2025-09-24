@@ -1,4 +1,4 @@
-import { SupportedVideoModel } from '../types';
+import { SupportedVideoModel } from 'supported-models/types';
 
 export type GeminiVideoModel = 'veo-3.0-generate-001';
 

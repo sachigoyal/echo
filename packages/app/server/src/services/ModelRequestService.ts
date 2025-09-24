@@ -1,24 +1,11 @@
 import { Request, Response } from 'express';
-import { HttpError, UnknownModelError } from '../errors/http';
+import { HttpError } from '../errors/http';
 import logger from '../logger';
-import { getProvider } from '../providers/ProviderFactory';
 import { Transaction } from '../types';
-import {
-  isValidImageModel,
-  isValidModel,
-  isValidVideoModel,
-} from './AccountingService';
-import { EchoControlService } from './EchoControlService';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { handleStreamService } from './HandleStreamService';
-import {
-  extractIsStream,
-  extractModelName,
-  formatUpstreamUrl,
-} from './RequestDataService';
-import { Decimal } from 'generated/prisma/runtime/library';
-import { pipeline, Readable } from 'stream';
-import { checkProxyVideoDownload } from './videoProxyService';
+import { formatUpstreamUrl } from './RequestDataService';
+import { BaseProvider } from 'providers/BaseProvider';
 
 export class ModelRequestService {
   /**
@@ -34,44 +21,12 @@ export class ModelRequestService {
     req: Request,
     res: Response,
     processedHeaders: Record<string, string>,
-    echoControlService: EchoControlService
+    provider: BaseProvider,
+    isStream: boolean
   ): Promise<{
     transaction: Transaction;
-    isStream: boolean;
     data: unknown;
-    requiresResolution: boolean;
   }> {
-    const isVideoProxy = await checkProxyVideoDownload(
-      req,
-      res,
-      echoControlService,
-      processedHeaders,
-      this.formatRequestBody
-    );
-    if (isVideoProxy) {
-      return { ...isVideoProxy, requiresResolution: false };
-    }
-    const model = extractModelName(req);
-
-    if (
-      !model ||
-      (!isValidModel(model) &&
-        !isValidImageModel(model) &&
-        !isValidVideoModel(model))
-    ) {
-      logger.error(`Invalid model: ${model}`);
-      res.status(422).json({
-        error: `Invalid model: ${model} Echo does not yet support this model.`,
-      });
-      throw new UnknownModelError('Invalid model');
-    }
-
-    // Extract stream flag
-    const isStream = extractIsStream(req);
-
-    // Get the appropriate provider
-    const provider = getProvider(model, echoControlService, isStream, req.path);
-
     // Format authentication headers
     const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
 
@@ -120,9 +75,7 @@ export class ModelRequestService {
       );
       return {
         transaction,
-        isStream: true,
         data: null,
-        requiresResolution: true,
       };
     } else {
       const { transaction, data } =
@@ -131,19 +84,11 @@ export class ModelRequestService {
           provider,
           res
         );
-      return { transaction, isStream: false, data, requiresResolution: true };
+      return { transaction, data };
     }
   }
 
-  handleResolveResponse(
-    res: Response,
-    isStream: boolean,
-    data: unknown,
-    requiresResolution: boolean
-  ): void {
-    if (!requiresResolution) {
-      return;
-    }
+  handleResolveResponse(res: Response, isStream: boolean, data: unknown): void {
     if (isStream) {
       res.end();
     } else {
@@ -158,7 +103,7 @@ export class ModelRequestService {
    * @param authenticatedHeaders - Base authenticated headers
    * @returns Object with formatted requestBody and headers
    */
-  private formatRequestBody(
+  formatRequestBody(
     req: Request,
     authenticatedHeaders: Record<string, string>
   ): {

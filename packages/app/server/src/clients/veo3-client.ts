@@ -35,7 +35,7 @@ async function makeRequest() {
   }
   // Download the generated video.
   ai.files.download({
-    file: '3nehbz3n08tz',
+    file: video,
     downloadPath: 'dialogue_example.mp4',
   });
   console.log(`Generated video saved to dialogue_example.mp4`);

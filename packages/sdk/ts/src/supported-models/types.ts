@@ -77,3 +77,10 @@ export interface SupportedTool {
     | 'per_call'
     | 'per_gb_per_day';
 }
+
+export interface SupportedVideoModel {
+  model_id: string;
+  input_cost_per_token: number;
+  output_cost_per_token: number;
+  provider: string;
+}

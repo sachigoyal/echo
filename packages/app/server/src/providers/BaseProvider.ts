@@ -2,6 +2,8 @@ import { Transaction } from '../types';
 import type { EchoControlService } from '../services/EchoControlService';
 
 import type { ProviderType } from './ProviderType';
+import { EscrowRequest } from 'middleware/transaction-escrow-middleware';
+import { Response } from 'express';
 
 export abstract class BaseProvider {
   protected readonly OPENAI_BASE_URL = 'https://api.openai.com/v1';
@@ -67,5 +69,17 @@ export abstract class BaseProvider {
       };
     }
     return reqBody;
+  }
+
+  // For provider such as gemini Veo3 that need to support passthrough requests
+  // which do not create transactions.
+  async forwardProxyRequest(
+    req: EscrowRequest,
+    res: Response,
+    formattedHeaders: Record<string, string>,
+    upstreamUrl: string,
+    requestBody: string | FormData | undefined
+  ) {
+    throw new Error('Not implemented');
   }
 }
