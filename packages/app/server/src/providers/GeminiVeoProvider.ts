@@ -1,4 +1,4 @@
-import { HttpError } from 'errors/http';
+import { HttpError } from '../errors/http';
 import { Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
