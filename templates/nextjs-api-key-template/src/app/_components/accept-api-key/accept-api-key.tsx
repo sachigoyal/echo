@@ -70,7 +70,7 @@ export function AcceptApiKey({ onApiKeySubmitted }: AcceptApiKeyProps) {
           <p className="text-sm text-blue-800 dark:text-blue-200">
             Don't have an API key yet?{' '}
             <a
-              href="https://echo.merit.systems/app/2c3da4eb-bfae-4615-8a6f-31389d2840dd/keys"
+              href={`https://echo.merit.systems/app/${process.env.NEXT_PUBLIC_ECHO_APP_ID}/keys`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"

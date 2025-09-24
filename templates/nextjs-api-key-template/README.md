@@ -21,6 +21,7 @@ This demo application demonstrates:
 - ✅ **Automatic Billing** - AI usage automatically tracked and billed through Echo
 - ✅ **Modern UI Components** - Beautiful, responsive interface with Tailwind CSS
 - ✅ **Streaming Responses** - Real-time AI response streaming with reasoning display
+- ✅ **API Key Management** - Demonstrates how an API key can be stored for a user and used to serve model requests
 
 ## 🏗️ Architecture Overview
 
@@ -30,6 +31,10 @@ This demo application demonstrates:
 src/
 ├── app/
 │   ├── _components/
+│   │   ├── accept-api-key/
+│   │   │   ├── accept-api-key.tsx # API key input component
+│   │   │   └── hooks/
+│   │   │       └── valid-api-key.ts # API key validation hook
 │   │   ├── chat.tsx              # Main chat interface component
 │   │   ├── echo/
 │   │   │   ├── balance.tsx       # Real-time balance display
@@ -38,16 +43,26 @@ src/
 │   ├── api/
 │   │   ├── chat/
 │   │   │   └── route.ts          # Chat API endpoint using Echo OpenAI
-│   │   └── echo/
-│   │       └── [...echo]/
-│   │          └── route.ts      # Echo webhook handlers         
+│   │   ├── echo/
+│   │   │   └── [...echo]/
+│   │   │       └── route.ts      # Echo webhook handlers
+│   │   └── user/
+│   │       └── route.ts          # User API endpoints
 │   ├── layout.tsx                # Root layout with Echo integration
 │   └── page.tsx                  # Main page with auth guard
+├── components/
+│   ├── ai-elements/              # Reusable AI chat components
+│   ├── ui/                       # Base UI components (shadcn/ui)
+│   └── [various Echo components] # Balance, top-up, account components
 ├── echo/
 │   └── index.ts                  # Echo SDK configuration
-└── components/
-    ├── ai-elements/              # Reusable AI chat components
-    └── ui/                       # Base UI components (shadcn/ui)
+├── generated/
+│   └── prisma/                   # Generated Prisma client files
+├── lib/
+│   ├── currency-utils.ts         # Currency formatting utilities
+│   ├── db.ts                     # Database configuration
+│   └── utils.ts                  # General utilities
+└── providers.tsx                 # React context providers
 ```
 
 ### Key Components
@@ -67,6 +82,7 @@ export const { handlers, isSignedIn, openai, anthropic } = Echo({
 - **Sign-in**: Uses Echo's built-in authentication system
 - **Session Management**: Automatic session handling across requests
 - **Auth Guards**: Pages check authentication status server-side
+- **Ensure API entry exists in the database**: Only allows a user to chat if they've submitted an API key.
 
 #### 3. AI Integration
 
@@ -189,15 +205,8 @@ The application uses a local PostgreSQL database for storing user data and API k
 ```env
 # Database - Docker PostgreSQL
 DATABASE_URL="postgresql://api_user:api_password@localhost:5433/nextjs_api_template?schema=public"
-
-# Echo API Configuration
-ECHO_API_KEY="your-echo-api-key-here"
-ECHO_SERVER_URL="https://api.echo.dev"
-
-# Application
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-here"
-API_KEY_PREFIX="nxt_"
+ECHO_APP_ID=2c3da4eb-bfae-4615-8a6f-31389d2840dd
+NEXT_PUBLIC_ECHO_APP_ID=2c3da4eb-bfae-4615-8a6f-31389d2840dd
 ```
 
 ### Database Management
