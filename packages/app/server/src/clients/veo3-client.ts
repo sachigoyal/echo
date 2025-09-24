@@ -16,7 +16,7 @@ async function makeRequest() {
     A man murmurs, 'This must be it. That's the secret code.' The woman looks at him and whispering excitedly, 'What did you find?'`;
 
   let operation = await ai.models.generateVideos({
-    model: 'veo-3.0-generate-001',
+    model: 'veo-3.0-fast-generate-001',
     prompt: prompt,
   });
 

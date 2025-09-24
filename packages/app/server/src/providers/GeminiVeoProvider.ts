@@ -18,6 +18,8 @@ export interface VeoResponse {
   // Add other Veo3 response fields as needed
 }
 
+export const PROXY_PASSTHROUGH_ONLY_MODEL = 'PROXY_PLACEHOLDER_GEMINI_VEO';
+
 export class GeminiVeoProvider extends BaseProvider {
   getType(): ProviderType {
     return ProviderType.GEMINI_VEO;
@@ -98,6 +100,9 @@ export class GeminiVeoProvider extends BaseProvider {
     upstreamUrl: string,
     requestBody: string | FormData | undefined
   ): Promise<void> {
+    if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
+      throw new HttpError(400, 'Invalid model');
+    }
     // Forward the request to the provider's API
     const response = await fetch(upstreamUrl, {
       method: req.method,

@@ -15,7 +15,10 @@ import {
   ALL_SUPPORTED_MODELS,
   ALL_SUPPORTED_VIDEO_MODELS,
 } from '../services/AccountingService';
-import { GeminiVeoProvider } from './GeminiVeoProvider';
+import {
+  GeminiVeoProvider,
+  PROXY_PASSTHROUGH_ONLY_MODEL as GeminiVeoProxyPassthroughOnlyModel,
+} from './GeminiVeoProvider';
 
 /**
  * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
@@ -104,6 +107,10 @@ export const getProvider = (
   const videoType = VIDEO_MODEL_TO_PROVIDER[model];
   if (videoType) {
     type = videoType;
+  }
+
+  if (model === GeminiVeoProxyPassthroughOnlyModel) {
+    type = ProviderType.GEMINI_VEO;
   }
 
   // If the model is not in the model to provider mapping, throw an error

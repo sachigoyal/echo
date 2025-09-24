@@ -9,6 +9,7 @@ import { extractIsStream } from './RequestDataService';
 import { getProvider } from '../providers/ProviderFactory';
 import { EchoControlService } from './EchoControlService';
 import { BaseProvider } from '../providers/BaseProvider';
+import { PROXY_PASSTHROUGH_ONLY_MODEL } from '../providers/GeminiVeoProvider';
 
 /**
  * Detects if the request is a proxy route, and should be forwarded rather
@@ -52,8 +53,7 @@ export function detectPassthroughProxyRoute(
     return undefined;
   }
 
-  // This will always be veo-3.0-generate-001 because we only support veo-3.0-generate-001 for video generation
-  const model = 'veo-3.0-generate-001';
+  const model = PROXY_PASSTHROUGH_ONLY_MODEL;
 
   const isStream = extractIsStream(req);
 
