@@ -1,8 +1,8 @@
-import logger from 'logger';
-import { EscrowRequest } from 'middleware/transaction-escrow-middleware';
-import { BaseProvider } from 'providers/BaseProvider';
+import logger from '../logger';
+import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
+import { BaseProvider } from '../providers/BaseProvider';
 import { Response } from 'express';
-import { modelRequestService } from 'services/ModelRequestService';
+import { modelRequestService } from './ModelRequestService';
 import { formatUpstreamUrl } from './RequestDataService';
 
 /**

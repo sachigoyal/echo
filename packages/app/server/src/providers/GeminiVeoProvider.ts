@@ -3,7 +3,7 @@ import { Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { Decimal } from '@prisma/client/runtime/library';
-import { EscrowRequest } from 'middleware/transaction-escrow-middleware';
+import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { Response } from 'express';
 
 export interface VeoUsage {
