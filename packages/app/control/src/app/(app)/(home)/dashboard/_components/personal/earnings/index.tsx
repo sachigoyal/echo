@@ -2,8 +2,6 @@ import React, { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { endOfDay, subDays } from 'date-fns';
-
 import { Card } from '@/components/ui/card';
 
 import { api, HydrateClient } from '@/trpc/server';
@@ -21,26 +19,19 @@ interface Props {
 }
 
 export const Earnings: React.FC<Props> = async ({ numAppsPromise }) => {
-  const defaultStartDate = subDays(new Date(), 7);
-  const defaultEndDate = endOfDay(new Date());
-
-  api.activity.creator.getCurrent.prefetch({
-    startDate: defaultStartDate,
-    endDate: defaultEndDate,
-  });
-
-  const user = await api.user.current.get();
+  const user = await api.user.current();
   if (!user) {
     throw new Error('User not found');
   }
 
+  await api.user.creatorActivity.prefetch({
+    startDate: user.createdAt,
+    isCumulative: false,
+  });
+
   return (
     <HydrateClient>
-      <ActivityContextProvider
-        initialStartDate={defaultStartDate}
-        initialEndDate={defaultEndDate}
-        creationDate={user.createdAt}
-      >
+      <ActivityContextProvider creationDate={user.createdAt}>
         <ActivityContainer>
           <ErrorBoundary
             fallback={<p>There was an error loading the activity data</p>}

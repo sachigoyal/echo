@@ -1,43 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedUser, getCurrentUser } from '@/lib/auth';
-import { User } from '@/generated/prisma';
-import {
-  handlePaymentSuccessFromx402,
-  formatAmountFromQueryParams,
-} from '@/lib/base';
+import { NextResponse } from 'next/server';
+import z from 'zod';
+import { authRoute } from '../../../../../lib/api/auth-route';
+import { handlePaymentSuccess } from '@/services/db/payments/success';
+import { logger } from '@/logger';
 
-// GET /api/v1/base/payment-link - Create base payment link
-export async function GET(request: NextRequest) {
+const querySchema = z.object({
+  amount: z.number().positive(),
+});
+
+export const GET = authRoute.query(querySchema).handler(async (_, context) => {
+  const { amount } = context.query;
+
+  const userId = context.ctx.userId;
+  const amountInCents = amount * 100;
+
+  const metadata = {
+    'payment-type': 'x402',
+    'transaction-id': 'x402_' + crypto.randomUUID(),
+    amount: amount.toString(),
+    currency: 'usd',
+  };
+
   try {
-    // Authenticate user
-    let user: User;
-    try {
-      const { user: userResult } = await getAuthenticatedUser(request);
-      user = userResult;
-    } catch (error) {
-      console.error('Error authenticating user:', error);
-      try {
-        const userResult = await getCurrentUser();
-        user = userResult;
-      } catch (error) {
-        console.log('Error getting current user:', error);
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-    }
-
-    const amount = formatAmountFromQueryParams(request);
-
-    if (!amount) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
-    }
-
-    const normalizedCentsAmount = amount * 100;
-
-    handlePaymentSuccessFromx402({
-      userId: user.id,
-      amount: normalizedCentsAmount,
+    await handlePaymentSuccess({
+      userId,
+      amountInCents,
       currency: 'usd',
-      metadata: {},
+      paymentId: metadata['transaction-id'],
+      metadata,
+      description: 'Echo credits purchase with x402',
+    });
+
+    logger.emit({
+      severityText: 'INFO',
+      body: 'Payment succeeded',
+      attributes: {
+        transactionId: metadata['transaction-id'],
+        isFreeTier: false,
+        userId,
+        function: 'handlePaymentSuccessFromx402',
+      },
     });
 
     return NextResponse.json(
@@ -45,31 +47,19 @@ export async function GET(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating payment link:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Not authenticated') {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    // TODO: Add specific error handling for your use case
-    // Example:
-    // if (error instanceof SpecificError) {
-    //   return NextResponse.json(
-    //     { error: error.message },
-    //     { status: 400 }
-    //   );
-    // }
-
-    // Generic server error fallback
+    logger.emit({
+      severityText: 'ERROR',
+      body: 'Error handling payment success',
+      attributes: {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        function: 'handlePaymentSuccessFromx402',
+      },
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { message: 'Payment creation failed' },
       { status: 500 }
     );
   }
-}
-
-export const POST = GET;
+});

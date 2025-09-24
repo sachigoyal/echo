@@ -24,7 +24,7 @@ import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { EchoContext } from '../../components/EchoProvider';
+import { EchoContext } from '../../context';
 import { EchoSignIn } from '../../components/EchoSignIn';
 import { EchoTokens } from '../../components/EchoTokens';
 import {
@@ -304,7 +304,7 @@ describe('Component Security Integration', () => {
           <div>
             <div data-testid="user-name">{user?.name}</div>
             <div data-testid="user-email">{user?.email}</div>
-            <div data-testid="user-picture">{user?.picture}</div>
+            <div data-testid="user-picture">{user?.image}</div>
             <div data-testid="user-id">{user?.id}</div>
           </div>
         );

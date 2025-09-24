@@ -1,41 +1,27 @@
-import { getCustomerSpendInfoForApp } from '@/lib/spend-pools/fetch-user-spend';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { NextRequest, NextResponse } from 'next/server';
-import { User } from '@/generated/prisma';
+// this route is deprecated, use the /api/v1/balance/{id}/free route instead
+// keeping as the old versions of the SDK expect this route
 
-// POST /api/v1/balance/free - Get authenticated user's free tier spend info for a specific app
-export async function POST(request: NextRequest) {
-  try {
-    let user: User;
-    try {
-      const { user: userResult } = await getAuthenticatedUser(request);
-      user = userResult;
-    } catch (error) {
-      console.error('Error authenticating user:', error);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+import { z } from 'zod';
 
-    const { echoAppId } = await request.json();
+import { NextResponse } from 'next/server';
 
-    if (!echoAppId) {
-      return NextResponse.json(
-        { error: 'echoAppId is required' },
-        { status: 400 }
-      );
-    }
+import { getUserSpendInfoForApp } from '@/services/db/user/app-spend-pool';
 
-    const { spendPoolBalance, userSpendInfo } =
-      await getCustomerSpendInfoForApp(user.id, echoAppId);
+import { authRoute } from '@/lib/api/auth-route';
 
-    return NextResponse.json({
-      spendPoolBalance,
-      userSpendInfo,
-    });
-  } catch (error) {
-    console.error('Error fetching customer spend info:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+const getFreeBalanceBodySchema = z.object({
+  echoAppId: z.uuid(),
+});
+
+export const POST = authRoute
+  .body(getFreeBalanceBodySchema)
+  .handler(async (_, context) => {
+    const { echoAppId } = context.body;
+
+    const spendPoolInfo = await getUserSpendInfoForApp(
+      context.ctx.userId,
+      echoAppId
     );
-  }
-}
+
+    return NextResponse.json(spendPoolInfo);
+  });

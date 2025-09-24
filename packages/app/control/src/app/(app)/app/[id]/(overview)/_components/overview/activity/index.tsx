@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { endOfDay, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 
 import { Card } from '@/components/ui/card';
 
@@ -44,21 +44,15 @@ export const Activity: React.FC<Props> = async ({ appId }) => {
   }
 
   const defaultStartDate = subDays(new Date(), 7);
-  const defaultEndDate = endOfDay(new Date());
 
-  api.apps.app.stats.bucketed.prefetch({
+  void api.apps.app.stats.bucketed.prefetch({
     appId,
     startDate: defaultStartDate,
-    endDate: defaultEndDate,
   });
 
   return (
     <HydrateClient>
-      <ActivityContextProvider
-        initialStartDate={defaultStartDate}
-        initialEndDate={defaultEndDate}
-        creationDate={app.createdAt}
-      >
+      <ActivityContextProvider creationDate={app.createdAt}>
         <ActivityContainer>
           <ErrorBoundary
             fallback={<p>There was an error loading the activity data</p>}

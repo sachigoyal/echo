@@ -1,0 +1,126 @@
+/**
+ * User Spending Service - Shows user spending analytics
+ * This shows how to create a TRPC procedure that accepts standardized pagination,
+ * sorting, and filtering parameters and returns spending data in the expected format.
+ */
+
+import type { PaginationParams } from '@/services/db/_lib/pagination';
+import { toPaginatedReponse } from '@/services/db/_lib/pagination';
+import type { MultiSortParams } from '@/services/db/_lib/sorting';
+import { buildOrderByClause } from '@/services/db/admin/util/build-order-by-clause';
+import type { FilterParams } from '@/services/db/_lib/filtering';
+import { db } from '@/services/db/client';
+import { buildFilterClauses } from '@/services/db/admin/util/build-filter-clause';
+
+interface UserSpendingRow {
+  id: string;
+  name: string;
+  email: string;
+  totalSpent: number;
+  totalPaid: number;
+  balance: number;
+  freeTierUsage: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Map frontend column names to SQL expressions
+const COLUMN_MAPPINGS: Record<string, string> = {
+  id: 'u.id',
+  name: 'u.name',
+  email: 'u.email',
+  totalSpent: 'u."totalSpent"',
+  totalPaid: 'u."totalPaid"',
+  balance: '(u."totalPaid" - u."totalSpent")',
+  freeTierUsage: 'COALESCE(SUM(uspu."totalSpent"), 0)',
+  createdAt: 'u."createdAt"',
+  updatedAt: 'u."updatedAt"',
+};
+
+// Use shared builder
+
+// Main function for getting user spending data with pagination
+export const getUserSpendingWithPagination = async (
+  params: PaginationParams & MultiSortParams & FilterParams
+) => {
+  // Build dynamic clauses
+  const { whereClause, havingClause, parameters } = buildFilterClauses(
+    params.filters,
+    {
+      columnMappings: COLUMN_MAPPINGS,
+      defaultWhere: 'WHERE 1=1',
+      aggregatedColumns: ['freeTierUsage'],
+      dateColumns: ['createdAt', 'updatedAt'],
+    }
+  );
+  const orderByClause = buildOrderByClause(params.sorts, {
+    columnMappings: COLUMN_MAPPINGS,
+    defaultOrderClause: 'u."createdAt" DESC',
+  });
+
+  // Build the main query with dynamic clauses
+  const baseQuery = `
+    SELECT 
+      u.id,
+      u.name,
+      u.email,
+      u."totalSpent",
+      (u."totalPaid" - u."totalSpent") as "balance",
+      COALESCE(SUM(uspu."totalSpent"), 0) as "freeTierUsage",
+      u."totalPaid",
+      u."createdAt",
+      u."updatedAt"
+    FROM "users" u
+    LEFT JOIN "app_memberships" am ON u.id = am."userId" 
+    LEFT JOIN "user_spend_pool_usage" uspu ON u.id = uspu."userId"
+    LEFT JOIN "payments" p ON u.id = p."userId"
+    ${whereClause}
+    GROUP BY u.id, u.name, u.email, u."totalSpent", u."totalPaid", u."createdAt", u."updatedAt"
+    ${havingClause}
+    ${orderByClause}
+    LIMIT $${parameters.length + 1} 
+    OFFSET $${parameters.length + 2}
+  `;
+
+  // Add pagination parameters
+  const queryParameters = [
+    ...parameters,
+    params.page_size,
+    params.page * params.page_size,
+  ];
+
+  // Execute the main query
+  const usersWithSpending = await db.$queryRawUnsafe<UserSpendingRow[]>(
+    baseQuery,
+    ...queryParameters
+  );
+
+  // Build count query with same filters
+  const countQuery = `
+    SELECT COUNT(DISTINCT u.id) as count
+    FROM "users" u
+    LEFT JOIN "app_memberships" am ON u.id = am."userId"
+    LEFT JOIN "user_spend_pool_usage" uspu ON u.id = uspu."userId"
+    LEFT JOIN "payments" p ON u.id = p."userId"
+    ${whereClause}
+    ${havingClause ? `GROUP BY u.id ${havingClause}` : ''}
+  `;
+
+  // If we have HAVING clauses, we need to count the grouped results
+  const totalCountQuery = havingClause
+    ? `SELECT COUNT(*) as count FROM (${countQuery}) as filtered_results`
+    : countQuery;
+
+  const totalCount = await db.$queryRawUnsafe<{ count: number }[]>(
+    totalCountQuery,
+    ...parameters
+  );
+
+  // Return in the expected format
+  return toPaginatedReponse({
+    items: usersWithSpending,
+    page: params.page,
+    page_size: params.page_size,
+    total_count: Number(totalCount[0].count),
+  });
+};

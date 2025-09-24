@@ -16,10 +16,15 @@ export default function AuthenticatedHomeLayout({
           {
             label: 'Credits',
             href: '/credits',
+            subRoutes: [`/credits/claim`],
           },
           {
             label: 'Your Apps',
             href: '/my-apps',
+          },
+          {
+            label: 'Top Apps',
+            href: '/top-apps',
           },
           {
             label: 'Activity',

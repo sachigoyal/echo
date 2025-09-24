@@ -8,7 +8,7 @@ import {
 } from '@/trpc/trpc';
 import { TRPCError } from '@trpc/server';
 
-import { createApp, createAppSchema } from '@/services/apps/create';
+import { createApp } from '@/services/db/apps/create';
 import {
   appOwnerProcedure,
   protectedAppProcedure,
@@ -23,65 +23,61 @@ import {
   createAppMembershipSchema,
   updateAppMembershipReferrer,
   updateAppMembershipReferrerSchema,
-} from '@/services/apps/membership';
+} from '@/services/db/apps/membership';
 import {
   listAppsSchema,
   listPublicApps,
   listMemberApps,
   listOwnerApps,
-} from '@/services/apps/list';
-import { updateApp, updateAppSchema } from '@/services/apps/update';
-import { getAppOwner } from '@/services/apps/get';
-import { appIdSchema } from '@/services/apps/lib/schemas';
-import {
-  getAppMarkup,
-  updateMarkup,
-  updateMarkupSchema,
-} from '@/services/apps/markup';
+} from '@/services/db/apps/list';
+import { updateApp } from '@/services/db/apps/update';
+import { getAppOwner } from '@/services/db/apps/get';
+import { appIdSchema } from '@/services/db/apps/lib/schemas';
+import { getAppMarkup, updateMarkup } from '@/services/db/apps/markup';
 import {
   getGithubLink,
   updateGithubLinkSchema,
   updateGithubLink,
-} from '@/services/apps/github-link';
+} from '@/services/db/apps/github-link';
 import {
   createFreeTierPaymentLink,
   createFreeTierPaymentLinkSchema,
-} from '@/services/stripe';
+} from '@/services/stripe/create-link/free-tier';
 import {
   getFreeTierSpendPool,
   updateFreeTierSpendPool,
   updateFreeTierSpendPoolSchema,
-} from '@/services/apps/free-tier';
-import { listFreeTierPayments } from '@/services/payments';
-import { countAppTokens } from '@/services/apps/tokens';
+} from '@/services/db/apps/free-tier';
+import { listFreeTierPayments } from '@/services/db/payments/list';
+import { countAppTokens } from '@/services/db/apps/tokens';
 import {
   countAppTransactions,
   countAppTransactionsSchema,
   listAppTransactions,
   listAppTransactionsSchema,
-} from '@/services/apps/transactions';
+} from '@/services/db/apps/transactions';
 import {
   getBucketedAppStats,
   getBucketedAppStatsSchema,
   getOverallAppStats,
   getOverallAppStatsSchema,
-} from '@/services/apps/stats';
+} from '@/services/db/apps/stats';
 import {
   listAppUsers,
   countAppUsers,
   appUsersSchema,
-} from '@/services/apps/users';
+} from '@/services/db/apps/users';
 import {
   countMemberApps,
   countOwnerApps,
   countPublicApps,
-} from '@/services/apps/count';
-import { appEarningsSchema, getAppEarnings } from '@/services/apps/earnings';
+} from '@/services/db/apps/count';
+import { appEarningsSchema, getAppEarnings } from '@/services/db/apps/earnings';
 import {
   getAppReferralReward,
   setAppReferralReward,
   setAppReferralRewardSchema,
-} from '@/services/apps/referral-reward';
+} from '@/services/db/apps/referral-reward';
 import {
   createAppReferralCode,
   createAppReferralCodeSchema,
@@ -89,8 +85,17 @@ import {
   getReferralCodeByCode,
   getReferralCodeByCodeSchema,
   getUserAppReferralCode,
-} from '@/services/apps/referral-code';
-import { deleteApp, deleteAppSchema } from '@/services/apps/delete';
+} from '@/services/db/apps/referral-code';
+import { deleteApp, deleteAppSchema } from '@/services/db/apps/delete';
+import {
+  createAppSchema,
+  updateAppSchema,
+  updateMarkupSchema,
+} from '@/services/db/apps/lib/schemas';
+import {
+  createFreeTierPaymentFromBalance,
+  createFreeTierPaymentFromBalanceSchema,
+} from '@/services/db/credits/mint';
 
 export const appsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -180,6 +185,12 @@ export const appsRouter = createTRPCRouter({
           .input(createFreeTierPaymentLinkSchema)
           .mutation(async ({ ctx, input }) => {
             return await createFreeTierPaymentLink(ctx.session.user.id, input);
+          }),
+
+        createFromBalance: appOwnerProcedure
+          .input(createFreeTierPaymentFromBalanceSchema)
+          .mutation(async ({ ctx, input }) => {
+            return await createFreeTierPaymentFromBalance(ctx, input);
           }),
       },
 

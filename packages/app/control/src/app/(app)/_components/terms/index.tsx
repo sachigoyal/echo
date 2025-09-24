@@ -18,13 +18,10 @@ import { useSession } from 'next-auth/react';
 export default function TermsAgreement() {
   const session = useSession();
 
-  const { data: needsTerms } = api.user.termsAgreement.needs.terms.useQuery(
-    undefined,
-    {
-      enabled: !!session.data?.user,
-    }
-  );
-  const { data: needsPrivacy } = api.user.termsAgreement.needs.privacy.useQuery(
+  const { data: needsTerms } = api.user.legal.needs.terms.useQuery(undefined, {
+    enabled: !!session.data?.user,
+  });
+  const { data: needsPrivacy } = api.user.legal.needs.privacy.useQuery(
     undefined,
     {
       enabled: !!session.data?.user,
@@ -37,9 +34,9 @@ export default function TermsAgreement() {
     mutate: acceptTerms,
     isPending: isAcceptingTerms,
     isSuccess: isAcceptedTerms,
-  } = api.user.termsAgreement.accept.terms.useMutation({
+  } = api.user.legal.accept.terms.useMutation({
     onSuccess: () => {
-      utils.user.termsAgreement.needs.terms.invalidate();
+      void utils.user.legal.needs.terms.invalidate();
     },
   });
 
@@ -47,9 +44,9 @@ export default function TermsAgreement() {
     mutate: acceptPrivacy,
     isPending: isAcceptingPrivacy,
     isSuccess: isAcceptedPrivacy,
-  } = api.user.termsAgreement.accept.privacy.useMutation({
+  } = api.user.legal.accept.privacy.useMutation({
     onSuccess: () => {
-      utils.user.termsAgreement.needs.privacy.invalidate();
+      void utils.user.legal.needs.privacy.invalidate();
     },
   });
 
@@ -72,7 +69,9 @@ export default function TermsAgreement() {
   };
 
   return (
-    <AlertDialog open={needsTerms?.needs || needsPrivacy?.needs}>
+    <AlertDialog
+      open={Boolean(needsTerms?.needs) || Boolean(needsPrivacy?.needs)}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>

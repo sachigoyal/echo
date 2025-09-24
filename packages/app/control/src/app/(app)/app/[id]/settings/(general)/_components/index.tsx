@@ -1,6 +1,6 @@
 import React from 'react';
 
-import z from 'zod';
+import type z from 'zod';
 
 import { revalidatePath } from 'next/cache';
 
@@ -13,12 +13,13 @@ import { AppDescription } from './description';
 import { AppProfilePicture } from './profile-picture';
 import { AppHomepage } from './homepage';
 
-import { updateAppSchema } from '@/services/apps/update';
+import type { updateAppSchema } from '@/services/db/apps/lib/schemas';
 
 import { api } from '@/trpc/server';
 import { CopyButton } from '@/components/ui/copy-button';
 import { DeleteAppCard } from './delete';
 import { checkAppExists } from '../../../_lib/checks';
+import { AppVisibility } from './visibility';
 
 interface Props {
   appId: string;
@@ -92,6 +93,20 @@ export const GeneralAppSettings: React.FC<Props> = async ({ appId }) => {
           description="The profile picture of your app. This is shown to users when they are connecting to your app."
         >
           <AppProfilePicture />
+        </FormCard>
+      </AppDetailsFormProvider>
+
+      <AppDetailsFormProvider
+        fields={['isPublic']}
+        title="Visibility"
+        action={updateApp}
+        defaultValues={{ isPublic: app.isPublic ?? false }}
+      >
+        <FormCard
+          title="Visibility"
+          description="Whether your app is available in the app store."
+        >
+          <AppVisibility />
         </FormCard>
       </AppDetailsFormProvider>
 

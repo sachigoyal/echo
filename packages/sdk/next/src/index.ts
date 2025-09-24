@@ -3,18 +3,21 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { EchoConfig, EchoResult } from './types';
 
-import { createEchoAnthropic } from 'providers/anthropic';
-import { createEchoGoogle } from 'providers/google';
-import { createEchoOpenAI } from 'providers/openai';
+import { createEchoAnthropic } from 'ai-providers/anthropic';
+import { createEchoGoogle } from 'ai-providers/google';
+import { createEchoOpenAI } from 'ai-providers/openai';
+
+import { CreateOauthTokenResponse } from '@merit-systems/echo-typescript-sdk';
 
 import { ECHO_COOKIE, namespacedCookie } from 'auth/cookie-names';
-import { RefreshTokenResponse } from 'auth/token-manager';
+import { getEchoToken as getEchoTokenInternal } from 'auth/token-manager';
 import { handleEchoClientProxy } from 'proxy';
 import {
   handleCallback,
   handleRefresh,
   handleSignIn,
   handleSignOut,
+  handleSession,
 } from './auth/oauth-handlers';
 
 /**
@@ -48,6 +51,9 @@ export default function Echo(config: EchoConfig): EchoResult {
       case '/refresh':
         return handleRefresh(req, config);
 
+      case '/session':
+        return handleSession(req, config);
+
       default:
         console.error('Unknown path', path);
         return NextResponse.error();
@@ -66,7 +72,7 @@ export default function Echo(config: EchoConfig): EchoResult {
     if (!userInfo) {
       return null;
     }
-    const user = JSON.parse(userInfo) as RefreshTokenResponse['user'];
+    const user = JSON.parse(userInfo) as CreateOauthTokenResponse['user'];
     return user;
   };
 
@@ -96,6 +102,7 @@ export default function Echo(config: EchoConfig): EchoResult {
     // Authentication utilities (server-side only)
     getUser,
     isSignedIn,
+    getEchoToken: () => getEchoTokenInternal(config),
 
     // AI provider clients
     openai: createEchoOpenAI(config),

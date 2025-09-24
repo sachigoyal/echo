@@ -1,5 +1,6 @@
-import { Button } from './ui/button';
-import { signOut } from '@merit-systems/echo-next-sdk/client';
+'use client';
+
+import { EchoTokens } from '@merit-systems/echo-next-sdk/client';
 import Image from 'next/image';
 
 export const Header = () => {
@@ -14,9 +15,11 @@ export const Header = () => {
         />
         <span className="font-semibold">Echo Chat</span>
       </div>
-      <Button onClick={() => signOut()} size="sm">
-        Sign out
-      </Button>
+
+      <div className="flex items-center gap-4">
+        {/* Balance and User Info */}
+        <EchoTokens />
+      </div>
     </header>
   );
 };

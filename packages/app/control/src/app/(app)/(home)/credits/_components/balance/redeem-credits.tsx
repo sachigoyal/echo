@@ -17,17 +17,17 @@ export const RedeemCredits = () => {
   const utils = api.useUtils();
 
   const {
-    mutate: redeemReferralCode,
+    mutate: redeemCreditGrantCode,
     isPending,
     isSuccess,
     isError,
     error,
-  } = api.user.redeem.redeem.useMutation({
+  } = api.credits.grant.redeem.useMutation({
     onSuccess: () => {
       setCode('');
       setFreeTier(false);
       setEchoAppId('');
-      utils.user.balance.get.invalidate();
+      void utils.user.balance.get.invalidate();
     },
   });
 
@@ -74,7 +74,7 @@ export const RedeemCredits = () => {
       </div>
       <Button
         onClick={() =>
-          redeemReferralCode({
+          redeemCreditGrantCode({
             code,
             freeTier,
             echoAppId: echoAppId.trim() || undefined,

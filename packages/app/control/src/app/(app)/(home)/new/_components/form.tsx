@@ -2,7 +2,7 @@
 
 import { Check, Loader2 } from 'lucide-react';
 
-import { z } from 'zod';
+import type { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { useForm } from 'react-hook-form';
@@ -16,10 +16,9 @@ import { Button } from '@/components/ui/button';
 import { FormFieldWithCard } from '@/components/ui/card-form';
 import { Separator } from '@/components/ui/separator';
 
-import { createAppSchema } from '@/services/apps/create';
-
 import { api } from '@/trpc/client';
 import { MarkupInput } from '../../../_components/markup/input';
+import { createAppSchema } from '@/services/db/apps/lib/schemas';
 
 export const CreateAppForm = () => {
   const form = useForm<z.infer<typeof createAppSchema>>({
@@ -74,7 +73,7 @@ export const CreateAppForm = () => {
           description="You will earn this markup as revenue for every LLM credit spent on your app."
           render={field => (
             <MarkupInput
-              markup={field.value}
+              markup={field.value as number}
               onMarkupChange={value => {
                 field.onChange(value);
               }}

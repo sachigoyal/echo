@@ -15,8 +15,7 @@ export const MotionTab = forwardRef<HTMLLIElement, Props>(
     const pathname = usePathname();
 
     const isSelected =
-      pathname === href ||
-      (subRoutes && subRoutes.some(route => pathname === route));
+      pathname === href || subRoutes?.some(route => pathname.startsWith(route));
 
     return (
       <motion.li key={href} ref={ref}>

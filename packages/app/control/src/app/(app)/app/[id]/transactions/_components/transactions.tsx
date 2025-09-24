@@ -18,7 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 import { UserAvatar } from '@/components/utils/user-avatar';
 
-import { formatCurrency } from '@/lib/balance';
+import { formatCurrency } from '@/lib/utils';
 import { api } from '@/trpc/client';
 
 interface Transaction {
@@ -61,7 +61,7 @@ export const TransactionsTable: React.FC<Props> = ({ appId }) => {
         hasNextPage
           ? {
               hasNext: hasNextPage,
-              fetchNextPage,
+              fetchNextPage: () => void fetchNextPage(),
               isFetchingNextPage,
             }
           : undefined

@@ -25,22 +25,23 @@ export const AuthorizedCallbackUrlsInput = () => {
       control={form.control}
       name="authorizedCallbackUrls"
       render={({ field }) => {
+        const typedField = field as { value: string[] };
         const handleAddUrl = (url: string) => {
           if (!z.url().safeParse(url).success) {
             toast.error('Invalid URL');
             return;
           }
 
-          if (field.value.includes(url)) {
+          if (typedField.value.includes(url)) {
             toast.error('URL already added');
             return;
           }
-          field.onChange([...field.value, url]);
+          field.onChange([...typedField.value, url]);
           setInput('');
         };
 
         const handleRemoveUrl = (url: string) => {
-          field.onChange(field.value.filter((u: string) => u !== url));
+          field.onChange(typedField.value.filter((u: string) => u !== url));
         };
 
         return (
@@ -57,6 +58,11 @@ export const AuthorizedCallbackUrlsInput = () => {
                     handleAddUrl(input);
                   }
                 }}
+                onPaste={e => {
+                  e.preventDefault();
+                  const text = e.clipboardData.getData('text/plain');
+                  handleAddUrl(text);
+                }}
               />
               <Button
                 onClick={e => {
@@ -66,7 +72,11 @@ export const AuthorizedCallbackUrlsInput = () => {
                 }}
                 disabled={Boolean(z.url().safeParse(input).error)}
                 size="sm"
-                variant="primaryGhost"
+                variant={
+                  Boolean(z.url().safeParse(input).error)
+                    ? 'primaryGhost'
+                    : 'default'
+                }
                 className="absolute right-1 top-1/2 -translate-y-1/2 size-fit px-2 py-1"
               >
                 Add
@@ -74,7 +84,7 @@ export const AuthorizedCallbackUrlsInput = () => {
               </Button>
             </div>
             <div className="flex flex-wrap gap-1">
-              {field.value.map((url: string) => (
+              {typedField.value.map((url: string) => (
                 <Badge
                   key={url}
                   variant="muted"
@@ -84,7 +94,7 @@ export const AuthorizedCallbackUrlsInput = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="p-0.5 size-fit"
+                    className="p-0.5 size-fit md:size-fit"
                     onClick={e => {
                       e.preventDefault();
                       e.stopPropagation();

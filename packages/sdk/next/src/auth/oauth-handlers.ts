@@ -1,8 +1,12 @@
-import { EchoConfig } from '@merit-systems/echo-typescript-sdk';
+import {
+  EchoConfig,
+  CreateOauthTokenResponse,
+} from '@merit-systems/echo-typescript-sdk';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveEchoBaseUrl } from '../config';
 import { ECHO_COOKIE, namespacedCookie } from './cookie-names';
-import { getEchoToken, RefreshTokenResponse } from './token-manager';
+import { getEchoToken } from './token-manager';
 
 /**
  * Generate PKCE code challenge and verifier
@@ -173,7 +177,7 @@ export async function handleCallback(
     );
   }
 
-  const tokenData = (await tokenResponse.json()) as RefreshTokenResponse;
+  const tokenData = (await tokenResponse.json()) as CreateOauthTokenResponse;
 
   const response = NextResponse.redirect(`${origin}`);
 
@@ -261,4 +265,18 @@ export async function handleRefresh(
       { status: 500 }
     );
   }
+}
+
+export async function handleSession(req: NextRequest, config: EchoConfig) {
+  const jar = await cookies();
+  const refreshExp = jar.get(
+    namespacedCookie(ECHO_COOKIE.REFRESH_TOKEN_EXPIRES, config.appId)
+  )?.value;
+  const isAuthenticated =
+    !!refreshExp && Number(refreshExp) > Math.floor(Date.now() / 1000);
+  const userInfo = jar.get(
+    namespacedCookie(ECHO_COOKIE.USER_INFO, config.appId)
+  )?.value;
+  const user = userInfo ? JSON.parse(userInfo) : null;
+  return NextResponse.json({ isAuthenticated, user });
 }

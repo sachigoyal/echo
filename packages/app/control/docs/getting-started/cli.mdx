@@ -48,7 +48,7 @@ Create CLI tools that generate revenue from AI usage. Echo handles user authenti
         ```typescript title="cli.ts"
         import { EchoClient, createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
         import { generateText } from 'ai';
-        import { prompt } from 'enquirer';
+        import enquirer from 'enquirer';
         import { open } from 'open';
 
         const APP_ID = 'your-echo-app-id';
@@ -57,11 +57,11 @@ Create CLI tools that generate revenue from AI usage. Echo handles user authenti
         console.log('Opening Echo to create your API key...');
         await open(`https://echo.merit.systems/app/${APP_ID}/keys`);
 
-        const { apiKey } = await prompt({
+        const { apiKey } = await enquirer.prompt({
           type: 'input',
           name: 'apiKey',
           message: 'Enter your API key:'
-        });
+        }) as { apiKey: string };
         ```
     </Step>
 
@@ -84,7 +84,7 @@ Create CLI tools that generate revenue from AI usage. Echo handles user authenti
         ```typescript title="cli.ts"
         // Generate text with automatic billing
         const { text } = await generateText({
-          model: openai('gpt-4'),
+          model: openai('gpt-4o'),
           prompt: 'Explain quantum computing in simple terms',
         });
 
@@ -106,7 +106,7 @@ Create CLI tools that generate revenue from AI usage. Echo handles user authenti
           });
 
           console.log('Low balance. Opening payment link...');
-          await open(payment.url);
+          await open(payment.paymentLink.url);
         }
         ```
     </Step>
