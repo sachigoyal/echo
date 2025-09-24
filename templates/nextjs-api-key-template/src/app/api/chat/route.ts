@@ -1,5 +1,7 @@
 import { convertToModelMessages, streamText, type UIMessage } from 'ai';
-import { openai } from '@/echo';
+import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk';
+import { db } from '@/lib/db';
+import { getUser } from '@/echo';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -40,6 +42,39 @@ export async function POST(req: Request) {
         }
       );
     }
+    
+    const user = await getUser();
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const apiKey = await db.user.findUnique({
+      where: {
+        email: user.email,
+      },
+      select: {
+        apiKey: true,
+      },
+    });
+
+    if (!apiKey) {
+      throw new Error('API key not found');
+    }
+
+    const openai = createEchoOpenAI({
+      appId: process.env.ECHO_APP_ID!,
+    }, async (appId) => {
+      console.log("appId", appId);
+      return apiKey.apiKey;
+    }, () => {
+      return new Response(
+        JSON.stringify({
+          error: 'Insufficient funds',
+          message: 'Insufficient funds',
+        }),
+      );
+    });
 
     const result = streamText({
       model: openai(model),
