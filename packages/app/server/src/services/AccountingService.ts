@@ -49,7 +49,7 @@ ALL_SUPPORTED_VIDEO_MODELS.forEach(model => {
   VIDEO_MODEL_MAP.set(model.model_id, model);
 });
 
-const getModelPrice = (model: string) => {
+export const getModelPrice = (model: string) => {
   const supportedModel = MODEL_PRICE_MAP.get(model);
 
   if (supportedModel) {
@@ -58,6 +58,7 @@ const getModelPrice = (model: string) => {
       output_cost_per_token: supportedModel.output_cost_per_token,
       provider: supportedModel.provider,
       model: supportedModel.model_id,
+      max_context_window: supportedModel.max_context_window || 0,
     };
   }
 

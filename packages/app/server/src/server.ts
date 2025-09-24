@@ -75,14 +75,16 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       prisma
     );
 
-    const { provider, isStream, isPassthroughProxyRoute } = await initializeProvider(
-      req,
-      res,
-      echoControlService
-    );
+    const { provider, isStream, isPassthroughProxyRoute } =
+      await initializeProvider(req, res, echoControlService);
 
     if (isPassthroughProxyRoute) {
-      return await makeProxyPassthroughRequest(req, res, provider, processedHeaders);
+      return await makeProxyPassthroughRequest(
+        req,
+        res,
+        provider,
+        processedHeaders
+      );
     }
 
     const balanceCheckResult = await checkBalance(echoControlService);
@@ -99,21 +101,16 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
     // Step 3: Execute business logic
-    const { transaction, data } =
-      await modelRequestService.executeModelRequest(
-        req,
-        res,
-        processedHeaders,
-        provider,
-        isStream
-      );
+    const { transaction, data } = await modelRequestService.executeModelRequest(
+      req,
+      res,
+      processedHeaders,
+      provider,
+      isStream
+    );
 
     await echoControlService.createTransaction(transaction);
-    modelRequestService.handleResolveResponse(
-      res,
-      isStream,
-      data,
-    );
+    modelRequestService.handleResolveResponse(res, isStream, data);
   } catch (error) {
     return next(error);
   }
