@@ -16,8 +16,8 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
-import { initializeProvider } from 'services/ProviderInitializationService';
-import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
+import { initializeProvider } from './services/ProviderInitializationService';
+import { makeProxyPassthroughRequest } from './services/ProxyPassthroughService';
 
 dotenv.config();
 

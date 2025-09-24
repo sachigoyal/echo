@@ -5,7 +5,7 @@ import { Transaction } from '../types';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { handleStreamService } from './HandleStreamService';
 import { formatUpstreamUrl } from './RequestDataService';
-import { BaseProvider } from 'providers/BaseProvider';
+import { BaseProvider } from '../providers/BaseProvider';
 
 export class ModelRequestService {
   /**
