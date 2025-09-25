@@ -17,9 +17,10 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
-import { Network, X402ChallengeParams } from './types';
+import { Network, X402ChallengeParams, X402Version } from './types';
 import { ERC20_CONTRACT_ABI, USDC_ADDRESS } from 'services/fund-repo/constants';
 import { Abi, encodeFunctionData } from 'viem';
+import { FacilitatorClient } from 'facilitatorClient';
 
 dotenv.config();
 
@@ -113,6 +114,12 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     }
 
     if (isX402Request(headers)) {
+      const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
+      facilitator.settle({
+        x402_version: X402Version.V1,
+        payment_payload: req.body.payment_payload,
+        payment_requirements: req.body.payment_requirements,
+      })
     }
 
     // check if request is a PAYMENT HEADER

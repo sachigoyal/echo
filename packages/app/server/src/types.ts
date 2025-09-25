@@ -125,9 +125,20 @@ export enum Schema {
 export type Address = string;
 export type TokenAmount = string;
 export type Url = string;
+export type Nonce = string;
+
+export interface ExactEvmPayloadAuthorization {
+  from: Address;
+  to: Address;
+  value: TokenAmount;
+  valid_after: number;
+  valid_before: number;
+  nonce: Nonce;
+}
 
 export interface ExactEvmPayload {
-
+  signature: string;
+  authorization: ExactEvmPayloadAuthorization;
 }
 
 export interface PaymentPayload {

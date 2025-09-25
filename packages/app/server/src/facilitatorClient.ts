@@ -2,11 +2,9 @@ import { SettleRequest, SettleResponse, VerifyRequest, VerifyResponse } from "ty
 
 export class FacilitatorClient {
     private baseUrl: string;
-    private apiKey: string;
 
-    constructor(baseUrl: string, apiKey: string) {
+    constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
-        this.apiKey = apiKey;
     }
 
     async verify(request: VerifyRequest): Promise<VerifyResponse> {
