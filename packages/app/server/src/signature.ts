@@ -2,6 +2,7 @@ import { CdpClient } from "@coinbase/cdp-sdk";
 import { ERC3009_ABI, USDC_ADDRESS } from "./services/fund-repo/constants";
 import { encodeFunctionData } from "viem/_types/utils/abi/encodeFunctionData";
 import { serializeTransaction } from "viem/_types/utils/transaction/serializeTransaction";
+import { WALLET_OWNER, WALLET_SMART_ACCOUNT, DOMAIN_NAME, DOMAIN_VERSION, DOMAIN_CHAIN_ID, TRANSFER_WITH_AUTHORIZATION_TYPE, TRANSFER_WITH_AUTHORIZATION_NAME } from "./constants";
 
 export async function signTransferWithAuthorization(
   to: `0x${string}`,
@@ -12,31 +13,20 @@ export async function signTransferWithAuthorization(
 ) {
     const cdp = new CdpClient();
     const owner = await cdp.evm.getOrCreateAccount({
-    name: 'echo-fund-owner',
+        name: WALLET_OWNER,
     });
 
     const smartAccount = await cdp.evm.getOrCreateSmartAccount({
-        name: 'echo-fund-smart-account',
+        name: WALLET_SMART_ACCOUNT,
         owner,
     });
 
     const domain = {
-        name: 'USD Coin',
-        version: '2',
-        chainId: 8453,
+        name: DOMAIN_NAME,
+        version: DOMAIN_VERSION,
+        chainId: DOMAIN_CHAIN_ID,
         verifyingContract: USDC_ADDRESS,
     }
-
-    const types = {
-        TransferWithAuthorization: [
-            { name: 'from', type: 'address' },
-            { name: 'to', type: 'address' },
-            { name: 'value', type: 'uint256' },
-            { name: 'validAfter', type: 'uint256' },
-            { name: 'validBefore', type: 'uint256' },
-            { name: 'nonce', type: 'uint256' },
-        ]
-    };
 
     const message = {
         from: smartAccount.address,
@@ -50,8 +40,8 @@ export async function signTransferWithAuthorization(
     const authoriztionSignature = await cdp.evm.signTypedData({
         address: smartAccount.address,
         domain,
-        types,
-        primaryType: 'TransferWithAuthorization',
+        types: TRANSFER_WITH_AUTHORIZATION_TYPE,
+        primaryType: TRANSFER_WITH_AUTHORIZATION_NAME,
         message,
     })
 
