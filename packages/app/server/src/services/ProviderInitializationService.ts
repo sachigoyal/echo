@@ -26,6 +26,7 @@ export function detectPassthroughProxyRoute(
       provider: BaseProvider;
       model: string;
       isStream: boolean;
+      providerId: string;
     }
   | undefined {
   // Gemini Veo3 Passthrough Proxy detection
@@ -45,11 +46,11 @@ export function detectPassthroughProxyRoute(
   }
 
   // Extract requestId from either files or operations path
-  const requestId =
+  const providerId =
     req.path.match(/\/files\/([^/:]+)(?::|$)/)?.[1] ??
     req.path.match(/\/operations\/([^\/]+)$/)?.[1] ??
     null;
-  if (!requestId) {
+  if (!providerId) {
     return undefined;
   }
 
@@ -64,6 +65,7 @@ export function detectPassthroughProxyRoute(
     provider,
     model,
     isStream,
+    providerId,
   };
 }
 
@@ -76,6 +78,7 @@ export async function initializeProvider(
   model: string;
   isStream: boolean;
   isPassthroughProxyRoute: boolean;
+  providerId: string | null;
 }> {
   const passthroughProxyRoute = detectPassthroughProxyRoute(
     req,
@@ -109,5 +112,6 @@ export async function initializeProvider(
     model,
     isStream,
     isPassthroughProxyRoute: false,
+    providerId: null,
   };
 }

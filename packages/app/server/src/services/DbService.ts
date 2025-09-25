@@ -486,4 +486,22 @@ export class EchoDbService {
       throw error;
     }
   }
+
+  async confirmAccessControl(
+    userId: string,
+    providerId: string
+  ): Promise<boolean> {
+    const transaction: Transaction | null = await this.db.transaction.findFirst(
+      {
+        where: {
+          userId,
+          transactionMetadata: {
+            providerId,
+          },
+        },
+      }
+    );
+
+    return !!transaction;
+  }
 }

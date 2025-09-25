@@ -91,14 +91,14 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
 
 
     // NEXT    
-    const { provider, isStream, isPassthroughProxyRoute } = await initializeProvider(
+    const { provider, isStream, isPassthroughProxyRoute, providerId } = await initializeProvider(
       req,
       res,
       echoControlService
     );
 
-    if (isPassthroughProxyRoute) {
-      return await makeProxyPassthroughRequest(req, res, provider, processedHeaders);
+    if (isPassthroughProxyRoute && providerId) {
+      return await makeProxyPassthroughRequest(req, res, provider, processedHeaders, providerId);
     }
 
 

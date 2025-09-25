@@ -6,6 +6,9 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { Response } from 'express';
 import { getVideoModelPrice } from '../services/AccountingService';
+import { EchoDbService } from '../services/DbService';
+import { prisma } from '../server';
+import logger from 'logger';
 
 export interface VeoUsage {
   promptTokens: number;
@@ -63,8 +66,7 @@ export class GeminiVeoProvider extends BaseProvider {
     data: unknown,
     requestBody?: Record<string, unknown>
   ): Promise<Transaction> {
-    const providerId =
-      (data as { name: string }).name?.split('/').pop() || 'unknown';
+    const providerId = this.parseProviderIdFromResponseBody(data);
     if (!requestBody) {
       throw new Error(
         'In GeminiVeo3, the request body dictates the parameters for the request'
@@ -127,11 +129,22 @@ export class GeminiVeoProvider extends BaseProvider {
     res: Response,
     formattedHeaders: Record<string, string>,
     upstreamUrl: string,
-    requestBody: string | FormData | undefined
+    requestBody: string | FormData | undefined,
+    providerId: string
   ): Promise<void> {
     if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
       throw new HttpError(400, 'Invalid model');
     }
+
+    const isOperationsEndpoint = upstreamUrl.includes('operations');
+
+    if (
+      isOperationsEndpoint &&
+      !(await this.confirmAccessControl(this.getUserId()!, providerId))
+    ) {
+      throw new HttpError(403, 'Access denied');
+    }
+
     // Forward the request to the provider's API
     const response = await fetch(upstreamUrl, {
       method: req.method,
@@ -147,7 +160,9 @@ export class GeminiVeoProvider extends BaseProvider {
     }
 
     if (response.headers.get('content-type') !== 'video/mp4') {
-      res.json(await response.json());
+      const responseData = await response.json();
+      this.parseCompletedOperationsResponse(responseData);
+      res.json(responseData);
       return;
     }
 
@@ -170,5 +185,66 @@ export class GeminiVeoProvider extends BaseProvider {
       res.status(500).send('No body in upstream response');
     }
     return;
+  }
+
+  async confirmAccessControl(
+    userId: string,
+    providerId: string
+  ): Promise<boolean> {
+    const dbService = new EchoDbService(prisma);
+    return await dbService.confirmAccessControl(userId, providerId);
+  }
+
+  parseProviderIdFromResponseBody(data: unknown): string {
+    let providerId = 'unknown';
+
+    try {
+      // Parse JSON if data is a string
+      let responseData: Record<string, any>;
+      if (typeof data === 'string') {
+        responseData = JSON.parse(data);
+      } else if (data && typeof data === 'object') {
+        responseData = data as Record<string, any>;
+      } else {
+        responseData = {};
+      }
+
+      // Try to extract from the 'name' field which contains operation info
+      if (responseData.name && typeof responseData.name === 'string') {
+        // Extract the operation ID from patterns like:
+        // "models/veo-3.0-fast-generate-001/operations/nl6hlo12axz7"
+        const operationMatch = responseData.name.match(/operations\/([^/]+)$/);
+        if (operationMatch) {
+          providerId = operationMatch[1] || 'unknown';
+        } else {
+          // Fallback to the last segment
+          providerId = responseData.name.split('/').pop() || 'unknown';
+        }
+      }
+    } catch (error) {
+      console.log('Failed to parse response data:', error);
+      // Keep providerId as 'unknown' if parsing fails
+    }
+
+    return providerId;
+  }
+
+  parseCompletedOperationsResponse(
+    responseData: Record<string, unknown>
+  ): boolean {
+    if (!responseData.done) {
+      return false;
+    }
+    const response = responseData.response as any;
+    if (!response?.generateVideoResponse?.generatedSamples) {
+      return false;
+    }
+    const uris = response.generateVideoResponse.generatedSamples
+      .map((sample: any) => sample?.video?.uri)
+      .filter((uri: string | undefined) => uri !== undefined);
+    logger.info(
+      `Generated video URIs for ${this.getUserId()} and ${responseData.name}: ${JSON.stringify(uris)}`
+    );
+    return true;
   }
 }
