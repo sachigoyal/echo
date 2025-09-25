@@ -5,6 +5,18 @@ import { UnknownModelError } from 'errors/http';
 import { getModelPrice } from './AccountingService';
 import { Decimal } from '@prisma/client/runtime/library';
 
+
+function getMaxToken(req: Request, provider: BaseProvider): number {
+    const headers = req.headers as Record<string, string>;
+    // Estimate input tokens based on content length
+    const maxInputTokens = Number(headers['content-length']) * 4;
+    switch (provider.getModel()) {
+        
+    }
+    const maxOutputTokens = req.body.maxOutputTokens;
+    return Math.max(inputTokens, maxOutputTokens);
+}
+
 export async function getRequestMaxCost(
   req: Request,
   provider: BaseProvider
@@ -26,10 +38,10 @@ export async function getRequestMaxCost(
   return {
     cost: new Decimal(maxContextWindow)
       .mul(
+    )
         Math.max(
           new Decimal(modelPricing.input_cost_per_token).toNumber(),
           new Decimal(modelPricing.output_cost_per_token).toNumber()
-        )
       )
       .toNumber(),
   };
