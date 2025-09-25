@@ -1,12 +1,11 @@
 import compression from 'compression';
-import { CdpClient } from '@coinbase/cdp-sdk';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import multer from 'multer';
 import { authenticateRequest } from './auth';
 import logger, { logMetric } from './logger';
-import { HttpError, PaymentRequiredError } from './errors/http';
+import { HttpError } from './errors/http';
 import { PrismaClient } from './generated/prisma';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
 import {
@@ -18,12 +17,9 @@ import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
 import { Network, TransferWithAuthorization, X402ChallengeParams, X402Version } from './types';
-import { ERC20_CONTRACT_ABI, ERC3009_ABI, USDC_ADDRESS } from 'services/fund-repo/constants';
-import { Abi, encodeFunctionData, serializeTransaction } from 'viem';
 import { FacilitatorClient } from 'facilitatorClient';
-import { encode } from 'punycode';
-import { signTransferWithAuthorization, transferWithAuthorization } from 'transferWithAuth';
-import { parseX402Headers } from 'utils';
+import { transferWithAuthorization } from 'transferWithAuth';
+import { parseX402Headers, alvaroInferenceCostEstimation, buildX402Response } from 'utils';
 
 dotenv.config();
 
@@ -79,34 +75,6 @@ function isApiRequest(headers: Record<string, string>): boolean {
 function isX402Request(headers: Record<string, string>): boolean {
   return headers['x-402-challenge'] !== undefined;
 }
-
-function buildX402Response(res: Response, amount: string, network: Network) {
-  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
-
-  res.setHeader(
-    'WWW-Authenticate',
-    buildX402Challenge({
-      realm: 'echo',
-      link: paymentUrl,
-      network,
-    })
-  )
-
-  return res.status(402).json({
-    error: 'Payment Required',
-    payment: {
-      type: 'x402',
-      url: paymentUrl,
-      network,
-    }
-  })
-}
-
-// TODO: Alvaro is working on this.
-function alvaroInferenceCostEstimation(): string {
-  return "1";
-}
-
 
 // Main route handler - handles authentication, escrow, and business logic
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
@@ -187,10 +155,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   }
 });
 
-function buildX402Challenge(params: X402ChallengeParams): string {
-  const esc = (value: string) => value.replace(/"/g, '\\"');
-  return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`
-}
 
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response) => {
