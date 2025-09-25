@@ -30,8 +30,8 @@ export async function signTransferWithAuthorization(
         from: smartAccount.address,
         to: transfer.to,
         value: transfer.value,
-        validAfter: transfer.validAfter,
-        validBefore: transfer.validBefore,
+        validAfter: transfer.valid_after,
+        validBefore: transfer.valid_before,
         nonce: transfer.nonce,
     }
 
@@ -46,7 +46,7 @@ export async function signTransferWithAuthorization(
     const data = encodeFunctionData({
         abi: ERC3009_ABI,
         functionName: 'transferWithAuthorization',
-        args: [smartAccount.address, transfer.to, transfer.value, transfer.validAfter, transfer.validBefore, transfer.nonce, authoriztionSignature.signature],
+        args: [smartAccount.address, transfer.to as `0x${string}`, transfer.value, transfer.valid_after as bigint, transfer.valid_before as bigint, transfer.nonce as `0x${string}`, authoriztionSignature.signature],
     })
 
     return await cdp.evm.signTransaction({
@@ -88,4 +88,7 @@ export async function transferWithAuthorization(
         },
     ],
   });
+}
+
+export async function decodeSignature(signature: string) {
 }

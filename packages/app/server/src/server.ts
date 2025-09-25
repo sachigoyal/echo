@@ -19,7 +19,7 @@ import { modelRequestService } from './services/ModelRequestService';
 import { Network, TransferWithAuthorization, X402ChallengeParams, X402Version } from './types';
 import { FacilitatorClient } from 'facilitatorClient';
 import { transferWithAuthorization } from 'transferWithAuth';
-import { parseX402Headers, alvaroInferenceCostEstimation, buildX402Response } from 'utils';
+import { parseX402Headers, alvaroInferenceCostEstimation, buildX402Response, isApiRequest, isX402Request } from 'utils';
 
 dotenv.config();
 
@@ -68,14 +68,6 @@ app.use(standardRouter);
 // Use in-flight monitor router for monitoring endpoints
 app.use(inFlightMonitorRouter);
 
-function isApiRequest(headers: Record<string, string>): boolean {
-  return headers['x-api-key'] !== undefined;
-}
-
-function isX402Request(headers: Record<string, string>): boolean {
-  return headers['x-402-challenge'] !== undefined;
-}
-
 // Main route handler - handles authentication, escrow, and business logic
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
@@ -92,7 +84,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         payment_payload: req.body.payment_payload,
         payment_requirements: req.body.payment_requirements,
       })
-    } else {
+    } else { // x-api-key call
       // Step 1: Authentication
       const { processedHeaders, echoControlService } = await authenticateRequest(
         req.headers as Record<string, string>,

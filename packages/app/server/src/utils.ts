@@ -44,3 +44,11 @@ export function buildX402Response(res: Response, amount: string, network: Networ
     }
   })
 }
+
+export function isApiRequest(headers: Record<string, string>): boolean {
+  return headers['x-api-key'] !== undefined;
+}
+
+export function isX402Request(headers: Record<string, string>): boolean {
+  return headers['x-402-challenge'] !== undefined;
+}
