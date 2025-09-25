@@ -83,7 +83,7 @@ export function extractMaxOutputTokens(req: Request): number {
   }
 
   
-  return 0;
+  return Number(process.env.MAX_OUTPUT_TOKENS) || 0;
 }
 
 export function extractGeminiIsStream(req: Request): boolean {
