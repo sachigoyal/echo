@@ -194,10 +194,4 @@ export interface SupportedPaymentKindsResponse {
   kinds: SupportedPaymentKind[];
 }
 
-export interface TransferWithAuthorization {
-  to: `0x${string}`;
-  value: bigint;
-  validAfter: bigint;
-  validBefore: bigint;
-  nonce: `0x${string}`;
-}
+export type TransferWithAuthorization = Omit<ExactEvmPayloadAuthorization, 'from'>;

@@ -23,6 +23,7 @@ import { Abi, encodeFunctionData, serializeTransaction } from 'viem';
 import { FacilitatorClient } from 'facilitatorClient';
 import { encode } from 'punycode';
 import { signTransferWithAuthorization, transferWithAuthorization } from 'transferWithAuth';
+import { parseX402Headers } from 'utils';
 
 dotenv.config();
 
@@ -165,15 +166,9 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     if (isX402Request(headers)) {
       const inferenceCost = transaction.rawTransactionCost;
 
-      const transferWithAuth: TransferWithAuthorization = {
-        to: "0x0000000000000000000000000000000000000000" as `0x${string}`,
-        value: BigInt(inferenceCost.toString()),
-        validAfter: 0n,
-        validBefore: 0n,
-        nonce: "0x0000000000000000000000000000000000000000" as `0x${string}`,
-      }
+      const payload = parseX402Headers(headers)
 
-      const result = await transferWithAuthorization(transferWithAuth)
+      const result = await transferWithAuthorization(payload)
     }
 
     // 
