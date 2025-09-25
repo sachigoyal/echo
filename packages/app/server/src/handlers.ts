@@ -9,7 +9,7 @@ import { transferWithAuthorization } from "transferWithAuth";
 import { checkBalance } from "services/BalanceCheckService";
 import { prisma } from "server";
 
-async function handleX402Request(
+export async function handleX402Request(
         req: EscrowRequest,
         res: Response,
         processedHeaders: Record<string, string>,
@@ -40,7 +40,7 @@ async function handleX402Request(
     return {transaction, isStream, data, result};
 }
 
-async function handleApiKeyRequest(
+export async function handleApiKeyRequest(
     req: EscrowRequest,
     res: Response,
     processedHeaders: Record<string, string>,

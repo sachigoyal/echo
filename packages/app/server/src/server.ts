@@ -16,10 +16,11 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
-import { Network, TransferWithAuthorization, X402ChallengeParams, X402Version } from './types';
+import { Network } from './types';
 import { FacilitatorClient } from 'facilitatorClient';
 import { transferWithAuthorization } from 'transferWithAuth';
 import { parseX402Headers, alvaroInferenceCostEstimation, buildX402Response, isApiRequest, isX402Request } from 'utils';
+import { handleX402Request, handleApiKeyRequest } from './handlers';
 
 dotenv.config();
 
@@ -77,71 +78,19 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       return buildX402Response(res, alvaroInferenceCostEstimation(), Network.BASE);
     }
 
+    const { processedHeaders, echoControlService } = await authenticateRequest(
+      req.headers as Record<string, string>,
+      prisma
+    );
+
     if (isX402Request(headers)) {
-      const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
-      facilitator.settle({
-        x402_version: X402Version.V1,
-        payment_payload: req.body.payment_payload,
-        payment_requirements: req.body.payment_requirements,
-      })
-    } else { // x-api-key call
-      // Step 1: Authentication
-      const { processedHeaders, echoControlService } = await authenticateRequest(
-        req.headers as Record<string, string>,
-        prisma
-      );
+      handleX402Request(req, res, processedHeaders, echoControlService, alvaroInferenceCostEstimation());
+    } 
 
-      const balanceCheckResult = await checkBalance(echoControlService);
-
-      // Step 2: Set up escrow context and apply escrow middleware logic
-      transactionEscrowMiddleware.setupEscrowContext(
-        req,
-        echoControlService.getUserId()!,
-        echoControlService.getEchoAppId()!,
-        balanceCheckResult.effectiveBalance ?? 0
-      );
-
-      // Apply escrow middleware logic inline
-      await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
+    if (isApiRequest(headers)) {
+      handleApiKeyRequest(req, res, processedHeaders, echoControlService);
     }
 
-    // check if request is a PAYMENT HEADER
-    // post the tx on-chain with the full amount
-    // const result = await cdp.evm.sendUserOperation({
-    // function transferWithAuthorization(
-
-
-    // first settle with full amount (alvaro functions)
-    // signature of client
-
-    // Step 3: Execute business logic
-    const { transaction, isStream, data } =
-      await modelRequestService.executeModelRequest(
-        req,
-        res,
-        processedHeaders,
-        echoControlService
-      );
-    
-    if (isX402Request(headers)) {
-      const inferenceCost = transaction.rawTransactionCost;
-
-      const payload = parseX402Headers(headers)
-
-      const result = await transferWithAuthorization(payload)
-    }
-
-    // 
-    // TODO: does another settle, funds go from server -> client // 3009 transferWithAuth
-    // refund
-    // const result = await cdp.evm.sendUserOperation({
-    // TODO: this should call the facilitator
-    //   async signTransaction(options: SignTransactionOptions): Promise<SignatureResult> {
-    // sign Transaction and send to facilitator
-    // faciitator client with setttle settle
-
-    await echoControlService.createTransaction(transaction);
-    modelRequestService.handleResolveResponse(res, isStream, data);
   } catch (error) {
     return next(error);
   }
@@ -153,34 +102,6 @@ app.use((error: Error, req: Request, res: Response) => {
   logger.error(
     `Error handling request: ${error.message} | Stack: ${error.stack}`
   );
-
-  // if (error instanceof PaymentRequiredError) {
-  //   // TODO: hardcoded amount for now, we need to determine how much 
-  //   // `executeModelRequest` is going to cost before executing it.
-  //   // Alvaro is working on this.
-  //   const amount = '1'; 
-
-  //   const network = Network.BASE;
-  //   const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
-
-  //   res.setHeader(
-  //     'WWW-Authenticate',
-  //     buildX402Challenge({
-  //       realm: 'echo',
-  //       link: paymentUrl,
-  //       network,
-  //     })
-  //   )
-
-  //   return res.status(402).json({
-  //     error: 'Payment Required',
-  //     payment: {
-  //       type: 'x402',
-  //       url: paymentUrl,
-  //       network,
-  //     }
-  //   })
-  // }
 
   if (error instanceof HttpError) {
     logMetric('server.internal_error', 1, {
