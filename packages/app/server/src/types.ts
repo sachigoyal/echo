@@ -113,3 +113,72 @@ export interface X402PaymentBody {
   url: string;
   network: Network;
 }
+
+export enum X402Version {
+  V1 = 'V1',
+}
+
+export enum Schema {
+  Exact = 'Exact',
+}
+
+export type Address = string;
+export type TokenAmount = string;
+export type Url = string;
+
+export interface ExactEvmPayload {
+
+}
+
+export interface PaymentPayload {
+  x402_version: X402Version;
+  schema: Schema;
+  network: Network;
+  payload: ExactEvmPayload;
+}
+
+export interface PaymentRequirements {
+  schema: Schema;
+  network: Network;
+  max_amount_required: TokenAmount;
+  resource: Url;
+  description: string;
+  mime_type: string;
+  output_schema?: unknown;
+  pay_to: Address;
+  max_timeout_seconds: number;
+  asset: Address;
+  extra?: unknown;
+}
+
+export interface VerifyResponse {
+  verified: boolean;
+  transaction_id?: string;
+
+}
+
+export interface VerifyRequest {
+  x402_version: X402Version;
+  payment_payload: PaymentPayload;
+  payment_requirements: PaymentRequirements;
+}
+
+export type SettleRequest = VerifyRequest;
+export type SettleResponse = VerifyResponse;
+
+export interface PaymentRequiredResponse {
+  error: string;
+  accepts: PaymentRequirements[];
+  x402_version: X402Version;
+}
+
+export interface SupportedPaymentKind {
+  x402_version: X402Version;
+  schema: Schema;
+  network: Network;
+  extra?: {fee_payer: Address};
+}
+
+export interface SupportedPaymentKindsResponse {
+  kinds: SupportedPaymentKind[];
+}

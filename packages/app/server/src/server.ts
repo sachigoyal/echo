@@ -1,4 +1,5 @@
 import compression from 'compression';
+import { CdpClient } from '@coinbase/cdp-sdk';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
@@ -17,6 +18,8 @@ import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
 import { Network, X402ChallengeParams } from './types';
+import { ERC20_CONTRACT_ABI, USDC_ADDRESS } from 'services/fund-repo/constants';
+import { Abi, encodeFunctionData } from 'viem';
 
 dotenv.config();
 
@@ -65,9 +68,53 @@ app.use(standardRouter);
 // Use in-flight monitor router for monitoring endpoints
 app.use(inFlightMonitorRouter);
 
+function isApiRequest(headers: Record<string, string>): boolean {
+  return headers['x-api-key'] !== undefined;
+}
+
+function isX402Request(headers: Record<string, string>): boolean {
+  return headers['x-402-challenge'] !== undefined;
+}
+
+function buildX402Response(res: Response, amount: string, network: Network) {
+  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
+
+  res.setHeader(
+    'WWW-Authenticate',
+    buildX402Challenge({
+      realm: 'echo',
+      link: paymentUrl,
+      network,
+    })
+  )
+
+  return res.status(402).json({
+    error: 'Payment Required',
+    payment: {
+      type: 'x402',
+      url: paymentUrl,
+      network,
+    }
+  })
+}
+
+// TODO: Alvaro is working on this.
+function alvaroInferenceCostEstimation(): string {
+  return "1";
+}
+
 // Main route handler - handles authentication, escrow, and business logic
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
+    const headers = req.headers as Record<string, string>;
+
+    if (!isApiRequest(headers) && !isX402Request(headers)) {
+      return buildX402Response(res, alvaroInferenceCostEstimation(), Network.BASE);
+    }
+
+    if (isX402Request(headers)) {
+    }
+
     // check if request is a PAYMENT HEADER
     // post the tx on-chain with the full amount
     // const result = await cdp.evm.sendUserOperation({
@@ -133,33 +180,33 @@ app.use((error: Error, req: Request, res: Response) => {
     `Error handling request: ${error.message} | Stack: ${error.stack}`
   );
 
-  if (error instanceof PaymentRequiredError) {
-    // TODO: hardcoded amount for now, we need to determine how much 
-    // `executeModelRequest` is going to cost before executing it.
-    // Alvaro is working on this.
-    const amount = '1'; 
+  // if (error instanceof PaymentRequiredError) {
+  //   // TODO: hardcoded amount for now, we need to determine how much 
+  //   // `executeModelRequest` is going to cost before executing it.
+  //   // Alvaro is working on this.
+  //   const amount = '1'; 
 
-    const network = Network.BASE;
-    const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
+  //   const network = Network.BASE;
+  //   const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
 
-    res.setHeader(
-      'WWW-Authenticate',
-      buildX402Challenge({
-        realm: 'echo',
-        link: paymentUrl,
-        network,
-      })
-    )
+  //   res.setHeader(
+  //     'WWW-Authenticate',
+  //     buildX402Challenge({
+  //       realm: 'echo',
+  //       link: paymentUrl,
+  //       network,
+  //     })
+  //   )
 
-    return res.status(402).json({
-      error: 'Payment Required',
-      payment: {
-        type: 'x402',
-        url: paymentUrl,
-        network,
-      }
-    })
-  }
+  //   return res.status(402).json({
+  //     error: 'Payment Required',
+  //     payment: {
+  //       type: 'x402',
+  //       url: paymentUrl,
+  //       network,
+  //     }
+  //   })
+  // }
 
   if (error instanceof HttpError) {
     logMetric('server.internal_error', 1, {
