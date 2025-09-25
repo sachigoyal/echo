@@ -22,6 +22,15 @@ export async function authenticateRequest(
   processedHeaders: Record<string, string>;
   echoControlService: EchoControlService;
 }> {
+  // if (headers['x-402-challenge']) {
+  //   return {
+  //     processedHeaders: headers,
+  //     echoControlService: null,
+  //   };
+  // }
+
+  // if api key
+
   // Process headers and instantiate provider
   const [processedHeaders, echoControlService] = await verifyUserHeaderCheck(
     headers,

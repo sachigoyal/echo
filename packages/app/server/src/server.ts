@@ -68,6 +68,11 @@ app.use(inFlightMonitorRouter);
 // Main route handler - handles authentication, escrow, and business logic
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
+    // check if request is a PAYMENT HEADER
+    // post the tx on-chain with the full amount
+    // const result = await cdp.evm.sendUserOperation({
+    // function transferWithAuthorization(
+
     // Step 1: Authentication
     const { processedHeaders, echoControlService } = await authenticateRequest(
       req.headers as Record<string, string>,
@@ -87,6 +92,9 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     // Apply escrow middleware logic inline
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
+    // first settle with full amount (alvaro functions)
+    // signature of client
+
     // Step 3: Execute business logic
     const { transaction, isStream, data } =
       await modelRequestService.executeModelRequest(
@@ -95,6 +103,17 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         processedHeaders,
         echoControlService
       );
+    
+    const inferenceCost = transaction.rawTransactionCost;
+
+    // 
+    // TODO: does another settle, funds go from server -> client // 3009 transferWithAuth
+    // refund
+    // const result = await cdp.evm.sendUserOperation({
+    // TODO: this should call the facilitator
+    //   async signTransaction(options: SignTransactionOptions): Promise<SignatureResult> {
+    // sign Transaction and send to facilitator
+    // faciitator client with setttle settle
 
     await echoControlService.createTransaction(transaction);
     modelRequestService.handleResolveResponse(res, isStream, data);
@@ -121,12 +140,25 @@ app.use((error: Error, req: Request, res: Response) => {
     const amount = '1'; 
 
     const network = Network.BASE;
-    const paymentUrl = `${process.env.ECHO_CONTROL_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
+    const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
 
     res.setHeader(
       'WWW-Authenticate',
-
+      buildX402Challenge({
+        realm: 'echo',
+        link: paymentUrl,
+        network,
+      })
     )
+
+    return res.status(402).json({
+      error: 'Payment Required',
+      payment: {
+        type: 'x402',
+        url: paymentUrl,
+        network,
+      }
+    })
   }
 
   if (error instanceof HttpError) {
@@ -156,6 +188,10 @@ app.use((error: Error, req: Request, res: Response) => {
       error: 'Internal Server Error',
     });
   }
+
+  return res.status(500).json({
+    erorr: 'Internal Server Error',
+  })
 });
 
 // Graceful shutdown handler
