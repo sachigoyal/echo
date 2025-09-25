@@ -58,7 +58,6 @@ export const getModelPrice = (model: string) => {
       output_cost_per_token: supportedModel.output_cost_per_token,
       provider: supportedModel.provider,
       model: supportedModel.model_id,
-      max_context_window: supportedModel.max_context_window || 0,
     };
   }
 

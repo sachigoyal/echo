@@ -4,17 +4,45 @@ import { BaseProvider } from '../providers/BaseProvider';
 import { UnknownModelError } from 'errors/http';
 import { getModelPrice } from './AccountingService';
 import { Decimal } from '@prisma/client/runtime/library';
+import { ProviderType } from 'providers/ProviderType';
 
 
 function getMaxToken(req: Request, provider: BaseProvider): number {
     const headers = req.headers as Record<string, string>;
     // Estimate input tokens based on content length
     const maxInputTokens = Number(headers['content-length']) * 4;
-    switch (provider.getModel()) {
-        
+    const modelWithPricing = getModelPrice(provider.getModel());
+    if (!modelWithPricing) {
+        throw new UnknownModelError(`Invalid model: ${provider.getModel()}`);
     }
-    const maxOutputTokens = req.body.maxOutputTokens;
-    return Math.max(inputTokens, maxOutputTokens);
+
+    return Math.max(maxInputTokens, modelWithPricing.input_cost_per_token);
+}
+
+function getMaxOutputTokens(req: Request, provider: BaseProvider): number {
+    switch (provider.getType()) {
+        case ProviderType.GPT:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.ANTHROPIC_GPT:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.ANTHROPIC_NATIVE:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.GEMINI:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.GEMINI_GPT:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.GEMINI_VEO:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.OPENAI_RESPONSES:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.OPENROUTER:
+            return Number(req.body.maxOutputTokens);
+        case ProviderType.OPENAI_IMAGES:
+            return Number(req.body.maxOutputTokens);
+        default:
+            return Number(req.body.maxOutputTokens);
+    }
+    
 }
 
 export async function getRequestMaxCost(
