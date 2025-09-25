@@ -41,7 +41,10 @@ export abstract class BaseProvider {
       Authorization: `Bearer ${apiKey}`,
     };
   }
-  abstract handleBody(data: string): Promise<Transaction>;
+  abstract handleBody(
+    data: string,
+    requestBody?: Record<string, unknown>
+  ): Promise<Transaction>;
   getEchoControlService(): EchoControlService {
     return this.echoControlService;
   }
@@ -78,7 +81,8 @@ export abstract class BaseProvider {
     res: Response,
     formattedHeaders: Record<string, string>,
     upstreamUrl: string,
-    requestBody: string | FormData | undefined
+    requestBody: string | FormData | undefined,
+    providerId: string
   ) {
     throw new Error('Not implemented');
   }

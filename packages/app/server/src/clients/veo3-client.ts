@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, GenerateVideosOperation } from '@google/genai';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,27 +12,36 @@ async function makeRequest() {
     },
   });
 
-  const prompt = `A close up of two people staring at a cryptic drawing on a wall, torchlight flickering.
-    A man murmurs, 'This must be it. That's the secret code.' The woman looks at him and whispering excitedly, 'What did you find?'`;
+  const prompt = `An anime-style racing scene. A cool looking guy is racing away from villians in a japanese sports car.`;
 
-  let operation = await ai.models.generateVideos({
-    model: 'veo-3.0-fast-generate-001',
-    prompt: prompt,
-  });
-
+  // let operation = await ai.models.generateVideos({
+  //   model: 'veo-3.0-fast-generate-001',
+  //   prompt: prompt,
+  //   config: {
+  //     durationSeconds: 4,
+  //   }
+  // });
+  const newOperation = new GenerateVideosOperation();
+  newOperation.name =
+    'models/veo-3.0-fast-generate-001/operations/nmzxcyndn7ee';
   // Poll the operation status until the video is ready.
-  while (!operation.done) {
+  let thirdOperation = newOperation;
+  while (!thirdOperation.done) {
     console.log('Waiting for video generation to complete...');
     await new Promise(resolve => setTimeout(resolve, 10000));
-    operation = await ai.operations.getVideosOperation({
-      operation: operation,
+    thirdOperation = await ai.operations.getVideosOperation({
+      operation: newOperation,
     });
   }
 
-  const video = operation.response?.generatedVideos?.[0]?.video;
+  const video = thirdOperation.response?.generatedVideos?.[0]?.video;
+  console.log('video: ', video);
   if (!video) {
     throw new Error('No video generated');
   }
+  const uri = video.uri?.split('/').pop();
+  console.log('video.uri: ', video.uri);
+  console.log('uri: ', uri);
   // Download the generated video.
   ai.files.download({
     file: video,

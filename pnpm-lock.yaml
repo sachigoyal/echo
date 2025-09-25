@@ -497,8 +497,8 @@ importers:
         specifier: ^0.39.0
         version: 0.39.0
       '@google/genai':
-        specifier: ^1.17.0
-        version: 1.19.0(@modelcontextprotocol/sdk@1.18.0)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^1.20.0
+        version: 1.20.0(@modelcontextprotocol/sdk@1.18.0)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
@@ -1735,8 +1735,8 @@ packages:
   '@formatjs/intl-localematcher@0.6.1':
     resolution: {integrity: sha512-ePEgLgVCqi2BBFnTMWPfIghu6FkbZnnBVhO2sSxvLfrdFw7wCHAHiDoM2h4NRgjbaY7+B7HgOLZGkK187pZTZg==}
 
-  '@google/genai@1.19.0':
-    resolution: {integrity: sha512-mIMV3M/KfzzFA//0fziK472wKBJ1TdJLhozIUJKTPLyTDN1NotU+hyoHW/N0cfrcEWUK20YA0GxCeHC4z0SbMA==}
+  '@google/genai@1.20.0':
+    resolution: {integrity: sha512-QdShxO9LX35jFogy3iKprQNqgKKveux4H2QjOnyIvyHRuGi6PHiz3fjNf8Y0VPY8o5V2fHqR2XqiSVoz7yZs0w==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.11.4
@@ -11342,7 +11342,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@google/genai@1.19.0(@modelcontextprotocol/sdk@1.18.0)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@google/genai@1.20.0(@modelcontextprotocol/sdk@1.18.0)(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       google-auth-library: 9.15.1
       ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)

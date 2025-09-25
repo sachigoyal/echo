@@ -80,6 +80,7 @@ export interface SupportedTool {
 
 export interface SupportedVideoModel {
   model_id: string;
-  cost_per_second: number;
+  cost_per_second_with_audio: number;
+  cost_per_second_without_audio: number;
   provider: string;
 }
