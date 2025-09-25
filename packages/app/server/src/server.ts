@@ -17,12 +17,12 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
-import { Network, X402ChallengeParams, X402Version } from './types';
+import { Network, TransferWithAuthorization, X402ChallengeParams, X402Version } from './types';
 import { ERC20_CONTRACT_ABI, ERC3009_ABI, USDC_ADDRESS } from 'services/fund-repo/constants';
 import { Abi, encodeFunctionData, serializeTransaction } from 'viem';
 import { FacilitatorClient } from 'facilitatorClient';
 import { encode } from 'punycode';
-import { signTransferWithAuthorization } from 'signature';
+import { signTransferWithAuthorization, transferWithAuthorization } from 'transferWithAuth';
 
 dotenv.config();
 
@@ -165,15 +165,15 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     if (isX402Request(headers)) {
       const inferenceCost = transaction.rawTransactionCost;
 
-      const signature = await signTransferWithAuthorization(
-        "0x0000000000000000000000000000000000000000",
-        BigInt(inferenceCost.toString()),
-        0n,
-        0n,
-        "0x0000000000000000000000000000000000000000"k
-      )
+      const transferWithAuth: TransferWithAuthorization = {
+        to: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+        value: BigInt(inferenceCost.toString()),
+        validAfter: 0n,
+        validBefore: 0n,
+        nonce: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+      }
 
-      // we need to do the refund through another settle from server to client
+      const result = await transferWithAuthorization(transferWithAuth)
     }
 
     // 
