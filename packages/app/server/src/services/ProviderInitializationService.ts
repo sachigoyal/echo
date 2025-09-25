@@ -9,7 +9,7 @@ import { extractIsStream } from './RequestDataService';
 import { getProvider } from '../providers/ProviderFactory';
 import { EchoControlService } from './EchoControlService';
 import { BaseProvider } from '../providers/BaseProvider';
-import { PROXY_PASSTHROUGH_ONLY_MODEL } from '../providers/GeminiVeoProvider';
+import { GeminiVeoProvider } from '../providers/GeminiVeoProvider';
 
 /**
  * Detects if the request is a proxy route, and should be forwarded rather
@@ -29,44 +29,11 @@ export function detectPassthroughProxyRoute(
       providerId: string;
     }
   | undefined {
-  // Gemini Veo3 Passthrough Proxy detection
-  const passThroughPrefixes = ['/v1beta/files'];
-  // https://generativelanguage.googleapis.com/v1beta/models/veo-3.0-generate-001/operations/i7yyoxmbqsib
-  const passThroughSuffixes = ['/operations/'];
-
-  const matchesPrefix = passThroughPrefixes.find(prefix =>
-    req.path.startsWith(prefix)
+  return GeminiVeoProvider.detectPassthroughProxy(
+    req,
+    echoControlService,
+    extractIsStream
   );
-  const matchesSuffix = passThroughSuffixes.find(suffix =>
-    req.path.includes(suffix)
-  );
-
-  if (!matchesPrefix && !matchesSuffix) {
-    return undefined;
-  }
-
-  // Extract requestId from either files or operations path
-  const providerId =
-    req.path.match(/\/files\/([^/:]+)(?::|$)/)?.[1] ??
-    req.path.match(/\/operations\/([^\/]+)$/)?.[1] ??
-    null;
-  if (!providerId) {
-    return undefined;
-  }
-
-  const model = PROXY_PASSTHROUGH_ONLY_MODEL;
-
-  const isStream = extractIsStream(req);
-
-  // Get the appropriate provider
-  const provider = getProvider(model, echoControlService, isStream, req.path);
-
-  return {
-    provider,
-    model,
-    isStream,
-    providerId,
-  };
 }
 
 export async function initializeProvider(
