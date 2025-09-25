@@ -18,9 +18,11 @@ import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
 import { Network, X402ChallengeParams, X402Version } from './types';
-import { ERC20_CONTRACT_ABI, USDC_ADDRESS } from 'services/fund-repo/constants';
-import { Abi, encodeFunctionData } from 'viem';
+import { ERC20_CONTRACT_ABI, ERC3009_ABI, USDC_ADDRESS } from 'services/fund-repo/constants';
+import { Abi, encodeFunctionData, serializeTransaction } from 'viem';
 import { FacilitatorClient } from 'facilitatorClient';
+import { encode } from 'punycode';
+import { signTransferWithAuthorization } from 'signature';
 
 dotenv.config();
 
@@ -104,6 +106,7 @@ function alvaroInferenceCostEstimation(): string {
   return "1";
 }
 
+
 // Main route handler - handles authentication, escrow, and business logic
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
@@ -120,6 +123,25 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         payment_payload: req.body.payment_payload,
         payment_requirements: req.body.payment_requirements,
       })
+    } else {
+      // Step 1: Authentication
+      const { processedHeaders, echoControlService } = await authenticateRequest(
+        req.headers as Record<string, string>,
+        prisma
+      );
+
+      const balanceCheckResult = await checkBalance(echoControlService);
+
+      // Step 2: Set up escrow context and apply escrow middleware logic
+      transactionEscrowMiddleware.setupEscrowContext(
+        req,
+        echoControlService.getUserId()!,
+        echoControlService.getEchoAppId()!,
+        balanceCheckResult.effectiveBalance ?? 0
+      );
+
+      // Apply escrow middleware logic inline
+      await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
     }
 
     // check if request is a PAYMENT HEADER
@@ -127,24 +149,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     // const result = await cdp.evm.sendUserOperation({
     // function transferWithAuthorization(
 
-    // Step 1: Authentication
-    const { processedHeaders, echoControlService } = await authenticateRequest(
-      req.headers as Record<string, string>,
-      prisma
-    );
-
-    const balanceCheckResult = await checkBalance(echoControlService);
-
-    // Step 2: Set up escrow context and apply escrow middleware logic
-    transactionEscrowMiddleware.setupEscrowContext(
-      req,
-      echoControlService.getUserId()!,
-      echoControlService.getEchoAppId()!,
-      balanceCheckResult.effectiveBalance ?? 0
-    );
-
-    // Apply escrow middleware logic inline
-    await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
     // first settle with full amount (alvaro functions)
     // signature of client
@@ -158,7 +162,19 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         echoControlService
       );
     
-    const inferenceCost = transaction.rawTransactionCost;
+    if (isX402Request(headers)) {
+      const inferenceCost = transaction.rawTransactionCost;
+
+      const signature = await signTransferWithAuthorization(
+        "0x0000000000000000000000000000000000000000",
+        BigInt(inferenceCost.toString()),
+        0n,
+        0n,
+        "0x0000000000000000000000000000000000000000"k
+      )
+
+      // we need to do the refund through another settle from server to client
+    }
 
     // 
     // TODO: does another settle, funds go from server -> client // 3009 transferWithAuth
