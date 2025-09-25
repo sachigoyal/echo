@@ -18,6 +18,7 @@ import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
 import { initializeProvider } from './services/ProviderInitializationService';
 import { makeProxyPassthroughRequest } from './services/ProxyPassthroughService';
+import { getRequestMaxCost } from './services/PricingService';
 
 dotenv.config();
 
@@ -76,6 +77,15 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       req.headers as Record<string, string>,
       prisma
     );
+    
+    const { provider, isStream, isPassthroughProxyRoute, providerId } = await initializeProvider(
+      req,
+      res,
+      echoControlService
+    );
+
+    const maxCost = getRequestMaxCost(req, provider);
+
     const balanceCheckResult = await checkBalance(echoControlService);
     
     // Step 2: Set up escrow context and apply escrow middleware logic
@@ -90,13 +100,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
 
-    // NEXT    
-    const { provider, isStream, isPassthroughProxyRoute, providerId } = await initializeProvider(
-      req,
-      res,
-      echoControlService
-    );
-
+    // NEXT 
     if (isPassthroughProxyRoute && providerId) {
       return await makeProxyPassthroughRequest(req, res, provider, processedHeaders, providerId);
     }
