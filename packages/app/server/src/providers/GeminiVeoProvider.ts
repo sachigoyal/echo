@@ -82,8 +82,6 @@ export class GeminiVeoProvider extends BaseProvider {
       );
     }
 
-    console.log('videoModelPrice', videoModelPrice);
-
     const totalCost = new Decimal(
       generateAudio
         ? videoModelPrice.cost_per_second_with_audio
