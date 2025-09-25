@@ -82,7 +82,6 @@ export function extractMaxOutputTokens(req: Request): number {
     return geminiMaxOutputTokens;
   }
 
-  
   return Number(process.env.MAX_OUTPUT_TOKENS) || 0;
 }
 
