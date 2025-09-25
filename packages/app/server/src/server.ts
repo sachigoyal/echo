@@ -16,7 +16,7 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
-import { Network } from './types';
+import { Network, X402ChallengeParams } from './types';
 
 dotenv.config();
 
@@ -103,6 +103,11 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   }
 });
 
+function buildX402Challenge(params: X402ChallengeParams): string {
+  const esc = (value: string) => value.replace(/"/g, '\\"');
+  return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`
+}
+
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response) => {
   logger.error(
@@ -111,10 +116,17 @@ app.use((error: Error, req: Request, res: Response) => {
 
   if (error instanceof PaymentRequiredError) {
     // TODO: hardcoded amount for now, we need to determine how much 
-    // `executeModelRequest` is going to cost before executing it
+    // `executeModelRequest` is going to cost before executing it.
+    // Alvaro is working on this.
     const amount = '1'; 
+
     const network = Network.BASE;
-    
+    const paymentUrl = `${process.env.ECHO_CONTROL_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
+
+    res.setHeader(
+      'WWW-Authenticate',
+
+    )
   }
 
   if (error instanceof HttpError) {

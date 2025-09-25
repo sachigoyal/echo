@@ -101,3 +101,15 @@ export interface EchoAccessJwtPayload {
 export enum Network {
   BASE = 'base',
 }
+
+export interface X402ChallengeParams {
+  realm: string;
+  link: string;
+  network: Network;
+}
+
+export interface X402PaymentBody {
+  type: 'x402';
+  url: string;
+  network: Network;
+}
