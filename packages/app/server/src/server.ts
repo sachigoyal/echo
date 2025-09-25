@@ -5,7 +5,7 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import multer from 'multer';
 import { authenticateRequest } from './auth';
 import logger, { logMetric } from './logger';
-import { HttpError } from './errors/http';
+import { HttpError, PaymentRequiredError } from './errors/http';
 import { PrismaClient } from './generated/prisma';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
 import {
@@ -16,6 +16,7 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
+import { Network } from './types';
 
 dotenv.config();
 
@@ -107,6 +108,14 @@ app.use((error: Error, req: Request, res: Response) => {
   logger.error(
     `Error handling request: ${error.message} | Stack: ${error.stack}`
   );
+
+  if (error instanceof PaymentRequiredError) {
+    // TODO: hardcoded amount for now, we need to determine how much 
+    // `executeModelRequest` is going to cost before executing it
+    const amount = '1'; 
+    const network = Network.BASE;
+    
+  }
 
   if (error instanceof HttpError) {
     logMetric('server.internal_error', 1, {

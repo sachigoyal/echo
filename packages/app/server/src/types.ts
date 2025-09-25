@@ -97,3 +97,7 @@ export interface EchoAccessJwtPayload {
   iat: number;
   jti: string;
 }
+
+export enum Network {
+  BASE = 'base',
+}
