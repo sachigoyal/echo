@@ -8,7 +8,7 @@ import { Response } from 'express';
 import { getVideoModelPrice } from '../services/AccountingService';
 import { EchoDbService } from '../services/DbService';
 import { prisma } from '../server';
-import logger from 'logger';
+import logger from '../logger';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import { ReadableStream as NodeWebReadableStream } from 'node:stream/web';
