@@ -71,6 +71,7 @@ export class ModelRequestService {
       const transaction = await handleStreamService.handleStream(
         response,
         provider,
+        req,
         res
       );
       return {
@@ -82,6 +83,7 @@ export class ModelRequestService {
         await handleNonStreamingService.handleNonStreaming(
           response,
           provider,
+          req,
           res
         );
       return { transaction, data };

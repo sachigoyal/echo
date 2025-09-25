@@ -41,7 +41,10 @@ export abstract class BaseProvider {
       Authorization: `Bearer ${apiKey}`,
     };
   }
-  abstract handleBody(data: string): Promise<Transaction>;
+  abstract handleBody(
+    data: string,
+    requestBody?: Record<string, unknown>
+  ): Promise<Transaction>;
   getEchoControlService(): EchoControlService {
     return this.echoControlService;
   }

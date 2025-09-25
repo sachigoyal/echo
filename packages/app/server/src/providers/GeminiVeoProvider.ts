@@ -1,10 +1,11 @@
-import { HttpError } from '../errors/http';
+import { HttpError, UnknownModelError } from '../errors/http';
 import { Transaction } from '../types';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { Decimal } from '@prisma/client/runtime/library';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { Response } from 'express';
+import { getVideoModelPrice } from '../services/AccountingService';
 
 export interface VeoUsage {
   promptTokens: number;
@@ -58,7 +59,37 @@ export class GeminiVeoProvider extends BaseProvider {
     };
   }
 
-  async handleBody(data: string): Promise<Transaction> {
+  override async handleBody(
+    data: unknown,
+    requestBody?: Record<string, unknown>
+  ): Promise<Transaction> {
+    const providerId =
+      (data as { name: string }).name?.split('/').pop() || 'unknown';
+    if (!requestBody) {
+      throw new Error(
+        'In GeminiVeo3, the request body dictates the parameters for the request'
+      );
+    }
+
+    const durationSeconds: number = Number(requestBody.durationSeconds) || 8;
+    const generateAudio: boolean = Boolean(requestBody.generateAudio) || true;
+
+    const videoModelPrice = getVideoModelPrice(this.getModel());
+
+    if (!videoModelPrice) {
+      throw new UnknownModelError(
+        `No price found for model: ${this.getModel()}`
+      );
+    }
+
+    console.log('videoModelPrice', videoModelPrice);
+
+    const totalCost = new Decimal(
+      generateAudio
+        ? videoModelPrice.cost_per_second_with_audio
+        : videoModelPrice.cost_per_second_without_audio
+    ).mul(durationSeconds);
+
     // Left unimplemented as requested
     return {
       metadata: {
@@ -66,10 +97,10 @@ export class GeminiVeoProvider extends BaseProvider {
         outputTokens: 0,
         totalTokens: 0,
         model: this.getModel(),
-        providerId: 'null',
+        providerId: providerId,
         provider: this.getType(),
       },
-      rawTransactionCost: new Decimal(0),
+      rawTransactionCost: totalCost,
       status: 'success',
     };
   }

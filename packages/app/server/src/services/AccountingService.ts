@@ -80,16 +80,13 @@ const getImageModelPrice = (model: string) => {
   return null;
 };
 
-const getVideoModelPrice = (model: string) => {
+export const getVideoModelPrice = (
+  model: string
+): SupportedVideoModel | null => {
   const videoModel = VIDEO_MODEL_MAP.get(model);
 
   if (videoModel) {
-    return {
-      input_cost_per_token: videoModel.input_cost_per_token,
-      output_cost_per_token: videoModel.output_cost_per_token,
-      provider: videoModel.provider,
-      model: videoModel.model_id,
-    };
+    return videoModel;
   }
   return null;
 };
