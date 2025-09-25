@@ -9,6 +9,7 @@ export function getRequestMaxCost(
   req: Request,
   provider: BaseProvider
 ): Decimal {
+    // Need to switch between language/image/video for different pricing models.
   const headers = req.headers as Record<string, string>;
   const maxInputTokens = Number(headers['content-length']) * 4;
   const maxOutputTokens = extractMaxOutputTokens(req) || 0;
