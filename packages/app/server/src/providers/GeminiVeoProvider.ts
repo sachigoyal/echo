@@ -22,18 +22,6 @@ import {
 import type { Request } from 'express';
 import type { EchoControlService } from '../services/EchoControlService';
 
-export interface VeoUsage {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
-}
-
-export interface VeoResponse {
-  usage?: VeoUsage;
-  id?: string;
-  // Add other Veo3 response fields as needed
-}
-
 export const PROXY_PASSTHROUGH_ONLY_MODEL = 'PROXY_PLACEHOLDER_GEMINI_VEO';
 
 export class GeminiVeoProvider extends BaseProvider {
