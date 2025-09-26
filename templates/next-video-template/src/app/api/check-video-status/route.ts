@@ -1,17 +1,23 @@
-import { checkGeminiOperationStatus } from '../generate-video/gemini';
+import { checkGeminiOperationStatus, checkGeminiOperationStatusByName } from '../generate-video/gemini';
 
 export async function POST(request: Request) {
   try {
-    const { operationData } = await request.json();
+    const body = await request.json();
+    const operationData: string | undefined = body?.operationData;
+    const operationName: string | undefined = body?.operationName;
 
-    if (!operationData) {
+    if (!operationData && !operationName) {
       return Response.json(
-        { error: 'operationData is required' },
+        { error: 'operationData or operationName is required' },
         { status: 400 }
       );
     }
 
-    return checkGeminiOperationStatus(operationData);
+    if (operationName) {
+      return checkGeminiOperationStatusByName(operationName);
+    }
+
+    return checkGeminiOperationStatus(operationData as string);
   } catch (error) {
     return Response.json(
       { error: 'Invalid request body' },

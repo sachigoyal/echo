@@ -4,7 +4,7 @@
 
 import { getEchoToken } from '@/echo';
 import { ERROR_MESSAGES } from '@/lib/constants';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, GenerateVideosOperation } from '@google/genai';
 /**
  * Initiates Google Veo video generation and returns operation immediately
  */
@@ -117,6 +117,71 @@ export async function checkGeminiOperationStatus(
     });
   } catch (error) {
     console.error('Error checking operation status:', error);
+    return Response.json(
+      {
+        status: 'failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to check operation status',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Checks the status of a video generation operation by operation name only
+ */
+export async function checkGeminiOperationStatusByName(
+  operationName: string
+): Promise<Response> {
+  try {
+    const apiKey = await getEchoToken();
+
+    if (!apiKey) {
+      return Response.json(
+        { error: 'API key not configured' },
+        { status: 500 }
+      );
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        baseUrl: 'https://echo-staging.up.railway.app',
+      },
+    });
+
+    const newOperation = new GenerateVideosOperation();
+
+    newOperation.name = operationName
+
+    // Build a minimal operation object using only the name
+    const operation = await ai.operations.getVideosOperation({
+      operation: newOperation,
+    });
+
+    if (operation.done) {
+      const video = operation.response?.generatedVideos?.[0]?.video;
+
+      if (!video || !video.uri) {
+        return Response.json({
+          status: 'failed',
+          error: ERROR_MESSAGES.NO_VIDEO_GENERATED,
+        });
+      }
+
+      const proxiedUrl = `/api/proxy-video?uri=${encodeURIComponent(video.uri)}`;
+      return Response.json({
+        status: 'completed',
+        videoUrl: proxiedUrl,
+      });
+    }
+
+    return Response.json({ status: 'processing' });
+  } catch (error) {
+    console.error('Error checking operation status by name:', error);
     return Response.json(
       {
         status: 'failed',

@@ -29,6 +29,7 @@ import type {
   VideoOperation,
 } from '@/lib/types';
 import { videoOperationsStorage } from '@/lib/video-operations';
+import { videoHistoryStorage } from '@/lib/video-history';
 import { VideoHistory } from './video-history';
 
 /**
@@ -91,6 +92,21 @@ export default function VideoGenerator() {
   const [activeOperations, setActiveOperations] = useState<Map<string, VideoOperation>>(new Map());
   const promptInputRef = useRef<HTMLFormElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Load existing history on mount
+  useEffect(() => {
+    const existing = videoHistoryStorage.getAll();
+    if (existing.length > 0) {
+      setVideoHistory(existing);
+    }
+  }, []);
+
+  // Persist history on change
+  useEffect(() => {
+    if (videoHistory.length >= 0) {
+      videoHistoryStorage.setAll(videoHistory);
+    }
+  }, [videoHistory]);
+
 
   const clearForm = useCallback(() => {
     promptInputRef.current?.reset();
@@ -251,7 +267,12 @@ export default function VideoGenerator() {
       });
 
       setActiveOperations(operationsMap);
-      setVideoHistory(prev => [...historyVideos, ...prev]);
+      setVideoHistory(prev => {
+        // Avoid duplicating entries by id
+        const existingIds = new Set(prev.map(v => v.id));
+        const merged = [...historyVideos.filter(v => !existingIds.has(v.id)), ...prev];
+        return merged;
+      });
     }
   }, []);
 
@@ -439,7 +460,13 @@ export default function VideoGenerator() {
         </PromptInputToolbar>
       </PromptInput>
 
-      <VideoHistory videoHistory={videoHistory} />
+      <VideoHistory
+        videoHistory={videoHistory}
+        onAppendVideo={video => setVideoHistory(prev => [video, ...prev])}
+        onUpdateVideo={(id, updates) =>
+          setVideoHistory(prev => prev.map(v => (v.id === id ? { ...v, ...updates } : v)))
+        }
+      />
     </div>
   );
 }
