@@ -52,14 +52,6 @@ export function VideoDetailsDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Video Details</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X size={16} />
-            </Button>
           </DialogTitle>
         </DialogHeader>
 
