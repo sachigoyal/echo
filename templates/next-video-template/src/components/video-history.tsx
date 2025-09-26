@@ -48,9 +48,13 @@ const VideoHistoryItem = React.memo(function VideoHistoryItem({
   const handleDownload = useCallback(() => {
     if (!video.videoUrl) return;
 
-    // Create a link element and trigger download
+    // Always proxy through server to add auth and rewrite host
+    const proxied = `/api/proxy-video?uri=${encodeURIComponent(
+      video.videoUrl
+    )}&download=1`;
+
     const link = document.createElement('a');
-    link.href = video.videoUrl;
+    link.href = proxied;
     link.download = `video_${video.id}.mp4`;
     document.body.appendChild(link);
     link.click();
@@ -59,7 +63,7 @@ const VideoHistoryItem = React.memo(function VideoHistoryItem({
 
   const handleCopy = useCallback(async () => {
     if (!video.videoUrl) return;
-    
+
     try {
       await navigator.clipboard.writeText(video.videoUrl);
     } catch (error) {
@@ -67,7 +71,9 @@ const VideoHistoryItem = React.memo(function VideoHistoryItem({
     }
   }, [video]);
 
-  const isActionable = Boolean(video.videoUrl && !video.isLoading && !video.error);
+  const isActionable = Boolean(
+    video.videoUrl && !video.isLoading && !video.error
+  );
 
   return (
     <div
@@ -185,10 +191,7 @@ export const VideoHistory = React.memo(function VideoHistory({
         ))}
       </div>
 
-      <VideoDetailsDialog
-        video={selectedVideo}
-        onClose={handleCloseDialog}
-      />
+      <VideoDetailsDialog video={selectedVideo} onClose={handleCloseDialog} />
     </div>
   );
 });

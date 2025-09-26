@@ -33,9 +33,7 @@ import { VideoHistory } from './video-history';
  * Available AI models for video generation
  * These models integrate with the Echo SDK to provide different video generation capabilities
  */
-const models: VideoModelConfig[] = [
-  { id: 'veo-3', name: 'Veo 3 Fast' },
-];
+const models: VideoModelConfig[] = [{ id: 'veo-3', name: 'Veo 3 Fast' }];
 
 /**
  * API functions for video generation
@@ -111,21 +109,23 @@ export default function VideoGenerator() {
       setVideoHistory(prev => [placeholderVideo, ...prev]);
 
       try {
-        const result = await generateVideo({ 
-          prompt, 
-          model, 
-          durationSeconds 
+        const result = await generateVideo({
+          prompt,
+          model,
+          durationSeconds,
         });
 
         // Update the existing placeholder entry with the result
         setVideoHistory(prev =>
           prev.map(vid =>
-            vid.id === videoId ? { 
-              ...vid, 
-              videoUrl: result.videoUrl, 
-              operationName: result.operationName,
-              isLoading: false 
-            } : vid
+            vid.id === videoId
+              ? {
+                  ...vid,
+                  videoUrl: result.videoUrl,
+                  operationName: result.operationName,
+                  isLoading: false,
+                }
+              : vid
           )
         );
       } catch (error) {
@@ -180,9 +180,12 @@ export default function VideoGenerator() {
                 ))}
               </PromptInputModelSelectContent>
             </PromptInputModelSelect>
-            
+
             <div className="flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg bg-white">
-              <Label htmlFor="duration-slider" className="text-sm font-medium whitespace-nowrap">
+              <Label
+                htmlFor="duration-slider"
+                className="text-sm font-medium whitespace-nowrap"
+              >
                 Duration: {durationSeconds}s
               </Label>
               <Slider
@@ -190,7 +193,7 @@ export default function VideoGenerator() {
                 value={[durationSeconds]}
                 onValueChange={([value]) => setDurationSeconds(value)}
                 min={1}
-                max={60}
+                max={8}
                 step={1}
                 className="w-20"
               />

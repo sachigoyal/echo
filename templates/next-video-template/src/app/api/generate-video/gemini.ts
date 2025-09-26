@@ -2,9 +2,9 @@
  * Google Gemini Veo video generation handler
  */
 
-import { GoogleGenAI, GenerateVideosOperation } from '@google/genai';
+import { getEchoToken } from '@/echo';
 import { ERROR_MESSAGES } from '@/lib/constants';
-
+import { GoogleGenAI } from '@google/genai';
 /**
  * Handles Google Veo video generation
  */
@@ -13,8 +13,8 @@ export async function handleGeminiGenerate(
   durationSeconds: number = 4
 ): Promise<Response> {
   try {
-    const apiKey = process.env.ECHO_API_KEY;
-    
+    const apiKey = await getEchoToken();
+
     if (!apiKey) {
       return Response.json(
         { error: 'API key not configured' },
@@ -25,7 +25,7 @@ export async function handleGeminiGenerate(
     const ai = new GoogleGenAI({
       apiKey,
       httpOptions: {
-        baseUrl: 'http://localhost:3070',
+        baseUrl: 'https://echo-staging.up.railway.app',
       },
     });
 
@@ -47,7 +47,7 @@ export async function handleGeminiGenerate(
     }
 
     const video = operation.response?.generatedVideos?.[0]?.video;
-    
+
     if (!video) {
       return Response.json(
         { error: ERROR_MESSAGES.NO_VIDEO_GENERATED },
@@ -55,9 +55,15 @@ export async function handleGeminiGenerate(
       );
     }
 
-    // For now, return the video URI - in a real app you might want to download and serve it
+    // Return a proxied URL so the player can access the protected video via server-side auth
+    const uri = video.uri;
+    if (!uri) {
+      return Response.json({ error: 'Missing video uri' }, { status: 500 });
+    }
+
+    const proxiedUrl = `/api/proxy-video?uri=${encodeURIComponent(uri)}`;
     return Response.json({
-      videoUrl: video.uri,
+      videoUrl: proxiedUrl,
       operationName: operation.name,
     });
   } catch (error) {

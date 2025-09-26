@@ -11,5 +11,7 @@ export const {
   getUser,
   getEchoToken,
 } = Echo({
-  appId,
+  appId: 'c0d441c4-8176-4bd6-925a-a0e8885f4e90', // staging-echo
+  baseEchoUrl: 'https://staging-echo.merit.systems',
+  baseRouterUrl: 'https://echo-staging.up.railway.app',
 });
