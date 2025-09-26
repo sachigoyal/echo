@@ -118,11 +118,41 @@ export interface GenerateVideoRequest {
 }
 
 /**
+ * Video operation status tracking
+ */
+export interface VideoOperation {
+  /** Unique identifier for the operation */
+  id: string;
+  /** Operation name from the API */
+  operationName: string;
+  /** User prompt */
+  prompt: string;
+  /** AI model used */
+  model: VideoModelOption;
+  /** Duration in seconds */
+  durationSeconds: number;
+  /** When the operation was started */
+  timestamp: Date;
+  /** Current status */
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  /** Video URL when completed */
+  videoUrl?: string;
+  /** Error message if failed */
+  error?: string;
+  /** Serialized operation object for API calls */
+  operationData?: string;
+}
+
+/**
  * Response from video generation API
  */
 export interface VideoResponse {
-  videoUrl: string;
-  operationName?: string;
+  videoUrl?: string;
+  operationName: string;
+  operationId: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  error?: string;
+  operationData?: string;
 }
 
 /**

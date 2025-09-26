@@ -6,7 +6,7 @@ import { getEchoToken } from '@/echo';
 import { ERROR_MESSAGES } from '@/lib/constants';
 import { GoogleGenAI } from '@google/genai';
 /**
- * Handles Google Veo video generation
+ * Initiates Google Veo video generation and returns operation immediately
  */
 export async function handleGeminiGenerate(
   prompt: string,
@@ -29,7 +29,7 @@ export async function handleGeminiGenerate(
       },
     });
 
-    let operation = await ai.models.generateVideos({
+    const operation = await ai.models.generateVideos({
       model: 'veo-3.0-fast-generate-001',
       prompt,
       config: {
@@ -37,34 +37,16 @@ export async function handleGeminiGenerate(
       },
     });
 
-    // Poll the operation status until the video is ready
-    while (!operation.done) {
-      console.log('Waiting for video generation to complete...');
-      operation = await ai.operations.getVideosOperation({
-        operation: operation,
-      });
-      await new Promise(resolve => setTimeout(resolve, 10000));
-    }
+    // Store the complete operation object as serialized JSON for later use
+    const operationData = JSON.stringify(operation);
 
-    const video = operation.response?.generatedVideos?.[0]?.video;
-
-    if (!video) {
-      return Response.json(
-        { error: ERROR_MESSAGES.NO_VIDEO_GENERATED },
-        { status: 500 }
-      );
-    }
-
-    // Return a proxied URL so the player can access the protected video via server-side auth
-    const uri = video.uri;
-    if (!uri) {
-      return Response.json({ error: 'Missing video uri' }, { status: 500 });
-    }
-
-    const proxiedUrl = `/api/proxy-video?uri=${encodeURIComponent(uri)}`;
+    // Return operation info immediately without polling
     return Response.json({
-      videoUrl: proxiedUrl,
       operationName: operation.name,
+      operationId: operation.name, // Use Gemini's operation name as ID
+      status: operation.done ? 'completed' : 'pending',
+      videoUrl: undefined, // Will be set when operation completes
+      operationData, // Pass the operation data to client
     });
   } catch (error) {
     console.error('Gemini video generation error:', error);
@@ -74,6 +56,74 @@ export async function handleGeminiGenerate(
           error instanceof Error
             ? error.message
             : ERROR_MESSAGES.NO_VIDEO_GENERATED,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Checks the status of a video generation operation
+ * We need to pass the serialized operation object that was returned from generateVideos
+ */
+export async function checkGeminiOperationStatus(
+  operationData: string
+): Promise<Response> {
+  try {
+    const apiKey = await getEchoToken();
+
+    if (!apiKey) {
+      return Response.json(
+        { error: 'API key not configured' },
+        { status: 500 }
+      );
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        baseUrl: 'https://echo-staging.up.railway.app',
+      },
+    });
+
+    // Deserialize the operation object
+    const operationObj = JSON.parse(operationData);
+
+    // Use the SDK method with the actual operation object
+    const operation = await ai.operations.getVideosOperation({
+      operation: operationObj,
+    });
+
+    if (operation.done) {
+      const video = operation.response?.generatedVideos?.[0]?.video;
+
+      if (!video || !video.uri) {
+        return Response.json({
+          status: 'failed',
+          error: ERROR_MESSAGES.NO_VIDEO_GENERATED,
+        });
+      }
+
+      // Return a proxied URL so the player can access the protected video via server-side auth
+      const proxiedUrl = `/api/proxy-video?uri=${encodeURIComponent(video.uri)}`;
+      return Response.json({
+        status: 'completed',
+        videoUrl: proxiedUrl,
+      });
+    }
+
+    return Response.json({
+      status: 'processing',
+    });
+  } catch (error) {
+    console.error('Error checking operation status:', error);
+    return Response.json(
+      {
+        status: 'failed',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to check operation status',
       },
       { status: 500 }
     );
