@@ -12,7 +12,7 @@ export async function handleX402Request(
     ) {
     const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
 
-    facilitator.settle({
+    await facilitator.settle({
         x402_version: X402Version.V1,
         payment_payload: req.body.payment_payload,
         payment_requirements: req.body.payment_requirements,
