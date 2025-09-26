@@ -49,7 +49,6 @@ export interface Balance {
   balance: number;
 }
 
-
 export interface TransactionMetadata {
   providerId: string;
   provider: string;
@@ -65,7 +64,7 @@ export interface LlmTransactionMetadata extends TransactionMetadata {
   toolCost?: Decimal;
 }
 
-export interface VeoTransactionMetadata extends TransactionMetadata{
+export interface VeoTransactionMetadata extends TransactionMetadata {
   durationSeconds: number;
   generateAudio: boolean;
 }
@@ -112,11 +111,15 @@ export interface EchoAccessJwtPayload {
 }
 
 // Type guard functions for transaction metadata
-export function isLlmTransactionMetadata(metadata: LlmTransactionMetadata | VeoTransactionMetadata): metadata is LlmTransactionMetadata {
+export function isLlmTransactionMetadata(
+  metadata: LlmTransactionMetadata | VeoTransactionMetadata
+): metadata is LlmTransactionMetadata {
   return 'inputTokens' in metadata;
 }
 
-export function isVeoTransactionMetadata(metadata: LlmTransactionMetadata | VeoTransactionMetadata): metadata is VeoTransactionMetadata {
+export function isVeoTransactionMetadata(
+  metadata: LlmTransactionMetadata | VeoTransactionMetadata
+): metadata is VeoTransactionMetadata {
   return 'durationSeconds' in metadata;
 }
 
@@ -188,7 +191,6 @@ export interface PaymentRequirements {
 export interface VerifyResponse {
   verified: boolean;
   transaction_id?: string;
-
 }
 
 export interface VerifyRequest {
@@ -210,14 +212,17 @@ export interface SupportedPaymentKind {
   x402_version: X402Version;
   schema: Schema;
   network: Network;
-  extra?: {fee_payer: Address};
+  extra?: { fee_payer: Address };
 }
 
 export interface SupportedPaymentKindsResponse {
   kinds: SupportedPaymentKind[];
 }
 
-export type TransferWithAuthorization = Omit<ExactEvmPayloadAuthorization, 'from'>;
+export type TransferWithAuthorization = Omit<
+  ExactEvmPayloadAuthorization,
+  'from'
+>;
 
 export type HandlerInput = {
   req: EscrowRequest;
@@ -229,4 +234,4 @@ export type HandlerInput = {
   providerId: string | null;
   provider: BaseProvider;
   isStream: boolean;
-}
+};

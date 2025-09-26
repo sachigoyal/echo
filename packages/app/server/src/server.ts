@@ -88,12 +88,32 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     }
 
     if (isX402Request(headers)) {
-      await handleX402Request({req, res, processedHeaders, echoControlService, maxCost, isPassthroughProxyRoute, providerId, provider, isStream});
+      await handleX402Request({
+        req,
+        res,
+        processedHeaders,
+        echoControlService,
+        maxCost,
+        isPassthroughProxyRoute,
+        providerId,
+        provider,
+        isStream,
+      });
       return;
     }
 
     if (isApiRequest(headers)) {
-      await handleApiKeyRequest({req, res, processedHeaders, echoControlService, maxCost, isPassthroughProxyRoute, providerId, provider, isStream});
+      await handleApiKeyRequest({
+        req,
+        res,
+        processedHeaders,
+        echoControlService,
+        maxCost,
+        isPassthroughProxyRoute,
+        providerId,
+        provider,
+        isStream,
+      });
       return;
     }
 
@@ -104,7 +124,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     return next(error);
   }
 });
-
 
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response) => {
@@ -142,7 +161,7 @@ app.use((error: Error, req: Request, res: Response) => {
 
   return res.status(500).json({
     erorr: 'Internal Server Error',
-  })
+  });
 });
 
 // Graceful shutdown handler

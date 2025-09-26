@@ -7,12 +7,12 @@ export const DOMAIN_CHAIN_ID = 8453;
 
 export const TRANSFER_WITH_AUTHORIZATION_NAME = 'TransferWithAuthorization';
 export const TRANSFER_WITH_AUTHORIZATION_TYPE = {
-    TransferWithAuthorization: [
-        { name: 'from', type: 'address' },
-        { name: 'to', type: 'address' },
-        { name: 'value', type: 'uint256' },
-        { name: 'validAfter', type: 'uint256' },
-        { name: 'validBefore', type: 'uint256' },
-        { name: 'nonce', type: 'uint256' },
-    ]
+  TransferWithAuthorization: [
+    { name: 'from', type: 'address' },
+    { name: 'to', type: 'address' },
+    { name: 'value', type: 'uint256' },
+    { name: 'validAfter', type: 'uint256' },
+    { name: 'validBefore', type: 'uint256' },
+    { name: 'nonce', type: 'uint256' },
+  ],
 };
