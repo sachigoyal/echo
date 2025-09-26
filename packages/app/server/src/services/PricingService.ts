@@ -34,7 +34,7 @@ export function getRequestMaxCost(
     return new Decimal(0);
   } else {
     const headers = req.headers as Record<string, string>;
-    const maxInputTokens = Number(headers['content-length']) * 4;
+    const maxInputTokens = Number(headers['content-length']) / 3;
     const maxOutputTokens = extractMaxOutputTokens(req) || 0;
     const modelWithPricing = getModelPrice(provider.getModel());
     if (!modelWithPricing) {
