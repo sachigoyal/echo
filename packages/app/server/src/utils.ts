@@ -1,5 +1,9 @@
 import { ExactEvmPayloadAuthorization, Network, X402ChallengeParams } from "types";
 import { Response } from 'express';
+import { SmartAccount } from "@coinbase/cdp-sdk/_types/client/evm/evm.types";
+import { CdpClient } from "@coinbase/cdp-sdk";
+import { WALLET_OWNER } from "./constants";
+import { WALLET_SMART_ACCOUNT } from "./constants";
 
 export function parseX402Headers(headers: Record<string, string>): ExactEvmPayloadAuthorization {
     return {
@@ -53,4 +57,17 @@ export function isApiRequest(headers: Record<string, string>): boolean {
 
 export function isX402Request(headers: Record<string, string>): boolean {
   return headers['x-402-challenge'] !== undefined;
+}
+
+export async function getSmartAccount(): Promise<{cdp: CdpClient, smartAccount: SmartAccount}> {
+    const cdp = new CdpClient();
+    const owner = await cdp.evm.getOrCreateAccount({
+        name: WALLET_OWNER,
+    });
+
+    const smartAccount = await cdp.evm.getOrCreateSmartAccount({
+        name: WALLET_SMART_ACCOUNT,
+        owner,
+    });
+    return {cdp, smartAccount};
 }

@@ -1,23 +1,16 @@
 import { CdpClient } from "@coinbase/cdp-sdk";
 import { ERC3009_ABI, USDC_ADDRESS } from "./services/fund-repo/constants";
-import { encodeFunctionData } from "viem/_types/utils/abi/encodeFunctionData";
-import { serializeTransaction } from "viem/_types/utils/transaction/serializeTransaction";
-import { WALLET_OWNER, WALLET_SMART_ACCOUNT, DOMAIN_NAME, DOMAIN_VERSION, DOMAIN_CHAIN_ID, TRANSFER_WITH_AUTHORIZATION_TYPE, TRANSFER_WITH_AUTHORIZATION_NAME } from "./constants";
+import { encodeFunctionData } from "viem";
+import { serializeTransaction } from "viem";
+import { DOMAIN_NAME, DOMAIN_VERSION, DOMAIN_CHAIN_ID, TRANSFER_WITH_AUTHORIZATION_TYPE, TRANSFER_WITH_AUTHORIZATION_NAME } from "./constants";
 import { Network, Schema, SettleRequest, TransferWithAuthorization, X402Version } from "types";
 import { FacilitatorClient } from "facilitatorClient";
+import { getSmartAccount } from "utils";
 
 export async function signTransferWithAuthorization(
     transfer: TransferWithAuthorization,
 ) {
-    const cdp = new CdpClient();
-    const owner = await cdp.evm.getOrCreateAccount({
-        name: WALLET_OWNER,
-    });
-
-    const smartAccount = await cdp.evm.getOrCreateSmartAccount({
-        name: WALLET_SMART_ACCOUNT,
-        owner,
-    });
+    const {cdp, smartAccount} = await getSmartAccount();
 
     const domain = {
         name: DOMAIN_NAME,
@@ -70,14 +63,7 @@ export async function signTransferWithAuthorization(
 export async function settleWithAuthorization(
   transfer: TransferWithAuthorization,
 ) {
-  const cdp = new CdpClient();
-  const owner = await cdp.evm.getOrCreateAccount({
-    name: WALLET_OWNER,
-  });
-  const smartAccount = await cdp.evm.getOrCreateSmartAccount({
-    name: WALLET_SMART_ACCOUNT,
-    owner,
-  });
+  const {smartAccount} = await getSmartAccount();
 
   const signature = await signTransferWithAuthorization(transfer);
   const network = process.env.NETWORK as Network;
