@@ -14,12 +14,8 @@ import {
 } from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
-import { checkBalance } from './services/BalanceCheckService';
-import { modelRequestService } from './services/ModelRequestService';
 import { Network } from './types';
-import { FacilitatorClient } from 'facilitatorClient';
-import { transferWithAuthorization } from 'transferWithAuth';
-import { parseX402Headers, alvaroInferenceCostEstimation, buildX402Response, isApiRequest, isX402Request } from 'utils';
+import { alvaroInferenceCostEstimation, buildX402Response, isApiRequest, isX402Request } from 'utils';
 import { handleX402Request, handleApiKeyRequest } from './handlers';
 
 dotenv.config();

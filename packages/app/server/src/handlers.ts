@@ -1,11 +1,9 @@
 import { FacilitatorClient } from "facilitatorClient";
-import { EscrowRequest, TransactionEscrowMiddleware } from "middleware/transaction-escrow-middleware";
+import { TransactionEscrowMiddleware } from "middleware/transaction-escrow-middleware";
 import { modelRequestService } from "services/ModelRequestService";
 import { HandlerInput, X402Version } from "types";
-import { Response } from "express";
-import { EchoControlService } from "services/EchoControlService";
 import { parseX402Headers } from "utils";
-import { transferWithAuthorization } from "transferWithAuth";
+import { settleWithAuthorization } from "transferWithAuth";
 import { checkBalance } from "services/BalanceCheckService";
 import { prisma } from "server";
 
@@ -32,7 +30,7 @@ export async function handleX402Request(
 
     const inferenceCost = transaction.rawTransactionCost;
     const refundAmount = (Number(req.body.payment_payload.value) - Number(inferenceCost)).toString()
-    const result = await transferWithAuthorization({...payload, value: refundAmount })
+    const result = await settleWithAuthorization({...payload, value: refundAmount })
 
     return {transaction, isStream, data, result, refundAmount};
 }
@@ -54,7 +52,7 @@ export async function handleApiKeyRequest(
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
     // Step 3: Execute business logic
-    const { transaction, isStream, data } =
+    const { transaction } =
       await modelRequestService.executeModelRequest(
         req,
         res,
