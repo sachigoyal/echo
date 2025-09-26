@@ -24,10 +24,8 @@ export async function handleX402Request({
   provider,
   isStream,
 }: HandlerInput) {
-  // check enough payload payment
   const payload = parseX402Headers(processedHeaders);
 
-  // Convert the incoming payment_payload.value from USDC BigInt to Decimal for comparison
   const paymentAmount = usdcBigIntToDecimal(
     req.body.payment_payload.payload.authorization.value
   );
