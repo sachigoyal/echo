@@ -8,6 +8,35 @@ import { WALLET_SMART_ACCOUNT } from "./constants";
 import { getRequestMaxCost } from "services/PricingService";
 import { Decimal } from "generated/prisma/runtime/library";
 
+/**
+ * USDC has 6 decimal places
+ */
+const USDC_DECIMALS = 6;
+const USDC_MULTIPLIER = 10 ** USDC_DECIMALS;
+
+/**
+ * Converts a decimal amount (USD) to USDC BigInt representation
+ * USDC has 6 decimal places, so $1.234567 becomes 1234567n
+ * @param amount Decimal amount in USD
+ * @returns BigInt representation for USDC
+ */
+export function decimalToUsdcBigInt(amount: Decimal | number): bigint {
+  const numericAmount = typeof amount === 'number' ? amount : Number(amount);
+  // Use Math.ceil for defensive rounding to avoid undercharging
+  return BigInt(Math.ceil(numericAmount * USDC_MULTIPLIER));
+}
+
+/**
+ * Converts USDC BigInt representation to decimal amount (USD)
+ * @param usdcBigInt BigInt representation of USDC amount
+ * @returns Decimal amount in USD
+ */
+export function usdcBigIntToDecimal(usdcBigInt: bigint | string): Decimal {
+  const bigIntValue = typeof usdcBigInt === 'string' ? BigInt(usdcBigInt) : usdcBigInt;
+  const decimalValue = Number(bigIntValue) / USDC_MULTIPLIER;
+  return new Decimal(decimalValue);
+}
+
 export function parseX402Headers(headers: Record<string, string>): ExactEvmPayloadAuthorization {
     return {
         from: headers['from'] as `0x${string}`,
@@ -32,7 +61,9 @@ function buildX402Challenge(params: X402ChallengeParams): string {
 
 export function buildX402Response(res: Response, maxCost: Decimal) {
   const network = process.env.NETWORK as Network;
-  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(costEstimation)}`;
+  // Convert maxCost from Decimal to USDC BigInt string for payment URL
+  const maxCostBigInt = decimalToUsdcBigInt(maxCost);
+  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(maxCostBigInt.toString())}`;
 
   res.setHeader(
     'WWW-Authenticate',

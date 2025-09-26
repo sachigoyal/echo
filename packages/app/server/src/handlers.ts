@@ -2,7 +2,7 @@ import { FacilitatorClient } from "facilitatorClient";
 import { TransactionEscrowMiddleware } from "middleware/transaction-escrow-middleware";
 import { modelRequestService } from "services/ModelRequestService";
 import { HandlerInput, X402Version } from "types";
-import { parseX402Headers } from "utils";
+import { parseX402Headers, usdcBigIntToDecimal, decimalToUsdcBigInt, buildX402Response } from "utils";
 import { settleWithAuthorization } from "transferWithAuth";
 import { checkBalance } from "services/BalanceCheckService";
 import { prisma } from "server";
@@ -12,6 +12,15 @@ export async function handleX402Request(
         {req, res, processedHeaders, echoControlService, maxCost, isPassthroughProxyRoute, providerId, provider, isStream}: HandlerInput
     ) {
     // check enough payload payment
+    const payload = parseX402Headers(processedHeaders)
+    
+    // Convert the incoming payment_payload.value from USDC BigInt to Decimal for comparison
+    const paymentAmount = usdcBigIntToDecimal(req.body.payment_payload.payload.authorization.value);
+    if (paymentAmount.lessThan(maxCost)) {
+      buildX402Response(res, maxCost);
+      return;
+    }
+    
     const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
 
     await facilitator.settle({
@@ -38,17 +47,15 @@ export async function handleX402Request(
         provider,
         isStream
       );
+    modelRequestService.handleResolveResponse(res, isStream, data);
 
-    // SHAFU: I think there needs to be some changes here.
-    // modelRequestService.handleResolveResponse(res, isStream, data);
-
-    const payload = parseX402Headers(processedHeaders)
-
+    // x402 refund logic
     const inferenceCost = transaction.rawTransactionCost;
-    const refundAmount = (Number(req.body.payment_payload.value) - Number(inferenceCost)).toString()
-    const result = await settleWithAuthorization({...payload, value: refundAmount })
+    const refundAmountDecimal = paymentAmount.minus(inferenceCost);
+    const refundAmountBigInt = decimalToUsdcBigInt(refundAmountDecimal);
+    const result = await settleWithAuthorization({...payload, value: refundAmountBigInt.toString() })
 
-    return {transaction, isStream, data, result, refundAmount};
+    return {transaction, isStream, data, result, refundAmount: refundAmountDecimal};
 }
 
 export async function handleApiKeyRequest(
