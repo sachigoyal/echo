@@ -74,17 +74,19 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
 
+    const costEstimation = alvaroInferenceCostEstimation();
+
     if (!isApiRequest(headers) && !isX402Request(headers)) {
-      return buildX402Response(res, alvaroInferenceCostEstimation(), Network.BASE);
+      return buildX402Response(res, costEstimation, Network.BASE);
     }
 
     const { processedHeaders, echoControlService } = await authenticateRequest(
-      req.headers as Record<string, string>,
+      headers,
       prisma
     );
 
     if (isX402Request(headers)) {
-      handleX402Request(req, res, processedHeaders, echoControlService, alvaroInferenceCostEstimation());
+      handleX402Request(req, res, processedHeaders, echoControlService, costEstimation);
     } 
 
     if (isApiRequest(headers)) {

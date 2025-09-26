@@ -17,11 +17,12 @@ export async function handleX402Request(
         estimatedCost: string,
     ) {
     const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
-      facilitator.settle({
+
+    facilitator.settle({
         x402_version: X402Version.V1,
         payment_payload: req.body.payment_payload,
         payment_requirements: req.body.payment_requirements,
-      })
+    })
 
     const { transaction, isStream, data } =
       await modelRequestService.executeModelRequest(
@@ -35,9 +36,12 @@ export async function handleX402Request(
 
     const payload = parseX402Headers(processedHeaders)
 
-    const result = await transferWithAuthorization({...payload, value: (Number(estimatedCost) - Number(inferenceCost)).toString() })
+    // get the actual amount paid
+    // throw warning if amount is bigggg boy
+    const refundAmount = (Number(estimatedCost) - Number(inferenceCost)).toString()
+    const result = await transferWithAuthorization({...payload, value: refundAmount })
 
-    return {transaction, isStream, data, result};
+    return {transaction, isStream, data, result, refundAmount};
 }
 
 export async function handleApiKeyRequest(
