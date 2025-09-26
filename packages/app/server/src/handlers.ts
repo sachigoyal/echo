@@ -1,7 +1,7 @@
 import { FacilitatorClient } from "facilitatorClient";
 import { EscrowRequest, TransactionEscrowMiddleware } from "middleware/transaction-escrow-middleware";
 import { modelRequestService } from "services/ModelRequestService";
-import { X402Version } from "types";
+import { HandlerInput, X402Version } from "types";
 import { Response } from "express";
 import { EchoControlService } from "services/EchoControlService";
 import { parseX402Headers } from "utils";
@@ -10,10 +10,7 @@ import { checkBalance } from "services/BalanceCheckService";
 import { prisma } from "server";
 
 export async function handleX402Request(
-        req: EscrowRequest,
-        res: Response,
-        processedHeaders: Record<string, string>,
-        echoControlService: EchoControlService,
+        {req, res, processedHeaders, echoControlService}: HandlerInput
     ) {
     const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
 
@@ -41,10 +38,7 @@ export async function handleX402Request(
 }
 
 export async function handleApiKeyRequest(
-    req: EscrowRequest,
-    res: Response,
-    processedHeaders: Record<string, string>,
-    echoControlService: EchoControlService,
+    {req, res, processedHeaders, echoControlService}: HandlerInput
 ) {
     const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
     const balanceCheckResult = await checkBalance(echoControlService);

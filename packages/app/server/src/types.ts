@@ -1,4 +1,7 @@
 import { Decimal } from '@prisma/client/runtime/library';
+import { EscrowRequest } from 'middleware/transaction-escrow-middleware';
+import { EchoControlService } from 'services/EchoControlService';
+import { Response } from 'express';
 
 export interface EchoApp {
   id: string;
@@ -195,3 +198,10 @@ export interface SupportedPaymentKindsResponse {
 }
 
 export type TransferWithAuthorization = Omit<ExactEvmPayloadAuthorization, 'from'>;
+
+export type HandlerInput = {
+  req: EscrowRequest;
+  res: Response;
+  processedHeaders: Record<string, string>;
+  echoControlService: EchoControlService;
+}

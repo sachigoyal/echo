@@ -85,12 +85,12 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     }
 
     if (isX402Request(headers)) {
-      await handleX402Request(req, res, processedHeaders, echoControlService);
+      await handleX402Request({req, res, processedHeaders, echoControlService});
       return;
     }
 
     if (isApiRequest(headers)) {
-      await handleApiKeyRequest(req, res, processedHeaders, echoControlService);
+      await handleApiKeyRequest({req, res, processedHeaders, echoControlService});
       return;
     }
 
