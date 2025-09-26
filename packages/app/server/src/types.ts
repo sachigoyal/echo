@@ -103,6 +103,7 @@ export interface EchoAccessJwtPayload {
 
 export enum Network {
   BASE = 'base',
+  BASE_SEPOLIA = 'base-sepolia',
 }
 
 export interface X402ChallengeParams {

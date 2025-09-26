@@ -80,13 +80,14 @@ export async function settleWithAuthorization(
   });
 
   const signature = await signTransferWithAuthorization(transfer);
+  const network = process.env.NETWORK as Network;
 
   const settleRequest: SettleRequest = {
     x402_version: X402Version.V1,
     payment_payload: {
       x402_version: X402Version.V1,
       schema: Schema.Exact,
-      network: Network.BASE,
+      network: network,
       payload: {
         signature: signature,
         authorization: {
@@ -101,7 +102,7 @@ export async function settleWithAuthorization(
     },
     payment_requirements: {
       schema: Schema.Exact,
-      network: Network.BASE,
+      network: network,
       max_amount_required: transfer.value,
       resource: transfer.to,
       description: 'Transfer with Authorization',

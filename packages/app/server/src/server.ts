@@ -65,11 +65,10 @@ app.use(standardRouter);
 // Use in-flight monitor router for monitoring endpoints
 app.use(inFlightMonitorRouter);
 
-// Main route handler - handles authentication, escrow, and business logic
+// Main route handler
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-    const costEstimation = alvaroInferenceCostEstimation();
 
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
@@ -77,7 +76,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     );
 
     if (!isApiRequest(headers) && !isX402Request(headers)) {
-      return buildX402Response(res, costEstimation, Network.BASE);
+      return buildX402Response(res);
     }
 
     if (isX402Request(headers)) {

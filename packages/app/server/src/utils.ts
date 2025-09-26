@@ -23,8 +23,10 @@ function buildX402Challenge(params: X402ChallengeParams): string {
   return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`
 }
 
-export function buildX402Response(res: Response, amount: string, network: Network) {
-  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(amount)}`;
+export function buildX402Response(res: Response) {
+  const network = process.env.NETWORK as Network;
+  const costEstimation = alvaroInferenceCostEstimation();
+  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(costEstimation)}`;
 
   res.setHeader(
     'WWW-Authenticate',
