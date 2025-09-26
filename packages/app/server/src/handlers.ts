@@ -14,7 +14,6 @@ export async function handleX402Request(
         res: Response,
         processedHeaders: Record<string, string>,
         echoControlService: EchoControlService,
-        estimatedCost: string,
     ) {
     const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
 
@@ -32,13 +31,10 @@ export async function handleX402Request(
         echoControlService
       );
 
-    const inferenceCost = transaction.rawTransactionCost;
-
     const payload = parseX402Headers(processedHeaders)
 
-    // get the actual amount paid
-    // throw warning if amount is bigggg boy
-    const refundAmount = (Number(estimatedCost) - Number(inferenceCost)).toString()
+    const inferenceCost = transaction.rawTransactionCost;
+    const refundAmount = (Number(req.body.payment_payload.value) - Number(inferenceCost)).toString()
     const result = await transferWithAuthorization({...payload, value: refundAmount })
 
     return {transaction, isStream, data, result, refundAmount};

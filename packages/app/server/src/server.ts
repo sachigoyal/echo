@@ -73,25 +73,30 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-
     const costEstimation = alvaroInferenceCostEstimation();
-
-    if (!isApiRequest(headers) && !isX402Request(headers)) {
-      return buildX402Response(res, costEstimation, Network.BASE);
-    }
 
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
       prisma
     );
 
+    if (!isApiRequest(headers) && !isX402Request(headers)) {
+      return buildX402Response(res, costEstimation, Network.BASE);
+    }
+
     if (isX402Request(headers)) {
-      handleX402Request(req, res, processedHeaders, echoControlService, costEstimation);
-    } 
+      await handleX402Request(req, res, processedHeaders, echoControlService);
+      return;
+    }
 
     if (isApiRequest(headers)) {
-      handleApiKeyRequest(req, res, processedHeaders, echoControlService);
+      await handleApiKeyRequest(req, res, processedHeaders, echoControlService);
+      return;
     }
+
+    return res.status(400).json({
+      error: 'No request type found',
+    });
 
   } catch (error) {
     return next(error);
