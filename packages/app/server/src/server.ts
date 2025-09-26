@@ -16,6 +16,8 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
+import { initializeProvider } from './services/ProviderInitializationService';
+import { makeProxyPassthroughRequest } from './services/ProxyPassthroughService';
 
 dotenv.config();
 
@@ -68,13 +70,14 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     // Step 1: Authentication
+
+    // VERIFY
     const { processedHeaders, echoControlService } = await authenticateRequest(
       req.headers as Record<string, string>,
       prisma
     );
-
     const balanceCheckResult = await checkBalance(echoControlService);
-
+    
     // Step 2: Set up escrow context and apply escrow middleware logic
     transactionEscrowMiddleware.setupEscrowContext(
       req,
@@ -86,17 +89,38 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     // Apply escrow middleware logic inline
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
+
+    // NEXT    
+    const { provider, isStream, isPassthroughProxyRoute, providerId } = await initializeProvider(
+      req,
+      res,
+      echoControlService
+    );
+
+    if (isPassthroughProxyRoute && providerId) {
+      return await makeProxyPassthroughRequest(req, res, provider, processedHeaders, providerId);
+    }
+
+
     // Step 3: Execute business logic
-    const { transaction, isStream, data } =
+    const { transaction, data } =
       await modelRequestService.executeModelRequest(
         req,
         res,
         processedHeaders,
-        echoControlService
+        provider,
+        isStream
+      );
+    
+    modelRequestService.handleResolveResponse(
+        res,
+        isStream,
+        data,
       );
 
+    // SETTLE
     await echoControlService.createTransaction(transaction);
-    modelRequestService.handleResolveResponse(res, isStream, data);
+   
   } catch (error) {
     return next(error);
   }
