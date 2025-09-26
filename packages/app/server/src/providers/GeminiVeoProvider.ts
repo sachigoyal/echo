@@ -8,23 +8,72 @@ import { Response } from 'express';
 import { getVideoModelPrice } from '../services/AccountingService';
 import { EchoDbService } from '../services/DbService';
 import { prisma } from '../server';
-import logger from 'logger';
-
-export interface VeoUsage {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
-}
-
-export interface VeoResponse {
-  usage?: VeoUsage;
-  id?: string;
-  // Add other Veo3 response fields as needed
-}
+import logger from '../logger';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
+import { ReadableStream as NodeWebReadableStream } from 'node:stream/web';
+import { GenerateVideosResponse, GeneratedVideo } from '@google/genai';
+import {
+  extractOperationId,
+  extractFileId,
+  isOperationsPath,
+  isFilesPath,
+} from '../utils/gemini/string-parsing.js';
+import type { Request } from 'express';
+import type { EchoControlService } from '../services/EchoControlService';
 
 export const PROXY_PASSTHROUGH_ONLY_MODEL = 'PROXY_PLACEHOLDER_GEMINI_VEO';
 
 export class GeminiVeoProvider extends BaseProvider {
+  /**
+   * Detects if the request should use Gemini VEO passthrough proxy.
+   * Returns the initialized provider and metadata if it matches, undefined otherwise.
+   */
+  static detectPassthroughProxy(
+    req: Request,
+    echoControlService: EchoControlService,
+    extractIsStream: (req: Request) => boolean
+  ):
+    | {
+        provider: BaseProvider;
+        model: string;
+        isStream: boolean;
+        providerId: string;
+      }
+    | undefined {
+    // Check for Gemini VEO passthrough patterns:
+    // - Files: /v1beta/files/{fileId}
+    // - Operations: /v1beta/models/{model}/operations/{operationId}
+    const isFilesEndpoint = isFilesPath(req.path);
+    const isOperationsEndpoint = isOperationsPath(req.path);
+
+    if (!isFilesEndpoint && !isOperationsEndpoint) {
+      return undefined;
+    }
+
+    // Extract provider ID from either files or operations path
+    const fileId = extractFileId(req.path);
+    const operationId = isOperationsEndpoint
+      ? extractOperationId(req.path)
+      : null;
+    const providerId = fileId ?? operationId;
+
+    if (!providerId) {
+      return undefined;
+    }
+
+    const model = PROXY_PASSTHROUGH_ONLY_MODEL;
+    const isStream = extractIsStream(req);
+    const provider = new GeminiVeoProvider(echoControlService, isStream, model);
+
+    return {
+      provider,
+      model,
+      isStream,
+      providerId,
+    };
+  }
+
   getType(): ProviderType {
     return ProviderType.GEMINI_VEO;
   }
@@ -93,9 +142,8 @@ export class GeminiVeoProvider extends BaseProvider {
     // Left unimplemented as requested
     return {
       metadata: {
-        inputTokens: 0,
-        outputTokens: 0,
-        totalTokens: 0,
+        durationSeconds: durationSeconds,
+        generateAudio: generateAudio,
         model: this.getModel(),
         providerId: providerId,
         provider: this.getType(),
@@ -136,7 +184,7 @@ export class GeminiVeoProvider extends BaseProvider {
       throw new HttpError(400, 'Invalid model');
     }
 
-    const isOperationsEndpoint = upstreamUrl.includes('operations');
+    const isOperationsEndpoint = isOperationsPath(upstreamUrl);
 
     if (
       isOperationsEndpoint &&
@@ -165,22 +213,17 @@ export class GeminiVeoProvider extends BaseProvider {
       res.json(responseData);
       return;
     }
-
     // Forward important headers
     const contentType = response.headers.get('content-type');
     const contentLength = response.headers.get('content-length');
-
     if (contentType) res.setHeader('Content-Type', contentType);
     if (contentLength) res.setHeader('Content-Length', contentLength);
     // Pipe the body
     if (response.body) {
-      const reader = response.body.getReader();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        res.write(value);
-      }
-      res.end();
+      await pipeline(
+        Readable.fromWeb(response.body as NodeWebReadableStream<Uint8Array>),
+        res
+      );
     } else {
       res.status(500).send('No body in upstream response');
     }
@@ -196,37 +239,17 @@ export class GeminiVeoProvider extends BaseProvider {
   }
 
   parseProviderIdFromResponseBody(data: unknown): string {
-    let providerId = 'unknown';
-
-    try {
-      // Parse JSON if data is a string
-      let responseData: Record<string, any>;
-      if (typeof data === 'string') {
-        responseData = JSON.parse(data);
-      } else if (data && typeof data === 'object') {
-        responseData = data as Record<string, any>;
-      } else {
-        responseData = {};
-      }
-
-      // Try to extract from the 'name' field which contains operation info
-      if (responseData.name && typeof responseData.name === 'string') {
-        // Extract the operation ID from patterns like:
-        // "models/veo-3.0-fast-generate-001/operations/nl6hlo12axz7"
-        const operationMatch = responseData.name.match(/operations\/([^/]+)$/);
-        if (operationMatch) {
-          providerId = operationMatch[1] || 'unknown';
-        } else {
-          // Fallback to the last segment
-          providerId = responseData.name.split('/').pop() || 'unknown';
-        }
-      }
-    } catch (error) {
-      console.log('Failed to parse response data:', error);
-      // Keep providerId as 'unknown' if parsing fails
+    if (typeof data !== 'string') {
+      throw new Error('Expected response data to be a string');
     }
 
-    return providerId;
+    const responseData = JSON.parse(data);
+
+    if (responseData.name && typeof responseData.name === 'string') {
+      return extractOperationId(responseData.name);
+    }
+
+    return 'unknown';
   }
 
   parseCompletedOperationsResponse(
@@ -235,12 +258,14 @@ export class GeminiVeoProvider extends BaseProvider {
     if (!responseData.done) {
       return false;
     }
-    const response = responseData.response as any;
-    if (!response?.generateVideoResponse?.generatedSamples) {
+    const response = responseData.response as
+      | GenerateVideosResponse
+      | undefined;
+    if (!response?.generatedVideos) {
       return false;
     }
-    const uris = response.generateVideoResponse.generatedSamples
-      .map((sample: any) => sample?.video?.uri)
+    const uris = response.generatedVideos
+      .map((video: GeneratedVideo) => video.video?.uri)
       .filter((uri: string | undefined) => uri !== undefined);
     logger.info(
       `Generated video URIs for ${this.getUserId()} and ${responseData.name}: ${JSON.stringify(uris)}`

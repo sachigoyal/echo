@@ -14,27 +14,26 @@ async function makeRequest() {
 
   const prompt = `An anime-style racing scene. A cool looking guy is racing away from villians in a japanese sports car.`;
 
-  // let operation = await ai.models.generateVideos({
-  //   model: 'veo-3.0-fast-generate-001',
-  //   prompt: prompt,
-  //   config: {
-  //     durationSeconds: 4,
-  //   }
-  // });
-  const newOperation = new GenerateVideosOperation();
-  newOperation.name =
-    'models/veo-3.0-fast-generate-001/operations/nmzxcyndn7ee';
+  let operation = await ai.models.generateVideos({
+    model: 'veo-3.0-fast-generate-001',
+    prompt: prompt,
+    config: {
+      durationSeconds: 4,
+    },
+  });
+  // const newOperation = new GenerateVideosOperation();
+  // newOperation.name =
+  //   'models/veo-3.0-fast-generate-001/operations/nmzxcyndn7ee';
   // Poll the operation status until the video is ready.
-  let thirdOperation = newOperation;
-  while (!thirdOperation.done) {
+  while (!operation.done) {
     console.log('Waiting for video generation to complete...');
-    await new Promise(resolve => setTimeout(resolve, 10000));
-    thirdOperation = await ai.operations.getVideosOperation({
-      operation: newOperation,
+    operation = await ai.operations.getVideosOperation({
+      operation: operation,
     });
+    await new Promise(resolve => setTimeout(resolve, 10000));
   }
 
-  const video = thirdOperation.response?.generatedVideos?.[0]?.video;
+  const video = operation.response?.generatedVideos?.[0]?.video;
   console.log('video: ', video);
   if (!video) {
     throw new Error('No video generated');
