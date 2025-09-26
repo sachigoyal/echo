@@ -6,10 +6,12 @@ import { parseX402Headers } from "utils";
 import { settleWithAuthorization } from "transferWithAuth";
 import { checkBalance } from "services/BalanceCheckService";
 import { prisma } from "server";
+import { makeProxyPassthroughRequest } from "services/ProxyPassthroughService";
 
 export async function handleX402Request(
-        {req, res, processedHeaders, echoControlService}: HandlerInput
+        {req, res, processedHeaders, echoControlService, maxCost, isPassthroughProxyRoute, providerId, provider, isStream}: HandlerInput
     ) {
+    // check enough payload payment
     const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
 
     await facilitator.settle({
@@ -18,13 +20,27 @@ export async function handleX402Request(
         payment_requirements: req.body.payment_requirements,
     })
 
-    const { transaction, isStream, data } =
+    if (isPassthroughProxyRoute && providerId) {
+      return await makeProxyPassthroughRequest(
+        req,
+        res,
+        provider,
+        processedHeaders,
+        providerId
+      );
+    }
+    
+    const { transaction, data } =
       await modelRequestService.executeModelRequest(
         req,
         res,
         processedHeaders,
-        echoControlService
+        provider,
+        isStream
       );
+
+    // SHAFU: I think there needs to be some changes here.
+    // modelRequestService.handleResolveResponse(res, isStream, data);
 
     const payload = parseX402Headers(processedHeaders)
 
@@ -36,7 +52,7 @@ export async function handleX402Request(
 }
 
 export async function handleApiKeyRequest(
-    {req, res, processedHeaders, echoControlService}: HandlerInput
+    {req, res, processedHeaders, echoControlService, isPassthroughProxyRoute, providerId, provider, isStream}: HandlerInput
 ) {
     const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
     const balanceCheckResult = await checkBalance(echoControlService);
@@ -51,14 +67,27 @@ export async function handleApiKeyRequest(
 
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
+    if (isPassthroughProxyRoute && providerId) {
+      return await makeProxyPassthroughRequest(
+        req,
+        res,
+        provider,
+        processedHeaders,
+        providerId
+      );
+    }
+
     // Step 3: Execute business logic
-    const { transaction } =
+    const { transaction, data } =
       await modelRequestService.executeModelRequest(
         req,
         res,
         processedHeaders,
-        echoControlService
+        provider,
+        isStream
       );
+    
+    modelRequestService.handleResolveResponse(res, isStream, data);
 
     await echoControlService.createTransaction(transaction);
 }

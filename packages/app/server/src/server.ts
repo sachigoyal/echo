@@ -14,8 +14,7 @@ import {
 } from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
-import { Network } from './types';
-import { alvaroInferenceCostEstimation, buildX402Response, isApiRequest, isX402Request } from 'utils';
+import { buildX402Response, isApiRequest, isX402Request } from 'utils';
 import { handleX402Request, handleApiKeyRequest } from './handlers';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
@@ -74,9 +73,6 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-
-    // Step 1: Authentication
-
     // VERIFY
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
@@ -85,64 +81,25 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
 
     const { provider, isStream, isPassthroughProxyRoute, providerId } =
       await initializeProvider(req, res, echoControlService);
-
     const maxCost = getRequestMaxCost(req, provider);
 
     if (!isApiRequest(headers) && !isX402Request(headers)) {
-      return buildX402Response(res);
+      return buildX402Response(res, maxCost);
     }
 
     if (isX402Request(headers)) {
-      await handleX402Request({req, res, processedHeaders, echoControlService});
+      await handleX402Request({req, res, processedHeaders, echoControlService, maxCost, isPassthroughProxyRoute, providerId, provider, isStream});
       return;
     }
 
     if (isApiRequest(headers)) {
-      await handleApiKeyRequest({req, res, processedHeaders, echoControlService});
+      await handleApiKeyRequest({req, res, processedHeaders, echoControlService, maxCost, isPassthroughProxyRoute, providerId, provider, isStream});
       return;
     }
 
     return res.status(400).json({
       error: 'No request type found',
     });
-
-    const balanceCheckResult = await checkBalance(echoControlService);
-
-    // Step 2: Set up escrow context and apply escrow middleware logic
-    transactionEscrowMiddleware.setupEscrowContext(
-      req,
-      echoControlService.getUserId()!,
-      echoControlService.getEchoAppId()!,
-      balanceCheckResult.effectiveBalance ?? 0
-    );
-
-    // Apply escrow middleware logic inline
-    await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
-
-    // NEXT
-    if (isPassthroughProxyRoute && providerId) {
-      return await makeProxyPassthroughRequest(
-        req,
-        res,
-        provider,
-        processedHeaders,
-        providerId
-      );
-    }
-
-    // Step 3: Execute business logic
-    const { transaction, data } = await modelRequestService.executeModelRequest(
-      req,
-      res,
-      processedHeaders,
-      provider,
-      isStream
-    );
-
-    modelRequestService.handleResolveResponse(res, isStream, data);
-
-    // SETTLE
-    await echoControlService.createTransaction(transaction);
   } catch (error) {
     return next(error);
   }

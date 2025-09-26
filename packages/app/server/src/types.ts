@@ -2,6 +2,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { EscrowRequest } from 'middleware/transaction-escrow-middleware';
 import { EchoControlService } from 'services/EchoControlService';
 import { Response } from 'express';
+import { BaseProvider } from 'providers/BaseProvider';
 
 export interface EchoApp {
   id: string;
@@ -223,4 +224,9 @@ export type HandlerInput = {
   res: Response;
   processedHeaders: Record<string, string>;
   echoControlService: EchoControlService;
+  maxCost: Decimal;
+  isPassthroughProxyRoute: boolean;
+  providerId: string | null;
+  provider: BaseProvider;
+  isStream: boolean;
 }

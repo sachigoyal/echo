@@ -1,9 +1,12 @@
 import { ExactEvmPayloadAuthorization, Network, X402ChallengeParams } from "types";
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { SmartAccount } from "@coinbase/cdp-sdk/_types/client/evm/evm.types";
 import { CdpClient } from "@coinbase/cdp-sdk";
+import { BaseProvider } from "./providers/BaseProvider";
 import { WALLET_OWNER } from "./constants";
 import { WALLET_SMART_ACCOUNT } from "./constants";
+import { getRequestMaxCost } from "services/PricingService";
+import { Decimal } from "generated/prisma/runtime/library";
 
 export function parseX402Headers(headers: Record<string, string>): ExactEvmPayloadAuthorization {
     return {
@@ -27,9 +30,8 @@ function buildX402Challenge(params: X402ChallengeParams): string {
   return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`
 }
 
-export function buildX402Response(res: Response) {
+export function buildX402Response(res: Response, maxCost: Decimal) {
   const network = process.env.NETWORK as Network;
-  const costEstimation = alvaroInferenceCostEstimation();
   const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(costEstimation)}`;
 
   res.setHeader(
