@@ -46,7 +46,15 @@ export async function signTransferWithAuthorization(
     const data = encodeFunctionData({
         abi: ERC3009_ABI,
         functionName: 'transferWithAuthorization',
-        args: [smartAccount.address, transfer.to as `0x${string}`, transfer.value, transfer.valid_after as bigint, transfer.valid_before as bigint, transfer.nonce as `0x${string}`, authoriztionSignature.signature],
+        args: [
+            smartAccount.address,
+            transfer.to as `0x${string}`,
+            BigInt(transfer.value),
+            BigInt(transfer.valid_after),
+            BigInt(transfer.valid_before),
+            transfer.nonce as `0x${string}`,
+            authoriztionSignature.signature,
+        ],
     })
 
     return await cdp.evm.signTransaction({
