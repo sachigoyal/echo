@@ -18,12 +18,16 @@ export function getRequestMaxCost(
   if (isValidVideoModel(provider.getModel())) {
     const videoModelWithPricing = getVideoModelPrice(provider.getModel());
     if (!videoModelWithPricing) {
-      throw new UnknownModelError(`No pricing found for video model: ${provider.getModel()}`);
+      throw new UnknownModelError(
+        `No pricing found for video model: ${provider.getModel()}`
+      );
     }
     const durationSeconds: number = Number(req.body.durationSeconds) || 8;
     const generateAudio: boolean = Boolean(req.body.generateAudio) || true;
     return new Decimal(
-        generateAudio ? videoModelWithPricing.cost_per_second_with_audio : videoModelWithPricing.cost_per_second_without_audio
+      generateAudio
+        ? videoModelWithPricing.cost_per_second_with_audio
+        : videoModelWithPricing.cost_per_second_without_audio
     ).mul(durationSeconds);
   } else if (isValidImageModel(provider.getModel())) {
     // TODO: Implement image pricing
