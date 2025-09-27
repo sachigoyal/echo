@@ -19,15 +19,16 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
   GeneratedVideo,
   GenerateVideoRequest,
   VideoModelConfig,
   VideoModelOption,
-  VideoResponse,
   VideoOperation,
 } from '@/lib/types';
+import { GenerateVideosOperation } from '@google/genai';
 import { videoOperationsStorage } from '@/lib/video-operations';
 import { videoHistoryStorage } from '@/lib/video-history';
 import { VideoHistory } from './video-history';
@@ -46,7 +47,7 @@ const models: VideoModelConfig[] = [{ id: 'veo-3', name: 'Veo 3 Fast' }];
 // ===== API FUNCTIONS =====
 async function generateVideo(
   request: GenerateVideoRequest
-): Promise<VideoResponse> {
+): Promise<GenerateVideosOperation> {
   const response = await fetch('/api/generate-video', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -58,14 +59,14 @@ async function generateVideo(
     throw new Error(`HTTP ${response.status}: ${errorText}`);
   }
 
-  return response.json();
+  return response.json(); // Return the SDK operation directly
 }
 
-async function checkVideoStatus(operationData: string): Promise<VideoResponse> {
+async function checkVideoStatus(operation: GenerateVideosOperation): Promise<GenerateVideosOperation> {
   const response = await fetch('/api/check-video-status', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ operationData }),
+    body: JSON.stringify({ operationName: operation.name }),
   });
 
   if (!response.ok) {
@@ -73,7 +74,7 @@ async function checkVideoStatus(operationData: string): Promise<VideoResponse> {
     throw new Error(`HTTP ${response.status}: ${errorText}`);
   }
 
-  return response.json();
+  return response.json(); // Return the updated SDK operation directly
 }
 
 /**
@@ -89,9 +90,8 @@ export default function VideoGenerator() {
   const [model, setModel] = useState<VideoModelOption>('veo-3');
   const [durationSeconds, setDurationSeconds] = useState<number>(4);
   const [videoHistory, setVideoHistory] = useState<GeneratedVideo[]>([]);
-  const [activeOperations, setActiveOperations] = useState<Map<string, VideoOperation>>(new Map());
   const promptInputRef = useRef<HTMLFormElement>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const queryClient = useQueryClient();
   // Load existing history on mount
   useEffect(() => {
     const existing = videoHistoryStorage.getAll();
@@ -112,161 +112,127 @@ export default function VideoGenerator() {
     promptInputRef.current?.reset();
   }, []);
 
-  // Polling function to check operation status
-  const pollOperations = useCallback(async () => {
-    const pendingOperations = Array.from(activeOperations.values()).filter(
-      op => op.status === 'pending' || op.status === 'processing'
-    );
+  // Use TanStack Query to poll pending operations
+  const { data: operationStatuses } = useQuery({
+    queryKey: ['video-operations'],
+    queryFn: async () => {
+      // Get fresh pending operations each time
+      const pendingOperations = videoOperationsStorage.getPending();
 
-    if (pendingOperations.length === 0) {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
+      if (pendingOperations.length === 0) {
+        return [];
       }
-      return;
-    }
 
-    for (const operation of pendingOperations) {
-      try {
-        if (!operation.operationData) {
-          console.error(`Missing operationData for operation ${operation.id}`);
-          continue;
-        }
-        const result = await checkVideoStatus(operation.operationData);
+      const results = await Promise.allSettled(
+        pendingOperations.map(async (op) => {
+          const result = await checkVideoStatus(op.operation);
+          return { operationId: op.id, result };
+        })
+      );
+      return results;
+    },
+    enabled: true, // Always enable, but return early if no pending ops
+    refetchInterval: 5000,
+  });
 
-        if (result.status === 'completed' && result.videoUrl) {
-          // Update operation in storage and state
-          const updatedOperation: VideoOperation = {
-            ...operation,
-            status: 'completed',
-            videoUrl: result.videoUrl,
-          };
+  // Update video history based on operation status changes
+  useEffect(() => {
+    if (!operationStatuses) return;
 
-          videoOperationsStorage.update(operation.id, {
-            status: 'completed',
-            videoUrl: result.videoUrl,
+    let hasUpdates = false;
+    const updates: Array<{ id: string; updates: Partial<GeneratedVideo> }> = [];
+
+    operationStatuses.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        const { operationId, result: opResult } = result.value;
+
+        // Handle any completed operation (done = true)
+        if (opResult.done) {
+          // Always update the operation in storage to mark it as done
+          videoOperationsStorage.update(operationId, {
+            operation: opResult,
           });
 
-          setActiveOperations(prev => {
-            const updated = new Map(prev);
-            updated.set(operation.id, updatedOperation);
-            return updated;
-          });
+          const video = opResult.response?.generatedVideos?.[0]?.video;
+          if (video && (video.uri || video.videoBytes)) {
+            // Video completed successfully - handle both URI and bytes
+            let videoUrl: string;
 
-          // Update video history
-          setVideoHistory(prev =>
-            prev.map(video =>
-              video.id === operation.id
-                ? {
-                    ...video,
-                    videoUrl: result.videoUrl,
-                    operationName: operation.operationName,
-                    isLoading: false,
-                  }
-                : video
-            )
-          );
-        } else if (result.status === 'failed') {
-          // Handle failed operation
-          const updatedOperation: VideoOperation = {
-            ...operation,
-            status: 'failed',
-            error: result.error || 'Video generation failed',
-          };
+            if (video.videoBytes) {
+              // Convert base64 bytes to data URL
+              videoUrl = `data:video/mp4;base64,${video.videoBytes}`;
+            } else if (video.uri) {
+              // Use URI directly
+              videoUrl = video.uri;
+            } else {
+              videoUrl = '';
+            }
 
-          videoOperationsStorage.update(operation.id, {
-            status: 'failed',
-            error: result.error || 'Video generation failed',
-          });
+            updates.push({
+              id: operationId,
+              updates: { videoUrl, isLoading: false, error: undefined }
+            });
 
-          setActiveOperations(prev => {
-            const updated = new Map(prev);
-            updated.set(operation.id, updatedOperation);
-            return updated;
-          });
+            videoOperationsStorage.update(operationId, {
+              videoUrl,
+              error: undefined, // Clear any previous error
+              operation: opResult,
+            });
+          } else {
+            // Operation done but no video (failed, filtered, etc.)
+            let errorMsg = 'Video generation failed';
 
-          // Update video history with error
-          setVideoHistory(prev =>
-            prev.map(video =>
-              video.id === operation.id
-                ? {
-                    ...video,
-                    isLoading: false,
-                    error: result.error || 'Video generation failed',
-                  }
-                : video
-            )
-          );
-        } else if (result.status === 'processing') {
-          // Update status to processing if needed
-          if (operation.status !== 'processing') {
-            const updatedOperation: VideoOperation = {
-              ...operation,
-              status: 'processing',
-            };
+            // Check for RAI filtering
+            if (opResult.response?.raiMediaFilteredCount && opResult.response.raiMediaFilteredCount > 0) {
+              const filterReasons = opResult.response.raiMediaFilteredReasons || [];
+              errorMsg = filterReasons.length > 0 ? filterReasons[0] : 'Content was filtered by safety policies';
+            } else if (opResult.error) {
+              errorMsg = typeof opResult.error === 'string' ? opResult.error : 'Video generation failed';
+            }
 
-            videoOperationsStorage.update(operation.id, { status: 'processing' });
+            updates.push({
+              id: operationId,
+              updates: { error: errorMsg, isLoading: false }
+            });
 
-            setActiveOperations(prev => {
-              const updated = new Map(prev);
-              updated.set(operation.id, updatedOperation);
-              return updated;
+            videoOperationsStorage.update(operationId, {
+              error: errorMsg,
+              operation: opResult,
             });
           }
+          hasUpdates = true;
         }
-      } catch (error) {
-        console.error(`Failed to check status for operation ${operation.id}:`, error);
       }
+    });
+
+    if (hasUpdates) {
+      setVideoHistory(prev =>
+        prev.map(video => {
+          const update = updates.find(u => u.id === video.id);
+          return update ? { ...video, ...update.updates } : video;
+        })
+      );
     }
-  }, [activeOperations]);
+  }, [operationStatuses]);
 
-  // Start polling when there are active operations
-  useEffect(() => {
-    const pendingOps = Array.from(activeOperations.values()).filter(
-      op => op.status === 'pending' || op.status === 'processing'
-    );
-
-    if (pendingOps.length > 0 && !pollingIntervalRef.current) {
-      pollingIntervalRef.current = setInterval(pollOperations, 10000); // Poll every 10 seconds
-    } else if (pendingOps.length === 0 && pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-    };
-  }, [activeOperations, pollOperations]);
 
   // Recover operations on mount
   useEffect(() => {
     const savedOperations = videoOperationsStorage.getPending();
 
     if (savedOperations.length > 0) {
-      const operationsMap = new Map<string, VideoOperation>();
-      const historyVideos: GeneratedVideo[] = [];
+      const historyVideos: GeneratedVideo[] = savedOperations.map(operation => ({
+        id: operation.id,
+        prompt: operation.prompt,
+        model: operation.model,
+        durationSeconds: operation.durationSeconds,
+        timestamp: operation.timestamp,
+        isLoading: !operation.operation.done,
+        videoUrl: operation.videoUrl,
+        error: operation.error,
+        operationName: operation.operation.name,
+      }));
 
-      savedOperations.forEach(operation => {
-        operationsMap.set(operation.id, operation);
-
-        // Add to video history as loading
-        historyVideos.push({
-          id: operation.id,
-          prompt: operation.prompt,
-          model: operation.model,
-          durationSeconds: operation.durationSeconds,
-          timestamp: operation.timestamp,
-          isLoading: operation.status !== 'completed' && operation.status !== 'failed',
-          videoUrl: operation.videoUrl,
-          error: operation.error,
-          operationName: operation.operationName,
-        });
-      });
-
-      setActiveOperations(operationsMap);
       setVideoHistory(prev => {
         // Avoid duplicating entries by id
         const existingIds = new Set(prev.map(v => v.id));
@@ -314,21 +280,35 @@ export default function VideoGenerator() {
           durationSeconds,
         });
 
-        if (result.status === 'completed' && result.videoUrl) {
+        const video = result.response?.generatedVideos?.[0]?.video;
+        if (result.done && video && (video.uri || video.videoBytes)) {
           // Video is already complete (unlikely but possible)
+          let videoUrl: string;
+
+          if (video.videoBytes) {
+            // Convert base64 bytes to data URL
+            videoUrl = `data:video/mp4;base64,${video.videoBytes}`;
+          } else if (video.uri) {
+            // Use URI directly
+            videoUrl = video.uri;
+          } else {
+            videoUrl = '';
+          }
+
           setVideoHistory(prev =>
             prev.map(vid =>
               vid.id === videoId
                 ? {
                     ...vid,
-                    videoUrl: result.videoUrl,
-                    operationName: result.operationName,
+                    videoUrl,
+                    operationName: result.name,
                     isLoading: false,
+                    error: undefined, // Clear any previous error
                   }
                 : vid
             )
           );
-        } else if (result.status === 'failed') {
+        } else if (result.done && result.error) {
           // Handle immediate failure
           setVideoHistory(prev =>
             prev.map(vid =>
@@ -336,7 +316,7 @@ export default function VideoGenerator() {
                 ? {
                     ...vid,
                     isLoading: false,
-                    error: result.error || 'Video generation failed',
+                    error: typeof result.error === 'string' ? result.error : 'Video generation failed',
                   }
                 : vid
             )
@@ -345,22 +325,18 @@ export default function VideoGenerator() {
           // Create operation for polling
           const operation: VideoOperation = {
             id: videoId,
-            operationName: result.operationName,
             prompt,
             model,
             durationSeconds,
             timestamp: new Date(),
-            status: result.status,
-            operationData: result.operationData,
+            operation: result,
           };
 
-          // Store operation in localStorage and state
+          // Store operation in localStorage
           videoOperationsStorage.store(operation);
-          setActiveOperations(prev => {
-            const updated = new Map(prev);
-            updated.set(videoId, operation);
-            return updated;
-          });
+
+          // Invalidate queries to start polling
+          queryClient.invalidateQueries({ queryKey: ['video-operations'] });
 
           // Update video history with operation name
           setVideoHistory(prev =>
@@ -368,7 +344,7 @@ export default function VideoGenerator() {
               vid.id === videoId
                 ? {
                     ...vid,
-                    operationName: result.operationName,
+                    operationName: result.name,
                   }
                 : vid
             )
@@ -394,7 +370,7 @@ export default function VideoGenerator() {
         );
       }
     },
-    [model, durationSeconds]
+    [model, durationSeconds, queryClient]
   );
 
   return (

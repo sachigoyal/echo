@@ -1,4 +1,4 @@
-import { checkGeminiOperationStatus, checkGeminiOperationStatusByName } from '../generate-video/gemini';
+import { checkGeminiOperationStatus } from '../generate-video/gemini';
 
 export async function POST(request: Request) {
   try {
@@ -13,11 +13,8 @@ export async function POST(request: Request) {
       );
     }
 
-    if (operationName) {
-      return checkGeminiOperationStatusByName(operationName);
-    }
-
-    return checkGeminiOperationStatus(operationData as string);
+    // Use operationName if provided, otherwise use operationData
+    return checkGeminiOperationStatus(operationName || operationData!);
   } catch (error) {
     return Response.json(
       { error: 'Invalid request body' },

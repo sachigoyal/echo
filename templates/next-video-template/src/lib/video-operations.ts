@@ -78,9 +78,7 @@ export const videoOperationsStorage = {
    * Get pending/processing operations that need polling
    */
   getPending(): VideoOperation[] {
-    return this.getAll().filter(op =>
-      op.status === 'pending' || op.status === 'processing'
-    );
+    return this.getAll().filter(op => !op.operation.done);
   },
 
   /**

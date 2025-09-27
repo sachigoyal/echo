@@ -4,7 +4,7 @@
 
 import { getEchoToken } from '@/echo';
 import { ERROR_MESSAGES } from '@/lib/constants';
-import { GoogleGenAI, GenerateVideosOperation } from '@google/genai';
+import { GenerateVideosOperation, GoogleGenAI } from '@google/genai';
 /**
  * Initiates Google Veo video generation and returns operation immediately
  */
@@ -24,30 +24,26 @@ export async function handleGeminiGenerate(
 
     const ai = new GoogleGenAI({
       apiKey,
+      vertexai: true,
       httpOptions: {
-        baseUrl: 'https://echo-staging.up.railway.app',
+        baseUrl: 'http://localhost:3070',
+        apiVersion: 'v1',
       },
     });
 
     const operation = await ai.models.generateVideos({
-      model: 'veo-3.0-fast-generate-001',
+      // model: 'veo-3.0-fast-generate-001',
+      model: 'veo-3.0-fast-generate-preview',
       prompt,
       config: {
         durationSeconds,
       },
     });
 
-    // Store the complete operation object as serialized JSON for later use
-    const operationData = JSON.stringify(operation);
+    console.log('operation: ', operation);
 
-    // Return operation info immediately without polling
-    return Response.json({
-      operationName: operation.name,
-      operationId: operation.name, // Use Gemini's operation name as ID
-      status: operation.done ? 'completed' : 'pending',
-      videoUrl: undefined, // Will be set when operation completes
-      operationData, // Pass the operation data to client
-    });
+    // Return the SDK operation directly - no wrapper needed
+    return Response.json(operation);
   } catch (error) {
     console.error('Gemini video generation error:', error);
     return Response.json(
@@ -64,10 +60,10 @@ export async function handleGeminiGenerate(
 
 /**
  * Checks the status of a video generation operation
- * We need to pass the serialized operation object that was returned from generateVideos
+ * Can accept either a full operation object or just the operation name
  */
 export async function checkGeminiOperationStatus(
-  operationData: string
+  operationOrName: GenerateVideosOperation | string
 ): Promise<Response> {
   try {
     const apiKey = await getEchoToken();
@@ -81,107 +77,33 @@ export async function checkGeminiOperationStatus(
 
     const ai = new GoogleGenAI({
       apiKey,
+      vertexai: true,
       httpOptions: {
-        baseUrl: 'https://echo-staging.up.railway.app',
+        baseUrl: 'http://localhost:3070',
+        apiVersion: 'v1',
       },
     });
 
-    // Deserialize the operation object
-    const operationObj = JSON.parse(operationData);
-
-    // Use the SDK method with the actual operation object
-    const operation = await ai.operations.getVideosOperation({
-      operation: operationObj,
-    });
-
-    if (operation.done) {
-      const video = operation.response?.generatedVideos?.[0]?.video;
-
-      if (!video || !video.uri) {
-        return Response.json({
-          status: 'failed',
-          error: ERROR_MESSAGES.NO_VIDEO_GENERATED,
-        });
-      }
-
-      // Return a proxied URL so the player can access the protected video via server-side auth
-      const proxiedUrl = `/api/proxy-video?uri=${encodeURIComponent(video.uri)}`;
-      return Response.json({
-        status: 'completed',
-        videoUrl: proxiedUrl,
-      });
+    // Handle both operation object and operation name string
+    let operation: GenerateVideosOperation;
+    if (typeof operationOrName === 'string') {
+      operation = new GenerateVideosOperation();
+      operation.name = operationOrName;
+    } else {
+      operation = operationOrName;
     }
 
-    return Response.json({
-      status: 'processing',
+    // Use the SDK method to check operation status
+    const updatedOperation = await ai.operations.getVideosOperation({
+      operation: operation,
     });
+
+    console.log('updatedOperation: ', updatedOperation);
+
+    // Just return the SDK operation response directly
+    return Response.json(updatedOperation);
   } catch (error) {
     console.error('Error checking operation status:', error);
-    return Response.json(
-      {
-        status: 'failed',
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to check operation status',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * Checks the status of a video generation operation by operation name only
- */
-export async function checkGeminiOperationStatusByName(
-  operationName: string
-): Promise<Response> {
-  try {
-    const apiKey = await getEchoToken();
-
-    if (!apiKey) {
-      return Response.json(
-        { error: 'API key not configured' },
-        { status: 500 }
-      );
-    }
-
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        baseUrl: 'https://echo-staging.up.railway.app',
-      },
-    });
-
-    const newOperation = new GenerateVideosOperation();
-
-    newOperation.name = operationName
-
-    // Build a minimal operation object using only the name
-    const operation = await ai.operations.getVideosOperation({
-      operation: newOperation,
-    });
-
-    if (operation.done) {
-      const video = operation.response?.generatedVideos?.[0]?.video;
-
-      if (!video || !video.uri) {
-        return Response.json({
-          status: 'failed',
-          error: ERROR_MESSAGES.NO_VIDEO_GENERATED,
-        });
-      }
-
-      const proxiedUrl = `/api/proxy-video?uri=${encodeURIComponent(video.uri)}`;
-      return Response.json({
-        status: 'completed',
-        videoUrl: proxiedUrl,
-      });
-    }
-
-    return Response.json({ status: 'processing' });
-  } catch (error) {
-    console.error('Error checking operation status by name:', error);
     return Response.json(
       {
         status: 'failed',

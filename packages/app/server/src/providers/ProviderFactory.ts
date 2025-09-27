@@ -19,6 +19,10 @@ import {
   GeminiVeoProvider,
   PROXY_PASSTHROUGH_ONLY_MODEL as GeminiVeoProxyPassthroughOnlyModel,
 } from './GeminiVeoProvider';
+import {
+  VertexAIProvider,
+  PROXY_PASSTHROUGH_ONLY_MODEL as VertexAIProxyPassthroughOnlyModel,
+} from './VertexAIProvider';
 
 /**
  * Creates model-to-provider mapping from the model_prices_and_context_window.json file.
@@ -72,6 +76,9 @@ const createVideoModelToProviderMapping = (): Record<string, ProviderType> => {
     if (modelConfig.provider === 'Gemini') {
       mapping[modelConfig.model_id] = ProviderType.GEMINI_VEO;
     }
+    if (modelConfig.provider === 'Vertex AI') {
+      mapping[modelConfig.model_id] = ProviderType.VERTEX_AI;
+    }
   }
   return mapping;
 };
@@ -111,6 +118,10 @@ export const getProvider = (
 
   if (model === GeminiVeoProxyPassthroughOnlyModel) {
     type = ProviderType.GEMINI_VEO;
+  }
+
+  if (model === VertexAIProxyPassthroughOnlyModel) {
+    type = ProviderType.VERTEX_AI;
   }
 
   // If the model is not in the model to provider mapping, throw an error
@@ -160,6 +171,8 @@ export const getProvider = (
       return new OpenAIImageProvider(echoControlService, stream, model);
     case ProviderType.GEMINI_VEO:
       return new GeminiVeoProvider(echoControlService, stream, model);
+    case ProviderType.VERTEX_AI:
+      return new VertexAIProvider(echoControlService, stream, model);
     default:
       throw new Error(`Unknown provider type: ${type}`);
   }
