@@ -4,13 +4,18 @@
 
 import { getEchoToken } from '@/echo';
 import { ERROR_MESSAGES } from '@/lib/constants';
-import { GenerateVideosOperation, GoogleGenAI } from '@google/genai';
+import {
+  GenerateVideosOperation,
+  GenerateVideosParameters,
+  GoogleGenAI,
+} from '@google/genai';
 /**
  * Initiates Google Veo video generation and returns operation immediately
  */
 export async function handleGeminiGenerate(
   prompt: string,
-  durationSeconds: number = 4
+  durationSeconds: number = 4,
+  image?: string // Base64 encoded image or data URL
 ): Promise<Response> {
   try {
     const apiKey = await getEchoToken();
@@ -31,14 +36,33 @@ export async function handleGeminiGenerate(
       },
     });
 
-    const operation = await ai.models.generateVideos({
+    const generateParams: GenerateVideosParameters = {
       // model: 'veo-3.0-fast-generate-001',
       model: 'veo-3.0-fast-generate-preview',
+      // model: 'veo-3.0-fast-generate-preview',
       prompt,
       config: {
         durationSeconds,
+        enhancePrompt: true,
+        personGeneration: 'allow_adult',
+        generateAudio: false,
       },
-    });
+    };
+
+    // Add image if provided
+    if (image) {
+      // Handle both data URLs and plain base64
+      const base64Data = image.startsWith('data:')
+        ? image.split(',')[1]
+        : image;
+
+      generateParams.image = {
+        imageBytes: base64Data,
+        mimeType: 'image/jpeg', // Default to JPEG, could be made configurable
+      };
+    }
+
+    const operation = await ai.models.generateVideos(generateParams);
 
     console.log('operation: ', operation);
 

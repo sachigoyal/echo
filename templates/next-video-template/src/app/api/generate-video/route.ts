@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { prompt, model, durationSeconds = 4 } = body as GenerateVideoRequest;
+    const { prompt, model, durationSeconds = 4, image } = body as GenerateVideoRequest & { image?: string };
     const handler = providers[model];
 
     if (!handler) {
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       );
     }
 
-    return handler(prompt, durationSeconds);
+    return handler(prompt, durationSeconds, image);
   } catch (error) {
     console.error('Video generation error:', error);
 

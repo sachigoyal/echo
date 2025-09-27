@@ -117,6 +117,7 @@ export interface GenerateVideoRequest {
   prompt: string;
   model: VideoModelOption;
   durationSeconds?: number;
+  image?: string; // Base64 encoded image or data URL
 }
 
 /**

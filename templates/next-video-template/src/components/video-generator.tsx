@@ -2,6 +2,12 @@
 
 import {
   PromptInput,
+  PromptInputActionAddAttachments,
+  PromptInputActionMenu,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuTrigger,
+  PromptInputAttachment,
+  PromptInputAttachments,
   PromptInputBody,
   type PromptInputMessage,
   PromptInputModelSelect,
@@ -13,6 +19,7 @@ import {
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
+  usePromptInputAttachments,
 } from '@/components/ai-elements/prompt-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -20,6 +27,8 @@ import { Slider } from '@/components/ui/slider';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { fileToDataUrl } from '@/lib/image-utils';
 
 import type {
   GeneratedVideo,
@@ -32,6 +41,15 @@ import { GenerateVideosOperation } from '@google/genai';
 import { videoOperationsStorage } from '@/lib/video-operations';
 import { videoHistoryStorage } from '@/lib/video-history';
 import { VideoHistory } from './video-history';
+
+declare global {
+  interface Window {
+    __promptInputActions?: {
+      addFiles: (files: File[] | FileList) => void;
+      clear: () => void;
+    };
+  }
+}
 
 /**
  * Available AI models for video generation
@@ -110,14 +128,37 @@ export default function VideoGenerator() {
 
   const clearForm = useCallback(() => {
     promptInputRef.current?.reset();
+    const actions = window.__promptInputActions;
+    if (actions) {
+      actions.clear();
+    }
   }, []);
 
+  // Component to bridge PromptInput context with external file operations
+  function FileInputManager() {
+    const attachments = usePromptInputAttachments();
+
+    // Store reference to attachment actions for external use
+    useEffect(() => {
+      window.__promptInputActions = {
+        addFiles: attachments.add,
+        clear: attachments.clear,
+      };
+
+      return () => {
+        delete window.__promptInputActions;
+      };
+    }, [attachments]);
+
+    return null;
+  }
+
   // Use TanStack Query to poll pending operations
+  const pendingOperations = videoOperationsStorage.getPending();
   const { data: operationStatuses } = useQuery({
-    queryKey: ['video-operations'],
+    queryKey: ['video-operations', pendingOperations.map(op => op.id)],
     queryFn: async () => {
-      // Get fresh pending operations each time
-      const pendingOperations = videoOperationsStorage.getPending();
+      console.log(`Polling ${pendingOperations.length} pending operations`);
 
       if (pendingOperations.length === 0) {
         return [];
@@ -125,13 +166,15 @@ export default function VideoGenerator() {
 
       const results = await Promise.allSettled(
         pendingOperations.map(async (op) => {
+          console.log(`Checking status for operation ${op.id}, done: ${op.operation.done}`);
           const result = await checkVideoStatus(op.operation);
+          console.log(`Result for operation ${op.id}:`, result.done ? 'DONE' : 'PENDING');
           return { operationId: op.id, result };
         })
       );
       return results;
     },
-    enabled: true, // Always enable, but return early if no pending ops
+    enabled: pendingOperations.length > 0,
     refetchInterval: 5000,
   });
 
@@ -148,6 +191,7 @@ export default function VideoGenerator() {
 
         // Handle any completed operation (done = true)
         if (opResult.done) {
+          console.log(`Operation ${operationId} is done, updating storage`);
           // Always update the operation in storage to mark it as done
           videoOperationsStorage.update(operationId, {
             operation: opResult,
@@ -212,8 +256,11 @@ export default function VideoGenerator() {
           return update ? { ...video, ...update.updates } : video;
         })
       );
+
+      // Invalidate queries to stop polling completed operations
+      queryClient.invalidateQueries({ queryKey: ['video-operations'] });
     }
-  }, [operationStatuses]);
+  }, [operationStatuses, queryClient]);
 
 
   // Recover operations on mount
@@ -249,9 +296,10 @@ export default function VideoGenerator() {
   const handleSubmit = useCallback(
     async (message: PromptInputMessage) => {
       const hasText = Boolean(message.text?.trim());
+      const hasAttachments = Boolean(message.files?.length);
 
-      // Require text prompt
-      if (!hasText) {
+      // Require either text prompt or attachments
+      if (!(hasText || hasAttachments)) {
         return;
       }
 
@@ -259,6 +307,24 @@ export default function VideoGenerator() {
 
       // Generate unique ID for this request
       const videoId = `vid_${Date.now()}`;
+
+      // Process image attachments if any
+      let imageDataUrl: string | undefined;
+      if (hasAttachments && message.files && message.files.length > 0) {
+        const imageFile = message.files.find(f => f.mediaType?.startsWith('image/'));
+        if (imageFile) {
+          try {
+            const response = await fetch(imageFile.url);
+            const blob = await response.blob();
+            const file = new File([blob], imageFile.filename || 'image', {
+              type: imageFile.mediaType,
+            });
+            imageDataUrl = await fileToDataUrl(file);
+          } catch (error) {
+            console.error('Failed to process image attachment:', error);
+          }
+        }
+      }
 
       // Create placeholder entry immediately for optimistic UI
       const placeholderVideo: GeneratedVideo = {
@@ -278,6 +344,7 @@ export default function VideoGenerator() {
           prompt,
           model,
           durationSeconds,
+          image: imageDataUrl,
         });
 
         const video = result.response?.generatedVideos?.[0]?.video;
@@ -379,12 +446,25 @@ export default function VideoGenerator() {
         ref={promptInputRef}
         onSubmit={handleSubmit}
         className="relative"
+        globalDrop
+        multiple
+        accept="image/*"
       >
+        <FileInputManager />
         <PromptInputBody>
-          <PromptInputTextarea placeholder="Describe the video you want to generate..." />
+          <PromptInputAttachments>
+            {attachment => <PromptInputAttachment data={attachment} />}
+          </PromptInputAttachments>
+          <PromptInputTextarea placeholder="Describe the video you want to generate, or attach an image..." />
         </PromptInputBody>
         <PromptInputToolbar>
           <PromptInputTools>
+            <PromptInputActionMenu>
+              <PromptInputActionMenuTrigger />
+              <PromptInputActionMenuContent>
+                <PromptInputActionAddAttachments />
+              </PromptInputActionMenuContent>
+            </PromptInputActionMenu>
             <PromptInputModelSelect
               onValueChange={value => {
                 setModel(value as VideoModelOption);
