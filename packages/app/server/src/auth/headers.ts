@@ -38,24 +38,33 @@ export const verifyUserHeaderCheck = async (
   } = headers;
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
+  console.log('🔍 [AUTH] Incoming headers check:');
+  console.log('  - isX402Request:', isX402Request(headers));
+  console.log('  - isApiRequest:', isApiRequest(headers));
+  console.log('  - xPayment exists:', !!xPayment);
+  console.log('  - xPayment value:', xPayment);
+
   if (!isX402Request(headers) && !isApiRequest(headers)) {
-    return [
-      {
-        ...restHeaders,
-        'accept-encoding': 'gzip, deflate',
-      },
-      new EchoControlService(prisma, ''),
-    ];
+    const processedHeaders = {
+      ...restHeaders,
+      ...(xPayment ? { 'x-payment': xPayment } : {}),
+      'accept-encoding': 'gzip, deflate',
+    };
+    console.log('🔍 [AUTH] No auth type detected, returning headers:', Object.keys(processedHeaders));
+    return [processedHeaders, new EchoControlService(prisma, '')];
   }
 
   if (isX402Request(headers)) {
-    return [
-      {
-        ...restHeaders,
-        'accept-encoding': 'gzip, deflate',
-      },
-      new EchoControlService(prisma, ''),
-    ];
+    const processedHeaders = {
+      ...restHeaders,
+      ...(xPayment ? { 'x-payment': xPayment } : {}),  // ✅ Only include if exists
+      'accept-encoding': 'gzip, deflate',
+    };
+    console.log('🔍 [AUTH] X402 request detected');
+    console.log('  - Returning headers:', Object.keys(processedHeaders));
+    console.log('  - x-payment included:', 'x-payment' in processedHeaders);
+    console.log('  - x-payment value length:', processedHeaders['x-payment']?.length || 0);
+    return [processedHeaders, new EchoControlService(prisma, '')];
   }
 
   if (!(authorization || xApiKey || xGoogleApiKey )) {
