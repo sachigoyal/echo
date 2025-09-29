@@ -77,44 +77,28 @@ export async function signTransferWithAuthorization(
 export async function settleWithAuthorization(
   transfer: TransferWithAuthorization
 ) {
-  const { smartAccount } = await getSmartAccount();
+  const { cdp, smartAccount } = await getSmartAccount();
 
   const signature = await signTransferWithAuthorization(transfer);
   const network = process.env.NETWORK as Network;
 
-  const settleRequest: SettleRequest = {
-    x402_version: X402Version.V1,
-    payment_payload: {
-      x402_version: X402Version.V1,
-      schema: Schema.Exact,
-      network: network,
-      payload: {
-        signature: signature,
-        authorization: {
-          from: smartAccount.address,
-          to: transfer.to,
-          value: transfer.value,
-          valid_after: transfer.valid_after,
-          valid_before: transfer.valid_before,
-          nonce: transfer.nonce,
-        },
+  const result = await cdp.evm.sendUserOperation({
+    smartAccount,
+    network,
+    calls: [
+      {
+        to: USDC_ADDRESS,
+        value: 0n,
+        data: encodeFunctionData({
+          abi: ERC3009_ABI,
+          functionName: 'transferWithAuthorization',
+          args: [smartAccount.address, USDC_ADDRESS, BigInt(transfer.value), BigInt(transfer.valid_after), BigInt(transfer.valid_before), transfer.nonce as `0x${string}`, signature],
+        }),
       },
-    },
-    payment_requirements: {
-      schema: Schema.Exact,
-      network: network,
-      max_amount_required: transfer.value,
-      resource: transfer.to,
-      description: 'Transfer with Authorization',
-      mime_type: 'application/json',
-      pay_to: smartAccount.address,
-      max_timeout_seconds: 1000,
-      asset: USDC_ADDRESS,
-    },
-  };
+    ],
+  });
 
-  const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
-  return await facilitator.settle(settleRequest);
+  return result;
 }
 
 export async function decodeSignature(signature: string) {}

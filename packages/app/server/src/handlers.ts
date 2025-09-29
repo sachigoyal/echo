@@ -105,11 +105,17 @@ export async function handleX402Request({
     value: refundAmountBigInt.toString(),
   });
 
+  const refundResult = await settleWithAuthorization({
+    ...payload,
+    value: refundAmountBigInt.toString(),
+  })
+
   return {
     transaction,
     isStream,
     data,
     result,
+    refundResult,
     refundAmount: refundAmountDecimal,
   };
 }
