@@ -35,24 +35,17 @@ export function getRequestMaxCost(
     // TODO: Implement image pricing
     return new Decimal(0);
   } else {
-    const headers = req.headers as Record<string, string>;
-    // Get content-length from preserved value or fallback to headers
-    const contentLength = req.originalContentLength || req.get('content-length') || headers['content-length'];
-    logger.info(`Content length (preserved): ${contentLength}`);
-    logger.info(`Getting model price for model: ${provider.getModel()}`);
-    logger.info(`Headers: ${JSON.stringify(headers, null, 2)}`);
+    // TODO(content length is not always available. we can calculate it here if not picked up via middleware once the body is parsed)
+    const contentLength = req.originalContentLength || '500000';
     const maxInputTokens = Number(contentLength) / 3;
-    logger.info(`Max input tokens: ${maxInputTokens}`);
     const maxOutputTokens = extractMaxOutputTokens(req) || 0;
     const modelWithPricing = getModelPrice(provider.getModel());
-    logger.info(`Model with pricing: ${modelWithPricing}`);
     if (!modelWithPricing) {
       throw new UnknownModelError(`Invalid model: ${provider.getModel()}`);
     }
     const maxInputCost = new Decimal(maxInputTokens).mul(
       modelWithPricing.input_cost_per_token
     );
-    logger.info(`Max input cost: ${maxInputCost}`);
     const maxOutputCost = new Decimal(maxOutputTokens).mul(
       modelWithPricing.output_cost_per_token
     );

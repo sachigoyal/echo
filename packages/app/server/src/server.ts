@@ -48,16 +48,6 @@ const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
 
 app.use(traceEnrichmentMiddleware);
 
-// Preserve content-length before body parsing middleware removes it
-app.use((req: EscrowRequest, res, next) => {
-  const contentLength = req.get('content-length');
-  if (contentLength) {
-    // Store the original content-length in a custom property
-    req.originalContentLength = contentLength;
-  }
-  next();
-});
-
 // Add middleware
 app.use(
   cors({
@@ -70,6 +60,27 @@ app.use(
     optionsSuccessStatus: 200, // Return 200 for preflight OPTIONS requests
   })
 );
+
+// Preserve content-length before body parsing middleware removes it
+app.use((req: EscrowRequest, res, next) => {
+  // Capture Content-Length from raw request before any parsing
+  const rawContentLength = req.headers['content-length'];
+  
+  logger.info('Raw request headers before parsing:', {
+    'content-length': rawContentLength,
+    'content-type': req.headers['content-type'],
+    method: req.method,
+    url: req.url
+  });
+  
+  if (rawContentLength) {
+    req.originalContentLength = rawContentLength;
+    logger.info(`Preserved Content-Length: ${rawContentLength}`);
+  } else {
+    logger.info('No Content-Length header in raw request');
+  }
+  next();
+});
 
 app.use(express.json({ limit: '100mb' }));
 app.use(upload.any()); // Handle multipart/form-data with any field names
@@ -85,7 +96,6 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-    logger.info(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
     // VERIFY
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
