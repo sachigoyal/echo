@@ -84,6 +84,7 @@ export async function handleApiKeyRequest({
   res,
   processedHeaders,
   echoControlService,
+  maxCost,
   isPassthroughProxyRoute,
   providerId,
   provider,
@@ -121,7 +122,9 @@ export async function handleApiKeyRequest({
     isStream
   );
 
+  
+
   modelRequestService.handleResolveResponse(res, isStream, data);
 
-  await echoControlService.createTransaction(transaction);
+  await echoControlService.createTransaction(transaction, maxCost);
 }
