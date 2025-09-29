@@ -123,7 +123,7 @@ export class VertexAIProvider extends BaseProvider {
   }
 
   getBaseUrl(reqPath?: string): string {
-    // Vertex AI uses the AI Platform endpoint
+    // Simple base URL - formatUpstreamUrl() handles the complex URL construction
     const project = process.env.GOOGLE_CLOUD_PROJECT;
     const location = process.env.GOOGLE_CLOUD_LOCATION || 'global';
 
@@ -133,27 +133,7 @@ export class VertexAIProvider extends BaseProvider {
       );
     }
 
-    const baseUrl = `https://aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google`;
-
-    if (reqPath) {
-      // For Vertex AI, we want:
-      // https://aiplatform.googleapis.com/v1/projects/echo-463518/locations/global/publishers/google/models/veo-3.0-generate-preview:predictLongRunning
-
-      // reqPath is: /v1/publishers/google/models/veo-3.0-generate-preview:predictLongRunning
-      // We need to strip the /v1 prefix and combine with our base
-
-      const pathWithoutV1Prefix = reqPath.replace(/^\/v1/, ''); // Remove /v1 from start
-      const finalUrl = `https://aiplatform.googleapis.com/v1/projects/${project}/locations/${location}${pathWithoutV1Prefix}`;
-
-      // Simple calculation that was working before:
-      // We want finalUrl when reqPath is appended
-      // So return: finalUrl - reqPath
-      const result = finalUrl.substring(0, finalUrl.length - reqPath.length);
-
-      return result;
-    }
-
-    return baseUrl;
+    return `https://aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google`;
   }
 
   getApiKey(): string | undefined {
