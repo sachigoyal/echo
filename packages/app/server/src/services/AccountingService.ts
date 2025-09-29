@@ -14,8 +14,10 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { UnknownModelError } from '../errors/http';
 import { Tool } from 'openai/resources/responses/responses';
 import { logMetric } from '../logger';
-import { GeminiVideoModels } from '@merit-systems/echo-typescript-sdk';
-import { VertexAIVideoModels } from '../models/vertex-ai-video-models';
+import {
+  GeminiVideoModels,
+  VertexAIVideoModels,
+} from '@merit-systems/echo-typescript-sdk';
 
 // Combine all supported chat models from the TypeScript SDK
 export const ALL_SUPPORTED_MODELS: SupportedModel[] = [

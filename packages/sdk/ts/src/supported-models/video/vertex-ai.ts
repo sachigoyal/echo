@@ -1,5 +1,8 @@
 import type { SupportedVideoModel } from '../types';
 
+export type VertexAIVideoModel =
+  | 'veo-3.0-fast-generate-preview'
+  | 'veo-3.0-generate-preview';
 /**
  * Vertex AI video models with official pricing information
  * Based on: https://cloud.google.com/vertex-ai/generative-ai/pricing

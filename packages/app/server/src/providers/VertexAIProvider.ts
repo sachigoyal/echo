@@ -1,11 +1,7 @@
-import { GenerateVideosResponse, GeneratedVideo } from '@google/genai';
 import { Decimal } from '@prisma/client/runtime/library';
 import type { Request } from 'express';
 import { Response } from 'express';
 import { GoogleAuth } from 'google-auth-library';
-import { ReadableStream as NodeWebReadableStream } from 'node:stream/web';
-import { Readable } from 'stream';
-import { pipeline } from 'stream/promises';
 import { HttpError, UnknownModelError } from '../errors/http';
 import logger from '../logger';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
@@ -298,28 +294,9 @@ export class VertexAIProvider extends BaseProvider {
       throw new HttpError(response.status, errorMessage);
     }
 
-    if (response.headers.get('content-type') !== 'video/mp4') {
-      const responseData = await response.json();
-      this.parseCompletedOperationsResponse(responseData);
-      res.json(responseData);
-      return;
-    }
-
-    // Forward important headers
-    const contentType = response.headers.get('content-type');
-    const contentLength = response.headers.get('content-length');
-    if (contentType) res.setHeader('Content-Type', contentType);
-    if (contentLength) res.setHeader('Content-Length', contentLength);
-
-    // Pipe the body
-    if (response.body) {
-      await pipeline(
-        Readable.fromWeb(response.body as NodeWebReadableStream<Uint8Array>),
-        res
-      );
-    } else {
-      res.status(500).send('No body in upstream response');
-    }
+    // Vertex AI always returns JSON (never video/mp4 directly)
+    const responseData = await response.json();
+    res.json(responseData);
     return;
   }
 
@@ -345,24 +322,4 @@ export class VertexAIProvider extends BaseProvider {
     return 'unknown';
   }
 
-  parseCompletedOperationsResponse(
-    responseData: Record<string, unknown>
-  ): boolean {
-    if (!responseData.done) {
-      return false;
-    }
-    const response = responseData.response as
-      | GenerateVideosResponse
-      | undefined;
-    if (!response?.generatedVideos) {
-      return false;
-    }
-    const uris = response.generatedVideos
-      .map((video: GeneratedVideo) => video.video?.uri)
-      .filter((uri: string | undefined) => uri !== undefined);
-    logger.info(
-      `Generated video URIs for ${this.getUserId()} and ${responseData.name}: ${JSON.stringify(uris)}`
-    );
-    return true;
-  }
 }
