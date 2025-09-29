@@ -55,12 +55,6 @@ export function parseX402Headers(
   };
 }
 
-// TODO: Alvaro is working on this.
-// takes request and provider
-export function alvaroInferenceCostEstimation(): string {
-  return '1';
-}
-
 function buildX402Challenge(params: X402ChallengeParams): string {
   const esc = (value: string) => value.replace(/"/g, '\\"');
   return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`;

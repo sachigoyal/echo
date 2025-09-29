@@ -1,17 +1,21 @@
 import { FacilitatorClient } from 'facilitatorClient';
 import { TransactionEscrowMiddleware } from 'middleware/transaction-escrow-middleware';
 import { modelRequestService } from 'services/ModelRequestService';
-import { HandlerInput, X402Version } from 'types';
+import { HandlerInput, X402Version, Network } from 'types';
 import {
   parseX402Headers,
   usdcBigIntToDecimal,
   decimalToUsdcBigInt,
   buildX402Response,
+  getSmartAccount,
 } from 'utils';
 import { settleWithAuthorization } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
 import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
+import { paymentMiddleware } from 'x402-express';
+import { facilitator } from '@coinbase/x402';
+import { USDC_ADDRESS } from 'services/fund-repo/constants';
 
 export async function handleX402Request({
   req,
@@ -24,6 +28,45 @@ export async function handleX402Request({
   provider,
   isStream,
 }: HandlerInput) {
+  // Apply x402 payment middleware with the calculated maxCost
+  const network = process.env.NETWORK as Network;
+  const recipient = (await getSmartAccount()).smartAccount.address;
+  
+  // Convert maxCost (Decimal) to USDC bigint string for payment middleware
+  const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
+  
+  const x402Middleware = paymentMiddleware(
+    recipient,
+    {
+      [`${req.method.toUpperCase()} ${req.path}`]: {
+        price: {
+          amount: maxCostUsdcBigInt.toString(),
+          asset: {
+            address: USDC_ADDRESS,
+            decimals: 6,
+            eip712: { name: 'USD Coin', version: '2'}
+          },
+        },
+        network,
+        config: {
+          description: 'Echo x402',
+          mimeType: 'application/json',
+          maxTimeoutSeconds: 1000,
+          discoverable: true,
+        }
+      }
+    },
+    facilitator,
+  );
+
+  // Execute the middleware to validate payment
+  await new Promise<void>((resolve, reject) => {
+    x402Middleware(req, res, (err: any) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+
   const payload = parseX402Headers(processedHeaders);
 
   const paymentAmount = usdcBigIntToDecimal(
@@ -33,14 +76,6 @@ export async function handleX402Request({
     buildX402Response(res, maxCost);
     return;
   }
-
-  const facilitator = new FacilitatorClient(process.env.FACILITATOR_BASE_URL!);
-
-  await facilitator.settle({
-    x402_version: X402Version.V1,
-    payment_payload: req.body.payment_payload,
-    payment_requirements: req.body.payment_requirements,
-  });
 
   if (isPassthroughProxyRoute && providerId) {
     return await makeProxyPassthroughRequest(

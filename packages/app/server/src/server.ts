@@ -21,7 +21,6 @@ import { modelRequestService } from './services/ModelRequestService';
 import { initializeProvider } from './services/ProviderInitializationService';
 import { makeProxyPassthroughRequest } from './services/ProxyPassthroughService';
 import { getRequestMaxCost } from './services/PricingService';
-import { x402DynamicPricingMiddleware } from './middleware/x402';
 
 dotenv.config();
 
@@ -92,9 +91,6 @@ app.use(standardRouter);
 
 // Use in-flight monitor router for monitoring endpoints
 app.use(inFlightMonitorRouter);
-
-// X402 dynamic pricing middleware
-app.use(x402DynamicPricingMiddleware());
 
 // Main route handler
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
