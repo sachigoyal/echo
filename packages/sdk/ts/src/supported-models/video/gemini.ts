@@ -19,16 +19,4 @@ export const GeminiVideoModels: SupportedVideoModel[] = [
     cost_per_second_without_audio: 0.1,
     provider: 'Gemini',
   },
-  {
-    model_id: 'veo-3.0-fast-generate-preview',
-    cost_per_second_with_audio: 0.15,
-    cost_per_second_without_audio: 0.1,
-    provider: 'Vertex AI',
-  },
-  {
-    model_id: 'veo-3.0-generate-preview',
-    cost_per_second_with_audio: 0.4,
-    cost_per_second_without_audio: 0.2,
-    provider: 'Vertex AI',
-  },
 ];

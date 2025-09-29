@@ -15,6 +15,7 @@ import { UnknownModelError } from '../errors/http';
 import { Tool } from 'openai/resources/responses/responses';
 import { logMetric } from '../logger';
 import { GeminiVideoModels } from '@merit-systems/echo-typescript-sdk';
+import { VertexAIVideoModels } from '../models/vertex-ai-video-models';
 
 // Combine all supported chat models from the TypeScript SDK
 export const ALL_SUPPORTED_MODELS: SupportedModel[] = [
@@ -28,8 +29,10 @@ export const ALL_SUPPORTED_MODELS: SupportedModel[] = [
 export const ALL_SUPPORTED_IMAGE_MODELS: SupportedImageModel[] =
   OpenAIImageModels;
 
-export const ALL_SUPPORTED_VIDEO_MODELS: SupportedVideoModel[] =
-  GeminiVideoModels;
+export const ALL_SUPPORTED_VIDEO_MODELS: SupportedVideoModel[] = [
+  ...GeminiVideoModels,
+  ...VertexAIVideoModels,
+];
 
 // Create a lookup map for O(1) model price retrieval
 const MODEL_PRICE_MAP = new Map<string, SupportedModel>();
