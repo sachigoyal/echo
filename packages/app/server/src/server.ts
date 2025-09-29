@@ -14,7 +14,6 @@ import {
 } from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
-import storageRouter from './routers/storage';
 import { checkBalance } from './services/BalanceCheckService';
 import { modelRequestService } from './services/ModelRequestService';
 import { initializeProvider } from './services/ProviderInitializationService';
@@ -66,9 +65,6 @@ app.use(standardRouter);
 
 // Use in-flight monitor router for monitoring endpoints
 app.use(inFlightMonitorRouter);
-
-// Use storage router for GCS signed URL generation
-app.use(storageRouter);
 
 // Main route handler - handles authentication, escrow, and business logic
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
