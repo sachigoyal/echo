@@ -47,6 +47,17 @@ export const prisma = new PrismaClient({
 const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
 
 app.use(traceEnrichmentMiddleware);
+
+// Preserve content-length before body parsing middleware removes it
+app.use((req: EscrowRequest, res, next) => {
+  const contentLength = req.get('content-length');
+  if (contentLength) {
+    // Store the original content-length in a custom property
+    req.originalContentLength = contentLength;
+  }
+  next();
+});
+
 // Add middleware
 app.use(
   cors({
@@ -59,6 +70,7 @@ app.use(
     optionsSuccessStatus: 200, // Return 200 for preflight OPTIONS requests
   })
 );
+
 app.use(express.json({ limit: '100mb' }));
 app.use(upload.any()); // Handle multipart/form-data with any field names
 app.use(compression());
@@ -73,6 +85,7 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
+    logger.info(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
     // VERIFY
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
@@ -82,6 +95,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     const { provider, isStream, isPassthroughProxyRoute, providerId } =
       await initializeProvider(req, res, echoControlService);
     const maxCost = getRequestMaxCost(req, provider);
+    logger.info(`Max cost: ${maxCost}`);
 
     if (!isApiRequest(headers) && !isX402Request(headers)) {
       return buildX402Response(res, maxCost);
