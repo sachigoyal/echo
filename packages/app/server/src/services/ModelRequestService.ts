@@ -6,6 +6,7 @@ import { handleNonStreamingService } from './HandleNonStreamingService';
 import { handleStreamService } from './HandleStreamService';
 import { formatUpstreamUrl } from './RequestDataService';
 import { BaseProvider } from '../providers/BaseProvider';
+import { ProviderType } from '../providers/ProviderType';
 
 export class ModelRequestService {
   /**
@@ -28,7 +29,7 @@ export class ModelRequestService {
     data: unknown;
   }> {
     // Format authentication headers
-    const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
+    const authenticatedHeaders = await provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
       `New outbound request: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`

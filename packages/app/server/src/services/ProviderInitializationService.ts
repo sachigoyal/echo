@@ -1,15 +1,17 @@
 import { Request, Response } from 'express';
-import { extractModelName } from './RequestDataService';
-import { isValidModel } from './AccountingService';
-import { isValidImageModel } from './AccountingService';
-import { isValidVideoModel } from './AccountingService';
-import logger from '../logger';
 import { UnknownModelError } from '../errors/http';
-import { extractIsStream } from './RequestDataService';
-import { getProvider } from '../providers/ProviderFactory';
-import { EchoControlService } from './EchoControlService';
+import logger from '../logger';
 import { BaseProvider } from '../providers/BaseProvider';
 import { GeminiVeoProvider } from '../providers/GeminiVeoProvider';
+import { VertexAIProvider } from '../providers/VertexAIProvider';
+import { getProvider } from '../providers/ProviderFactory';
+import {
+  isValidImageModel,
+  isValidModel,
+  isValidVideoModel,
+} from './AccountingService';
+import { EchoControlService } from './EchoControlService';
+import { extractIsStream, extractModelName } from './RequestDataService';
 
 /**
  * Detects if the request is a proxy route, and should be forwarded rather
@@ -26,9 +28,19 @@ export function detectPassthroughProxyRoute(
       provider: BaseProvider;
       model: string;
       isStream: boolean;
-      providerId: string;
     }
   | undefined {
+  // Check for Vertex AI proxy routes first
+  const vertexAIProxy = VertexAIProvider.detectPassthroughProxy(
+    req,
+    echoControlService,
+    extractIsStream
+  );
+  if (vertexAIProxy) {
+    return vertexAIProxy;
+  }
+
+  // Then check for Gemini VEO proxy routes
   return GeminiVeoProvider.detectPassthroughProxy(
     req,
     echoControlService,
@@ -45,7 +57,6 @@ export async function initializeProvider(
   model: string;
   isStream: boolean;
   isPassthroughProxyRoute: boolean;
-  providerId: string | null;
 }> {
   const passthroughProxyRoute = detectPassthroughProxyRoute(
     req,
@@ -79,6 +90,5 @@ export async function initializeProvider(
     model,
     isStream,
     isPassthroughProxyRoute: false,
-    providerId: null,
   };
 }

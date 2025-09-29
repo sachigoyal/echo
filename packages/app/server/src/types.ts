@@ -45,7 +45,6 @@ export interface Balance {
   balance: number;
 }
 
-
 export interface TransactionMetadata {
   providerId: string;
   provider: string;
@@ -61,7 +60,7 @@ export interface LlmTransactionMetadata extends TransactionMetadata {
   toolCost?: Decimal;
 }
 
-export interface VeoTransactionMetadata extends TransactionMetadata{
+export interface VeoTransactionMetadata extends TransactionMetadata {
   durationSeconds: number;
   generateAudio: boolean;
 }
@@ -108,10 +107,14 @@ export interface EchoAccessJwtPayload {
 }
 
 // Type guard functions for transaction metadata
-export function isLlmTransactionMetadata(metadata: LlmTransactionMetadata | VeoTransactionMetadata): metadata is LlmTransactionMetadata {
+export function isLlmTransactionMetadata(
+  metadata: LlmTransactionMetadata | VeoTransactionMetadata
+): metadata is LlmTransactionMetadata {
   return 'inputTokens' in metadata;
 }
 
-export function isVeoTransactionMetadata(metadata: LlmTransactionMetadata | VeoTransactionMetadata): metadata is VeoTransactionMetadata {
+export function isVeoTransactionMetadata(
+  metadata: LlmTransactionMetadata | VeoTransactionMetadata
+): metadata is VeoTransactionMetadata {
   return 'durationSeconds' in metadata;
 }

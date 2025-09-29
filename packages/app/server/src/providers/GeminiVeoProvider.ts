@@ -38,7 +38,6 @@ export class GeminiVeoProvider extends BaseProvider {
         provider: BaseProvider;
         model: string;
         isStream: boolean;
-        providerId: string;
       }
     | undefined {
     // Check for Gemini VEO passthrough patterns:
@@ -51,17 +50,6 @@ export class GeminiVeoProvider extends BaseProvider {
       return undefined;
     }
 
-    // Extract provider ID from either files or operations path
-    const fileId = extractFileId(req.path);
-    const operationId = isOperationsEndpoint
-      ? extractOperationId(req.path)
-      : null;
-    const providerId = fileId ?? operationId;
-
-    if (!providerId) {
-      return undefined;
-    }
-
     const model = PROXY_PASSTHROUGH_ONLY_MODEL;
     const isStream = extractIsStream(req);
     const provider = new GeminiVeoProvider(echoControlService, isStream, model);
@@ -70,7 +58,6 @@ export class GeminiVeoProvider extends BaseProvider {
       provider,
       model,
       isStream,
-      providerId,
     };
   }
 
@@ -96,9 +83,9 @@ export class GeminiVeoProvider extends BaseProvider {
     return true;
   }
 
-  override formatAuthHeaders(
+  override async formatAuthHeaders(
     headers: Record<string, string>
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
     const apiKey = this.getApiKey();
     if (apiKey === undefined || apiKey.length === 0) {
       throw new Error('No Gemini API key found for Veo3');
@@ -177,11 +164,19 @@ export class GeminiVeoProvider extends BaseProvider {
     res: Response,
     formattedHeaders: Record<string, string>,
     upstreamUrl: string,
-    requestBody: string | FormData | undefined,
-    providerId: string
+    requestBody: string | FormData | undefined
   ): Promise<void> {
     if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
       throw new HttpError(400, 'Invalid model');
+    }
+
+    // Extract provider ID from either files or operations path for access control
+    const fileId = extractFileId(req.path);
+    const operationId = extractOperationId(req.path);
+    const providerId = fileId ?? operationId;
+
+    if (!providerId) {
+      throw new HttpError(400, 'Invalid file or operation ID');
     }
 
     const isOperationsEndpoint = isOperationsPath(upstreamUrl);

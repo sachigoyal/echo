@@ -31,7 +31,16 @@ export abstract class BaseProvider {
   abstract getType(): ProviderType;
   abstract getBaseUrl(reqPath?: string): string;
   abstract getApiKey(): string | undefined;
-  formatAuthHeaders(headers: Record<string, string>): Record<string, string> {
+
+  // Default URL formatting for most providers
+  formatUpstreamUrl(req: { path: string; url: string }): string {
+    const upstreamUrl = `${this.getBaseUrl(req.path)}${req.path}${
+      req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''
+    }`;
+    return upstreamUrl;
+  }
+
+  async formatAuthHeaders(headers: Record<string, string>): Promise<Record<string, string>> {
     const apiKey = this.getApiKey();
     if (apiKey === undefined || apiKey.length === 0) {
       throw new Error('No API key found');
@@ -81,8 +90,7 @@ export abstract class BaseProvider {
     res: Response,
     formattedHeaders: Record<string, string>,
     upstreamUrl: string,
-    requestBody: string | FormData | undefined,
-    providerId: string
+    requestBody: string | FormData | undefined
   ) {
     throw new Error('Not implemented');
   }
