@@ -96,6 +96,7 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
+    console.log('headers', JSON.stringify(headers));
 
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
@@ -111,6 +112,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     }
 
     if (isX402Request(headers)) {
+      console.log('isX402Request');
       await handleX402Request({
         req,
         res,

@@ -86,20 +86,33 @@ export async function buildX402Response(res: Response, maxCost: Decimal) {
     })
   );
 
-  return res.status(402).json({
+  const resBody = {
+    x402Version: 1,
     error: 'Payment Required',
-    payment: {
+    accepts: [{
       type: 'x402',
       version: '1',
       network,
-      amount: maxCostBigInt.toString(),
+      maxAmountRequired: maxCostBigInt.toString(),
       recipient: recipient,
       currency: USDC_ADDRESS,
       to: recipient,
       url: paymentUrl,
       nonce: generateRandomNonce(),
-    },
-  });
+      scheme: "exact",
+      resource: paymentUrl,
+      description: "Echo x402",
+      mimeType: "application/json",
+      maxTimeoutSeconds: 1000,
+      discoverable: true,
+      payTo: recipient,
+      asset: USDC_ADDRESS,
+    }],
+  }
+
+  console.log('resBody', resBody);
+
+  return res.status(402).json(resBody);
 }
 
 export function isApiRequest(headers: Record<string, string>): boolean {
@@ -107,7 +120,7 @@ export function isApiRequest(headers: Record<string, string>): boolean {
 }
 
 export function isX402Request(headers: Record<string, string>): boolean {
-  return headers['x-402-challenge'] !== undefined;
+  return headers['x-payment'] !== undefined;
 }
 
 export async function getSmartAccount(): Promise<{

@@ -34,6 +34,8 @@ export async function handleX402Request({
   
   // Convert maxCost (Decimal) to USDC bigint string for payment middleware
   const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
+
+  console.log('maxCostUsdcBigInt', maxCostUsdcBigInt);
   
   const x402Middleware = paymentMiddleware(
     recipient,

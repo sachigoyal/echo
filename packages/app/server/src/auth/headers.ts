@@ -33,7 +33,7 @@ export const verifyUserHeaderCheck = async (
     connection: _connection,
     'x-api-key': xApiKey,
     'x-goog-api-key': xGoogleApiKey,
-    'x-402-challenge': x402Challenge,
+    'x-payment': xPayment,
     ...restHeaders
   } = headers;
   /* eslint-enable @typescript-eslint/no-unused-vars */
@@ -48,7 +48,17 @@ export const verifyUserHeaderCheck = async (
     ];
   }
 
-  if (!(authorization || xApiKey || xGoogleApiKey)) {
+  if (isX402Request(headers)) {
+    return [
+      {
+        ...restHeaders,
+        'accept-encoding': 'gzip, deflate',
+      },
+      new EchoControlService(prisma, ''),
+    ];
+  }
+
+  if (!(authorization || xApiKey || xGoogleApiKey )) {
     logger.error(`Missing authentication headers: ${JSON.stringify(headers)}`);
     throw new UnauthorizedError('Please include auth headers.');
   }
