@@ -232,7 +232,9 @@ export const VideoHistory = React.memo(function VideoHistory({
   if (videoHistory.length === 0) {
     return (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Generated Videos</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Generated Videos
+        </h3>
         <div className="flex items-center gap-2">
           <Input
             placeholder="Paste operationName to restore"

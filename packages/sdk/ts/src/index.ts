@@ -47,3 +47,5 @@ export { OpenAIImageModels } from './supported-models/image/openai';
 export type { OpenAIImageModel } from './supported-models/image/openai';
 export { GeminiVideoModels } from './supported-models/video/gemini';
 export type { GeminiVideoModel } from './supported-models/video/gemini';
+export { VertexAIVideoModels } from './supported-models/video/vertex-ai';
+export type { VertexAIVideoModel } from './supported-models/video/vertex-ai';

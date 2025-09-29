@@ -3,6 +3,8 @@
  * This file consolidates all type definitions used across the application
  */
 
+import { GenerateVideosOperation } from '@google/genai';
+
 /**
  * Available AI models for image generation
  */
@@ -115,16 +117,17 @@ export interface GenerateVideoRequest {
   prompt: string;
   model: VideoModelOption;
   durationSeconds?: number;
+  image?: string; // Base64 encoded image or data URL (first frame)
+  lastFrame?: string; // Base64 encoded image or data URL (last frame)
 }
 
 /**
- * Video operation status tracking
+ * Video operation tracking - simplified to only contain UI-specific data
+ * The SDK operation contains all the provider-specific data
  */
 export interface VideoOperation {
   /** Unique identifier for the operation */
   id: string;
-  /** Operation name from the API */
-  operationName: string;
   /** User prompt */
   prompt: string;
   /** AI model used */
@@ -133,27 +136,15 @@ export interface VideoOperation {
   durationSeconds: number;
   /** When the operation was started */
   timestamp: Date;
-  /** Current status */
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  /** Video URL when completed */
+  /** Video URL when completed (derived from SDK operation) */
   videoUrl?: string;
-  /** Error message if failed */
+  /** Error message if failed (derived from SDK operation) */
   error?: string;
-  /** Serialized operation object for API calls */
-  operationData?: string;
+  /** The actual SDK operation object */
+  operation: GenerateVideosOperation;
 }
 
-/**
- * Response from video generation API
- */
-export interface VideoResponse {
-  videoUrl?: string;
-  operationName: string;
-  operationId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  error?: string;
-  operationData?: string;
-}
+// No need for VideoResponse - just use GenerateVideosOperation directly from the SDK
 
 /**
  * Props for components that handle image actions

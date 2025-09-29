@@ -35,7 +35,10 @@ export const videoOperationsStorage = {
 
     try {
       const existing = this.getAll();
-      const updated = [operation, ...existing.filter(op => op.id !== operation.id)];
+      const updated = [
+        operation,
+        ...existing.filter(op => op.id !== operation.id),
+      ];
       localStorage.setItem(VIDEO_OPERATIONS_KEY, JSON.stringify(updated));
     } catch (error) {
       console.error('Failed to store video operation:', error);
@@ -78,9 +81,7 @@ export const videoOperationsStorage = {
    * Get pending/processing operations that need polling
    */
   getPending(): VideoOperation[] {
-    return this.getAll().filter(op =>
-      op.status === 'pending' || op.status === 'processing'
-    );
+    return this.getAll().filter(op => !op.operation.done);
   },
 
   /**

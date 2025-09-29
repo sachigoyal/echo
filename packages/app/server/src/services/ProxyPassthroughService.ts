@@ -19,11 +19,10 @@ export async function makeProxyPassthroughRequest(
   req: EscrowRequest,
   res: Response,
   provider: BaseProvider,
-  processedHeaders: Record<string, string>,
-  providerId: string
+  processedHeaders: Record<string, string>
 ): Promise<void> {
   // Format authentication headers
-  const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
+  const authenticatedHeaders = await provider.formatAuthHeaders(processedHeaders);
 
   logger.info(
     `New outbound request for passthrough proxy: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`
@@ -44,7 +43,6 @@ export async function makeProxyPassthroughRequest(
     res,
     formattedHeaders,
     upstreamUrl,
-    requestBody,
-    providerId
+    requestBody
   );
 }
