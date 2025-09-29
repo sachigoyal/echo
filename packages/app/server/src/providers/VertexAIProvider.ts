@@ -3,7 +3,6 @@ import type { Request } from 'express';
 import { Response } from 'express';
 import { GoogleAuth } from 'google-auth-library';
 import { HttpError, UnknownModelError } from '../errors/http';
-import logger from '../logger';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { prisma } from '../server';
 import { getVideoModelPrice } from '../services/AccountingService';
@@ -316,10 +315,15 @@ export class VertexAIProvider extends BaseProvider {
     const responseData = JSON.parse(data);
 
     if (responseData.name && typeof responseData.name === 'string') {
-      return extractOperationId(responseData.name);
+      const operationId = extractOperationId(responseData.name);
+      if (!operationId) {
+        throw new Error(
+          `Failed to extract operation ID from: ${responseData.name}`
+        );
+      }
+      return operationId;
     }
 
-    return 'unknown';
+    throw new Error('Response missing operation name');
   }
-
 }
