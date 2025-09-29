@@ -77,7 +77,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       prisma
     );
     const balanceCheckResult = await checkBalance(echoControlService);
-    
+
     // Step 2: Set up escrow context and apply escrow middleware logic
     transactionEscrowMiddleware.setupEscrowContext(
       req,
@@ -89,38 +89,33 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     // Apply escrow middleware logic inline
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
-
-    // NEXT    
-    const { provider, isStream, isPassthroughProxyRoute, providerId } = await initializeProvider(
-      req,
-      res,
-      echoControlService
-    );
+    // NEXT
+    const { provider, isStream, isPassthroughProxyRoute, providerId } =
+      await initializeProvider(req, res, echoControlService);
 
     if (isPassthroughProxyRoute && providerId) {
-      return await makeProxyPassthroughRequest(req, res, provider, processedHeaders, providerId);
-    }
-
-
-    // Step 3: Execute business logic
-    const { transaction, data } =
-      await modelRequestService.executeModelRequest(
+      return await makeProxyPassthroughRequest(
         req,
         res,
-        processedHeaders,
         provider,
-        isStream
+        processedHeaders,
+        providerId
       );
-    
-    modelRequestService.handleResolveResponse(
-        res,
-        isStream,
-        data,
-      );
+    }
+
+    // Step 3: Execute business logic
+    const { transaction, data } = await modelRequestService.executeModelRequest(
+      req,
+      res,
+      processedHeaders,
+      provider,
+      isStream
+    );
+
+    modelRequestService.handleResolveResponse(res, isStream, data);
 
     // SETTLE
     await echoControlService.createTransaction(transaction);
-   
   } catch (error) {
     return next(error);
   }

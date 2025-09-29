@@ -57,7 +57,7 @@ export function extractGeminiModelName(req: Request): string | undefined {
     '/v1beta/models/',
     '/models/',
     '/v1beta1/publishers/google/models/',
-    '/v1/publishers/google/models/'
+    '/v1/publishers/google/models/',
   ];
   const expectedSuffixes = [
     ':streamGenerateContent',

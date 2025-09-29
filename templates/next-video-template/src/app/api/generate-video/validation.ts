@@ -43,10 +43,17 @@ export function validateGenerateVideoRequest(body: unknown): ValidationResult {
   }
 
   if (durationSeconds !== undefined) {
-    if (typeof durationSeconds !== 'number' || durationSeconds < 1 || durationSeconds > 60) {
+    if (
+      typeof durationSeconds !== 'number' ||
+      durationSeconds < 1 ||
+      durationSeconds > 60
+    ) {
       return {
         isValid: false,
-        error: { message: 'Duration must be between 1 and 60 seconds', status: 400 },
+        error: {
+          message: 'Duration must be between 1 and 60 seconds',
+          status: 400,
+        },
       };
     }
   }

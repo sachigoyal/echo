@@ -29,7 +29,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const { prompt, model, durationSeconds = 4, image, lastFrame } = body as GenerateVideoRequest;
+    const {
+      prompt,
+      model,
+      durationSeconds = 4,
+      image,
+      lastFrame,
+    } = body as GenerateVideoRequest;
     const handler = providers[model];
 
     if (!handler) {

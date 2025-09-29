@@ -319,10 +319,16 @@ export class VertexAIProvider extends BaseProvider {
       let errorMessage = `${response.status} ${response.statusText}`;
       try {
         const errorBody = await response.text();
-        console.error(`Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}, Body:`, errorBody);
+        console.error(
+          `Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}, Body:`,
+          errorBody
+        );
         errorMessage = errorBody || errorMessage;
       } catch (e) {
-        console.error(`Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}`, e);
+        console.error(
+          `Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}`,
+          e
+        );
       }
       throw new HttpError(response.status, errorMessage);
     }

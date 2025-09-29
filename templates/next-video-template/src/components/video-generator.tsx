@@ -80,7 +80,9 @@ async function generateVideo(
   return response.json(); // Return the SDK operation directly
 }
 
-async function checkVideoStatus(operation: GenerateVideosOperation): Promise<GenerateVideosOperation> {
+async function checkVideoStatus(
+  operation: GenerateVideosOperation
+): Promise<GenerateVideosOperation> {
   const response = await fetch('/api/check-video-status', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -127,7 +129,6 @@ export default function VideoGenerator() {
     }
   }, [videoHistory]);
 
-
   const clearForm = useCallback(() => {
     promptInputRef.current?.reset();
     const actions = window.__promptInputActions;
@@ -156,7 +157,9 @@ export default function VideoGenerator() {
   }
 
   // Use TanStack Query to poll pending operations (only after initialization)
-  const pendingOperations = isInitialized ? videoOperationsStorage.getPending() : [];
+  const pendingOperations = isInitialized
+    ? videoOperationsStorage.getPending()
+    : [];
   const { data: operationStatuses } = useQuery({
     queryKey: ['video-operations', pendingOperations.map(op => op.id)],
     queryFn: async () => {
@@ -167,10 +170,15 @@ export default function VideoGenerator() {
       }
 
       const results = await Promise.allSettled(
-        pendingOperations.map(async (op) => {
-          console.log(`Checking status for operation ${op.id}, done: ${op.operation.done}`);
+        pendingOperations.map(async op => {
+          console.log(
+            `Checking status for operation ${op.id}, done: ${op.operation.done}`
+          );
           const result = await checkVideoStatus(op.operation);
-          console.log(`Result for operation ${op.id}:`, result.done ? 'DONE' : 'PENDING');
+          console.log(
+            `Result for operation ${op.id}:`,
+            result.done ? 'DONE' : 'PENDING'
+          );
           return { operationId: op.id, result };
         })
       );
@@ -187,7 +195,7 @@ export default function VideoGenerator() {
     let hasUpdates = false;
     const updates: Array<{ id: string; updates: Partial<GeneratedVideo> }> = [];
 
-    operationStatuses.forEach((result) => {
+    operationStatuses.forEach(result => {
       if (result.status === 'fulfilled') {
         const { operationId, result: opResult } = result.value;
 
@@ -216,7 +224,7 @@ export default function VideoGenerator() {
 
             updates.push({
               id: operationId,
-              updates: { videoUrl, isLoading: false, error: undefined }
+              updates: { videoUrl, isLoading: false, error: undefined },
             });
 
             videoOperationsStorage.update(operationId, {
@@ -229,16 +237,26 @@ export default function VideoGenerator() {
             let errorMsg = 'Video generation failed';
 
             // Check for RAI filtering
-            if (opResult.response?.raiMediaFilteredCount && opResult.response.raiMediaFilteredCount > 0) {
-              const filterReasons = opResult.response.raiMediaFilteredReasons || [];
-              errorMsg = filterReasons.length > 0 ? filterReasons[0] : 'Content was filtered by safety policies';
+            if (
+              opResult.response?.raiMediaFilteredCount &&
+              opResult.response.raiMediaFilteredCount > 0
+            ) {
+              const filterReasons =
+                opResult.response.raiMediaFilteredReasons || [];
+              errorMsg =
+                filterReasons.length > 0
+                  ? filterReasons[0]
+                  : 'Content was filtered by safety policies';
             } else if (opResult.error) {
-              errorMsg = typeof opResult.error === 'string' ? opResult.error : 'Video generation failed';
+              errorMsg =
+                typeof opResult.error === 'string'
+                  ? opResult.error
+                  : 'Video generation failed';
             }
 
             updates.push({
               id: operationId,
-              updates: { error: errorMsg, isLoading: false }
+              updates: { error: errorMsg, isLoading: false },
             });
 
             videoOperationsStorage.update(operationId, {
@@ -264,7 +282,6 @@ export default function VideoGenerator() {
     }
   }, [operationStatuses, queryClient]);
 
-
   // Recover operations on mount (only after initialization)
   useEffect(() => {
     if (!isInitialized) return;
@@ -272,22 +289,27 @@ export default function VideoGenerator() {
     const savedOperations = videoOperationsStorage.getPending();
 
     if (savedOperations.length > 0) {
-      const historyVideos: GeneratedVideo[] = savedOperations.map(operation => ({
-        id: operation.id,
-        prompt: operation.prompt,
-        model: operation.model,
-        durationSeconds: operation.durationSeconds,
-        timestamp: operation.timestamp,
-        isLoading: !operation.operation.done,
-        videoUrl: operation.videoUrl,
-        error: operation.error,
-        operationName: operation.operation.name,
-      }));
+      const historyVideos: GeneratedVideo[] = savedOperations.map(
+        operation => ({
+          id: operation.id,
+          prompt: operation.prompt,
+          model: operation.model,
+          durationSeconds: operation.durationSeconds,
+          timestamp: operation.timestamp,
+          isLoading: !operation.operation.done,
+          videoUrl: operation.videoUrl,
+          error: operation.error,
+          operationName: operation.operation.name,
+        })
+      );
 
       setVideoHistory(prev => {
         // Avoid duplicating entries by id
         const existingIds = new Set(prev.map(v => v.id));
-        const merged = [...historyVideos.filter(v => !existingIds.has(v.id)), ...prev];
+        const merged = [
+          ...historyVideos.filter(v => !existingIds.has(v.id)),
+          ...prev,
+        ];
         return merged;
       });
     }
@@ -316,7 +338,9 @@ export default function VideoGenerator() {
       let imageDataUrl: string | undefined;
       let lastFrameDataUrl: string | undefined;
       if (hasAttachments && message.files && message.files.length > 0) {
-        const imageFiles = message.files.filter(f => f.mediaType?.startsWith('image/'));
+        const imageFiles = message.files.filter(f =>
+          f.mediaType?.startsWith('image/')
+        );
 
         if (imageFiles.length > 0) {
           try {
@@ -324,9 +348,13 @@ export default function VideoGenerator() {
             const firstImageFile = imageFiles[0];
             const response1 = await fetch(firstImageFile.url);
             const blob1 = await response1.blob();
-            const file1 = new File([blob1], firstImageFile.filename || 'image', {
-              type: firstImageFile.mediaType,
-            });
+            const file1 = new File(
+              [blob1],
+              firstImageFile.filename || 'image',
+              {
+                type: firstImageFile.mediaType,
+              }
+            );
             imageDataUrl = await fileToDataUrl(file1);
 
             // Second image for lastFrame (if exists)
@@ -334,9 +362,13 @@ export default function VideoGenerator() {
               const secondImageFile = imageFiles[1];
               const response2 = await fetch(secondImageFile.url);
               const blob2 = await response2.blob();
-              const file2 = new File([blob2], secondImageFile.filename || 'lastframe', {
-                type: secondImageFile.mediaType,
-              });
+              const file2 = new File(
+                [blob2],
+                secondImageFile.filename || 'lastframe',
+                {
+                  type: secondImageFile.mediaType,
+                }
+              );
               lastFrameDataUrl = await fileToDataUrl(file2);
             }
           } catch (error) {
@@ -403,7 +435,10 @@ export default function VideoGenerator() {
                 ? {
                     ...vid,
                     isLoading: false,
-                    error: typeof result.error === 'string' ? result.error : 'Video generation failed',
+                    error:
+                      typeof result.error === 'string'
+                        ? result.error
+                        : 'Video generation failed',
                   }
                 : vid
             )
@@ -540,7 +575,9 @@ export default function VideoGenerator() {
         videoHistory={videoHistory}
         onAppendVideo={video => setVideoHistory(prev => [video, ...prev])}
         onUpdateVideo={(id, updates) =>
-          setVideoHistory(prev => prev.map(v => (v.id === id ? { ...v, ...updates } : v)))
+          setVideoHistory(prev =>
+            prev.map(v => (v.id === id ? { ...v, ...updates } : v))
+          )
         }
       />
     </div>

@@ -34,7 +34,7 @@ export function VideoDetailsDialog({
 
   const handleCopyUrl = useCallback(async () => {
     if (!video?.videoUrl) return;
-    
+
     try {
       await navigator.clipboard.writeText(video.videoUrl);
     } catch (error) {
@@ -44,7 +44,9 @@ export function VideoDetailsDialog({
 
   if (!video) return null;
 
-  const isActionable = Boolean(video.videoUrl && !video.isLoading && !video.error);
+  const isActionable = Boolean(
+    video.videoUrl && !video.isLoading && !video.error
+  );
 
   return (
     <Dialog open={Boolean(video)} onOpenChange={onClose}>
