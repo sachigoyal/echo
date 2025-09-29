@@ -90,16 +90,15 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
     // NEXT
-    const { provider, isStream, isPassthroughProxyRoute, providerId } =
+    const { provider, isStream, isPassthroughProxyRoute } =
       await initializeProvider(req, res, echoControlService);
 
-    if (isPassthroughProxyRoute && providerId) {
+    if (isPassthroughProxyRoute) {
       return await makeProxyPassthroughRequest(
         req,
         res,
         provider,
-        processedHeaders,
-        providerId
+        processedHeaders
       );
     }
 

@@ -81,8 +81,7 @@ export abstract class BaseProvider {
     res: Response,
     formattedHeaders: Record<string, string>,
     upstreamUrl: string,
-    requestBody: string | FormData | undefined,
-    providerId: string
+    requestBody: string | FormData | undefined
   ) {
     throw new Error('Not implemented');
   }

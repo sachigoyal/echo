@@ -28,7 +28,6 @@ export function detectPassthroughProxyRoute(
       provider: BaseProvider;
       model: string;
       isStream: boolean;
-      providerId: string;
     }
   | undefined {
   // Check for Vertex AI proxy routes first
@@ -58,7 +57,6 @@ export async function initializeProvider(
   model: string;
   isStream: boolean;
   isPassthroughProxyRoute: boolean;
-  providerId: string | null;
 }> {
   const passthroughProxyRoute = detectPassthroughProxyRoute(
     req,
@@ -92,6 +90,5 @@ export async function initializeProvider(
     model,
     isStream,
     isPassthroughProxyRoute: false,
-    providerId: null,
   };
 }

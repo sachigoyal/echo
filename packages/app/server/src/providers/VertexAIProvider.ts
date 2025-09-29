@@ -14,12 +14,7 @@ import { getVideoModelPrice } from '../services/AccountingService';
 import { EchoDbService } from '../services/DbService';
 import type { EchoControlService } from '../services/EchoControlService';
 import { Transaction } from '../types';
-import {
-  extractFileId,
-  extractOperationId,
-  isFilesPath,
-  isOperationsPath,
-} from '../utils/gemini/string-parsing.js';
+import { extractOperationId } from '../utils/gemini/string-parsing.js';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 
@@ -110,39 +105,10 @@ export class VertexAIProvider extends BaseProvider {
         provider: BaseProvider;
         model: string;
         isStream: boolean;
-        providerId: string;
       }
     | undefined {
-    // Check for Vertex AI passthrough patterns:
-    // - Files: /v1beta/files/{fileId}
-    // - Operations: /v1beta/models/{model}/operations/{operationId}
-    // - Operations: /v1beta1/publishers/google/models/{model}/operations/{operationId}
-    // - Vertex AI operations: /v1/projects/{project}/locations/{location}/publishers/google/models/{model}:fetchPredictOperation
-    const isFilesEndpoint = isFilesPath(req.path);
-    const isOperationsEndpoint = isOperationsPath(req.path);
-    const isVertexAIOperation =
-      req.path.includes(':fetchPredictOperation') ||
-      req.path.includes(':predictLongRunning');
-
-    if (!isFilesEndpoint && !isOperationsEndpoint && !isVertexAIOperation) {
-      return undefined;
-    }
-
-    // Extract provider ID from different path types
-    let providerId: string | null = null;
-
-    if (isFilesEndpoint) {
-      providerId = extractFileId(req.path);
-    } else if (isOperationsEndpoint) {
-      providerId = extractOperationId(req.path);
-    } else if (isVertexAIOperation) {
-      // For Vertex AI operations like :fetchPredictOperation, extract model name as provider ID
-      // Path: /v1/projects/{project}/locations/{location}/publishers/google/models/{model}:fetchPredictOperation
-      const modelMatch = req.path.match(/\/models\/([^:]+):/);
-      providerId = modelMatch?.[1] || null;
-    }
-
-    if (!providerId) {
+    // Only fetchPredictOperation is a proxy endpoint
+    if (!req.path.includes(':fetchPredictOperation')) {
       return undefined;
     }
 
@@ -154,7 +120,6 @@ export class VertexAIProvider extends BaseProvider {
       provider,
       model,
       isStream,
-      providerId,
     };
   }
 
@@ -275,19 +240,22 @@ export class VertexAIProvider extends BaseProvider {
     res: Response,
     formattedHeaders: Record<string, string>,
     upstreamUrl: string,
-    requestBody: string | FormData | undefined,
-    providerId: string
+    requestBody: string | FormData | undefined
   ): Promise<void> {
     if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
       throw new HttpError(400, 'Invalid model');
     }
 
-    const isOperationsEndpoint = isOperationsPath(upstreamUrl);
+    // For fetchPredictOperation, extract operation ID from request body
+    const requestBodyObj =
+      typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
+    const operationId = extractOperationId(requestBodyObj?.operationName || '');
+    if (!operationId) {
+      throw new HttpError(400, 'Invalid operation ID');
+    }
 
-    if (
-      isOperationsEndpoint &&
-      !(await this.confirmAccessControl(this.getUserId()!, providerId))
-    ) {
+    // All Vertex AI proxy requests are operations-based, check access control
+    if (!(await this.confirmAccessControl(this.getUserId()!, operationId))) {
       throw new HttpError(403, 'Access denied');
     }
 
@@ -302,10 +270,6 @@ export class VertexAIProvider extends BaseProvider {
     const baseUrl = this.getBaseUrl();
     const pathAfterModels = this.transformVeo3Path(req.path);
     upstreamUrl = `${baseUrl}/models/${pathAfterModels}`;
-
-    console.log(`Vertex AI request: ${req.method} ${upstreamUrl}`);
-    console.log('Headers:', JSON.stringify(formattedHeaders, null, 2));
-    console.log('Request body:', requestBody ? 'Present' : 'None');
 
     // Forward the request to the provider's API
     const response = await fetch(upstreamUrl, {
