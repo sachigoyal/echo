@@ -1,8 +1,10 @@
+import { Storage } from '@google-cloud/storage';
 import { Decimal } from '@prisma/client/runtime/library';
 import type { Request } from 'express';
 import { Response } from 'express';
 import { GoogleAuth } from 'google-auth-library';
 import { HttpError, UnknownModelError } from '../errors/http';
+import logger from '../logger';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { prisma } from '../server';
 import { getVideoModelPrice } from '../services/AccountingService';
@@ -218,6 +220,132 @@ export class VertexAIProvider extends BaseProvider {
     return reqBody;
   }
 
+  override transformRequestBody(
+    reqBody: Record<string, unknown>,
+    reqPath: string
+  ): Record<string, unknown> {
+    const userId = this.getUserId();
+    if (!userId) {
+      throw new Error('User ID is required for Vertex AI requests');
+    }
+
+    // Deep clone to avoid mutating the original request body
+    const modifiedBody = JSON.parse(JSON.stringify(reqBody));
+
+    // The Google GenAI SDK transforms config.outputGcsUri -> parameters.storageUri
+    // So we need to check parameters.storageUri instead
+    if (
+      modifiedBody.parameters &&
+      typeof modifiedBody.parameters === 'object'
+    ) {
+      const params = modifiedBody.parameters as Record<string, unknown>;
+      if (typeof params.storageUri === 'string') {
+        // Transform: 'echo-template-output-bucket' -> 'gs://echo-veo3-videos/{userId}/echo-template-output-bucket'
+        params.storageUri = `gs://echo-veo3-videos/${userId}/${params.storageUri}`;
+      }
+    }
+
+    return modifiedBody;
+  }
+
+  /**
+   * Transform response to replace GCS URIs with signed URLs
+   */
+  override async transformResponse(responseData: unknown): Promise<unknown> {
+    if (typeof responseData === 'object' && responseData !== null) {
+      await this.transformResponseUris(responseData as Record<string, unknown>);
+    }
+    return responseData;
+  }
+
+  /**
+   * Parse GCS URI into bucket and file path components
+   */
+  private parseGcsUri(gcsUri: string): { bucket: string; path: string } {
+    const uriWithoutProtocol = gcsUri.substring(5); // Remove 'gs://'
+    const firstSlashIndex = uriWithoutProtocol.indexOf('/');
+    return {
+      bucket: uriWithoutProtocol.substring(0, firstSlashIndex),
+      path: uriWithoutProtocol.substring(firstSlashIndex + 1),
+    };
+  }
+
+  /**
+   * Generate a signed URL for a GCS file
+   */
+  private async generateSignedUrl(
+    storage: Storage,
+    gcsUri: string,
+    expirationMs: number = 3600000 // 1 hour default
+  ): Promise<{ signedUrl: string; expiresAt: string }> {
+    const { bucket: bucketName, path: filePath } = this.parseGcsUri(gcsUri);
+    const bucket = storage.bucket(bucketName);
+    const file = bucket.file(filePath);
+    const expirationTime = Date.now() + expirationMs;
+
+    const [signedUrl] = await file.getSignedUrl({
+      action: 'read',
+      expires: expirationTime,
+    });
+
+    return {
+      signedUrl,
+      expiresAt: new Date(expirationTime).toISOString(),
+    };
+  }
+
+  /**
+   * Transform GCS URIs in the response to signed URLs
+   */
+  private async transformResponseUris(
+    responseData: Record<string, unknown>
+  ): Promise<void> {
+    if (!responseData.response || typeof responseData.response !== 'object') {
+      return;
+    }
+
+    const response = responseData.response as Record<string, unknown>;
+    const videos = (response.generatedVideos || response.videos) as any[];
+
+    if (!Array.isArray(videos) || videos.length === 0) {
+      return;
+    }
+
+    const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+    if (!serviceAccountKey) {
+      return;
+    }
+
+    const storage = new Storage({
+      credentials: JSON.parse(serviceAccountKey),
+    });
+
+    for (const video of videos) {
+      const videoObj = video.video || video;
+      const gcsUri = videoObj.gcsUri || videoObj.uri;
+
+      if (gcsUri && typeof gcsUri === 'string' && gcsUri.startsWith('gs://')) {
+        try {
+          const { signedUrl, expiresAt } = await this.generateSignedUrl(
+            storage,
+            gcsUri
+          );
+
+          // Replace GCS URI with signed URL
+          if (videoObj.gcsUri) {
+            videoObj.gcsUri = signedUrl;
+          } else {
+            videoObj.uri = signedUrl;
+          }
+          videoObj.expiresAt = expiresAt;
+        } catch (error) {
+          // Keep original URI if signing fails
+          logger.error(`Failed to generate signed URL for ${gcsUri}:`, error);
+        }
+      }
+    }
+  }
+
   /**
    * Forwards a proxy request to the provider's API.
    * This will be the last function called in the proxy request chain,
@@ -287,6 +415,10 @@ export class VertexAIProvider extends BaseProvider {
 
     // Vertex AI always returns JSON (never video/mp4 directly)
     const responseData = await response.json();
+
+    // Transform GCS URIs to signed URLs
+    await this.transformResponseUris(responseData);
+
     res.json(responseData);
     return;
   }
