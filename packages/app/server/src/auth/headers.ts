@@ -3,6 +3,7 @@ import { UnauthorizedError } from '../errors/http';
 import type { PrismaClient } from '../generated/prisma';
 import logger from '../logger';
 import { EchoControlService } from '../services/EchoControlService';
+import { isApiRequest, isX402Request } from 'utils';
 
 export const verifyUserHeaderCheck = async (
   headers: Record<string, string>,
@@ -32,19 +33,28 @@ export const verifyUserHeaderCheck = async (
     connection: _connection,
     'x-api-key': xApiKey,
     'x-goog-api-key': xGoogleApiKey,
+    'x-402-challenge': x402Challenge,
     ...restHeaders
   } = headers;
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
-  if (!(authorization || xApiKey || xGoogleApiKey)) {
+  if (!(authorization || xApiKey || xGoogleApiKey || x402Challenge)) {
     logger.error(`Missing authentication headers: ${JSON.stringify(headers)}`);
     throw new UnauthorizedError('Please include auth headers.');
   }
 
+  if (!isX402Request(headers) && !isApiRequest(headers)) {
+    return [
+      {
+        ...restHeaders,
+        'accept-encoding': 'gzip, deflate',
+      },
+      new EchoControlService(prisma, ''),
+    ];
+  }
+
   const apiKey = authorization ?? xApiKey ?? xGoogleApiKey;
-
   const cleanApiKey = apiKey?.replace('Bearer ', '') ?? '';
-
   const echoControlService = new EchoControlService(prisma, cleanApiKey);
   const authResult = await echoControlService.verifyApiKey();
 

@@ -96,6 +96,7 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
+
     // VERIFY
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,

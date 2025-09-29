@@ -3,14 +3,14 @@ import {
   Network,
   X402ChallengeParams,
 } from 'types';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { SmartAccount } from '@coinbase/cdp-sdk/_types/client/evm/evm.types';
 import { CdpClient } from '@coinbase/cdp-sdk';
-import { BaseProvider } from './providers/BaseProvider';
 import { WALLET_OWNER } from './constants';
 import { WALLET_SMART_ACCOUNT } from './constants';
-import { getRequestMaxCost } from 'services/PricingService';
 import { Decimal } from 'generated/prisma/runtime/library';
+import { USDC_ADDRESS } from 'services/fund-repo/constants';
+import crypto from 'crypto';
 
 /**
  * USDC has 6 decimal places
@@ -42,6 +42,15 @@ export function usdcBigIntToDecimal(usdcBigInt: bigint | string): Decimal {
   return new Decimal(decimalValue);
 }
 
+/**
+ * Generates a random nonce in hexadecimal format
+ * @returns A random hex string with 0x prefix (25 bytes = 50 hex chars)
+ */
+export function generateRandomNonce(): `0x${string}` {
+  const bytes = crypto.randomBytes(25);
+  return `0x${bytes.toString('hex')}` as `0x${string}`;
+}
+
 export function parseX402Headers(
   headers: Record<string, string>
 ): ExactEvmPayloadAuthorization {
@@ -60,11 +69,13 @@ function buildX402Challenge(params: X402ChallengeParams): string {
   return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`;
 }
 
-export function buildX402Response(res: Response, maxCost: Decimal) {
+export async function buildX402Response(res: Response, maxCost: Decimal) {
   const network = process.env.NETWORK as Network;
   // Convert maxCost from Decimal to USDC BigInt string for payment URL
   const maxCostBigInt = decimalToUsdcBigInt(maxCost);
   const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(maxCostBigInt.toString())}`;
+
+  const recipient = (await getSmartAccount()).smartAccount.address;
 
   res.setHeader(
     'WWW-Authenticate',
@@ -79,8 +90,14 @@ export function buildX402Response(res: Response, maxCost: Decimal) {
     error: 'Payment Required',
     payment: {
       type: 'x402',
-      url: paymentUrl,
+      version: '1',
       network,
+      amount: maxCostBigInt.toString(),
+      recipient: recipient,
+      currency: USDC_ADDRESS,
+      to: recipient,
+      url: paymentUrl,
+      nonce: generateRandomNonce(),
     },
   });
 }
