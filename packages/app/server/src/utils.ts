@@ -103,8 +103,7 @@ export async function buildX402Response(res: Response, maxCost: Decimal) {
 }
 
 export function isApiRequest(headers: Record<string, string>): boolean {
-  // return true;
-  return headers['x-api-key'] !== undefined;
+  return headers['x-api-key'] !== undefined || headers['x-google-api-key'] !== undefined || headers['authorization'] !== undefined;
 }
 
 export function isX402Request(headers: Record<string, string>): boolean {
