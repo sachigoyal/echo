@@ -171,14 +171,15 @@ export class VertexAIProvider extends BaseProvider {
     return true;
   }
 
-  override formatAuthHeaders(
+  override async formatAuthHeaders(
     headers: Record<string, string>
-  ): Record<string, string> {
-    // For Vertex AI, we can't get the access token synchronously here
-    // We'll handle auth in a different way
+  ): Promise<Record<string, string>> {
+    // Now we can get the access token asynchronously
+    const accessToken = await this.getAccessToken();
     return {
       ...headers,
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
     };
   }
 

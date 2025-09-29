@@ -22,7 +22,7 @@ export async function makeProxyPassthroughRequest(
   processedHeaders: Record<string, string>
 ): Promise<void> {
   // Format authentication headers
-  const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
+  const authenticatedHeaders = await provider.formatAuthHeaders(processedHeaders);
 
   logger.info(
     `New outbound request for passthrough proxy: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`

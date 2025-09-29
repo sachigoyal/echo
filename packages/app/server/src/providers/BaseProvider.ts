@@ -31,7 +31,7 @@ export abstract class BaseProvider {
   abstract getType(): ProviderType;
   abstract getBaseUrl(reqPath?: string): string;
   abstract getApiKey(): string | undefined;
-  formatAuthHeaders(headers: Record<string, string>): Record<string, string> {
+  async formatAuthHeaders(headers: Record<string, string>): Promise<Record<string, string>> {
     const apiKey = this.getApiKey();
     if (apiKey === undefined || apiKey.length === 0) {
       throw new Error('No API key found');

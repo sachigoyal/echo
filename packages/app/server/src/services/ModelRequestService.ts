@@ -9,26 +9,6 @@ import { BaseProvider } from '../providers/BaseProvider';
 import { ProviderType } from '../providers/ProviderType';
 
 export class ModelRequestService {
-  private async formatAuthHeadersAsync(
-    provider: BaseProvider,
-    headers: Record<string, string>
-  ): Promise<Record<string, string>> {
-    // Check if this is a Vertex AI provider that needs async auth
-    if (provider.getType() === ProviderType.VERTEX_AI) {
-      const vertexProvider = provider as any;
-      if (vertexProvider.getAccessToken) {
-        const accessToken = await vertexProvider.getAccessToken();
-        return {
-          ...headers,
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        };
-      }
-    }
-
-    // For all other providers, use the sync method
-    return provider.formatAuthHeaders(headers);
-  }
   /**
    * Validates and executes a model request, handling the response directly
    * @param req - Express request object containing the model request
@@ -49,10 +29,7 @@ export class ModelRequestService {
     data: unknown;
   }> {
     // Format authentication headers
-    const authenticatedHeaders = await this.formatAuthHeadersAsync(
-      provider,
-      processedHeaders
-    );
+    const authenticatedHeaders = await provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
       `New outbound request: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`

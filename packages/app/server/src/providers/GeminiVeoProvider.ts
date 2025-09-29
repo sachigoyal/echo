@@ -83,9 +83,9 @@ export class GeminiVeoProvider extends BaseProvider {
     return true;
   }
 
-  override formatAuthHeaders(
+  override async formatAuthHeaders(
     headers: Record<string, string>
-  ): Record<string, string> {
+  ): Promise<Record<string, string>> {
     const apiKey = this.getApiKey();
     if (apiKey === undefined || apiKey.length === 0) {
       throw new Error('No Gemini API key found for Veo3');
