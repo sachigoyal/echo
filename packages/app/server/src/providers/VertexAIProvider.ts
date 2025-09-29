@@ -15,84 +15,23 @@ import { extractOperationId } from '../utils/gemini/string-parsing.js';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 
+// Constants
 export const PROXY_PASSTHROUGH_ONLY_MODEL = 'PROXY_PLACEHOLDER_VERTEX_AI';
-
-// VEO3 models that use Vertex AI
 const VEO3_MODELS = [
   'veo-3.0-fast-generate-preview',
   'veo-3.0-generate-preview',
 ];
+const GCS_BUCKET_NAME = 'echo-veo3-videos';
+const GCS_URI_PREFIX = 'gs://';
+const TOKEN_CACHE_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
+const TOKEN_EXPIRY_MS = 55 * 60 * 1000; // 55 minutes
+const SIGNED_URL_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
 export class VertexAIProvider extends BaseProvider {
   private authCache: { token: string; expiry: number } | null = null;
 
-  /**
-   * Check if the current model is a VEO3 model that should use Vertex AI
-   */
-  private isVeo3Model(): boolean {
-    return VEO3_MODELS.includes(this.getModel());
-  }
+  // ========== Static Factory Methods ==========
 
-  /**
-   * Get access token for Vertex AI authentication
-   */
-  private async getAccessToken(): Promise<string> {
-    // Check cache first (with 5 minute buffer)
-    if (this.authCache && Date.now() < this.authCache.expiry - 300000) {
-      return this.authCache.token;
-    }
-
-    const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-    if (!serviceAccountKey) {
-      throw new Error(
-        'GOOGLE_SERVICE_ACCOUNT_KEY environment variable not set'
-      );
-    }
-
-    const auth = new GoogleAuth({
-      credentials: JSON.parse(serviceAccountKey),
-      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-    });
-
-    const client = await auth.getClient();
-    const tokenResponse = await client.getAccessToken();
-
-    if (!tokenResponse.token) {
-      throw new Error('Failed to get access token from Google Auth');
-    }
-
-    // Cache token with expiry (tokens typically last 1 hour)
-    this.authCache = {
-      token: tokenResponse.token,
-      expiry: Date.now() + 3300000, // 55 minutes
-    };
-
-    return tokenResponse.token;
-  }
-
-  /**
-   * Extract everything AFTER "/models/" from the request path
-   */
-  private transformVeo3Path(originalPath: string): string {
-    // Find "/models/" and take everything after it
-    const modelsIndex = originalPath.indexOf('/models/');
-    if (modelsIndex === -1) {
-      throw new Error(`Path does not contain "/models/": ${originalPath}`);
-    }
-
-    // Get everything after "/models/"
-    const pathAfterModels = originalPath.substring(
-      modelsIndex + '/models/'.length
-    );
-
-    // Return the path after models
-    return pathAfterModels;
-  }
-
-  /**
-   * Detects if the request should use Vertex AI passthrough proxy.
-   * Returns the initialized provider and metadata if it matches, undefined otherwise.
-   */
   static detectPassthroughProxy(
     req: Request,
     echoControlService: EchoControlService,
@@ -104,7 +43,6 @@ export class VertexAIProvider extends BaseProvider {
         isStream: boolean;
       }
     | undefined {
-    // Only fetchPredictOperation is a proxy endpoint
     if (!req.path.includes(':fetchPredictOperation')) {
       return undefined;
     }
@@ -113,57 +51,43 @@ export class VertexAIProvider extends BaseProvider {
     const isStream = extractIsStream(req);
     const provider = new VertexAIProvider(echoControlService, isStream, model);
 
-    return {
-      provider,
-      model,
-      isStream,
-    };
+    return { provider, model, isStream };
   }
+
+  // ========== Provider Interface ==========
 
   getType(): ProviderType {
     return ProviderType.VERTEX_AI;
   }
 
-  getBaseUrl(reqPath?: string): string {
-    // Simple base URL - formatUpstreamUrl() handles the complex URL construction
-    const project = process.env.GOOGLE_CLOUD_PROJECT;
+  getBaseUrl(): string {
+    const project = this.getRequiredEnvVar('GOOGLE_CLOUD_PROJECT');
     const location = process.env.GOOGLE_CLOUD_LOCATION || 'global';
-
-    if (!project) {
-      throw new Error(
-        'GOOGLE_CLOUD_PROJECT environment variable not set for Vertex AI'
-      );
-    }
-
     return `https://aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/publishers/google`;
   }
 
   getApiKey(): string | undefined {
-    // Vertex AI uses service account authentication, not API keys
-    return undefined;
+    return undefined; // Vertex AI uses service account authentication
   }
 
   override formatUpstreamUrl(req: { path: string; url: string }): string {
-    // For Vertex AI, we need to construct the URL differently to avoid /v1 duplication
-    const pathWithoutV1 = req.path.replace(/^\/v1/, ''); // Remove /v1 from start
-    const project = process.env.GOOGLE_CLOUD_PROJECT;
+    const pathWithoutV1 = req.path.replace(/^\/v1/, '');
+    const project = this.getRequiredEnvVar('GOOGLE_CLOUD_PROJECT');
     const location = process.env.GOOGLE_CLOUD_LOCATION || 'global';
+    const queryString = req.url.includes('?')
+      ? req.url.substring(req.url.indexOf('?'))
+      : '';
 
-    const upstreamUrl = `https://aiplatform.googleapis.com/v1/projects/${project}/locations/${location}${pathWithoutV1}${
-      req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''
-    }`;
-    return upstreamUrl;
+    return `https://aiplatform.googleapis.com/v1/projects/${project}/locations/${location}${pathWithoutV1}${queryString}`;
   }
 
   override supportsStream(): boolean {
-    // Vertex AI video generation is typically async/long-running, not streaming
     return true;
   }
 
   override async formatAuthHeaders(
     headers: Record<string, string>
   ): Promise<Record<string, string>> {
-    // Now we can get the access token asynchronously
     const accessToken = await this.getAccessToken();
     return {
       ...headers,
@@ -172,20 +96,48 @@ export class VertexAIProvider extends BaseProvider {
     };
   }
 
+  override ensureStreamUsage(
+    reqBody: Record<string, unknown>
+  ): Record<string, unknown> {
+    return reqBody;
+  }
+
+  override transformRequestBody(
+    reqBody: Record<string, unknown>,
+    reqPath: string
+  ): Record<string, unknown> {
+    const userId = this.getRequiredUserId();
+    const modifiedBody = JSON.parse(JSON.stringify(reqBody));
+
+    if (modifiedBody.parameters?.storageUri) {
+      const params = modifiedBody.parameters as Record<string, unknown>;
+      params.storageUri = this.buildUserGcsUri(
+        userId,
+        params.storageUri as string
+      );
+    }
+
+    return modifiedBody;
+  }
+
+  override async transformResponse(responseData: unknown): Promise<unknown> {
+    if (typeof responseData === 'object' && responseData !== null) {
+      await this.transformResponseUris(responseData as Record<string, unknown>);
+    }
+    return responseData;
+  }
+
   override async handleBody(
     data: unknown,
     requestBody?: Record<string, unknown>
   ): Promise<Transaction> {
     const providerId = this.parseProviderIdFromResponseBody(data);
     if (!requestBody) {
-      throw new Error(
-        'In Vertex AI, the request body dictates the parameters for the request'
-      );
+      throw new Error('Request body is required for Vertex AI');
     }
 
-    const durationSeconds: number = Number(requestBody.durationSeconds) || 8;
-    const generateAudio: boolean = Boolean(requestBody.generateAudio) || true;
-
+    const durationSeconds = Number(requestBody.durationSeconds) || 8;
+    const generateAudio = Boolean(requestBody.generateAudio) || true;
     const videoModelPrice = getVideoModelPrice(this.getModel());
 
     if (!videoModelPrice) {
@@ -194,18 +146,17 @@ export class VertexAIProvider extends BaseProvider {
       );
     }
 
-    const totalCost = new Decimal(
-      generateAudio
-        ? videoModelPrice.cost_per_second_with_audio
-        : videoModelPrice.cost_per_second_without_audio
-    ).mul(durationSeconds);
+    const costPerSecond = generateAudio
+      ? videoModelPrice.cost_per_second_with_audio
+      : videoModelPrice.cost_per_second_without_audio;
+    const totalCost = new Decimal(costPerSecond).mul(durationSeconds);
 
     return {
       metadata: {
-        durationSeconds: durationSeconds,
-        generateAudio: generateAudio,
+        durationSeconds,
+        generateAudio,
         model: this.getModel(),
-        providerId: providerId,
+        providerId,
         provider: this.getType(),
       },
       rawTransactionCost: totalCost,
@@ -213,86 +164,165 @@ export class VertexAIProvider extends BaseProvider {
     };
   }
 
-  override ensureStreamUsage(
-    reqBody: Record<string, unknown>
-  ): Record<string, unknown> {
-    // Vertex AI doesn't use streaming, so no special stream usage handling needed
-    return reqBody;
-  }
-
-  override transformRequestBody(
-    reqBody: Record<string, unknown>,
-    reqPath: string
-  ): Record<string, unknown> {
-    const userId = this.getUserId();
-    if (!userId) {
-      throw new Error('User ID is required for Vertex AI requests');
+  override async forwardProxyRequest(
+    req: EscrowRequest,
+    res: Response,
+    formattedHeaders: Record<string, string>,
+    upstreamUrl: string,
+    requestBody: string | FormData | undefined
+  ): Promise<void> {
+    if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
+      throw new HttpError(400, 'Invalid model');
     }
 
-    // Deep clone to avoid mutating the original request body
-    const modifiedBody = JSON.parse(JSON.stringify(reqBody));
+    const operationId = this.extractOperationIdFromRequest(requestBody);
+    await this.verifyAccessControl(operationId);
 
-    // The Google GenAI SDK transforms config.outputGcsUri -> parameters.storageUri
-    // So we need to check parameters.storageUri instead
-    if (
-      modifiedBody.parameters &&
-      typeof modifiedBody.parameters === 'object'
-    ) {
-      const params = modifiedBody.parameters as Record<string, unknown>;
-      if (typeof params.storageUri === 'string' && params.storageUri) {
-        // Remove gs:// prefix if user accidentally included it
-        let path = params.storageUri.startsWith('gs://')
-          ? params.storageUri.substring(5)
-          : params.storageUri;
-
-        // Encode each path segment to handle special characters, preserving path structure
-        const encodedPath = path
-          .split('/')
-          .map(segment => encodeURIComponent(segment))
-          .join('/');
-
-        // Transform: 'echo-template-output-bucket' -> 'gs://echo-veo3-videos/{userId}/echo-template-output-bucket'
-        params.storageUri = `gs://echo-veo3-videos/${userId}/${encodedPath}`;
-      }
-    }
-
-    return modifiedBody;
-  }
-
-  /**
-   * Transform response to replace GCS URIs with signed URLs
-   */
-  override async transformResponse(responseData: unknown): Promise<unknown> {
-    if (typeof responseData === 'object' && responseData !== null) {
-      await this.transformResponseUris(responseData as Record<string, unknown>);
-    }
-    return responseData;
-  }
-
-  /**
-   * Parse GCS URI into bucket and file path components
-   */
-  private parseGcsUri(gcsUri: string): { bucket: string; path: string } {
-    const uriWithoutProtocol = gcsUri.substring(5); // Remove 'gs://'
-    const firstSlashIndex = uriWithoutProtocol.indexOf('/');
-    return {
-      bucket: uriWithoutProtocol.substring(0, firstSlashIndex),
-      path: uriWithoutProtocol.substring(firstSlashIndex + 1),
+    const accessToken = await this.getAccessToken();
+    const headers = {
+      ...formattedHeaders,
+      Authorization: `Bearer ${accessToken}`,
     };
+
+    const baseUrl = this.getBaseUrl();
+    const pathAfterModels = this.extractPathAfterModels(req.path);
+    const url = `${baseUrl}/models/${pathAfterModels}`;
+
+    const response = await this.makeUpstreamRequest(
+      url,
+      req.method,
+      headers,
+      requestBody
+    );
+    const responseData = await response.json();
+
+    await this.transformResponseUris(responseData);
+    res.json(responseData);
   }
 
-  /**
-   * Generate a signed URL for a GCS file
-   */
+  // ========== Authentication ==========
+
+  private async getAccessToken(): Promise<string> {
+    if (
+      this.authCache &&
+      Date.now() < this.authCache.expiry - TOKEN_CACHE_BUFFER_MS
+    ) {
+      return this.authCache.token;
+    }
+
+    const credentials = this.getServiceAccountCredentials();
+    const auth = new GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    });
+
+    const client = await auth.getClient();
+    const tokenResponse = await client.getAccessToken();
+
+    if (!tokenResponse.token) {
+      throw new Error('Failed to get access token from Google Auth');
+    }
+
+    this.authCache = {
+      token: tokenResponse.token,
+      expiry: Date.now() + TOKEN_EXPIRY_MS,
+    };
+
+    return tokenResponse.token;
+  }
+
+  // ========== GCS Operations ==========
+
+  private buildUserGcsUri(userId: string, userPath: string): string {
+    const cleanPath = userPath.startsWith(GCS_URI_PREFIX)
+      ? userPath.substring(GCS_URI_PREFIX.length)
+      : userPath;
+
+    const encodedPath = cleanPath
+      .split('/')
+      .map(segment => encodeURIComponent(segment))
+      .join('/');
+
+    return `${GCS_URI_PREFIX}${GCS_BUCKET_NAME}/${userId}/${encodedPath}`;
+  }
+
+  private async transformResponseUris(
+    responseData: Record<string, unknown>
+  ): Promise<void> {
+    const videos = this.extractVideosFromResponse(responseData);
+    if (!videos || videos.length === 0) {
+      return;
+    }
+
+    const storage = this.initializeStorage();
+    if (!storage) {
+      return;
+    }
+
+    for (const video of videos) {
+      await this.transformVideoUri(video, storage);
+    }
+  }
+
+  private extractVideosFromResponse(
+    responseData: Record<string, unknown>
+  ): any[] | null {
+    if (!responseData.response || typeof responseData.response !== 'object') {
+      return null;
+    }
+
+    const response = responseData.response as Record<string, unknown>;
+    const videos = (response.generatedVideos || response.videos) as any[];
+
+    return Array.isArray(videos) ? videos : null;
+  }
+
+  private initializeStorage(): Storage | null {
+    const credentials = this.getServiceAccountCredentials();
+    if (!credentials) {
+      return null;
+    }
+
+    return new Storage({ credentials });
+  }
+
+  private async transformVideoUri(video: any, storage: Storage): Promise<void> {
+    const videoObj = video.video || video;
+    const gcsUri = videoObj.gcsUri || videoObj.uri;
+
+    if (
+      !gcsUri ||
+      typeof gcsUri !== 'string' ||
+      !gcsUri.startsWith(GCS_URI_PREFIX)
+    ) {
+      return;
+    }
+
+    try {
+      const { signedUrl, expiresAt } = await this.generateSignedUrl(
+        storage,
+        gcsUri
+      );
+
+      if (videoObj.gcsUri) {
+        videoObj.gcsUri = signedUrl;
+      } else {
+        videoObj.uri = signedUrl;
+      }
+      videoObj.expiresAt = expiresAt;
+    } catch (error) {
+      logger.error(`Failed to generate signed URL for ${gcsUri}:`, error);
+    }
+  }
+
   private async generateSignedUrl(
     storage: Storage,
-    gcsUri: string,
-    expirationMs: number = 3600000 // 1 hour default
+    gcsUri: string
   ): Promise<{ signedUrl: string; expiresAt: string }> {
     const { bucket: bucketName, path: filePath } = this.parseGcsUri(gcsUri);
     const bucket = storage.bucket(bucketName);
     const file = bucket.file(filePath);
-    const expirationTime = Date.now() + expirationMs;
+    const expirationTime = Date.now() + SIGNED_URL_EXPIRY_MS;
 
     const [signedUrl] = await file.getSignedUrl({
       action: 'read',
@@ -305,133 +335,92 @@ export class VertexAIProvider extends BaseProvider {
     };
   }
 
-  /**
-   * Transform GCS URIs in the response to signed URLs
-   */
-  private async transformResponseUris(
-    responseData: Record<string, unknown>
-  ): Promise<void> {
-    if (!responseData.response || typeof responseData.response !== 'object') {
-      return;
-    }
+  private parseGcsUri(gcsUri: string): { bucket: string; path: string } {
+    const uriWithoutProtocol = gcsUri.substring(GCS_URI_PREFIX.length);
+    const firstSlashIndex = uriWithoutProtocol.indexOf('/');
 
-    const response = responseData.response as Record<string, unknown>;
-    const videos = (response.generatedVideos || response.videos) as any[];
-
-    if (!Array.isArray(videos) || videos.length === 0) {
-      return;
-    }
-
-    const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-    if (!serviceAccountKey) {
-      return;
-    }
-
-    const storage = new Storage({
-      credentials: JSON.parse(serviceAccountKey),
-    });
-
-    for (const video of videos) {
-      const videoObj = video.video || video;
-      const gcsUri = videoObj.gcsUri || videoObj.uri;
-
-      if (gcsUri && typeof gcsUri === 'string' && gcsUri.startsWith('gs://')) {
-        try {
-          const { signedUrl, expiresAt } = await this.generateSignedUrl(
-            storage,
-            gcsUri
-          );
-
-          // Replace GCS URI with signed URL
-          if (videoObj.gcsUri) {
-            videoObj.gcsUri = signedUrl;
-          } else {
-            videoObj.uri = signedUrl;
-          }
-          videoObj.expiresAt = expiresAt;
-        } catch (error) {
-          // Keep original URI if signing fails
-          logger.error(`Failed to generate signed URL for ${gcsUri}:`, error);
-        }
-      }
-    }
+    return {
+      bucket: uriWithoutProtocol.substring(0, firstSlashIndex),
+      path: uriWithoutProtocol.substring(firstSlashIndex + 1),
+    };
   }
 
-  /**
-   * Forwards a proxy request to the provider's API.
-   * This will be the last function called in the proxy request chain,
-   * and will resolve the request by writing the response to the response object.
-   */
-  override async forwardProxyRequest(
-    req: EscrowRequest,
-    res: Response,
-    formattedHeaders: Record<string, string>,
-    upstreamUrl: string,
-    requestBody: string | FormData | undefined
-  ): Promise<void> {
-    if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
-      throw new HttpError(400, 'Invalid model');
-    }
+  // ========== Request Processing ==========
 
-    // For fetchPredictOperation, extract operation ID from request body
+  private extractOperationIdFromRequest(
+    requestBody: string | FormData | undefined
+  ): string {
     const requestBodyObj =
       typeof requestBody === 'string' ? JSON.parse(requestBody) : requestBody;
     const operationId = extractOperationId(requestBodyObj?.operationName || '');
+
     if (!operationId) {
       throw new HttpError(400, 'Invalid operation ID');
     }
 
-    // All Vertex AI proxy requests are operations-based, check access control
-    if (!(await this.confirmAccessControl(this.getUserId()!, operationId))) {
-      throw new HttpError(403, 'Access denied');
+    return operationId;
+  }
+
+  private extractPathAfterModels(path: string): string {
+    const modelsIndex = path.indexOf('/models/');
+    if (modelsIndex === -1) {
+      throw new Error(`Path does not contain "/models/": ${path}`);
     }
 
-    // Add Vertex AI authentication
-    const accessToken = await this.getAccessToken();
-    formattedHeaders = {
-      ...formattedHeaders,
-      Authorization: `Bearer ${accessToken}`,
-    };
+    return path.substring(modelsIndex + '/models/'.length);
+  }
 
-    // For Vertex AI requests, construct the full URL with transformed path
-    const baseUrl = this.getBaseUrl();
-    const pathAfterModels = this.transformVeo3Path(req.path);
-    upstreamUrl = `${baseUrl}/models/${pathAfterModels}`;
-
-    // Forward the request to the provider's API
-    const response = await fetch(upstreamUrl, {
-      method: req.method,
-      headers: formattedHeaders,
-      ...(requestBody && { body: requestBody }),
+  private async makeUpstreamRequest(
+    url: string,
+    method: string,
+    headers: Record<string, string>,
+    body: string | FormData | undefined
+  ): Promise<globalThis.Response> {
+    const response = await fetch(url, {
+      method,
+      headers,
+      ...(body && { body }),
     });
 
-    // Handle non-200 responses
     if (response.status !== 200) {
-      let errorMessage = `${response.status} ${response.statusText}`;
-      try {
-        const errorBody = await response.text();
-        console.error(
-          `Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}, Body:`,
-          errorBody
-        );
-        errorMessage = errorBody || errorMessage;
-      } catch (e) {
-        console.error(
-          `Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}`,
-          e
-        );
-      }
-      throw new HttpError(response.status, errorMessage);
+      await this.handleUpstreamError(response, url);
     }
 
-    // Vertex AI always returns JSON (never video/mp4 directly)
-    const responseData = await response.json();
+    return response;
+  }
 
-    // Transform GCS URIs to signed URLs
-    await this.transformResponseUris(responseData);
+  private async handleUpstreamError(
+    response: globalThis.Response,
+    url: string
+  ): Promise<never> {
+    let errorMessage = `${response.status} ${response.statusText}`;
 
-    res.json(responseData);
-    return;
+    try {
+      const errorBody = await response.text();
+      logger.error(
+        `Vertex AI request failed. URL: ${url}, Status: ${response.status}, Body:`,
+        errorBody
+      );
+      errorMessage = errorBody || errorMessage;
+    } catch (e) {
+      logger.error(
+        `Vertex AI request failed. URL: ${url}, Status: ${response.status}`,
+        e
+      );
+    }
+
+    throw new HttpError(response.status, errorMessage);
+  }
+
+  // ========== Access Control ==========
+
+  private async verifyAccessControl(operationId: string): Promise<void> {
+    const userId = this.getRequiredUserId();
+    const hasAccess = await this.confirmAccessControl(userId, operationId);
+
+    if (!hasAccess) {
+      throw new HttpError(403, 'Access denied');
+    }
   }
 
   async confirmAccessControl(
@@ -441,6 +430,8 @@ export class VertexAIProvider extends BaseProvider {
     const dbService = new EchoDbService(prisma);
     return await dbService.confirmAccessControl(userId, providerId);
   }
+
+  // ========== Response Parsing ==========
 
   parseProviderIdFromResponseBody(data: unknown): string {
     if (typeof data !== 'string') {
@@ -460,5 +451,41 @@ export class VertexAIProvider extends BaseProvider {
     }
 
     throw new Error('Response missing operation name');
+  }
+
+  // ========== Utility Methods ==========
+
+  private getRequiredUserId(): string {
+    const userId = this.getUserId();
+    if (!userId) {
+      throw new Error('User ID is required for Vertex AI requests');
+    }
+    return userId;
+  }
+
+  private getRequiredEnvVar(name: string): string {
+    const value = process.env[name];
+    if (!value) {
+      throw new Error(`${name} environment variable not set for Vertex AI`);
+    }
+    return value;
+  }
+
+  private getServiceAccountCredentials(): any {
+    const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+    if (!serviceAccountKey) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(serviceAccountKey);
+    } catch (error) {
+      logger.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY', error);
+      return null;
+    }
+  }
+
+  private isVeo3Model(): boolean {
+    return VEO3_MODELS.includes(this.getModel());
   }
 }
