@@ -108,6 +108,7 @@ export default function VideoGenerator() {
   const [model, setModel] = useState<VideoModelOption>('veo-3');
   const [durationSeconds, setDurationSeconds] = useState<number>(4);
   const [videoHistory, setVideoHistory] = useState<GeneratedVideo[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const promptInputRef = useRef<HTMLFormElement>(null);
   const queryClient = useQueryClient();
   // Load existing history on mount
@@ -116,6 +117,7 @@ export default function VideoGenerator() {
     if (existing.length > 0) {
       setVideoHistory(existing);
     }
+    setIsInitialized(true);
   }, []);
 
   // Persist history on change
@@ -153,8 +155,8 @@ export default function VideoGenerator() {
     return null;
   }
 
-  // Use TanStack Query to poll pending operations
-  const pendingOperations = videoOperationsStorage.getPending();
+  // Use TanStack Query to poll pending operations (only after initialization)
+  const pendingOperations = isInitialized ? videoOperationsStorage.getPending() : [];
   const { data: operationStatuses } = useQuery({
     queryKey: ['video-operations', pendingOperations.map(op => op.id)],
     queryFn: async () => {
@@ -174,7 +176,7 @@ export default function VideoGenerator() {
       );
       return results;
     },
-    enabled: pendingOperations.length > 0,
+    enabled: isInitialized && pendingOperations.length > 0,
     refetchInterval: 5000,
   });
 
@@ -263,8 +265,10 @@ export default function VideoGenerator() {
   }, [operationStatuses, queryClient]);
 
 
-  // Recover operations on mount
+  // Recover operations on mount (only after initialization)
   useEffect(() => {
+    if (!isInitialized) return;
+
     const savedOperations = videoOperationsStorage.getPending();
 
     if (savedOperations.length > 0) {
@@ -287,7 +291,7 @@ export default function VideoGenerator() {
         return merged;
       });
     }
-  }, []);
+  }, [isInitialized]);
 
   /**
    * Handles form submission for video generation
@@ -310,18 +314,33 @@ export default function VideoGenerator() {
 
       // Process image attachments if any
       let imageDataUrl: string | undefined;
+      let lastFrameDataUrl: string | undefined;
       if (hasAttachments && message.files && message.files.length > 0) {
-        const imageFile = message.files.find(f => f.mediaType?.startsWith('image/'));
-        if (imageFile) {
+        const imageFiles = message.files.filter(f => f.mediaType?.startsWith('image/'));
+
+        if (imageFiles.length > 0) {
           try {
-            const response = await fetch(imageFile.url);
-            const blob = await response.blob();
-            const file = new File([blob], imageFile.filename || 'image', {
-              type: imageFile.mediaType,
+            // First image
+            const firstImageFile = imageFiles[0];
+            const response1 = await fetch(firstImageFile.url);
+            const blob1 = await response1.blob();
+            const file1 = new File([blob1], firstImageFile.filename || 'image', {
+              type: firstImageFile.mediaType,
             });
-            imageDataUrl = await fileToDataUrl(file);
+            imageDataUrl = await fileToDataUrl(file1);
+
+            // Second image for lastFrame (if exists)
+            if (imageFiles.length > 1) {
+              const secondImageFile = imageFiles[1];
+              const response2 = await fetch(secondImageFile.url);
+              const blob2 = await response2.blob();
+              const file2 = new File([blob2], secondImageFile.filename || 'lastframe', {
+                type: secondImageFile.mediaType,
+              });
+              lastFrameDataUrl = await fileToDataUrl(file2);
+            }
           } catch (error) {
-            console.error('Failed to process image attachment:', error);
+            console.error('Failed to process image attachments:', error);
           }
         }
       }
@@ -345,6 +364,7 @@ export default function VideoGenerator() {
           model,
           durationSeconds,
           image: imageDataUrl,
+          lastFrame: lastFrameDataUrl,
         });
 
         const video = result.response?.generatedVideos?.[0]?.video;

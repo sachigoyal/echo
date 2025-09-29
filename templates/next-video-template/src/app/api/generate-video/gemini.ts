@@ -15,7 +15,8 @@ import {
 export async function handleGeminiGenerate(
   prompt: string,
   durationSeconds: number = 4,
-  image?: string // Base64 encoded image or data URL
+  image?: string, // Base64 encoded image or data URL (first frame)
+  lastFrame?: string // Base64 encoded image or data URL (last frame)
 ): Promise<Response> {
   try {
     const apiKey = await getEchoToken();
@@ -44,7 +45,7 @@ export async function handleGeminiGenerate(
       config: {
         durationSeconds,
         enhancePrompt: true,
-        personGeneration: 'allow_adult',
+        personGeneration: 'allow_all',
         generateAudio: false,
       },
     };
@@ -58,6 +59,24 @@ export async function handleGeminiGenerate(
 
       generateParams.image = {
         imageBytes: base64Data,
+        mimeType: 'image/jpeg', // Default to JPEG, could be made configurable
+      };
+    }
+
+    // Add lastFrame if provided (only when there are 2+ images)
+    if (lastFrame) {
+      // Handle both data URLs and plain base64
+      const lastFrameBase64Data = lastFrame.startsWith('data:')
+        ? lastFrame.split(',')[1]
+        : lastFrame;
+
+      // Ensure config exists before setting lastFrame
+      if (!generateParams.config) {
+        generateParams.config = {};
+      }
+
+      generateParams.config.lastFrame = {
+        imageBytes: lastFrameBase64Data,
         mimeType: 'image/jpeg', // Default to JPEG, could be made configurable
       };
     }

@@ -303,6 +303,10 @@ export class VertexAIProvider extends BaseProvider {
     const pathAfterModels = this.transformVeo3Path(req.path);
     upstreamUrl = `${baseUrl}/models/${pathAfterModels}`;
 
+    console.log(`Vertex AI request: ${req.method} ${upstreamUrl}`);
+    console.log('Headers:', JSON.stringify(formattedHeaders, null, 2));
+    console.log('Request body:', requestBody ? 'Present' : 'None');
+
     // Forward the request to the provider's API
     const response = await fetch(upstreamUrl, {
       method: req.method,
@@ -312,10 +316,15 @@ export class VertexAIProvider extends BaseProvider {
 
     // Handle non-200 responses
     if (response.status !== 200) {
-      throw new HttpError(
-        response.status,
-        `${response.status} ${response.statusText}`
-      );
+      let errorMessage = `${response.status} ${response.statusText}`;
+      try {
+        const errorBody = await response.text();
+        console.error(`Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}, Body:`, errorBody);
+        errorMessage = errorBody || errorMessage;
+      } catch (e) {
+        console.error(`Vertex AI request failed. URL: ${upstreamUrl}, Status: ${response.status}`, e);
+      }
+      throw new HttpError(response.status, errorMessage);
     }
 
     if (response.headers.get('content-type') !== 'video/mp4') {
