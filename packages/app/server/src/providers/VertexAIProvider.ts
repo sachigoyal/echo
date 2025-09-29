@@ -239,9 +239,20 @@ export class VertexAIProvider extends BaseProvider {
       typeof modifiedBody.parameters === 'object'
     ) {
       const params = modifiedBody.parameters as Record<string, unknown>;
-      if (typeof params.storageUri === 'string') {
+      if (typeof params.storageUri === 'string' && params.storageUri) {
+        // Remove gs:// prefix if user accidentally included it
+        let path = params.storageUri.startsWith('gs://')
+          ? params.storageUri.substring(5)
+          : params.storageUri;
+
+        // Encode each path segment to handle special characters, preserving path structure
+        const encodedPath = path
+          .split('/')
+          .map(segment => encodeURIComponent(segment))
+          .join('/');
+
         // Transform: 'echo-template-output-bucket' -> 'gs://echo-veo3-videos/{userId}/echo-template-output-bucket'
-        params.storageUri = `gs://echo-veo3-videos/${userId}/${params.storageUri}`;
+        params.storageUri = `gs://echo-veo3-videos/${userId}/${encodedPath}`;
       }
     }
 
