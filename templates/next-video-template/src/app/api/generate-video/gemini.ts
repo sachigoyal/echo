@@ -141,8 +141,6 @@ export async function checkGeminiOperationStatus(
       operation: operation,
     });
 
-    console.log('updatedOperation: ', updatedOperation);
-
     // Just return the SDK operation response directly
     return Response.json(updatedOperation);
   } catch (error) {
