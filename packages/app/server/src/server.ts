@@ -97,7 +97,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
 
-    // VERIFY
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
       prisma
@@ -106,7 +105,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     const { provider, isStream, isPassthroughProxyRoute, providerId } =
       await initializeProvider(req, res, echoControlService);
     const maxCost = getRequestMaxCost(req, provider);
-    logger.info(`Max cost: ${maxCost}`);
 
     if (!isApiRequest(headers) && !isX402Request(headers)) {
       return buildX402Response(res, maxCost);
