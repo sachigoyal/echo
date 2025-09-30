@@ -16,6 +16,13 @@ import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
 import { paymentMiddleware } from 'x402-express';
 import { facilitator } from '@coinbase/x402';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
+import { FacilitatorClient } from 'services/facilitator/facilitatorService';
+import {
+  PaymentPayloadSchema,
+  PaymentRequirementsSchema,
+  VerifyRequestSchema,
+  SettleRequestSchema,
+} from 'services/facilitator/x402-types';
 
 export async function handleX402Request({
   req,
@@ -41,11 +48,29 @@ export async function handleX402Request({
     throw new Error('x-payment header missing after validation');
   }
 
-  const xPaymentData = JSON.parse(
+  const xPaymentDataRaw = JSON.parse(
     Buffer.from(xPaymentHeader as string, 'base64').toString()
   );
 
-  const paymentAmount = xPaymentData.payload.authorization.value;
+  // Construct and validate PaymentPayload using Zod schema
+  const paymentPayload = PaymentPayloadSchema.parse({
+    x402Version: 1,
+    scheme: 'exact',
+    network: xPaymentDataRaw.network,
+    payload: {
+      signature: xPaymentDataRaw.payload.signature,
+      authorization: {
+        from: xPaymentDataRaw.payload.authorization.from,
+        to: xPaymentDataRaw.payload.authorization.to,
+        value: xPaymentDataRaw.payload.authorization.value,
+        validAfter: xPaymentDataRaw.payload.authorization.validAfter,
+        validBefore: xPaymentDataRaw.payload.authorization.validBefore,
+        nonce: xPaymentDataRaw.payload.authorization.nonce,
+      },
+    },
+  });
+
+  const paymentAmount = (paymentPayload.payload as any).authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
 
   if (paymentAmount < maxCostUsdcBigInt) {
@@ -54,110 +79,125 @@ export async function handleX402Request({
 
   const routeKey = `${req.method.toUpperCase()} ${req.path}`;
 
-  const x402Middleware = paymentMiddleware(
-    recipient,
-    {
-      [routeKey]: {
-        price: {
-          amount: Number(paymentAmount).toString(),
-          asset: {
-            address: USDC_ADDRESS,
-            decimals: 6,
-            eip712: { name: 'USD Coin', version: '2' },
-          },
-        },
-        network,
-        config: {
-          description: 'Echo x402',
-          mimeType: 'application/json',
-          maxTimeoutSeconds: 1000,
-          discoverable: true,
-        },
-      },
-    },
-    facilitator
-  );
+  const facilitatorClient = new FacilitatorClient();
+  try {
+    if (isPassthroughProxyRoute && providerId) {
+      return await makeProxyPassthroughRequest(
+        req,
+        res,
+        provider,
+        processedHeaders,
+        providerId
+      );
+    }
+  // Default to no refund
+  let refundAmount = new Decimal(0);
+  let transaction,
+    data,
+    refundResult = null;
 
-  return new Promise((resolve, reject) => {
-    x402Middleware(req, res, async (err: any) => {
-      if (err) {
-        return reject(err);
-      }
-
-      try {
-        if (isPassthroughProxyRoute && providerId) {
-          const result = await makeProxyPassthroughRequest(
-            req,
-            res,
-            provider,
-            processedHeaders,
-            providerId
-          );
-          return resolve(result);
-        }
-        // Default to no refund
-        let refundAmount = new Decimal(0);
-        let transaction,
-          data,
-          refundResult = null;
-
-        try {
-          const transactionResult =
-            await modelRequestService.executeModelRequest(
-              req,
-              res,
-              processedHeaders,
-              provider,
-              isStream
-            );
-          transaction = transactionResult.transaction;
-          data = transactionResult.data;
-
-          refundAmount = calculateRefundAmount(
-            paymentAmountDecimal,
-            transaction.rawTransactionCost
-          );
-
-          // Process refund if needed
-          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
-            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await transfer(
-                xPaymentData.payload.authorization.to as `0x${string}`,
-                refundAmountUsdcBigInt.toString()
-            );
-          }
-
-          // Send the response - the middleware has intercepted res.end()/res.json()
-          // and will actually send it after settlement completes
-          modelRequestService.handleResolveResponse(res, isStream, data);
-
-          // The middleware will handle settlement automatically
-          const result = {
-            transaction,
-            isStream,
-            data,
-            refundResult,
-          };
-
-          resolve(result);
-        } catch (error) {
-          // In case of error, do full refund
-          refundAmount = paymentAmountDecimal;
-
-          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
-            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await transfer(
-                xPaymentData.payload.authorization.to as `0x${string}`,
-                refundAmountUsdcBigInt.toString()
-            );
-          }
-          reject(error);
-        }
-      } catch (error) {
-        reject(error);
-      }
-    });
+  // Construct and validate PaymentRequirements using Zod schema
+  const paymentRequirements = PaymentRequirementsSchema.parse({
+    scheme: 'exact',
+    network,
+    maxAmountRequired: paymentAmount,
+    resource: `${req.protocol}://${req.get('host')}${req.url}`,
+    description: 'Echo x402',
+    mimeType: 'application/json',
+    payTo: recipient,
+    maxTimeoutSeconds: 1000,
+    asset: USDC_ADDRESS,
   });
+
+  // Validate and execute verify request
+  const verifyRequest = VerifyRequestSchema.parse({
+    paymentPayload,
+    paymentRequirements,
+  });
+
+  console.log("verifyRequest", verifyRequest);
+  const verifyResult = await facilitatorClient.verify(verifyRequest);
+
+  console.log('verifyResult', verifyResult);
+
+  if (!verifyResult.isValid) {
+    return buildX402Response(req, res, maxCost);
+  }
+
+  // Validate and execute settle request
+  const settleRequest = SettleRequestSchema.parse({
+    paymentPayload,
+    paymentRequirements,
+  });
+
+  const settleResult = await facilitatorClient.settle(settleRequest);
+
+  console.log('settleResult', settleResult);
+
+  if (!settleResult.success || !settleResult.transaction) {
+    return buildX402Response(req, res, maxCost);
+  }
+    
+  console.log('refundAmount', refundAmount);
+
+  console.log("attempting to execute model request")
+  try {
+    const transactionResult =
+      await modelRequestService.executeModelRequest(
+        req,
+        res,
+        processedHeaders,
+        provider,
+        isStream
+      );
+    transaction = transactionResult.transaction;
+    data = transactionResult.data;
+
+    console.log('transaction', transaction);
+    console.log('data', data);
+
+    refundAmount = calculateRefundAmount(
+      paymentAmountDecimal,
+      transaction.rawTransactionCost
+    );
+
+    // Process refund if needed
+    if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
+      const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
+      const authPayload = paymentPayload.payload as any;
+      refundResult = await transfer(
+          authPayload.authorization.from as `0x${string}`,
+          refundAmountUsdcBigInt.toString()
+      );
+    }
+
+    // Send the response - the middleware has intercepted res.end()/res.json()
+    // and will actually send it after settlement completes
+    modelRequestService.handleResolveResponse(res, isStream, data);
+
+    // The middleware will handle settlement automatically
+    const result = {
+      transaction,
+      isStream,
+      data,
+      refundResult,
+    };
+  } catch (error) {
+    // In case of error, do full refund
+    refundAmount = paymentAmountDecimal;
+
+    if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
+      const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
+      const authPayload = paymentPayload.payload as any;
+      refundResult = await transfer(
+          authPayload.authorization.from as `0x${string}`,
+          refundAmountUsdcBigInt.toString()
+      );
+    }
+  }
+  } catch (error) {
+    throw error;
+  }
 }
 
 export async function handleApiKeyRequest({
