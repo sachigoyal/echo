@@ -76,15 +76,6 @@ export async function handleX402Request({
         
         const xPaymentData = JSON.parse(Buffer.from(xPaymentHeader as string, 'base64').toString());
         
-        const payload = {
-          from: xPaymentData.payload.authorization.from as `0x${string}`,
-          to: xPaymentData.payload.authorization.to as `0x${string}`,
-          value: xPaymentData.payload.authorization.value,
-          valid_after: Number(xPaymentData.payload.authorization.validAfter),
-          valid_before: Number(xPaymentData.payload.authorization.validBefore),
-          nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
-        };
-        
         const paymentAmount = usdcBigIntToDecimal(
           xPaymentData.payload.authorization.value
         );
@@ -113,6 +104,16 @@ export async function handleX402Request({
           isStream
         );
 
+        const refundAmount = maxCostUsdcBigInt - BigInt(xPaymentData.payload.authorization.value);
+
+        const refundResult = await settleWithAuthorization({
+            to: xPaymentData.payload.authorization.to as `0x${string}`,
+            value: refundAmount.toString(),
+            valid_after: xPaymentData.payload.authorization.valid_after,
+            valid_before: xPaymentData.payload.authorization.valid_before,
+            nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
+        })
+
         // Send the response - the middleware has intercepted res.end()/res.json()
         // and will actually send it after settlement completes
         modelRequestService.handleResolveResponse(res, isStream, data);
@@ -122,6 +123,7 @@ export async function handleX402Request({
           transaction,
           isStream,
           data,
+          refundResult,
         };
 
         resolve(result);
@@ -174,8 +176,6 @@ export async function handleApiKeyRequest({
     provider,
     isStream
   );
-
-  
 
   modelRequestService.handleResolveResponse(res, isStream, data);
 
