@@ -10,6 +10,7 @@ import { WALLET_SMART_ACCOUNT } from './constants';
 import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
+import logger from 'logger';
 
 /**
  * USDC has 6 decimal places
@@ -42,6 +43,25 @@ export function usdcBigIntToDecimal(usdcBigInt: bigint | string): Decimal {
 }
 
 /**
+ * Calculates the refund amount for an x402 request. Also used to log when we underestimate the cost.
+ * @param maxCost The max cost of the request
+ * @param transactionCost The cost of the transaction
+ * @returns The refund amount
+ */
+export function calculateRefundAmount(
+  maxCost: Decimal,
+  transactionCost: Decimal
+): Decimal {
+  if (transactionCost.greaterThan(maxCost)) {
+    logger.error(
+      `Transaction cost (${transactionCost}) exceeds max cost (${maxCost}).`
+    );
+    return new Decimal(0);
+  }
+  return maxCost.minus(transactionCost);
+}
+
+/**
  * Generates a random nonce in hexadecimal format
  * @returns A random hex string with 0x prefix (25 bytes = 50 hex chars)
  */
@@ -68,7 +88,11 @@ function buildX402Challenge(params: X402ChallengeParams): string {
   return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`;
 }
 
-export async function buildX402Response(req: Request, res: Response, maxCost: Decimal) {
+export async function buildX402Response(
+  req: Request,
+  res: Response,
+  maxCost: Decimal
+) {
   const network = process.env.NETWORK as Network;
   // Convert maxCost from Decimal to USDC BigInt string for payment URL
   const maxCostBigInt = decimalToUsdcBigInt(maxCost);
@@ -89,30 +113,32 @@ export async function buildX402Response(req: Request, res: Response, maxCost: De
   const resBody = {
     x402Version: 1,
     error: 'Payment Required',
-    accepts: [{
-      type: 'x402',
-      version: '1',
-      network,
-      maxAmountRequired: maxCostBigInt.toString(),
-      recipient: recipient,
-      currency: USDC_ADDRESS,
-      to: recipient,
-      url: paymentUrl,
-      nonce: generateRandomNonce(),
-      scheme: "exact",
-      resource: resourceUrl,
-      description: "Echo x402",
-      mimeType: "application/json",
-      maxTimeoutSeconds: 1000,
-      discoverable: true,
-      payTo: recipient,
-      asset: USDC_ADDRESS,
-      extra: {
-        name: "USD Coin",
-        version: "2"
-      }
-    }],
-  }
+    accepts: [
+      {
+        type: 'x402',
+        version: '1',
+        network,
+        maxAmountRequired: maxCostBigInt.toString(),
+        recipient: recipient,
+        currency: USDC_ADDRESS,
+        to: recipient,
+        url: paymentUrl,
+        nonce: generateRandomNonce(),
+        scheme: 'exact',
+        resource: resourceUrl,
+        description: 'Echo x402',
+        mimeType: 'application/json',
+        maxTimeoutSeconds: 1000,
+        discoverable: true,
+        payTo: recipient,
+        asset: USDC_ADDRESS,
+        extra: {
+          name: 'USD Coin',
+          version: '2',
+        },
+      },
+    ],
+  };
 
   console.log('resBody', resBody);
 
@@ -120,7 +146,11 @@ export async function buildX402Response(req: Request, res: Response, maxCost: De
 }
 
 export function isApiRequest(headers: Record<string, string>): boolean {
-  return headers['x-api-key'] !== undefined || headers['x-google-api-key'] !== undefined || headers['authorization'] !== undefined;
+  return (
+    headers['x-api-key'] !== undefined ||
+    headers['x-google-api-key'] !== undefined ||
+    headers['authorization'] !== undefined
+  );
 }
 
 export function isX402Request(headers: Record<string, string>): boolean {

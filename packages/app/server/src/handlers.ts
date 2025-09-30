@@ -1,14 +1,14 @@
-import { FacilitatorClient } from 'facilitatorClient';
 import { TransactionEscrowMiddleware } from 'middleware/transaction-escrow-middleware';
 import { modelRequestService } from 'services/ModelRequestService';
-import { HandlerInput, X402Version, Network } from 'types';
+import { HandlerInput, Network } from 'types';
 import {
-  parseX402Headers,
   usdcBigIntToDecimal,
   decimalToUsdcBigInt,
   buildX402Response,
   getSmartAccount,
+  calculateRefundAmount,
 } from 'utils';
+import { Decimal } from '@prisma/client/runtime/library';
 import { settleWithAuthorization } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
@@ -31,22 +31,40 @@ export async function handleX402Request({
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
-  
+
   // Convert maxCost (Decimal) to USDC bigint string for payment middleware
   const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
 
+  // Decode the x-payment header to get payment details
+  const xPaymentHeader =
+    processedHeaders['x-payment'] || req.headers['x-payment'];
+  if (!xPaymentHeader) {
+    throw new Error('x-payment header missing after validation');
+  }
+
+  const xPaymentData = JSON.parse(
+    Buffer.from(xPaymentHeader as string, 'base64').toString()
+  );
+
+  const paymentAmount = xPaymentData.payload.authorization.value;
+  const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
+
+  if (paymentAmount < maxCostUsdcBigInt) {
+    buildX402Response(req, res, maxCost);
+  }
+
   const routeKey = `${req.method.toUpperCase()} ${req.path}`;
-  
+
   const x402Middleware = paymentMiddleware(
     recipient,
     {
       [routeKey]: {
         price: {
-          amount: Number(maxCostUsdcBigInt).toString(),
+          amount: Number(paymentAmount).toString(),
           asset: {
             address: USDC_ADDRESS,
             decimals: 6,
-            eip712: { name: 'USD Coin', version: '2'}
+            eip712: { name: 'USD Coin', version: '2' },
           },
         },
         network,
@@ -55,36 +73,19 @@ export async function handleX402Request({
           mimeType: 'application/json',
           maxTimeoutSeconds: 1000,
           discoverable: true,
-        }
-      }
+        },
+      },
     },
-    facilitator,
+    facilitator
   );
-  
+
   return new Promise((resolve, reject) => {
     x402Middleware(req, res, async (err: any) => {
       if (err) {
         return reject(err);
       }
-      
-      try {
-        // Decode the x-payment header to get payment details
-        const xPaymentHeader = processedHeaders['x-payment'] || req.headers['x-payment'];
-        if (!xPaymentHeader) {
-          throw new Error('x-payment header missing after validation');
-        }
-        
-        const xPaymentData = JSON.parse(Buffer.from(xPaymentHeader as string, 'base64').toString());
-        
-        const paymentAmount = usdcBigIntToDecimal(
-          xPaymentData.payload.authorization.value
-        );
-        
-        if (paymentAmount.lessThan(maxCost)) {
-          buildX402Response(req, res, maxCost);
-          return resolve(undefined);
-        }
 
+      try {
         if (isPassthroughProxyRoute && providerId) {
           const result = await makeProxyPassthroughRequest(
             req,
@@ -95,38 +96,70 @@ export async function handleX402Request({
           );
           return resolve(result);
         }
-
-        const { transaction, data } = await modelRequestService.executeModelRequest(
-          req,
-          res,
-          processedHeaders,
-          provider,
-          isStream
-        );
-
-        const refundAmount = maxCostUsdcBigInt - BigInt(xPaymentData.payload.authorization.value);
-
-        const refundResult = await settleWithAuthorization({
-            to: xPaymentData.payload.authorization.to as `0x${string}`,
-            value: refundAmount.toString(),
-            valid_after: xPaymentData.payload.authorization.valid_after,
-            valid_before: xPaymentData.payload.authorization.valid_before,
-            nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
-        })
-
-        // Send the response - the middleware has intercepted res.end()/res.json()
-        // and will actually send it after settlement completes
-        modelRequestService.handleResolveResponse(res, isStream, data);
-
-        // The middleware will handle settlement automatically
-        const result = {
-          transaction,
-          isStream,
+        // Default to no refund
+        let refundAmount = new Decimal(0);
+        let transaction,
           data,
-          refundResult,
-        };
+          refundResult = null;
 
-        resolve(result);
+        try {
+          const transactionResult =
+            await modelRequestService.executeModelRequest(
+              req,
+              res,
+              processedHeaders,
+              provider,
+              isStream
+            );
+          transaction = transactionResult.transaction;
+          data = transactionResult.data;
+
+          refundAmount = calculateRefundAmount(
+            paymentAmountDecimal,
+            transaction.rawTransactionCost
+          );
+
+          // Process refund if needed
+          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
+            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
+            refundResult = await settleWithAuthorization({
+              to: xPaymentData.payload.authorization.to as `0x${string}`,
+              value: refundAmountUsdcBigInt.toString(),
+              valid_after: xPaymentData.payload.authorization.valid_after,
+              valid_before: xPaymentData.payload.authorization.valid_before,
+              nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
+            });
+          }
+
+          // Send the response - the middleware has intercepted res.end()/res.json()
+          // and will actually send it after settlement completes
+          modelRequestService.handleResolveResponse(res, isStream, data);
+
+          // The middleware will handle settlement automatically
+          const result = {
+            transaction,
+            isStream,
+            data,
+            refundResult,
+          };
+
+          resolve(result);
+        } catch (error) {
+          // In case of error, do full refund
+          refundAmount = paymentAmountDecimal;
+
+          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
+            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
+            refundResult = await settleWithAuthorization({
+              to: xPaymentData.payload.authorization.to as `0x${string}`,
+              value: refundAmountUsdcBigInt.toString(),
+              valid_after: xPaymentData.payload.authorization.valid_after,
+              valid_before: xPaymentData.payload.authorization.valid_before,
+              nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
+            });
+          }
+          reject(error);
+        }
       } catch (error) {
         reject(error);
       }
@@ -176,6 +209,9 @@ export async function handleApiKeyRequest({
     provider,
     isStream
   );
+
+  // There is no actual refund, this logs if we underestimate the raw cost
+  calculateRefundAmount(maxCost, transaction.rawTransactionCost);
 
   modelRequestService.handleResolveResponse(res, isStream, data);
 

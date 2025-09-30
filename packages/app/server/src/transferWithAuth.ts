@@ -104,7 +104,15 @@ export async function settleWithAuthorization(
         data: encodeFunctionData({
           abi: ERC3009_ABI,
           functionName: 'transferWithAuthorization',
-          args: [smartAccount.address, USDC_ADDRESS, BigInt(transfer.value), BigInt(transfer.valid_after), BigInt(transfer.valid_before), transfer.nonce as `0x${string}`, signature],
+          args: [
+            smartAccount.address,
+            USDC_ADDRESS,
+            BigInt(transfer.value),
+            BigInt(transfer.valid_after),
+            BigInt(transfer.valid_before),
+            transfer.nonce as `0x${string}`,
+            signature,
+          ],
         }),
       },
     ],

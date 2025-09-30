@@ -62,19 +62,9 @@ app.use(
 app.use((req: EscrowRequest, res, next) => {
   // Capture Content-Length from raw request before any parsing
   const rawContentLength = req.headers['content-length'];
-  
-  logger.info('Raw request headers before parsing:', {
-    'content-length': rawContentLength,
-    'content-type': req.headers['content-type'],
-    method: req.method,
-    url: req.url
-  });
-  
+
   if (rawContentLength) {
     req.originalContentLength = rawContentLength;
-    logger.info(`Preserved Content-Length: ${rawContentLength}`);
-  } else {
-    logger.info('No Content-Length header in raw request');
   }
   next();
 });
