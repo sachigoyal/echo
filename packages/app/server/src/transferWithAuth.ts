@@ -1,6 +1,6 @@
 import { CdpClient } from '@coinbase/cdp-sdk';
 import { ERC3009_ABI, USDC_ADDRESS } from './services/fund-repo/constants';
-import { encodeFunctionData } from 'viem';
+import { encodeFunctionData, Hex } from 'viem';
 import { serializeTransaction } from 'viem';
 import {
   DOMAIN_NAME,
@@ -10,6 +10,7 @@ import {
   TRANSFER_WITH_AUTHORIZATION_NAME,
 } from './constants';
 import {
+  Address,
   Network,
   Schema,
   SettleRequest,
@@ -74,9 +75,20 @@ export async function signTransferWithAuthorization(
     .then(tx => tx.signature);
 }
 
+/**
+Lazily redefining the type for the sendUserOperation function, because CDP doesn't export it
+ */
+export type SendUserOperationReturnType = {
+  /** The address of the smart wallet. */
+  smartAccountAddress: Address;
+  /** The hash of the user operation. This is not the transaction hash which is only available after the operation is completed.*/
+  userOpHash: Hex;
+};
+
+
 export async function settleWithAuthorization(
   transfer: TransferWithAuthorization
-) {
+): Promise<SendUserOperationReturnType> {
   const { cdp, smartAccount } = await getSmartAccount();
 
   const signature = await signTransferWithAuthorization(transfer);
