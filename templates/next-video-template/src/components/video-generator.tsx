@@ -56,7 +56,7 @@ export default function VideoGenerator() {
 
   const allowedDurations = [4, 6, 8] as const;
 
-  const { videoHistory, isInitialized, addVideo, updateVideo } =
+  const { videoHistory, isInitialized, addVideo, updateVideo, removeVideo } =
     useVideoHistory();
 
   useVideoOperations({
@@ -170,7 +170,7 @@ export default function VideoGenerator() {
         </PromptInputToolbar>
       </PromptInput>
 
-      <VideoHistory videoHistory={videoHistory} />
+      <VideoHistory videoHistory={videoHistory} onRemoveVideo={removeVideo} />
     </div>
   );
 }

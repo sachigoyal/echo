@@ -1,26 +1,27 @@
 import type { GeneratedVideo } from '@/lib/types';
 import { videoHistoryStorage } from '@/lib/video-history';
 import { videoOperationsStorage } from '@/lib/video-operations';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function useVideoHistory() {
   const [videoHistory, setVideoHistory] = useState<GeneratedVideo[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const isFirstRender = useRef(true);
 
   // Load existing history on mount
   useEffect(() => {
     const existing = videoHistoryStorage.getAll();
-    if (existing.length > 0) {
-      setVideoHistory(existing);
-    }
+    setVideoHistory(existing);
     setIsInitialized(true);
   }, []);
 
-  // Persist history on change
+  // Persist history on change (skip first render to avoid overwriting during load)
   useEffect(() => {
-    if (videoHistory.length >= 0) {
-      videoHistoryStorage.setAll(videoHistory);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
+    videoHistoryStorage.setAll(videoHistory);
   }, [videoHistory]);
 
   // Recover pending operations on mount
@@ -65,10 +66,17 @@ export function useVideoHistory() {
     []
   );
 
+  const removeVideo = useCallback((id: string) => {
+    setVideoHistory(prev => prev.filter(v => v.id !== id));
+    videoHistoryStorage.remove(id);
+    videoOperationsStorage.remove(id);
+  }, []);
+
   return {
     videoHistory,
     isInitialized,
     addVideo,
     updateVideo,
+    removeVideo,
   };
 }

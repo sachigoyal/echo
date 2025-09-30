@@ -27,6 +27,17 @@ export const videoHistoryStorage = {
     }
   },
 
+  remove(videoId: string): void {
+    if (typeof window === 'undefined') return;
+    try {
+      const existing = this.getAll();
+      const filtered = existing.filter(v => v.id !== videoId);
+      localStorage.setItem(VIDEO_HISTORY_KEY, JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to remove video from history:', error);
+    }
+  },
+
   clear(): void {
     if (typeof window === 'undefined') return;
     try {
