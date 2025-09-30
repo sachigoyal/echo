@@ -108,9 +108,9 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     const maxCost = getRequestMaxCost(req, provider);
 
     if (!isApiRequest(headers) && !isX402Request(headers)) {
-      return buildX402Response(res, maxCost);
+      return buildX402Response(req, res, maxCost);
     }
-
+    
     if (isX402Request(headers)) {
       console.log('isX402Request');
       await handleX402Request({

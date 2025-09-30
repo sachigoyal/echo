@@ -3,7 +3,7 @@ import {
   Network,
   X402ChallengeParams,
 } from 'types';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { SmartAccount } from '@coinbase/cdp-sdk/_types/client/evm/evm.types';
 import { CdpClient } from '@coinbase/cdp-sdk';
 import { WALLET_OWNER } from './constants';
@@ -69,13 +69,14 @@ function buildX402Challenge(params: X402ChallengeParams): string {
   return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`;
 }
 
-export async function buildX402Response(res: Response, maxCost: Decimal) {
+export async function buildX402Response(req: Request, res: Response, maxCost: Decimal) {
   const network = process.env.NETWORK as Network;
   // Convert maxCost from Decimal to USDC BigInt string for payment URL
   const maxCostBigInt = decimalToUsdcBigInt(maxCost);
   const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(maxCostBigInt.toString())}`;
 
   const recipient = (await getSmartAccount()).smartAccount.address;
+  const resourceUrl = `http://${req.headers.host}${req.url}`;
 
   res.setHeader(
     'WWW-Authenticate',
@@ -100,13 +101,17 @@ export async function buildX402Response(res: Response, maxCost: Decimal) {
       url: paymentUrl,
       nonce: generateRandomNonce(),
       scheme: "exact",
-      resource: paymentUrl,
+      resource: resourceUrl,
       description: "Echo x402",
       mimeType: "application/json",
       maxTimeoutSeconds: 1000,
       discoverable: true,
       payTo: recipient,
       asset: USDC_ADDRESS,
+      extra: {
+        name: "USD Coin",
+        version: "2"
+      }
     }],
   }
 
