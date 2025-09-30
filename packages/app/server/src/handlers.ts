@@ -1,9 +1,7 @@
-import { FacilitatorClient } from 'facilitatorClient';
 import { TransactionEscrowMiddleware } from 'middleware/transaction-escrow-middleware';
 import { modelRequestService } from 'services/ModelRequestService';
-import { HandlerInput, X402Version, Network } from 'types';
+import { HandlerInput, Network } from 'types';
 import {
-  parseX402Headers,
   usdcBigIntToDecimal,
   decimalToUsdcBigInt,
   buildX402Response,
@@ -36,6 +34,24 @@ export async function handleX402Request({
   // Convert maxCost (Decimal) to USDC bigint string for payment middleware
   const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
 
+  // Decode the x-payment header to get payment details
+  const xPaymentHeader =
+  processedHeaders['x-payment'] || req.headers['x-payment'];
+  if (!xPaymentHeader) {
+    throw new Error('x-payment header missing after validation');
+  }
+
+  const xPaymentData = JSON.parse(
+    Buffer.from(xPaymentHeader as string, 'base64').toString()
+  );
+
+  const paymentAmount = xPaymentData.payload.authorization.value;
+  const paymentAmountUsdcBigInt = usdcBigIntToDecimal(paymentAmount);
+
+  if (paymentAmount < maxCostUsdcBigInt) {
+    buildX402Response(req, res, maxCost);
+  }
+
   const routeKey = `${req.method.toUpperCase()} ${req.path}`;
 
   const x402Middleware = paymentMiddleware(
@@ -43,7 +59,7 @@ export async function handleX402Request({
     {
       [routeKey]: {
         price: {
-          amount: Number(maxCostUsdcBigInt).toString(),
+          amount: Number(paymentAmount).toString(),
           asset: {
             address: USDC_ADDRESS,
             decimals: 6,
@@ -69,26 +85,6 @@ export async function handleX402Request({
       }
 
       try {
-        // Decode the x-payment header to get payment details
-        const xPaymentHeader =
-          processedHeaders['x-payment'] || req.headers['x-payment'];
-        if (!xPaymentHeader) {
-          throw new Error('x-payment header missing after validation');
-        }
-
-        const xPaymentData = JSON.parse(
-          Buffer.from(xPaymentHeader as string, 'base64').toString()
-        );
-
-        const paymentAmount = usdcBigIntToDecimal(
-          xPaymentData.payload.authorization.value
-        );
-
-        if (paymentAmount.lessThan(maxCost)) {
-          buildX402Response(req, res, maxCost);
-          return resolve(undefined);
-        }
-
         if (isPassthroughProxyRoute && providerId) {
           const result = await makeProxyPassthroughRequest(
             req,
@@ -111,7 +107,7 @@ export async function handleX402Request({
 
         // Calculate refund amount
         const refundAmount = calculateRefundAmount(
-          maxCost,
+          paymentAmountUsdcBigInt,
           transaction.rawTransactionCost
         );
         let refundResult = null;
