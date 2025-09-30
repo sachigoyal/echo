@@ -8,6 +8,7 @@ import {
   getSmartAccount,
   calculateRefundAmount,
 } from 'utils';
+import { Decimal } from '@prisma/client/runtime/library';
 import { settleWithAuthorization } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
@@ -36,7 +37,7 @@ export async function handleX402Request({
 
   // Decode the x-payment header to get payment details
   const xPaymentHeader =
-  processedHeaders['x-payment'] || req.headers['x-payment'];
+    processedHeaders['x-payment'] || req.headers['x-payment'];
   if (!xPaymentHeader) {
     throw new Error('x-payment header missing after validation');
   }
@@ -46,7 +47,7 @@ export async function handleX402Request({
   );
 
   const paymentAmount = xPaymentData.payload.authorization.value;
-  const paymentAmountUsdcBigInt = usdcBigIntToDecimal(paymentAmount);
+  const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
 
   if (paymentAmount < maxCostUsdcBigInt) {
     buildX402Response(req, res, maxCost);
@@ -95,46 +96,70 @@ export async function handleX402Request({
           );
           return resolve(result);
         }
+        // Default to no refund
+        let refundAmount = new Decimal(0);
+        let transaction,
+          data,
+          refundResult = null;
 
-        const { transaction, data } =
-          await modelRequestService.executeModelRequest(
-            req,
-            res,
-            processedHeaders,
-            provider,
-            isStream
+        try {
+          const transactionResult =
+            await modelRequestService.executeModelRequest(
+              req,
+              res,
+              processedHeaders,
+              provider,
+              isStream
+            );
+          transaction = transactionResult.transaction;
+          data = transactionResult.data;
+
+          refundAmount = calculateRefundAmount(
+            paymentAmountDecimal,
+            transaction.rawTransactionCost
           );
 
-        // Calculate refund amount
-        const refundAmount = calculateRefundAmount(
-          paymentAmountUsdcBigInt,
-          transaction.rawTransactionCost
-        );
-        let refundResult = null;
-        if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
-          const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-          refundResult = await settleWithAuthorization({
-            to: xPaymentData.payload.authorization.to as `0x${string}`,
-            value: refundAmountUsdcBigInt.toString(),
-            valid_after: xPaymentData.payload.authorization.valid_after,
-            valid_before: xPaymentData.payload.authorization.valid_before,
-            nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
-          });
+          // Process refund if needed
+          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
+            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
+            refundResult = await settleWithAuthorization({
+              to: xPaymentData.payload.authorization.to as `0x${string}`,
+              value: refundAmountUsdcBigInt.toString(),
+              valid_after: xPaymentData.payload.authorization.valid_after,
+              valid_before: xPaymentData.payload.authorization.valid_before,
+              nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
+            });
+          }
+
+          // Send the response - the middleware has intercepted res.end()/res.json()
+          // and will actually send it after settlement completes
+          modelRequestService.handleResolveResponse(res, isStream, data);
+
+          // The middleware will handle settlement automatically
+          const result = {
+            transaction,
+            isStream,
+            data,
+            refundResult,
+          };
+
+          resolve(result);
+        } catch (error) {
+          // In case of error, do full refund
+          refundAmount = paymentAmountDecimal;
+
+          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
+            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
+            refundResult = await settleWithAuthorization({
+              to: xPaymentData.payload.authorization.to as `0x${string}`,
+              value: refundAmountUsdcBigInt.toString(),
+              valid_after: xPaymentData.payload.authorization.valid_after,
+              valid_before: xPaymentData.payload.authorization.valid_before,
+              nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
+            });
+          }
+          reject(error);
         }
-
-        // Send the response - the middleware has intercepted res.end()/res.json()
-        // and will actually send it after settlement completes
-        modelRequestService.handleResolveResponse(res, isStream, data);
-
-        // The middleware will handle settlement automatically
-        const result = {
-          transaction,
-          isStream,
-          data,
-          refundResult,
-        };
-
-        resolve(result);
       } catch (error) {
         reject(error);
       }
