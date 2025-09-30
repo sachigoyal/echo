@@ -31,8 +31,8 @@ export class GeminiVeoProvider extends BaseProvider {
    */
   static detectPassthroughProxy(
     req: Request,
-    echoControlService: EchoControlService,
-    extractIsStream: (req: Request) => boolean
+    extractIsStream: (req: Request) => boolean,
+    echoControlService?: EchoControlService
   ):
     | {
         provider: BaseProvider;
