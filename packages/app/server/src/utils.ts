@@ -12,7 +12,7 @@ import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
 import logger from 'logger';
-import { transferWithAuthorization } from 'transferWithAuth';
+import { transfer } from 'transferWithAuth';
 
 /**
  * USDC has 6 decimal places
@@ -173,14 +173,4 @@ export async function getSmartAccount(): Promise<{
   });
 
   return {smartAccount};
-}
-
-export async function refund(to: string, value: string) : Promise<SendUserOperationReturnType> {
-    return await transferWithAuthorization({
-        to,
-        value,
-        valid_after: 0,
-        valid_before: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
-        nonce: generateRandomNonce(),
-    })
 }

@@ -101,8 +101,8 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       await handleX402Request({
         req,
         res,
-        processedHeaders,
         echoControlService,
+        processedHeaders,
         maxCost,
         isPassthroughProxyRoute,
         providerId,

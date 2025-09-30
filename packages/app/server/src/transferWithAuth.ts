@@ -1,13 +1,13 @@
 import { ERC20_CONTRACT_ABI, USDC_ADDRESS } from './services/fund-repo/constants';
 import { Abi, encodeFunctionData } from 'viem';
 import {
-  TransferWithAuthorization,
   SendUserOperationReturnType,
 } from './types';
 import { getSmartAccount } from './utils';
 
-export async function transferWithAuthorization(
-  transfer: TransferWithAuthorization
+export async function transfer(
+  to: string,
+  value: string
 ) : Promise<SendUserOperationReturnType> {
 
   const { smartAccount } = await getSmartAccount();
@@ -21,7 +21,7 @@ export async function transferWithAuthorization(
           data: encodeFunctionData({
             abi: ERC20_CONTRACT_ABI as Abi,
             functionName: 'transfer',
-            args: [transfer.to, transfer.value],
+            args: [to, value],
           }),
         },
       ],

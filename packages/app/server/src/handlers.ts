@@ -7,11 +7,9 @@ import {
   buildX402Response,
   getSmartAccount,
   calculateRefundAmount,
-  generateRandomNonce,
-  refund,
 } from 'utils';
 import { Decimal } from '@prisma/client/runtime/library';
-import { transferWithAuthorization } from 'transferWithAuth';
+import { transfer } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
 import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
@@ -124,7 +122,7 @@ export async function handleX402Request({
           // Process refund if needed
           if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
             const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await refund(
+            refundResult = await transfer(
                 xPaymentData.payload.authorization.to as `0x${string}`,
                 refundAmountUsdcBigInt.toString()
             );
@@ -149,7 +147,7 @@ export async function handleX402Request({
 
           if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
             const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await refund(
+            refundResult = await transfer(
                 xPaymentData.payload.authorization.to as `0x${string}`,
                 refundAmountUsdcBigInt.toString()
             );
