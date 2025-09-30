@@ -23,7 +23,6 @@ export async function handleX402Request({
   processedHeaders,
   maxCost,
   isPassthroughProxyRoute,
-  providerId,
   provider,
   isStream,
 }: X402HandlerInput) {
@@ -85,7 +84,7 @@ export async function handleX402Request({
       }
 
       try {
-        if (isPassthroughProxyRoute && providerId) {
+        if (isPassthroughProxyRoute) {
           const result = await makeProxyPassthroughRequest(
             req,
             res,
@@ -166,7 +165,6 @@ export async function handleApiKeyRequest({
   echoControlService,
   maxCost,
   isPassthroughProxyRoute,
-  providerId,
   provider,
   isStream,
 }: HandlerInput) {
@@ -183,7 +181,7 @@ export async function handleApiKeyRequest({
 
   await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
-  if (isPassthroughProxyRoute && providerId) {
+  if (isPassthroughProxyRoute) {
     return await makeProxyPassthroughRequest(
       req,
       res,

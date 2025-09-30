@@ -104,7 +104,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         processedHeaders,
         maxCost,
         isPassthroughProxyRoute,
-        providerId: null,
         provider,
         isStream,
       });
@@ -119,7 +118,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         echoControlService,
         maxCost,
         isPassthroughProxyRoute,
-        providerId: null,
         provider,
         isStream,
       });
