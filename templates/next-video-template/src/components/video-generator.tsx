@@ -9,7 +9,6 @@ import {
   PromptInputAttachment,
   PromptInputAttachments,
   PromptInputBody,
-  type PromptInputMessage,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
   PromptInputModelSelectItem,
@@ -19,83 +18,22 @@ import {
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
-  usePromptInputAttachments,
 } from '@/components/ai-elements/prompt-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { useVideoGeneration } from '@/lib/hooks/useVideoGeneration';
+import { useVideoHistory } from '@/lib/hooks/useVideoHistory';
+import { useVideoOperations } from '@/lib/hooks/useVideoOperations';
+import type { VideoModelConfig, VideoModelOption } from '@/lib/types';
 import { X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-import { fileToDataUrl } from '@/lib/image-utils';
-
-import type {
-  GeneratedVideo,
-  GenerateVideoRequest,
-  VideoModelConfig,
-  VideoModelOption,
-  VideoOperation,
-} from '@/lib/types';
-import { GenerateVideosOperation } from '@google/genai';
-import { videoOperationsStorage } from '@/lib/video-operations';
-import { videoHistoryStorage } from '@/lib/video-history';
+import { useCallback, useRef, useState } from 'react';
+import { FileInputManager } from './FileInputManager';
 import { VideoHistory } from './video-history';
 
-declare global {
-  interface Window {
-    __promptInputActions?: {
-      addFiles: (files: File[] | FileList) => void;
-      clear: () => void;
-    };
-  }
-}
-
-/**
- * Available AI models for video generation
- * These models integrate with the Echo SDK to provide different video generation capabilities
- */
-const models: VideoModelConfig[] = [{ id: 'veo-3', name: 'Veo 3 Fast' }];
-
-/**
- * API functions for video generation
- * These functions communicate with the Echo SDK backend routes
- */
-
-// ===== API FUNCTIONS =====
-async function generateVideo(
-  request: GenerateVideoRequest
-): Promise<GenerateVideosOperation> {
-  const response = await fetch('/api/generate-video', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(request),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
-  }
-
-  return response.json(); // Return the SDK operation directly
-}
-
-async function checkVideoStatus(
-  operation: GenerateVideosOperation
-): Promise<GenerateVideosOperation> {
-  const response = await fetch('/api/check-video-status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ operationName: operation.name }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`HTTP ${response.status}: ${errorText}`);
-  }
-
-  return response.json(); // Return the updated SDK operation directly
-}
+const models: VideoModelConfig[] = [
+  { id: 'veo-3.0-fast-generate-preview', name: 'Veo 3 Fast' },
+];
 
 /**
  * Main VideoGenerator component
@@ -107,393 +45,31 @@ async function checkVideoStatus(
  * - Provides seamless model switching between available video models
  */
 export default function VideoGenerator() {
-  const [model, setModel] = useState<VideoModelOption>('veo-3');
+  const [model, setModel] = useState<VideoModelOption>(
+    'veo-3.0-fast-generate-preview'
+  );
   const [durationSeconds, setDurationSeconds] = useState<number>(4);
-  const [videoHistory, setVideoHistory] = useState<GeneratedVideo[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
   const promptInputRef = useRef<HTMLFormElement>(null);
-  const queryClient = useQueryClient();
-  // Load existing history on mount
-  useEffect(() => {
-    const existing = videoHistoryStorage.getAll();
-    if (existing.length > 0) {
-      setVideoHistory(existing);
-    }
-    setIsInitialized(true);
-  }, []);
 
-  // Persist history on change
-  useEffect(() => {
-    if (videoHistory.length >= 0) {
-      videoHistoryStorage.setAll(videoHistory);
-    }
-  }, [videoHistory]);
+  const { videoHistory, isInitialized, addVideo, updateVideo } =
+    useVideoHistory();
+
+  useVideoOperations({
+    isInitialized,
+    onOperationComplete: updateVideo,
+  });
+
+  const { handleSubmit } = useVideoGeneration({
+    model,
+    durationSeconds,
+    onVideoAdded: addVideo,
+    onVideoUpdated: updateVideo,
+  });
 
   const clearForm = useCallback(() => {
     promptInputRef.current?.reset();
-    const actions = window.__promptInputActions;
-    if (actions) {
-      actions.clear();
-    }
+    window.__promptInputActions?.clear();
   }, []);
-
-  // Component to bridge PromptInput context with external file operations
-  function FileInputManager() {
-    const attachments = usePromptInputAttachments();
-
-    // Store reference to attachment actions for external use
-    useEffect(() => {
-      window.__promptInputActions = {
-        addFiles: attachments.add,
-        clear: attachments.clear,
-      };
-
-      return () => {
-        delete window.__promptInputActions;
-      };
-    }, [attachments]);
-
-    return null;
-  }
-
-  // Use TanStack Query to poll pending operations (only after initialization)
-  const pendingOperations = isInitialized
-    ? videoOperationsStorage.getPending()
-    : [];
-  const { data: operationStatuses } = useQuery({
-    queryKey: ['video-operations', pendingOperations.map(op => op.id)],
-    queryFn: async () => {
-      console.log(`Polling ${pendingOperations.length} pending operations`);
-
-      if (pendingOperations.length === 0) {
-        return [];
-      }
-
-      const results = await Promise.allSettled(
-        pendingOperations.map(async op => {
-          console.log(
-            `Checking status for operation ${op.id}, done: ${op.operation.done}`
-          );
-          const result = await checkVideoStatus(op.operation);
-          console.log(
-            `Result for operation ${op.id}:`,
-            result.done ? 'DONE' : 'PENDING'
-          );
-          return { operationId: op.id, result };
-        })
-      );
-      return results;
-    },
-    enabled: isInitialized && pendingOperations.length > 0,
-    refetchInterval: 5000,
-  });
-
-  // Update video history based on operation status changes
-  useEffect(() => {
-    if (!operationStatuses) return;
-
-    let hasUpdates = false;
-    const updates: Array<{ id: string; updates: Partial<GeneratedVideo> }> = [];
-
-    operationStatuses.forEach(result => {
-      if (result.status === 'fulfilled') {
-        const { operationId, result: opResult } = result.value;
-
-        // Handle any completed operation (done = true)
-        if (opResult.done) {
-          console.log(`Operation ${operationId} is done, updating storage`);
-          // Always update the operation in storage to mark it as done
-          videoOperationsStorage.update(operationId, {
-            operation: opResult,
-          });
-
-          const video = opResult.response?.generatedVideos?.[0]?.video;
-          if (video && (video.uri || video.videoBytes)) {
-            // Video completed successfully - handle both URI and bytes
-            let videoUrl: string;
-
-            if (video.videoBytes) {
-              // Convert base64 bytes to data URL
-              videoUrl = `data:video/mp4;base64,${video.videoBytes}`;
-            } else if (video.uri) {
-              // Use URI directly
-              videoUrl = video.uri;
-            } else {
-              videoUrl = '';
-            }
-
-            updates.push({
-              id: operationId,
-              updates: { videoUrl, isLoading: false, error: undefined },
-            });
-
-            videoOperationsStorage.update(operationId, {
-              videoUrl,
-              error: undefined, // Clear any previous error
-              operation: opResult,
-            });
-          } else {
-            // Operation done but no video (failed, filtered, etc.)
-            let errorMsg = 'Video generation failed';
-
-            // Check for RAI filtering
-            if (
-              opResult.response?.raiMediaFilteredCount &&
-              opResult.response.raiMediaFilteredCount > 0
-            ) {
-              const filterReasons =
-                opResult.response.raiMediaFilteredReasons || [];
-              errorMsg =
-                filterReasons.length > 0
-                  ? filterReasons[0]
-                  : 'Content was filtered by safety policies';
-            } else if (opResult.error) {
-              errorMsg =
-                typeof opResult.error === 'string'
-                  ? opResult.error
-                  : 'Video generation failed';
-            }
-
-            updates.push({
-              id: operationId,
-              updates: { error: errorMsg, isLoading: false },
-            });
-
-            videoOperationsStorage.update(operationId, {
-              error: errorMsg,
-              operation: opResult,
-            });
-          }
-          hasUpdates = true;
-        }
-      }
-    });
-
-    if (hasUpdates) {
-      setVideoHistory(prev =>
-        prev.map(video => {
-          const update = updates.find(u => u.id === video.id);
-          return update ? { ...video, ...update.updates } : video;
-        })
-      );
-
-      // Invalidate queries to stop polling completed operations
-      queryClient.invalidateQueries({ queryKey: ['video-operations'] });
-    }
-  }, [operationStatuses, queryClient]);
-
-  // Recover operations on mount (only after initialization)
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const savedOperations = videoOperationsStorage.getPending();
-
-    if (savedOperations.length > 0) {
-      const historyVideos: GeneratedVideo[] = savedOperations.map(
-        operation => ({
-          id: operation.id,
-          prompt: operation.prompt,
-          model: operation.model,
-          durationSeconds: operation.durationSeconds,
-          timestamp: operation.timestamp,
-          isLoading: !operation.operation.done,
-          videoUrl: operation.videoUrl,
-          error: operation.error,
-          operationName: operation.operation.name,
-        })
-      );
-
-      setVideoHistory(prev => {
-        // Avoid duplicating entries by id
-        const existingIds = new Set(prev.map(v => v.id));
-        const merged = [
-          ...historyVideos.filter(v => !existingIds.has(v.id)),
-          ...prev,
-        ];
-        return merged;
-      });
-    }
-  }, [isInitialized]);
-
-  /**
-   * Handles form submission for video generation
-   * - Initiates async video generation and starts polling
-   */
-  const handleSubmit = useCallback(
-    async (message: PromptInputMessage) => {
-      const hasText = Boolean(message.text?.trim());
-      const hasAttachments = Boolean(message.files?.length);
-
-      // Require either text prompt or attachments
-      if (!(hasText || hasAttachments)) {
-        return;
-      }
-
-      const prompt = message.text?.trim() || '';
-
-      // Generate unique ID for this request
-      const videoId = `vid_${Date.now()}`;
-
-      // Process image attachments if any
-      let imageDataUrl: string | undefined;
-      let lastFrameDataUrl: string | undefined;
-      if (hasAttachments && message.files && message.files.length > 0) {
-        const imageFiles = message.files.filter(f =>
-          f.mediaType?.startsWith('image/')
-        );
-
-        if (imageFiles.length > 0) {
-          try {
-            // First image
-            const firstImageFile = imageFiles[0];
-            const response1 = await fetch(firstImageFile.url);
-            const blob1 = await response1.blob();
-            const file1 = new File(
-              [blob1],
-              firstImageFile.filename || 'image',
-              {
-                type: firstImageFile.mediaType,
-              }
-            );
-            imageDataUrl = await fileToDataUrl(file1);
-
-            // Second image for lastFrame (if exists)
-            if (imageFiles.length > 1) {
-              const secondImageFile = imageFiles[1];
-              const response2 = await fetch(secondImageFile.url);
-              const blob2 = await response2.blob();
-              const file2 = new File(
-                [blob2],
-                secondImageFile.filename || 'lastframe',
-                {
-                  type: secondImageFile.mediaType,
-                }
-              );
-              lastFrameDataUrl = await fileToDataUrl(file2);
-            }
-          } catch (error) {
-            console.error('Failed to process image attachments:', error);
-          }
-        }
-      }
-
-      // Create placeholder entry immediately for optimistic UI
-      const placeholderVideo: GeneratedVideo = {
-        id: videoId,
-        prompt,
-        model: model,
-        durationSeconds,
-        timestamp: new Date(),
-        isLoading: true,
-      };
-
-      // Add to history immediately for responsive UI
-      setVideoHistory(prev => [placeholderVideo, ...prev]);
-
-      try {
-        const result = await generateVideo({
-          prompt,
-          model,
-          durationSeconds,
-          image: imageDataUrl,
-          lastFrame: lastFrameDataUrl,
-        });
-
-        const video = result.response?.generatedVideos?.[0]?.video;
-        if (result.done && video && (video.uri || video.videoBytes)) {
-          // Video is already complete (unlikely but possible)
-          let videoUrl: string;
-
-          if (video.videoBytes) {
-            // Convert base64 bytes to data URL
-            videoUrl = `data:video/mp4;base64,${video.videoBytes}`;
-          } else if (video.uri) {
-            // Use URI directly
-            videoUrl = video.uri;
-          } else {
-            videoUrl = '';
-          }
-
-          setVideoHistory(prev =>
-            prev.map(vid =>
-              vid.id === videoId
-                ? {
-                    ...vid,
-                    videoUrl,
-                    operationName: result.name,
-                    isLoading: false,
-                    error: undefined, // Clear any previous error
-                  }
-                : vid
-            )
-          );
-        } else if (result.done && result.error) {
-          // Handle immediate failure
-          setVideoHistory(prev =>
-            prev.map(vid =>
-              vid.id === videoId
-                ? {
-                    ...vid,
-                    isLoading: false,
-                    error:
-                      typeof result.error === 'string'
-                        ? result.error
-                        : 'Video generation failed',
-                  }
-                : vid
-            )
-          );
-        } else {
-          // Create operation for polling
-          const operation: VideoOperation = {
-            id: videoId,
-            prompt,
-            model,
-            durationSeconds,
-            timestamp: new Date(),
-            operation: result,
-          };
-
-          // Store operation in localStorage
-          videoOperationsStorage.store(operation);
-
-          // Invalidate queries to start polling
-          queryClient.invalidateQueries({ queryKey: ['video-operations'] });
-
-          // Update video history with operation name
-          setVideoHistory(prev =>
-            prev.map(vid =>
-              vid.id === videoId
-                ? {
-                    ...vid,
-                    operationName: result.name,
-                  }
-                : vid
-            )
-          );
-        }
-      } catch (error) {
-        console.error('Error generating video:', error);
-
-        // Update the placeholder entry with error state
-        setVideoHistory(prev =>
-          prev.map(vid =>
-            vid.id === videoId
-              ? {
-                  ...vid,
-                  isLoading: false,
-                  error:
-                    error instanceof Error
-                      ? error.message
-                      : 'Failed to generate video',
-                }
-              : vid
-          )
-        );
-      }
-    },
-    [model, durationSeconds, queryClient]
-  );
 
   return (
     <div className="space-y-6">
@@ -521,18 +97,16 @@ export default function VideoGenerator() {
               </PromptInputActionMenuContent>
             </PromptInputActionMenu>
             <PromptInputModelSelect
-              onValueChange={value => {
-                setModel(value as VideoModelOption);
-              }}
+              onValueChange={value => setModel(value as VideoModelOption)}
               value={model}
             >
               <PromptInputModelSelectTrigger>
                 <PromptInputModelSelectValue />
               </PromptInputModelSelectTrigger>
               <PromptInputModelSelectContent>
-                {models.map(model => (
-                  <PromptInputModelSelectItem key={model.id} value={model.id}>
-                    {model.name}
+                {models.map(m => (
+                  <PromptInputModelSelectItem key={m.id} value={m.id}>
+                    {m.name}
                   </PromptInputModelSelectItem>
                 ))}
               </PromptInputModelSelectContent>
@@ -571,15 +145,7 @@ export default function VideoGenerator() {
         </PromptInputToolbar>
       </PromptInput>
 
-      <VideoHistory
-        videoHistory={videoHistory}
-        onAppendVideo={video => setVideoHistory(prev => [video, ...prev])}
-        onUpdateVideo={(id, updates) =>
-          setVideoHistory(prev =>
-            prev.map(v => (v.id === id ? { ...v, ...updates } : v))
-          )
-        }
-      />
+      <VideoHistory videoHistory={videoHistory} />
     </div>
   );
 }

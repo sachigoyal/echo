@@ -2,11 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { GeneratedVideo, VideoResponse } from '@/lib/types';
+import type { GeneratedVideo } from '@/lib/types';
 import { Copy, Download, Play } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { VideoDetailsDialog } from './video-details-dialog';
-import { Input } from '@/components/ui/input';
 
 /**
  * Self-contained loading timer component
@@ -159,21 +158,14 @@ const VideoHistoryItem = React.memo(function VideoHistoryItem({
 
 interface VideoHistoryProps {
   videoHistory: GeneratedVideo[];
-  onAppendVideo?: (video: GeneratedVideo) => void;
-  onUpdateVideo?: (id: string, updates: Partial<GeneratedVideo>) => void;
 }
 
 export const VideoHistory = React.memo(function VideoHistory({
   videoHistory,
-  onAppendVideo,
-  onUpdateVideo,
 }: VideoHistoryProps) {
   const [selectedVideo, setSelectedVideo] = useState<GeneratedVideo | null>(
     null
   );
-  const [opName, setOpName] = useState('');
-  const [isRestoring, setIsRestoring] = useState(false);
-
   // Memoize callbacks to prevent unnecessary re-renders
   const handleVideoClick = useCallback((video: GeneratedVideo) => {
     setSelectedVideo(video);
@@ -183,86 +175,13 @@ export const VideoHistory = React.memo(function VideoHistory({
     setSelectedVideo(null);
   }, []);
 
-  const canRestore = useMemo(() => opName.trim().length > 0, [opName]);
-
-  const handleRestore = useCallback(async () => {
-    if (!canRestore) return;
-    setIsRestoring(true);
-    try {
-      const res = await fetch('/api/check-video-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ operationName: opName.trim() }),
-      });
-      const data: VideoResponse = await res.json();
-      if (res.ok && data.status === 'completed' && data.videoUrl) {
-        const restored: GeneratedVideo = {
-          id: `restored_${Date.now()}`,
-          prompt: '(restored from operation)',
-          model: 'veo-3',
-          durationSeconds: 0,
-          timestamp: new Date(),
-          isLoading: false,
-          videoUrl: data.videoUrl,
-          operationName: opName.trim(),
-        };
-        onAppendVideo?.(restored);
-        setOpName('');
-      } else if (data.status === 'processing') {
-        // Add placeholder and let polling (if any) handle update; otherwise just show loading card
-        const placeholder: GeneratedVideo = {
-          id: `restoring_${Date.now()}`,
-          prompt: '(restoring) ' + opName.trim(),
-          model: 'veo-3',
-          durationSeconds: 0,
-          timestamp: new Date(),
-          isLoading: true,
-          operationName: opName.trim(),
-        };
-        onAppendVideo?.(placeholder);
-        setOpName('');
-      }
-    } catch (e) {
-      console.error('Failed to restore operation by name', e);
-    } finally {
-      setIsRestoring(false);
-    }
-  }, [canRestore, opName, onAppendVideo]);
-
   if (videoHistory.length === 0) {
-    return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Generated Videos
-        </h3>
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Paste operationName to restore"
-            value={opName}
-            onChange={e => setOpName(e.target.value)}
-          />
-          <Button onClick={handleRestore} disabled={!canRestore || isRestoring}>
-            {isRestoring ? 'Restoring…' : 'Restore'}
-          </Button>
-        </div>
-        <div className="text-sm text-gray-500">No videos yet.</div>
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Generated Videos</h3>
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="Paste operationName to restore"
-          value={opName}
-          onChange={e => setOpName(e.target.value)}
-        />
-        <Button onClick={handleRestore} disabled={!canRestore || isRestoring}>
-          {isRestoring ? 'Restoring…' : 'Restore'}
-        </Button>
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-all duration-300 ease-out">
         {videoHistory.map(video => (
           <VideoHistoryItem
