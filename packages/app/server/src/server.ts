@@ -16,10 +16,7 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { buildX402Response, isApiRequest, isX402Request } from 'utils';
 import { handleX402Request, handleApiKeyRequest } from './handlers';
-import { checkBalance } from './services/BalanceCheckService';
-import { modelRequestService } from './services/ModelRequestService';
 import { initializeProvider } from './services/ProviderInitializationService';
-import { makeProxyPassthroughRequest } from './services/ProxyPassthroughService';
 import { getRequestMaxCost } from './services/PricingService';
 
 dotenv.config();
@@ -65,19 +62,9 @@ app.use(
 app.use((req: EscrowRequest, res, next) => {
   // Capture Content-Length from raw request before any parsing
   const rawContentLength = req.headers['content-length'];
-  
-  logger.info('Raw request headers before parsing:', {
-    'content-length': rawContentLength,
-    'content-type': req.headers['content-type'],
-    method: req.method,
-    url: req.url
-  });
-  
+
   if (rawContentLength) {
     req.originalContentLength = rawContentLength;
-    logger.info(`Preserved Content-Length: ${rawContentLength}`);
-  } else {
-    logger.info('No Content-Length header in raw request');
   }
   next();
 });
@@ -96,27 +83,25 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-    // VERIFY
+    const { provider, isStream, isPassthroughProxyRoute, providerId } =
+      await initializeProvider(req, res);
+    const maxCost = getRequestMaxCost(req, provider);
+
+    if (!isApiRequest(headers) && !isX402Request(headers)) {
+      return buildX402Response(req, res, maxCost);
+    }
+
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
       prisma
     );
-
-    const { provider, isStream, isPassthroughProxyRoute, providerId } =
-      await initializeProvider(req, res, echoControlService);
-    const maxCost = getRequestMaxCost(req, provider);
-    logger.info(`Max cost: ${maxCost}`);
-
-    if (!isApiRequest(headers) && !isX402Request(headers)) {
-      return buildX402Response(res, maxCost);
-    }
-
+    
     if (isX402Request(headers)) {
+      console.log('isX402Request');
       await handleX402Request({
         req,
         res,
         processedHeaders,
-        echoControlService,
         maxCost,
         isPassthroughProxyRoute,
         providerId,

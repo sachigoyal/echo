@@ -38,7 +38,7 @@ export function getRequestMaxCost(
     // TODO(content length is not always available. we can calculate it here if not picked up via middleware once the body is parsed)
     const contentLength = req.originalContentLength || '500000';
     const maxInputTokens = Number(contentLength) / 3;
-    const maxOutputTokens = extractMaxOutputTokens(req) || 0;
+    const maxOutputTokens = extractMaxOutputTokens(req) || 0; // set to 2k to test
     const modelWithPricing = getModelPrice(provider.getModel());
     if (!modelWithPricing) {
       throw new UnknownModelError(`Invalid model: ${provider.getModel()}`);

@@ -1,16 +1,18 @@
 import {
   ExactEvmPayloadAuthorization,
   Network,
+  SendUserOperationReturnType,
   X402ChallengeParams,
 } from 'types';
 import { Request, Response } from 'express';
-import { SmartAccount } from '@coinbase/cdp-sdk/_types/client/evm/evm.types';
-import { CdpClient } from '@coinbase/cdp-sdk';
-import { BaseProvider } from './providers/BaseProvider';
+import { CdpClient, EvmSmartAccount} from '@coinbase/cdp-sdk';
 import { WALLET_OWNER } from './constants';
 import { WALLET_SMART_ACCOUNT } from './constants';
-import { getRequestMaxCost } from 'services/PricingService';
 import { Decimal } from 'generated/prisma/runtime/library';
+import { USDC_ADDRESS } from 'services/fund-repo/constants';
+import crypto from 'crypto';
+import logger from 'logger';
+import { transfer } from 'transferWithAuth';
 
 /**
  * USDC has 6 decimal places
@@ -42,6 +44,34 @@ export function usdcBigIntToDecimal(usdcBigInt: bigint | string): Decimal {
   return new Decimal(decimalValue);
 }
 
+/**
+ * Calculates the refund amount for an x402 request. Also used to log when we underestimate the cost.
+ * @param maxCost The max cost of the request
+ * @param transactionCost The cost of the transaction
+ * @returns The refund amount
+ */
+export function calculateRefundAmount(
+  maxCost: Decimal,
+  transactionCost: Decimal
+): Decimal {
+  if (transactionCost.greaterThan(maxCost)) {
+    logger.error(
+      `Transaction cost (${transactionCost}) exceeds max cost (${maxCost}).`
+    );
+    return new Decimal(0);
+  }
+  return maxCost.minus(transactionCost);
+}
+
+/**
+ * Generates a random nonce in hexadecimal format
+ * @returns A random hex string with 0x prefix (25 bytes = 50 hex chars)
+ */
+export function generateRandomNonce(): `0x${string}` {
+  const bytes = crypto.randomBytes(32);
+  return `0x${bytes.toString('hex')}` as `0x${string}`;
+}
+
 export function parseX402Headers(
   headers: Record<string, string>
 ): ExactEvmPayloadAuthorization {
@@ -55,22 +85,23 @@ export function parseX402Headers(
   };
 }
 
-// TODO: Alvaro is working on this.
-// takes request and provider
-export function alvaroInferenceCostEstimation(): string {
-  return '1';
-}
-
 function buildX402Challenge(params: X402ChallengeParams): string {
   const esc = (value: string) => value.replace(/"/g, '\\"');
   return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`;
 }
 
-export function buildX402Response(res: Response, maxCost: Decimal) {
+export async function buildX402Response(
+  req: Request,
+  res: Response,
+  maxCost: Decimal
+) {
   const network = process.env.NETWORK as Network;
   // Convert maxCost from Decimal to USDC BigInt string for payment URL
   const maxCostBigInt = decimalToUsdcBigInt(maxCost);
   const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(maxCostBigInt.toString())}`;
+
+  const recipient = (await getSmartAccount()).smartAccount.address;
+  const resourceUrl = `http://${req.headers.host}${req.url}`;
 
   res.setHeader(
     'WWW-Authenticate',
@@ -81,28 +112,55 @@ export function buildX402Response(res: Response, maxCost: Decimal) {
     })
   );
 
-  return res.status(402).json({
+  const resBody = {
+    x402Version: 1,
     error: 'Payment Required',
-    payment: {
-      type: 'x402',
-      url: paymentUrl,
-      network,
-    },
-  });
+    accepts: [
+      {
+        type: 'x402',
+        version: '1',
+        network,
+        maxAmountRequired: maxCostBigInt.toString(),
+        recipient: recipient,
+        currency: USDC_ADDRESS,
+        to: recipient,
+        url: paymentUrl,
+        nonce: generateRandomNonce(),
+        scheme: 'exact',
+        resource: resourceUrl,
+        description: 'Echo x402',
+        mimeType: 'application/json',
+        maxTimeoutSeconds: 1000,
+        discoverable: true,
+        payTo: recipient,
+        asset: USDC_ADDRESS,
+        extra: {
+          name: 'USD Coin',
+          version: '2',
+        },
+      },
+    ],
+  };
+
+  console.log('resBody', resBody);
+
+  return res.status(402).json(resBody);
 }
 
 export function isApiRequest(headers: Record<string, string>): boolean {
-  // return true;
-  return headers['x-api-key'] !== undefined;
+  return (
+    headers['x-api-key'] !== undefined ||
+    headers['x-google-api-key'] !== undefined ||
+    headers['authorization'] !== undefined
+  );
 }
 
 export function isX402Request(headers: Record<string, string>): boolean {
-  return headers['x-402-challenge'] !== undefined;
+  return headers['x-payment'] !== undefined;
 }
 
 export async function getSmartAccount(): Promise<{
-  cdp: CdpClient;
-  smartAccount: SmartAccount;
+  smartAccount: EvmSmartAccount;
 }> {
   const cdp = new CdpClient();
   const owner = await cdp.evm.getOrCreateAccount({
@@ -113,5 +171,6 @@ export async function getSmartAccount(): Promise<{
     name: WALLET_SMART_ACCOUNT,
     owner,
   });
-  return { cdp, smartAccount };
+
+  return {smartAccount};
 }

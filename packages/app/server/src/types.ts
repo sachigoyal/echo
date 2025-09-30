@@ -3,6 +3,7 @@ import { EscrowRequest } from 'middleware/transaction-escrow-middleware';
 import { EchoControlService } from 'services/EchoControlService';
 import { Response } from 'express';
 import { BaseProvider } from 'providers/BaseProvider';
+import { Hex } from 'viem';
 
 export interface EchoApp {
   id: string;
@@ -234,4 +235,16 @@ export type HandlerInput = {
   providerId: string | null;
   provider: BaseProvider;
   isStream: boolean;
+};
+
+export type X402HandlerInput = Omit<HandlerInput, 'echoControlService'>;
+
+/**
+ * Note(Ben): Lazily redefining the type for the sendUserOperation function, because CDP doesn't export it
+ */
+export type SendUserOperationReturnType = {
+  /** The address of the smart wallet. */
+  smartAccountAddress: Address;
+  /** The hash of the user operation. This is not the transaction hash which is only available after the operation is completed.*/
+  userOpHash: Hex;
 };
