@@ -4,10 +4,10 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": "./src",
-    "types": ["node"]
+    "types": ["node"],
+    "moduleResolution": "bundler",
+    "module": "esnext"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "__tests__/**/*"],
-  "module": "commonjs",
-  "moduleResolution": "bundler",
+  "exclude": ["node_modules", "dist", "__tests__/**/*"]
 }

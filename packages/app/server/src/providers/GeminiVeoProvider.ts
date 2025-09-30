@@ -64,7 +64,7 @@ export class GeminiVeoProvider extends BaseProvider {
 
     const model = PROXY_PASSTHROUGH_ONLY_MODEL;
     const isStream = extractIsStream(req);
-    const provider = new GeminiVeoProvider(echoControlService, isStream, model);
+    const provider = new GeminiVeoProvider(isStream, model);
 
     return {
       provider,
