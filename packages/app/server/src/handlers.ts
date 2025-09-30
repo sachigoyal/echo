@@ -115,7 +115,7 @@ export async function handleX402Request({
           transaction.rawTransactionCost
         );
         let refundResult = null;
-        if (!refundAmount.equals(0)) {
+        if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
           const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
           refundResult = await settleWithAuthorization({
             to: xPaymentData.payload.authorization.to as `0x${string}`,
