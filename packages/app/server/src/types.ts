@@ -237,6 +237,8 @@ export type HandlerInput = {
   isStream: boolean;
 };
 
+export type X402HandlerInput = Omit<HandlerInput, 'echoControlService'>;
+
 /**
  * Note(Ben): Lazily redefining the type for the sendUserOperation function, because CDP doesn't export it
  */

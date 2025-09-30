@@ -1,6 +1,6 @@
 import { TransactionEscrowMiddleware } from 'middleware/transaction-escrow-middleware';
 import { modelRequestService } from 'services/ModelRequestService';
-import { HandlerInput, Network } from 'types';
+import { HandlerInput, Network, X402HandlerInput } from 'types';
 import {
   usdcBigIntToDecimal,
   decimalToUsdcBigInt,
@@ -21,13 +21,12 @@ export async function handleX402Request({
   req,
   res,
   processedHeaders,
-  echoControlService,
   maxCost,
   isPassthroughProxyRoute,
   providerId,
   provider,
   isStream,
-}: HandlerInput) {
+}: X402HandlerInput) {
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
