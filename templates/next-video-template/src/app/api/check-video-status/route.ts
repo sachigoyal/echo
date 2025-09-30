@@ -1,4 +1,4 @@
-import { checkGeminiOperationStatus } from '../generate-video/gemini';
+import { checkGeminiOperationStatus } from '../generate-video/vertex';
 
 export async function POST(request: Request) {
   try {

@@ -33,7 +33,7 @@ export async function handleGeminiGenerate(
       apiKey,
       vertexai: true,
       httpOptions: {
-        baseUrl: 'https://echo-staging.up.railway.app',
+        baseUrl: 'https://echo.router.merit.systems',
         apiVersion: 'v1',
       },
     });
@@ -122,7 +122,7 @@ export async function checkGeminiOperationStatus(
       apiKey,
       vertexai: true,
       httpOptions: {
-        baseUrl: 'https://echo-staging.up.railway.app',
+        baseUrl: 'https://echo.router.merit.systems',
         apiVersion: 'v1',
       },
     });

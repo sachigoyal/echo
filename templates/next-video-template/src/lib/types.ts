@@ -142,6 +142,8 @@ export interface VideoOperation {
   videoUrl?: string;
   /** Error message if failed (derived from SDK operation) */
   error?: string;
+  /** When the signed URL expires (ISO string) */
+  signedUrlExpiresAt?: string;
   /** The actual SDK operation object */
   operation: GenerateVideosOperation;
 }

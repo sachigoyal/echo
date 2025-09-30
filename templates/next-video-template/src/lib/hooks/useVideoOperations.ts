@@ -12,6 +12,14 @@ interface UseVideoOperationsOptions {
   ) => void;
 }
 
+/**
+ * Hook to manage video operation polling
+ *
+ * Smart polling logic:
+ * - Polls operations that are not done yet
+ * - Re-polls completed operations if their signed URLs have expired (after 1 hour)
+ * - Stops polling once operation is done and URL is still valid
+ */
 export function useVideoOperations({
   isInitialized,
   onOperationComplete,
@@ -64,9 +72,13 @@ export function useVideoOperations({
               isLoading: false,
               error: undefined,
             });
+
+            // Extract expiresAt if present (added by server when generating signed URLs)
+            const videoWithExpiry = video as any;
             videoOperationsStorage.update(operationId, {
               videoUrl,
               error: undefined,
+              signedUrlExpiresAt: videoWithExpiry.expiresAt,
               operation: opResult,
             });
           } else {

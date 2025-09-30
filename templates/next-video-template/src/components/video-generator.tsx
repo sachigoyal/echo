@@ -9,6 +9,7 @@ import {
   PromptInputAttachment,
   PromptInputAttachments,
   PromptInputBody,
+  type PromptInputMessage,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
   PromptInputModelSelectItem,
@@ -50,6 +51,7 @@ export default function VideoGenerator() {
     'veo-3.0-fast-generate-preview'
   );
   const [durationSeconds, setDurationSeconds] = useState<4 | 6 | 8>(4);
+  const [hasContent, setHasContent] = useState(false);
   const promptInputRef = useRef<HTMLFormElement>(null);
 
   const allowedDurations = [4, 6, 8] as const;
@@ -62,16 +64,25 @@ export default function VideoGenerator() {
     onOperationComplete: updateVideo,
   });
 
-  const { handleSubmit } = useVideoGeneration({
+  const { handleSubmit: generateVideo } = useVideoGeneration({
     model,
     durationSeconds,
     onVideoAdded: addVideo,
     onVideoUpdated: updateVideo,
   });
 
+  const handleSubmit = useCallback(
+    async (message: PromptInputMessage) => {
+      await generateVideo(message);
+      setHasContent(false);
+    },
+    [generateVideo]
+  );
+
   const clearForm = useCallback(() => {
     promptInputRef.current?.reset();
     window.__promptInputActions?.clear();
+    setHasContent(false);
   }, []);
 
   return (
@@ -87,9 +98,15 @@ export default function VideoGenerator() {
         <FileInputManager />
         <PromptInputBody>
           <PromptInputAttachments>
-            {attachment => <PromptInputAttachment data={attachment} />}
+            {attachment => {
+              setHasContent(true);
+              return <PromptInputAttachment data={attachment} />;
+            }}
           </PromptInputAttachments>
-          <PromptInputTextarea placeholder="Describe the video you want to generate, or attach an image..." />
+          <PromptInputTextarea
+            placeholder="Describe the video you want to generate, or attach an image..."
+            onChange={e => setHasContent(e.target.value.length > 0 || false)}
+          />
         </PromptInputBody>
         <PromptInputToolbar>
           <PromptInputTools>
@@ -136,15 +153,18 @@ export default function VideoGenerator() {
             </div>
           </PromptInputTools>
           <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={clearForm}
-              className="h-9 w-9 p-0"
-            >
-              <X size={16} />
-            </Button>
+            {hasContent && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={clearForm}
+                className="h-9 w-9 p-0"
+                title="Clear input"
+              >
+                <X size={16} />
+              </Button>
+            )}
             <PromptInputSubmit />
           </div>
         </PromptInputToolbar>

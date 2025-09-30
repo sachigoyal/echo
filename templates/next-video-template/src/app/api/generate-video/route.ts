@@ -7,11 +7,11 @@
  * - Returns video URLs or operation status
  */
 
-import { handleGeminiGenerate } from './gemini';
 import {
   GenerateVideoRequest,
   validateGenerateVideoRequest,
 } from './validation';
+import { handleGeminiGenerate } from './vertex';
 
 export async function POST(req: Request) {
   try {

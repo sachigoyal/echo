@@ -149,6 +149,19 @@ function handleCompletedOperation(
       isLoading: false,
       error: undefined,
     });
+
+    // Store the operation with expiration timestamp if it's a signed URL
+    const videoWithExpiry = video as any;
+    if (videoWithExpiry.expiresAt) {
+      const operation = videoOperationsStorage
+        .getAll()
+        .find(op => op.id === videoId);
+      if (operation) {
+        videoOperationsStorage.update(videoId, {
+          signedUrlExpiresAt: videoWithExpiry.expiresAt,
+        });
+      }
+    }
   } else if (result.error) {
     onVideoUpdated(videoId, {
       isLoading: false,
