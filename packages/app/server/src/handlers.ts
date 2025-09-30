@@ -7,8 +7,8 @@ import {
   buildX402Response,
   getSmartAccount,
   calculateRefundAmount,
+  validateXPaymentHeader,
 } from 'utils';
-import { Decimal } from '@prisma/client/runtime/library';
 import { transfer } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
@@ -37,21 +37,12 @@ export async function handleX402Request({
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
 
-  // Decode the x-payment header to get payment details
-  const xPaymentHeader =
-    processedHeaders['x-payment'] || req.headers['x-payment'];
-  if (!xPaymentHeader) {
-    throw new Error('x-payment header missing after validation');
-  }
-
-  const xPaymentData = JSON.parse(
-    Buffer.from(xPaymentHeader as string, 'base64').toString()
-  );
+  const xPaymentData = validateXPaymentHeader(processedHeaders, req);
 
   const paymentAmount = xPaymentData.payload.authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
 
-  if (paymentAmount < maxCost) {
+  if (BigInt(paymentAmount) < decimalToUsdcBigInt(maxCost)) {
     buildX402Response(req, res, maxCost);
   }
 
@@ -119,8 +110,10 @@ export async function handleX402Request({
           );
 
           if (refundAmount.greaterThan(0)) {
-            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount).toString();
-            refundResult = await transfer(to, refundAmountUsdcBigInt);
+            refundResult = await transfer(
+                to,
+                refundAmount
+            );
           }
 
           // Send the response - the middleware has intercepted res.end()/res.json()
@@ -137,8 +130,10 @@ export async function handleX402Request({
 
           resolve(result);
         } catch (error) {
-          const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal).toString();
-          refundResult = await transfer(to, refundAmountUsdcBigInt);
+          refundResult = await transfer(
+            to,
+            paymentAmountDecimal
+          );
           reject(error);
         }
       } catch (error) {
