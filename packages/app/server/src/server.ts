@@ -62,7 +62,7 @@ app.use(
 app.use((req: EscrowRequest, res, next) => {
   // Capture Content-Length from raw request before any parsing
   const rawContentLength = req.headers['content-length'];
-  
+
   if (rawContentLength) {
     req.originalContentLength = rawContentLength;
   }
@@ -96,7 +96,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     if (!isApiRequest(headers) && !isX402Request(headers)) {
       return buildX402Response(req, res, maxCost);
     }
-    
+
     if (isX402Request(headers)) {
       console.log('isX402Request');
       await handleX402Request({

@@ -32,12 +32,12 @@ export async function handleX402Request({
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
-  
+
   // Convert maxCost (Decimal) to USDC bigint string for payment middleware
   const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
 
   const routeKey = `${req.method.toUpperCase()} ${req.path}`;
-  
+
   const x402Middleware = paymentMiddleware(
     recipient,
     {
@@ -47,7 +47,7 @@ export async function handleX402Request({
           asset: {
             address: USDC_ADDRESS,
             decimals: 6,
-            eip712: { name: 'USD Coin', version: '2'}
+            eip712: { name: 'USD Coin', version: '2' },
           },
         },
         network,
@@ -56,31 +56,34 @@ export async function handleX402Request({
           mimeType: 'application/json',
           maxTimeoutSeconds: 1000,
           discoverable: true,
-        }
-      }
+        },
+      },
     },
-    facilitator,
+    facilitator
   );
-  
+
   return new Promise((resolve, reject) => {
     x402Middleware(req, res, async (err: any) => {
       if (err) {
         return reject(err);
       }
-      
+
       try {
         // Decode the x-payment header to get payment details
-        const xPaymentHeader = processedHeaders['x-payment'] || req.headers['x-payment'];
+        const xPaymentHeader =
+          processedHeaders['x-payment'] || req.headers['x-payment'];
         if (!xPaymentHeader) {
           throw new Error('x-payment header missing after validation');
         }
-        
-        const xPaymentData = JSON.parse(Buffer.from(xPaymentHeader as string, 'base64').toString());
-        
+
+        const xPaymentData = JSON.parse(
+          Buffer.from(xPaymentHeader as string, 'base64').toString()
+        );
+
         const paymentAmount = usdcBigIntToDecimal(
           xPaymentData.payload.authorization.value
         );
-        
+
         if (paymentAmount.lessThan(maxCost)) {
           buildX402Response(req, res, maxCost);
           return resolve(undefined);
@@ -97,16 +100,20 @@ export async function handleX402Request({
           return resolve(result);
         }
 
-        const { transaction, data } = await modelRequestService.executeModelRequest(
-          req,
-          res,
-          processedHeaders,
-          provider,
-          isStream
-        );
+        const { transaction, data } =
+          await modelRequestService.executeModelRequest(
+            req,
+            res,
+            processedHeaders,
+            provider,
+            isStream
+          );
 
         // Calculate refund amount
-        const refundAmount = calculateRefundAmount(maxCost, transaction.rawTransactionCost);
+        const refundAmount = calculateRefundAmount(
+          maxCost,
+          transaction.rawTransactionCost
+        );
         let refundResult = null;
         if (!refundAmount.equals(0)) {
           const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
@@ -116,7 +123,7 @@ export async function handleX402Request({
             valid_after: xPaymentData.payload.authorization.valid_after,
             valid_before: xPaymentData.payload.authorization.valid_before,
             nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
-          })
+          });
         }
 
         // Send the response - the middleware has intercepted res.end()/res.json()

@@ -141,7 +141,10 @@ export class EchoControlService {
    * Create an LLM transaction record directly in the database
    * Uses centralized logic from EchoDbService
    */
-  async createTransaction(transaction: Transaction, maxCost: Decimal): Promise<void> {
+  async createTransaction(
+    transaction: Transaction,
+    maxCost: Decimal
+  ): Promise<void> {
     try {
       if (!this.authResult) {
         logger.error('No authentication result available');
@@ -289,7 +292,10 @@ export class EchoControlService {
     );
   }
 
-  async createPaidTransaction(transaction: Transaction, maxCost: Decimal): Promise<void> {
+  async createPaidTransaction(
+    transaction: Transaction,
+    maxCost: Decimal
+  ): Promise<void> {
     if (!this.authResult) {
       logger.error('No authentication result available');
       throw new UnauthorizedError('No authentication result available');
@@ -303,7 +309,9 @@ export class EchoControlService {
       markUpProfit,
     } = await this.computeTransactionCosts(transaction, this.referralCodeId);
 
-    logger.error(`Transaction cost: ${rawTransactionCost}, Max cost: ${maxCost}`);
+    logger.error(
+      `Transaction cost: ${rawTransactionCost}, Max cost: ${maxCost}`
+    );
     if (rawTransactionCost.greaterThan(maxCost)) {
       logger.error(` Difference: ${rawTransactionCost.minus(maxCost)}`);
     }

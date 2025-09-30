@@ -50,13 +50,13 @@ export const verifyUserHeaderCheck = async (
   if (isX402Request(headers)) {
     const processedHeaders = {
       ...restHeaders,
-      ...(xPayment ? { 'x-payment': xPayment } : {}),  // ✅ Only include if exists
+      ...(xPayment ? { 'x-payment': xPayment } : {}), // ✅ Only include if exists
       'accept-encoding': 'gzip, deflate',
     };
     return [processedHeaders, new EchoControlService(prisma, '')];
   }
 
-  if (!(authorization || xApiKey || xGoogleApiKey )) {
+  if (!(authorization || xApiKey || xGoogleApiKey)) {
     logger.error(`Missing authentication headers: ${JSON.stringify(headers)}`);
     throw new UnauthorizedError('Please include auth headers.');
   }
