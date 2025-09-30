@@ -16,3 +16,9 @@ export const TRANSFER_WITH_AUTHORIZATION_TYPE = {
     { name: 'nonce', type: 'bytes32' },
   ],
 };
+
+
+export const ECHO_DESCRIPTION = 'Echo x402';
+export const MIME_TYPE = 'application/json';
+export const MAX_TIMEOUT_SECONDS = 1000;
+export const DISCOVERABLE = true;

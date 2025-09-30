@@ -142,8 +142,6 @@ export async function buildX402Response(
     ],
   };
 
-  console.log('resBody', resBody);
-
   return res.status(402).json(resBody);
 }
 

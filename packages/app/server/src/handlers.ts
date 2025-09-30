@@ -16,6 +16,12 @@ import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
 import { paymentMiddleware } from 'x402-express';
 import { facilitator } from '@coinbase/x402';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
+import { DOMAIN_NAME } from './constants';
+import { DOMAIN_VERSION } from './constants';
+import { ECHO_DESCRIPTION } from './constants';
+import { MAX_TIMEOUT_SECONDS } from './constants';
+import { DISCOVERABLE } from './constants';
+import { MIME_TYPE } from './constants';
 
 export async function handleX402Request({
   req,
@@ -31,9 +37,6 @@ export async function handleX402Request({
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
 
-  // Convert maxCost (Decimal) to USDC bigint string for payment middleware
-  const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
-
   // Decode the x-payment header to get payment details
   const xPaymentHeader =
     processedHeaders['x-payment'] || req.headers['x-payment'];
@@ -48,7 +51,7 @@ export async function handleX402Request({
   const paymentAmount = xPaymentData.payload.authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
 
-  if (paymentAmount < maxCostUsdcBigInt) {
+  if (paymentAmount < maxCost) {
     buildX402Response(req, res, maxCost);
   }
 
@@ -63,15 +66,15 @@ export async function handleX402Request({
           asset: {
             address: USDC_ADDRESS,
             decimals: 6,
-            eip712: { name: 'USD Coin', version: '2' },
+            eip712: { name: DOMAIN_NAME, version: DOMAIN_VERSION },
           },
         },
         network,
         config: {
-          description: 'Echo x402',
-          mimeType: 'application/json',
-          maxTimeoutSeconds: 1000,
-          discoverable: true,
+          description: ECHO_DESCRIPTION,
+          mimeType: MIME_TYPE,
+          maxTimeoutSeconds: MAX_TIMEOUT_SECONDS,
+          discoverable: DISCOVERABLE,
         },
       },
     },
@@ -95,11 +98,8 @@ export async function handleX402Request({
           );
           return resolve(result);
         }
-        // Default to no refund
-        let refundAmount = new Decimal(0);
-        let transaction,
-          data,
-          refundResult = null;
+        let transaction, data, refundResult = null;
+        const to = xPaymentData.payload.authorization.to as `0x${string}`;
 
         try {
           const transactionResult =
@@ -113,18 +113,14 @@ export async function handleX402Request({
           transaction = transactionResult.transaction;
           data = transactionResult.data;
 
-          refundAmount = calculateRefundAmount(
+          const refundAmount = calculateRefundAmount(
             paymentAmountDecimal,
             transaction.rawTransactionCost
           );
 
-          // Process refund if needed
-          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
-            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await transfer(
-                xPaymentData.payload.authorization.to as `0x${string}`,
-                refundAmountUsdcBigInt.toString()
-            );
+          if (refundAmount.greaterThan(0)) {
+            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount).toString();
+            refundResult = await transfer(to, refundAmountUsdcBigInt);
           }
 
           // Send the response - the middleware has intercepted res.end()/res.json()
@@ -141,16 +137,8 @@ export async function handleX402Request({
 
           resolve(result);
         } catch (error) {
-          // In case of error, do full refund
-          refundAmount = paymentAmountDecimal;
-
-          if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
-            const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await transfer(
-                xPaymentData.payload.authorization.to as `0x${string}`,
-                refundAmountUsdcBigInt.toString()
-            );
-          }
+          const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal).toString();
+          refundResult = await transfer(to, refundAmountUsdcBigInt);
           reject(error);
         }
       } catch (error) {
