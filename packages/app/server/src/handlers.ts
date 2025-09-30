@@ -8,6 +8,7 @@ import {
   decimalToUsdcBigInt,
   buildX402Response,
   getSmartAccount,
+  calculateRefundAmount,
 } from 'utils';
 import { settleWithAuthorization } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
@@ -104,15 +105,19 @@ export async function handleX402Request({
           isStream
         );
 
-        const refundAmount = maxCostUsdcBigInt - BigInt(xPaymentData.payload.authorization.value);
-
-        const refundResult = await settleWithAuthorization({
+        // Calculate refund amount
+        const refundAmount = calculateRefundAmount(maxCost, transaction.rawTransactionCost);
+        let refundResult = null;
+        if (!refundAmount.equals(0)) {
+          const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
+          refundResult = await settleWithAuthorization({
             to: xPaymentData.payload.authorization.to as `0x${string}`,
-            value: refundAmount.toString(),
+            value: refundAmountUsdcBigInt.toString(),
             valid_after: xPaymentData.payload.authorization.valid_after,
             valid_before: xPaymentData.payload.authorization.valid_before,
             nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
-        })
+          })
+        }
 
         // Send the response - the middleware has intercepted res.end()/res.json()
         // and will actually send it after settlement completes
@@ -176,6 +181,9 @@ export async function handleApiKeyRequest({
     provider,
     isStream
   );
+
+  // There is no actual refund, this logs if we underestimate the raw cost
+  calculateRefundAmount(maxCost, transaction.rawTransactionCost);
 
   modelRequestService.handleResolveResponse(res, isStream, data);
 

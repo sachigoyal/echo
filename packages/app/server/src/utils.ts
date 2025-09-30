@@ -11,6 +11,7 @@ import { WALLET_SMART_ACCOUNT } from './constants';
 import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
+import logger from 'logger';
 
 /**
  * USDC has 6 decimal places
@@ -40,6 +41,20 @@ export function usdcBigIntToDecimal(usdcBigInt: bigint | string): Decimal {
     typeof usdcBigInt === 'string' ? BigInt(usdcBigInt) : usdcBigInt;
   const decimalValue = Number(bigIntValue) / USDC_MULTIPLIER;
   return new Decimal(decimalValue);
+}
+
+/**
+ * Calculates the refund amount for an x402 request. Also used to log when we underestimate the cost.
+ * @param maxCost The max cost of the request
+ * @param transactionCost The cost of the transaction
+ * @returns The refund amount
+ */
+export function calculateRefundAmount(maxCost: Decimal, transactionCost: Decimal): Decimal {
+  if (transactionCost.greaterThan(maxCost)) {
+    logger.error(`Transaction cost (${transactionCost}) exceeds max cost (${maxCost}).`);
+    return new Decimal(0);
+  }
+  return maxCost.minus(transactionCost);
 }
 
 /**
