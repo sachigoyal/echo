@@ -159,7 +159,6 @@ export function isX402Request(headers: Record<string, string>): boolean {
 }
 
 export async function getSmartAccount(): Promise<{
-  cdp: CdpClient;
   smartAccount: SmartAccount;
 }> {
   const cdp = new CdpClient();
@@ -171,5 +170,6 @@ export async function getSmartAccount(): Promise<{
     name: WALLET_SMART_ACCOUNT,
     owner,
   });
-  return { cdp, smartAccount };
+
+  return {smartAccount};
 }

@@ -1,7 +1,5 @@
-import { CdpClient } from '@coinbase/cdp-sdk';
 import { ERC3009_ABI, USDC_ADDRESS } from './services/fund-repo/constants';
 import { encodeFunctionData } from 'viem';
-import { serializeTransaction } from 'viem';
 import {
   DOMAIN_NAME,
   DOMAIN_VERSION,
@@ -11,18 +9,14 @@ import {
 } from './constants';
 import {
   Network,
-  Schema,
-  SettleRequest,
   TransferWithAuthorization,
-  X402Version,
 } from 'types';
-import { FacilitatorClient } from 'facilitatorClient';
 import { getSmartAccount } from 'utils';
 
 export async function signTransferWithAuthorization(
   transfer: TransferWithAuthorization
 ) {
-  const { cdp, smartAccount } = await getSmartAccount();
+  const { smartAccount } = await getSmartAccount();
 
   const domain = {
     name: DOMAIN_NAME,
@@ -40,50 +34,26 @@ export async function signTransferWithAuthorization(
     nonce: transfer.nonce,
   };
 
-  const authoriztionSignature = await cdp.evm.signTypedData({
-    address: smartAccount.address,
+  const signature = await smartAccount.signTypedData({
     domain,
     types: TRANSFER_WITH_AUTHORIZATION_TYPE,
     primaryType: TRANSFER_WITH_AUTHORIZATION_NAME,
     message,
+    network: Network.BASE,
   });
 
-  const data = encodeFunctionData({
-    abi: ERC3009_ABI,
-    functionName: 'transferWithAuthorization',
-    args: [
-      smartAccount.address,
-      transfer.to as `0x${string}`,
-      BigInt(transfer.value),
-      BigInt(transfer.valid_after),
-      BigInt(transfer.valid_before),
-      transfer.nonce as `0x${string}`,
-      authoriztionSignature.signature,
-    ],
-  });
-
-  return await cdp.evm
-    .signTransaction({
-      address: smartAccount.address,
-      transaction: serializeTransaction({
-        to: USDC_ADDRESS,
-        data,
-        value: 0n,
-      }),
-    })
-    .then(tx => tx.signature);
+  return signature;
 }
 
 export async function settleWithAuthorization(
   transfer: TransferWithAuthorization
 ) {
-  const { cdp, smartAccount } = await getSmartAccount();
+  const { smartAccount } = await getSmartAccount();
 
   const signature = await signTransferWithAuthorization(transfer);
   const network = process.env.NETWORK as Network;
 
-  const result = await cdp.evm.sendUserOperation({
-    smartAccount,
+  const result = await smartAccount.sendUserOperation({
     network,
     calls: [
       {
@@ -94,7 +64,7 @@ export async function settleWithAuthorization(
           functionName: 'transferWithAuthorization',
           args: [
             smartAccount.address,
-            USDC_ADDRESS,
+            transfer.to as `0x${string}`,
             BigInt(transfer.value),
             BigInt(transfer.valid_after),
             BigInt(transfer.valid_before),
@@ -108,5 +78,3 @@ export async function settleWithAuthorization(
 
   return result;
 }
-
-export async function decodeSignature(signature: string) {}
