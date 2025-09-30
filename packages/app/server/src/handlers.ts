@@ -110,10 +110,7 @@ export async function handleX402Request({
           );
 
           if (refundAmount.greaterThan(0)) {
-            refundResult = await transfer(
-                to,
-                refundAmount
-            );
+            refundResult = await transfer(to, refundAmount);
           }
 
           // Send the response - the middleware has intercepted res.end()/res.json()
@@ -130,10 +127,8 @@ export async function handleX402Request({
 
           resolve(result);
         } catch (error) {
-          refundResult = await transfer(
-            to,
-            paymentAmountDecimal
-          );
+          // full refund on error
+          refundResult = await transfer(to, paymentAmountDecimal);
           reject(error);
         }
       } catch (error) {
