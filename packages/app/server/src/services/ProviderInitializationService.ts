@@ -32,7 +32,6 @@ export function detectPassthroughProxyRoute(
   // Check for Vertex AI proxy routes first
   const vertexAIProxy = VertexAIProvider.detectPassthroughProxy(
     req,
-    echoControlService,
     extractIsStream
   );
   if (vertexAIProxy) {

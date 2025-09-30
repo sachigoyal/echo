@@ -91,7 +91,6 @@ export async function handleX402Request({
             res,
             provider,
             processedHeaders,
-            providerId
           );
           return resolve(result);
         }
@@ -190,7 +189,6 @@ export async function handleApiKeyRequest({
       res,
       provider,
       processedHeaders,
-      providerId
     );
   }
 
