@@ -16,12 +16,7 @@ import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
 import { paymentMiddleware } from 'x402-express';
 import { facilitator } from '@coinbase/x402';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
-import { DOMAIN_NAME } from './constants';
-import { DOMAIN_VERSION } from './constants';
-import { ECHO_DESCRIPTION } from './constants';
-import { MAX_TIMEOUT_SECONDS } from './constants';
-import { DISCOVERABLE } from './constants';
-import { MIME_TYPE } from './constants';
+import { DOMAIN_NAME, DOMAIN_VERSION, ECHO_DESCRIPTION, MAX_TIMEOUT_SECONDS, DISCOVERABLE, MIME_TYPE } from './constants';
 
 export async function handleX402Request({
   req,
