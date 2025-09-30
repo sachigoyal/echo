@@ -5,8 +5,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "biome check --write",
-    "postinstall": "npm dedupe || true"
+    "lint": "next lint"
   },
   "dependencies": {
     "@google/genai": "^1.20.0",

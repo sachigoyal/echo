@@ -161,7 +161,7 @@ function handleCompletedOperation(
     });
 
     // Store the operation with expiration timestamp if it's a signed URL
-    const videoWithExpiry = video as any;
+    const videoWithExpiry = video as { expiresAt?: string };
     if (videoWithExpiry.expiresAt) {
       const operation = videoOperationsStorage
         .getAll()
