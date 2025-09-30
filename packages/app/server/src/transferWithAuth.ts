@@ -7,7 +7,7 @@ import { getSmartAccount } from './utils';
 
 export async function transfer(
   to: string,
-  value: string
+  value: BigInt
 ) : Promise<SendUserOperationReturnType> {
 
   const { smartAccount } = await getSmartAccount();
@@ -21,7 +21,7 @@ export async function transfer(
           data: encodeFunctionData({
             abi: ERC20_CONTRACT_ABI as Abi,
             functionName: 'transfer',
-            args: [to, value],
+            args: [to, value.toString()],
           }),
         },
       ],

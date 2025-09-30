@@ -1,7 +1,6 @@
 import {
   ExactEvmPayloadAuthorization,
   Network,
-  SendUserOperationReturnType,
   X402ChallengeParams,
 } from 'types';
 import { Request, Response } from 'express';
@@ -12,7 +11,7 @@ import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
 import logger from 'logger';
-import { transfer } from 'transferWithAuth';
+import { PaymentPayload } from './types';
 
 /**
  * USDC has 6 decimal places
@@ -142,8 +141,6 @@ export async function buildX402Response(
     ],
   };
 
-  console.log('resBody', resBody);
-
   return res.status(402).json(resBody);
 }
 
@@ -173,4 +170,16 @@ export async function getSmartAccount(): Promise<{
   });
 
   return {smartAccount};
+}
+
+export function validateXPaymentHeader(processedHeaders: Record<string, string>, req: Request): PaymentPayload {
+  const xPaymentHeader =
+    processedHeaders['x-payment'] || req.headers['x-payment'];
+  if (!xPaymentHeader) {
+    throw new Error('x-payment header missing after validation');
+  }
+  const xPaymentData = JSON.parse(
+    Buffer.from(xPaymentHeader as string, 'base64').toString()
+  );
+  return xPaymentData as PaymentPayload;
 }
