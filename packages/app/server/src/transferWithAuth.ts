@@ -4,11 +4,10 @@ import {
   SendUserOperationReturnType,
 } from './types';
 import { getSmartAccount } from './utils';
-import { Decimal } from 'generated/prisma/runtime/library';
 
 export async function transfer(
   to: string,
-  value: Decimal
+  value: BigInt
 ) : Promise<SendUserOperationReturnType> {
 
   const { smartAccount } = await getSmartAccount();

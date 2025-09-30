@@ -106,7 +106,7 @@ export async function handleX402Request({
           );
 
           if (refundAmount.greaterThan(0)) {
-            await transfer(to, refundAmount);
+            await transfer(to, decimalToUsdcBigInt(refundAmount));
           }
 
           // Send the response - the middleware has intercepted res.end()/res.json()
@@ -123,7 +123,7 @@ export async function handleX402Request({
           resolve(result);
         } catch (error) {
           // full refund on error
-          await transfer(to, paymentAmountDecimal);
+          await transfer(to, decimalToUsdcBigInt(paymentAmountDecimal));
           reject(error);
         }
       } catch (error) {
