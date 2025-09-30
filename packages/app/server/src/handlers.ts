@@ -89,7 +89,6 @@ export async function handleX402Request({
           );
           return resolve(result);
         }
-        let transaction, data, refundResult = null;
         const to = xPaymentData.payload.authorization.to as `0x${string}`;
 
         try {
@@ -101,8 +100,8 @@ export async function handleX402Request({
               provider,
               isStream
             );
-          transaction = transactionResult.transaction;
-          data = transactionResult.data;
+          const transaction = transactionResult.transaction;
+          const data = transactionResult.data;
 
           const refundAmount = calculateRefundAmount(
             paymentAmountDecimal,
@@ -110,7 +109,7 @@ export async function handleX402Request({
           );
 
           if (refundAmount.greaterThan(0)) {
-            refundResult = await transfer(to, refundAmount);
+            await transfer(to, refundAmount);
           }
 
           // Send the response - the middleware has intercepted res.end()/res.json()
@@ -122,13 +121,12 @@ export async function handleX402Request({
             transaction,
             isStream,
             data,
-            refundResult,
           };
 
           resolve(result);
         } catch (error) {
           // full refund on error
-          refundResult = await transfer(to, paymentAmountDecimal);
+          await transfer(to, paymentAmountDecimal);
           reject(error);
         }
       } catch (error) {
