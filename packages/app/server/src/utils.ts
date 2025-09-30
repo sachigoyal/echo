@@ -1,6 +1,7 @@
 import {
   ExactEvmPayloadAuthorization,
   Network,
+  SendUserOperationReturnType,
   X402ChallengeParams,
 } from 'types';
 import { Request, Response } from 'express';
@@ -11,6 +12,7 @@ import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
 import logger from 'logger';
+import { transferWithAuthorization } from 'transferWithAuth';
 
 /**
  * USDC has 6 decimal places
@@ -66,7 +68,7 @@ export function calculateRefundAmount(
  * @returns A random hex string with 0x prefix (25 bytes = 50 hex chars)
  */
 export function generateRandomNonce(): `0x${string}` {
-  const bytes = crypto.randomBytes(25);
+  const bytes = crypto.randomBytes(32);
   return `0x${bytes.toString('hex')}` as `0x${string}`;
 }
 
@@ -171,4 +173,14 @@ export async function getSmartAccount(): Promise<{
   });
 
   return {smartAccount};
+}
+
+export async function refund(to: string, value: string) : Promise<SendUserOperationReturnType> {
+    return await transferWithAuthorization({
+        to,
+        value,
+        valid_after: 0,
+        valid_before: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+        nonce: generateRandomNonce(),
+    })
 }

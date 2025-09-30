@@ -7,6 +7,8 @@ import {
   buildX402Response,
   getSmartAccount,
   calculateRefundAmount,
+  generateRandomNonce,
+  refund,
 } from 'utils';
 import { Decimal } from '@prisma/client/runtime/library';
 import { transferWithAuthorization } from 'transferWithAuth';
@@ -122,13 +124,10 @@ export async function handleX402Request({
           // Process refund if needed
           if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
             const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await transferWithAuthorization({
-              to: xPaymentData.payload.authorization.to as `0x${string}`,
-              value: refundAmountUsdcBigInt.toString(),
-              valid_after: xPaymentData.payload.authorization.valid_after,
-              valid_before: xPaymentData.payload.authorization.valid_before,
-              nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
-            });
+            refundResult = await refund(
+                xPaymentData.payload.authorization.to as `0x${string}`,
+                refundAmountUsdcBigInt.toString()
+            );
           }
 
           // Send the response - the middleware has intercepted res.end()/res.json()
@@ -150,13 +149,10 @@ export async function handleX402Request({
 
           if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
             const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await transferWithAuthorization({
-              to: xPaymentData.payload.authorization.to as `0x${string}`,
-              value: refundAmountUsdcBigInt.toString(),
-              valid_after: xPaymentData.payload.authorization.valid_after,
-              valid_before: xPaymentData.payload.authorization.valid_before,
-              nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
-            });
+            refundResult = await refund(
+                xPaymentData.payload.authorization.to as `0x${string}`,
+                refundAmountUsdcBigInt.toString()
+            );
           }
           reject(error);
         }
