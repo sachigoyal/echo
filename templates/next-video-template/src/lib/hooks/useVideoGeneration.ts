@@ -14,6 +14,7 @@ import { useCallback } from 'react';
 interface UseVideoGenerationOptions {
   model: VideoModelOption;
   durationSeconds: number;
+  generateAudio: boolean;
   onVideoAdded: (video: GeneratedVideo) => void;
   onVideoUpdated: (id: string, updates: Partial<GeneratedVideo>) => void;
 }
@@ -21,6 +22,7 @@ interface UseVideoGenerationOptions {
 export function useVideoGeneration({
   model,
   durationSeconds,
+  generateAudio,
   onVideoAdded,
   onVideoUpdated,
 }: UseVideoGenerationOptions) {
@@ -60,6 +62,7 @@ export function useVideoGeneration({
           prompt,
           model,
           durationSeconds,
+          generateAudio,
           image: imageDataUrl,
           lastFrame: lastFrameDataUrl,
         });
@@ -86,7 +89,14 @@ export function useVideoGeneration({
         });
       }
     },
-    [model, durationSeconds, queryClient, onVideoAdded, onVideoUpdated]
+    [
+      model,
+      durationSeconds,
+      generateAudio,
+      queryClient,
+      onVideoAdded,
+      onVideoUpdated,
+    ]
   );
 
   return { handleSubmit };

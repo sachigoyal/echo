@@ -51,6 +51,7 @@ export default function VideoGenerator() {
     'veo-3.0-fast-generate-preview'
   );
   const [durationSeconds, setDurationSeconds] = useState<4 | 6 | 8>(4);
+  const [generateAudio, setGenerateAudio] = useState<boolean>(false);
   const [hasContent, setHasContent] = useState(false);
   const promptInputRef = useRef<HTMLFormElement>(null);
 
@@ -67,6 +68,7 @@ export default function VideoGenerator() {
   const { handleSubmit: generateVideo } = useVideoGeneration({
     model,
     durationSeconds,
+    generateAudio,
     onVideoAdded: addVideo,
     onVideoUpdated: updateVideo,
   });
@@ -131,6 +133,22 @@ export default function VideoGenerator() {
                 ))}
               </PromptInputModelSelectContent>
             </PromptInputModelSelect>
+
+            <div className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-white">
+              <Label
+                htmlFor="audio-toggle"
+                className="text-sm font-medium whitespace-nowrap cursor-pointer"
+              >
+                Audio
+              </Label>
+              <input
+                id="audio-toggle"
+                type="checkbox"
+                checked={generateAudio}
+                onChange={e => setGenerateAudio(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+            </div>
 
             <div className="flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg bg-white">
               <Label
