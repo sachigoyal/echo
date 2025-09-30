@@ -7,15 +7,11 @@
  * - Returns video URLs or operation status
  */
 
+import { handleGeminiGenerate } from './gemini';
 import {
   GenerateVideoRequest,
   validateGenerateVideoRequest,
 } from './validation';
-import { handleGeminiGenerate } from './gemini';
-
-const providers = {
-  'veo-3': handleGeminiGenerate,
-};
 
 export async function POST(req: Request) {
   try {
@@ -36,16 +32,14 @@ export async function POST(req: Request) {
       image,
       lastFrame,
     } = body as GenerateVideoRequest;
-    const handler = providers[model];
 
-    if (!handler) {
-      return Response.json(
-        { error: `Unsupported model: ${model}` },
-        { status: 400 }
-      );
-    }
-
-    return handler(prompt, durationSeconds, image, lastFrame);
+    return handleGeminiGenerate(
+      prompt,
+      model,
+      durationSeconds,
+      image,
+      lastFrame
+    );
   } catch (error) {
     console.error('Video generation error:', error);
 

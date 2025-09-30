@@ -14,6 +14,7 @@ import {
  */
 export async function handleGeminiGenerate(
   prompt: string,
+  model: 'veo-3.0-fast-generate-preview' | 'veo-3.0-generate-preview',
   durationSeconds: number = 4,
   image?: string, // Base64 encoded image or data URL (first frame)
   lastFrame?: string // Base64 encoded image or data URL (last frame)
@@ -32,22 +33,20 @@ export async function handleGeminiGenerate(
       apiKey,
       vertexai: true,
       httpOptions: {
-        baseUrl: 'http://localhost:3070',
+        baseUrl: 'https://echo-staging.up.railway.app',
         apiVersion: 'v1',
       },
     });
 
     const generateParams: GenerateVideosParameters = {
-      // model: 'veo-3.0-fast-generate-001',
-      model: 'veo-3.0-fast-generate-preview',
-      // model: 'veo-3.0-fast-generate-preview',
+      model,
       prompt,
       config: {
         durationSeconds,
         enhancePrompt: true,
         personGeneration: 'allow_all',
-        generateAudio: false,
-        outputGcsUri: 'gs://test-bad-boy',
+        generateAudio: true,
+        outputGcsUri: 'template-v1',
       },
     };
 
@@ -123,7 +122,7 @@ export async function checkGeminiOperationStatus(
       apiKey,
       vertexai: true,
       httpOptions: {
-        baseUrl: 'http://localhost:3070',
+        baseUrl: 'https://echo-staging.up.railway.app',
         apiVersion: 'v1',
       },
     });

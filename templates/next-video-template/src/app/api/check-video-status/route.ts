@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     // Use operationName if provided, otherwise use operationData
     return checkGeminiOperationStatus(operationName || operationData!);
   } catch (error) {
+    console.error('Error checking video status:', error);
     return Response.json({ error: 'Invalid request body' }, { status: 400 });
   }
 }
