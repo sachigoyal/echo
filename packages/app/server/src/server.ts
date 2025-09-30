@@ -14,10 +14,9 @@ import {
 } from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
-import { checkBalance } from './services/BalanceCheckService';
-import { modelRequestService } from './services/ModelRequestService';
+import { buildX402Response, isApiRequest, isX402Request } from 'utils';
+import { handleX402Request, handleApiKeyRequest } from './handlers';
 import { initializeProvider } from './services/ProviderInitializationService';
-import { makeProxyPassthroughRequest } from './services/ProxyPassthroughService';
 import { getRequestMaxCost } from './services/PricingService';
 
 dotenv.config();
@@ -45,6 +44,7 @@ export const prisma = new PrismaClient({
 const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
 
 app.use(traceEnrichmentMiddleware);
+
 // Add middleware
 app.use(
   cors({
@@ -57,6 +57,18 @@ app.use(
     optionsSuccessStatus: 200, // Return 200 for preflight OPTIONS requests
   })
 );
+
+// Preserve content-length before body parsing middleware removes it
+app.use((req: EscrowRequest, res, next) => {
+  // Capture Content-Length from raw request before any parsing
+  const rawContentLength = req.headers['content-length'];
+
+  if (rawContentLength) {
+    req.originalContentLength = rawContentLength;
+  }
+  next();
+});
+
 app.use(express.json({ limit: '100mb' }));
 app.use(upload.any()); // Handle multipart/form-data with any field names
 app.use(compression());
@@ -67,59 +79,56 @@ app.use(standardRouter);
 // Use in-flight monitor router for monitoring endpoints
 app.use(inFlightMonitorRouter);
 
-// Main route handler - handles authentication, escrow, and business logic
+// Main route handler
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
-    // Step 1: Authentication
-
-    // VERIFY
-    const { processedHeaders, echoControlService } = await authenticateRequest(
-      req.headers as Record<string, string>,
-      prisma
-    );
-
+    const headers = req.headers as Record<string, string>;
     const { provider, isStream, isPassthroughProxyRoute, providerId } =
-      await initializeProvider(req, res, echoControlService);
-
+      await initializeProvider(req, res);
     const maxCost = getRequestMaxCost(req, provider);
 
-    const balanceCheckResult = await checkBalance(echoControlService);
-
-    // Step 2: Set up escrow context and apply escrow middleware logic
-    transactionEscrowMiddleware.setupEscrowContext(
-      req,
-      echoControlService.getUserId()!,
-      echoControlService.getEchoAppId()!,
-      balanceCheckResult.effectiveBalance ?? 0
-    );
-
-    // Apply escrow middleware logic inline
-    await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
-
-    // NEXT
-    if (isPassthroughProxyRoute && providerId) {
-      return await makeProxyPassthroughRequest(
-        req,
-        res,
-        provider,
-        processedHeaders,
-        providerId
-      );
+    if (!isApiRequest(headers) && !isX402Request(headers)) {
+      return buildX402Response(req, res, maxCost);
     }
 
-    // Step 3: Execute business logic
-    const { transaction, data } = await modelRequestService.executeModelRequest(
-      req,
-      res,
-      processedHeaders,
-      provider,
-      isStream
+    const { processedHeaders, echoControlService } = await authenticateRequest(
+      headers,
+      prisma
     );
+    
+    if (isX402Request(headers)) {
+      console.log('isX402Request');
+      await handleX402Request({
+        req,
+        res,
+        processedHeaders,
+        maxCost,
+        isPassthroughProxyRoute,
+        providerId,
+        provider,
+        isStream,
+      });
+      return;
+    }
 
-    modelRequestService.handleResolveResponse(res, isStream, data);
+    if (isApiRequest(headers)) {
+      await handleApiKeyRequest({
+        req,
+        res,
+        processedHeaders,
+        echoControlService,
+        maxCost,
+        isPassthroughProxyRoute,
+        providerId,
+        provider,
+        isStream,
+      });
+      return;
+    }
 
-    // SETTLE
-    await echoControlService.createTransaction(transaction);
+    return res.status(400).json({
+      error: 'No request type found',
+    });
   } catch (error) {
     return next(error);
   }
@@ -158,6 +167,10 @@ app.use((error: Error, req: Request, res: Response) => {
       error: 'Internal Server Error',
     });
   }
+
+  return res.status(500).json({
+    erorr: 'Internal Server Error',
+  });
 });
 
 // Graceful shutdown handler

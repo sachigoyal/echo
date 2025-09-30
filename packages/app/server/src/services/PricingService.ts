@@ -9,9 +9,11 @@ import {
 } from './AccountingService';
 import { Decimal } from '@prisma/client/runtime/library';
 import { extractMaxOutputTokens } from './RequestDataService';
+import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
+import logger from 'logger';
 
 export function getRequestMaxCost(
-  req: Request,
+  req: EscrowRequest,
   provider: BaseProvider
 ): Decimal {
   // Need to switch between language/image/video for different pricing models.
@@ -33,9 +35,10 @@ export function getRequestMaxCost(
     // TODO: Implement image pricing
     return new Decimal(0);
   } else {
-    const headers = req.headers as Record<string, string>;
-    const maxInputTokens = Number(headers['content-length']) / 3;
-    const maxOutputTokens = extractMaxOutputTokens(req) || 0;
+    // TODO(content length is not always available. we can calculate it here if not picked up via middleware once the body is parsed)
+    const contentLength = req.originalContentLength || '500000';
+    const maxInputTokens = Number(contentLength) / 3;
+    const maxOutputTokens = extractMaxOutputTokens(req) || 0; // set to 2k to test
     const modelWithPricing = getModelPrice(provider.getModel());
     if (!modelWithPricing) {
       throw new UnknownModelError(`Invalid model: ${provider.getModel()}`);
