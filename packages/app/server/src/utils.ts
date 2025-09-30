@@ -4,8 +4,7 @@ import {
   X402ChallengeParams,
 } from 'types';
 import { Request, Response } from 'express';
-import { SmartAccount } from '@coinbase/cdp-sdk/_types/client/evm/evm.types';
-import { CdpClient } from '@coinbase/cdp-sdk';
+import { CdpClient, EvmSmartAccount} from '@coinbase/cdp-sdk';
 import { WALLET_OWNER } from './constants';
 import { WALLET_SMART_ACCOUNT } from './constants';
 import { Decimal } from 'generated/prisma/runtime/library';
@@ -159,7 +158,7 @@ export function isX402Request(headers: Record<string, string>): boolean {
 }
 
 export async function getSmartAccount(): Promise<{
-  smartAccount: SmartAccount;
+  smartAccount: EvmSmartAccount;
 }> {
   const cdp = new CdpClient();
   const owner = await cdp.evm.getOrCreateAccount({

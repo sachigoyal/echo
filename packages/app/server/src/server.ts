@@ -83,20 +83,19 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-
-    const { processedHeaders, echoControlService } = await authenticateRequest(
-      headers,
-      prisma
-    );
-
     const { provider, isStream, isPassthroughProxyRoute, providerId } =
-      await initializeProvider(req, res, echoControlService);
+      await initializeProvider(req, res);
     const maxCost = getRequestMaxCost(req, provider);
 
     if (!isApiRequest(headers) && !isX402Request(headers)) {
       return buildX402Response(req, res, maxCost);
     }
 
+    const { processedHeaders, echoControlService } = await authenticateRequest(
+      headers,
+      prisma
+    );
+    
     if (isX402Request(headers)) {
       console.log('isX402Request');
       await handleX402Request({

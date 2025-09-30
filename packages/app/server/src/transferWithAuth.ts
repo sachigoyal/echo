@@ -10,8 +10,9 @@ import {
 import {
   Network,
   TransferWithAuthorization,
-} from 'types';
-import { getSmartAccount } from 'utils';
+  SendUserOperationReturnType,
+} from './types';
+import { getSmartAccount } from './utils';
 
 export async function signTransferWithAuthorization(
   transfer: TransferWithAuthorization
@@ -45,11 +46,11 @@ export async function signTransferWithAuthorization(
   return signature;
 }
 
-export async function settleWithAuthorization(
+export async function transferWithAuthorization(
   transfer: TransferWithAuthorization
-) {
-  const { smartAccount } = await getSmartAccount();
+) : Promise<SendUserOperationReturnType> {
 
+  const { smartAccount } = await getSmartAccount();
   const signature = await signTransferWithAuthorization(transfer);
   const network = process.env.NETWORK as Network;
 

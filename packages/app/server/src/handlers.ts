@@ -9,7 +9,7 @@ import {
   calculateRefundAmount,
 } from 'utils';
 import { Decimal } from '@prisma/client/runtime/library';
-import { settleWithAuthorization } from 'transferWithAuth';
+import { transferWithAuthorization } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
 import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
@@ -122,7 +122,7 @@ export async function handleX402Request({
           // Process refund if needed
           if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
             const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await settleWithAuthorization({
+            refundResult = await transferWithAuthorization({
               to: xPaymentData.payload.authorization.to as `0x${string}`,
               value: refundAmountUsdcBigInt.toString(),
               valid_after: xPaymentData.payload.authorization.valid_after,
@@ -150,7 +150,7 @@ export async function handleX402Request({
 
           if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
             const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-            refundResult = await settleWithAuthorization({
+            refundResult = await transferWithAuthorization({
               to: xPaymentData.payload.authorization.to as `0x${string}`,
               value: refundAmountUsdcBigInt.toString(),
               valid_after: xPaymentData.payload.authorization.valid_after,
