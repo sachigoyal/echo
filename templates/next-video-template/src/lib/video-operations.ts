@@ -78,10 +78,25 @@ export const videoOperationsStorage = {
   },
 
   /**
-   * Get pending/processing operations that need polling
+   * Get operations that need polling (not done OR signed URL expired)
    */
   getPending(): VideoOperation[] {
-    return this.getAll().filter(op => !op.operation.done);
+    const now = new Date();
+    return this.getAll().filter(op => {
+      // Not done yet - needs polling
+      if (!op.operation.done) {
+        return true;
+      }
+
+      // Done but signed URL expired - needs refresh
+      if (op.signedUrlExpiresAt) {
+        const expiresAt = new Date(op.signedUrlExpiresAt);
+        return now >= expiresAt;
+      }
+
+      // Done and no expiry or still valid - no polling needed
+      return false;
+    });
   },
 
   /**

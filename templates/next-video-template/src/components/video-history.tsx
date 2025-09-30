@@ -2,11 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { GeneratedVideo, VideoResponse } from '@/lib/types';
-import { Copy, Download, Play } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import type { GeneratedVideo } from '@/lib/types';
+import { Copy, Download, Play, X } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { VideoDetailsDialog } from './video-details-dialog';
-import { Input } from '@/components/ui/input';
 
 /**
  * Self-contained loading timer component
@@ -36,15 +35,25 @@ const LoadingTimer = React.memo(function LoadingTimer({
 interface VideoHistoryItemProps {
   video: GeneratedVideo;
   onVideoClick: (video: GeneratedVideo) => void;
+  onRemove: (id: string) => void;
 }
 
 const VideoHistoryItem = React.memo(function VideoHistoryItem({
   video,
   onVideoClick,
+  onRemove,
 }: VideoHistoryItemProps) {
   const handleVideoClick = useCallback(() => {
     onVideoClick(video);
   }, [video, onVideoClick]);
+
+  const handleRemove = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent triggering video click
+      onRemove(video.id);
+    },
+    [video.id, onRemove]
+  );
 
   const handleDownload = useCallback(() => {
     if (!video.videoUrl) return;
@@ -90,6 +99,15 @@ const VideoHistoryItem = React.memo(function VideoHistoryItem({
       aria-label={`Open details for video: ${video.prompt.slice(0, 50)}${video.prompt.length > 50 ? '...' : ''}`}
       className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200 group cursor-pointer hover:shadow-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all animate-in fade-in slide-in-from-left-4 duration-500"
     >
+      {/* Remove button */}
+      <button
+        onClick={handleRemove}
+        className="absolute top-2 right-2 z-10 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        aria-label="Remove video"
+        title="Remove video"
+      >
+        <X size={14} className="text-gray-600" />
+      </button>
       {video.isLoading ? (
         <div className="flex flex-col items-center justify-center h-full space-y-2 p-4">
           <Skeleton className="h-16 w-16 rounded-lg" />
@@ -116,7 +134,7 @@ const VideoHistoryItem = React.memo(function VideoHistoryItem({
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <Play size={24} className="text-white" />
           </div>
-          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
+          <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
             <Button
               size="sm"
               onClick={e => {
@@ -159,21 +177,16 @@ const VideoHistoryItem = React.memo(function VideoHistoryItem({
 
 interface VideoHistoryProps {
   videoHistory: GeneratedVideo[];
-  onAppendVideo?: (video: GeneratedVideo) => void;
-  onUpdateVideo?: (id: string, updates: Partial<GeneratedVideo>) => void;
+  onRemoveVideo: (id: string) => void;
 }
 
 export const VideoHistory = React.memo(function VideoHistory({
   videoHistory,
-  onAppendVideo,
-  onUpdateVideo,
+  onRemoveVideo,
 }: VideoHistoryProps) {
   const [selectedVideo, setSelectedVideo] = useState<GeneratedVideo | null>(
     null
   );
-  const [opName, setOpName] = useState('');
-  const [isRestoring, setIsRestoring] = useState(false);
-
   // Memoize callbacks to prevent unnecessary re-renders
   const handleVideoClick = useCallback((video: GeneratedVideo) => {
     setSelectedVideo(video);
@@ -183,92 +196,20 @@ export const VideoHistory = React.memo(function VideoHistory({
     setSelectedVideo(null);
   }, []);
 
-  const canRestore = useMemo(() => opName.trim().length > 0, [opName]);
-
-  const handleRestore = useCallback(async () => {
-    if (!canRestore) return;
-    setIsRestoring(true);
-    try {
-      const res = await fetch('/api/check-video-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ operationName: opName.trim() }),
-      });
-      const data: VideoResponse = await res.json();
-      if (res.ok && data.status === 'completed' && data.videoUrl) {
-        const restored: GeneratedVideo = {
-          id: `restored_${Date.now()}`,
-          prompt: '(restored from operation)',
-          model: 'veo-3',
-          durationSeconds: 0,
-          timestamp: new Date(),
-          isLoading: false,
-          videoUrl: data.videoUrl,
-          operationName: opName.trim(),
-        };
-        onAppendVideo?.(restored);
-        setOpName('');
-      } else if (data.status === 'processing') {
-        // Add placeholder and let polling (if any) handle update; otherwise just show loading card
-        const placeholder: GeneratedVideo = {
-          id: `restoring_${Date.now()}`,
-          prompt: '(restoring) ' + opName.trim(),
-          model: 'veo-3',
-          durationSeconds: 0,
-          timestamp: new Date(),
-          isLoading: true,
-          operationName: opName.trim(),
-        };
-        onAppendVideo?.(placeholder);
-        setOpName('');
-      }
-    } catch (e) {
-      console.error('Failed to restore operation by name', e);
-    } finally {
-      setIsRestoring(false);
-    }
-  }, [canRestore, opName, onAppendVideo]);
-
   if (videoHistory.length === 0) {
-    return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Generated Videos
-        </h3>
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Paste operationName to restore"
-            value={opName}
-            onChange={e => setOpName(e.target.value)}
-          />
-          <Button onClick={handleRestore} disabled={!canRestore || isRestoring}>
-            {isRestoring ? 'Restoring…' : 'Restore'}
-          </Button>
-        </div>
-        <div className="text-sm text-gray-500">No videos yet.</div>
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Generated Videos</h3>
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="Paste operationName to restore"
-          value={opName}
-          onChange={e => setOpName(e.target.value)}
-        />
-        <Button onClick={handleRestore} disabled={!canRestore || isRestoring}>
-          {isRestoring ? 'Restoring…' : 'Restore'}
-        </Button>
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-all duration-300 ease-out">
         {videoHistory.map(video => (
           <VideoHistoryItem
             key={video.id}
             video={video}
             onVideoClick={handleVideoClick}
+            onRemove={onRemoveVideo}
           />
         ))}
       </div>

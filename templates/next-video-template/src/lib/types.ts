@@ -13,7 +13,9 @@ export type ModelOption = 'openai' | 'gemini';
 /**
  * Available AI models for video generation
  */
-export type VideoModelOption = 'veo-3';
+export type VideoModelOption =
+  | 'veo-3.0-fast-generate-preview'
+  | 'veo-3.0-generate-preview';
 
 /**
  * Model configuration with display names
@@ -140,6 +142,8 @@ export interface VideoOperation {
   videoUrl?: string;
   /** Error message if failed (derived from SDK operation) */
   error?: string;
+  /** When the signed URL expires (ISO string) */
+  signedUrlExpiresAt?: string;
   /** The actual SDK operation object */
   operation: GenerateVideosOperation;
 }
