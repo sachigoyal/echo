@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import { HttpError } from '../errors/http';
 import logger from '../logger';
+import { BaseProvider } from '../providers/BaseProvider';
 import { Transaction } from '../types';
 import { handleNonStreamingService } from './HandleNonStreamingService';
 import { handleStreamService } from './HandleStreamService';
 import { formatUpstreamUrl } from './RequestDataService';
-import { BaseProvider } from '../providers/BaseProvider';
-import { ProviderType } from '../providers/ProviderType';
 
 export class ModelRequestService {
   /**
@@ -29,7 +28,8 @@ export class ModelRequestService {
     data: unknown;
   }> {
     // Format authentication headers
-    const authenticatedHeaders = await provider.formatAuthHeaders(processedHeaders);
+    const authenticatedHeaders =
+      await provider.formatAuthHeaders(processedHeaders);
 
     logger.info(
       `New outbound request: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`
@@ -37,6 +37,9 @@ export class ModelRequestService {
 
     // Ensure stream usage is set correctly (OpenAI Format)
     req.body = provider.ensureStreamUsage(req.body, req.path);
+
+    // Apply provider-specific request body transformations
+    req.body = provider.transformRequestBody(req.body, req.path);
 
     // Format request body and headers based on content type
     const { requestBody, headers: formattedHeaders } = this.formatRequestBody(
