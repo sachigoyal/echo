@@ -5,19 +5,12 @@ import {
 } from 'types';
 import { Request, Response } from 'express';
 import { CdpClient, EvmSmartAccount} from '@coinbase/cdp-sdk';
-import { WALLET_OWNER } from './constants';
-import { WALLET_SMART_ACCOUNT } from './constants';
+import { WALLET_SMART_ACCOUNT, DOMAIN_NAME, X402_VERSION, X402_SCHEME, DISCOVERABLE, DOMAIN_VERSION, MAX_TIMEOUT_SECONDS, MIME_TYPE, ECHO_DESCRIPTION, WALLET_OWNER, X402_TYPE, X402_ERROR_MESSAGE, X402_PAYMENT_HEADER, X402_REALM, USDC_MULTIPLIER } from './constants';
 import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
 import logger from 'logger';
 import { PaymentPayload } from './types';
-
-/**
- * USDC has 6 decimal places
- */
-const USDC_DECIMALS = 6;
-const USDC_MULTIPLIER = 10 ** USDC_DECIMALS;
 
 /**
  * Converts a decimal amount (USD) to USDC BigInt representation
@@ -105,7 +98,7 @@ export async function buildX402Response(
   res.setHeader(
     'WWW-Authenticate',
     buildX402Challenge({
-      realm: 'echo',
+      realm: X402_REALM,
       link: paymentUrl,
       network,
     })
@@ -113,11 +106,11 @@ export async function buildX402Response(
 
   const resBody = {
     x402Version: 1,
-    error: 'Payment Required',
+    error: X402_ERROR_MESSAGE,
     accepts: [
       {
-        type: 'x402',
-        version: '1',
+        type: X402_TYPE,
+        version: X402_VERSION,
         network,
         maxAmountRequired: maxCostBigInt.toString(),
         recipient: recipient,
@@ -125,17 +118,17 @@ export async function buildX402Response(
         to: recipient,
         url: paymentUrl,
         nonce: generateRandomNonce(),
-        scheme: 'exact',
+        scheme: X402_SCHEME,
         resource: resourceUrl,
-        description: 'Echo x402',
-        mimeType: 'application/json',
-        maxTimeoutSeconds: 1000,
-        discoverable: true,
+        description: ECHO_DESCRIPTION,
+        mimeType: MIME_TYPE,
+        maxTimeoutSeconds: MAX_TIMEOUT_SECONDS,
+        discoverable: DISCOVERABLE,
         payTo: recipient,
         asset: USDC_ADDRESS,
         extra: {
-          name: 'USD Coin',
-          version: '2',
+          name: DOMAIN_NAME,
+          version: DOMAIN_VERSION,
         },
       },
     ],
@@ -153,7 +146,7 @@ export function isApiRequest(headers: Record<string, string>): boolean {
 }
 
 export function isX402Request(headers: Record<string, string>): boolean {
-  return headers['x-payment'] !== undefined;
+  return headers[X402_PAYMENT_HEADER] !== undefined;
 }
 
 export async function getSmartAccount(): Promise<{
@@ -174,7 +167,7 @@ export async function getSmartAccount(): Promise<{
 
 export function validateXPaymentHeader(processedHeaders: Record<string, string>, req: Request): PaymentPayload {
   const xPaymentHeader =
-    processedHeaders['x-payment'] || req.headers['x-payment'];
+    processedHeaders[X402_PAYMENT_HEADER] || req.headers[X402_PAYMENT_HEADER];
   if (!xPaymentHeader) {
     throw new Error('x-payment header missing after validation');
   }
