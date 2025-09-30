@@ -33,6 +33,7 @@ import { VideoHistory } from './video-history';
 
 const models: VideoModelConfig[] = [
   { id: 'veo-3.0-fast-generate-preview', name: 'Veo 3 Fast' },
+  { id: 'veo-3.0-generate-preview', name: 'Veo 3' },
 ];
 
 /**
@@ -48,8 +49,10 @@ export default function VideoGenerator() {
   const [model, setModel] = useState<VideoModelOption>(
     'veo-3.0-fast-generate-preview'
   );
-  const [durationSeconds, setDurationSeconds] = useState<number>(4);
+  const [durationSeconds, setDurationSeconds] = useState<4 | 6 | 8>(4);
   const promptInputRef = useRef<HTMLFormElement>(null);
+
+  const allowedDurations = [4, 6, 8] as const;
 
   const { videoHistory, isInitialized, addVideo, updateVideo } =
     useVideoHistory();
@@ -121,10 +124,12 @@ export default function VideoGenerator() {
               </Label>
               <Slider
                 id="duration-slider"
-                value={[durationSeconds]}
-                onValueChange={([value]) => setDurationSeconds(value)}
-                min={1}
-                max={8}
+                value={[allowedDurations.indexOf(durationSeconds)]}
+                onValueChange={([index]) =>
+                  setDurationSeconds(allowedDurations[index])
+                }
+                min={0}
+                max={allowedDurations.length - 1}
                 step={1}
                 className="w-20"
               />
