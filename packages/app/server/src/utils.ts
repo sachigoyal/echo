@@ -1,7 +1,6 @@
 import {
   ExactEvmPayloadAuthorization,
   Network,
-  SendUserOperationReturnType,
   X402ChallengeParams,
 } from 'types';
 import { Request, Response } from 'express';

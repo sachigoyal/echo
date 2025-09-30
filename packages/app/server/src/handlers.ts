@@ -37,8 +37,10 @@ export async function handleX402Request({
   const paymentAmount = xPaymentData.payload.authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
 
+  // Note(shafu, alvaro): Edge case where client sends the x402-challenge
+  // but the payment amount is less than what we returned in the first response
   if (BigInt(paymentAmount) < decimalToUsdcBigInt(maxCost)) {
-    buildX402Response(req, res, maxCost);
+    return buildX402Response(req, res, maxCost);
   }
 
   const routeKey = `${req.method.toUpperCase()} ${req.path}`;
