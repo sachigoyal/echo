@@ -16,10 +16,7 @@ import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
 import { buildX402Response, isApiRequest, isX402Request } from 'utils';
 import { handleX402Request, handleApiKeyRequest } from './handlers';
-import { checkBalance } from './services/BalanceCheckService';
-import { modelRequestService } from './services/ModelRequestService';
 import { initializeProvider } from './services/ProviderInitializationService';
-import { makeProxyPassthroughRequest } from './services/ProxyPassthroughService';
 import { getRequestMaxCost } from './services/PricingService';
 
 dotenv.config();
@@ -96,7 +93,6 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-    console.log('headers', JSON.stringify(headers));
 
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,

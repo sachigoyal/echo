@@ -28,24 +28,6 @@ export async function handleX402Request({
   provider,
   isStream,
 }: HandlerInput) {
-  console.log('\n🎯 [HANDLER] X402 Request Handler Started');
-  console.log('📦 [HANDLER] Request details:');
-  console.log('  - Method:', req.method);
-  console.log('  - Path:', req.path);
-  console.log('  - URL:', req.url);
-  
-  console.log('\n📋 [HANDLER] Processed Headers:');
-  console.log('  - Keys:', Object.keys(processedHeaders));
-  console.log('  - Has x-payment:', 'x-payment' in processedHeaders);
-  console.log('  - x-payment value:', processedHeaders['x-payment']);
-  
-  console.log('\n📋 [HANDLER] Raw Request Headers:');
-  console.log('  - Has x-payment:', 'x-payment' in req.headers);
-  console.log('  - x-payment value:', req.headers['x-payment']);
-  
-  console.log('\n📦 [HANDLER] Request Body BEFORE middleware:');
-  console.log('  - Body:', JSON.stringify(req.body, null, 2));
-
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
@@ -53,24 +35,7 @@ export async function handleX402Request({
   // Convert maxCost (Decimal) to USDC bigint string for payment middleware
   const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
 
-  console.log('\n🔍 [DEBUG] Request URL details:');
-  console.log('  - req.originalUrl:', req.originalUrl);
-  console.log('  - req.baseUrl:', req.baseUrl);
-  console.log('  - req.path:', req.path);
-  console.log('  - req.url:', req.url);
-  console.log('  - req.hostname:', req.hostname);
-  console.log('  - req.headers.host:', req.headers.host);
-  console.log('  - Full URL would be:', `http://${req.headers.host}${req.originalUrl || req.url}`);
-
-//   const routeKey = `http://${req.headers.host}${req.url}`;
   const routeKey = `${req.method.toUpperCase()} ${req.path}`;
-//   const routeKey = `http://${req.headers.host}${req.url}`;
-  console.log('\n⚙️ [HANDLER] Middleware Config:');
-  console.log('  - Route key:', routeKey);
-  console.log('  - Recipient:', recipient);
-  console.log('  - Amount:', maxCostUsdcBigInt.toString());
-  console.log('  - Network:', network);
-  console.log('  - Asset:', USDC_ADDRESS);
   
   const x402Middleware = paymentMiddleware(
     recipient,
@@ -95,24 +60,14 @@ export async function handleX402Request({
     },
     facilitator,
   );
-  // Execute the middleware - DON'T wrap in Promise, put logic in callback
-  console.log('\n🔐 [HANDLER] Executing x402 middleware...');
   
-  // ✅ Call middleware with callback containing all handler logic
   return new Promise((resolve, reject) => {
     x402Middleware(req, res, async (err: any) => {
       if (err) {
-        console.error('❌ [HANDLER] X402 Middleware Error:', err);
-        console.error('  - Error message:', err.message);
-        console.error('  - Error stack:', err.stack);
         return reject(err);
       }
       
       try {
-        console.log('✅ [HANDLER] X402 Middleware: Payment validated successfully');
-        
-        console.log('\n📊 [HANDLER] Processing payment data...');
-        
         // Decode the x-payment header to get payment details
         const xPaymentHeader = processedHeaders['x-payment'] || req.headers['x-payment'];
         if (!xPaymentHeader) {
@@ -120,9 +75,7 @@ export async function handleX402Request({
         }
         
         const xPaymentData = JSON.parse(Buffer.from(xPaymentHeader as string, 'base64').toString());
-        console.log('  - Decoded x-payment data:', JSON.stringify(xPaymentData, null, 2));
         
-        // ✅ Extract payload from decoded x-payment data
         const payload = {
           from: xPaymentData.payload.authorization.from as `0x${string}`,
           to: xPaymentData.payload.authorization.to as `0x${string}`,
@@ -131,22 +84,15 @@ export async function handleX402Request({
           valid_before: Number(xPaymentData.payload.authorization.validBefore),
           nonce: xPaymentData.payload.authorization.nonce as `0x${string}`,
         };
-        console.log('  - Parsed payload:', payload);
         
         const paymentAmount = usdcBigIntToDecimal(
           xPaymentData.payload.authorization.value
         );
         
-        console.log('💰 [HANDLER] Payment amount from x-payment:', paymentAmount.toString());
-        console.log('💰 [HANDLER] Expected maxCost:', maxCost.toString());
-        
         if (paymentAmount.lessThan(maxCost)) {
-          console.warn('⚠️ [HANDLER] Payment amount less than maxCost, returning 402');
           buildX402Response(req, res, maxCost);
           return resolve(undefined);
         }
-
-        console.log('\n🚀 [HANDLER] Proceeding with model request...');
 
         if (isPassthroughProxyRoute && providerId) {
           const result = await makeProxyPassthroughRequest(
@@ -180,7 +126,6 @@ export async function handleX402Request({
 
         resolve(result);
       } catch (error) {
-        console.error('❌ [HANDLER] Error in x402 handler:', error);
         reject(error);
       }
     });
