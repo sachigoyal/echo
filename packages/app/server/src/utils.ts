@@ -1,7 +1,6 @@
 import {
   ExactEvmPayloadAuthorization,
   Network,
-  SendUserOperationReturnType,
   X402ChallengeParams,
 } from 'types';
 import { Request, Response } from 'express';
@@ -12,7 +11,6 @@ import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
 import logger from 'logger';
-import { transfer } from 'transferWithAuth';
 
 /**
  * USDC has 6 decimal places

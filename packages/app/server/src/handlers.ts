@@ -1,6 +1,6 @@
 import { TransactionEscrowMiddleware } from 'middleware/transaction-escrow-middleware';
 import { modelRequestService } from 'services/ModelRequestService';
-import { HandlerInput, Network, X402HandlerInput } from 'types';
+import { HandlerInput, Network, Transaction, X402HandlerInput } from 'types';
 import {
   usdcBigIntToDecimal,
   decimalToUsdcBigInt,
@@ -18,7 +18,6 @@ import { FacilitatorClient } from 'services/facilitator/facilitatorService';
 import {
   PaymentPayloadSchema,
   PaymentRequirementsSchema,
-  VerifyRequestSchema,
   SettleRequestSchema,
 } from 'services/facilitator/x402-types';
 
@@ -32,6 +31,16 @@ export async function handleX402Request({
   provider,
   isStream,
 }: X402HandlerInput) {
+
+  if (isPassthroughProxyRoute && providerId) {
+    return await makeProxyPassthroughRequest(
+      req,
+      res,
+      provider,
+      processedHeaders,
+      providerId
+    );
+  }
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
@@ -77,20 +86,10 @@ export async function handleX402Request({
 
   const facilitatorClient = new FacilitatorClient();
   try {
-    if (isPassthroughProxyRoute && providerId) {
-      return await makeProxyPassthroughRequest(
-        req,
-        res,
-        provider,
-        processedHeaders,
-        providerId
-      );
-    }
   // Default to no refund
   let refundAmount = new Decimal(0);
-  let transaction,
-    data,
-    refundResult = null;
+  let transaction: Transaction | null = null;
+  let data: unknown = null;
 
   // Construct and validate PaymentRequirements using Zod schema
   const paymentRequirements = PaymentRequirementsSchema.parse({
@@ -145,7 +144,7 @@ export async function handleX402Request({
     if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
       const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
       const authPayload = paymentPayload.payload as any;
-      refundResult = await transfer(
+      await transfer(
           authPayload.authorization.from as `0x${string}`,
           refundAmountUsdcBigInt.toString()
       );
@@ -158,7 +157,7 @@ export async function handleX402Request({
     if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
       const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
       const authPayload = paymentPayload.payload as any;
-      refundResult = await transfer(
+      await transfer(
           authPayload.authorization.from as `0x${string}`,
           refundAmountUsdcBigInt.toString()
       );

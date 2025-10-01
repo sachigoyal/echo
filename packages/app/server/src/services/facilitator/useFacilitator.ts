@@ -3,13 +3,11 @@ import { PaymentPayload, PaymentRequirements, SettleResponse, VerifyResponse } f
 import { generateCdpJwt } from "./facilitatorService";
 
 
-const DEFAULT_FACILITATOR_URL = "https://api.cdp.coinbase.com";
-// const DEFAULT_FACILITATOR_URL = "https://facilitator.x402.rs";
-
+const DEFAULT_FACILITATOR_URL = process.env.FACILITATOR_BASE_URL;
+const FACILITATOR_METHOD_PREFIX = process.env.FACILITATOR_METHOD_PREFIX;
 /**
  * Creates a facilitator client for interacting with the X402 payment facilitator service
  *
- * @param facilitator - The facilitator config to use. If not provided, the default facilitator will be used.
  * @returns An object containing verify and settle functions for interacting with the facilitator
  */
 export function useFacilitator() {
@@ -28,7 +26,7 @@ export function useFacilitator() {
   
       const jwt = await generateCdpJwt({
         requestMethod: "POST",
-        requestPath: "/platform/v2/x402/verify",
+        requestPath: `/${FACILITATOR_METHOD_PREFIX}/verify`,
       });
 
       let headers = { 
@@ -42,7 +40,7 @@ export function useFacilitator() {
         paymentRequirements: toJsonSafe(paymentRequirements),
       };
   
-      const res = await fetch(`${url}/platform/v2/x402/verify`, {
+      const res = await fetch(`${url}/${FACILITATOR_METHOD_PREFIX}/verify`, {
         method: "POST",
         headers,
         body: JSON.stringify(requestBody),
@@ -74,7 +72,7 @@ export function useFacilitator() {
   
       const jwt = await generateCdpJwt({
         requestMethod: "POST",
-        requestPath: "/platform/v2/x402/settle",
+        requestPath: `/${FACILITATOR_METHOD_PREFIX}/settle`,
       });
 
       let headers = { 
@@ -88,7 +86,7 @@ export function useFacilitator() {
         paymentRequirements: toJsonSafe(paymentRequirements),
       };
     
-      const res = await fetch(`${url}/platform/v2/x402/settle`, {
+      const res = await fetch(`${url}/${FACILITATOR_METHOD_PREFIX}/settle`, {
         method: "POST",
         headers,
         body: JSON.stringify(requestBody),
