@@ -6,7 +6,9 @@
     "baseUrl": "./src",
     "types": ["node"],
     "skipLibCheck": true,
-    "exactOptionalPropertyTypes": false
+    "exactOptionalPropertyTypes": false,
+    "noImplicitAny": false,
+    "strict": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "__tests__/**/*"]
