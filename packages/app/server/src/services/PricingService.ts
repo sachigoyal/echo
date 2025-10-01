@@ -55,7 +55,10 @@ export function getRequestMaxCost(
   }
 }
 
-function predictMaxToolCost(req: EscrowRequest, provider: BaseProvider): Decimal {
+function predictMaxToolCost(
+  req: EscrowRequest,
+  provider: BaseProvider
+): Decimal {
   switch (provider.getType()) {
     case ProviderType.OPENAI_RESPONSES:
       const tools = req.body.tools as Tool[] | undefined;
@@ -64,14 +67,14 @@ function predictMaxToolCost(req: EscrowRequest, provider: BaseProvider): Decimal
       }
 
       let totalToolCost = new Decimal(0);
-      
+
       for (const tool of tools) {
         // Calculate the cost of each tool as specified
         totalToolCost = totalToolCost.add(calculateToolCost(tool));
       }
-      
+
       return totalToolCost;
-      
+
     default:
       return new Decimal(0);
   }
