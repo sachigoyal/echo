@@ -44,7 +44,6 @@
     "@google-cloud/storage": "^7.17.1",
     "@google/genai": "^1.20.0",
     "@coinbase/x402": "^0.6.5",
-    "@google/genai": "^1.20.0",
     "@merit-systems/echo-typescript-sdk": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "0.57.2",
