@@ -4,13 +4,13 @@ import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import multer from 'multer';
 import { authenticateRequest } from './auth';
-import logger, { logMetric } from './logger';
 import { HttpError } from './errors/http';
 import { PrismaClient } from './generated/prisma';
+import logger, { logMetric } from './logger';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
 import {
-  TransactionEscrowMiddleware,
   EscrowRequest,
+  TransactionEscrowMiddleware,
 } from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
@@ -83,7 +83,7 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-    const { provider, isStream, isPassthroughProxyRoute, providerId } =
+    const { provider, isStream, isPassthroughProxyRoute } =
       await initializeProvider(req, res);
     const maxCost = getRequestMaxCost(req, provider);
 
@@ -95,7 +95,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       headers,
       prisma
     );
-    
+
     if (isX402Request(headers)) {
       await handleX402Request({
         req,
@@ -103,7 +103,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         processedHeaders,
         maxCost,
         isPassthroughProxyRoute,
-        providerId,
         provider,
         isStream,
       });
@@ -116,11 +115,10 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
         res,
         processedHeaders,
         echoControlService,
-        maxCost,
         isPassthroughProxyRoute,
-        providerId,
         provider,
         isStream,
+        maxCost,
       });
       return;
     }

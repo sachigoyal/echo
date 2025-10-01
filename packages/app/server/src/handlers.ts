@@ -7,8 +7,8 @@ import {
   buildX402Response,
   getSmartAccount,
   calculateRefundAmount,
+  validateXPaymentHeader,
 } from 'utils';
-import { Decimal } from '@prisma/client/runtime/library';
 import { transfer } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
@@ -20,6 +20,7 @@ import {
   PaymentRequirementsSchema,
   SettleRequestSchema,
 } from 'services/facilitator/x402-types';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export async function handleX402Request({
   req,
@@ -27,52 +28,38 @@ export async function handleX402Request({
   processedHeaders,
   maxCost,
   isPassthroughProxyRoute,
-  providerId,
   provider,
   isStream,
 }: X402HandlerInput) {
 
-  if (isPassthroughProxyRoute && providerId) {
+  if (isPassthroughProxyRoute) {
     return await makeProxyPassthroughRequest(
       req,
       res,
       provider,
       processedHeaders,
-      providerId
     );
   }
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
 
-  // Convert maxCost (Decimal) to USDC bigint string for payment middleware
-  const maxCostUsdcBigInt = decimalToUsdcBigInt(maxCost);
-
-  // Decode the x-payment header to get payment details
-  const xPaymentHeader =
-    processedHeaders['x-payment'] || req.headers['x-payment'];
-  if (!xPaymentHeader) {
-    throw new Error('x-payment header missing after validation');
-  }
-
-  const xPaymentDataRaw = JSON.parse(
-    Buffer.from(xPaymentHeader as string, 'base64').toString()
-  );
+  const xPaymentData = validateXPaymentHeader(processedHeaders, req);
 
   // Construct and validate PaymentPayload using Zod schema
   const paymentPayload = PaymentPayloadSchema.parse({
     x402Version: 1,
     scheme: 'exact',
-    network: xPaymentDataRaw.network,
+    network: xPaymentData.network,
     payload: {
-      signature: xPaymentDataRaw.payload.signature,
+      signature: xPaymentData.payload.signature,
       authorization: {
-        from: xPaymentDataRaw.payload.authorization.from,
-        to: xPaymentDataRaw.payload.authorization.to,
-        value: xPaymentDataRaw.payload.authorization.value,
-        validAfter: xPaymentDataRaw.payload.authorization.validAfter,
-        validBefore: xPaymentDataRaw.payload.authorization.validBefore,
-        nonce: xPaymentDataRaw.payload.authorization.nonce,
+        from: xPaymentData.payload.authorization.from,
+        to: xPaymentData.payload.authorization.to,
+        value: xPaymentData.payload.authorization.value,
+        validAfter: xPaymentData.payload.authorization.valid_after,
+        validBefore: xPaymentData.payload.authorization.valid_before,
+        nonce: xPaymentData.payload.authorization.nonce,
       },
     },
   });
@@ -80,8 +67,10 @@ export async function handleX402Request({
   const paymentAmount = (paymentPayload.payload as any).authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
 
-  if (paymentAmount < maxCostUsdcBigInt) {
-    buildX402Response(req, res, maxCost);
+  // Note(shafu, alvaro): Edge case where client sends the x402-challenge
+  // but the payment amount is less than what we returned in the first response
+  if (BigInt(paymentAmount) < decimalToUsdcBigInt(maxCost)) {
+    return buildX402Response(req, res, maxCost);
   }
 
   const facilitatorClient = new FacilitatorClient();
@@ -146,7 +135,7 @@ export async function handleX402Request({
       const authPayload = paymentPayload.payload as any;
       await transfer(
           authPayload.authorization.from as `0x${string}`,
-          refundAmountUsdcBigInt.toString()
+          refundAmountUsdcBigInt
       );
     }
 
@@ -159,7 +148,7 @@ export async function handleX402Request({
       const authPayload = paymentPayload.payload as any;
       await transfer(
           authPayload.authorization.from as `0x${string}`,
-          refundAmountUsdcBigInt.toString()
+          refundAmountUsdcBigInt
       );
     }
   }
@@ -175,7 +164,6 @@ export async function handleApiKeyRequest({
   echoControlService,
   maxCost,
   isPassthroughProxyRoute,
-  providerId,
   provider,
   isStream,
 }: HandlerInput) {
@@ -192,13 +180,12 @@ export async function handleApiKeyRequest({
 
   await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
-  if (isPassthroughProxyRoute && providerId) {
+  if (isPassthroughProxyRoute) {
     return await makeProxyPassthroughRequest(
       req,
       res,
       provider,
-      processedHeaders,
-      providerId
+      processedHeaders
     );
   }
 

@@ -232,7 +232,6 @@ export type HandlerInput = {
   echoControlService: EchoControlService;
   maxCost: Decimal;
   isPassthroughProxyRoute: boolean;
-  providerId: string | null;
   provider: BaseProvider;
   isStream: boolean;
 };

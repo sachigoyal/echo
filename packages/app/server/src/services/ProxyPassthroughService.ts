@@ -1,7 +1,7 @@
+import { Response } from 'express';
 import logger from '../logger';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { BaseProvider } from '../providers/BaseProvider';
-import { Response } from 'express';
 import { modelRequestService } from './ModelRequestService';
 import { formatUpstreamUrl } from './RequestDataService';
 
@@ -19,11 +19,11 @@ export async function makeProxyPassthroughRequest(
   req: EscrowRequest,
   res: Response,
   provider: BaseProvider,
-  processedHeaders: Record<string, string>,
-  providerId: string
+  processedHeaders: Record<string, string>
 ): Promise<void> {
   // Format authentication headers
-  const authenticatedHeaders = provider.formatAuthHeaders(processedHeaders);
+  const authenticatedHeaders =
+    await provider.formatAuthHeaders(processedHeaders);
 
   logger.info(
     `New outbound request for passthrough proxy: ${req.method} ${provider.getBaseUrl(req.path)}${req.path}`
@@ -31,6 +31,9 @@ export async function makeProxyPassthroughRequest(
 
   // Ensure stream usage is set correctly
   req.body = provider.ensureStreamUsage(req.body, req.path);
+
+  // Apply provider-specific request body transformations
+  req.body = provider.transformRequestBody(req.body, req.path);
 
   // Format request body and headers based on content type
   const { requestBody, headers: formattedHeaders } =
@@ -44,7 +47,6 @@ export async function makeProxyPassthroughRequest(
     res,
     formattedHeaders,
     upstreamUrl,
-    requestBody,
-    providerId
+    requestBody
   );
 }

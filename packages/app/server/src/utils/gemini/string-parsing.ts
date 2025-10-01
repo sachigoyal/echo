@@ -52,7 +52,13 @@ export function extractGeminiModelName(req: Request): string | undefined {
 
   // Expected format: /v1beta/models/{model-name}:streamGenerateContent or /v1beta/models/{model-name}:generateContent
   // OR: /models/{model-name}:streamGenerateContent or /models/{model-name}:generateContent
-  const expectedPrefixes = ['/v1beta/models/', '/models/'];
+  // OR: /v1beta1/publishers/google/models/{model-name}:predictLongRunning (Vertex AI format)
+  const expectedPrefixes = [
+    '/v1beta/models/',
+    '/models/',
+    '/v1beta1/publishers/google/models/',
+    '/v1/publishers/google/models/',
+  ];
   const expectedSuffixes = [
     ':streamGenerateContent',
     ':generateContent',

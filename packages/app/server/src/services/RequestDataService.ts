@@ -39,7 +39,7 @@ export function extractMaxOutputTokens(req: Request): number {
     return geminiMaxOutputTokens;
   }
 
-  return Number(process.env.MAX_OUTPUT_TOKENS) || 0;
+  return Number(process.env.MAX_OUTPUT_TOKENS);
 }
 
 export function extractGeminiIsStream(req: Request): boolean {
@@ -65,9 +65,5 @@ export function formatUpstreamUrl(
   provider: BaseProvider,
   req: Request
 ): string {
-  // this rewrites the base url to the provider's base url and retains the rest
-  const upstreamUrl = `${provider.getBaseUrl(req.path)}${req.path}${
-    req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''
-  }`;
-  return upstreamUrl;
+  return provider.formatUpstreamUrl(req);
 }
