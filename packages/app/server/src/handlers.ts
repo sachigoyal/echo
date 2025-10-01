@@ -84,7 +84,7 @@ export async function handleX402Request({
           );
           return resolve(result);
         }
-        const to = xPaymentData.payload.authorization.to as `0x${string}`;
+        const to = xPaymentData.payload.authorization.from as `0x${string}`;
 
         try {
           const transactionResult =
