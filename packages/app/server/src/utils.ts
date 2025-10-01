@@ -4,8 +4,24 @@ import {
   X402ChallengeParams,
 } from 'types';
 import { Request, Response } from 'express';
-import { CdpClient, EvmSmartAccount} from '@coinbase/cdp-sdk';
-import { WALLET_SMART_ACCOUNT, DOMAIN_NAME, X402_VERSION, X402_SCHEME, DISCOVERABLE, DOMAIN_VERSION, MAX_TIMEOUT_SECONDS, MIME_TYPE, ECHO_DESCRIPTION, WALLET_OWNER, X402_TYPE, X402_ERROR_MESSAGE, X402_PAYMENT_HEADER, X402_REALM, USDC_MULTIPLIER } from './constants';
+import { CdpClient, EvmSmartAccount } from '@coinbase/cdp-sdk';
+import {
+  WALLET_SMART_ACCOUNT,
+  DOMAIN_NAME,
+  X402_VERSION,
+  X402_SCHEME,
+  DISCOVERABLE,
+  DOMAIN_VERSION,
+  MAX_TIMEOUT_SECONDS,
+  MIME_TYPE,
+  ECHO_DESCRIPTION,
+  WALLET_OWNER,
+  X402_TYPE,
+  X402_ERROR_MESSAGE,
+  X402_PAYMENT_HEADER,
+  X402_REALM,
+  USDC_MULTIPLIER,
+} from './constants';
 import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
@@ -162,10 +178,13 @@ export async function getSmartAccount(): Promise<{
     owner,
   });
 
-  return {smartAccount};
+  return { smartAccount };
 }
 
-export function validateXPaymentHeader(processedHeaders: Record<string, string>, req: Request): PaymentPayload {
+export function validateXPaymentHeader(
+  processedHeaders: Record<string, string>,
+  req: Request
+): PaymentPayload {
   const xPaymentHeader =
     processedHeaders[X402_PAYMENT_HEADER] || req.headers[X402_PAYMENT_HEADER];
   if (!xPaymentHeader) {

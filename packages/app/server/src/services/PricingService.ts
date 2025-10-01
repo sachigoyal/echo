@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import { BaseProvider } from '../providers/BaseProvider';
 import { UnknownModelError } from 'errors/http';
 import {
@@ -11,7 +10,6 @@ import {
 import { Decimal } from '@prisma/client/runtime/library';
 import { extractMaxOutputTokens } from './RequestDataService';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
-import logger from 'logger';
 import { ProviderType } from 'providers/ProviderType';
 import { Tool } from 'openai/resources/responses/responses';
 
@@ -38,10 +36,9 @@ export function getRequestMaxCost(
     // TODO: Implement image pricing
     return new Decimal(0);
   } else {
-    // TODO(content length is not always available. we can calculate it here if not picked up via middleware once the body is parsed)
-    const contentLength = req.originalContentLength || '500000';
+    const contentLength = req.originalContentLength;
     const maxInputTokens = Number(contentLength) / 3;
-    const maxOutputTokens = extractMaxOutputTokens(req) || 0; // set to 2k to test
+    const maxOutputTokens = extractMaxOutputTokens(req);
     const modelWithPricing = getModelPrice(provider.getModel());
     if (!modelWithPricing) {
       throw new UnknownModelError(`Invalid model: ${provider.getModel()}`);
@@ -58,25 +55,26 @@ export function getRequestMaxCost(
   }
 }
 
-function predictMaxToolCost(req: EscrowRequest, provider: BaseProvider): Decimal {
+function predictMaxToolCost(
+  req: EscrowRequest,
+  provider: BaseProvider
+): Decimal {
   switch (provider.getType()) {
     case ProviderType.OPENAI_RESPONSES:
-      const parsedBody = JSON.parse(req.body) as Record<string, unknown>;
-      const tools = parsedBody.tools as Tool[] | undefined;
-      
+      const tools = req.body.tools as Tool[] | undefined;
       if (!tools || !Array.isArray(tools) || tools.length === 0) {
         return new Decimal(0);
       }
 
       let totalToolCost = new Decimal(0);
-      
+
       for (const tool of tools) {
         // Calculate the cost of each tool as specified
         totalToolCost = totalToolCost.add(calculateToolCost(tool));
       }
-      
+
       return totalToolCost;
-      
+
     default:
       return new Decimal(0);
   }

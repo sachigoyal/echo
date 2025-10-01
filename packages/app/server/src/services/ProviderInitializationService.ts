@@ -20,9 +20,7 @@ import { extractIsStream, extractModelName } from './RequestDataService';
  *
  * @returns
  */
-export function detectPassthroughProxyRoute(
-  req: Request,
-):
+export function detectPassthroughProxyRoute(req: Request):
   | {
       provider: BaseProvider;
       model: string;
@@ -39,24 +37,19 @@ export function detectPassthroughProxyRoute(
   }
 
   // Then check for Gemini VEO proxy routes
-  return GeminiVeoProvider.detectPassthroughProxy(
-    req,
-    extractIsStream
-  );
+  return GeminiVeoProvider.detectPassthroughProxy(req, extractIsStream);
 }
 
 export async function initializeProvider(
   req: Request,
-  res: Response,
+  res: Response
 ): Promise<{
   provider: BaseProvider;
   model: string;
   isStream: boolean;
   isPassthroughProxyRoute: boolean;
 }> {
-  const passthroughProxyRoute = detectPassthroughProxyRoute(
-    req,
-  );
+  const passthroughProxyRoute = detectPassthroughProxyRoute(req);
   if (passthroughProxyRoute)
     return { ...passthroughProxyRoute, isPassthroughProxyRoute: true };
 
