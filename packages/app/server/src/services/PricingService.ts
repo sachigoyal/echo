@@ -44,9 +44,13 @@ export function getRequestMaxCost(
       }
       const maxResolutionPricing = new Decimal(0.25);
       const numberOfImages = req.body.n || 1;
-      const outputImageCost = new Decimal(numberOfImages).mul(maxResolutionPricing);
+      const outputImageCost = new Decimal(numberOfImages).mul(
+        maxResolutionPricing
+      );
       const inputTokens = Number(req.originalContentLength) / 3;
-      const textCost = new Decimal(imageModelPrice.text_input_cost_per_token).mul(new Decimal(inputTokens));
+      const textCost = new Decimal(
+        imageModelPrice.text_input_cost_per_token
+      ).mul(new Decimal(inputTokens));
       return textCost.add(outputImageCost);
     }
     // Default to cover costs

@@ -94,11 +94,14 @@ export interface SupportedPaymentKind {
   x402_version: X402Version;
   schema: Schema;
   network: Network;
-  extra?: {fee_payer: Address};
+  extra?: { fee_payer: Address };
 }
 
 export interface SupportedPaymentKindsResponse {
   kinds: SupportedPaymentKind[];
 }
 
-export type TransferWithAuthorization = Omit<ExactEvmPayloadAuthorization, 'from'>;
+export type TransferWithAuthorization = Omit<
+  ExactEvmPayloadAuthorization,
+  'from'
+>;

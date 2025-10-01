@@ -30,7 +30,10 @@ import logger from 'logger';
 /**
  * USDC has 6 decimal places
  */
-import { PaymentPayload, PaymentPayloadSchema } from './services/facilitator/x402-types';
+import {
+  PaymentPayload,
+  PaymentPayloadSchema,
+} from './services/facilitator/x402-types';
 
 /**
  * Converts a decimal amount (USD) to USDC BigInt representation
