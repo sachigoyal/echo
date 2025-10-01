@@ -34,7 +34,7 @@ export function getRequestMaxCost(
     ).mul(durationSeconds);
   } else if (isValidImageModel(provider.getModel())) {
     // TODO: Implement image pricing
-    return new Decimal(0);
+    return new Decimal(2.5);
   } else {
     const contentLength = req.originalContentLength;
     const maxInputTokens = Number(contentLength) / 3;
