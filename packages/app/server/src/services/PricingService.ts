@@ -6,6 +6,7 @@ import {
   isValidImageModel,
   isValidVideoModel,
   calculateToolCost,
+  getImageModelPrice,
 } from './AccountingService';
 import { Decimal } from '@prisma/client/runtime/library';
 import { extractMaxOutputTokens } from './RequestDataService';
@@ -33,7 +34,22 @@ export function getRequestMaxCost(
         : videoModelWithPricing.cost_per_second_without_audio
     ).mul(durationSeconds);
   } else if (isValidImageModel(provider.getModel())) {
-    // TODO: Implement image pricing
+    if (req.path.includes('images/generations')) {
+      // Text to image generation pricing
+      const imageModelPrice = getImageModelPrice(provider.getModel());
+      if (!imageModelPrice) {
+        throw new UnknownModelError(
+          `No pricing found for image model: ${provider.getModel()}`
+        );
+      }
+      const maxResolutionPricing = new Decimal(0.25);
+      const numberOfImages = req.body.n || 1;
+      const outputImageCost = new Decimal(numberOfImages).mul(maxResolutionPricing);
+      const inputTokens = Number(req.originalContentLength) / 3;
+      const textCost = new Decimal(imageModelPrice.text_input_cost_per_token).mul(new Decimal(inputTokens));
+      return textCost.add(outputImageCost);
+    }
+    // Default to cover costs
     return new Decimal(2.5);
   } else {
     const contentLength = req.originalContentLength;
