@@ -3,7 +3,8 @@ import { PaymentPayload, PaymentRequirements, SettleResponse, VerifyResponse } f
 import { generateCdpJwt } from "./facilitatorService";
 
 
-const DEFAULT_FACILITATOR_URL = "https://x402.org/facilitator";
+const DEFAULT_FACILITATOR_URL = "https://api.cdp.coinbase.com";
+// const DEFAULT_FACILITATOR_URL = "https://facilitator.x402.rs";
 
 /**
  * Creates a facilitator client for interacting with the X402 payment facilitator service
@@ -27,7 +28,7 @@ export function useFacilitator() {
   
       const jwt = await generateCdpJwt({
         requestMethod: "POST",
-        requestPath: "/verify",
+        requestPath: "/platform/v2/x402/verify",
       });
 
       let headers = { 
@@ -41,9 +42,7 @@ export function useFacilitator() {
         paymentRequirements: toJsonSafe(paymentRequirements),
       };
   
-      console.log('Verify request to facilitator:', JSON.stringify(requestBody, null, 2));
-  
-      const res = await fetch(`${url}/verify`, {
+      const res = await fetch(`${url}/platform/v2/x402/verify`, {
         method: "POST",
         headers,
         body: JSON.stringify(requestBody),
@@ -75,7 +74,7 @@ export function useFacilitator() {
   
       const jwt = await generateCdpJwt({
         requestMethod: "POST",
-        requestPath: "/settle",
+        requestPath: "/platform/v2/x402/settle",
       });
 
       let headers = { 
@@ -88,10 +87,8 @@ export function useFacilitator() {
         paymentPayload: toJsonSafe(payload),
         paymentRequirements: toJsonSafe(paymentRequirements),
       };
-  
-      console.log('Settle request to facilitator:', JSON.stringify(requestBody, null, 2));
-  
-      const res = await fetch(`${url}/settle`, {
+    
+      const res = await fetch(`${url}/platform/v2/x402/settle`, {
         method: "POST",
         headers,
         body: JSON.stringify(requestBody),

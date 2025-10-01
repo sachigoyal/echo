@@ -13,8 +13,6 @@ import { transfer } from 'transferWithAuth';
 import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
 import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
-import { paymentMiddleware } from 'x402-express';
-import { facilitator } from '@coinbase/x402';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import { FacilitatorClient } from 'services/facilitator/facilitatorService';
 import {
@@ -77,8 +75,6 @@ export async function handleX402Request({
     buildX402Response(req, res, maxCost);
   }
 
-  const routeKey = `${req.method.toUpperCase()} ${req.path}`;
-
   const facilitatorClient = new FacilitatorClient();
   try {
     if (isPassthroughProxyRoute && providerId) {
@@ -105,25 +101,13 @@ export async function handleX402Request({
     description: 'Echo x402',
     mimeType: 'application/json',
     payTo: recipient,
-    maxTimeoutSeconds: 1000,
+    maxTimeoutSeconds: 60,
     asset: USDC_ADDRESS,
+    extra: {
+      name: 'USD Coin',
+      version: '2',
+    },
   });
-
-  // Validate and execute verify request
-  const verifyRequest = VerifyRequestSchema.parse({
-    paymentPayload,
-    paymentRequirements,
-  });
-
-  console.log("verifyRequest", verifyRequest);
-  const verifyResult = await facilitatorClient.verify(verifyRequest);
-
-  console.log('verifyResult', verifyResult);
-
-  if (!verifyResult.isValid) {
-    return buildX402Response(req, res, maxCost);
-  }
-
   // Validate and execute settle request
   const settleRequest = SettleRequestSchema.parse({
     paymentPayload,
@@ -132,15 +116,10 @@ export async function handleX402Request({
 
   const settleResult = await facilitatorClient.settle(settleRequest);
 
-  console.log('settleResult', settleResult);
-
   if (!settleResult.success || !settleResult.transaction) {
     return buildX402Response(req, res, maxCost);
   }
-    
-  console.log('refundAmount', refundAmount);
 
-  console.log("attempting to execute model request")
   try {
     const transactionResult =
       await modelRequestService.executeModelRequest(
@@ -153,8 +132,9 @@ export async function handleX402Request({
     transaction = transactionResult.transaction;
     data = transactionResult.data;
 
-    console.log('transaction', transaction);
-    console.log('data', data);
+    // Send the response - the middleware has intercepted res.end()/res.json()
+    // and will actually send it after settlement completes
+    modelRequestService.handleResolveResponse(res, isStream, data);
 
     refundAmount = calculateRefundAmount(
       paymentAmountDecimal,
@@ -171,17 +151,6 @@ export async function handleX402Request({
       );
     }
 
-    // Send the response - the middleware has intercepted res.end()/res.json()
-    // and will actually send it after settlement completes
-    modelRequestService.handleResolveResponse(res, isStream, data);
-
-    // The middleware will handle settlement automatically
-    const result = {
-      transaction,
-      isStream,
-      data,
-      refundResult,
-    };
   } catch (error) {
     // In case of error, do full refund
     refundAmount = paymentAmountDecimal;

@@ -36,12 +36,10 @@ export class FacilitatorClient {
     }
 
     async settle(request: SettleRequest): Promise<SettleResponse> {
-        console.log('settle', request);
         const result = await useFacilitator().settle(
             request.paymentPayload,
             request.paymentRequirements
         );
-        console.log('settle result', result);
         return result;
     }
 }

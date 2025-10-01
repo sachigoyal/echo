@@ -97,7 +97,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     );
     
     if (isX402Request(headers)) {
-      console.log('isX402Request');
       await handleX402Request({
         req,
         res,
