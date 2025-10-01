@@ -26,7 +26,11 @@ import { Decimal } from 'generated/prisma/runtime/library';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import crypto from 'crypto';
 import logger from 'logger';
-import { PaymentPayload } from './types';
+
+/**
+ * USDC has 6 decimal places
+ */
+import { PaymentPayload, PaymentPayloadSchema } from './services/facilitator/x402-types';
 
 /**
  * Converts a decimal amount (USD) to USDC BigInt representation
@@ -193,5 +197,5 @@ export function validateXPaymentHeader(
   const xPaymentData = JSON.parse(
     Buffer.from(xPaymentHeader as string, 'base64').toString()
   );
-  return xPaymentData as PaymentPayload;
+  return PaymentPayloadSchema.parse(xPaymentData);
 }
