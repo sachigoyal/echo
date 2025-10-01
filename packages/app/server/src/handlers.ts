@@ -16,7 +16,8 @@ import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
 import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import { FacilitatorClient } from 'services/facilitator/facilitatorService';
 import {
-  PaymentPayloadSchema,
+  ExactEvmPayload,
+  PaymentPayload,
   PaymentRequirementsSchema,
   SettleRequestSchema,
 } from 'services/facilitator/x402-types';
@@ -44,27 +45,11 @@ export async function handleX402Request({
   const network = process.env.NETWORK as Network;
   const recipient = (await getSmartAccount()).smartAccount.address;
 
-  const xPaymentData = validateXPaymentHeader(processedHeaders, req);
+  const xPaymentData: PaymentPayload = validateXPaymentHeader(processedHeaders, req);
+  const payload = xPaymentData.payload as ExactEvmPayload;
 
-  // Construct and validate PaymentPayload using Zod schema
-  const paymentPayload = PaymentPayloadSchema.parse({
-    x402Version: 1,
-    scheme: 'exact',
-    network: xPaymentData.network,
-    payload: {
-      signature: xPaymentData.payload.signature,
-      authorization: {
-        from: xPaymentData.payload.authorization.from,
-        to: xPaymentData.payload.authorization.to,
-        value: xPaymentData.payload.authorization.value,
-        validAfter: xPaymentData.payload.authorization.valid_after,
-        validBefore: xPaymentData.payload.authorization.valid_before,
-        nonce: xPaymentData.payload.authorization.nonce,
-      },
-    },
-  });
 
-  const paymentAmount = (paymentPayload.payload as any).authorization.value;
+  const paymentAmount = payload.authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
 
   // Note(shafu, alvaro): Edge case where client sends the x402-challenge
@@ -98,7 +83,7 @@ export async function handleX402Request({
   });
   // Validate and execute settle request
   const settleRequest = SettleRequestSchema.parse({
-    paymentPayload,
+    paymentPayload: xPaymentData,
     paymentRequirements,
   });
 
@@ -132,9 +117,9 @@ export async function handleX402Request({
     // Process refund if needed
     if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
       const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-      const authPayload = paymentPayload.payload as any;
+      const authPayload = payload.authorization;
       await transfer(
-          authPayload.authorization.from as `0x${string}`,
+          authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
       );
     }
@@ -145,9 +130,9 @@ export async function handleX402Request({
 
     if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
       const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
-      const authPayload = paymentPayload.payload as any;
+      const authPayload = payload.authorization;
       await transfer(
-          authPayload.authorization.from as `0x${string}`,
+          authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
       );
     }
