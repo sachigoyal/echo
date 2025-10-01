@@ -26,7 +26,7 @@
     "test": "vitest run",
     "test:integration": "vitest run",
     "test:watch": "vitest",
-    "build": "tsc && pnpm run copy-prisma-to-dist",
+    "build": "tsup && pnpm run copy-prisma-to-dist",
     "lint": "pnpx eslint src/**/*.ts --no-warn-ignored",
     "lint:fix": "pnpx eslint src/**/*.ts --no-warn-ignored --fix",
     "type-check": "tsc --noEmit",
@@ -88,6 +88,7 @@
     "@typescript-eslint/parser": "^8.34.1",
     "eslint": "^9.29.0",
     "supertest": "^6.3.4",
+    "tsup": "^8.5.0",
     "tsx": "^4.20.5",
     "vitest": "^3.2.3"
   }
