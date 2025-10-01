@@ -53,7 +53,7 @@ export function getRequestMaxCost(
     return new Decimal(2.5);
   } else {
     const contentLength = req.originalContentLength;
-    const maxInputTokens = Number(contentLength) / 3;
+    const maxInputTokens = contentLength ? Number(contentLength) / 3 : 1000;
     const maxOutputTokens = extractMaxOutputTokens(req);
     const modelWithPricing = getModelPrice(provider.getModel());
     if (!modelWithPricing) {
