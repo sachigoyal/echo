@@ -86,7 +86,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     const { provider, isStream, isPassthroughProxyRoute } =
       await initializeProvider(req, res);
     const maxCost = getRequestMaxCost(req, provider);
-    console.log('maxCost', maxCost);
 
     if (!isApiRequest(headers) && !isX402Request(headers)) {
       return buildX402Response(req, res, maxCost);
