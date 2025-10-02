@@ -49,7 +49,7 @@ describe('In-Flight Requests Monitor', () => {
       }
     );
 
-    expect(response.status).toBe(402);
+    expect(response.status).toBe(401);
   });
 
   test('should reject requests with invalid API key', async () => {
