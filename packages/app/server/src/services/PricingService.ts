@@ -14,14 +14,6 @@ import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { ProviderType } from 'providers/ProviderType';
 import { Tool } from 'openai/resources/responses/responses';
 
-function getInputContentLength(req: EscrowRequest): number {
-  const input = req.body.input;
-  if (!input) {
-    return 0;
-  }
-  return JSON.stringify(input).length;
-}
-
 export function getRequestMaxCost(
   req: EscrowRequest,
   provider: BaseProvider
@@ -55,8 +47,7 @@ export function getRequestMaxCost(
       const outputImageCost = new Decimal(numberOfImages).mul(
         maxResolutionPricing
       );
-      const inputContentLength = getInputContentLength(req);
-      const inputTokens = inputContentLength / 3;
+      const inputTokens = Number(req.originalContentLength) / 3;
       const textCost = new Decimal(
         imageModelPrice.text_input_cost_per_token
       ).mul(new Decimal(inputTokens));
@@ -65,8 +56,8 @@ export function getRequestMaxCost(
     // Default to cover costs
     return new Decimal(2.5);
   } else {
-    const inputContentLength = getInputContentLength(req);
-    const maxInputTokens = inputContentLength ? inputContentLength / 3 : 1000;
+    const contentLength = req.originalContentLength;
+    const maxInputTokens = contentLength ? Number(contentLength) / 3 : 1000;
     const maxOutputTokens = extractMaxOutputTokens(req);
     const modelWithPricing = getModelPrice(provider.getModel());
     if (!modelWithPricing) {
