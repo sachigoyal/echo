@@ -158,7 +158,8 @@ interface CreateAppOptions {
 }
 
 async function createApp(projectDir: string, options: CreateAppOptions) {
-  let { template, appId, skipInstall } = options;
+  let { template, appId } = options;
+  const { skipInstall } = options;
   const packageManager = detectPackageManager();
 
   printHeader();
@@ -294,7 +295,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
           writeFileSync(envPath, updatedContent);
           log.message(`Updated ECHO_APP_ID in .env.local`);
         }
-      } catch (envError) {
+      } catch {
         log.warning('Could not update .env.local file');
       }
     }
