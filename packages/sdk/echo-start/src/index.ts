@@ -10,6 +10,11 @@ import { spawn } from 'child_process';
 
 const program = new Command();
 
+// Get version from package.json
+const packageJsonPath = new URL('../package.json', import.meta.url);
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+const VERSION = packageJson.version;
+
 // Available templates - add new ones here
 const DEFAULT_TEMPLATES = {
   next: {
@@ -59,6 +64,12 @@ const DEFAULT_TEMPLATES = {
 type TemplateName = keyof typeof DEFAULT_TEMPLATES;
 type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';
 
+function printHeader(): void {
+  console.log();
+  console.log(`${chalk.cyan('Echo Start')} ${chalk.gray(`(${VERSION})`)}`);
+  console.log();
+}
+
 function detectPackageManager(): PackageManager {
   const userAgent = process.env.npm_config_user_agent || '';
 
@@ -71,7 +82,7 @@ function detectPackageManager(): PackageManager {
   return 'pnpm';
 }
 
-function getPackageManagerCommands(pm: PackageManager) {
+function getPackageManagerCommands(pm: PackageManager): { install: string; dev: string } {
   switch (pm) {
     case 'pnpm':
       return { install: 'pnpm install', dev: 'pnpm dev' };
@@ -92,10 +103,16 @@ function cleanProgressLine(line: string, maxLength: number): string {
     .substring(0, maxLength);
 }
 
+function calculateProgressSpace(packageManager: PackageManager): number {
+  const terminalWidth = process.stdout.columns || 80;
+  const mainMessage = `Installing dependencies with ${packageManager}... `;
+  return Math.max(20, terminalWidth - mainMessage.length - 10);
+}
+
 async function runInstall(
   packageManager: PackageManager,
   projectPath: string,
-  onProgress?: (line: string, maxLength: number) => void
+  onProgress?: (line: string) => void
 ): Promise<boolean> {
   return new Promise((resolve) => {
     const command = packageManager;
@@ -115,14 +132,10 @@ async function runInstall(
         .pop(); // Get the last non-empty line
 
       if (relevantLine && onProgress) {
-        // Calculate available space: terminal width - spinner icon - main message - buffer
-        const terminalWidth = process.stdout.columns || 80;
-        const mainMessage = `Installing dependencies with ${packageManager}... `;
-        const availableSpace = terminalWidth - mainMessage.length - 10; // 10 chars buffer for spinner + margins
-
-        const cleanLine = cleanProgressLine(relevantLine, Math.max(20, availableSpace));
+        const availableSpace = calculateProgressSpace(packageManager);
+        const cleanLine = cleanProgressLine(relevantLine, availableSpace);
         if (cleanLine !== lastLine && cleanLine.length > 0) {
-          onProgress(cleanLine, availableSpace);
+          onProgress(cleanLine);
           lastLine = cleanLine;
         }
       }
@@ -148,10 +161,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
   let { template, appId, skipInstall } = options;
   const packageManager = detectPackageManager();
 
-  // Print header
-  console.log();
-  console.log(`${chalk.cyan('Echo Start')} ${chalk.gray('(0.1.6)')}`);
-  console.log();
+  printHeader();
 
   intro('Creating your Echo application');
 
@@ -159,9 +169,9 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
   if (!template) {
     const selectedTemplate = await select({
       message: 'Which template would you like to use?',
-      options: Object.entries(DEFAULT_TEMPLATES).map(([key, template]) => ({
-        label: template.title,
-        hint: template.description,
+      options: Object.entries(DEFAULT_TEMPLATES).map(([key, { title, description }]) => ({
+        label: title,
+        hint: description,
         value: key,
       })),
     });
@@ -174,7 +184,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
     template = selectedTemplate as TemplateName;
   }
 
-  log.step(`Selected template: ${DEFAULT_TEMPLATES[template!].title}`);
+  log.step(`Selected template: ${DEFAULT_TEMPLATES[template].title}`);
 
   // If no app ID specified, prompt for it
   if (!appId) {
@@ -198,16 +208,6 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
   }
 
   log.step(`Using App ID: ${appId}`);
-
-  // Validate template exists
-  if (!template) {
-    cancel(`Template "${template}" does not exist.`);
-    console.log(chalk.gray('Available templates:'));
-    Object.keys(DEFAULT_TEMPLATES).forEach(t => {
-      console.log(chalk.gray(`  - ${t}`));
-    });
-    process.exit(1);
-  }
 
   const absoluteProjectPath = path.resolve(projectDir);
 
@@ -284,7 +284,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
         // Find the line with *ECHO_APP_ID and replace the value after the = sign
         const updatedContent = envContent.replace(
           /^(.*ECHO_APP_ID\s*=\s*).+$/gm,
-          `$1${appId!}`
+          `$1${appId}`
         );
 
         // Check if the replacement actually occurred
@@ -309,7 +309,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
       const installSuccess = await runInstall(
         packageManager,
         absoluteProjectPath,
-        (progressLine, maxLength) => {
+        (progressLine) => {
           s.message(`Installing dependencies with ${packageManager}... ${chalk.gray(progressLine + '...')}`);
         }
       );
@@ -322,10 +322,14 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
       }
     }
 
-    const commands = getPackageManagerCommands(packageManager);
-    const nextSteps = skipInstall
-      ? `Get started:\n  ${chalk.cyan('└')} cd ${projectDir}\n  ${chalk.cyan('└')} ${commands.install}\n  ${chalk.cyan('└')} ${commands.dev}`
-      : `Get started:\n  ${chalk.cyan('└')} cd ${projectDir}\n  ${chalk.cyan('└')} ${commands.dev}`;
+    const { install, dev } = getPackageManagerCommands(packageManager);
+    const steps = skipInstall
+      ? [`cd ${projectDir}`, install, dev]
+      : [`cd ${projectDir}`, dev];
+
+    const nextSteps = 'Get started:\n' + steps
+      .map(step => `  ${chalk.cyan('└')} ${step}`)
+      .join('\n');
 
     outro(`Success! Created ${projectDir}\n\n${nextSteps}`);
 
@@ -351,7 +355,7 @@ async function main() {
   program
     .name('echo-start')
     .description('Create a new Echo application')
-    .version(require('../package.json').version)
+    .version(VERSION)
     .argument('[directory]', 'Directory to create the app in')
     .option(
       '-t, --template <template>',
@@ -376,10 +380,7 @@ async function main() {
             counter++;
           }
 
-          // Print header if we need to prompt for project name
-          console.log();
-          console.log(`${chalk.cyan('Echo Start')} ${chalk.gray('(0.1.6)')}`);
-          console.log();
+          printHeader();
 
           intro('Creating your Echo application');
 
@@ -407,14 +408,14 @@ async function main() {
           log.step(`Creating project: ${projectDir}`);
         }
 
-        await createApp(projectDir!, options);
+        await createApp(projectDir, options);
       }
     );
 
   await program.parseAsync();
 }
 
-function toSafePackageName(dirname: string) {
+function toSafePackageName(dirname: string): string {
   return dirname
     .toLowerCase()
     .replace(/[^a-z0-9-_.]/g, '-') // replace unsafe chars with dashes
