@@ -327,7 +327,7 @@ async function createApp(projectDir: string, options: CreateAppOptions) {
       ? [`cd ${projectDir}`, install, dev]
       : [`cd ${projectDir}`, dev];
 
-    const nextSteps = 'Get started:\n' + steps
+    const nextSteps = `${chalk.cyan('Get started:')}\n` + steps
       .map(step => `  ${chalk.cyan('└')} ${step}`)
       .join('\n');
 
