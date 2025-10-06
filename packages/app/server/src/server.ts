@@ -91,12 +91,6 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       return buildX402Response(req, res, maxCost);
     }
 
-    const { processedHeaders, echoControlService } = await authenticateRequest(
-      headers,
-      prisma
-    );
-
-    provider.setEchoControlService(echoControlService);
     if (isX402Request(headers)) {
       await handleX402Request({
         req,
@@ -111,6 +105,14 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     }
 
     if (isApiRequest(headers)) {
+
+      const { processedHeaders, echoControlService } = await authenticateRequest(
+        headers,
+        prisma
+      );
+  
+      provider.setEchoControlService(echoControlService);
+  
       await handleApiKeyRequest({
         req,
         res,
