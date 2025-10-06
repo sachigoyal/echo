@@ -13,14 +13,14 @@ Echo is a proxy layer that handles authentication, metering, and billing for LLM
 
 Echo operates as a three-layer stack that sits between your application and LLM providers:
 
-<pre className="mermaid">
+<Mermaid>
 {`graph TB
     A[Your Application] --> B[Echo SDK]
     B --> C[Echo Proxy Layer]
     C --> D[OpenAI/Anthropic/Claude]
     C --> E[Billing & Analytics]
     C --> F[User Management]`}
-</pre>
+</Mermaid>
 
 ### Core Components
 
