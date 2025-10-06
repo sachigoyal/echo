@@ -52,6 +52,11 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
+      # CDP Configuration
+      CDP_API_KEY_ID: ${{ secrets.CDP_API_KEY_ID }}
+      CDP_API_KEY_SECRET: ${{ secrets.CDP_API_KEY_SECRET }}
+      CDP_WALLET_SECRET: ${{ secrets.CDP_WALLET_SECRET }}
+
       # OAuth Configuration
       OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS: 2592000
       OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS: 86400
@@ -139,6 +144,11 @@ jobs:
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
 
+          # CDP Configuration
+          CDP_API_KEY_ID=${{ secrets.CDP_API_KEY_ID }}
+          CDP_API_KEY_SECRET=${{ secrets.CDP_API_KEY_SECRET }}
+          CDP_WALLET_SECRET=${{ secrets.CDP_WALLET_SECRET }}
+
           # OAuth Configuration
           OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=5
           OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS=5
@@ -221,6 +231,9 @@ jobs:
           PORT=3069 \
           OPENAI_API_KEY="${OPENAI_API_KEY}" \
           ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}" \
+          CDP_API_KEY_ID="${CDP_API_KEY_ID}" \
+          CDP_API_KEY_SECRET="${CDP_API_KEY_SECRET}" \
+          CDP_WALLET_SECRET="${CDP_WALLET_SECRET}" \
           nohup pnpm start > /tmp/echo-data-server.log 2>&1 &
           
           echo $! > /tmp/echo-data-server.pid
@@ -323,6 +336,11 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
+      # CDP Configuration
+      CDP_API_KEY_ID: ${{ secrets.CDP_API_KEY_ID }}
+      CDP_API_KEY_SECRET: ${{ secrets.CDP_API_KEY_SECRET }}
+      CDP_WALLET_SECRET: ${{ secrets.CDP_WALLET_SECRET }}
+
       # OAuth Configuration
       OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS: 2592000
       OAUTH_ACCESS_TOKEN_EXPIRY_SECONDS: 86400
@@ -374,6 +392,9 @@ jobs:
           INTEGRATION_TEST_JWT=${{ secrets.INTEGRATION_TEST_JWT }}
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          CDP_API_KEY_ID=${{ secrets.CDP_API_KEY_ID }}
+          CDP_API_KEY_SECRET=${{ secrets.CDP_API_KEY_SECRET }}
+          CDP_WALLET_SECRET=${{ secrets.CDP_WALLET_SECRET }}
           OAUTH_REFRESH_TOKEN_EXPIRY_SECONDS=2592000
           CI=true
           NODE_ENV=test
