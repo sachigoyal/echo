@@ -1,4 +1,4 @@
-import { SpendPool } from '../generated/prisma';
+import { X402_ERROR_MESSAGE } from '../constants';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
 import { EchoControlService } from './EchoControlService';
 
@@ -46,5 +46,5 @@ export async function checkBalance(
       effectiveBalance: balance,
     };
   }
-  throw new PaymentRequiredError('Payment Required');
+  throw new PaymentRequiredError(X402_ERROR_MESSAGE);
 }
