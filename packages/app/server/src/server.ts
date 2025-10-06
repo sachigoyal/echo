@@ -142,31 +142,28 @@ app.use((error: Error, req: Request, res: Response) => {
       error_type: 'http_error',
       error_message: error.message,
     });
-    res.status(error.statusCode).json({
+    return res.status(error.statusCode).json({
       error: error.message,
     });
-  } else if (error instanceof Error) {
+  }
+  
+  if (error instanceof Error) {
     logMetric('server.internal_error', 1, {
       error_type: error.name,
       error_message: error.message,
     });
-    // Handle other errors with a more specific message
     logger.error('Internal server error', error);
-    res.status(500).json({
+    return res.status(500).json({
       error: error.message || 'Internal Server Error',
     });
-  } else {
-    logMetric('server.internal_error', 1, {
-      error_type: 'unknown_error',
-    });
-    logger.error('Internal server error', error);
-    res.status(500).json({
-      error: 'Internal Server Error',
-    });
   }
-
+  
+  logMetric('server.internal_error', 1, {
+    error_type: 'unknown_error',
+  });
+  logger.error('Internal server error', error);
   return res.status(500).json({
-    erorr: 'Internal Server Error',
+    error: 'Internal Server Error',
   });
 });
 

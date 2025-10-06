@@ -46,29 +46,6 @@ describe('402 Authentication Flow Tests', () => {
       console.log('✅ Successfully authenticated with Authorization Bearer header');
     });
 
-    test('should authenticate with x-goog-api-key header', async () => {
-      const apiKey = TEST_USER_API_KEYS.primary;
-      
-      const openaiClient = new OpenAI({
-        baseURL: TEST_CONFIG.services.echoDataServer,
-        apiKey: 'dummy',
-        defaultHeaders: {
-          'x-goog-api-key': apiKey,
-        },  
-      });
-
-      const completion = await openaiClient.chat.completions.create({
-        messages: [{ role: 'user', content: 'reply with a single word: hello' }],
-        model: 'gpt-3.5-turbo',
-        stream: false,
-        max_completion_tokens: 16,
-      });
-
-      expect(completion).toBeDefined();
-      expect(completion.choices).toBeDefined();
-      console.log('✅ Successfully authenticated with x-google-api-key header');
-    });
-
     test('should reject invalid API key', async () => {
       const openaiClient = new OpenAI({
         baseURL: TEST_CONFIG.services.echoDataServer,

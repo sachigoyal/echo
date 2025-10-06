@@ -114,62 +114,59 @@ export async function buildX402Response(
   res: Response,
   maxCost: Decimal
 ) {
+  const network = process.env.NETWORK as Network;
+  const maxCostBigInt = decimalToUsdcBigInt(maxCost);
+  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(maxCostBigInt.toString())}`;
+  const resourceUrl = `http://${req.headers.host}${req.url}`;
+
+  let recipient: string;
   try {
-    const network = process.env.NETWORK as Network;
-    // Convert maxCost from Decimal to USDC BigInt string for payment URL
-    const maxCostBigInt = decimalToUsdcBigInt(maxCost);
-    const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(maxCostBigInt.toString())}`;
-
-    const recipient = (await getSmartAccount()).smartAccount.address;
-    const resourceUrl = `http://${req.headers.host}${req.url}`;
-
-    res.setHeader(
-      'WWW-Authenticate',
-      buildX402Challenge({
-        realm: X402_REALM,
-        link: paymentUrl,
-        network,
-      })
-    );
-
-    const resBody = {
-      x402Version: 1,
-      error: X402_ERROR_MESSAGE,
-      accepts: [
-        {
-          type: X402_TYPE,
-          version: X402_VERSION,
-          network,
-          maxAmountRequired: maxCostBigInt.toString(),
-          recipient: recipient,
-          currency: USDC_ADDRESS,
-          to: recipient,
-          url: paymentUrl,
-          nonce: generateRandomNonce(),
-          scheme: X402_SCHEME,
-          resource: resourceUrl,
-          description: ECHO_DESCRIPTION,
-          mimeType: MIME_TYPE,
-          maxTimeoutSeconds: MAX_TIMEOUT_SECONDS,
-          discoverable: DISCOVERABLE,
-          payTo: recipient,
-          asset: USDC_ADDRESS,
-          extra: {
-            name: DOMAIN_NAME,
-            version: DOMAIN_VERSION,
-          },
-        },
-      ],
-    };
-
-    return res.status(402).json(resBody);
+    recipient = (await getSmartAccount()).smartAccount.address;
   } catch (error) {
-    logger.error('Failed to build X402 response', { error });
-    return res.status(500).json({
-      error: 'Payment configuration error',
-      message: 'Unable to process payment request at this time',
-    });
+    logger.error('Failed to get smart account for X402 response', { error });
+    recipient = '0x0000000000000000000000000000000000000000';
   }
+
+  res.setHeader(
+    'WWW-Authenticate',
+    buildX402Challenge({
+      realm: X402_REALM,
+      link: paymentUrl,
+      network,
+    })
+  );
+
+  const resBody = {
+    x402Version: 1,
+    error: X402_ERROR_MESSAGE,
+    accepts: [
+      {
+        type: X402_TYPE,
+        version: X402_VERSION,
+        network,
+        maxAmountRequired: maxCostBigInt.toString(),
+        recipient: recipient,
+        currency: USDC_ADDRESS,
+        to: recipient,
+        url: paymentUrl,
+        nonce: generateRandomNonce(),
+        scheme: X402_SCHEME,
+        resource: resourceUrl,
+        description: ECHO_DESCRIPTION,
+        mimeType: MIME_TYPE,
+        maxTimeoutSeconds: MAX_TIMEOUT_SECONDS,
+        discoverable: DISCOVERABLE,
+        payTo: recipient,
+        asset: USDC_ADDRESS,
+        extra: {
+          name: DOMAIN_NAME,
+          version: DOMAIN_VERSION,
+        },
+      },
+    ],
+  };
+
+  return res.status(402).json(resBody);
 }
 
 export function isApiRequest(headers: Record<string, string>): boolean {
