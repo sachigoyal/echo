@@ -35,6 +35,10 @@ import {
   PaymentPayloadSchema,
 } from './services/facilitator/x402-types';
 
+
+const API_KEY_ID = process.env.CDP_API_KEY_ID || "your-api-key-id";
+const API_KEY_SECRET = process.env.CDP_API_KEY_SECRET || "your-api-key-secret";
+const WALLET_SECRET = process.env.CDP_WALLET_SECRET || "your-wallet-secret";
 /**
  * Converts a decimal amount (USD) to USDC BigInt representation
  * USDC has 6 decimal places, so $1.234567 becomes 1234567n
@@ -175,7 +179,14 @@ export function isX402Request(headers: Record<string, string>): boolean {
 export async function getSmartAccount(): Promise<{
   smartAccount: EvmSmartAccount;
 }> {
-  const cdp = new CdpClient();
+
+  
+  const cdp = new CdpClient({
+    apiKeyId: API_KEY_ID,
+    apiKeySecret: API_KEY_SECRET,
+    walletSecret: WALLET_SECRET,
+  }
+  );
   const owner = await cdp.evm.getOrCreateAccount({
     name: WALLET_OWNER,
   });
