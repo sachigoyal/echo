@@ -87,7 +87,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       await initializeProvider(req, res);
     const maxCost = getRequestMaxCost(req, provider);
 
-    if (!isApiRequest(headers) && !isX402Request(headers)) {
+    if (!isApiRequest(headers) && !isX402Request(headers) && !isPassthroughProxyRoute) {
       return buildX402Response(req, res, maxCost);
     }
 
@@ -109,7 +109,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       return;
     }
 
-    if (isApiRequest(headers)) {
+    if (isApiRequest(headers) || isPassthroughProxyRoute) {
       await handleApiKeyRequest({
         req,
         res,
