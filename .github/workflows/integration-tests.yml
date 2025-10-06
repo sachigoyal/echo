@@ -169,19 +169,17 @@ jobs:
         working-directory: packages/app/control
         run: pnpm prisma:generate
 
-      - name: Setup integration test environment
+      - name: Setup integration test environment and run tests
         working-directory: packages/tests/integration
         run: |
           chmod +x scripts/setup-integration-env.sh
           pnpm run env:setup
-
-      - name: Run Echo Data Server Tests
-        working-directory: packages/tests/integration
-        run: pnpm test:echo-data-server
-
-      - name: Run OAuth Protocol Tests
-        working-directory: packages/tests/integration
-        run: pnpm test:oauth-protocol
+          
+          echo "🧪 Running Echo Data Server Tests..."
+          pnpm test:echo-data-server
+          
+          echo "🧪 Running OAuth Protocol Tests..."
+          pnpm test:oauth-protocol
 
       # TODO: Re-enable echo-server integration tests when properly configured
       # - name: Run Echo Server Integration Tests
