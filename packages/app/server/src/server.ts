@@ -90,17 +90,11 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
     if (!isApiRequest(headers) && !isX402Request(headers)) {
       return buildX402Response(req, res, maxCost);
     }
-
-    const { processedHeaders, echoControlService } = await authenticateRequest(
-      headers,
-      prisma
-    );
-
     if (isX402Request(headers)) {
       await handleX402Request({
         req,
         res,
-        processedHeaders,
+        headers,
         maxCost,
         isPassthroughProxyRoute,
         provider,
@@ -109,11 +103,18 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       return;
     }
 
+
+    const { processedHeaders, echoControlService } = await authenticateRequest(
+      headers,
+      prisma
+    );
+
+
     if (isApiRequest(headers)) {
       await handleApiKeyRequest({
         req,
         res,
-        processedHeaders,
+        headers: processedHeaders,
         echoControlService,
         isPassthroughProxyRoute,
         provider,

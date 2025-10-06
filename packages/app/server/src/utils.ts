@@ -105,8 +105,8 @@ export function parseX402Headers(
 }
 
 function buildX402Challenge(params: X402ChallengeParams): string {
-  const esc = (value: string) => value.replace(/"/g, '\\"');
-  return `X-402 realm=${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`;
+  const esc = (value: string | undefined) => (value || '').replace(/"/g, '\\"');
+  return `X-402 realm="${esc(params.realm)}", link="${esc(params.link)}", network="${esc(params.network)}"`;
 }
 
 export async function buildX402Response(
@@ -116,8 +116,8 @@ export async function buildX402Response(
 ) {
   const network = process.env.NETWORK as Network;
   const maxCostBigInt = decimalToUsdcBigInt(maxCost);
-  const paymentUrl = `${process.env.ECHO_ROUTER_BASE_URL}/api/v1/${network}/payment-link?amount=${encodeURIComponent(maxCostBigInt.toString())}`;
-  const resourceUrl = `http://${req.headers.host}${req.url}`;
+  const paymentUrl = req.path;
+  const resourceUrl = req.url;
 
   let recipient: string;
   try {

@@ -38,24 +38,6 @@ export const verifyUserHeaderCheck = async (
   } = headers;
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
-  if (!isX402Request(headers) && !isApiRequest(headers)) {
-    const processedHeaders = {
-      ...restHeaders,
-      ...(xPayment ? { 'x-payment': xPayment } : {}),
-      'accept-encoding': 'gzip, deflate',
-    };
-    return [processedHeaders, new EchoControlService(prisma, '')];
-  }
-
-  if (isX402Request(headers)) {
-    const processedHeaders = {
-      ...restHeaders,
-      ...(xPayment ? { 'x-payment': xPayment } : {}), // ✅ Only include if exists
-      'accept-encoding': 'gzip, deflate',
-    };
-    return [processedHeaders, new EchoControlService(prisma, '')];
-  }
-
   if (!(authorization || xApiKey || xGoogleApiKey)) {
     logger.error(`Missing authentication headers: ${JSON.stringify(headers)}`);
     throw new UnauthorizedError('Please include auth headers.');

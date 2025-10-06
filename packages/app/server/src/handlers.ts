@@ -27,7 +27,7 @@ import logger from 'logger';
 export async function handleX402Request({
   req,
   res,
-  processedHeaders,
+  headers,
   maxCost,
   isPassthroughProxyRoute,
   provider,
@@ -38,7 +38,7 @@ export async function handleX402Request({
       req,
       res,
       provider,
-      processedHeaders
+      headers
     );
   }
   
