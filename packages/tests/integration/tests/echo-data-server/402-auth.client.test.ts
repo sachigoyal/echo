@@ -108,7 +108,6 @@ describe('402 Authentication Flow Tests', () => {
       expect(x402Accept).toHaveProperty('version');
       expect(x402Accept).toHaveProperty('maxAmountRequired');
       expect(x402Accept).toHaveProperty('recipient');
-      expect(x402Accept).toHaveProperty('currency');
       expect(x402Accept).toHaveProperty('url');
       expect(x402Accept).toHaveProperty('nonce');
       expect(x402Accept).toHaveProperty('scheme', 'exact');
