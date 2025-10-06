@@ -16,7 +16,8 @@ import { Tool } from 'openai/resources/responses/responses';
 
 export function getRequestMaxCost(
   req: EscrowRequest,
-  provider: BaseProvider
+  provider: BaseProvider,
+  isPassthroughProxyRoute: boolean
 ): Decimal {
   // Need to switch between language/image/video for different pricing models.
   if (isValidVideoModel(provider.getModel())) {
@@ -61,6 +62,9 @@ export function getRequestMaxCost(
     const maxOutputTokens = extractMaxOutputTokens(req);
     const modelWithPricing = getModelPrice(provider.getModel());
     if (!modelWithPricing) {
+      if (isPassthroughProxyRoute) {
+        return new Decimal(0);
+      }
       throw new UnknownModelError(`Invalid model: ${provider.getModel()}`);
     }
     const maxInputCost = new Decimal(maxInputTokens).mul(
