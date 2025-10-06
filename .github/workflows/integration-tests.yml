@@ -169,7 +169,7 @@ jobs:
         working-directory: packages/app/control
         run: pnpm prisma:generate
 
-       - name: Run database migrations and seed data
+      - name: Run database migrations and seed data
         working-directory: packages/app/control
         run: |
           echo "🗃️ Running database migrations..."
