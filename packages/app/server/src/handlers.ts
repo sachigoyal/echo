@@ -22,6 +22,7 @@ import {
   SettleRequestSchema,
 } from 'services/facilitator/x402-types';
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from 'logger';
 
 export async function handleX402Request({
   req,
@@ -40,9 +41,16 @@ export async function handleX402Request({
       processedHeaders
     );
   }
+  
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
-  const recipient = (await getSmartAccount()).smartAccount.address;
+  
+  let recipient: string;
+  try {
+    recipient = (await getSmartAccount()).smartAccount.address;
+  } catch (error) {
+    return buildX402Response(req, res, maxCost);
+  }
 
   const xPaymentData: PaymentPayload = validateXPaymentHeader(
     processedHeaders,
@@ -121,7 +129,9 @@ export async function handleX402Request({
         await transfer(
           authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
-        );
+        ).catch((transferError) => {
+          logger.error('Failed to process refund', { error: transferError, refundAmount: refundAmount.toString() });
+        });
       }
     } catch (error) {
       // In case of error, do full refund
@@ -133,7 +143,9 @@ export async function handleX402Request({
         await transfer(
           authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
-        );
+        ).catch((transferError) => {
+          logger.error('Failed to process full refund after error', { error: transferError, originalError: error, refundAmount: refundAmount.toString() });
+        });
       }
     }
   } catch (error) {
