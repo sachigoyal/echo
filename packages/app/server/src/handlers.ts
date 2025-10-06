@@ -152,6 +152,16 @@ export async function handleApiKeyRequest({
   isStream,
 }: HandlerInput) {
   const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
+
+  if (isPassthroughProxyRoute) {
+    return await makeProxyPassthroughRequest(
+      req,
+      res,
+      provider,
+      processedHeaders
+    );
+  }
+  
   const balanceCheckResult = await checkBalance(echoControlService);
 
   // Step 2: Set up escrow context and apply escrow middleware logic
@@ -163,15 +173,6 @@ export async function handleApiKeyRequest({
   );
 
   await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
-
-  if (isPassthroughProxyRoute) {
-    return await makeProxyPassthroughRequest(
-      req,
-      res,
-      provider,
-      processedHeaders
-    );
-  }
 
   // Step 3: Execute business logic
   const { transaction, data } = await modelRequestService.executeModelRequest(
