@@ -3,7 +3,6 @@ import { UnauthorizedError } from '../errors/http';
 import type { PrismaClient } from '../generated/prisma';
 import logger from '../logger';
 import { EchoControlService } from '../services/EchoControlService';
-import { isApiRequest, isX402Request } from 'utils';
 
 export const verifyUserHeaderCheck = async (
   headers: Record<string, string>,

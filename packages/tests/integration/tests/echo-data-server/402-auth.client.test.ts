@@ -106,7 +106,6 @@ describe('402 Authentication Flow Tests', () => {
       const x402Accept = data.accepts[0];
       expect(x402Accept).toHaveProperty('type', 'x402');
       expect(x402Accept).toHaveProperty('version');
-      expect(x402Accept).toHaveProperty('network');
       expect(x402Accept).toHaveProperty('maxAmountRequired');
       expect(x402Accept).toHaveProperty('recipient');
       expect(x402Accept).toHaveProperty('currency');

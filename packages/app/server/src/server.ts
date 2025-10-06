@@ -103,12 +103,10 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       return;
     }
 
-
     const { processedHeaders, echoControlService } = await authenticateRequest(
       headers,
       prisma
     );
-
 
     if (isApiRequest(headers)) {
       await handleApiKeyRequest({
