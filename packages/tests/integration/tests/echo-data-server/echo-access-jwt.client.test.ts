@@ -315,10 +315,9 @@ describe('Echo Data Server Client Integration Tests', () => {
       const completion = await openaiClient.chat.completions
         .create({
           messages: [
-            { role: 'user', content: 'hello' },
+            { role: 'user', content: 'Tell me a short story about a cat!' },
           ],
           model: 'gpt-3.5-turbo',
-          max_completion_tokens: 16,
           stream: false,
         })
         .catch(error => {
