@@ -22,11 +22,12 @@ import {
   SettleRequestSchema,
 } from 'services/facilitator/x402-types';
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from 'logger';
 
 export async function handleX402Request({
   req,
   res,
-  processedHeaders,
+  headers,
   maxCost,
   isPassthroughProxyRoute,
   provider,
@@ -37,15 +38,22 @@ export async function handleX402Request({
       req,
       res,
       provider,
-      processedHeaders
+      headers
     );
   }
+  
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
-  const recipient = (await getSmartAccount()).smartAccount.address;
+  
+  let recipient: string;
+  try {
+    recipient = (await getSmartAccount()).smartAccount.address;
+  } catch (error) {
+    return buildX402Response(req, res, maxCost);
+  }
 
   const xPaymentData: PaymentPayload = validateXPaymentHeader(
-    processedHeaders,
+    headers,
     req
   );
   const payload = xPaymentData.payload as ExactEvmPayload;
@@ -98,7 +106,7 @@ export async function handleX402Request({
       const transactionResult = await modelRequestService.executeModelRequest(
         req,
         res,
-        processedHeaders,
+        headers,
         provider,
         isStream
       );
@@ -121,7 +129,9 @@ export async function handleX402Request({
         await transfer(
           authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
-        );
+        ).catch((transferError) => {
+          logger.error('Failed to process refund', { error: transferError, refundAmount: refundAmount.toString() });
+        });
       }
     } catch (error) {
       // In case of error, do full refund
@@ -133,7 +143,9 @@ export async function handleX402Request({
         await transfer(
           authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
-        );
+        ).catch((transferError) => {
+          logger.error('Failed to process full refund after error', { error: transferError, originalError: error, refundAmount: refundAmount.toString() });
+        });
       }
     }
   } catch (error) {
@@ -144,7 +156,7 @@ export async function handleX402Request({
 export async function handleApiKeyRequest({
   req,
   res,
-  processedHeaders,
+  headers,
   echoControlService,
   maxCost,
   isPassthroughProxyRoute,
@@ -169,7 +181,7 @@ export async function handleApiKeyRequest({
       req,
       res,
       provider,
-      processedHeaders
+      headers
     );
   }
 
@@ -177,7 +189,7 @@ export async function handleApiKeyRequest({
   const { transaction, data } = await modelRequestService.executeModelRequest(
     req,
     res,
-    processedHeaders,
+    headers,
     provider,
     isStream
   );
