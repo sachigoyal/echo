@@ -53,7 +53,7 @@ export async function handleX402Request({
   }
 
   const xPaymentData: PaymentPayload = validateXPaymentHeader(
-    processedHeaders,
+    headers,
     req
   );
   const payload = xPaymentData.payload as ExactEvmPayload;
@@ -106,7 +106,7 @@ export async function handleX402Request({
       const transactionResult = await modelRequestService.executeModelRequest(
         req,
         res,
-        processedHeaders,
+        headers,
         provider,
         isStream
       );
@@ -156,7 +156,7 @@ export async function handleX402Request({
 export async function handleApiKeyRequest({
   req,
   res,
-  processedHeaders,
+  headers,
   echoControlService,
   maxCost,
   isPassthroughProxyRoute,
@@ -181,7 +181,7 @@ export async function handleApiKeyRequest({
       req,
       res,
       provider,
-      processedHeaders
+      headers
     );
   }
 
@@ -189,7 +189,7 @@ export async function handleApiKeyRequest({
   const { transaction, data } = await modelRequestService.executeModelRequest(
     req,
     res,
-    processedHeaders,
+    headers,
     provider,
     isStream
   );
