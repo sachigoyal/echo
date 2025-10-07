@@ -8,7 +8,6 @@ import {
   SupportedModel,
   SupportedImageModel,
   SupportedVideoModel,
-  OpenAIVideoModels,
 } from '@merit-systems/echo-typescript-sdk';
 
 import { Decimal } from '@prisma/client/runtime/library';
@@ -18,6 +17,7 @@ import { logMetric } from '../logger';
 import {
   GeminiVideoModels,
   VertexAIVideoModels,
+  OpenAIVideoModels,
 } from '@merit-systems/echo-typescript-sdk';
 
 // Combine all supported chat models from the TypeScript SDK
