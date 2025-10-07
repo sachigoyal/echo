@@ -11,9 +11,7 @@ import { Transaction } from '../types';
 import { prisma } from '../server';
 import { EchoDbService } from '../services/DbService';
 import logger from '../logger';
-import { extractModelName } from 'services/RequestDataService';
 
-const SORA_MODELS = ['sora-2', 'sora-2-pro'];
 export class OpenAIVideoProvider extends BaseProvider {
   static detectPassthroughProxy(
     req: Request,
@@ -25,23 +23,46 @@ export class OpenAIVideoProvider extends BaseProvider {
         isStream: boolean;
       }
     | undefined {
-    const modelFromRequest = extractModelName(req);
-    if (!modelFromRequest || !SORA_MODELS.includes(modelFromRequest)) {
-      return undefined;
-    }
-    if (!req.path.endsWith('/videos') || req.path.endsWith('/remix')) {
+    const { method, path } = req;
+
+    // 1. Create video route (POST /v1/videos) - return undefined (not passthrough)
+    if (method === 'POST' && path.endsWith('/videos') && !path.includes('/videos/')) {
       return undefined;
     }
 
-    const model = PROXY_PASSTHROUGH_ONLY_MODEL;
-    const isStream = extractIsStream(req);
-    const provider = new OpenAIVideoProvider(isStream, model);
+    // 2. Retrieve video (GET /v1/videos/{video_id}) - passthrough
+    const isRetrieveRoute = method === 'GET' && /\/videos\/[^/]+$/.test(path);
+    
+    // 3. Download content (GET /v1/videos/{video_id}/content) - passthrough
+    const isDownloadRoute = method === 'GET' && /\/videos\/[^/]+\/content$/.test(path);
 
-    return {
-      provider,
-      model,
-      isStream,
-    };
+    if (isRetrieveRoute || isDownloadRoute) {
+      const model = PROXY_PASSTHROUGH_ONLY_MODEL;
+      const isStream = extractIsStream(req);
+      const provider = new OpenAIVideoProvider(isStream, model);
+
+      return {
+        provider,
+        model,
+        isStream,
+      };
+    }
+    // 4. List videos (GET /v1/videos) - 404
+    if (method === 'GET' && path.endsWith('/videos') && path.endsWith('/videos')) {
+      throw new HttpError(404, 'List videos endpoint is not supported');
+    }
+
+    // 5. Delete video (DELETE /v1/videos/{video_id}) - 404
+    if (method === 'DELETE' && /\/videos\/[^/]+$/.test(path)) {
+      throw new HttpError(404, 'Delete video endpoint is not supported');
+    }
+
+    // 6. Remix video (POST /v1/videos/{video_id}/remix) - 404
+    if (method === 'POST' && /\/videos\/[^/]+\/remix$/.test(path)) {
+      throw new HttpError(404, 'Remix video endpoint is not supported');
+    }
+
+    return undefined;
   }
 
   // ========== Provider Interface ==========
@@ -163,7 +184,7 @@ export class OpenAIVideoProvider extends BaseProvider {
     upstreamUrl: string
   ): Promise<void> {
     const videoId = this.extractVideoId(req.path);
-    await this.verifyVideoAccess(videoId);
+    // await this.verifyVideoAccess(videoId);
 
     const response = await fetch(upstreamUrl, {
       method: req.method,

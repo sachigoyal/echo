@@ -46,8 +46,13 @@ export async function handleX402Request({
   } catch (error) {
     return buildX402Response(req, res, maxCost);
   }
+  let xPaymentData: PaymentPayload;
+  try {
+    xPaymentData = validateXPaymentHeader(headers, req);
+  } catch (error) {
+    return buildX402Response(req, res, maxCost);
+  }
 
-  const xPaymentData: PaymentPayload = validateXPaymentHeader(headers, req);
   const payload = xPaymentData.payload as ExactEvmPayload;
 
   const paymentAmount = payload.authorization.value;
