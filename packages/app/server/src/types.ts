@@ -228,7 +228,7 @@ export type TransferWithAuthorization = Omit<
 export type HandlerInput = {
   req: EscrowRequest;
   res: Response;
-  processedHeaders: Record<string, string>;
+  headers: Record<string, string>;
   echoControlService: EchoControlService;
   maxCost: Decimal;
   isPassthroughProxyRoute: boolean;
