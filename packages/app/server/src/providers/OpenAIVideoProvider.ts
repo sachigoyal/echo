@@ -11,7 +11,7 @@ import { Transaction } from '../types';
 
 export class OpenAIVideoProvider extends BaseProvider {
 
-    static detectPassThroughProxy(
+    static detectPassthroughProxy(
         req: Request,
         extractIsStream: (req: Request) => boolean
     ): 
