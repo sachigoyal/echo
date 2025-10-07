@@ -8,6 +8,9 @@ import { getVideoModelPrice } from "services/AccountingService";
 import { HttpError, UnknownModelError } from "errors/http";
 import { Decimal } from "generated/prisma/runtime/library";
 import { Transaction } from '../types';
+import { prisma } from '../server';
+import { EchoDbService } from '../services/DbService';
+import logger from '../logger';
 
 export class OpenAIVideoProvider extends BaseProvider {
 
@@ -50,7 +53,7 @@ export class OpenAIVideoProvider extends BaseProvider {
         return process.env.OPENAI_API_KEY;
     }
 
-    override handleBody(
+    override async handleBody(
         data: string,
         requestBody?: Record<string, unknown>
     ): Promise<Transaction> {
@@ -109,19 +112,123 @@ export class OpenAIVideoProvider extends BaseProvider {
         upstreamUrl: string,
         requestBody: string | FormData | undefined
     ): Promise<void> {
-    if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
+        if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
             throw new HttpError(400, 'Invalid model');
-    }
+        }
 
-    // TODO: Add Access control here
-    const response = await fetch(
-        upstreamUrl, {
+        const isVideoDownload = this.isVideoContentDownload(req.path);
+        
+        if (isVideoDownload) {
+            await this.handleVideoDownload(req, res, formattedHeaders, upstreamUrl);
+            return;
+        }
+
+        const response = await fetch(upstreamUrl, {
             method: req.method,
             headers: formattedHeaders,
             ...(requestBody && { body: requestBody }),
+        });
+
+        if (!response.ok) {
+            await this.handleUpstreamError(response, upstreamUrl);
         }
-    );
-    const responseData = await response.json();
-    res.json(responseData);
+
+        const responseData = await response.json();
+        res.json(responseData);
+    }
+
+    // ========== Video Download Handling ==========
+
+    private isVideoContentDownload(path: string): boolean {
+        return path.includes('/videos/') && path.endsWith('/content');
+    }
+
+    private extractVideoId(path: string): string {
+        const match = path.match(/\/videos\/([^\/]+)\/content/);
+        if (!match || !match[1]) {
+            throw new HttpError(400, 'Invalid video content path');
+        }
+        return match[1];
+    }
+
+    private async handleVideoDownload(
+        req: EscrowRequest,
+        res: Response,
+        formattedHeaders: Record<string, string>,
+        upstreamUrl: string
+    ): Promise<void> {
+        const videoId = this.extractVideoId(req.path);
+        await this.verifyVideoAccess(videoId);
+
+        const response = await fetch(upstreamUrl, {
+            method: req.method,
+            headers: formattedHeaders,
+        });
+
+        if (!response.ok) {
+            await this.handleUpstreamError(response, upstreamUrl);
+        }
+
+        if (!response.body) {
+            throw new HttpError(500, 'No response body from upstream');
+        }
+
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Content-Disposition', `attachment; filename="video-${videoId}.mp4"`);
+
+        const contentLength = response.headers.get('content-length');
+        if (contentLength) {
+            res.setHeader('Content-Length', contentLength);
+        }
+
+        const reader = response.body.getReader();
+        
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            res.write(value);
+        }
+
+        res.end();
+    }
+
+    private async verifyVideoAccess(videoId: string): Promise<void> {
+        const userId = this.getRequiredUserId();
+        const dbService = new EchoDbService(prisma);
+        const hasAccess = await dbService.confirmAccessControl(userId, videoId);
+
+        if (!hasAccess) {
+            throw new HttpError(403, 'Access denied to this video');
+        }
+    }
+
+    private getRequiredUserId(): string {
+        const userId = this.getUserId();
+        if (!userId) {
+            throw new HttpError(401, 'User ID is required');
+        }
+        return userId;
+    }
+
+    private async handleUpstreamError(
+        response: globalThis.Response,
+        url: string
+    ): Promise<never> {
+        let errorMessage = `${response.status} ${response.statusText}`;
+
+        const errorBody = await response.text().catch(() => '');
+        if (errorBody) {
+            logger.error(
+                `OpenAI Video request failed. URL: ${url}, Status: ${response.status}, Body:`,
+                errorBody
+            );
+            errorMessage = errorBody;
+        } else {
+            logger.error(
+                `OpenAI Video request failed. URL: ${url}, Status: ${response.status}`
+            );
+        }
+
+        throw new HttpError(response.status, errorMessage);
     }
 }
