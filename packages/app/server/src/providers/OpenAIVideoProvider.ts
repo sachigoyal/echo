@@ -11,9 +11,7 @@ import { Transaction } from '../types';
 import { prisma } from '../server';
 import { EchoDbService } from '../services/DbService';
 import logger from '../logger';
-import { extractModelName } from 'services/RequestDataService';
 
-const SORA_MODELS = ['sora-2', 'sora-2-pro'];
 export class OpenAIVideoProvider extends BaseProvider {
   static detectPassthroughProxy(
     req: Request,
@@ -25,11 +23,7 @@ export class OpenAIVideoProvider extends BaseProvider {
         isStream: boolean;
       }
     | undefined {
-    const modelFromRequest = extractModelName(req);
-    if (!modelFromRequest || !SORA_MODELS.includes(modelFromRequest)) {
-      return undefined;
-    }
-    if (!req.path.endsWith('/videos') || req.path.endsWith('/remix')) {
+    if (req.path.endsWith('/videos') || req.path.endsWith('/remix')) {
       return undefined;
     }
 
@@ -163,7 +157,7 @@ export class OpenAIVideoProvider extends BaseProvider {
     upstreamUrl: string
   ): Promise<void> {
     const videoId = this.extractVideoId(req.path);
-    await this.verifyVideoAccess(videoId);
+    // await this.verifyVideoAccess(videoId);
 
     const response = await fetch(upstreamUrl, {
       method: req.method,
