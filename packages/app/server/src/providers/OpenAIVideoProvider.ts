@@ -1,234 +1,242 @@
-import { PROXY_PASSTHROUGH_ONLY_MODEL } from "./VertexAIProvider";
+import { PROXY_PASSTHROUGH_ONLY_MODEL } from './VertexAIProvider';
 import { BaseProvider } from './BaseProvider';
 import { Request } from 'express';
 import { ProviderType } from './ProviderType';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { Response } from 'express';
-import { getVideoModelPrice } from "services/AccountingService";
-import { HttpError, UnknownModelError } from "errors/http";
-import { Decimal } from "generated/prisma/runtime/library";
+import { getVideoModelPrice } from 'services/AccountingService';
+import { HttpError, UnknownModelError } from 'errors/http';
+import { Decimal } from 'generated/prisma/runtime/library';
 import { Transaction } from '../types';
 import { prisma } from '../server';
 import { EchoDbService } from '../services/DbService';
 import logger from '../logger';
+import { extractModelName } from 'services/RequestDataService';
 
+const SORA_MODELS = ['sora-2', 'sora-2-pro'];
 export class OpenAIVideoProvider extends BaseProvider {
-
-    static detectPassthroughProxy(
-        req: Request,
-        extractIsStream: (req: Request) => boolean
-    ): 
+  static detectPassthroughProxy(
+    req: Request,
+    extractIsStream: (req: Request) => boolean
+  ):
     | {
         provider: BaseProvider;
         model: string;
         isStream: boolean;
-    }
+      }
     | undefined {
-        if (req.path.endsWith('/videos') || req.path.endsWith('/remix')) {
-            return undefined;
-        }
-
-        const model = PROXY_PASSTHROUGH_ONLY_MODEL;
-        const isStream = extractIsStream(req);
-        const provider = new OpenAIVideoProvider(isStream, model);
-
-        return {
-            provider,
-            model,
-            isStream,
-        };
+    const modelFromRequest = extractModelName(req);
+    if (!modelFromRequest || !SORA_MODELS.includes(modelFromRequest)) {
+      return undefined;
+    }
+    if (!req.path.endsWith('/videos') || req.path.endsWith('/remix')) {
+      return undefined;
     }
 
-    // ========== Provider Interface ==========
+    const model = PROXY_PASSTHROUGH_ONLY_MODEL;
+    const isStream = extractIsStream(req);
+    const provider = new OpenAIVideoProvider(isStream, model);
 
-    getType(): ProviderType {
-        return ProviderType.OPENAI_VIDEOS;
+    return {
+      provider,
+      model,
+      isStream,
+    };
+  }
+
+  // ========== Provider Interface ==========
+
+  getType(): ProviderType {
+    return ProviderType.OPENAI_VIDEOS;
+  }
+
+  getBaseUrl(): string {
+    return this.OPENAI_BASE_URL;
+  }
+
+  getApiKey(): string | undefined {
+    return process.env.OPENAI_API_KEY;
+  }
+
+  override async handleBody(
+    data: string,
+    requestBody?: Record<string, unknown>
+  ): Promise<Transaction> {
+    const providerId = this.parseProviderIdFromResponseBody(data);
+    if (!requestBody) {
+      throw new Error('Request body is required for OpenAI Videos');
     }
 
-    getBaseUrl(): string {
-        return this.OPENAI_BASE_URL;
+    const durationSeconds = Number(requestBody.seconds) || 4;
+    // TODO: Size pricing??
+    const size = requestBody.size || '720x1280';
+    const videoModelPrice = getVideoModelPrice(this.getModel());
+
+    if (!videoModelPrice) {
+      throw new UnknownModelError(
+        `No price found for model ${this.getModel()}`
+      );
+    }
+    const costPerSecond = videoModelPrice.cost_per_second_with_audio;
+    // TODO: Calculate cost based on size
+    const totalCost = new Decimal(costPerSecond).mul(durationSeconds);
+
+    return {
+      metadata: {
+        durationSeconds,
+        generateAudio: true,
+        model: this.getModel(),
+        providerId,
+        provider: this.getType(),
+      },
+      rawTransactionCost: totalCost,
+      status: 'success',
+    };
+  }
+
+  // ========== Response Parsing ==========
+
+  parseProviderIdFromResponseBody(data: unknown): string {
+    if (typeof data !== 'string') {
+      throw new Error('Expected response data to be a string');
     }
 
-    getApiKey(): string | undefined {
-        return process.env.OPENAI_API_KEY;
+    const responseData = JSON.parse(data);
+
+    if (responseData.id && typeof responseData.id === 'string') {
+      return responseData.id;
     }
 
-    override async handleBody(
-        data: string,
-        requestBody?: Record<string, unknown>
-    ): Promise<Transaction> {
-        const providerId = this.parseProviderIdFromResponseBody(data);
-        if (!requestBody) {
-            throw new Error('Request body is required for OpenAI Videos');
-        }
+    throw new Error('Response missing ID');
+  }
 
-        const durationSeconds = Number(requestBody.seconds) || 4;
-        // TODO: Size pricing??
-        const size = requestBody.size || '720x1280';
-        const videoModelPrice = getVideoModelPrice(this.getModel());
-
-        if (!videoModelPrice) {
-            throw new UnknownModelError(
-                `No price found for model ${this.getModel()}`
-            );
-        }
-        const costPerSecond = videoModelPrice.cost_per_second_with_audio;
-        // TODO: Calculate cost based on size
-        const totalCost = new Decimal(costPerSecond).mul(durationSeconds);
-
-        return {
-            metadata: {
-              durationSeconds,
-              generateAudio: true,
-              model: this.getModel(),
-              providerId,
-              provider: this.getType(),
-            },
-            rawTransactionCost: totalCost,
-            status: 'success',
-          };
+  override async forwardProxyRequest(
+    req: EscrowRequest,
+    res: Response,
+    formattedHeaders: Record<string, string>,
+    upstreamUrl: string,
+    requestBody: string | FormData | undefined
+  ): Promise<void> {
+    if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
+      throw new HttpError(400, 'Invalid model');
     }
 
-    // ========== Response Parsing ==========
+    const isVideoDownload = this.isVideoContentDownload(req.path);
 
-    parseProviderIdFromResponseBody(data: unknown): string {
-        if (typeof data !== 'string') {
-            throw new Error('Expected response data to be a string');
-        }
-
-        const responseData = JSON.parse(data);
-
-        if (responseData.id && typeof responseData.id === 'string') {
-            return responseData.id;
-        }
-
-        throw new Error('Response missing ID');
+    if (isVideoDownload) {
+      await this.handleVideoDownload(req, res, formattedHeaders, upstreamUrl);
+      return;
     }
 
-    override async forwardProxyRequest(
-        req: EscrowRequest,
-        res: Response,
-        formattedHeaders: Record<string, string>,
-        upstreamUrl: string,
-        requestBody: string | FormData | undefined
-    ): Promise<void> {
-        if (this.getModel() !== PROXY_PASSTHROUGH_ONLY_MODEL) {
-            throw new HttpError(400, 'Invalid model');
-        }
+    const response = await fetch(upstreamUrl, {
+      method: req.method,
+      headers: formattedHeaders,
+      ...(requestBody && { body: requestBody }),
+    });
 
-        const isVideoDownload = this.isVideoContentDownload(req.path);
-        
-        if (isVideoDownload) {
-            await this.handleVideoDownload(req, res, formattedHeaders, upstreamUrl);
-            return;
-        }
-
-        const response = await fetch(upstreamUrl, {
-            method: req.method,
-            headers: formattedHeaders,
-            ...(requestBody && { body: requestBody }),
-        });
-
-        if (!response.ok) {
-            await this.handleUpstreamError(response, upstreamUrl);
-        }
-
-        const responseData = await response.json();
-        res.json(responseData);
+    if (!response.ok) {
+      await this.handleUpstreamError(response, upstreamUrl);
     }
 
-    // ========== Video Download Handling ==========
+    const responseData = await response.json();
+    res.json(responseData);
+  }
 
-    private isVideoContentDownload(path: string): boolean {
-        return path.includes('/videos/') && path.endsWith('/content');
+  // ========== Video Download Handling ==========
+
+  private isVideoContentDownload(path: string): boolean {
+    return path.includes('/videos/') && path.endsWith('/content');
+  }
+
+  private extractVideoId(path: string): string {
+    const match = path.match(/\/videos\/([^\/]+)\/content/);
+    if (!match || !match[1]) {
+      throw new HttpError(400, 'Invalid video content path');
+    }
+    return match[1];
+  }
+
+  private async handleVideoDownload(
+    req: EscrowRequest,
+    res: Response,
+    formattedHeaders: Record<string, string>,
+    upstreamUrl: string
+  ): Promise<void> {
+    const videoId = this.extractVideoId(req.path);
+    await this.verifyVideoAccess(videoId);
+
+    const response = await fetch(upstreamUrl, {
+      method: req.method,
+      headers: formattedHeaders,
+    });
+
+    if (!response.ok) {
+      await this.handleUpstreamError(response, upstreamUrl);
     }
 
-    private extractVideoId(path: string): string {
-        const match = path.match(/\/videos\/([^\/]+)\/content/);
-        if (!match || !match[1]) {
-            throw new HttpError(400, 'Invalid video content path');
-        }
-        return match[1];
+    if (!response.body) {
+      throw new HttpError(500, 'No response body from upstream');
     }
 
-    private async handleVideoDownload(
-        req: EscrowRequest,
-        res: Response,
-        formattedHeaders: Record<string, string>,
-        upstreamUrl: string
-    ): Promise<void> {
-        const videoId = this.extractVideoId(req.path);
-        await this.verifyVideoAccess(videoId);
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="video-${videoId}.mp4"`
+    );
 
-        const response = await fetch(upstreamUrl, {
-            method: req.method,
-            headers: formattedHeaders,
-        });
-
-        if (!response.ok) {
-            await this.handleUpstreamError(response, upstreamUrl);
-        }
-
-        if (!response.body) {
-            throw new HttpError(500, 'No response body from upstream');
-        }
-
-        res.setHeader('Content-Type', 'video/mp4');
-        res.setHeader('Content-Disposition', `attachment; filename="video-${videoId}.mp4"`);
-
-        const contentLength = response.headers.get('content-length');
-        if (contentLength) {
-            res.setHeader('Content-Length', contentLength);
-        }
-
-        const reader = response.body.getReader();
-        
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            res.write(value);
-        }
-
-        res.end();
+    const contentLength = response.headers.get('content-length');
+    if (contentLength) {
+      res.setHeader('Content-Length', contentLength);
     }
 
-    private async verifyVideoAccess(videoId: string): Promise<void> {
-        const userId = this.getRequiredUserId();
-        const dbService = new EchoDbService(prisma);
-        const hasAccess = await dbService.confirmAccessControl(userId, videoId);
+    const reader = response.body.getReader();
 
-        if (!hasAccess) {
-            throw new HttpError(403, 'Access denied to this video');
-        }
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
     }
 
-    private getRequiredUserId(): string {
-        const userId = this.getUserId();
-        if (!userId) {
-            throw new HttpError(401, 'User ID is required');
-        }
-        return userId;
+    res.end();
+  }
+
+  private async verifyVideoAccess(videoId: string): Promise<void> {
+    const userId = this.getRequiredUserId();
+    const dbService = new EchoDbService(prisma);
+    const hasAccess = await dbService.confirmAccessControl(userId, videoId);
+
+    if (!hasAccess) {
+      throw new HttpError(403, 'Access denied to this video');
+    }
+  }
+
+  private getRequiredUserId(): string {
+    const userId = this.getUserId();
+    if (!userId) {
+      throw new HttpError(401, 'User ID is required');
+    }
+    return userId;
+  }
+
+  private async handleUpstreamError(
+    response: globalThis.Response,
+    url: string
+  ): Promise<never> {
+    let errorMessage = `${response.status} ${response.statusText}`;
+
+    const errorBody = await response.text().catch(() => '');
+    if (errorBody) {
+      logger.error(
+        `OpenAI Video request failed. URL: ${url}, Status: ${response.status}, Body:`,
+        errorBody
+      );
+      errorMessage = errorBody;
+    } else {
+      logger.error(
+        `OpenAI Video request failed. URL: ${url}, Status: ${response.status}`
+      );
     }
 
-    private async handleUpstreamError(
-        response: globalThis.Response,
-        url: string
-    ): Promise<never> {
-        let errorMessage = `${response.status} ${response.statusText}`;
-
-        const errorBody = await response.text().catch(() => '');
-        if (errorBody) {
-            logger.error(
-                `OpenAI Video request failed. URL: ${url}, Status: ${response.status}, Body:`,
-                errorBody
-            );
-            errorMessage = errorBody;
-        } else {
-            logger.error(
-                `OpenAI Video request failed. URL: ${url}, Status: ${response.status}`
-            );
-        }
-
-        throw new HttpError(response.status, errorMessage);
-    }
+    throw new HttpError(response.status, errorMessage);
+  }
 }

@@ -4,20 +4,20 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function makeRequest() {
-    console.log(process.env.ECHO_API_KEY);
-    const openai = new OpenAI({
-        baseURL: 'http://localhost:3070',
-        apiKey: process.env.ECHO_API_KEY,
-    })
+  console.log(process.env.ECHO_API_KEY);
+  const openai = new OpenAI({
+    baseURL: 'http://localhost:3070',
+    apiKey: process.env.ECHO_API_KEY,
+  });
 
-    let video = await openai.videos.create({
-        model: 'sora-2',
-        prompt: 'A video of a cat playing with a ball',
-    });
-    console.log('Video generation started: ', video);
-let progress = video.progress ?? 0;
+  let video = await openai.videos.create({
+    model: 'sora-2',
+    prompt: 'A video of a cat playing with a ball',
+  });
+  console.log('Video generation started: ', video);
+  let progress = video.progress ?? 0;
 
-while (video.status === 'in_progress' || video.status === 'queued') {
+  while (video.status === 'in_progress' || video.status === 'queued') {
     video = await openai.videos.retrieve(video.id);
     progress = video.progress ?? 0;
 
@@ -30,22 +30,21 @@ while (video.status === 'in_progress' || video.status === 'queued') {
 
     process.stdout.write(`${statusText}: [${bar}] ${progress.toFixed(1)}%`);
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-}
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
 
-// Clear the progress line and show completion
-process.stdout.write('\n');
+  // Clear the progress line and show completion
+  process.stdout.write('\n');
 
-if (video.status === 'failed') {
+  if (video.status === 'failed') {
     console.error('Video generation failed');
     return;
-}
+  }
 
-console.log('Video generation completed: ', video);
+  console.log('Video generation completed: ', video);
 }
 
 makeRequest().then(() => {
-    console.log('\n');
-    console.log('done');
-  });
-  
+  console.log('\n');
+  console.log('done');
+});

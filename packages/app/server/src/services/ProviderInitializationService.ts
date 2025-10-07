@@ -33,7 +33,10 @@ export function detectPassthroughProxyRoute(req: Request):
     req,
     extractIsStream
   );
-  const openAIVideoProxy = OpenAIVideoProvider.detectPassthroughProxy(req, extractIsStream);
+  const openAIVideoProxy = OpenAIVideoProvider.detectPassthroughProxy(
+    req,
+    extractIsStream
+  );
   if (openAIVideoProxy) {
     return openAIVideoProxy;
   }
