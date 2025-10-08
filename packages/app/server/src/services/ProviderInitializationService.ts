@@ -77,8 +77,8 @@ export async function initializeProvider(
       });
       throw new UnknownModelError('Invalid model');
     } else {
-    await buildX402Response(req, res, new Decimal(0));
-    throw new PaymentRequiredError('No Model or Auth method detected, returning 402 Schema');
+      await buildX402Response(req, res, new Decimal(0));
+      throw new PaymentRequiredError('No Model or Auth method detected, returning 402 Schema');
     }
   }
 
