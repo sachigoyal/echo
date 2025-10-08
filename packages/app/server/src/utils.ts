@@ -34,6 +34,7 @@ import {
   PaymentPayload,
   PaymentPayloadSchema,
 } from './services/facilitator/x402-types';
+import { getSchemaForRoute } from './schema/schemaForRoute';
 
 const API_KEY_ID = process.env.CDP_API_KEY_ID || 'your-api-key-id';
 const API_KEY_SECRET = process.env.CDP_API_KEY_SECRET || 'your-api-key-secret';
@@ -134,6 +135,7 @@ export async function buildX402Response(
       network,
     })
   );
+  const outputSchema = getSchemaForRoute(req.path);
 
   const resBody = {
     x402Version: 1,
@@ -161,6 +163,7 @@ export async function buildX402Response(
           name: DOMAIN_NAME,
           version: DOMAIN_VERSION,
         },
+        // ...(outputSchema ? { outputSchema: outputSchema } : {}),
       },
     ],
   };
