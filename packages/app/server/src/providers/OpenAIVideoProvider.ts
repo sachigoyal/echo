@@ -1,7 +1,6 @@
 import { PROXY_PASSTHROUGH_ONLY_MODEL } from './VertexAIProvider';
 import { BaseProvider } from './BaseProvider';
 import { Request } from 'express';
-import { Video } from 'openai/resources/videos';
 import { ProviderType } from './ProviderType';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { Response } from 'express';
@@ -162,7 +161,6 @@ export class OpenAIVideoProvider extends BaseProvider {
     }
 
     const responseData = await response.json();
-
     res.json(responseData);
   }
 
