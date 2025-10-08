@@ -163,7 +163,7 @@ export async function buildX402Response(
           name: DOMAIN_NAME,
           version: DOMAIN_VERSION,
         },
-        // ...(outputSchema ? { outputSchema: outputSchema } : {}),
+        ...(outputSchema ? { outputSchema: outputSchema } : {}),
       },
     ],
   };
