@@ -140,6 +140,12 @@ app.use((error: Error, req: Request, res: Response) => {
     `Error handling request: ${error.message} | Stack: ${error.stack}`
   );
 
+  // If response has already been sent, just log the error and return
+  if (res.headersSent) {
+    logger.warn('Response already sent, cannot send error response');
+    return;
+  }
+
   if (error instanceof HttpError) {
     logMetric('server.internal_error', 1, {
       error_type: 'http_error',
