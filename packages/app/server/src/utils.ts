@@ -124,7 +124,7 @@ export async function buildX402Response(
     recipient = (await getSmartAccount()).smartAccount.address;
   } catch (error) {
     logger.error('Failed to get smart account for X402 response', { error });
-    recipient = '0x0000000000000000000000000000000000000000';
+    throw error;
   }
 
   res.setHeader(
