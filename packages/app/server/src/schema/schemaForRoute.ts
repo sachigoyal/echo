@@ -13,7 +13,7 @@ export function getSchemaForRoute(path: string): { input: unknown, output: unkno
         }
         return returnObject;
     }
-    if (path.endsWith("/images")) {
+    if (path.endsWith("/images/generations")) {
         const returnObject = {
             input: z.toJSONSchema(CreateImagesRequest),
             output: z.toJSONSchema(CreateImagesResponse),
