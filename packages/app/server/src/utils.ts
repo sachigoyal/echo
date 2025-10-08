@@ -127,14 +127,14 @@ export async function buildX402Response(
     throw error;
   }
 
-  res.setHeader(
-    'WWW-Authenticate',
-    buildX402Challenge({
-      realm: X402_REALM,
-      link: paymentUrl,
-      network,
-    })
-  );
+  // res.setHeader(
+  //   'WWW-Authenticate',
+  //   buildX402Challenge({
+  //     realm: X402_REALM,
+  //     link: paymentUrl,
+  //     network,
+  //   })
+  // );
   
   let outputSchema;
   try {
