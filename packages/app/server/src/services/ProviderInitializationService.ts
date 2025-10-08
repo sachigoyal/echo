@@ -52,10 +52,10 @@ export async function initializeProvider(
   req: Request,
   res: Response
 ): Promise<{
-  provider?: BaseProvider;
   model: string;
   isStream: boolean;
   isPassthroughProxyRoute: boolean;
+  provider?: BaseProvider;
   is402Sniffer?: boolean;
 }> {
   const passthroughProxyRoute = detectPassthroughProxyRoute(req);

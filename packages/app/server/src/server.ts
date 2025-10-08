@@ -88,7 +88,7 @@ app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
       await initializeProvider(req, res);
     if (!provider || is402Sniffer) {
       await buildX402Response(req, res, new Decimal(0));
-      return;
+      return res.end();
     }
     const maxCost = getRequestMaxCost(req, provider, isPassthroughProxyRoute);
 
