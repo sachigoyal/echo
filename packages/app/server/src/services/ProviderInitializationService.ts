@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { UnknownModelError } from '../errors/http';
+import { PaymentRequiredError, UnknownModelError } from '../errors/http';
 import logger from '../logger';
 import { BaseProvider } from '../providers/BaseProvider';
 import { GeminiVeoProvider } from '../providers/GeminiVeoProvider';
@@ -75,10 +75,11 @@ export async function initializeProvider(
       res.status(422).json({
         error: `Invalid model: ${model} Echo does not yet support this model.`,
       });
+      throw new UnknownModelError('Invalid model');
     } else {
     await buildX402Response(req, res, new Decimal(0));
+    throw new PaymentRequiredError('No Model or Auth method detected, returning 402 Schema');
     }
-    throw new UnknownModelError('Invalid model');
   }
 
   // Extract stream flag
