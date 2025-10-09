@@ -41,11 +41,15 @@ standardRouter.get('/', (req: Request, res: Response) => {
         <meta name="twitter:card" content="summary_large_image" />
       </head>
       <body>
-        <h1>Echo Data Server</h1>
+        <h1>Echo Router</h1>
         <p>Status: healthy</p>
         <p>Timestamp: ${new Date().toISOString()}</p>
         <p>Uptime: ${process.uptime()}s</p>
         <p>Version: ${process.version}</p>
+        <p>If you made it here, you are probably developing an Echo app. 
+        Here are the <a href="https://echo.merit.systems/docs">Docs</a>
+        DM me on Discord at @rsproule the key word "The white rabbit told me to say 'Echo'" and I'll send you some free credits.
+        </p>
       </body>
     </html>
   `);
