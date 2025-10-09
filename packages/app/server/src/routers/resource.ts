@@ -2,11 +2,10 @@ import express, { Request, Response, Router } from 'express';
 import path from 'path';
 import logger, { logMetric } from '../logger';
 import { TavilySearchInputSchema } from '../resources/tavily/types';
-import { calculateTavilySearchCost, tavilySearch } from '../resources/tavily/tavily';
+import { calculateTavilySearchCost, tavilySearch, createTavilyTransaction } from '../resources/tavily/tavily';
 import { buildX402Response, isApiRequest, isX402Request } from 'utils';
 import { authenticateRequest } from 'auth';
 import { prisma } from 'server';
-import { Transaction } from 'types';
 import { settle, finalize } from 'handlers';        
 const resourceRouter: Router = Router();
 
@@ -32,19 +31,7 @@ resourceRouter.post('/tavily/search', async (req: Request, res: Response) => {
 
             const output = await tavilySearch(inputBody);
 
-            const transaction: Transaction = {
-                metadata: {
-                    providerId: output.request_id,
-                    provider: 'tavily',
-                    model: inputBody.search_depth ?? 'basic',
-                    inputTokens: 0,
-                    outputTokens: 0,
-                    totalTokens: 0,
-                    toolCost: maxCost,
-                },
-                rawTransactionCost: maxCost,
-                status: 'completed',
-            };
+            const transaction = createTavilyTransaction(inputBody, output, maxCost);
 
             await echoControlService.createTransaction(transaction, maxCost);
 
@@ -60,19 +47,7 @@ resourceRouter.post('/tavily/search', async (req: Request, res: Response) => {
 
             const output = await tavilySearch(inputBody);
 
-            const transaction: Transaction = {
-                metadata: {
-                    providerId: output.request_id,
-                    provider: 'tavily',
-                    model: inputBody.search_depth ?? 'basic',
-                    inputTokens: 0,
-                    outputTokens: 0,
-                    totalTokens: 0,
-                    toolCost: maxCost,
-                },
-                rawTransactionCost: maxCost,
-                status: 'completed',
-            };
+            const transaction = createTavilyTransaction(inputBody, output, maxCost);
 
             await finalize(paymentAmountDecimal, transaction, payload);
 
