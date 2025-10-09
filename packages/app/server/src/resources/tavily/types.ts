@@ -41,11 +41,11 @@ export const TavilySearchInputSchema = z.object({
     results: z.array(TavilySearchResultSchema),
     auto_parameters: z
       .object({
-        topic: z.string().optional(),
-        search_depth: z.string().optional(),
+        topic: z.any().optional(),
+        search_depth: z.any().optional(),
       })
       .optional(),
-    response_time: z.string(),
+    response_time: z.number(),
     request_id: z.string(),
   });
   
