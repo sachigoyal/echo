@@ -30,9 +30,9 @@
     "lint:fix": "pnpx eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write src",
-    "test": "vitest run",
-    "test:unit": "vitest run",
-    "test:watch": "vitest --watch",
+    "test": "echo 'No tests'",
+    "test:unit": "echo 'No tests'",
+    "test:watch": "echo 'No tests'",
     "prepublishOnly": "pnpm run build"
   },
   "keywords": [

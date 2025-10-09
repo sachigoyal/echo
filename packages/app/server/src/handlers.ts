@@ -22,33 +22,39 @@ import {
   SettleRequestSchema,
 } from 'services/facilitator/x402-types';
 import { Decimal } from '@prisma/client/runtime/library';
+import logger from 'logger';
 
 export async function handleX402Request({
   req,
   res,
-  processedHeaders,
+  headers,
   maxCost,
   isPassthroughProxyRoute,
   provider,
   isStream,
 }: X402HandlerInput) {
   if (isPassthroughProxyRoute) {
-    return await makeProxyPassthroughRequest(
-      req,
-      res,
-      provider,
-      processedHeaders
-    );
+    return await makeProxyPassthroughRequest(req, res, provider, headers);
   }
+
   // Apply x402 payment middleware with the calculated maxCost
   const network = process.env.NETWORK as Network;
-  const recipient = (await getSmartAccount()).smartAccount.address;
 
-  const xPaymentData: PaymentPayload = validateXPaymentHeader(
-    processedHeaders,
-    req
-  );
+  let recipient: string;
+  try {
+    recipient = (await getSmartAccount()).smartAccount.address;
+  } catch (error) {
+    return buildX402Response(req, res, maxCost);
+  }
+  let xPaymentData: PaymentPayload;
+  try {
+    xPaymentData = validateXPaymentHeader(headers, req);
+  } catch (error) {
+    return buildX402Response(req, res, maxCost);
+  }
+
   const payload = xPaymentData.payload as ExactEvmPayload;
+  logger.info(`Payment payload: ${JSON.stringify(payload)}`);
 
   const paymentAmount = payload.authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);
@@ -98,7 +104,7 @@ export async function handleX402Request({
       const transactionResult = await modelRequestService.executeModelRequest(
         req,
         res,
-        processedHeaders,
+        headers,
         provider,
         isStream
       );
@@ -121,7 +127,12 @@ export async function handleX402Request({
         await transfer(
           authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
-        );
+        ).catch(transferError => {
+          logger.error('Failed to process refund', {
+            error: transferError,
+            refundAmount: refundAmount.toString(),
+          });
+        });
       }
     } catch (error) {
       // In case of error, do full refund
@@ -133,7 +144,13 @@ export async function handleX402Request({
         await transfer(
           authPayload.from as `0x${string}`,
           refundAmountUsdcBigInt
-        );
+        ).catch(transferError => {
+          logger.error('Failed to process full refund after error', {
+            error: transferError,
+            originalError: error,
+            refundAmount: refundAmount.toString(),
+          });
+        });
       }
     }
   } catch (error) {
@@ -144,7 +161,7 @@ export async function handleX402Request({
 export async function handleApiKeyRequest({
   req,
   res,
-  processedHeaders,
+  headers,
   echoControlService,
   maxCost,
   isPassthroughProxyRoute,
@@ -152,6 +169,11 @@ export async function handleApiKeyRequest({
   isStream,
 }: HandlerInput) {
   const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
+
+  if (isPassthroughProxyRoute) {
+    return await makeProxyPassthroughRequest(req, res, provider, headers);
+  }
+
   const balanceCheckResult = await checkBalance(echoControlService);
 
   // Step 2: Set up escrow context and apply escrow middleware logic
@@ -165,19 +187,14 @@ export async function handleApiKeyRequest({
   await transactionEscrowMiddleware.handleInFlightRequestIncrement(req, res);
 
   if (isPassthroughProxyRoute) {
-    return await makeProxyPassthroughRequest(
-      req,
-      res,
-      provider,
-      processedHeaders
-    );
+    return await makeProxyPassthroughRequest(req, res, provider, headers);
   }
 
   // Step 3: Execute business logic
   const { transaction, data } = await modelRequestService.executeModelRequest(
     req,
     res,
-    processedHeaders,
+    headers,
     provider,
     isStream
   );
