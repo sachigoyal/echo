@@ -1,7 +1,6 @@
 import { OpenAIProvider, createOpenAI as createOpenAIBase } from "@ai-sdk/openai";
-import { EchoConfig } from "@merit-systems/echo-react-sdk";
 
-export function echoFetch(originalFetch: typeof fetch, paymentAuthHeader: string | null | undefined) {
+function fetchAddPayment(originalFetch: typeof fetch, paymentAuthHeader: string | null | undefined) {
     return async (input: RequestInfo | URL, init?: RequestInit) => {
       const headers: Record<string, any> = { ...init?.headers };
       if (paymentAuthHeader) {
@@ -17,16 +16,14 @@ export function echoFetch(originalFetch: typeof fetch, paymentAuthHeader: string
   }
   
 
-  export function createX402OpenAI(
-    { appId, baseRouterUrl = 
-        "http://localhost:3070"
-     }: EchoConfig,
+  export function createX402OpenAIWithoutPayment(
     paymentAuthHeader?: string | null,  
+    baseRouterUrl?: string,
   ): OpenAIProvider {
     return createOpenAIBase({
-      baseURL: baseRouterUrl,
-      apiKey: 'placeholder_replaced_by_echoFetch',
-      fetch: echoFetch(
+      baseURL: baseRouterUrl || 'https://echo.router.merit.systems',
+      apiKey: 'placeholder_replaced_by_fetchAddPayment',
+      fetch: fetchAddPayment(
         fetch,
         paymentAuthHeader,
       ),

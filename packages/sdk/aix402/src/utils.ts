@@ -26,7 +26,7 @@ export const X402PaymentLinkSchema = z
     resource: z.string().url(),
     scheme: z.literal('exact'),
     to: evmAddress,
-    type: z.literal('x402'),
+    type: z.string(),
     url: z.string().url(),
     version: z.string().min(1),
   })

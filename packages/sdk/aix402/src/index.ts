@@ -1,4 +1,5 @@
 export { useChatWithPayment } from './useChatWithPayment';
 export type { default as UseChatWithPayment } from './useChatWithPayment';
-export { createX402OpenAI } from './route-utils';
-export { UiStreamOnError } from './route-utils';
+export { createX402OpenAIWithoutPayment } from './fetch-no-payment';
+export { createOpenAIWithX402Payment } from './fetch-with-payment';
+export { UiStreamOnError } from './fetch-no-payment';

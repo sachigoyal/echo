@@ -12,6 +12,8 @@
   "dependencies": {
     "@ai-sdk/openai": "2.0.16",
     "@ai-sdk/react": "2.0.17",
+    "@coinbase/cdp-sdk": "^1.34.0",
+    "@merit-systems/echo-aix402-sdk": "workspace:*",
     "@merit-systems/echo-next-sdk": "0.0.24",
     "@merit-systems/echo-react-sdk": "1.0.33",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -29,6 +31,7 @@
     "autonumeric": "^4.10.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
@@ -41,8 +44,8 @@
     "use-stick-to-bottom": "^1.1.1",
     "viem": "2.x",
     "wagmi": "^2.17.5",
-    "zod": "^4.1.5",
-    "@merit-systems/echo-aix402-sdk": "workspace:*"
+    "x402": "^0.6.5",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
