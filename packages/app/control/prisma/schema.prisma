@@ -496,6 +496,5 @@ model VideoGenerationX402 {
   wallet          String?
   cost            Decimal
   createdAt       DateTime  @default(now()) @db.Timestamptz(6)
-  status          String
   isFinal         Boolean   @default(false)
 }

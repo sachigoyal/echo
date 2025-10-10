@@ -23,6 +23,7 @@ import {
 } from 'services/facilitator/x402-types';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from 'logger';
+import { ProviderType } from 'providers/ProviderType';
 
 export async function handleX402Request({
   req,
@@ -110,6 +111,16 @@ export async function handleX402Request({
       );
       transaction = transactionResult.transaction;
       data = transactionResult.data;
+
+      if (provider.getType() === ProviderType.OPENAI_VIDEOS) {
+        await prisma.videoGenerationX402.create({
+          data: {
+            videoId: transaction.metadata.providerId,
+            wallet: payload.authorization.from,
+            cost: transaction.rawTransactionCost,
+          },
+        });
+      }
 
       // Send the response - the middleware has intercepted res.end()/res.json()
       // and will actually send it after settlement completes

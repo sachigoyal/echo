@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { ProviderType } from './ProviderType';
 import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { Response } from 'express';
+import { transfer } from 'transferWithAuth';
 import { getVideoModelPrice } from 'services/AccountingService';
 import { HttpError, UnknownModelError } from 'errors/http';
 import { Decimal } from 'generated/prisma/runtime/library';
@@ -11,6 +12,7 @@ import { Transaction } from '../types';
 import { prisma } from '../server';
 import { EchoDbService } from '../services/DbService';
 import logger from '../logger';
+import { decimalToUsdcBigInt } from 'utils';
 
 export class OpenAIVideoProvider extends BaseProvider {
   static detectPassthroughProxy(
@@ -173,8 +175,52 @@ export class OpenAIVideoProvider extends BaseProvider {
     }
 
     const responseData = await response.json();
-    res.json(responseData);
-  }
+    switch (responseData.status) {
+      case 'completed':
+        const videoId = responseData.id as string;
+        await prisma.videoGenerationX402.updateMany({
+          where: {
+            videoId: videoId,
+          },
+          data: {
+            isFinal: true,
+          },
+        });
+        break;
+      case 'failed':
+        const failedVideoId = responseData.id as string;
+        const existingRecord = await prisma.videoGenerationX402.findFirst({
+          where: {
+            videoId: failedVideoId,
+          },
+        });
+        
+        if (existingRecord?.isFinal) {
+          break;
+        }
+        
+        if (existingRecord && existingRecord.wallet) {
+            const refundAmount = decimalToUsdcBigInt(existingRecord.cost);
+            await transfer(
+                existingRecord.wallet as `0x${string}`,
+                refundAmount
+            );
+            await prisma.videoGenerationX402.updateMany({
+                where: {
+                    videoId: failedVideoId,
+                },
+                data: {
+                    isFinal: true,
+                },
+            });
+        }
+        break;
+      default:
+            break;
+        }
+        res.json(responseData);
+    }
+    
 
   // ========== Video Download Handling ==========
 
