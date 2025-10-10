@@ -18,6 +18,7 @@ import { buildX402Response, isApiRequest, isX402Request } from './utils';
 import { handleX402Request, handleApiKeyRequest } from './handlers';
 import { initializeProvider } from './services/ProviderInitializationService';
 import { getRequestMaxCost } from './services/PricingService';
+import { Decimal } from '@prisma/client/runtime/library';
 
 dotenv.config();
 
@@ -83,42 +84,49 @@ app.use(inFlightMonitorRouter);
 app.all('*', async (req: EscrowRequest, res: Response, next: NextFunction) => {
   try {
     const headers = req.headers as Record<string, string>;
-    const { provider, isStream, isPassthroughProxyRoute } =
+    const { provider, isStream, isPassthroughProxyRoute, is402Sniffer } =
       await initializeProvider(req, res);
-    const maxCost = getRequestMaxCost(req, provider);
+    if (!provider || is402Sniffer) {
+      await buildX402Response(req, res, new Decimal(0));
+      return res.end();
+    }
+    const maxCost = getRequestMaxCost(req, provider, isPassthroughProxyRoute);
 
-    if (!isApiRequest(headers) && !isX402Request(headers)) {
+    if (
+      !isApiRequest(headers) &&
+      !isX402Request(headers) &&
+      !isPassthroughProxyRoute
+    ) {
       return buildX402Response(req, res, maxCost);
     }
 
-    const { processedHeaders, echoControlService } = await authenticateRequest(
-      headers,
-      prisma
-    );
-
-    if (isX402Request(headers)) {
-      await handleX402Request({
-        req,
-        res,
-        processedHeaders,
-        maxCost,
-        isPassthroughProxyRoute,
-        provider,
-        isStream,
-      });
-      return;
-    }
-
     if (isApiRequest(headers)) {
+      const { processedHeaders, echoControlService } =
+        await authenticateRequest(headers, prisma);
+
+      provider.setEchoControlService(echoControlService);
+
       await handleApiKeyRequest({
         req,
         res,
-        processedHeaders,
+        headers: processedHeaders,
         echoControlService,
         isPassthroughProxyRoute,
         provider,
         isStream,
         maxCost,
+      });
+      return;
+    }
+    if (isX402Request(headers) || isPassthroughProxyRoute) {
+      await handleX402Request({
+        req,
+        res,
+        headers,
+        maxCost,
+        isPassthroughProxyRoute,
+        provider,
+        isStream,
       });
       return;
     }
@@ -137,36 +145,39 @@ app.use((error: Error, req: Request, res: Response) => {
     `Error handling request: ${error.message} | Stack: ${error.stack}`
   );
 
+  // If response has already been sent, just log the error and return
+  if (res.headersSent) {
+    logger.warn('Response already sent, cannot send error response');
+    return;
+  }
+
   if (error instanceof HttpError) {
     logMetric('server.internal_error', 1, {
       error_type: 'http_error',
       error_message: error.message,
     });
-    res.status(error.statusCode).json({
+    return res.status(error.statusCode).json({
       error: error.message,
     });
-  } else if (error instanceof Error) {
+  }
+
+  if (error instanceof Error) {
     logMetric('server.internal_error', 1, {
       error_type: error.name,
       error_message: error.message,
     });
-    // Handle other errors with a more specific message
     logger.error('Internal server error', error);
-    res.status(500).json({
+    return res.status(500).json({
       error: error.message || 'Internal Server Error',
-    });
-  } else {
-    logMetric('server.internal_error', 1, {
-      error_type: 'unknown_error',
-    });
-    logger.error('Internal server error', error);
-    res.status(500).json({
-      error: 'Internal Server Error',
     });
   }
 
+  logMetric('server.internal_error', 1, {
+    error_type: 'unknown_error',
+  });
+  logger.error('Internal server error', error);
   return res.status(500).json({
-    erorr: 'Internal Server Error',
+    error: 'Internal Server Error',
   });
 });
 
