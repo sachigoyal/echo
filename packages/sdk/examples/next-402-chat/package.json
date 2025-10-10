@@ -13,7 +13,7 @@
     "@ai-sdk/openai": "2.0.16",
     "@ai-sdk/react": "2.0.17",
     "@coinbase/cdp-sdk": "^1.34.0",
-    "@merit-systems/echo-aix402-sdk": "workspace:*",
+    "@merit-systems/ai-x402": "workspace:*",
     "@merit-systems/echo-next-sdk": "0.0.24",
     "@merit-systems/echo-react-sdk": "1.0.33",
     "@radix-ui/react-avatar": "^1.1.10",

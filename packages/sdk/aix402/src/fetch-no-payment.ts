@@ -1,4 +1,5 @@
-import { OpenAIProvider, createOpenAI as createOpenAIBase } from "@ai-sdk/openai";
+import { createOpenAI, OpenAIProvider } from "@ai-sdk/openai";
+
 
 function fetchAddPayment(originalFetch: typeof fetch, paymentAuthHeader: string | null | undefined) {
     return async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -20,7 +21,7 @@ function fetchAddPayment(originalFetch: typeof fetch, paymentAuthHeader: string 
     paymentAuthHeader?: string | null,  
     baseRouterUrl?: string,
   ): OpenAIProvider {
-    return createOpenAIBase({
+    return createOpenAI({
       baseURL: baseRouterUrl || 'https://echo.router.merit.systems',
       apiKey: 'placeholder_replaced_by_fetchAddPayment',
       fetch: fetchAddPayment(

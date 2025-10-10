@@ -1,7 +1,6 @@
-import { OpenAIProvider } from "@ai-sdk/openai";
+import { createOpenAI, OpenAIProvider } from "@ai-sdk/openai";
 import { createPaymentHeader, selectPaymentRequirements } from "x402/client";
 import { PaymentRequirementsSchema, Signer } from "x402/types";
-import { createOpenAI as createOpenAIBase } from "@ai-sdk/openai";
 
 export async function getPaymentHeaderFromBody(body: any, walletClient: Signer) {
 
@@ -54,11 +53,11 @@ export async function getPaymentHeaderFromBody(body: any, walletClient: Signer) 
     }
   }
   
-  export function createOpenAIWithX402Payment(
+  export function createX402OpenAI(
       walletClient: Signer,
       baseRouterUrl?: string,
     ): OpenAIProvider {
-      return createOpenAIBase({
+      return createOpenAI({
         baseURL: baseRouterUrl || 'https://echo.router.merit.systems',
         apiKey: 'placeholder_replaced_by_echoFetch',
         fetch: fetchWithX402Payment(

@@ -1,5 +1,5 @@
 import { convertToModelMessages, streamText, type UIMessage } from 'ai';
-import { createOpenAIWithX402Payment, createX402OpenAIWithoutPayment, UiStreamOnError } from '@merit-systems/echo-aix402-sdk/server';
+import { createX402OpenAI, createX402OpenAIWithoutPayment, UiStreamOnError } from '@merit-systems/ai-x402/server';
 import { walletClient } from '../chat-server-wallet/cdp';
 
 // Allow streaming responses up to 30 seconds
@@ -44,13 +44,14 @@ export async function POST(req: Request) {
   }
 
   if (useServerWallet) {
+
     // Create OpenAI provider with payment authorization
-    const openai = createOpenAIWithX402Payment(
-      walletClient
+    const withX402 = createX402OpenAI(
+      walletClient 
     );
     // Proceed with actual streaming request
     const result = streamText({
-      model: openai(model),
+      model: withX402("gpt-5"),
       messages: convertToModelMessages(messages),
       maxRetries: 0,
       maxOutputTokens: 1000,
