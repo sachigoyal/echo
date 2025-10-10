@@ -489,3 +489,13 @@ model OutboundEmailSent {
   @@index([emailCampaignId])
   @@map("outbound_emails_sent")
 }
+
+model VideoGenerationX402 {
+  id              String     @id @default(uuid()) @db.Uuid
+  videoId         String
+  wallet          String?
+  cost            Decimal
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  status          String
+  isFinal         Boolean   @default(false)
+}
