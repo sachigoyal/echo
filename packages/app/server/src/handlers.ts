@@ -1,19 +1,10 @@
+import { Decimal } from '@prisma/client/runtime/library';
+import logger from 'logger';
 import { TransactionEscrowMiddleware } from 'middleware/transaction-escrow-middleware';
-import { modelRequestService } from 'services/ModelRequestService';
-import { HandlerInput, Network, Transaction, X402HandlerInput } from 'types';
-import {
-  usdcBigIntToDecimal,
-  decimalToUsdcBigInt,
-  buildX402Response,
-  getSmartAccount,
-  calculateRefundAmount,
-  validateXPaymentHeader,
-} from 'utils';
-import { transfer } from 'transferWithAuth';
-import { checkBalance } from 'services/BalanceCheckService';
 import { prisma } from 'server';
+import { checkBalance } from 'services/BalanceCheckService';
+import { modelRequestService } from 'services/ModelRequestService';
 import { makeProxyPassthroughRequest } from 'services/ProxyPassthroughService';
-import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import { FacilitatorClient } from 'services/facilitator/facilitatorService';
 import {
   ExactEvmPayload,
@@ -21,8 +12,17 @@ import {
   PaymentRequirementsSchema,
   SettleRequestSchema,
 } from 'services/facilitator/x402-types';
-import { Decimal } from '@prisma/client/runtime/library';
-import logger from 'logger';
+import { USDC_ADDRESS } from 'services/fund-repo/constants';
+import { transfer } from 'transferWithAuth';
+import { HandlerInput, Network, Transaction, X402HandlerInput } from 'types';
+import {
+  buildX402Response,
+  calculateRefundAmount,
+  decimalToUsdcBigInt,
+  getSmartAccount,
+  usdcBigIntToDecimal,
+  validateXPaymentHeader,
+} from 'utils';
 
 export async function handleX402Request({
   req,
@@ -154,6 +154,7 @@ export async function handleX402Request({
       }
     }
   } catch (error) {
+    logger.error('Error in handleX402Request', { error });
     throw error;
   }
 }
