@@ -1,4 +1,3 @@
-import { Decimal } from '@prisma/client/runtime/library';
 import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -7,7 +6,6 @@ import multer from 'multer';
 import { authenticateRequest } from './auth';
 import { HttpError } from './errors/http';
 import { PrismaClient } from './generated/prisma';
-import { handleApiKeyRequest, handleX402Request } from './handlers';
 import logger, { logMetric } from './logger';
 import { traceEnrichmentMiddleware } from './middleware/trace-enrichment-middleware';
 import {
@@ -16,9 +14,11 @@ import {
 } from './middleware/transaction-escrow-middleware';
 import standardRouter from './routers/common';
 import inFlightMonitorRouter from './routers/in-flight-monitor';
-import { getRequestMaxCost } from './services/PricingService';
-import { initializeProvider } from './services/ProviderInitializationService';
 import { buildX402Response, isApiRequest, isX402Request } from './utils';
+import { handleX402Request, handleApiKeyRequest } from './handlers';
+import { initializeProvider } from './services/ProviderInitializationService';
+import { getRequestMaxCost } from './services/PricingService';
+import { Decimal } from '@prisma/client/runtime/library';
 
 dotenv.config();
 
