@@ -193,14 +193,15 @@ export class OpenAIVideoProvider extends BaseProvider {
     videoId: string
   ): Promise<void> {
     await prisma.$transaction(async tx => {
-      const video = await tx.$queryRawUnsafe(
+      const result = await tx.$queryRawUnsafe(
         `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
         videoId
       );
-      if (video && !(video as any).isFinal) {
+      const video = (result as any[])[0];
+      if (video && !video.isFinal) {
         await tx.videoGenerationX402.update({
           where: {
-            videoId: (video as any).videoId,
+            videoId: video.videoId,
           },
           data: {
             isFinal: true,
@@ -212,21 +213,22 @@ export class OpenAIVideoProvider extends BaseProvider {
 
   private async handleFailedVideoGeneration(videoId: string): Promise<void> {
     await prisma.$transaction(async tx => {
-      const video = await tx.$queryRawUnsafe(
+      const result = await tx.$queryRawUnsafe(
         `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
         videoId
       );
+      const video = (result as any[])[0];
       // Exit early if video already final
-      if (!video || (video as any).isFinal) {
+      if (!video || video.isFinal) {
         return;
       }
-      if ((video as any).wallet) {
-        const refundAmount = decimalToUsdcBigInt((video as any).cost);
-        await transfer((video as any).wallet as `0x${string}`, refundAmount);
+      if (video.wallet) {
+        const refundAmount = decimalToUsdcBigInt(video.cost);
+        await transfer(video.wallet as `0x${string}`, refundAmount);
       }
       await tx.videoGenerationX402.update({
         where: {
-          videoId: (video as any).videoId,
+          videoId: video.videoId,
         },
         data: {
           isFinal: true,
