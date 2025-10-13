@@ -22,6 +22,13 @@ export function traceEnrichmentMiddleware(
   // Set response header so client can correlate
   res.setHeader('X-Request-ID', requestId);
 
+  // Set requestId on the span immediately so it's available for the entire trace
+  const span = trace.getSpan(context.active());
+  if (span) {
+    span.setAttribute('request.id', requestId);
+    span.setAttribute('http.request_id', requestId); // Alternative standard attribute name
+  }
+
   // Log inbound request
   logger.info('REQUEST', {
     requestId,
@@ -43,12 +50,9 @@ export function traceEnrichmentMiddleware(
       duration: `${duration}ms`,
     });
 
-    // Enrich OpenTelemetry span
+    // Enrich OpenTelemetry span on finish
     const span = trace.getSpan(context.active());
     if (!span) return;
-
-    // 🔹 Custom attributes
-    span.setAttribute('request.id', requestId);
 
     // 🔹 Standard semantic HTTP attributes
     span.setAttribute(SemanticAttributes.HTTP_METHOD, req.method);
