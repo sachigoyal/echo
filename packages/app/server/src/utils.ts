@@ -136,13 +136,19 @@ export async function buildX402Response(
       network,
     })
   );
-  
+
   let outputSchema;
   try {
     outputSchema = getSchemaForRoute(req.path);
-    logger.info('Schema generated for route', { path: req.path, hasSchema: !!outputSchema });
+    logger.info('Schema generated for route', {
+      path: req.path,
+      hasSchema: !!outputSchema,
+    });
   } catch (error) {
-    logger.error('Failed to generate schema for route', { path: req.path, error });
+    logger.error('Failed to generate schema for route', {
+      path: req.path,
+      error,
+    });
     outputSchema = undefined;
   }
 

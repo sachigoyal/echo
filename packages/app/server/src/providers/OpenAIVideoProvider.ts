@@ -177,81 +177,63 @@ export class OpenAIVideoProvider extends BaseProvider {
     const responseData = await response.json();
     switch (responseData.status) {
       case 'completed':
-        const videoId = responseData.id as string;
-        await prisma.videoGenerationX402.updateMany({
+        await this.handleSuccessfulVideoGeneration(responseData.id as string);
+        break;
+      case 'failed':
+        await this.handleFailedVideoGeneration(responseData.id as string);
+        break;
+      default:
+        break;
+    }
+    res.json(responseData);
+  }
+
+  // ====== Refund methods ======
+  private async handleSuccessfulVideoGeneration(
+    videoId: string
+  ): Promise<void> {
+    await prisma.$transaction(async tx => {
+      const video = await tx.$queryRawUnsafe(
+        `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
+        videoId
+      );
+      if (video && !(video as any).isFinal) {
+        await tx.videoGenerationX402.update({
           where: {
-            videoId: videoId,
+            videoId: (video as any).videoId,
           },
           data: {
             isFinal: true,
           },
         });
-        break;
-      case 'failed':
-        const failedVideoId = responseData.id as string;
-        const existingRecord = await prisma.videoGenerationX402.findFirst({
-          where: {
-            videoId: failedVideoId,
-          },
-        });
-        
-        if (existingRecord?.isFinal) {
-          break;
-        }
-        
-        if (existingRecord && existingRecord.wallet) {
-            const refundAmount = decimalToUsdcBigInt(existingRecord.cost);
-            await transfer(
-                existingRecord.wallet as `0x${string}`,
-                refundAmount
-            );
-            await prisma.videoGenerationX402.updateMany({
-                where: {
-                    videoId: failedVideoId,
-                },
-                data: {
-                    isFinal: true,
-                },
-            });
-        }
-        break;
-      default:
-            break;
-        }
-        res.json(responseData);
-    }
+      }
+    });
+  }
 
-    // ====== Refund methods ======
-    private async handleSuccessfulVideoGeneration(videoId: string): Promise<void> {
-        await prisma.$transaction(async (tx) => {
-            const video = await tx.$queryRawUnsafe(
-                `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
-                videoId
-            );
-            if (video && !(video as any).isFinal) {
-                await tx.videoGenerationX402.update({
-                    where: {
-                        videoId: (video as any).videoId,
-                    },
-                    data: {
-                        isFinal: true,
-                    },
-                });
-            }
-        });
-    }
-
-    private async handleFailedVideoGeneration(videoId: string): Promise<void> {
-        await prisma.$transaction(async(tx) => {
-            const video = await tx.$queryRawUnsafe(
-                `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
-                videoId
-            );
-            if (video) {
-            }
-        });
-    }
-    
+  private async handleFailedVideoGeneration(videoId: string): Promise<void> {
+    await prisma.$transaction(async tx => {
+      const video = await tx.$queryRawUnsafe(
+        `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
+        videoId
+      );
+      // Exit early if video already final
+      if (!video || (video as any).isFinal) {
+        return;
+      }
+      if ((video as any).wallet) {
+        const refundAmount = decimalToUsdcBigInt((video as any).cost);
+        await transfer((video as any).wallet as `0x${string}`, refundAmount);
+      }
+      await tx.videoGenerationX402.update({
+        where: {
+          videoId: (video as any).videoId,
+        },
+        data: {
+          isFinal: true,
+        },
+      });
+    });
+  }
 
   // ========== Video Download Handling ==========
 
