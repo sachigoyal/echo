@@ -32,10 +32,18 @@ export function traceEnrichmentMiddleware(
   // Store requestId in AsyncLocalStorage so it's available to all logs
   requestIdStorage.run(requestId, () => {
     // Log inbound request (requestId will be automatically injected by logger format)
+    // Avoid logging large bodies (files, images, etc.)
+    const contentType = req.headers['content-type'] || '';
+    const shouldLogBody =
+      contentType.includes('application/json') &&
+      JSON.stringify(req.body || {}).length < 10000; // Max 10KB
+
     logger.info('REQUEST', {
       method: req.method,
       path: req.path,
-      body: req.body,
+      contentType,
+      contentLength: req.headers['content-length'],
+      body: shouldLogBody ? req.body : '[BODY_TOO_LARGE_OR_BINARY]',
     });
 
     // Set up span enrichment and logging on response finish
