@@ -491,10 +491,11 @@ model OutboundEmailSent {
 }
 
 model VideoGenerationX402 {
-  id              String     @id @default(uuid()) @db.Uuid
-  videoId         String
+  videoId         String     @id
   wallet          String?
   cost            Decimal
   createdAt       DateTime  @default(now()) @db.Timestamptz(6)
   isFinal         Boolean   @default(false)
+
+  @@map("video_generation_x402")
 }

@@ -220,6 +220,37 @@ export class OpenAIVideoProvider extends BaseProvider {
         }
         res.json(responseData);
     }
+
+    // ====== Refund methods ======
+    private async handleSuccessfulVideoGeneration(videoId: string): Promise<void> {
+        await prisma.$transaction(async (tx) => {
+            const video = await tx.$queryRawUnsafe(
+                `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
+                videoId
+            );
+            if (video && !(video as any).isFinal) {
+                await tx.videoGenerationX402.update({
+                    where: {
+                        videoId: (video as any).videoId,
+                    },
+                    data: {
+                        isFinal: true,
+                    },
+                });
+            }
+        });
+    }
+
+    private async handleFailedVideoGeneration(videoId: string): Promise<void> {
+        await prisma.$transaction(async(tx) => {
+            const video = await tx.$queryRawUnsafe(
+                `SELECT * FROM "video_generation_x402" WHERE "videoId" = $1 FOR UPDATE`,
+                videoId
+            );
+            if (video) {
+            }
+        });
+    }
     
 
   // ========== Video Download Handling ==========
