@@ -1,6 +1,7 @@
 // trace-enrichment-middleware.ts
 import { context, trace } from '@opentelemetry/api';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { randomUUID } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import logger from '../logger';
 
@@ -11,15 +12,19 @@ export function traceEnrichmentMiddleware(
   next: NextFunction
 ) {
   const startTime = Date.now();
-  const span = trace.getSpan(context.active());
-  const traceId = span?.spanContext().traceId || 'no-trace';
 
-  // Store trace ID on request for later use
-  (req as any).traceId = traceId;
+  // Generate requestId (use X-Request-ID header if provided, otherwise generate new)
+  const requestId = (req.headers['x-request-id'] as string) || randomUUID();
+
+  // Store requestId on request for later use
+  (req as any).requestId = requestId;
+
+  // Set response header so client can correlate
+  res.setHeader('X-Request-ID', requestId);
 
   // Log inbound request
   logger.info('REQUEST', {
-    traceId,
+    requestId,
     method: req.method,
     path: req.path,
     body: req.body,
@@ -31,7 +36,7 @@ export function traceEnrichmentMiddleware(
 
     // Log response
     logger.info('RESPONSE', {
-      traceId,
+      requestId,
       method: req.method,
       path: req.path,
       status: res.statusCode,
@@ -41,6 +46,9 @@ export function traceEnrichmentMiddleware(
     // Enrich OpenTelemetry span
     const span = trace.getSpan(context.active());
     if (!span) return;
+
+    // 🔹 Custom attributes
+    span.setAttribute('request.id', requestId);
 
     // 🔹 Standard semantic HTTP attributes
     span.setAttribute(SemanticAttributes.HTTP_METHOD, req.method);
