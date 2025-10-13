@@ -37,7 +37,7 @@ const result = streamText({
 });
 ```
 
-### With Pre-authenticated Header
+### With Pre-signed Payment Header
 
 ```typescript
 import { createX402OpenAIWithoutPayment } from '@merit-systems/ai-x402/server';
