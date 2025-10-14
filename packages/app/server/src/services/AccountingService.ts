@@ -124,10 +124,19 @@ export const getCostPerToken = (
   if (!modelPrice) {
     throw new Error(`Pricing information not found for model: ${model}`);
   }
+  if (modelPrice.input_cost_per_token < 0 || modelPrice.output_cost_per_token < 0) {
+    throw new Error(`Invalid pricing for model: ${model}`);
+  }
 
-  return new Decimal(modelPrice.input_cost_per_token)
+  const cost = new Decimal(modelPrice.input_cost_per_token)
     .mul(inputTokens)
     .plus(new Decimal(modelPrice.output_cost_per_token).mul(outputTokens));
+
+  if (cost.lessThan(0)) {
+    throw new Error(`Invalid cost for model: ${model}`);
+  }
+
+  return cost;
 };
 
 export const getImageModelCost = (
