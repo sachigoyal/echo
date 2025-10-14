@@ -12,22 +12,37 @@ import { Billing } from './features/billing';
 import { UniversalBalance } from './features/universal-balance';
 
 import { cn } from '@/lib/utils';
+import { Login } from './features/login';
 
 export const Features = () => {
   return (
     <Section id="features">
       <div className={cn('grid md:grid-cols-3')}>
+
+        <FeatureCard>
+          <FeatureCardComponent>
+            <Login />
+          </FeatureCardComponent>
+          <FeatureCardFooter>
+            <FeatureCardTitle>Echo Login</FeatureCardTitle>
+            <FeatureCardDescription>
+              Users login with Echo, pay for their usage.
+            </FeatureCardDescription>
+          </FeatureCardFooter>
+        </FeatureCard>
+
         <FeatureCard>
           <FeatureCardComponent>
             <Billing />
           </FeatureCardComponent>
           <FeatureCardFooter>
-            <FeatureCardTitle>Billing in a Box</FeatureCardTitle>
+            <FeatureCardTitle>Your Markup, Your Revnue</FeatureCardTitle>
             <FeatureCardDescription>
               Every token your users consume is profit in your pocket
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
+
         <FeatureCard>
           <FeatureCardComponent>
             <UniversalBalance />
@@ -39,6 +54,7 @@ export const Features = () => {
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
+
         <FeatureCard>
           <FeatureCardComponent>
             <AnyModel />
@@ -50,6 +66,7 @@ export const Features = () => {
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
+
       </div>
     </Section>
   );
