@@ -31,15 +31,18 @@ export const TAVILY_MAP_PRICING = {
 } as const;
 
 // Calculate costs
-export function calculateSearchCost(searchDepth: "basic" | "advanced" = "basic"): number {
+export function calculateSearchCost(
+  searchDepth: 'basic' | 'advanced' = 'basic'
+): number {
   return TAVILY_SEARCH_PRICING[searchDepth] * CREDIT_PRICE;
 }
 
 export function calculateExtractCost(
   successfulUrls: number,
-  extractionDepth: "basic" | "advanced" = "basic"
+  extractionDepth: 'basic' | 'advanced' = 'basic'
 ): number {
-  const { creditsPerUnit, urlsPerCredit } = TAVILY_EXTRACT_PRICING[extractionDepth];
+  const { creditsPerUnit, urlsPerCredit } =
+    TAVILY_EXTRACT_PRICING[extractionDepth];
   const credits = Math.ceil(successfulUrls / urlsPerCredit) * creditsPerUnit;
   return credits * CREDIT_PRICE;
 }
@@ -51,13 +54,15 @@ export function calculateMapCost(
   const pricing = withInstructions
     ? TAVILY_MAP_PRICING.withInstructions
     : TAVILY_MAP_PRICING.regular;
-  const credits = Math.ceil(successfulPages / pricing.pagesPerCredit) * pricing.creditsPerUnit;
+  const credits =
+    Math.ceil(successfulPages / pricing.pagesPerCredit) *
+    pricing.creditsPerUnit;
   return credits * CREDIT_PRICE;
 }
 
 export function calculateCrawlCost(
   successfulPages: number,
-  extractionDepth: "basic" | "advanced" = "basic"
+  extractionDepth: 'basic' | 'advanced' = 'basic'
 ): number {
   // Crawl cost = Mapping cost + Extraction cost
   const mappingCost = calculateMapCost(successfulPages, false);

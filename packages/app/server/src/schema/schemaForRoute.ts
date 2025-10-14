@@ -9,11 +9,12 @@ import {
 import { z } from 'zod';
 import { ChatCompletionInput, ChatCompletionOutput } from './chat/completions';
 import { CreateImagesRequest, CreateImagesResponse } from './image/openai';
-import { TavilySearchInputSchema, TavilySearchOutputSchema } from 'resources/tavily/types';
+import {
+  TavilySearchInputSchema,
+  TavilySearchOutputSchema,
+} from 'resources/tavily/types';
 
-export function getSchemaForRoute(
-  path: string
-):
+export function getSchemaForRoute(path: string):
   | {
       input: { type: 'http'; method: string; bodyFields?: unknown };
       output: unknown;
@@ -83,18 +84,22 @@ export function getSchemaForRoute(
       output: outputSchema.properties,
     };
   }
-  if (path.endsWith("/tavily/search")) {
-    const inputSchema = z.toJSONSchema(TavilySearchInputSchema, { target: "openapi-3.0" });
-    const outputSchema = z.toJSONSchema(TavilySearchOutputSchema, { target: "openapi-3.0" });
+  if (path.endsWith('/tavily/search')) {
+    const inputSchema = z.toJSONSchema(TavilySearchInputSchema, {
+      target: 'openapi-3.0',
+    });
+    const outputSchema = z.toJSONSchema(TavilySearchOutputSchema, {
+      target: 'openapi-3.0',
+    });
     return {
-        input: {
-            type: "http",
-            method: "POST",
-            bodyFields: inputSchema.properties,
-        },
-        output: outputSchema.properties,
+      input: {
+        type: 'http',
+        method: 'POST',
+        bodyFields: inputSchema.properties,
+      },
+      output: outputSchema.properties,
     };
-}
-  
+  }
+
   return undefined;
 }

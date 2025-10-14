@@ -30,7 +30,9 @@ export async function settle(
   res: Response,
   headers: Record<string, string>,
   maxCost: Decimal
-): Promise<{ payload: ExactEvmPayload; paymentAmountDecimal: Decimal } | undefined> {
+): Promise<
+  { payload: ExactEvmPayload; paymentAmountDecimal: Decimal } | undefined
+> {
   const network = process.env.NETWORK as Network;
 
   let recipient: string;
@@ -107,15 +109,7 @@ export async function finalize(
   if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
     const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
     const authPayload = payload.authorization;
-    await transfer(
-      authPayload.from as `0x${string}`,
-      refundAmountUsdcBigInt
-    ).catch(transferError => {
-      logger.error('Failed to process refund', {
-        error: transferError,
-        refundAmount: refundAmount.toString(),
-      });
-    });
+    await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
   }
 }
 
@@ -148,22 +142,21 @@ export async function handleX402Request({
       isStream
     );
 
-    modelRequestService.handleResolveResponse(res, isStream, transactionResult.data);
+    modelRequestService.handleResolveResponse(
+      res,
+      isStream,
+      transactionResult.data
+    );
 
-    await finalize(paymentAmountDecimal, transactionResult.transaction, payload);
+    await finalize(
+      paymentAmountDecimal,
+      transactionResult.transaction,
+      payload
+    );
   } catch (error) {
     const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal);
     const authPayload = payload.authorization;
-    await transfer(
-      authPayload.from as `0x${string}`,
-      refundAmountUsdcBigInt
-    ).catch(transferError => {
-      logger.error('Failed to process full refund after error', {
-        error: transferError,
-        originalError: error,
-        refundAmount: paymentAmountDecimal.toString(),
-      });
-    });
+    await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
   }
 }
 
