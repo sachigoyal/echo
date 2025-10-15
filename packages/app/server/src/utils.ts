@@ -34,8 +34,8 @@ import {
   PaymentPayload,
   PaymentPayloadSchema,
 } from './services/facilitator/x402-types';
-import { getSchemaForRoute } from './schema/schemaForRoute';
 
+import { getSchemaForRoute } from './schema/schemaForRoute';
 const API_KEY_ID = process.env.CDP_API_KEY_ID || 'your-api-key-id';
 const API_KEY_SECRET = process.env.CDP_API_KEY_SECRET || 'your-api-key-secret';
 const WALLET_SECRET = process.env.CDP_WALLET_SECRET || 'your-wallet-secret';

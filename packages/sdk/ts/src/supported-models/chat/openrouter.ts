@@ -240,7 +240,6 @@ export type OpenRouterModel =
   | 'openai/o4-mini'
   | 'openai/o4-mini-high'
   | 'opengvlab/internvl3-14b'
-  | 'openrouter/auto'
   | 'perplexity/r1-1776'
   | 'perplexity/sonar'
   | 'perplexity/sonar-deep-research'
@@ -1750,12 +1749,6 @@ export const OpenRouterModels: SupportedModel[] = [
     model_id: 'opengvlab/internvl3-14b',
     input_cost_per_token: 2e-7,
     output_cost_per_token: 4e-7,
-    provider: 'OpenRouter',
-  },
-  {
-    model_id: 'openrouter/auto',
-    input_cost_per_token: -1,
-    output_cost_per_token: -1,
     provider: 'OpenRouter',
   },
   {

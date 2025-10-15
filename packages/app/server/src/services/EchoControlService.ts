@@ -313,7 +313,7 @@ export class EchoControlService {
       `Transaction cost: ${rawTransactionCost}, Max cost: ${maxCost}`
     );
     if (rawTransactionCost.greaterThan(maxCost)) {
-      logger.warn(` Difference: ${rawTransactionCost.minus(maxCost)}`);
+      logger.info(` Difference: ${rawTransactionCost.minus(maxCost)}`);
     }
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
