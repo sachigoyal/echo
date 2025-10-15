@@ -245,11 +245,76 @@ const ShirtslopImageReveal: React.FC<{ src: string; delay: number; isActive: boo
 };
 
 const ShirtslopBody: React.FC<CardBodyProps> = ({ isActive }) => {
+    const [selectedImage, setSelectedImage] = React.useState(false);
+    const [showOnShirt, setShowOnShirt] = React.useState(false);
+
+    useEffect(() => {
+        if (!isActive) {
+            setSelectedImage(false);
+            setShowOnShirt(false);
+            return;
+        }
+
+        // After all three images complete (0ms + 1s reveal + 1000ms delay + 1s reveal = ~3s)
+        const selectTimeout = setTimeout(() => {
+            setSelectedImage(true);
+            // Show on shirt after selection animation
+            setTimeout(() => {
+                setShowOnShirt(true);
+            }, 300);
+        }, 3200);
+
+        return () => clearTimeout(selectTimeout);
+    }, [isActive]);
+
     return (
-        <div className="flex gap-2 justify-center">
-            <ShirtslopImageReveal src="/landing/uni_1.png" delay={0} isActive={isActive} />
-            <ShirtslopImageReveal src="/landing/uni_2.png" delay={400} isActive={isActive} />
-            <ShirtslopImageReveal src="/landing/uni_3.png" delay={800} isActive={isActive} />
+        <div className="flex gap-3 h-full">
+            {/* Left column - animated images */}
+            <div className="flex-1 flex gap-2 justify-center items-center">
+                <ShirtslopImageReveal src="/landing/uni_1.png" delay={0} isActive={isActive} />
+                <motion.div
+                    animate={{
+                        scale: selectedImage ? [1, 0.95, 1] : 1,
+                    }}
+                    transition={{
+                        duration: 0.3,
+                    }}
+                >
+                    <div className={`relative ${selectedImage ? 'ring-2 ring-primary rounded-md' : ''}`}>
+                        <ShirtslopImageReveal src="/landing/uni_2.png" delay={500} isActive={isActive} />
+                    </div>
+                </motion.div>
+                <ShirtslopImageReveal src="/landing/uni_3.png" delay={1000} isActive={isActive} />
+            </div>
+
+            {/* Right column - blank shirt (full size) */}
+            <div className="flex-1 flex items-center justify-center">
+                <div className="relative w-full h-full overflow-hidden rounded-md">
+                    <Image
+                        src="/landing/shirt_blank.png"
+                        alt="Blank shirt"
+                        fill
+                        className="object-contain"
+                    />
+                    {showOnShirt && (
+                        <motion.div
+                            className="absolute inset-0 flex items-center justify-center"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                        >
+                            <div className="relative w-1/2 h-1/2">
+                                <Image
+                                    src="/landing/uni_2_transparent.png"
+                                    alt="Design on shirt"
+                                    fill
+                                    className="object-contain"
+                                />
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };
