@@ -158,9 +158,9 @@ export const Hero = () => {
             </Button>
           </Link>
         </div>
-        <div className="mt-8 flex justify-center w-full">
+        {/* <div className="mt-8 flex justify-center w-full">
           <HeroGraphic />
-        </div>
+        </div> */}
         <div className="mt-8 w-full">
           <HeroGraphic2 />
         </div>

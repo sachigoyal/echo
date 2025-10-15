@@ -24,33 +24,9 @@ export const Features = () => {
             <Login />
           </FeatureCardComponent>
           <FeatureCardFooter>
-            <FeatureCardTitle>Echo Login</FeatureCardTitle>
+            <FeatureCardTitle>Auth Managed</FeatureCardTitle>
             <FeatureCardDescription>
-              Users login with Echo, pay for their usage.
-            </FeatureCardDescription>
-          </FeatureCardFooter>
-        </FeatureCard>
-
-        <FeatureCard>
-          <FeatureCardComponent>
-            <Billing />
-          </FeatureCardComponent>
-          <FeatureCardFooter>
-            <FeatureCardTitle>Your Markup, Your Revnue</FeatureCardTitle>
-            <FeatureCardDescription>
-              Every token your users consume is profit in your pocket
-            </FeatureCardDescription>
-          </FeatureCardFooter>
-        </FeatureCard>
-
-        <FeatureCard>
-          <FeatureCardComponent>
-            <UniversalBalance />
-          </FeatureCardComponent>
-          <FeatureCardFooter>
-            <FeatureCardTitle>Universal Balance</FeatureCardTitle>
-            <FeatureCardDescription>
-              Echo credits can be used on any app in our network
+              Prebuilt components for login, balance and top-ups
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
@@ -66,6 +42,31 @@ export const Features = () => {
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
+
+        <FeatureCard>
+          <FeatureCardComponent>
+            <Billing />
+          </FeatureCardComponent>
+          <FeatureCardFooter>
+            <FeatureCardTitle>Zero-Risk Billing</FeatureCardTitle>
+            <FeatureCardDescription>
+              Every token your users consume is profit, we handle the costs
+            </FeatureCardDescription>
+          </FeatureCardFooter>
+        </FeatureCard>
+
+        {/* <FeatureCard>
+          <FeatureCardComponent>
+            <UniversalBalance />
+          </FeatureCardComponent>
+          <FeatureCardFooter>
+            <FeatureCardTitle>Universal Balance</FeatureCardTitle>
+            <FeatureCardDescription>
+              Echo credits can be used on any app in our network
+            </FeatureCardDescription>
+          </FeatureCardFooter>
+        </FeatureCard> */}
+
 
       </div>
     </Section>
