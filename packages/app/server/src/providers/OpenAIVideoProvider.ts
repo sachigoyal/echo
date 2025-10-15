@@ -226,6 +226,10 @@ export class OpenAIVideoProvider extends BaseProvider {
         const refundAmount = decimalToUsdcBigInt(video.cost);
         await transfer(video.wallet as `0x${string}`, refundAmount);
       }
+      if (video.userId) {
+        // Proccess the refund to the user. There is some level of complexity here since there is a markup. Not as simple as just credit grant.
+        logger.info(`Refunding video generation ${video.videoId} to user ${video.userId} on app ${video.echoAppId}`);
+      }
       await tx.videoGenerationX402.update({
         where: {
           videoId: video.videoId,

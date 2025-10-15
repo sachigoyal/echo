@@ -32,7 +32,7 @@ export class EchoControlService {
 
   constructor(db: PrismaClient, apiKey: string) {
     // Check if the generated Prisma client exists
-    const generatedPrismaPath = join(__dirname, '..', 'generated', 'prisma');
+    const generatedPrismaPath = join(__dirname, 'generated', 'prisma');
     if (!existsSync(generatedPrismaPath)) {
       throw new Error(
         `Generated Prisma client not found at ${generatedPrismaPath}. ` +
@@ -309,11 +309,11 @@ export class EchoControlService {
       markUpProfit,
     } = await this.computeTransactionCosts(transaction, this.referralCodeId);
 
-    logger.error(
+    logger.info(
       `Transaction cost: ${rawTransactionCost}, Max cost: ${maxCost}`
     );
     if (rawTransactionCost.greaterThan(maxCost)) {
-      logger.error(` Difference: ${rawTransactionCost.minus(maxCost)}`);
+      logger.warn(` Difference: ${rawTransactionCost.minus(maxCost)}`);
     }
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
