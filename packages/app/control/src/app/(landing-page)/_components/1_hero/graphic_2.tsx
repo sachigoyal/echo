@@ -218,7 +218,7 @@ const ShirtslopImageReveal: React.FC<{ src: string; delay: number; isActive: boo
     }, [isActive, delay]);
 
     return (
-        <div className="relative w-16 h-16 overflow-hidden rounded-md">
+        <div className="relative w-16 h-16 overflow-hidden rounded-md border border-border">
             {/* Blurred background */}
             <Image
                 src={src}
