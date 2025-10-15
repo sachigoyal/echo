@@ -25,19 +25,7 @@ export const Features = () => {
           <FeatureCardFooter>
             <FeatureCardTitle>Managed Auth</FeatureCardTitle>
             <FeatureCardDescription>
-              Prebuilt components for login, balance and top-ups
-            </FeatureCardDescription>
-          </FeatureCardFooter>
-        </FeatureCard>
-
-        <FeatureCard>
-          <FeatureCardComponent>
-            <AnyModel />
-          </FeatureCardComponent>
-          <FeatureCardFooter>
-            <FeatureCardTitle>Any Model Provider</FeatureCardTitle>
-            <FeatureCardDescription>
-              Serve any model with maximum rate limits and minimum latency
+              Pre-built components for login, balance and top-ups
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
@@ -49,10 +37,23 @@ export const Features = () => {
           <FeatureCardFooter>
             <FeatureCardTitle>Zero-Risk Billing</FeatureCardTitle>
             <FeatureCardDescription>
-              Every token your users consume is profit, Echo is responsible for costs
+              Users pay for usage, Echo pays costs and returns your profit
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
+
+        <FeatureCard>
+          <FeatureCardComponent>
+            <AnyModel />
+          </FeatureCardComponent>
+          <FeatureCardFooter>
+            <FeatureCardTitle>Any Model, Any Scale</FeatureCardTitle>
+            <FeatureCardDescription>
+              Serve any model with maximum rate limits and minimum latency
+            </FeatureCardDescription>
+          </FeatureCardFooter>
+        </FeatureCard>
+
 
         {/* <FeatureCard>
           <FeatureCardComponent>

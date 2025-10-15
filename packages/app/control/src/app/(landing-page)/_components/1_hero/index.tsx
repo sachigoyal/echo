@@ -138,11 +138,17 @@ export const Hero = () => {
               dashedBorder
             )}
           >
-            User Pays AI Infrastructure
+            User Pays AI SDK
           </h1>
         </div>
-        <p className={cn('text-center max-w-sm', dashedBorder)}>
+        {/* <p className={cn('text-center max-w-sm', dashedBorder)}>
           $0 down. Production ready in minutes.
+        </p>
+        <p className={cn('text-center max-w-sm', dashedBorder)}>
+          No API keys. Never front API costs.
+        </p> */}
+        <p className={cn('text-center max-w-sm', dashedBorder)}>
+          Your users pay as they go. You never front the bill.
         </p>
         <div className={cn('flex justify-center gap-2')}>
           <Link href="/login?redirect_url=/new">
