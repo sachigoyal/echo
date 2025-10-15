@@ -8,9 +8,9 @@ import {
 import { Transaction } from 'types';
 
 export const calculateTavilySearchCost = (
-  input: TavilySearchInput
+  input: TavilySearchInput | undefined
 ): Decimal => {
-  const price = TAVILY_SEARCH_PRICING[input.search_depth ?? 'basic'];
+  const price = TAVILY_SEARCH_PRICING[input?.search_depth ?? 'basic'];
   return new Decimal(price).mul(CREDIT_PRICE);
 };
 

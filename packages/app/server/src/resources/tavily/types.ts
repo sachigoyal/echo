@@ -36,7 +36,7 @@ export const TavilySearchResultSchema = z.object({
 
 export const TavilySearchOutputSchema = z.object({
   query: z.string(),
-  answer: z.string().optional(),
+  answer: z.string().nullish(),
   images: z.array(z.string()),
   results: z.array(TavilySearchResultSchema),
   auto_parameters: z
