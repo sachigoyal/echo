@@ -24,7 +24,7 @@ export const Features = () => {
             <Login />
           </FeatureCardComponent>
           <FeatureCardFooter>
-            <FeatureCardTitle>Auth Managed</FeatureCardTitle>
+            <FeatureCardTitle>Managed Auth</FeatureCardTitle>
             <FeatureCardDescription>
               Prebuilt components for login, balance and top-ups
             </FeatureCardDescription>
@@ -50,7 +50,7 @@ export const Features = () => {
           <FeatureCardFooter>
             <FeatureCardTitle>Zero-Risk Billing</FeatureCardTitle>
             <FeatureCardDescription>
-              Every token your users consume is profit, we handle the costs
+              Every token your users consume is profit, Echo is responsible for costs
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
