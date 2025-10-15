@@ -13,6 +13,7 @@ import {
   TavilySearchInputSchema,
   TavilySearchOutputSchema,
 } from 'resources/tavily/types';
+import { E2BExecuteInputSchema, E2BExecuteOutputSchema } from 'resources/e2b/types';
 
 export function getSchemaForRoute(path: string):
   | {
@@ -89,6 +90,22 @@ export function getSchemaForRoute(path: string):
       target: 'openapi-3.0',
     });
     const outputSchema = z.toJSONSchema(TavilySearchOutputSchema, {
+      target: 'openapi-3.0',
+    });
+    return {
+      input: {
+        type: 'http',
+        method: 'POST',
+        bodyFields: inputSchema.properties,
+      },
+      output: outputSchema.properties,
+    };
+  }
+  if (path.endsWith('/e2b/execute')) {
+    const inputSchema = z.toJSONSchema(E2BExecuteInputSchema, {
+      target: 'openapi-3.0',
+    });
+    const outputSchema = z.toJSONSchema(E2BExecuteOutputSchema, {
       target: 'openapi-3.0',
     });
     return {
