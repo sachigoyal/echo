@@ -149,7 +149,7 @@ const ToolkitBody: React.FC<CardBodyProps> = ({ isActive }) => {
     };
 
     return (
-        <div className="flex flex-col gap-2 h-full pt-2">
+        <div className="flex flex-col gap-2 h-full">
             {/* User message */}
             <div className="ml-auto max-w-[80%]">
                 <div className="text-xs bg-primary text-primary-foreground rounded-lg px-2 py-1.5">
@@ -262,7 +262,7 @@ const ShirtslopBody: React.FC<CardBodyProps> = ({ isActive }) => {
             setTimeout(() => {
                 setShowOnShirt(true);
             }, 300);
-        }, 3200);
+        }, 2450);
 
         return () => clearTimeout(selectTimeout);
     }, [isActive]);
@@ -320,7 +320,7 @@ const ShirtslopBody: React.FC<CardBodyProps> = ({ isActive }) => {
 };
 
 const EchoVibesBody: React.FC<CardBodyProps> = ({ isActive }) => {
-    const promptText = 'Make a landing page for my indie project';
+    const promptText = 'Indie project landing page';
     const [displayText, setDisplayText] = React.useState('');
     const [showExecuting, setShowExecuting] = React.useState(false);
     const [showBrowser, setShowBrowser] = React.useState(false);
