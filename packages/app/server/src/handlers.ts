@@ -118,6 +118,7 @@ export async function handleX402Request({
             videoId: transaction.metadata.providerId,
             wallet: payload.authorization.from,
             cost: transaction.rawTransactionCost,
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
           },
         });
       }
