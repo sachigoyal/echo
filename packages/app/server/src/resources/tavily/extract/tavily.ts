@@ -6,6 +6,7 @@ import {
   TavilyExtractOutputSchema,
 } from './types';
 import { Transaction } from '../../../types';
+import { HttpError } from 'errors/http';
 
 export const calculateTavilyExtractMaxCost = (
   input: TavilyExtractInput | undefined
@@ -58,6 +59,8 @@ export const createTavilyTransaction = (
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
+
+
 export async function tavilyExtract(
   input: TavilyExtractInput
 ): Promise<TavilyExtractOutput> {
@@ -72,7 +75,8 @@ export async function tavilyExtract(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(
+    throw new HttpError(
+      response.status,
       `Tavily API request failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }
