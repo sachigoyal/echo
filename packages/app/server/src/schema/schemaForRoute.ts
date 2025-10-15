@@ -12,7 +12,15 @@ import { CreateImagesRequest, CreateImagesResponse } from './image/openai';
 import {
   TavilySearchInputSchema,
   TavilySearchOutputSchema,
-} from 'resources/tavily/types';
+} from 'resources/tavily/search/types';
+import {
+  TavilyExtractInputSchema,
+  TavilyExtractOutputSchema,
+} from 'resources/tavily/extract/types';
+import {
+  TavilyCrawlInputSchema,
+  TavilyCrawlOutputSchema,
+} from 'resources/tavily/crawl/types';
 import {
   E2BExecuteInputSchema,
   E2BExecuteOutputSchema,
@@ -93,6 +101,38 @@ export function getSchemaForRoute(path: string):
       target: 'openapi-3.0',
     });
     const outputSchema = z.toJSONSchema(TavilySearchOutputSchema, {
+      target: 'openapi-3.0',
+    });
+    return {
+      input: {
+        type: 'http',
+        method: 'POST',
+        bodyFields: inputSchema.properties,
+      },
+      output: outputSchema.properties,
+    };
+  }
+  if (path.endsWith('/tavily/extract')) {
+    const inputSchema = z.toJSONSchema(TavilyExtractInputSchema, {
+      target: 'openapi-3.0',
+    });
+    const outputSchema = z.toJSONSchema(TavilyExtractOutputSchema, {
+      target: 'openapi-3.0',
+    });
+    return {
+      input: {
+        type: 'http',
+        method: 'POST',
+        bodyFields: inputSchema.properties,
+      },
+      output: outputSchema.properties,
+    };
+  }
+  if (path.endsWith('/tavily/crawl')) {
+    const inputSchema = z.toJSONSchema(TavilyCrawlInputSchema, {
+      target: 'openapi-3.0',
+    });
+    const outputSchema = z.toJSONSchema(TavilyCrawlOutputSchema, {
       target: 'openapi-3.0',
     });
     return {

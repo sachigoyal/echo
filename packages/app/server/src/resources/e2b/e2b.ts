@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { E2BExecuteOutput, E2BExecuteInput  } from "./types";
 import { DEFAULT_VCPU_COUNT, PRICE_PER_VCPU_PER_SECOND } from "./prices";
 import { Decimal } from "@prisma/client/runtime/library";
-import { Transaction } from "types";
+import { Transaction } from "../../types";
 dotenv.config();
 
 export const calculateE2BExecuteCost = (): Decimal => {
