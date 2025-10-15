@@ -6,6 +6,7 @@ import {
   TavilySearchOutputSchema,
 } from './types';
 import { Transaction } from '../../../types';
+import { HttpError } from 'errors/http';
 
 export const calculateTavilySearchCost = (
   input: TavilySearchInput | undefined
@@ -48,7 +49,8 @@ export async function tavilySearch(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(
+    throw new HttpError(
+      response.status,
       `Tavily API request failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }

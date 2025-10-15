@@ -6,6 +6,7 @@ import {
   TavilyCrawlOutputSchema,
 } from './types';
 import { Transaction } from '../../../types';
+import { HttpError } from 'errors/http';
 
 export const calculateTavilyCrawlMaxCost = (
   input: TavilyCrawlInput | undefined
@@ -91,7 +92,8 @@ export async function tavilyCrawl(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(
+    throw new HttpError(
+      response.status,
       `Tavily API request failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }

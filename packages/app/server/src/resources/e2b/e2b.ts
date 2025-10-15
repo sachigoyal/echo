@@ -4,6 +4,7 @@ import { E2BExecuteOutput, E2BExecuteInput  } from "./types";
 import { DEFAULT_VCPU_COUNT, PRICE_PER_VCPU_PER_SECOND } from "./prices";
 import { Decimal } from "@prisma/client/runtime/library";
 import { Transaction } from "../../types";
+import { HttpError } from 'errors/http';
 dotenv.config();
 
 export const calculateE2BExecuteCost = (): Decimal => {
@@ -37,27 +38,35 @@ export const e2bExecutePythonSnippet = async (snippet: string): Promise<E2BExecu
       "E2B_API_KEY environment variable is required but not set",
     );
   }
+  try {
 
-  const startTime = performance.now();
-  const sandbox = await Sandbox.create({
-    apiKey: process.env.E2B_API_KEY,
-  });
-  const { results, logs, error, executionCount } = await sandbox.runCode(snippet, {
-    timeoutMs: 10000,
-    requestTimeoutMs: 15000,
-  });
-  await sandbox.kill();
-  const endTime = performance.now();
-  const durationMs = endTime - startTime;
-  const duration = durationMs / 1000;
-  const cost = duration * PRICE_PER_VCPU_PER_SECOND * DEFAULT_VCPU_COUNT;
-  return {
-    results: results,
-    logs: logs,
-    error: error,
-    executionCount: executionCount,
-    cost: cost,
-    sandboxId: sandbox.sandboxId,
-    duration: duration,
-  };
+    const startTime = performance.now();
+    const sandbox = await Sandbox.create({
+        apiKey: process.env.E2B_API_KEY,
+    });
+    const { results, logs, error, executionCount } = await sandbox.runCode(snippet, {
+        timeoutMs: 10000,
+        requestTimeoutMs: 15000,
+    });
+    await sandbox.kill();
+    const endTime = performance.now();
+    const durationMs = endTime - startTime;
+    const duration = durationMs / 1000;
+    const cost = duration * PRICE_PER_VCPU_PER_SECOND * DEFAULT_VCPU_COUNT;
+    return {
+        results: results,
+        logs: logs,
+        error: error,
+        executionCount: executionCount,
+        cost: cost,
+        sandboxId: sandbox.sandboxId,
+        duration: duration,
+    };
+  } catch (error) {
+    const errorText = error instanceof Error ? error.message : 'Unknown error';
+    throw new HttpError(
+      400,
+      `E2B API request failed: ${errorText}`
+    );
+  }
 };

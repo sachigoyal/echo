@@ -7,6 +7,7 @@ import { prisma } from 'server';
 import { settle, finalize, refund } from 'handlers';
 import logger from 'logger';
 import { ExactEvmPayload } from 'services/facilitator/x402-types';
+import { HttpError, PaymentRequiredError } from 'errors/http';
 
 type ResourceHandlerConfig<TInput, TOutput> = {
   inputSchema: ZodSchema<TInput>;
@@ -42,14 +43,13 @@ async function handle402Request<TInput, TOutput>(
   parsedBody: TInput,
   headers: Record<string, string>,
   safeMaxCost: Decimal,
-  maxCost: Decimal,
   config: ResourceHandlerConfig<TInput, TOutput>
-): Promise<{ output: TOutput } | { error: true }> {
+): Promise<TOutput> {
   const { executeResource, calculateActualCost, createTransaction } = config;
 
   const settleResult = await settle(req, res, headers, safeMaxCost);
   if (!settleResult) {
-    return { error: true };
+    throw new PaymentRequiredError('Payment required, settle failed');
   }
 
   const { payload, paymentAmountDecimal } = settleResult;
@@ -64,11 +64,11 @@ async function handle402Request<TInput, TOutput>(
   const actualCost = calculateActualCost(parsedBody, output);
   const transaction = createTransaction(parsedBody, output, actualCost);
 
-  finalize(paymentAmountDecimal, transaction, payload).catch((error) => {
+  finalize(paymentAmountDecimal, transaction, payload).catch(error => {
     logger.error('Failed to finalize transaction', error);
   });
 
-  return { output };
+  return output;
 }
 
 async function executeResourceWithRefund<TInput, TOutput>(
@@ -77,8 +77,8 @@ async function executeResourceWithRefund<TInput, TOutput>(
   paymentAmountDecimal: Decimal,
   payload: ExactEvmPayload
 ): Promise<TOutput> {
-    try {
-  const output = await executeResource(parsedBody);
+  try {
+    const output = await executeResource(parsedBody);
     return output;
   } catch (error) {
     await refund(paymentAmountDecimal, payload);
@@ -103,7 +103,9 @@ export async function handleResourceRequest<TInput, TOutput>(
   }
 
   if (!inputBody.success) {
-    return res.status(400).json({ error: 'Invalid body', issues: inputBody.error.issues });
+    return res
+      .status(400)
+      .json({ error: 'Invalid body', issues: inputBody.error.issues });
   }
 
   const parsedBody = inputBody.data;
@@ -120,21 +122,24 @@ export async function handleResourceRequest<TInput, TOutput>(
   }
 
   if (isX402Request(headers)) {
-    const result = await handle402Request(
-      req,
-      res,
-      parsedBody,
-      headers,
-      safeMaxCost,
-      maxCost,
-      config
-    );
-
-    if ('error' in result) {
-      return buildX402Response(req, res, maxCost);
+    try {
+      const result = await handle402Request(
+        req,
+        res,
+        parsedBody,
+        headers,
+        safeMaxCost,
+        config
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      if (error instanceof PaymentRequiredError) {
+        logger.error('Failed to handle 402 request', error);
+        return buildX402Response(req, res, safeMaxCost);
+      }
+      logger.error('Failed to handle 402 request', error);
+      return res.status(500).json({ error: 'Internal server error' });
     }
-
-    return res.status(200).json(result.output);
   }
 
   return buildX402Response(req, res, safeMaxCost);
@@ -145,11 +150,17 @@ export async function handleResourceRequestWithErrorHandling<TInput, TOutput>(
   res: Response,
   config: ResourceHandlerConfig<TInput, TOutput>
 ) {
-  const { errorMessage } = config;
-
-  return handleResourceRequest(req, res, config).catch((error) => {
+  try {
+    return await handleResourceRequest(req, res, config);
+  } catch (error) {
+    const { errorMessage } = config;
+    if (error instanceof HttpError) {
+      logger.error(errorMessage, error);
+      return res.status(error.statusCode).json({ error: errorMessage });
+    }
     logger.error(errorMessage, error);
-    return res.status(500).json({ error: 'Internal server error' });
-  });
+    return res
+      .status(500)
+      .json({ error: errorMessage || 'Internal server error' });
+  }
 }
-
