@@ -156,7 +156,9 @@ export async function handleX402Request({
   } catch (error) {
     const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal);
     const authPayload = payload.authorization;
-    await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
+    await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt).catch((error) => {
+      console.error('Failed to transfer refund amount:', error);
+    });
   }
 }
 

@@ -1,11 +1,11 @@
 import { Decimal } from '@prisma/client/runtime/library';
-import { CREDIT_PRICE, TAVILY_SEARCH_PRICING } from './prices';
+import { CREDIT_PRICE, TAVILY_SEARCH_PRICING } from '../prices';
 import {
   TavilySearchInput,
   TavilySearchOutput,
   TavilySearchOutputSchema,
 } from './types';
-import { Transaction } from 'types';
+import { Transaction } from '../../../types';
 
 export const calculateTavilySearchCost = (
   input: TavilySearchInput | undefined
