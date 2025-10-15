@@ -13,7 +13,10 @@ import {
   TavilySearchInputSchema,
   TavilySearchOutputSchema,
 } from 'resources/tavily/types';
-import { E2BExecuteInputSchema, E2BExecuteOutputSchema } from 'resources/e2b/types';
+import {
+  E2BExecuteInputSchema,
+  E2BExecuteOutputSchema,
+} from 'resources/e2b/types';
 
 export function getSchemaForRoute(path: string):
   | {
