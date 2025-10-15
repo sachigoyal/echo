@@ -9,7 +9,6 @@ import {
 
 import { AnyModel } from './features/any-model';
 import { Billing } from './features/billing';
-import { UniversalBalance } from './features/universal-balance';
 
 import { cn } from '@/lib/utils';
 import { Login } from './features/login';

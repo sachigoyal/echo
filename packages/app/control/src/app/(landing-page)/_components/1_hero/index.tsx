@@ -1,4 +1,3 @@
-import { HeroGraphic } from './graphic';
 import { AuroraText } from '@/components/magicui/aurora-text';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -73,7 +72,6 @@ const Card: React.FC<CardProps> = ({
     image,
     title,
     description,
-    author,
     earnings,
     users,
 }) => {

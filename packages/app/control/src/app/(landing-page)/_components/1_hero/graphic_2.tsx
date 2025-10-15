@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React, { useEffect } from 'react';
 
 import { Users, Calendar, Mail, Loader2, Check } from 'lucide-react';
-import { motion, useAnimate } from 'motion/react';
+import { motion } from 'motion/react';
 
 
 import { formatCurrency } from '@/lib/utils';
@@ -91,8 +91,8 @@ const ToolkitBody: React.FC<CardBodyProps> = ({ isActive }) => {
         if (!isActive) {
             setUserText('');
             setShowTools(false);
-            setTool1({ ...tool1, displayText: '', isTyping: false, isLoading: false, isComplete: false });
-            setTool2({ ...tool2, displayText: '', isTyping: false, isLoading: false, isComplete: false });
+            setTool1({ text: 'Query Google Calendar', displayText: '', isTyping: false, isLoading: false, isComplete: false });
+            setTool2({ text: 'Sending email to bill@merit.systems', displayText: '', isTyping: false, isLoading: false, isComplete: false });
             return;
         }
 
@@ -114,6 +114,7 @@ const ToolkitBody: React.FC<CardBodyProps> = ({ isActive }) => {
         }, 30);
 
         return () => clearInterval(userInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]);
 
     const animateTool = (toolNum: number) => {
@@ -523,7 +524,6 @@ const Card: React.FC<CardProps> = ({
     image,
     title,
     body: BodyComponent,
-    author,
     earnings,
     users,
     isFirst = false,
