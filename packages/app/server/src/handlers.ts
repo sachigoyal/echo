@@ -211,6 +211,18 @@ export async function handleApiKeyRequest({
     isStream
   );
 
+  if (provider.getType() === ProviderType.OPENAI_VIDEOS) {
+    await prisma.videoGenerationX402.create({
+      data: {
+        videoId: transaction.metadata.providerId,
+        userId: echoControlService.getUserId()!,
+        echoAppId: echoControlService.getEchoAppId()!,
+        cost: transaction.rawTransactionCost,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      },
+    });
+  }
+
   // There is no actual refund, this logs if we underestimate the raw cost
   calculateRefundAmount(maxCost, transaction.rawTransactionCost);
 
