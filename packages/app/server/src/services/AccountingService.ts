@@ -124,7 +124,10 @@ export const getCostPerToken = (
   if (!modelPrice) {
     throw new Error(`Pricing information not found for model: ${model}`);
   }
-  if (modelPrice.input_cost_per_token < 0 || modelPrice.output_cost_per_token < 0) {
+  if (
+    modelPrice.input_cost_per_token < 0 ||
+    modelPrice.output_cost_per_token < 0
+  ) {
     throw new Error(`Invalid pricing for model: ${model}`);
   }
 
