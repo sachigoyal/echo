@@ -1,16 +1,17 @@
 import { Decimal } from '@prisma/client/runtime/library';
-import { CREDIT_PRICE, TAVILY_SEARCH_PRICING } from './prices';
+import { CREDIT_PRICE, TAVILY_SEARCH_PRICING } from '../prices';
 import {
   TavilySearchInput,
   TavilySearchOutput,
   TavilySearchOutputSchema,
 } from './types';
-import { Transaction } from 'types';
+import { Transaction } from '../../../types';
+import { HttpError } from 'errors/http';
 
 export const calculateTavilySearchCost = (
-  input: TavilySearchInput
+  input: TavilySearchInput | undefined
 ): Decimal => {
-  const price = TAVILY_SEARCH_PRICING[input.search_depth ?? 'basic'];
+  const price = TAVILY_SEARCH_PRICING[input?.search_depth ?? 'basic'];
   return new Decimal(price).mul(CREDIT_PRICE);
 };
 
@@ -48,7 +49,8 @@ export async function tavilySearch(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(
+    throw new HttpError(
+      response.status,
       `Tavily API request failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }

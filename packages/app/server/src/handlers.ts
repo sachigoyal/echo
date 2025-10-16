@@ -25,6 +25,19 @@ import { Decimal } from '@prisma/client/runtime/library';
 import logger from 'logger';
 import { Request, Response } from 'express';
 
+export async function refund(
+  paymentAmountDecimal: Decimal,
+  payload: ExactEvmPayload
+) {
+  try {
+  const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal);
+    const authPayload = payload.authorization;
+    await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
+  } catch (error) {
+    logger.error('Failed to refund', error);
+  }
+}
+
 export async function settle(
   req: Request,
   res: Response,
@@ -154,9 +167,7 @@ export async function handleX402Request({
       payload
     );
   } catch (error) {
-    const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal);
-    const authPayload = payload.authorization;
-    await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
+    await refund(paymentAmountDecimal, payload);
   }
 }
 
