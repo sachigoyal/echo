@@ -26,7 +26,7 @@ describe.concurrent('OpenRouter generateText per model', () => {
       continue;
     }
 
-    it(`OpenAI ${model_id}`, async () => {
+    it(`OpenRouter generateText ${model_id}`, async () => {
       try {
         const { text } = await generateText({
           model: openrouter(model_id),
