@@ -2,53 +2,8 @@ import { LlmTransactionMetadata, Transaction } from '../types';
 import { getCostPerToken } from '../services/AccountingService';
 import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
+import { CompletionStateBody, parseSSEGPTFormat } from './GPTProvider';
 import logger from '../logger';
-
-export interface CompletionStateBody {
-  id: string;
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
-
-export interface StreamingChunkBody {
-  id: string;
-  choices: {
-    index: number;
-    delta: {
-      content?: string;
-    };
-    finish_reason: string | null;
-  }[];
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  } | null;
-}
-
-export const parseSSEGPTFormat = (data: string): StreamingChunkBody[] => {
-  const events = data.split('\n\n');
-  const chunks: StreamingChunkBody[] = [];
-
-  for (const event of events) {
-    if (!event.trim()) continue;
-    if (event.startsWith('data: ')) {
-      const jsonStr = event.slice(6);
-      if (jsonStr.trim() === '[DONE]') continue;
-      try {
-        const parsed = JSON.parse(jsonStr);
-        chunks.push(parsed);
-      } catch (error) {
-        logger.error(`Error parsing SSE chunk: ${error}`);
-      }
-    }
-  }
-
-  return chunks;
-};
 
 export class GroqProvider extends BaseProvider {
   private readonly GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
