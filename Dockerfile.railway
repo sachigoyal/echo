@@ -69,38 +69,41 @@ RUN apk add --no-cache \
     git \
     openssh-client 
 
-# Copy dependency files for caching
+# Copy pnpm workspace and lock files for dependency installation
 COPY pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
+COPY tsconfig.base.json ./
 COPY turbo.json ./
 
-# Copy all source code (needed for postinstall scripts)
+# Copy all project files first
 COPY packages/app/control/ ./packages/app/control/
 COPY packages/app/server/ ./packages/app/server/
 COPY packages/sdk/ts/ ./packages/sdk/ts/
 COPY packages/sdk/next/ ./packages/sdk/next/
 COPY packages/sdk/react/ ./packages/sdk/react/
+# we are now also copy the examples because pnpm install needs it
 COPY packages/sdk/examples/next/ ./packages/sdk/examples/next/
 COPY packages/sdk/examples/vite/ ./packages/sdk/examples/vite/
 COPY packages/sdk/component-registry/ ./packages/sdk/component-registry/
-COPY tsconfig.base.json ./
 
-# Install dependencies (needs source files for postinstall scripts)
+# Install all workspace dependencies
 WORKDIR /app
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
-# Generate Prisma client first (before build)
+# Build only what's needed for the server
+WORKDIR /app
+RUN SKIP_ENV_VALIDATION=true pnpm exec turbo run build --filter=echo-server
+
+# Generate Prisma client and copy schema for server
 WORKDIR /app/packages/app/control
 RUN pnpm run prisma:generate
 
-# Copy Prisma files to server
 WORKDIR /app/packages/app/server
-RUN pnpm run copy-schema && pnpm run prisma:generate
+RUN pnpm run copy-prisma
 
-# Build only the server package
-WORKDIR /app
-RUN SKIP_ENV_VALIDATION=true pnpm exec turbo run build --filter=echo-server
+# Step 4: Install production dependencies only
+RUN pnpm install --prod
 
 # Expose the port that echo-server runs on
 EXPOSE 3069
