@@ -75,21 +75,7 @@ COPY pnpm-workspace.yaml ./
 COPY package.json ./
 COPY turbo.json ./
 
-# Copy only package.json files first for better caching
-COPY packages/app/control/package.json ./packages/app/control/package.json
-COPY packages/app/server/package.json ./packages/app/server/package.json
-COPY packages/sdk/ts/package.json ./packages/sdk/ts/package.json
-COPY packages/sdk/next/package.json ./packages/sdk/next/package.json
-COPY packages/sdk/react/package.json ./packages/sdk/react/package.json
-COPY packages/sdk/examples/next/package.json ./packages/sdk/examples/next/package.json
-COPY packages/sdk/examples/vite/package.json ./packages/sdk/examples/vite/package.json
-COPY packages/sdk/component-registry/package.json ./packages/sdk/component-registry/package.json
-
-# Install dependencies first (cached if package.json unchanged)
-WORKDIR /app
-RUN pnpm install --frozen-lockfile
-
-# Copy source code after deps are installed
+# Copy all source code (needed for postinstall scripts)
 COPY packages/app/control/ ./packages/app/control/
 COPY packages/app/server/ ./packages/app/server/
 COPY packages/sdk/ts/ ./packages/sdk/ts/
@@ -99,6 +85,10 @@ COPY packages/sdk/examples/next/ ./packages/sdk/examples/next/
 COPY packages/sdk/examples/vite/ ./packages/sdk/examples/vite/
 COPY packages/sdk/component-registry/ ./packages/sdk/component-registry/
 COPY tsconfig.base.json ./
+
+# Install dependencies (needs source files for postinstall scripts)
+WORKDIR /app
+RUN pnpm install --frozen-lockfile
 
 # Generate Prisma client first (before build)
 WORKDIR /app/packages/app/control
