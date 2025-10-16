@@ -22,6 +22,7 @@ import {
   handleSignOut,
   handleSession,
 } from './auth/oauth-handlers';
+import { createEchoGroq } from 'ai-providers/groq';
 
 /**
  * Echo SDK for Next.js
@@ -112,5 +113,6 @@ export default function Echo(config: EchoConfig): EchoResult {
     openai: createEchoOpenAI(config),
     anthropic: createEchoAnthropic(config),
     google: createEchoGoogle(config),
+    groq: createEchoGroq(config),
   };
 }
