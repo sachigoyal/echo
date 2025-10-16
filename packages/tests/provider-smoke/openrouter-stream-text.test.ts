@@ -53,6 +53,6 @@ describe.concurrent('OpenAI streamText per model', () => {
           `[streamText] OpenRouter ${model_id} failed: ${details}`
         );
       }
-    }, 45000); // 45 second timeout per test
+    }); // 45 second timeout per test
   }
 });
