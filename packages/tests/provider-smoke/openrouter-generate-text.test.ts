@@ -40,6 +40,6 @@ describe.concurrent('OpenRouter generateText per model', () => {
           `[generateText] OpenRouter ${model_id} failed: ${details}`
         );
       }
-    }, 45_000); // 15 second timeout per test
+    }); // 15 second timeout per test
   }
 });
