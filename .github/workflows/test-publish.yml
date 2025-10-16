@@ -26,7 +26,7 @@ on:
 jobs:
   test-publish:
     name: Test SDK publishing workflow
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-l
     outputs:
       typescript-ready: ${{ steps.test-typescript.outputs.ready }}
       react-ready: ${{ steps.test-react.outputs.ready }}
