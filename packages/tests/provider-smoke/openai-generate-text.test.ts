@@ -63,6 +63,6 @@ describe.concurrent('OpenAI generateText per model', () => {
         const details = getApiErrorDetails(err);
         throw new Error(`[generateText] OpenAI ${model_id} failed: ${details}`);
       }
-    }, 15_000);
+    });
   }
 });
