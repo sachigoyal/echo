@@ -103,7 +103,7 @@ WORKDIR /app/packages/app/server
 RUN pnpm run copy-prisma
 
 # Step 4: Install production dependencies only
-RUN pnpm install
+RUN pnpm install --prod
 
 # Expose the port that echo-server runs on
 EXPOSE 3069
