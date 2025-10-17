@@ -33,7 +33,8 @@ export const calculateTavilyExtractActualCost = (
   const { creditsPerUnit, urlsPerCredit } = TAVILY_EXTRACT_PRICING[depth];
 
   // Calculate actual cost based on successful URLs
-  const credits = Math.ceil(successfulUrlCount / urlsPerCredit) * creditsPerUnit;
+  const credits =
+    Math.ceil(successfulUrlCount / urlsPerCredit) * creditsPerUnit;
   return new Decimal(credits).mul(CREDIT_PRICE);
 };
 
@@ -59,8 +60,6 @@ export const createTavilyTransaction = (
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
-
-
 export async function tavilyExtract(
   input: TavilyExtractInput
 ): Promise<TavilyExtractOutput> {
@@ -84,4 +83,3 @@ export async function tavilyExtract(
   const data = await response.json();
   return TavilyExtractOutputSchema.parse(data);
 }
-

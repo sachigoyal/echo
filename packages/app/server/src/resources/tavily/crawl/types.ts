@@ -35,4 +35,3 @@ export const TavilyCrawlOutputSchema = z.object({
 });
 
 export type TavilyCrawlOutput = z.infer<typeof TavilyCrawlOutputSchema>;
-

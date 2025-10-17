@@ -1,8 +1,4 @@
-import {
-  createEchoGoogle,
-  createEchoGroq,
-  GeminiModels,
-} from '@merit-systems/echo-typescript-sdk';
+import { createEchoGroq, GroqModels } from '@merit-systems/echo-typescript-sdk';
 import { generateText } from 'ai';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -19,7 +15,7 @@ beforeAll(assertEnv);
 describe.concurrent('Groq generateText per model', () => {
   const groq = createEchoGroq({ appId: ECHO_APP_ID!, baseRouterUrl }, getToken);
 
-  for (const { model_id } of GeminiModels) {
+  for (const { model_id } of GroqModels) {
     if (NON_CHAT_MODELS.includes(model_id)) {
       continue;
     }

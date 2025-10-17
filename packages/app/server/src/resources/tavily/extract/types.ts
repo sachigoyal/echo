@@ -33,4 +33,3 @@ export const TavilyExtractOutputSchema = z.object({
 });
 
 export type TavilyExtractOutput = z.infer<typeof TavilyExtractOutputSchema>;
-

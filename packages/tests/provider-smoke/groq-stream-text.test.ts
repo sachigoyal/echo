@@ -1,8 +1,4 @@
-import {
-  createEchoGoogle,
-  createEchoGroq,
-  GeminiModels,
-} from '@merit-systems/echo-typescript-sdk';
+import { createEchoGroq, GroqModels } from '@merit-systems/echo-typescript-sdk';
 import { streamText } from 'ai';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -16,18 +12,14 @@ import {
 beforeAll(assertEnv);
 
 export const NON_CHAT_MODELS = [
-  'gemini-2.0-flash-preview-image-generation',
-  'gemini-2.5-flash-preview-tts',
-  'gemini-2.5-pro-preview-tts',
-  'gemini-2.0-flash-preview-image-generation',
-  'gemini-2.0-flash-exp-image-generation',
-  'gemini-2.0-flash-thinking-exp',
+  'meta-llama/llama-prompt-guard-2-22m',
+  'meta-llama/llama-prompt-guard-2-86m',
 ];
 
 describe.concurrent('Groq streamText per model', () => {
   const groq = createEchoGroq({ appId: ECHO_APP_ID!, baseRouterUrl }, getToken);
 
-  for (const { model_id } of GeminiModels) {
+  for (const { model_id } of GroqModels) {
     if (NON_CHAT_MODELS.includes(model_id)) {
       continue;
     }
