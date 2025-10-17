@@ -1,5 +1,9 @@
 import { Decimal } from '@prisma/client/runtime/library';
-import { CREDIT_PRICE, TAVILY_MAP_PRICING, TAVILY_EXTRACT_PRICING } from '../prices';
+import {
+  CREDIT_PRICE,
+  TAVILY_MAP_PRICING,
+  TAVILY_EXTRACT_PRICING,
+} from '../prices';
 import {
   TavilyCrawlInput,
   TavilyCrawlOutput,
@@ -21,13 +25,15 @@ export const calculateTavilyCrawlMaxCost = (
   const extractDepth = input.extract_depth ?? 'basic';
 
   // Mapping cost
-  const mapPricing = hasInstructions 
-    ? TAVILY_MAP_PRICING.withInstructions 
+  const mapPricing = hasInstructions
+    ? TAVILY_MAP_PRICING.withInstructions
     : TAVILY_MAP_PRICING.regular;
-  const mapCredits = Math.ceil(maxPages / mapPricing.pagesPerCredit) * mapPricing.creditsPerUnit;
+  const mapCredits =
+    Math.ceil(maxPages / mapPricing.pagesPerCredit) * mapPricing.creditsPerUnit;
 
   // Extraction cost
-  const { creditsPerUnit, urlsPerCredit } = TAVILY_EXTRACT_PRICING[extractDepth];
+  const { creditsPerUnit, urlsPerCredit } =
+    TAVILY_EXTRACT_PRICING[extractDepth];
   const extractCredits = Math.ceil(maxPages / urlsPerCredit) * creditsPerUnit;
 
   const totalCredits = mapCredits + extractCredits;
@@ -43,14 +49,18 @@ export const calculateTavilyCrawlActualCost = (
   const extractDepth = input.extract_depth ?? 'basic';
 
   // Mapping cost
-  const mapPricing = hasInstructions 
-    ? TAVILY_MAP_PRICING.withInstructions 
+  const mapPricing = hasInstructions
+    ? TAVILY_MAP_PRICING.withInstructions
     : TAVILY_MAP_PRICING.regular;
-  const mapCredits = Math.ceil(successfulPages / mapPricing.pagesPerCredit) * mapPricing.creditsPerUnit;
+  const mapCredits =
+    Math.ceil(successfulPages / mapPricing.pagesPerCredit) *
+    mapPricing.creditsPerUnit;
 
   // Extraction cost
-  const { creditsPerUnit, urlsPerCredit } = TAVILY_EXTRACT_PRICING[extractDepth];
-  const extractCredits = Math.ceil(successfulPages / urlsPerCredit) * creditsPerUnit;
+  const { creditsPerUnit, urlsPerCredit } =
+    TAVILY_EXTRACT_PRICING[extractDepth];
+  const extractCredits =
+    Math.ceil(successfulPages / urlsPerCredit) * creditsPerUnit;
 
   const totalCredits = mapCredits + extractCredits;
   return new Decimal(totalCredits).mul(CREDIT_PRICE);
@@ -101,4 +111,3 @@ export async function tavilyCrawl(
   const data = await response.json();
   return TavilyCrawlOutputSchema.parse(data);
 }
-

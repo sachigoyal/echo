@@ -45,6 +45,8 @@ export type OpenRouterModel =
   | 'cohere/command-r7b-12-2024'
   | 'deepcogito/cogito-v2-preview-deepseek-671b'
   | 'deepcogito/cogito-v2-preview-llama-109b-moe'
+  | 'deepcogito/cogito-v2-preview-llama-405b'
+  | 'deepcogito/cogito-v2-preview-llama-70b'
   | 'deepseek/deepseek-chat'
   | 'deepseek/deepseek-chat-v3-0324'
   | 'deepseek/deepseek-chat-v3.1'
@@ -77,6 +79,8 @@ export type OpenRouterModel =
   | 'gryphe/mythomax-l2-13b'
   | 'inception/mercury'
   | 'inception/mercury-coder'
+  | 'inclusionai/ling-1t'
+  | 'inclusionai/ring-1t'
   | 'inflection/inflection-3-pi'
   | 'inflection/inflection-3-productivity'
   | 'liquid/lfm-3b'
@@ -532,6 +536,18 @@ export const OpenRouterModels: SupportedModel[] = [
     provider: 'OpenRouter',
   },
   {
+    model_id: 'deepcogito/cogito-v2-preview-llama-405b',
+    input_cost_per_token: 0.0000035,
+    output_cost_per_token: 0.0000035,
+    provider: 'OpenRouter',
+  },
+  {
+    model_id: 'deepcogito/cogito-v2-preview-llama-70b',
+    input_cost_per_token: 8.8e-7,
+    output_cost_per_token: 8.8e-7,
+    provider: 'OpenRouter',
+  },
+  {
     model_id: 'deepseek/deepseek-chat',
     input_cost_per_token: 3e-7,
     output_cost_per_token: 8.5e-7,
@@ -721,6 +737,18 @@ export const OpenRouterModels: SupportedModel[] = [
     model_id: 'inception/mercury-coder',
     input_cost_per_token: 2.5e-7,
     output_cost_per_token: 0.000001,
+    provider: 'OpenRouter',
+  },
+  {
+    model_id: 'inclusionai/ling-1t',
+    input_cost_per_token: 4e-7,
+    output_cost_per_token: 0.000002,
+    provider: 'OpenRouter',
+  },
+  {
+    model_id: 'inclusionai/ring-1t',
+    input_cost_per_token: 5.7e-7,
+    output_cost_per_token: 0.00000228,
     provider: 'OpenRouter',
   },
   {
@@ -1661,8 +1689,8 @@ export const OpenRouterModels: SupportedModel[] = [
   },
   {
     model_id: 'qwen/qwen3-vl-235b-a22b-thinking',
-    input_cost_per_token: 4.5e-7,
-    output_cost_per_token: 0.0000035,
+    input_cost_per_token: 3e-7,
+    output_cost_per_token: 0.0000012,
     provider: 'OpenRouter',
   },
   {

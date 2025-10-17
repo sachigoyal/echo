@@ -11,11 +11,10 @@ import { handleResourceRequestWithErrorHandling } from '../../handler';
 export async function tavilyCrawlRoute(req: Request, res: Response) {
   return handleResourceRequestWithErrorHandling(req, res, {
     inputSchema: TavilyCrawlInputSchema,
-    calculateMaxCost: (input) => calculateTavilyCrawlMaxCost(input),
+    calculateMaxCost: input => calculateTavilyCrawlMaxCost(input),
     executeResource: tavilyCrawl,
     calculateActualCost: calculateTavilyCrawlActualCost,
     createTransaction: createTavilyTransaction,
     errorMessage: 'Error crawling tavily',
   });
 }
-

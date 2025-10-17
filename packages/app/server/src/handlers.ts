@@ -30,7 +30,7 @@ export async function refund(
   payload: ExactEvmPayload
 ) {
   try {
-  const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal);
+    const refundAmountUsdcBigInt = decimalToUsdcBigInt(paymentAmountDecimal);
     const authPayload = payload.authorization;
     await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
   } catch (error) {

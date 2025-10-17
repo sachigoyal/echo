@@ -1,33 +1,33 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Input schema
 export const E2BExecuteInputSchema = z.object({
-  snippet: z.string().min(1, "Code snippet cannot be empty"),
+  snippet: z.string().min(1, 'Code snippet cannot be empty'),
 });
 
 export type E2BExecuteInput = z.infer<typeof E2BExecuteInputSchema>;
 
 // Chart type enums
 export const ChartTypeSchema = z.enum([
-  "line",
-  "scatter",
-  "bar",
-  "pie",
-  "box_and_whisker",
-  "superchart",
-  "unknown",
+  'line',
+  'scatter',
+  'bar',
+  'pie',
+  'box_and_whisker',
+  'superchart',
+  'unknown',
 ]);
 
 export const ScaleTypeSchema = z.enum([
-  "linear",
-  "datetime",
-  "categorical",
-  "log",
-  "symlog",
-  "logit",
-  "function",
-  "functionlog",
-  "asinh",
+  'linear',
+  'datetime',
+  'categorical',
+  'log',
+  'symlog',
+  'logit',
+  'function',
+  'functionlog',
+  'asinh',
 ]);
 
 // Result schema
@@ -80,4 +80,3 @@ export const E2BExecuteOutputSchema = z.object({
 });
 
 export type E2BExecuteOutput = z.infer<typeof E2BExecuteOutputSchema>;
-
