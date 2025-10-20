@@ -37,22 +37,33 @@ describe.concurrent('xAI (Grok) streamText per model', () => {
     });
   }
 
-  // Basic coverage for X Search tool call translation
+  // Test xAI Live Search with searchParameters (correct approach)
   if (XAIModels.length > 0) {
     const modelId = XAIModels[0]!.model_id;
-    it(`xAI streamText with web_search_preview tool: ${modelId}`, async () => {
+    it(`xAI streamText with Live Search (searchParameters): ${modelId}`, async () => {
       try {
-        const { textStream } = streamText({
+        const { textStream, sources } = streamText({
           model: xai(modelId),
-          prompt: 'Name a recent event on X (one sentence).',
-          // We use OpenAI-style web_search_preview; server translates to xAI search=true
-          tools: {
-            web_search_preview: {},
-          } as any,
-        } as any);
+          prompt: 'What happened in tech news today? (one sentence)',
+          providerOptions: {
+            xai: {
+              searchParameters: {
+                mode: 'auto',
+                returnCitations: true,
+                sources: ['web', 'x'],
+              },
+            },
+          },
+        });
         let streamed = '';
         for await (const d of textStream) streamed += d;
         expect(streamed).toBeDefined();
+        expect(streamed).not.toBe('');
+
+        const resolvedSources = await sources;
+        if (resolvedSources && resolvedSources.length > 0) {
+          console.log(`✓ Search returned ${resolvedSources.length} sources`);
+        }
       } catch (err) {
         const details = getApiErrorDetails(err);
         throw new Error(

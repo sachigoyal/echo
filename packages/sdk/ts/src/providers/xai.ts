@@ -1,4 +1,4 @@
-import { createXAI as createXAIBase, XAIProvider } from '@ai-sdk/xai';
+import { createXai as createXAIBase, XaiProvider } from '@ai-sdk/xai';
 import { ROUTER_BASE_URL } from 'config';
 import { EchoConfig } from '../types';
 import { validateAppId } from '../utils/validation';
@@ -8,7 +8,7 @@ export function createEchoXAI(
   { appId, baseRouterUrl = ROUTER_BASE_URL }: EchoConfig,
   getTokenFn: (appId: string) => Promise<string | null>,
   onInsufficientFunds?: () => void
-): XAIProvider {
+): XaiProvider {
   validateAppId(appId, 'createEchoXAI');
 
   return createXAIBase({

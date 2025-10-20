@@ -62,4 +62,4 @@ export { type GoogleGenerativeAIProvider } from '@ai-sdk/google';
 export { type GroqProvider } from '@ai-sdk/groq';
 export { type OpenAIProvider } from '@ai-sdk/openai';
 export { type OpenRouterProvider } from '@openrouter/ai-sdk-provider';
-export { type XAIProvider } from '@ai-sdk/xai';
+export { type XaiProvider } from '@ai-sdk/xai';
