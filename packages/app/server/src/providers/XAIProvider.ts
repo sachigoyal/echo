@@ -24,31 +24,6 @@ export class XAIProvider extends BaseProvider {
     return true;
   }
 
-  // Allow users to request X Search via OpenAI-like tool call named "web_search_preview"
-  override transformRequestBody(
-    reqBody: Record<string, unknown>,
-    reqPath: string
-  ): Record<string, unknown> {
-    try {
-      // If tools include web_search_preview, set xAI search flag on top-level
-      const tools = (reqBody as any)?.tools as unknown[] | undefined;
-      if (Array.isArray(tools)) {
-        const wantsWebSearch = tools.some(tool => {
-          const t = tool as any;
-          return (
-            t?.type === 'web_search_preview' || t?.name === 'web_search_preview'
-          );
-        });
-        if (wantsWebSearch) {
-          (reqBody as any).search = true;
-        }
-      }
-    } catch (e) {
-      // best-effort; fall through
-    }
-    return reqBody;
-  }
-
   async handleBody(data: string): Promise<Transaction> {
     try {
       let prompt_tokens = 0;
