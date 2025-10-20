@@ -1,6 +1,7 @@
 export * from './anthropic';
 export * from './google';
 export * from './groq';
+export * from './xai';
 export * from './openai';
 export * from './openrouter';
 
@@ -61,3 +62,5 @@ export { type GoogleGenerativeAIProvider } from '@ai-sdk/google';
 export { type GroqProvider } from '@ai-sdk/groq';
 export { type OpenAIProvider } from '@ai-sdk/openai';
 export { type OpenRouterProvider } from '@openrouter/ai-sdk-provider';
+// xAI uses a custom provider interface in our SDK (not from @ai-sdk)
+export { type XAIProvider } from './xai';
