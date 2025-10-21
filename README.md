@@ -55,8 +55,12 @@ const response = await yourProxy.validate(apiKey, ...); // Your hosting
 ```typescript
 // Users pay, you earn markup, zero infrastructure
 import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+
 const { openai } = useEchoModelProviders();
-const response = await generateText({ model: openai('gpt-5'), ... });
+const response = await generateText({ 
+  model: openai('gpt-5'), 
+  ... 
+});
 ```
 
 ## Quick Start
@@ -98,7 +102,7 @@ Creates a new app with Echo pre-configured. Live in 2 minutes.
 Get started quickly with `echo-start`:
 
 ```bash
-npx echo-start my-app
+pnpx echo-start gen-ai-app
 ```
 
 Available templates:
