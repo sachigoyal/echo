@@ -8,7 +8,7 @@ export const FeatureCard = ({ children }: { children: React.ReactNode }) => {
         'border-b last:border-b-0',
         'lg:border-b-0 lg:border-r lg:last:border-r-0',
         'border-dashed border-border',
-        'lg:flex-1 lg:min-w-[280px] lg:h-full'
+        'lg:flex-1 lg:min-w-[250px] lg:h-full'
       )}
     >
       {children}

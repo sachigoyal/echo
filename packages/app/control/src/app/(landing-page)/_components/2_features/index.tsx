@@ -17,7 +17,7 @@ import { Login } from './features/login';
 export const Features = () => {
   return (
     <Section id="features">
-      <div className={cn('flex flex-col lg:flex-row lg:overflow-x-auto lg:h-[300px] scrollbar-hide')}>
+      <div className={cn('flex flex-col lg:flex-row lg:overflow-x-auto lg:h-[280px] scrollbar-hide')}>
 
         <FeatureCard>
           <FeatureCardComponent>
@@ -62,7 +62,7 @@ export const Features = () => {
           <FeatureCardFooter>
             <FeatureCardTitle>Free & OSS</FeatureCardTitle>
             <FeatureCardDescription>
-              Open Source, transparent and built by the community
+              No fees by default. 2.5% fees on profits
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>

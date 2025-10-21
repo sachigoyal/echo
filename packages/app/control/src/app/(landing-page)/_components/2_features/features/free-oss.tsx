@@ -35,9 +35,14 @@ export const FreeOss: React.FC = () => {
           </span>
         </div>
       </a>
-      <div className="text-xs text-muted-foreground text-center">
+      <a
+        href="https://github.com/merit-systems/echo"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs text-muted-foreground text-center hover:underline"
+      >
         merit-systems/echo
-      </div>
+      </a>
     </div>
   );
 };
