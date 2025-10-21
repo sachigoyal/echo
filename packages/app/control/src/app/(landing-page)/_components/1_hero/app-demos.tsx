@@ -29,7 +29,7 @@ export const AppDemoStack = () => {
 
     return (
         <div className="size-full flex items-end justify-center">
-            <div className="h-48 w-full relative">
+            <div className="h-56 md:h-48 w-full relative">
                 {cardOrder.map((card, index) => {
                     const isFirst = index === 0;
                     return (
@@ -566,7 +566,7 @@ const DemoCard: React.FC<DemoCardProps> = ({
     }, [isFirst]);
 
     return (
-        <div className="flex flex-col gap-2 p-2 size-full">
+        <div className="flex flex-col gap-2 p-1.5 md:p-2 size-full">
 
             <div className="flex items-center gap-2 border-b pb-2 justify-between">
                 <div className="flex gap-2">
@@ -650,12 +650,12 @@ const DemoCard: React.FC<DemoCardProps> = ({
 
 export const AppDemos = () => {
   return (
-      <div className="flex w-full">
-        <div className="w-1/6" />
-        <div className="w-2/3 flex items-center justify-center">
+      <div className="flex w-full px-2 md:px-0">
+        <div className="hidden md:block md:w-1/6" />
+        <div className="w-full md:w-2/3 flex items-center justify-center">
           <AppDemoStack />
         </div>
-        <div className="w-1/6" />
+        <div className="hidden md:block md:w-1/6" />
       </div>
   );
 };
