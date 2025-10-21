@@ -1,0 +1,57 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Mail } from 'lucide-react';
+
+export function OpenMailButton() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect if user is on mobile device
+    const userAgent = navigator.userAgent.toLowerCase();
+    const mobile = /iphone|ipad|ipod|android/.test(userAgent);
+    setIsMobile(mobile);
+  }, []);
+
+  const handleOpenMail = () => {
+    // Detect platform
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isAndroid = /android/.test(userAgent);
+
+    if (isIOS) {
+      // For iOS, use mailto: which opens the default mail app
+      // This is the most reliable cross-app method
+      window.location.href = 'mailto:';
+    } else if (isAndroid) {
+      // For Android, try to open mail app via intent
+      // Fallback to mailto: if it fails
+      try {
+        window.location.href = 'intent://scan/#Intent;scheme=mailto;end';
+      } catch {
+        window.location.href = 'mailto:';
+      }
+    } else {
+      // Desktop fallback - just use mailto
+      window.location.href = 'mailto:';
+    }
+  };
+
+  // Only show the button on mobile devices
+  if (!isMobile) {
+    return null;
+  }
+
+  return (
+    <Button
+      onClick={handleOpenMail}
+      variant="default"
+      className="gap-2"
+      size="lg"
+    >
+      <Mail className="size-4" />
+      Open Mail App
+    </Button>
+  );
+}
