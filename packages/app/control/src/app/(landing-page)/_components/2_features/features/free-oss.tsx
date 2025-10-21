@@ -1,0 +1,43 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { SiGithub } from '@icons-pack/react-simple-icons';
+
+export const FreeOss: React.FC = () => {
+  const [stars, setStars] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('https://api.github.com/repos/merit-systems/echo')
+      .then(res => res.json())
+      .then(data => setStars(data.stargazers_count))
+      .catch(() => setStars(null));
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full gap-4">
+      <a
+        href="https://github.com/merit-systems/echo"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex flex-col items-center gap-3 hover:opacity-80 transition-opacity"
+      >
+        <SiGithub className="size-16" />
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <svg
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="size-4"
+          >
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          <span className="text-sm font-medium">
+            {stars !== null ? stars.toLocaleString() : '---'}
+          </span>
+        </div>
+      </a>
+      <div className="text-xs text-muted-foreground text-center">
+        merit-systems/echo
+      </div>
+    </div>
+  );
+};

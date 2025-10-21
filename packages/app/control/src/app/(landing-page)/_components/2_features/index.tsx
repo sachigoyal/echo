@@ -9,6 +9,7 @@ import {
 
 import { AnyModel } from './features/any-model';
 import { Billing } from './features/billing';
+import { FreeOss } from './features/free-oss';
 
 import { cn } from '@/lib/utils';
 import { Login } from './features/login';
@@ -16,7 +17,7 @@ import { Login } from './features/login';
 export const Features = () => {
   return (
     <Section id="features">
-      <div className={cn('grid md:grid-cols-3')}>
+      <div className={cn('flex flex-col lg:flex-row lg:overflow-x-auto lg:h-[300px] scrollbar-hide')}>
 
         <FeatureCard>
           <FeatureCardComponent>
@@ -47,26 +48,24 @@ export const Features = () => {
             <AnyModel />
           </FeatureCardComponent>
           <FeatureCardFooter>
-            <FeatureCardTitle>Any Model, Any Scale</FeatureCardTitle>
+            <FeatureCardTitle>Unified Gateway</FeatureCardTitle>
             <FeatureCardDescription>
-              Serve any model with maximum rate limits and minimum latency
+              Echo SDK serves all frontier models behind a single gateway
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
 
-
-        {/* <FeatureCard>
+        <FeatureCard>
           <FeatureCardComponent>
-            <UniversalBalance />
+            <FreeOss />
           </FeatureCardComponent>
           <FeatureCardFooter>
-            <FeatureCardTitle>Universal Balance</FeatureCardTitle>
+            <FeatureCardTitle>Free & OSS</FeatureCardTitle>
             <FeatureCardDescription>
-              Echo credits can be used on any app in our network
+              Open Source, transparent and built by the community
             </FeatureCardDescription>
           </FeatureCardFooter>
-        </FeatureCard> */}
-
+        </FeatureCard>
 
       </div>
     </Section>
