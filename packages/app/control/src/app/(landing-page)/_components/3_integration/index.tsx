@@ -22,7 +22,10 @@ export const IntegrationSection = () => {
             Distribution Ready in Seconds
           </h1>
           <p className="text-sm text-muted-foreground text-center">
-            Our SDKs are designed to minimize the time from idea to revenue
+            Change 5 lines from the {""}
+            <a href="https://ai-sdk.dev/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Vercel AI SDK</a> 
+            {""} and you're production ready.
+            <br /> No API keys. No metering. No Stripe.
           </p>
         </div>
         <Tabs
@@ -51,7 +54,7 @@ export const IntegrationSection = () => {
                     <div className="flex flex-col justify-center">
                       <h1 className="text-2xl font-bold">{integration.name}</h1>
                       <p className="text-sm text-muted-foreground">
-                        LLM billing made easy in {integration.name}
+                        User pays LLM inference made easy in {integration.name}
                       </p>
                     </div>
                     <div className="flex flex-col justify-center gap-1">

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Section } from '../lib/section';
 import Link from 'next/link';
 import type { Route } from 'next';
-import { AppDemos } from './app-demos';
+import { AppDemos } from './app-demos/index';
 
 const dashedBorder = 'border-dashed border-border';
 
