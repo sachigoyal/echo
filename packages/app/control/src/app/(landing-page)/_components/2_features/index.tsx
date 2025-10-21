@@ -17,8 +17,11 @@ import { Login } from './features/login';
 export const Features = () => {
   return (
     <Section id="features">
-      <div className={cn('flex flex-col lg:flex-row lg:overflow-x-auto lg:h-[280px] scrollbar-hide')}>
-
+      <div
+        className={cn(
+          'flex flex-col lg:flex-row lg:overflow-x-auto lg:h-[280px] scrollbar-hide'
+        )}
+      >
         <FeatureCard>
           <FeatureCardComponent>
             <Login />
@@ -66,7 +69,6 @@ export const Features = () => {
             </FeatureCardDescription>
           </FeatureCardFooter>
         </FeatureCard>
-
       </div>
     </Section>
   );

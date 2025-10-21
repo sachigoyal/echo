@@ -22,9 +22,16 @@ export const IntegrationSection = () => {
             Distribution Ready in Seconds
           </h1>
           <p className="text-sm text-muted-foreground text-center">
-            Change 5 lines from the {""}
-            <a href="https://ai-sdk.dev/" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">Vercel AI SDK</a> 
-            {""} and you're production ready.
+            Change 5 lines from the {''}
+            <a
+              href="https://ai-sdk.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-primary"
+            >
+              Vercel AI SDK
+            </a>
+            {''} and you're production ready.
             <br /> No API keys. No metering. No Stripe.
           </p>
         </div>

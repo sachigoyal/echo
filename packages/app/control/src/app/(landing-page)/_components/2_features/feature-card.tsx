@@ -22,7 +22,11 @@ export const FeatureCardComponent = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className={cn('flex w-full flex-1 items-center justify-start overflow-hidden')}>
+    <div
+      className={cn(
+        'flex w-full flex-1 items-center justify-start overflow-hidden'
+      )}
+    >
       {children}
     </div>
   );
