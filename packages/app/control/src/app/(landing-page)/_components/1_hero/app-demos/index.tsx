@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { DemoCard, cards } from './demo-card';
 
-export const AppDemoStack = () => {
+const AppDemoStack = () => {
   const CARD_OFFSET = 10;
   const SCALE_FACTOR = 0.06;
   const [cardOrder, setCardOrder] = React.useState(cards);

@@ -14,7 +14,7 @@ export interface CardBodyProps {
   isActive: boolean;
 }
 
-export interface DemoCardProps {
+interface DemoCardProps {
   image: string;
   title: string;
   author: string;

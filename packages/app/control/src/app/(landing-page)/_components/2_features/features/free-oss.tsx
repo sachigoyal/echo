@@ -9,7 +9,9 @@ export const FreeOss: React.FC = () => {
   useEffect(() => {
     fetch('https://api.github.com/repos/merit-systems/echo')
       .then(res => res.json())
-      .then(data => setStars(data.stargazers_count))
+      .then((data: { stargazers_count: number }) =>
+        setStars(data.stargazers_count)
+      )
       .catch(() => setStars(null));
   }, []);
 

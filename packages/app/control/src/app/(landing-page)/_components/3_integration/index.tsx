@@ -31,7 +31,7 @@ export const IntegrationSection = () => {
             >
               Vercel AI SDK
             </a>
-            {''} and you're production ready.
+            {''} and you&apos;re production ready.
             <br /> No API keys. No metering. No Stripe.
           </p>
         </div>
