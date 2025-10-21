@@ -4,11 +4,11 @@ export const FeatureCard = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       className={cn(
-        'gap-4 p-4 pt-8 lg:pt-4 flex flex-col',
+        'gap-4 p-4 pt-8 md:pt-4 flex flex-col',
         'border-b last:border-b-0',
-        'lg:border-b-0 lg:border-r lg:last:border-r-0',
-        'border-dashed border-border',
-        'lg:flex-1 lg:min-w-[250px] lg:h-full'
+        'md:border-r md:[&:nth-child(2n)]:border-r-0',
+        'md:[&:nth-child(n+3)]:border-b-0',
+        'border-dashed border-border'
       )}
     >
       {children}

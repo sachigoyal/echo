@@ -17,11 +17,7 @@ import { Login } from './features/login';
 export const Features = () => {
   return (
     <Section id="features">
-      <div
-        className={cn(
-          'flex flex-col lg:flex-row lg:overflow-x-auto lg:h-[280px] scrollbar-hide'
-        )}
-      >
+      <div className={cn('grid grid-cols-1 md:grid-cols-2')}>
         <FeatureCard>
           <FeatureCardComponent>
             <Login />
