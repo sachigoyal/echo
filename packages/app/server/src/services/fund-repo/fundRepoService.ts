@@ -124,6 +124,6 @@ export async function safeFundRepo(
     }
     await fundRepo(amount, Number(repoId));
   } catch (error) {
-    logger.error(`Error in safe funding repo: ${error instanceof Error ? error.message : 'Unknown error'} | Amount: ${amount} | Stack: ${error instanceof Error ? error.stack : 'No stack'} | Timestamp: ${new Date().toISOString()}`);
+    logger.error(`Error in safe funding repo: ${error instanceof Error ? error.message : 'Unknown error'} | Amount: ${amount}`);
   }
 }
