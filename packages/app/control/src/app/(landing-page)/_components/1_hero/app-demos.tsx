@@ -10,7 +10,7 @@ import { motion } from 'motion/react';
 import { formatCurrency } from '@/lib/utils';
 import { Logo } from '@/components/ui/logo';
 
-export const CardStack = () => {
+export const AppDemoStack = () => {
     const CARD_OFFSET = 10;
     const SCALE_FACTOR = 0.06;
     const [cardOrder, setCardOrder] = React.useState(cards);
@@ -45,7 +45,7 @@ export const CardStack = () => {
                                 zIndex: cardOrder.length - index,
                             }}
                         >
-                            <Card {...card} isFirst={isFirst} />
+                            <DemoCard {...card} isFirst={isFirst} />
                         </motion.div>
                     );
                 })}
@@ -434,7 +434,7 @@ const EchoVibesBody: React.FC<CardBodyProps> = ({ isActive }) => {
     );
 };
 
-const cards: CardProps[] = [
+const cards: DemoCardProps[] = [
     {
         image: '/images/toolkit.svg',
         title: 'Toolkit.dev',
@@ -461,7 +461,7 @@ const cards: CardProps[] = [
     },
 ];
 
-interface CardProps {
+interface DemoCardProps {
     image: string;
     title: string;
     author: string;
@@ -520,7 +520,7 @@ const AnimatedNumber: React.FC<{ value: number; shouldAnimate: boolean }> = ({ v
     );
 };
 
-const Card: React.FC<CardProps> = ({
+const DemoCard: React.FC<DemoCardProps> = ({
     image,
     title,
     body: BodyComponent,
@@ -648,12 +648,12 @@ const Card: React.FC<CardProps> = ({
 
 
 
-export const HeroGraphic2 = () => {
+export const AppDemos = () => {
   return (
       <div className="flex w-full">
         <div className="w-1/6" />
         <div className="w-2/3 flex items-center justify-center">
-          <CardStack />
+          <AppDemoStack />
         </div>
         <div className="w-1/6" />
       </div>
