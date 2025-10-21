@@ -41,25 +41,25 @@ Replace your AI SDK imports with Echo. Users authenticate once, get a balance, a
 ```typescript
 // Option 1: Front costs yourself
 import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
 const response = await generateText({
   model: openai('gpt-5'),
-  // You pay, need billing logic to recover costs
+  'YOUR-API-KEY',
+  prompt: '...'
 });
 
-// Option 2: BYOK complexity
-const apiKey = await getUserApiKey(); // Complex UX
-const response = await yourProxy.validate(apiKey, ...); // Your hosting
 ```
 
 **After:**
 ```typescript
 // Users pay, you earn markup, zero infrastructure
 import { useEchoModelProviders } from '@merit-systems/echo-react-sdk';
+import { generateText } from 'ai';
 
 const { openai } = useEchoModelProviders();
 const response = await generateText({ 
   model: openai('gpt-5'), 
-  ... 
+  prompt: '...'
 });
 ```
 
