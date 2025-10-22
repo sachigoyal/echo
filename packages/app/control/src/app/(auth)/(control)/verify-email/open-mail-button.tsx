@@ -6,9 +6,11 @@ import { Mail } from 'lucide-react';
 
 export function OpenMailButton() {
   const [isMobile, setIsMobile] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    // Detect if user is on mobile device
+    // Mark component as mounted and detect if user is on mobile device
+    setHasMounted(true);
     const userAgent = navigator.userAgent.toLowerCase();
     const mobile = /iphone|ipad|ipod|android/.test(userAgent);
     setIsMobile(mobile);
@@ -34,6 +36,11 @@ export function OpenMailButton() {
       window.location.href = 'mailto:';
     }
   };
+
+  // Prevent hydration mismatch by not rendering until component has mounted
+  if (!hasMounted) {
+    return null;
+  }
 
   // Only show the button on mobile devices
   if (!isMobile) {
