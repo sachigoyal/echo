@@ -18,7 +18,7 @@ export function OpenMailButton() {
     // Detect platform
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
-    const isAndroid = /android/.test(userAgent);
+    const isAndroid = userAgent.includes('android');
 
     if (isIOS) {
       // For iOS, use mailto: which opens the default mail app
