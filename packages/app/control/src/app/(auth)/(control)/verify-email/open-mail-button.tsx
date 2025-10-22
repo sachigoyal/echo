@@ -25,13 +25,10 @@ export function OpenMailButton() {
       // This is the most reliable cross-app method
       window.location.href = 'mailto:';
     } else if (isAndroid) {
-      // For Android, try to open mail app via intent
-      // Fallback to mailto: if it fails
-      try {
-        window.location.href = 'intent://scan/#Intent;scheme=mailto;end';
-      } catch {
-        window.location.href = 'mailto:';
-      }
+      // For Android, use mailto: which is reliable across all devices
+      // The intent URI approach doesn't throw exceptions when it fails,
+      // making try-catch ineffective for fallback handling
+      window.location.href = 'mailto:';
     } else {
       // Desktop fallback - just use mailto
       window.location.href = 'mailto:';
