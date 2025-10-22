@@ -50,67 +50,50 @@ export const getHomePageChart = async (
   const numBuckets = input?.numBuckets ?? 30;
   const isCumulative = input?.isCumulative ?? false;
 
-  // For non-cumulative mode, we need to fetch data in the date range for bucketing
-  // For cumulative mode, we'll query directly per bucket
-  let transactions: {
-    createdAt: Date;
-    transactionMetadata: { totalTokens: number | null } | null;
-  }[] = [];
-  let users: { createdAt: Date }[] = [];
-  let apps: { createdAt: Date }[] = [];
-  let refreshTokens: { createdAt: Date }[] = [];
+  // Fetch data for bucketing
+  // For cumulative mode, we need all data from the beginning up to endDate
+  // For non-cumulative mode, we only need data in the date range
+  const dateFilter = isCumulative
+    ? { lte: endDate }
+    : { gte: startDate, lte: endDate };
 
-  if (!isCumulative) {
-    [transactions, users, apps, refreshTokens] = await db.$transaction([
-      db.transaction.findMany({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-          isArchived: false,
-        },
-        select: {
-          createdAt: true,
-          transactionMetadata: {
-            select: {
-              totalTokens: true,
-            },
+  const [transactions, users, apps, refreshTokens] = await db.$transaction([
+    db.transaction.findMany({
+      where: {
+        createdAt: dateFilter,
+        isArchived: false,
+      },
+      select: {
+        createdAt: true,
+        transactionMetadata: {
+          select: {
+            totalTokens: true,
           },
         },
-      }),
-      db.user.findMany({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-          isArchived: false,
-        },
-        select: { createdAt: true },
-      }),
-      db.echoApp.findMany({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-          isArchived: false,
-        },
-        select: { createdAt: true },
-      }),
-      db.refreshToken.findMany({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-          isArchived: false,
-        },
-        select: { createdAt: true },
-      }),
-    ]);
-  }
+      },
+    }),
+    db.user.findMany({
+      where: {
+        createdAt: dateFilter,
+        isArchived: false,
+      },
+      select: { createdAt: true },
+    }),
+    db.echoApp.findMany({
+      where: {
+        createdAt: dateFilter,
+        isArchived: false,
+      },
+      select: { createdAt: true },
+    }),
+    db.refreshToken.findMany({
+      where: {
+        createdAt: dateFilter,
+        isArchived: false,
+      },
+      select: { createdAt: true },
+    }),
+  ]);
 
   const totalMs = endDate.getTime() - startDate.getTime();
   const bucketSizeMs = Math.max(1, Math.floor(totalMs / numBuckets));
@@ -128,36 +111,41 @@ export const getHomePageChart = async (
   let tokensData: Array<{ timestamp: string; tokens: number }>;
 
   if (isCumulative) {
-    // For cumulative, get total tokens from beginning of time up to each bucket
-    const tokenBuckets = makeBuckets();
-    const tokensDataPromises = tokenBuckets.map(async bucket => {
-      const transactions = await db.transaction.findMany({
-        where: {
-          createdAt: {
-            lte: new Date(bucket.timestamp.getTime() + bucketSizeMs),
-          },
-          isArchived: false,
-        },
-        select: {
-          transactionMetadata: {
-            select: {
-              totalTokens: true,
-            },
-          },
-        },
-      });
+    // For cumulative, calculate running total in memory
+    const tokenBuckets = makeBuckets().map(b => ({ ...b, tokens: 0 }));
 
-      const totalTokens = transactions.reduce((sum, t) => {
-        return sum + Number(t.transactionMetadata?.totalTokens ?? 0);
-      }, 0);
+    // Sort transactions by createdAt for cumulative calculation
+    const sortedTransactions = [...transactions].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
 
-      return {
-        timestamp: bucket.timestamp.toISOString().slice(0, 16),
-        tokens: totalTokens,
-      };
-    });
+    let cumulativeTotal = 0;
+    let transactionIndex = 0;
 
-    tokensData = await Promise.all(tokensDataPromises);
+    for (let i = 0; i < numBuckets; i++) {
+      const bucketEndTime = tokenBuckets[i].timestamp.getTime() + bucketSizeMs;
+
+      // Add all transactions up to this bucket's end time
+      while (
+        transactionIndex < sortedTransactions.length &&
+        sortedTransactions[transactionIndex].createdAt.getTime() <=
+          bucketEndTime
+      ) {
+        const amt = Number(
+          sortedTransactions[transactionIndex].transactionMetadata
+            ?.totalTokens ?? 0
+        );
+        cumulativeTotal += amt;
+        transactionIndex++;
+      }
+
+      tokenBuckets[i].tokens = cumulativeTotal;
+    }
+
+    tokensData = tokenBuckets.map(b => ({
+      timestamp: b.timestamp.toISOString().slice(0, 16),
+      tokens: Number(b.tokens || 0),
+    }));
   } else {
     // For non-cumulative, use the existing bucketing logic
     const tokenBuckets = makeBuckets().map(b => ({ ...b, tokens: 0 }));
@@ -180,25 +168,36 @@ export const getHomePageChart = async (
   let signupsData: Array<{ timestamp: string; signups: number }>;
 
   if (isCumulative) {
-    // For cumulative, get total users from beginning of time up to each bucket
-    const signupBuckets = makeBuckets();
-    const signupsDataPromises = signupBuckets.map(async bucket => {
-      const totalUsers = await db.user.count({
-        where: {
-          createdAt: {
-            lte: new Date(bucket.timestamp.getTime() + bucketSizeMs),
-          },
-          isArchived: false,
-        },
-      });
+    // For cumulative, calculate running total in memory
+    const signupBuckets = makeBuckets().map(b => ({ ...b, signups: 0 }));
 
-      return {
-        timestamp: bucket.timestamp.toISOString().slice(0, 16),
-        signups: totalUsers,
-      };
-    });
+    // Sort users by createdAt for cumulative calculation
+    const sortedUsers = [...users].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
 
-    signupsData = await Promise.all(signupsDataPromises);
+    let cumulativeTotal = 0;
+    let userIndex = 0;
+
+    for (let i = 0; i < numBuckets; i++) {
+      const bucketEndTime = signupBuckets[i].timestamp.getTime() + bucketSizeMs;
+
+      // Add all users up to this bucket's end time
+      while (
+        userIndex < sortedUsers.length &&
+        sortedUsers[userIndex].createdAt.getTime() <= bucketEndTime
+      ) {
+        cumulativeTotal += 1;
+        userIndex++;
+      }
+
+      signupBuckets[i].signups = cumulativeTotal;
+    }
+
+    signupsData = signupBuckets.map(b => ({
+      timestamp: b.timestamp.toISOString().slice(0, 16),
+      signups: Number(b.signups || 0),
+    }));
   } else {
     // For non-cumulative, use the existing bucketing logic
     const signupBuckets = makeBuckets().map(b => ({ ...b, signups: 0 }));
@@ -220,25 +219,36 @@ export const getHomePageChart = async (
   let appsData: Array<{ timestamp: string; apps: number }>;
 
   if (isCumulative) {
-    // For cumulative, get total apps from beginning of time up to each bucket
-    const appBuckets = makeBuckets();
-    const appsDataPromises = appBuckets.map(async bucket => {
-      const totalApps = await db.echoApp.count({
-        where: {
-          createdAt: {
-            lte: new Date(bucket.timestamp.getTime() + bucketSizeMs),
-          },
-          isArchived: false,
-        },
-      });
+    // For cumulative, calculate running total in memory
+    const appBuckets = makeBuckets().map(b => ({ ...b, apps: 0 }));
 
-      return {
-        timestamp: bucket.timestamp.toISOString().slice(0, 16),
-        apps: totalApps,
-      };
-    });
+    // Sort apps by createdAt for cumulative calculation
+    const sortedApps = [...apps].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
 
-    appsData = await Promise.all(appsDataPromises);
+    let cumulativeTotal = 0;
+    let appIndex = 0;
+
+    for (let i = 0; i < numBuckets; i++) {
+      const bucketEndTime = appBuckets[i].timestamp.getTime() + bucketSizeMs;
+
+      // Add all apps up to this bucket's end time
+      while (
+        appIndex < sortedApps.length &&
+        sortedApps[appIndex].createdAt.getTime() <= bucketEndTime
+      ) {
+        cumulativeTotal += 1;
+        appIndex++;
+      }
+
+      appBuckets[i].apps = cumulativeTotal;
+    }
+
+    appsData = appBuckets.map(b => ({
+      timestamp: b.timestamp.toISOString().slice(0, 16),
+      apps: Number(b.apps || 0),
+    }));
   } else {
     // For non-cumulative, use the existing bucketing logic
     const appBuckets = makeBuckets().map(b => ({ ...b, apps: 0 }));
@@ -260,25 +270,36 @@ export const getHomePageChart = async (
   let refreshTokensData: Array<{ timestamp: string; refreshTokens: number }>;
 
   if (isCumulative) {
-    // For cumulative, get total refresh tokens from beginning of time up to each bucket
-    const rtBuckets = makeBuckets();
-    const refreshTokensDataPromises = rtBuckets.map(async bucket => {
-      const totalRefreshTokens = await db.refreshToken.count({
-        where: {
-          createdAt: {
-            lte: new Date(bucket.timestamp.getTime() + bucketSizeMs),
-          },
-          isArchived: false,
-        },
-      });
+    // For cumulative, calculate running total in memory
+    const rtBuckets = makeBuckets().map(b => ({ ...b, refreshTokens: 0 }));
 
-      return {
-        timestamp: bucket.timestamp.toISOString().slice(0, 16),
-        refreshTokens: totalRefreshTokens,
-      };
-    });
+    // Sort refresh tokens by createdAt for cumulative calculation
+    const sortedRefreshTokens = [...refreshTokens].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
 
-    refreshTokensData = await Promise.all(refreshTokensDataPromises);
+    let cumulativeTotal = 0;
+    let rtIndex = 0;
+
+    for (let i = 0; i < numBuckets; i++) {
+      const bucketEndTime = rtBuckets[i].timestamp.getTime() + bucketSizeMs;
+
+      // Add all refresh tokens up to this bucket's end time
+      while (
+        rtIndex < sortedRefreshTokens.length &&
+        sortedRefreshTokens[rtIndex].createdAt.getTime() <= bucketEndTime
+      ) {
+        cumulativeTotal += 1;
+        rtIndex++;
+      }
+
+      rtBuckets[i].refreshTokens = cumulativeTotal;
+    }
+
+    refreshTokensData = rtBuckets.map(b => ({
+      timestamp: b.timestamp.toISOString().slice(0, 16),
+      refreshTokens: Number(b.refreshTokens || 0),
+    }));
   } else {
     // For non-cumulative, use the existing bucketing logic
     const rtBuckets = makeBuckets().map(b => ({ ...b, refreshTokens: 0 }));
