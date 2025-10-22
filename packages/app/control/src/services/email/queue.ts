@@ -33,11 +33,13 @@ export const queueJob = async (body: z.infer<typeof emailJobSchema>) => {
       type: 'email',
       job: body,
     },
-    flowControl: {
-      key: env.RESEND_FLOW_CONTROL_KEY,
-      rate: 2,
-      period: '1m',
-    },
+    ...(env.RESEND_FLOW_CONTROL_KEY && {
+      flowControl: {
+        key: env.RESEND_FLOW_CONTROL_KEY,
+        rate: 2,
+        period: '1m',
+      },
+    }),
   });
 };
 
