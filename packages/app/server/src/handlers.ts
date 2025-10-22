@@ -25,6 +25,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import logger from 'logger';
 import { Request, Response } from 'express';
 import { ProviderType } from 'providers/ProviderType';
+import { safeFundRepo } from 'services/fund-repo/fundRepoService';
 
 export async function refund(
   paymentAmountDecimal: Decimal,
@@ -179,6 +180,8 @@ export async function handleX402Request({
       transactionResult.transaction,
       payload
     );
+
+    await safeFundRepo(paymentAmountDecimal.toNumber());
   } catch (error) {
     await refund(paymentAmountDecimal, payload);
   }
