@@ -55,6 +55,7 @@ Specialized input component for handling monetary values with proper formatting 
 
 ```tsx
 import { MoneyInput } from '@/components/money-input';
+import { useState } from 'react';
 
 function PaymentForm() {
   const [amount, setAmount] = useState(0);
@@ -268,6 +269,7 @@ You can create custom themes by overriding CSS variables:
 import { Button } from '@/components/echo-button';
 import { MoneyInput } from '@/components/money-input';
 import { EchoAccount } from '@/components/echo-account-react';
+import { useState } from 'react';
 
 function PaymentForm() {
   const [amount, setAmount] = useState(0);
