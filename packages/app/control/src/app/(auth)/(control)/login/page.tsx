@@ -133,7 +133,7 @@ export default async function SignInPage({
           <form
             action={async () => {
               'use server';
-              await signIn('test-user-1', {
+              await signIn('local-user', {
                 redirectTo: redirectTo || '/',
               });
             }}

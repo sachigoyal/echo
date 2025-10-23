@@ -73,39 +73,28 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
    # Example: DATABASE_URL="postgresql://username:password@localhost:5469/echo_control"
    ```
 
-4. **Run database migrations**:
+4. ** Create auth secret**:
+
+   ```bash
+   pnpm dlx auth secret
+   ```
+
+5. **Run database migrations**:
 
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-5. **Start the development server**:
+6. **Start the development server**:
 
    ```bash
    pnpm run dev
    ```
 
-6. **Open the application**:
+7. **Open the application**:
    Visit [http://localhost:3000](http://localhost:3000)
 
-## Environment Variables
-
-Create a `.env` file with the following variables:
-
-```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5469/echo_control"
-
-# Stripe (Mocked)
-STRIPE_SECRET_KEY="mock_stripe_secret_key"
-STRIPE_PUBLISHABLE_KEY="mock_stripe_publishable_key"
-STRIPE_WEBHOOK_SECRET="mock_webhook_secret"
-
-# Application
-NEXTAUTH_URL="http://localhost:3000"
-API_KEY_PREFIX="echo_"
-```
 
 ## Features Overview
 
