@@ -63,38 +63,28 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
    pnpm install
    ```
 
-3. **Set up the database**:
+3. **Create .env file**:
 
    ```bash
-   # Copy the example environment file
-   cp .env.example .env
-
-   # Update DATABASE_URL in .env with your PostgreSQL connection string
-   # Example: DATABASE_URL="postgresql://username:password@localhost:5469/echo_control"
+   # Generate .env file
+   pnpm local-setup
    ```
 
-4. ** Create auth secret**:
-
-   ```bash
-   pnpm dlx auth secret
-   ```
-
-5. **Run database migrations**:
+4. **Run database migrations**:
 
    ```bash
    npx prisma generate
    npx prisma db push
    ```
 
-6. **Start the development server**:
+5. **Start the development server**:
 
    ```bash
    pnpm run dev
    ```
 
-7. **Open the application**:
+6. **Open the application**:
    Visit [http://localhost:3000](http://localhost:3000)
-
 
 ## Features Overview
 

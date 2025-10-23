@@ -30,6 +30,7 @@ We offer bounties for specific features, bug fixes, and improvements. This is a 
 [**View available bounties →**](https://terminal.merit.systems/Merit-Systems/echo/bounties)
 
 To claim a bounty:
+
 1. Check the [bounties page](https://terminal.merit.systems/Merit-Systems/echo/bounties) for available tasks
 2. Comment on the bounty to express interest
 3. Submit your work via pull request
@@ -42,6 +43,7 @@ New bounties are added regularly, so check back often!
 ### 🐛 Report Bugs
 
 If you find a bug, please [open an issue](https://github.com/Merit-Systems/echo/issues/new) with:
+
 - A clear, descriptive title
 - Steps to reproduce the issue
 - Expected vs. actual behavior
@@ -51,6 +53,7 @@ If you find a bug, please [open an issue](https://github.com/Merit-Systems/echo/
 ### 💡 Suggest Features
 
 Have an idea? We'd love to hear it! [Open a feature request](https://github.com/Merit-Systems/echo/issues/new) with:
+
 - A clear description of the feature
 - Use cases and examples
 - Why this would benefit Echo users
@@ -59,6 +62,7 @@ Have an idea? We'd love to hear it! [Open a feature request](https://github.com/
 ### 📝 Improve Documentation
 
 Documentation improvements are always welcome! This includes:
+
 - Fixing typos or unclear explanations
 - Adding examples or tutorials
 - Improving API documentation
@@ -94,18 +98,8 @@ Ready to code? Check our [open issues](https://github.com/Merit-Systems/echo/iss
 
 3. **Set up environment variables**
 
-   For Echo Control:
    ```bash
-   cd packages/app/control
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-   For Echo Server:
-   ```bash
-   cd packages/app/server
-   cp .env.example .env
-   # Edit .env with your configuration
+   pnpm local-setup
    ```
 
 4. **Set up the database** (for Echo Control)
@@ -121,6 +115,7 @@ Ready to code? Check our [open issues](https://github.com/Merit-Systems/echo/iss
 5. **Start development servers**
 
    From the root directory:
+
    ```bash
    pnpm dev
    ```
@@ -350,7 +345,6 @@ test(ts-sdk): add integration tests for provider initialization
    ```
 
 2. **Open a Pull Request** against the `main` branch with:
-
    - **Clear title**: Summarize the change in one line
    - **Description**: Explain what, why, and how
    - **Related issues**: Link any related issues
@@ -362,27 +356,33 @@ test(ts-sdk): add integration tests for provider initialization
 
    ```markdown
    ## Description
+
    Adds support for Anthropic Claude models in the Echo Server.
 
    ## Motivation
+
    Users have requested support for Claude models. This PR adds routing and metering for Anthropic's API.
 
    ## Changes
+
    - Added Anthropic provider configuration
    - Implemented token counting for Claude models
    - Updated documentation with Claude examples
    - Added integration tests
 
    ## Testing
+
    - ✅ Unit tests pass
    - ✅ Integration tests added and passing
    - ✅ Manually tested with Claude 3.5 Sonnet
    - ✅ Tested metering accuracy
 
    ## Breaking Changes
+
    None
 
    ## Related Issues
+
    Closes #123
    ```
 
@@ -442,7 +442,7 @@ Good documentation is crucial for adoption and maintenance.
 - Document complex algorithms or business logic
 - Keep comments up-to-date with code changes
 
-```typescript
+````typescript
 /**
  * Initializes the Echo client with authentication and provider configuration.
  *
@@ -461,11 +461,12 @@ Good documentation is crucial for adoption and maintenance.
 export function initEcho(config: EchoConfig): EchoClient {
   // Implementation
 }
-```
+````
 
 ### README Updates
 
 Update relevant README files when:
+
 - Adding new features
 - Changing APIs or configuration
 - Adding new packages or templates
@@ -474,6 +475,7 @@ Update relevant README files when:
 ### Examples and Templates
 
 When adding examples:
+
 - Include clear comments
 - Show common use cases
 - Demonstrate best practices
@@ -498,6 +500,7 @@ When adding examples:
 ### Recognition
 
 All contributors are recognized in our:
+
 - GitHub contributors page
 - Release notes (for significant contributions)
 - Community shoutouts on Twitter/Discord
@@ -511,9 +514,9 @@ By contributing to Echo, you agree that your contributions will be licensed unde
 ## Questions?
 
 If you have questions about contributing, feel free to:
+
 - Open a [GitHub Discussion](https://github.com/Merit-Systems/echo/discussions)
 - Ask in our [Discord server](https://discord.gg/merit)
 - Reach out to the maintainers
 
 Thank you for contributing to Echo! 🚀
-
