@@ -7,12 +7,17 @@ import {
 } from './x402-types';
 import { generateCdpJwt } from './facilitatorService';
 import logger, { logMetric } from '../../logger';
+import dotenv from 'dotenv';
 
-const COINBASE_FACILITATOR_URL = process.env.COINBASE_FACILITATOR_BASE_URL;
-const X402RS_FACILITATOR_URL = process.env.X402RS_FACILITATOR_URL;
+dotenv.config();
+
+
+
+const COINBASE_FACILITATOR_BASE_URL = process.env.COINBASE_FACILITATOR_BASE_URL;
 const COINBASE_FACILITATOR_METHOD_PREFIX = process.env.COINBASE_FACILITATOR_METHOD_PREFIX;
+const X402RS_FACILITATOR_BASE_URL = process.env.X402RS_FACILITATOR_BASE_URL;
 const X402RS_FACILITATOR_METHOD_PREFIX = process.env.X402RS_FACILITATOR_METHOD_PREFIX;
-const PAYAI_FACILITATOR_URL = process.env.PAYAI_FACILITATOR_URL;
+const PAYAI_FACILITATOR_BASE_URL = process.env.PAYAI_FACILITATOR_BASE_URL;
 const PAYAI_FACILITATOR_METHOD_PREFIX = process.env.PAYAI_FACILITATOR_METHOD_PREFIX;
 
 type FacilitatorMethod = 'verify' | 'settle';
@@ -25,17 +30,17 @@ interface FacilitatorConfig {
 
 const facilitators: FacilitatorConfig[] = [
   {
-    url: COINBASE_FACILITATOR_URL!,
+    url: COINBASE_FACILITATOR_BASE_URL!,
     methodPrefix: COINBASE_FACILITATOR_METHOD_PREFIX!,
     name: 'Coinbase',
   },
   {
-    url: X402RS_FACILITATOR_URL!,
+    url: X402RS_FACILITATOR_BASE_URL!,
     methodPrefix: X402RS_FACILITATOR_METHOD_PREFIX!,
     name: 'X402RS',
   },
   {
-    url: PAYAI_FACILITATOR_URL!,
+    url: PAYAI_FACILITATOR_BASE_URL!,
     methodPrefix: PAYAI_FACILITATOR_METHOD_PREFIX!,
     name: 'PayAI',
   },
@@ -55,12 +60,6 @@ export async function facilitatorWithRetry<T extends VerifyResponse | SettleResp
   payload: PaymentPayload,
   paymentRequirements: PaymentRequirements
 ): Promise<T> {
-  if (!COINBASE_FACILITATOR_URL || !X402RS_FACILITATOR_URL || !PAYAI_FACILITATOR_URL) {
-    throw new Error('Coinbase, X402RS, and PayAI facilitator URL is not set');
-  }
-  if (!COINBASE_FACILITATOR_METHOD_PREFIX || !X402RS_FACILITATOR_METHOD_PREFIX || !PAYAI_FACILITATOR_METHOD_PREFIX) {
-    throw new Error('Coinbase, X402RS, and PayAI facilitator method prefix is not set');
-  }
 
   const errors: Array<{ facilitator: string; error: string }> = [];
 
@@ -73,7 +72,7 @@ export async function facilitatorWithRetry<T extends VerifyResponse | SettleResp
       if (facilitator.name === 'Coinbase') {
         const jwt = await generateCdpJwt({
           requestMethod: 'POST',
-          requestPath: `/${facilitator.methodPrefix}/${method}`,
+          requestPath: `${facilitator.methodPrefix}/${method}`,
         });
         headers.Authorization = `Bearer ${jwt}`;
       }
@@ -84,7 +83,7 @@ export async function facilitatorWithRetry<T extends VerifyResponse | SettleResp
         paymentRequirements: toJsonSafe(paymentRequirements),
       };
 
-      const res = await fetch(`${facilitator.url}/${facilitator.methodPrefix}/${method}`, {
+      const res = await fetch(`${facilitator.url}${facilitator.methodPrefix}/${method}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(requestBody),
