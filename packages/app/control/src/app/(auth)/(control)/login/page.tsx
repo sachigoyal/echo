@@ -134,7 +134,7 @@ export default async function SignInPage({
             action={async () => {
               'use server';
               await signIn('local-user', {
-                redirectTo: redirectTo || '/',
+                redirectTo: '/welcome',
               });
             }}
             className="w-full"

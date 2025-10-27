@@ -40,17 +40,17 @@ export const env = createEnv({
 
     AUTH_SECRET: z.string(),
 
-    AUTH_GOOGLE_ID: !IS_INTEGRATION_TEST
+    AUTH_GOOGLE_ID: IS_STRICT
       ? z.string()
       : z.string().default('get-a-google-id-for-production'),
-    AUTH_GOOGLE_SECRET: !IS_INTEGRATION_TEST
+    AUTH_GOOGLE_SECRET: IS_STRICT
       ? z.string()
       : z.string().default('auth-google-secret-change-in-production'),
 
-    AUTH_GITHUB_ID: !IS_INTEGRATION_TEST
+    AUTH_GITHUB_ID: IS_STRICT
       ? z.string()
       : z.string().default('get-a-github-id-for-production'),
-    AUTH_GITHUB_SECRET: !IS_INTEGRATION_TEST
+    AUTH_GITHUB_SECRET: IS_STRICT
       ? z.string()
       : z.string().default('auth-github-secret-change-in-production'),
 
