@@ -5,7 +5,7 @@ AUTH_SECRET=$(node -e "console.log('AUTH_SECRET=' + require('crypto').randomByte
 echo $AUTH_SECRET
 
 echo $AUTH_SECRET >> .env
-echo "DATABASE_URL='postgresql://echo_user:echo_password@localhost:5469/echo_control?schema=public'" >> .env
+echo "DATABASE_URL='postgresql://echo_user:echo_password@localhost:5469/echo_control_v2?schema=public'" >> .env
 
 echo "Setup complete! You can now run 'pnpm dev' to start the development server."
 
