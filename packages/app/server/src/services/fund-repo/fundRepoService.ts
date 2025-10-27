@@ -170,8 +170,12 @@ export async function safeFundRepoIfWorthwhile(): Promise<void> {
     return;
   }
 
-  if (baseUsdcBalanceAmount.lessThan(new Decimal(BASE_USDC_WARNING_THRESHOLD))) {
-    logger.info(`Base USDC balance is less than ${BASE_USDC_WARNING_THRESHOLD}, skipping fundRepo event`);
+  if (
+    baseUsdcBalanceAmount.lessThan(new Decimal(BASE_USDC_WARNING_THRESHOLD))
+  ) {
+    logger.info(
+      `Base USDC balance is less than ${BASE_USDC_WARNING_THRESHOLD}, skipping fundRepo event`
+    );
     return;
   }
   logger.info(
