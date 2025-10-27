@@ -118,6 +118,14 @@ A comprehensive Next.js application for managing Echo applications, API keys, an
 pnpm test
 ```
 
+### Scripts
+
+To run scripts, you should do:
+
+```bash
+SKIP_ENV_VALIDATION=1 ./scripts/<name-of-script.sh>
+```
+
 ### Database Operations
 
 ```bash
