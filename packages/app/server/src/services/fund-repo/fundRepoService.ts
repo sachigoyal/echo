@@ -148,7 +148,10 @@ export async function safeFundRepoIfWorthwhile(): Promise<void> {
     address: smartAccount.address,
   });
 
-  if (ethereumBalanceAmount.lessThan(new Decimal(0.0001))) {
+  const ETH_WARNING_THRESHOLD = process.env.ETH_WARNING_THRESHOLD || 0.0001;
+  const BASE_USDC_WARNING_THRESHOLD = process.env.BASE_USDC_TRANSFER_THRESHOLD || 5;
+
+  if (ethereumBalanceAmount.lessThan(new Decimal(ETH_WARNING_THRESHOLD))) {
     logger.error('[Critical] Ethereum balance is less than 0.0001, skipping fundRepo event');
     logMetric('fund_repo.ethereum_balance_running_low', 1, {
       amount: ethereumBalanceAmount.toNumber(),
@@ -157,7 +160,7 @@ export async function safeFundRepoIfWorthwhile(): Promise<void> {
     return;
   }
 
-  if (baseUsdcBalanceAmount.lessThan(new Decimal(100))) {
+  if (baseUsdcBalanceAmount.lessThan(new Decimal(BASE_USDC_WARNING_THRESHOLD))) {
     logger.info('Base USDC balance is less than 100, skipping fundRepo event');
     return;
   }
