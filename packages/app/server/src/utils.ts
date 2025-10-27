@@ -64,10 +64,12 @@ export function usdcBigIntToDecimal(usdcBigInt: bigint | string): Decimal {
   return new Decimal(decimalValue);
 }
 
-export function bigIntToDecimal(bigInt: bigint | string, decimals: number): Decimal {
-  const bigIntValue =
-    typeof bigInt === 'string' ? BigInt(bigInt) : bigInt;
-  const decimalValue = Number(bigIntValue) / (10 ** decimals);
+export function bigIntToDecimal(
+  bigInt: bigint | string,
+  decimals: number
+): Decimal {
+  const bigIntValue = typeof bigInt === 'string' ? BigInt(bigInt) : bigInt;
+  const decimalValue = Number(bigIntValue) / 10 ** decimals;
   return new Decimal(decimalValue);
 }
 
