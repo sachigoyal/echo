@@ -1,4 +1,4 @@
-import { encodeFunctionData, Abi } from 'viem';
+import { encodeFunctionData, Abi, formatUnits, parseUnits } from 'viem';
 import {
   MERIT_ABI,
   MERIT_CONTRACT_ADDRESS,
@@ -7,8 +7,7 @@ import {
   ETH_ADDRESS,
 } from './constants';
 import logger, { logMetric } from '../../logger';
-import { bigIntToDecimal, getSmartAccount, usdcBigIntToDecimal } from 'utils';
-import { Decimal } from '@prisma/client/runtime/library';
+import { getSmartAccount } from 'utils';
 
 export interface FundRepoResult {
   success: boolean;
@@ -137,34 +136,44 @@ export async function safeFundRepoIfWorthwhile(): Promise<void> {
     return;
   }
 
-  const ethereumBalanceAmount = bigIntToDecimal(ethereumBalance.amount.amount, ethereumBalance.amount.decimals);
-  logger.info(`Ethereum balance is ${ethereumBalanceAmount.toNumber()} ETH`, {
-    amount: ethereumBalanceAmount.toNumber(),
+  const ethereumBalanceAmount = ethereumBalance.amount.amount;
+  const ethBalanceFormatted = formatUnits(ethereumBalanceAmount, ethereumBalance.amount.decimals);
+  logger.info(`Ethereum balance is ${ethBalanceFormatted} ETH`, {
+    amount: ethBalanceFormatted,
     address: smartAccount.address,
   });
-  const baseUsdcBalanceAmount = usdcBigIntToDecimal(baseUsdcBalance.amount.amount);
-  logger.info(`Base USDC balance is ${baseUsdcBalanceAmount.toNumber()} USD`, {
-    amount: baseUsdcBalanceAmount.toNumber(),
+  
+  const baseUsdcBalanceAmount = baseUsdcBalance.amount.amount;
+  const usdcBalanceFormatted = formatUnits(baseUsdcBalanceAmount, baseUsdcBalance.amount.decimals);
+  logger.info(`Base USDC balance is ${usdcBalanceFormatted} USD`, {
+    amount: usdcBalanceFormatted,
     address: smartAccount.address,
   });
 
-  const ETH_WARNING_THRESHOLD = process.env.ETH_WARNING_THRESHOLD || 0.0001;
-  const BASE_USDC_WARNING_THRESHOLD = process.env.BASE_USDC_TRANSFER_THRESHOLD || 5;
+  const ETH_WARNING_THRESHOLD = parseUnits(
+    String(process.env.ETH_WARNING_THRESHOLD || '0.0001'), 
+    ethereumBalance.amount.decimals
+  );
+  const BASE_USDC_WARNING_THRESHOLD = parseUnits(
+    String(process.env.BASE_USDC_TRANSFER_THRESHOLD || '5'),
+    baseUsdcBalance.amount.decimals
+  );
 
-  if (ethereumBalanceAmount.lessThan(new Decimal(ETH_WARNING_THRESHOLD))) {
-    logger.error('[Critical] Ethereum balance is less than 0.0001, skipping fundRepo event');
+  if (ethereumBalanceAmount < ETH_WARNING_THRESHOLD) {
+    const readableEthWarningThreshold = formatUnits(ETH_WARNING_THRESHOLD, ethereumBalance.amount.decimals);
+    logger.error(`[Critical] Ethereum balance is less than ${readableEthWarningThreshold} ETH, skipping fundRepo event`);
     logMetric('fund_repo.ethereum_balance_running_low', 1, {
-      amount: ethereumBalanceAmount.toNumber(),
+      amount: ethBalanceFormatted,
       address: smartAccount.address,
     });
     return;
   }
 
-  if (baseUsdcBalanceAmount.lessThan(new Decimal(BASE_USDC_WARNING_THRESHOLD))) {
-    logger.info(`Base USDC balance is less than ${BASE_USDC_WARNING_THRESHOLD}, skipping fundRepo event`);
+  if (baseUsdcBalanceAmount < BASE_USDC_WARNING_THRESHOLD) {
+    logger.info('Base USDC balance is less than threshold, skipping fundRepo event');
     return;
   }
-  logger.info(`Base USDC balance is ${baseUsdcBalanceAmount.toNumber()} USD, funding repo`);
+  logger.info(`Base USDC balance is ${usdcBalanceFormatted} USD, funding repo`);
 
-  await safeFundRepo(baseUsdcBalanceAmount.toNumber());
+  await safeFundRepo(Number(usdcBalanceFormatted));
 }
