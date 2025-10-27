@@ -4,9 +4,11 @@ import {
   MERIT_CONTRACT_ADDRESS,
   USDC_ADDRESS,
   ERC20_CONTRACT_ABI,
+  ETH_ADDRESS,
 } from './constants';
-import logger from '../../logger';
-import { getSmartAccount } from 'utils';
+import logger, { logMetric } from '../../logger';
+import { bigIntToDecimal, getSmartAccount, usdcBigIntToDecimal } from 'utils';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export interface FundRepoResult {
   success: boolean;
@@ -105,4 +107,61 @@ export async function safeFundRepo(amount: number): Promise<void> {
       `Error in safe funding repo: ${error instanceof Error ? error.message : 'Unknown error'} | Amount: ${amount}`
     );
   }
+}
+
+
+export async function safeFundRepoIfWorthwhile(): Promise<void> {
+  const repoId = process.env.MERIT_REPO_ID;
+  if (!repoId) {
+    throw new Error('Missing required environment variables');
+  }
+
+  // check balance of wallet. If it is > 100 USD, send all of the USD to the repo.
+
+  const { smartAccount } = await getSmartAccount();
+  const balances = await smartAccount.listTokenBalances({
+    network: 'base',
+  });
+  const baseUsdcBalance = balances.balances.find((balance) => balance.token.contractAddress === USDC_ADDRESS);
+
+
+  const ethereumBalance = balances.balances.find((balance) => balance.token.contractAddress === ETH_ADDRESS);
+
+  if (!ethereumBalance) {
+    logger.info('No Ethereum balance found, skipping fundRepo event');
+    return;
+  }
+
+  if (!baseUsdcBalance) {
+    logger.info('No base USDC balance found, skipping fundRepo event');
+    return;
+  }
+
+  const ethereumBalanceAmount = bigIntToDecimal(ethereumBalance.amount.amount, ethereumBalance.amount.decimals);
+  logger.info(`Ethereum balance is ${ethereumBalanceAmount.toNumber()} ETH`, {
+    amount: ethereumBalanceAmount.toNumber(),
+    address: smartAccount.address,
+  });
+  const baseUsdcBalanceAmount = usdcBigIntToDecimal(baseUsdcBalance.amount.amount);
+  logger.info(`Base USDC balance is ${baseUsdcBalanceAmount.toNumber()} USD`, {
+    amount: baseUsdcBalanceAmount.toNumber(),
+    address: smartAccount.address,
+  });
+
+  if (ethereumBalanceAmount.lessThan(new Decimal(0.0001))) {
+    logger.error('[Critical] Ethereum balance is less than 0.0001, skipping fundRepo event');
+    logMetric('fund_repo.ethereum_balance_running_low', 1, {
+      amount: ethereumBalanceAmount.toNumber(),
+      address: smartAccount.address,
+    });
+    return;
+  }
+
+  if (baseUsdcBalanceAmount.lessThan(new Decimal(100))) {
+    logger.info('Base USDC balance is less than 100, skipping fundRepo event');
+    return;
+  }
+  logger.info(`Base USDC balance is ${baseUsdcBalanceAmount.toNumber()} USD, funding repo`);
+
+  await safeFundRepo(baseUsdcBalanceAmount.toNumber());
 }
