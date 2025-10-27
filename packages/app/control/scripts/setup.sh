@@ -18,4 +18,3 @@ else
 fi
 
 echo "Setup complete! You can now run 'pnpm dev' to start the development server."
- No newline at end of file
