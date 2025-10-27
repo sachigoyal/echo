@@ -33,7 +33,7 @@ export const env = createEnv({
       : z
           .url()
           .default(
-            'postgresql://echo_user:echo_password@localhost:5469/echo_control?schema=public'
+            'postgresql://echo_user:echo_password@localhost:5469/echo_control_v2?schema=public'
           ),
 
     // auth
