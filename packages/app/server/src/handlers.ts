@@ -126,6 +126,17 @@ export async function finalize(
     const authPayload = payload.authorization;
     await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
   }
+
+  // fund repo amount should be: 
+
+  // - Total paid up front
+  // - minus transaction cost
+  // - minus refund amount
+  // - which leaves only the profit margin generated. (this should be 0)
+
+
+  await safeFundRepo(paymentAmountDecimal.toNumber());
+
 }
 
 export async function handleX402Request({
@@ -181,7 +192,6 @@ export async function handleX402Request({
       payload
     );
 
-    await safeFundRepo(paymentAmountDecimal.toNumber());
   } catch (error) {
     await refund(paymentAmountDecimal, payload);
   }
