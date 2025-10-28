@@ -1,14 +1,8 @@
-import {
-  decimalToUsdcBigInt,
-  calculateRefundAmount,
-} from 'utils';
+import { decimalToUsdcBigInt, calculateRefundAmount } from 'utils';
 import { transfer } from 'transferWithAuth';
-import {
-  ExactEvmPayload,
-} from 'services/facilitator/x402-types';
+import { ExactEvmPayload } from 'services/facilitator/x402-types';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transaction } from 'types';
-
 
 export async function finalize(
   originalPaymentAmountDecimal: Decimal,
@@ -17,7 +11,6 @@ export async function finalize(
   echoMarkupProfit: Decimal,
   payload: ExactEvmPayload
 ) {
-
   const appMarkupAmount = rawTransactionCost.plus(appMarkupProfit);
 
   const totalCostToUser = appMarkupAmount.add(echoMarkupProfit);
@@ -32,8 +25,6 @@ export async function finalize(
     const authPayload = payload.authorization;
     await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
   }
-
-
 
   // We need to send the rawTransactionCost to a separate wallet (and allow claim through control)
 

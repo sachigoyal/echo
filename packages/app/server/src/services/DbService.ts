@@ -330,9 +330,10 @@ export class EchoDbService {
         markUpProfit: transaction.markUpProfit,
         referralProfit: transaction.referralProfit,
         rawTransactionCost: transaction.rawTransactionCost,
-        status: transaction.status,
-        userId: transaction.userId,
-        echoAppId: transaction.echoAppId,
+        echoProfit: transaction.echoProfit,
+        status: transaction.status ?? null,
+        userId: transaction.userId ?? null,
+        echoAppId: transaction.echoAppId ?? null,
         apiKeyId: transaction.apiKeyId || null,
         markUpId: transaction.markUpId || null,
         spendPoolId: transaction.spendPoolId || null,
@@ -465,13 +466,14 @@ export class EchoDbService {
           throw new Error('Spend pool not found');
         }
         // 2. Upsert UserSpendPoolUsage record using helper
-        const userSpendPoolUsage = transactionData.userId ?
-        await this.upsertUserSpendPoolUsage(
-          tx,
-          transactionData.userId,
-          spendPoolId,
-          transactionData.totalCost
-        ) : null;
+        const userSpendPoolUsage = transactionData.userId
+          ? await this.upsertUserSpendPoolUsage(
+              tx,
+              transactionData.userId,
+              spendPoolId,
+              transactionData.totalCost
+            )
+          : null;
         // 3. Create the transaction record
         const transaction = await this.createTransactionRecord(
           tx,

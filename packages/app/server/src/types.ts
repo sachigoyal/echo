@@ -83,6 +83,7 @@ export interface TransactionRequest extends Transaction {
   appProfit: Decimal;
   markUpProfit: Decimal;
   referralProfit: Decimal;
+  echoProfit: Decimal;
   userId?: string;
   echoAppId?: string;
   apiKeyId?: string;
@@ -266,4 +267,5 @@ export interface TransactionCosts {
   totalAppProfit: Decimal;
   referralProfit: Decimal;
   markUpProfit: Decimal;
+  echoProfit: Decimal;
 }

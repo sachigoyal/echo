@@ -1,10 +1,6 @@
-import {
-  decimalToUsdcBigInt,
-} from 'utils';
+import { decimalToUsdcBigInt } from 'utils';
 import { transfer } from 'transferWithAuth';
-import {
-  ExactEvmPayload,
-} from 'services/facilitator/x402-types';
+import { ExactEvmPayload } from 'services/facilitator/x402-types';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from 'logger';
 

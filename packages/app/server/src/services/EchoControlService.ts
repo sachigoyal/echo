@@ -13,10 +13,16 @@ import { EchoDbService } from './DbService';
 
 import { Decimal } from '@prisma/client/runtime/library';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
-import { EnumTransactionType, MarkUp, PrismaClient, SpendPool } from '../generated/prisma';
+import {
+  EnumTransactionType,
+  MarkUp,
+  PrismaClient,
+  SpendPool,
+} from '../generated/prisma';
 import logger from '../logger';
 import { EarningsService } from './EarningsService';
 import FreeTierService from './FreeTierService';
+import { applyEchoMarkup } from './PricingService';
 
 export class EchoControlService {
   private readonly db: PrismaClient;
@@ -170,9 +176,7 @@ export class EchoControlService {
    * Create an LLM transaction record directly in the database
    * Uses centralized logic from EchoDbService
    */
-  async createTransaction(
-    transaction: Transaction,
-  ): Promise<void> {
+  async createTransaction(transaction: Transaction): Promise<void> {
     try {
       if (!this.authResult) {
         logger.error('No authentication result available');
@@ -214,7 +218,8 @@ export class EchoControlService {
 
   async computeTransactionCosts(
     transaction: Transaction,
-    referralCodeId: string | null
+    referralCodeId: string | null,
+    addEchoProfit: boolean = false
   ): Promise<TransactionCosts> {
     if (!this.markUpAmount) {
       logger.error('User has not authenticated');
@@ -255,6 +260,10 @@ export class EchoControlService {
       totalAppProfitDecimal
     );
 
+    const echoProfitDecimal = addEchoProfit
+      ? applyEchoMarkup(transaction.rawTransactionCost)
+      : new Decimal(0);
+
     // Return Decimal values directly
     return {
       rawTransactionCost: transaction.rawTransactionCost,
@@ -262,6 +271,7 @@ export class EchoControlService {
       totalAppProfit: totalAppProfitDecimal,
       referralProfit: referralProfitDecimal,
       markUpProfit: markUpProfitDecimal,
+      echoProfit: echoProfitDecimal,
     };
   }
   async createFreeTierTransaction(transaction: Transaction): Promise<void> {
@@ -314,9 +324,7 @@ export class EchoControlService {
     );
   }
 
-  async createPaidTransaction(
-    transaction: Transaction,
-  ): Promise<void> {
+  async createPaidTransaction(transaction: Transaction): Promise<void> {
     if (!this.authResult) {
       logger.error('No authentication result available');
       throw new UnauthorizedError('No authentication result available');
@@ -351,7 +359,10 @@ export class EchoControlService {
     await this.dbService.createPaidTransaction(transactionData);
   }
 
-  async identifyX402Transaction(echoApp: EchoApp, markUp: MarkUp): Promise<void> {
+  async identifyX402Transaction(
+    echoApp: EchoApp,
+    markUp: MarkUp
+  ): Promise<void> {
     this.markUpId = markUp.id;
     this.markUpAmount = markUp.amount;
     this.x402AuthenticationResult = {
@@ -360,12 +371,15 @@ export class EchoControlService {
     };
   }
 
-
   async createX402Transaction(
     transaction: Transaction,
+    addEchoProfit: boolean = true
   ): Promise<TransactionCosts> {
-
-    const transactionCosts = await this.computeTransactionCosts(transaction, null);
+    const transactionCosts = await this.computeTransactionCosts(
+      transaction,
+      null,
+      addEchoProfit
+    );
 
     const transactionData: TransactionRequest = {
       totalCost: transactionCosts.totalTransactionCost,
@@ -373,9 +387,12 @@ export class EchoControlService {
       markUpProfit: transactionCosts.markUpProfit,
       referralProfit: transactionCosts.referralProfit,
       rawTransactionCost: transactionCosts.rawTransactionCost,
+      echoProfit: transactionCosts.echoProfit,
       metadata: transaction.metadata,
       status: transaction.status,
-      ...(this.x402AuthenticationResult?.echoAppId && { echoAppId: this.x402AuthenticationResult?.echoAppId }),
+      ...(this.x402AuthenticationResult?.echoAppId && {
+        echoAppId: this.x402AuthenticationResult?.echoAppId,
+      }),
       ...(this.markUpId && { markUpId: this.markUpId }),
       transactionType: EnumTransactionType.X402,
     };

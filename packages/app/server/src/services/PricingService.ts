@@ -17,11 +17,18 @@ import { SupportedVideoModel } from '@merit-systems/echo-typescript-sdk';
 import { MarkUp } from 'generated/prisma/client';
 
 export function applyEchoMarkup(cost: Decimal): Decimal {
-  const echoMarkup = process.env.MAX_COST_MARKUP || '1.25';
-  return cost.mul(new Decimal(echoMarkup)).minus(cost);
+  const echoMarkup = process.env.ECHO_MARKUP || '1.25';
+  const applyEchoMarkup = process.env.APPLY_ECHO_MARKUP === 'true';
+  if (applyEchoMarkup) {
+    return cost.mul(new Decimal(echoMarkup)).minus(cost);
+  }
+  return new Decimal(0);
 }
 
-export function applyMaxCostMarkup(maxCost: Decimal, markUp: MarkUp | null): Decimal {
+export function applyMaxCostMarkup(
+  maxCost: Decimal,
+  markUp: MarkUp | null
+): Decimal {
   const appMarkup = markUp?.amount || 1.0;
   const appMarkupApplied = maxCost.mul(new Decimal(appMarkup)).minus(maxCost);
   const echoMarkupApplied = applyEchoMarkup(maxCost);

@@ -67,7 +67,7 @@ export async function handleX402Request({
       paymentAmountDecimal,
       transactionCosts.rawTransactionCost,
       transactionCosts.markUpProfit,
-      applyEchoMarkup(transactionCosts.rawTransactionCost),
+      transactionCosts.echoProfit,
       payload
     );
   } catch (error) {
