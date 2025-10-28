@@ -117,8 +117,9 @@ export async function finalize(
   transaction: Transaction,
   payload: ExactEvmPayload
 ) {
-
-  const transactionCostWithMarkup = applyMaxCostMarkup(transaction.rawTransactionCost);
+  const transactionCostWithMarkup = applyMaxCostMarkup(
+    transaction.rawTransactionCost
+  );
 
   // rawTransactionCost is what we pay to OpenAI
   // transactionCostWithMarkup is what we charge the user
@@ -126,16 +127,18 @@ export async function finalize(
 
   // The user should be refunded paymentAmountDecimal - transactionCostWithMarkup\
 
-
   const refundAmount = calculateRefundAmount(
     paymentAmountDecimal,
     transactionCostWithMarkup
   );
-  logger.info(`Payment amount decimal: ${paymentAmountDecimal.toNumber()} USD`)
-  logger.info(`Refunding ${refundAmount.toNumber()} USD`)
-  logger.info(`Transaction cost with markup: ${transactionCostWithMarkup.toNumber()} USD`)
-  logger.info(`Transaction cost: ${transaction.rawTransactionCost.toNumber()} USD`)
-
+  logger.info(`Payment amount decimal: ${paymentAmountDecimal.toNumber()} USD`);
+  logger.info(`Refunding ${refundAmount.toNumber()} USD`);
+  logger.info(
+    `Transaction cost with markup: ${transactionCostWithMarkup.toNumber()} USD`
+  );
+  logger.info(
+    `Transaction cost: ${transaction.rawTransactionCost.toNumber()} USD`
+  );
 
   if (!refundAmount.equals(0) && refundAmount.greaterThan(0)) {
     const refundAmountUsdcBigInt = decimalToUsdcBigInt(refundAmount);
@@ -143,7 +146,9 @@ export async function finalize(
     await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
   }
 
-  const markUpAmount = transactionCostWithMarkup.minus(transaction.rawTransactionCost);
+  const markUpAmount = transactionCostWithMarkup.minus(
+    transaction.rawTransactionCost
+  );
   if (markUpAmount.greaterThan(0)) {
     logger.info(`PROFIT RECEIVED: ${markUpAmount.toNumber()} USD, checking for a repo send operation`);
     try {
@@ -207,7 +212,6 @@ export async function handleX402Request({
       transactionResult.transaction,
       payload
     );
-
   } catch (error) {
     await refund(paymentAmountDecimal, payload);
   }

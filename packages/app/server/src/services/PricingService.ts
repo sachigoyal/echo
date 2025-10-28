@@ -20,7 +20,6 @@ export function applyMaxCostMarkup(maxCost: Decimal): Decimal {
   return maxCost.mul(new Decimal(markup));
 }
 
-
 export function getRequestMaxCost(
   req: EscrowRequest,
   provider: BaseProvider,
