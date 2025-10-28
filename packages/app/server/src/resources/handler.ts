@@ -4,7 +4,9 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { buildX402Response, isApiRequest, isX402Request } from 'utils';
 import { authenticateRequest } from 'auth';
 import { prisma } from 'server';
-import { settle, finalize, refund } from 'handlers';
+import { settle } from 'handlers/settle';
+import { finalizeResource } from 'handlers/finalize';
+import { refund } from 'handlers/refund';
 import logger from 'logger';
 import { ExactEvmPayload } from 'services/facilitator/x402-types';
 import { HttpError, PaymentRequiredError } from 'errors/http';
@@ -64,7 +66,7 @@ async function handle402Request<TInput, TOutput>(
   const actualCost = calculateActualCost(parsedBody, output);
   const transaction = createTransaction(parsedBody, output, actualCost);
 
-  finalize(paymentAmountDecimal, transaction, payload).catch(error => {
+  finalizeResource(paymentAmountDecimal, transaction, payload).catch(error => {
     logger.error('Failed to finalize transaction', error);
   });
 

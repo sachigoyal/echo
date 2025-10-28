@@ -1,6 +1,6 @@
 import { MarkUp, PrismaClient } from "../generated/prisma";
 import { EchoDbService } from "./DbService";
-import { EchoApp, Transaction } from "../types";
+import { EchoApp, Transaction, TransactionCosts } from "../types";
 import { EchoControlService } from "./EchoControlService";
 import logger from "logger";
 
@@ -37,9 +37,11 @@ export class X402AuthenticationService {
 
 
 
-    async createX402Transaction(transaction: Transaction): Promise<void> {
-        await this.echoControlService.createX402Transaction(transaction);
+    async createX402Transaction(transaction: Transaction): Promise<TransactionCosts> {
+        const transactionCosts = await this.echoControlService.createX402Transaction(transaction);
 
         logger.info(`Created X402 transaction for echo app ${transaction.metadata.provider}`);
+
+        return transactionCosts;
     }
 }

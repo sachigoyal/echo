@@ -4,6 +4,7 @@ import type {
   ApiKeyValidationResult,
   EchoApp,
   Transaction,
+  TransactionCosts,
   TransactionRequest,
   User,
   X402AuthenticationResult,
@@ -214,13 +215,7 @@ export class EchoControlService {
   async computeTransactionCosts(
     transaction: Transaction,
     referralCodeId: string | null
-  ): Promise<{
-    rawTransactionCost: Decimal;
-    totalTransactionCost: Decimal;
-    totalAppProfit: Decimal;
-    referralProfit: Decimal;
-    markUpProfit: Decimal;
-  }> {
+  ): Promise<TransactionCosts> {
     if (!this.markUpAmount) {
       logger.error('User has not authenticated');
       throw new UnauthorizedError('User has not authenticated');
@@ -368,22 +363,16 @@ export class EchoControlService {
 
   async createX402Transaction(
     transaction: Transaction,
-  ): Promise<void> {
+  ): Promise<TransactionCosts> {
 
-    const {
-      rawTransactionCost,
-      totalTransactionCost,
-      totalAppProfit,
-      referralProfit,
-      markUpProfit,
-    } = await this.computeTransactionCosts(transaction, null);
+    const transactionCosts = await this.computeTransactionCosts(transaction, null);
 
     const transactionData: TransactionRequest = {
-      totalCost: totalTransactionCost,
-      appProfit: totalAppProfit,
-      markUpProfit: markUpProfit,
-      referralProfit: referralProfit,
-      rawTransactionCost: rawTransactionCost,
+      totalCost: transactionCosts.totalTransactionCost,
+      appProfit: transactionCosts.totalAppProfit,
+      markUpProfit: transactionCosts.markUpProfit,
+      referralProfit: transactionCosts.referralProfit,
+      rawTransactionCost: transactionCosts.rawTransactionCost,
       metadata: transaction.metadata,
       status: transaction.status,
       ...(this.x402AuthenticationResult?.echoAppId && { echoAppId: this.x402AuthenticationResult?.echoAppId }),
@@ -392,5 +381,7 @@ export class EchoControlService {
     };
 
     await this.dbService.createPaidTransaction(transactionData);
+
+    return transactionCosts;
   }
 }

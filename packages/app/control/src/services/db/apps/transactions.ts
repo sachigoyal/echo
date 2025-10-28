@@ -67,7 +67,7 @@ export const listAppTransactions = async (
     {
       id: string;
       user: {
-        id: string;
+        id: string | null;
         name: string | null;
         image: string | null;
       };
@@ -78,7 +78,9 @@ export const listAppTransactions = async (
   >();
 
   for (const transaction of transactions) {
-    const userKey = `${transaction.userId}-${format(transaction.createdAt, 'yyyy-MM-dd')}`;
+    // Use 'unknown' as userId for null userIds, ensuring they all group together
+    const userId = transaction.userId ?? 'unknown';
+    const userKey = `${userId}-${format(transaction.createdAt, 'yyyy-MM-dd')}`;
 
     if (groupedTransactions.has(userKey)) {
       // Aggregate existing group
@@ -90,8 +92,8 @@ export const listAppTransactions = async (
       groupedTransactions.set(userKey, {
         id: transaction.id,
         user: {
-          id: transaction.userId!,
-          name: transaction.user?.name ?? null,
+          id: transaction.userId,
+          name: transaction.user?.name ?? (transaction.userId === null ? 'Unknown User' : null),
           image: transaction.user?.image ?? null,
         },
         callCount: 1,

@@ -258,3 +258,12 @@ export type SendUserOperationReturnType = {
   /** The hash of the user operation. This is not the transaction hash which is only available after the operation is completed.*/
   userOpHash: Hex;
 };
+
+
+export interface TransactionCosts {
+  rawTransactionCost: Decimal;
+  totalTransactionCost: Decimal;
+  totalAppProfit: Decimal;
+  referralProfit: Decimal;
+  markUpProfit: Decimal;
+}
