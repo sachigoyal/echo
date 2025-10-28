@@ -66,7 +66,7 @@ export async function handleX402Request({
     await finalize(
       paymentAmountDecimal,
       transactionCosts.rawTransactionCost,
-      transactionCosts.markUpProfit,
+      transactionCosts.totalAppProfit,
       transactionCosts.echoProfit,
       payload
     );
