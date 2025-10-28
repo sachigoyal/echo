@@ -12,7 +12,7 @@ import {
   PaymentRequirements,
   VerifyResponse,
   SettleResponse,
-  ExactEvmPayload,
+  ExactEvmPayloadSchema,
 } from './x402-types';
 import { USDC_ADDRESS_BY_NETWORK } from '../../constants';
 import { ERC3009_ABI } from '../fund-repo/constants';
@@ -25,15 +25,25 @@ export async function verify(
   payload: PaymentPayload,
   paymentRequirements: PaymentRequirements
 ): Promise<VerifyResponse> {
-  const exactEvmPayload = payload.payload as ExactEvmPayload;
-
   if (payload.scheme !== SCHEME || paymentRequirements.scheme !== SCHEME) {
     return {
       isValid: false,
       invalidReason: 'unsupported_scheme',
-      payer: exactEvmPayload.authorization.from,
+      payer: undefined,
     };
   }
+
+  const parseResult = ExactEvmPayloadSchema.safeParse(payload.payload);
+  
+  if (!parseResult.success) {
+    return {
+      isValid: false,
+      invalidReason: 'invalid_payload',
+      payer: undefined,
+    };
+  }
+
+  const exactEvmPayload = parseResult.data;
 
   const network = payload.network;
   const chainId = getNetworkId(network);
@@ -119,8 +129,6 @@ export async function settle(
   paymentPayload: PaymentPayload,
   paymentRequirements: PaymentRequirements
 ): Promise<SettleResponse> {
-  const payload = paymentPayload.payload as ExactEvmPayload;
-
   const valid = await verify(paymentPayload, paymentRequirements);
 
   if (!valid.isValid) {
@@ -129,9 +137,23 @@ export async function settle(
       network: paymentPayload.network,
       transaction: '',
       errorReason: valid.invalidReason ?? 'invalid_scheme',
-      payer: payload.authorization.from,
+      payer: valid.payer,
     };
   }
+
+  const parseResult = ExactEvmPayloadSchema.safeParse(paymentPayload.payload);
+  
+  if (!parseResult.success) {
+    return {
+      success: false,
+      network: paymentPayload.network,
+      transaction: '',
+      errorReason: 'invalid_payload',
+      payer: undefined,
+    };
+  }
+
+  const payload = parseResult.data;
 
   const { signature } = parseErc6492Signature(payload.signature as Hex);
 
