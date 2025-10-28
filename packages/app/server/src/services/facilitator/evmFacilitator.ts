@@ -6,7 +6,7 @@ import {
   encodeFunctionData,
   Abi,
 } from 'viem';
-import { getNetworkId, getVersion, getERC20Balance, USDC_CONFIG } from './evmUtils';
+import { getNetworkId, getERC20Balance } from './evmUtils';
 import {
   PaymentPayload,
   PaymentRequirements,
@@ -14,6 +14,7 @@ import {
   SettleResponse,
   ExactEvmPayload,
 } from './x402-types';
+import { USDC_ADDRESS_BY_NETWORK } from '../../constants';
 import { ERC3009_ABI } from '../fund-repo/constants';
 import { getSmartAccount } from '../../utils';
 import logger from 'logger';
@@ -34,21 +35,22 @@ export async function verify(
     };
   }
 
-  let name: string;
-  let chainId: number;
-  let erc20Address: Address;
-  let version: string;
-
   const network = payload.network;
-  chainId = getNetworkId(network);
-  name = paymentRequirements.extra?.name ?? USDC_CONFIG[chainId.toString()]?.usdcName ?? 'USD Coin';
-  erc20Address = paymentRequirements.asset as Address;
-  version = paymentRequirements.extra?.version ?? await getVersion(network);
+  const chainId = getNetworkId(network);
+  const erc20Address = paymentRequirements.asset as Address;
 
-  if (!chainId || !USDC_CONFIG[chainId.toString()]) {
+  if (!chainId) {
     return {
       isValid: false,
       invalidReason: 'invalid_network',
+      payer: exactEvmPayload.authorization.from,
+    };
+  }
+
+  if (erc20Address !== USDC_ADDRESS_BY_NETWORK[network]) {
+    return {
+      isValid: false,
+      invalidReason: 'invalid_payment',
       payer: exactEvmPayload.authorization.from,
     };
   }
