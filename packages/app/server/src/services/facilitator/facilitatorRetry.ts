@@ -32,11 +32,6 @@ interface FacilitatorConfig {
 
 const facilitators: FacilitatorConfig[] = [
   {
-    url: '',
-    methodPrefix: '',
-    name: 'Local',
-  },
-  {
     url: COINBASE_FACILITATOR_BASE_URL!,
     methodPrefix: COINBASE_FACILITATOR_METHOD_PREFIX!,
     name: 'Coinbase',
@@ -50,6 +45,11 @@ const facilitators: FacilitatorConfig[] = [
     url: PAYAI_FACILITATOR_BASE_URL!,
     methodPrefix: PAYAI_FACILITATOR_METHOD_PREFIX!,
     name: 'PayAI',
+  },
+  {
+    url: '',
+    methodPrefix: '',
+    name: 'Local',
   },
 ];
 
