@@ -5,6 +5,7 @@ import { Response } from 'express';
 import { BaseProvider } from 'providers/BaseProvider';
 import { Hex } from 'viem';
 import { X402AuthenticationService } from 'services/x402AuthenticationService';
+import { EnumTransactionType } from 'generated/prisma';
 
 export interface EchoApp {
   id: string;
@@ -89,6 +90,7 @@ export interface TransactionRequest extends Transaction {
   spendPoolId?: string;
   referralCodeId?: string;
   referrerRewardId?: string;
+  transactionType?: EnumTransactionType;
 }
 
 export interface ApiKeyValidationResult {

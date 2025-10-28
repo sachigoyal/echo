@@ -59,7 +59,7 @@ export const listAppUsers = async (
       });
 
       // Get user details and membership info for the top users
-      const userIds = topUsersWithStats.map(stat => stat.userId);
+      const userIds = topUsersWithStats.map(stat => stat.userId).filter((id): id is string => id !== null);
 
       const usersWithDetails = await db.user.findMany({
         where: {

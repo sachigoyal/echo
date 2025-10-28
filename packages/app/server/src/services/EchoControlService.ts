@@ -12,7 +12,7 @@ import { EchoDbService } from './DbService';
 
 import { Decimal } from '@prisma/client/runtime/library';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
-import { MarkUp, PrismaClient, SpendPool } from '../generated/prisma';
+import { EnumTransactionType, MarkUp, PrismaClient, SpendPool } from '../generated/prisma';
 import logger from '../logger';
 import { EarningsService } from './EarningsService';
 import FreeTierService from './FreeTierService';
@@ -96,6 +96,10 @@ export class EchoControlService {
     if (markUp) {
       this.markUpAmount = markUp.amount;
       this.markUpId = markUp.id;
+    } else {
+      // Default markup amount when no markup is configured
+      this.markUpAmount = new Decimal(1.0);
+      this.markUpId = null;
     }
 
     this.referralAmount = new Decimal(1.0);
@@ -384,6 +388,7 @@ export class EchoControlService {
       status: transaction.status,
       ...(this.x402AuthenticationResult?.echoAppId && { echoAppId: this.x402AuthenticationResult?.echoAppId }),
       ...(this.markUpId && { markUpId: this.markUpId }),
+      transactionType: EnumTransactionType.X402,
     };
 
     await this.dbService.createPaidTransaction(transactionData);

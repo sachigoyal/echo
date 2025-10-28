@@ -107,7 +107,7 @@ const TransactionRow = ({ transaction }: { transaction: Transaction }) => {
           <UserAvatar src={transaction.user.image} className="size-8" />
           <div className="flex flex-col items-start">
             <p className="text-sm leading-tight">
-              <span className="font-medium">{transaction.user.name}</span> made{' '}
+              <span className="font-medium">{transaction.user.name ?? 'Unknown User'}</span> made{' '}
               {transaction.callCount} requests
             </p>
             <p className="text-[10px] text-muted-foreground">
