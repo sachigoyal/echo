@@ -150,10 +150,13 @@ export async function finalize(
     transaction.rawTransactionCost
   );
   if (markUpAmount.greaterThan(0)) {
-    logger.info(
-      `PROFIT RECEIVED: ${markUpAmount.toNumber()} USD, checking for a repo send operation`
-    );
-    await safeFundRepoIfWorthwhile();
+    logger.info(`PROFIT RECEIVED: ${markUpAmount.toNumber()} USD, checking for a repo send operation`);
+    try {
+      await safeFundRepoIfWorthwhile();
+    } catch (error) {
+      logger.error('Failed to fund repo', error);
+      // Don't re-throw - repo funding is not critical to the transaction
+    }
   }
 }
 
