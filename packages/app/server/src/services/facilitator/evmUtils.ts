@@ -21,9 +21,11 @@ export async function getERC20Balance(
     throw new Error(`Unsupported network for balance check: ${network}`);
   }
 
+  const baseRpcUrl = process.env.BASE_RPC_URL || undefined;
+
   const client = createPublicClient({
     chain,
-    transport: http(),
+    transport: http(baseRpcUrl),
   });
 
   const balance = await client.readContract({
