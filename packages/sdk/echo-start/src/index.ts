@@ -171,10 +171,8 @@ interface CreateAppOptions {
 
 function isExternalTemplate(template: string): boolean {
   return (
-    template.includes('/') ||
-    template.includes('#') ||
-    template.startsWith('http://') ||
-    template.startsWith('https://')
+    template.startsWith('https://github.com/') ||
+    template.startsWith('http://github.com/')
   );
 }
 
@@ -477,7 +475,7 @@ async function main() {
     .argument('[directory]', 'Directory to create the app in')
     .option(
       '-t, --template <template>',
-      `Template to use. Can be a preset (${Object.keys(DEFAULT_TEMPLATES).join(', ')}) or an external GitHub repository (user/repo, user/repo/subdirectory, user/repo#branch, https://github.com/user/repo)`
+      `Template to use. Can be a preset (${Object.keys(DEFAULT_TEMPLATES).join(', ')}) or a GitHub repository URL (https://github.com/user/repo)`
     )
     .option('-a, --app-id <appId>', 'Echo App ID to use in the project')
     .option('--skip-install', 'Skip automatic dependency installation')
