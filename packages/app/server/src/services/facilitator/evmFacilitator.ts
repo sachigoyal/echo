@@ -5,8 +5,10 @@ import {
   Address,
   encodeFunctionData,
   Abi,
+  parseUnits,
+  formatUnits,
 } from 'viem';
-import { getNetworkId, getERC20Balance } from './evmUtils';
+import { getNetworkId, getERC20Balance, getEthereumBalance } from './evmUtils';
 import {
   PaymentPayload,
   PaymentRequirements,
@@ -17,7 +19,7 @@ import {
 import { USDC_ADDRESS_BY_NETWORK } from '../../constants';
 import { ERC3009_ABI } from '../fund-repo/constants';
 import { getSmartAccount } from '../../utils';
-import logger from 'logger';
+import logger, { logMetric } from 'logger';
 
 const SCHEME = 'exact';
 
@@ -158,6 +160,43 @@ export async function settle(
   const { signature } = parseErc6492Signature(payload.signature as Hex);
 
   const { smartAccount } = await getSmartAccount();
+
+  const ETH_WARNING_THRESHOLD = parseUnits(
+    String(process.env.ETH_WARNING_THRESHOLD || '0.0001'),
+    18 // ETH decimals
+  );
+
+  const ethereumBalance = await getEthereumBalance(paymentPayload.network, smartAccount.address);
+  logger.info('Ethereum balance', {
+    balance: ethereumBalance,
+    address: smartAccount.address,
+  });
+  if (ethereumBalance < ETH_WARNING_THRESHOLD) {
+    const ethBalanceFormatted = formatUnits(ethereumBalance, 18);
+    const readableEthWarningThreshold = formatUnits(ETH_WARNING_THRESHOLD, 18);
+    
+    logger.warn(
+      `Ethereum balance is less than ${readableEthWarningThreshold} ETH`,
+      { 
+        balance: ethBalanceFormatted,
+        threshold: readableEthWarningThreshold,
+        address: smartAccount.address,
+      }
+    );
+    
+    logMetric('server_wallet.ethereum_balance_running_low', 1, {
+      amount: ethBalanceFormatted,
+      address: smartAccount.address,
+    });
+    
+    return {
+      success: false,
+      network: paymentPayload.network,
+      transaction: '',
+      errorReason: 'insufficient_funds',
+      payer: valid.payer,
+    };
+  }
 
   const callData = encodeFunctionData({
     abi: ERC3009_ABI as Abi,
