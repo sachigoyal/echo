@@ -224,6 +224,7 @@ function detectFrameworkEnvVarName(projectPath: string): string {
       }
     } catch (e) {
       // Fall through to default
+      console.error(e);
     }
   }
   
