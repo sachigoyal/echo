@@ -5,6 +5,7 @@ import {
   TransactionRequest,
   isLlmTransactionMetadata,
   isVeoTransactionMetadata,
+  EchoApp,
 } from '../types';
 import { createHmac } from 'crypto';
 import { jwtVerify } from 'jose';
@@ -412,13 +413,14 @@ export class EchoDbService {
           transaction
         );
 
-        // Update user's total spent amount
-        await this.updateUserTotalSpent(
-          tx,
-          transaction.userId,
-          transaction.totalCost
-        );
-
+        if (transaction.userId) {
+          // Update user's total spent amount
+          await this.updateUserTotalSpent(
+            tx,
+            transaction.userId,
+            transaction.totalCost
+          );
+        }
         // Update API key's last used timestamp if provided
         if (transaction.apiKeyId) {
           await this.updateApiKeyLastUsed(tx, transaction.apiKeyId);
@@ -449,7 +451,7 @@ export class EchoDbService {
     spendPoolId: string
   ): Promise<{
     transaction: Transaction;
-    userSpendPoolUsage: UserSpendPoolUsage;
+    userSpendPoolUsage: UserSpendPoolUsage | null;
   }> {
     try {
       return await this.db.$transaction(async tx => {
@@ -462,15 +464,14 @@ export class EchoDbService {
         if (!spendPool) {
           throw new Error('Spend pool not found');
         }
-
         // 2. Upsert UserSpendPoolUsage record using helper
-        const userSpendPoolUsage = await this.upsertUserSpendPoolUsage(
+        const userSpendPoolUsage = transactionData.userId ?
+        await this.upsertUserSpendPoolUsage(
           tx,
           transactionData.userId,
           spendPoolId,
           transactionData.totalCost
-        );
-
+        ) : null;
         // 3. Create the transaction record
         const transaction = await this.createTransactionRecord(
           tx,
@@ -521,5 +522,31 @@ export class EchoDbService {
     );
 
     return !!transaction;
+  }
+
+  async getEchoAppById(echoAppId: string): Promise<EchoApp | null> {
+    const echoApp = await this.db.echoApp.findUnique({
+      where: { id: echoAppId },
+    });
+    if (!echoApp) {
+      return null;
+    }
+    return {
+      id: echoApp.id,
+      name: echoApp.name,
+      createdAt: echoApp.createdAt.toISOString(),
+      updatedAt: echoApp.updatedAt.toISOString(),
+    };
+  }
+  async getCurrentMarkupByEchoAppId(echoAppId: string) {
+    const echoApp = await this.getEchoAppById(echoAppId);
+    if (!echoApp) {
+      return null;
+    }
+    const markup = await this.db.echoApp.findUnique({
+      where: { id: echoAppId },
+      select: { markUp: true },
+    });
+    return markup?.markUp || null;
   }
 }

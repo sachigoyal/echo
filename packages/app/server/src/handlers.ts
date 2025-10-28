@@ -1,6 +1,6 @@
 import { TransactionEscrowMiddleware } from 'middleware/transaction-escrow-middleware';
 import { modelRequestService } from 'services/ModelRequestService';
-import { HandlerInput, Network, Transaction, X402HandlerInput } from 'types';
+import { ApiKeyHandlerInput, Network, Transaction, X402HandlerInput } from 'types';
 import {
   usdcBigIntToDecimal,
   decimalToUsdcBigInt,
@@ -168,11 +168,11 @@ export async function handleX402Request({
   isPassthroughProxyRoute,
   provider,
   isStream,
+  x402AuthenticationService,
 }: X402HandlerInput) {
   if (isPassthroughProxyRoute) {
     return await makeProxyPassthroughRequest(req, res, provider, headers);
   }
-
   const settleResult = await settle(req, res, headers, maxCost);
   if (!settleResult) {
     return;
@@ -189,7 +189,6 @@ export async function handleX402Request({
       isStream
     );
     const transaction = transactionResult.transaction;
-
     if (provider.getType() === ProviderType.OPENAI_VIDEOS) {
       await prisma.videoGenerationX402.create({
         data: {
@@ -206,6 +205,9 @@ export async function handleX402Request({
       isStream,
       transactionResult.data
     );
+
+    logger.info(`Creating X402 transaction for app. Metadata: ${JSON.stringify(transaction.metadata)}`);
+    await x402AuthenticationService.createX402Transaction(transaction);
 
     await finalize(
       paymentAmountDecimal,
@@ -226,7 +228,7 @@ export async function handleApiKeyRequest({
   isPassthroughProxyRoute,
   provider,
   isStream,
-}: HandlerInput) {
+}: ApiKeyHandlerInput) {
   const transactionEscrowMiddleware = new TransactionEscrowMiddleware(prisma);
 
   if (isPassthroughProxyRoute) {
@@ -263,7 +265,7 @@ export async function handleApiKeyRequest({
 
   modelRequestService.handleResolveResponse(res, isStream, data);
 
-  await echoControlService.createTransaction(transaction, maxCost);
+  await echoControlService.createTransaction(transaction);
 
   if (provider.getType() === ProviderType.OPENAI_VIDEOS) {
     const transactionCost = await echoControlService.computeTransactionCosts(

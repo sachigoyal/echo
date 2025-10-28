@@ -14,10 +14,17 @@ import { EscrowRequest } from '../middleware/transaction-escrow-middleware';
 import { ProviderType } from 'providers/ProviderType';
 import { Tool } from 'openai/resources/responses/responses';
 import { SupportedVideoModel } from '@merit-systems/echo-typescript-sdk';
+import { MarkUp } from 'generated/prisma/client';
 
-export function applyMaxCostMarkup(maxCost: Decimal): Decimal {
-  const markup = process.env.MAX_COST_MARKUP || '1.25';
-  return maxCost.mul(new Decimal(markup));
+export function applyMaxCostMarkup(maxCost: Decimal, markUp: MarkUp | null): Decimal {
+  const echoMarkup = process.env.MAX_COST_MARKUP || '1.25';
+  const appMarkup = markUp?.amount || 1.0;
+
+  const echoMarkupApplied = maxCost.mul(new Decimal(echoMarkup)).minus(maxCost);
+
+  const appMarkupApplied = maxCost.mul(new Decimal(appMarkup)).minus(maxCost);
+  
+  return maxCost.add(echoMarkupApplied).add(appMarkupApplied);
 }
 
 export function getRequestMaxCost(

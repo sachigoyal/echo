@@ -6,12 +6,13 @@ import type {
   Transaction,
   TransactionRequest,
   User,
+  X402AuthenticationResult,
 } from '../types';
 import { EchoDbService } from './DbService';
 
 import { Decimal } from '@prisma/client/runtime/library';
 import { PaymentRequiredError, UnauthorizedError } from '../errors/http';
-import { PrismaClient, SpendPool } from '../generated/prisma';
+import { MarkUp, PrismaClient, SpendPool } from '../generated/prisma';
 import logger from '../logger';
 import { EarningsService } from './EarningsService';
 import FreeTierService from './FreeTierService';
@@ -21,8 +22,9 @@ export class EchoControlService {
   private readonly dbService: EchoDbService;
   private readonly freeTierService: FreeTierService;
   private earningsService: EarningsService;
-  private readonly apiKey: string;
+  private readonly apiKey: string | undefined;
   private authResult: ApiKeyValidationResult | null = null;
+  private x402AuthenticationResult: X402AuthenticationResult | null = null;
   private markUpAmount: Decimal | null = null;
   private markUpId: string | null = null;
   private referralAmount: Decimal | null = null;
@@ -30,7 +32,7 @@ export class EchoControlService {
   private referralCodeId: string | null = null;
   private freeTierSpendPool: SpendPool | null = null;
 
-  constructor(db: PrismaClient, apiKey: string) {
+  constructor(db: PrismaClient, apiKey?: string) {
     // Check if the generated Prisma client exists
     const generatedPrismaPath = join(__dirname, 'generated', 'prisma');
     if (!existsSync(generatedPrismaPath)) {
@@ -53,7 +55,9 @@ export class EchoControlService {
    */
   async verifyApiKey(): Promise<ApiKeyValidationResult | null> {
     try {
-      this.authResult = await this.dbService.validateApiKey(this.apiKey);
+      if (this.apiKey) {
+        this.authResult = await this.dbService.validateApiKey(this.apiKey);
+      }
     } catch (error) {
       logger.error(`Error verifying API key: ${error}`);
       return null;
@@ -79,6 +83,26 @@ export class EchoControlService {
     }
 
     return this.authResult;
+  }
+
+  identifyX402Request(echoApp: EchoApp | null, markUp: MarkUp | null): void {
+    if (echoApp) {
+      this.x402AuthenticationResult = {
+        echoApp: echoApp,
+        echoAppId: echoApp.id,
+      };
+    }
+
+    if (markUp) {
+      this.markUpAmount = markUp.amount;
+      this.markUpId = markUp.id;
+    }
+
+    this.referralAmount = new Decimal(1.0);
+    this.referrerRewardId = null;
+    this.referralCodeId = null;
+    this.freeTierSpendPool = null;
+    this.referralCodeId = null;
   }
 
   /**
@@ -143,7 +167,6 @@ export class EchoControlService {
    */
   async createTransaction(
     transaction: Transaction,
-    maxCost: Decimal
   ): Promise<void> {
     try {
       if (!this.authResult) {
@@ -160,7 +183,7 @@ export class EchoControlService {
         await this.createFreeTierTransaction(transaction);
         return;
       } else {
-        await this.createPaidTransaction(transaction, maxCost);
+        await this.createPaidTransaction(transaction);
         return;
       }
     } catch (error) {
@@ -294,7 +317,6 @@ export class EchoControlService {
 
   async createPaidTransaction(
     transaction: Transaction,
-    maxCost: Decimal
   ): Promise<void> {
     if (!this.authResult) {
       logger.error('No authentication result available');
@@ -308,13 +330,6 @@ export class EchoControlService {
       referralProfit,
       markUpProfit,
     } = await this.computeTransactionCosts(transaction, this.referralCodeId);
-
-    logger.info(
-      `Transaction cost: ${rawTransactionCost}, Max cost: ${maxCost}`
-    );
-    if (rawTransactionCost.greaterThan(maxCost)) {
-      logger.info(` Difference: ${rawTransactionCost.minus(maxCost)}`);
-    }
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
 
@@ -332,6 +347,43 @@ export class EchoControlService {
       ...(this.markUpId && { markUpId: this.markUpId }),
       ...(this.referralCodeId && { referralCodeId: this.referralCodeId }),
       ...(this.referrerRewardId && { referrerRewardId: this.referrerRewardId }),
+    };
+
+    await this.dbService.createPaidTransaction(transactionData);
+  }
+
+  async identifyX402Transaction(echoApp: EchoApp, markUp: MarkUp): Promise<void> {
+    this.markUpId = markUp.id;
+    this.markUpAmount = markUp.amount;
+    this.x402AuthenticationResult = {
+      echoApp,
+      echoAppId: echoApp.id,
+    };
+  }
+
+
+  async createX402Transaction(
+    transaction: Transaction,
+  ): Promise<void> {
+
+    const {
+      rawTransactionCost,
+      totalTransactionCost,
+      totalAppProfit,
+      referralProfit,
+      markUpProfit,
+    } = await this.computeTransactionCosts(transaction, null);
+
+    const transactionData: TransactionRequest = {
+      totalCost: totalTransactionCost,
+      appProfit: totalAppProfit,
+      markUpProfit: markUpProfit,
+      referralProfit: referralProfit,
+      rawTransactionCost: rawTransactionCost,
+      metadata: transaction.metadata,
+      status: transaction.status,
+      ...(this.x402AuthenticationResult?.echoAppId && { echoAppId: this.x402AuthenticationResult?.echoAppId }),
+      ...(this.markUpId && { markUpId: this.markUpId }),
     };
 
     await this.dbService.createPaidTransaction(transactionData);

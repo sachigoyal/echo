@@ -32,7 +32,7 @@ async function handleApiRequest<TInput, TOutput>(
   const actualCost = calculateActualCost(parsedBody, output);
   const transaction = createTransaction(parsedBody, output, actualCost);
 
-  await echoControlService.createTransaction(transaction, actualCost);
+  await echoControlService.createTransaction(transaction);
 
   return output;
 }

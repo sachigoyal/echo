@@ -4,6 +4,7 @@ import { EchoControlService } from 'services/EchoControlService';
 import { Response } from 'express';
 import { BaseProvider } from 'providers/BaseProvider';
 import { Hex } from 'viem';
+import { X402AuthenticationService } from 'services/x402AuthenticationService';
 
 export interface EchoApp {
   id: string;
@@ -81,8 +82,8 @@ export interface TransactionRequest extends Transaction {
   appProfit: Decimal;
   markUpProfit: Decimal;
   referralProfit: Decimal;
-  userId: string;
-  echoAppId: string;
+  userId?: string;
+  echoAppId?: string;
   apiKeyId?: string;
   markUpId?: string;
   spendPoolId?: string;
@@ -97,6 +98,11 @@ export interface ApiKeyValidationResult {
   echoApp: EchoApp;
   apiKeyId?: string;
   apiKey?: ApiKey;
+}
+
+export interface X402AuthenticationResult {
+  echoApp: EchoApp;
+  echoAppId: string;
 }
 
 /**
@@ -234,7 +240,10 @@ export type HandlerInput = {
   isPassthroughProxyRoute: boolean;
   provider: BaseProvider;
   isStream: boolean;
+  x402AuthenticationService: X402AuthenticationService;
 };
+
+export type ApiKeyHandlerInput = Omit<HandlerInput, 'x402AuthenticationService'>;
 
 export type X402HandlerInput = Omit<HandlerInput, 'echoControlService'>;
 

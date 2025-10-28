@@ -19,6 +19,9 @@ export const listAppUsers = async (
   { page, page_size }: PaginationParams
 ) => {
   const where: Prisma.TransactionWhereInput = {
+    userId: {
+      not: null,
+    },
     echoAppId: appId,
     isArchived: false,
     ...((startDate !== undefined || endDate !== undefined) && {

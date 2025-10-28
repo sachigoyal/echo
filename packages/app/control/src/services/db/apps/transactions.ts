@@ -90,9 +90,9 @@ export const listAppTransactions = async (
       groupedTransactions.set(userKey, {
         id: transaction.id,
         user: {
-          id: transaction.userId,
-          name: transaction.user.name,
-          image: transaction.user.image,
+          id: transaction.userId!,
+          name: transaction.user?.name ?? null,
+          image: transaction.user?.image ?? null,
         },
         callCount: 1,
         markUpProfit: Number(transaction.markUpProfit),
