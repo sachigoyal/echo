@@ -4,61 +4,44 @@ import {
   VerifyResponse,
   VerifyRequest,
 } from './x402-types';
-import { verify as x402Verify, settle as x402Settle } from 'x402/facilitator';
-// @ts-ignore - moduleResolution:node doesn't support package exports, but works at runtime
-import { createConnectedClient, createSigner, SupportedEVMNetworks, SupportedSVMNetworks, Signer, ConnectedClient } from 'x402/types';
-
-const EVM_PRIVATE_KEY = process.env.EVM_PRIVATE_KEY || '';
-const SVM_PRIVATE_KEY = process.env.SVM_PRIVATE_KEY || '';
-const SVM_RPC_URL = process.env.SVM_RPC_URL || '';
-
-const x402Config =
-  SVM_RPC_URL ? { svmConfig: { rpcUrl: SVM_RPC_URL } } : undefined;
+import { verify as evmVerify, settle as evmSettle } from './evmFacilitator';
+import logger from 'logger';
 
 const verify = async (request: VerifyRequest): Promise<VerifyResponse> => {
   const { paymentPayload, paymentRequirements } = request;
 
-  let client: Signer | ConnectedClient;
-  if (SupportedEVMNetworks.includes(paymentRequirements.network)) {
-    client = createConnectedClient(paymentRequirements.network);
-  } else if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
-    client = await createSigner(paymentRequirements.network, SVM_PRIVATE_KEY);
-  } else {
+  const network = paymentPayload.network;
+  
+  if (network.startsWith('solana')) {
+    logger.error('SVM not yet supported in localFacilitator');
     return {
       isValid: false,
-      invalidReason: 'invalid_network',
+      invalidReason: 'unsupported_scheme',
+      payer: undefined,
     };
   }
 
-  const result = await x402Verify(
-    client,
-    paymentPayload,
-    paymentRequirements,
-    x402Config
-  );
-
+  const result = await evmVerify(paymentPayload, paymentRequirements);
   return result;
 };
 
 const settle = async (request: SettleRequest): Promise<SettleResponse> => {
   const { paymentPayload, paymentRequirements } = request;
 
-  let signer: Signer;
-  if (SupportedEVMNetworks.includes(paymentRequirements.network)) {
-    signer = await createSigner(paymentRequirements.network, EVM_PRIVATE_KEY);
-  } else if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
-    signer = await createSigner(paymentRequirements.network, SVM_PRIVATE_KEY);
-  } else {
-    throw new Error('Invalid network');
+  const network = paymentPayload.network;
+  
+  if (network.startsWith('solana')) {
+    logger.error('SVM not yet supported in localFacilitator');
+    return {
+      success: false,
+      errorReason: 'unsupported_scheme',
+      payer: undefined,
+      transaction: '',
+      network: paymentPayload.network,
+    };
   }
 
-  const response = await x402Settle(
-    signer,
-    paymentPayload,
-    paymentRequirements,
-    x402Config
-  );
-
+  const response = await evmSettle(paymentPayload, paymentRequirements);
   return response;
 };
 

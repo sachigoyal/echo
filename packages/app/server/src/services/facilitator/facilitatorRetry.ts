@@ -8,6 +8,7 @@ import {
 import { generateCdpJwt } from './facilitatorService';
 import logger, { logMetric } from '../../logger';
 import dotenv from 'dotenv';
+import { localFacilitator } from './localFacilitator';
 
 dotenv.config();
 
@@ -30,6 +31,11 @@ interface FacilitatorConfig {
 }
 
 const facilitators: FacilitatorConfig[] = [
+  {
+    url: '',
+    methodPrefix: '',
+    name: 'Local',
+  },
   {
     url: COINBASE_FACILITATOR_BASE_URL!,
     methodPrefix: COINBASE_FACILITATOR_METHOD_PREFIX!,
@@ -67,6 +73,14 @@ export async function facilitatorWithRetry<
 
   for (const facilitator of facilitators) {
     try {
+      if (facilitator.name === 'Local') {
+        const result = await localFacilitator[method]({
+          paymentPayload: payload,
+          paymentRequirements: paymentRequirements,
+        });
+        return result as T;
+      }
+
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
