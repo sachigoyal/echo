@@ -95,7 +95,7 @@ export const listAppTransactions = async (
           id: transaction.userId,
           name:
             transaction.user?.name ??
-            (transaction.userId === null ? 'Unknown User' : null),
+            (transaction.userId === null ? 'x402 Users' : null),
           image: transaction.user?.image ?? null,
         },
         callCount: 1,

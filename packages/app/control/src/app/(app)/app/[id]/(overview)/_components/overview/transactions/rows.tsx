@@ -31,7 +31,7 @@ export const TransactionRows = async ({ appId }: { appId: string }) => {
           <div className="flex flex-col items-start">
             <p className="text-sm leading-tight">
               <span className="font-medium">
-                {transaction.user.name ?? 'Unknown User'}
+                {transaction.user.name ?? 'x402 Users'}
               </span>{' '}
               made {transaction.callCount} requests
             </p>
