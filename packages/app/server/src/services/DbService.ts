@@ -332,7 +332,8 @@ export class EchoDbService {
         referralProfit: transaction.referralProfit,
         rawTransactionCost: transaction.rawTransactionCost,
         echoProfit: transaction.echoProfit,
-        transactionType: transaction.transactionType ?? EnumTransactionType.BALANCE,
+        transactionType:
+          transaction.transactionType ?? EnumTransactionType.BALANCE,
         status: transaction.status ?? null,
         userId: transaction.userId ?? null,
         echoAppId: transaction.echoAppId ?? null,

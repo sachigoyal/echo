@@ -399,7 +399,6 @@ export class EchoControlService {
       }),
       ...(this.markUpId && { markUpId: this.markUpId }),
       transactionType: EnumTransactionType.X402,
-
     };
 
     await this.dbService.createPaidTransaction(transactionData);
