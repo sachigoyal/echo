@@ -14,6 +14,7 @@ import {
   Prisma,
   Transaction,
   UserSpendPoolUsage,
+  EnumTransactionType,
 } from '../generated/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from '../logger';
@@ -331,6 +332,7 @@ export class EchoDbService {
         referralProfit: transaction.referralProfit,
         rawTransactionCost: transaction.rawTransactionCost,
         echoProfit: transaction.echoProfit,
+        transactionType: transaction.transactionType ?? EnumTransactionType.BALANCE,
         status: transaction.status ?? null,
         userId: transaction.userId ?? null,
         echoAppId: transaction.echoAppId ?? null,

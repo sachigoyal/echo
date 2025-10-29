@@ -295,6 +295,7 @@ export class EchoControlService {
       rawTransactionCost,
       totalTransactionCost,
       totalAppProfit,
+      echoProfit,
       referralProfit,
       markUpProfit,
     } = await this.computeTransactionCosts(transaction, this.referralCodeId);
@@ -305,6 +306,7 @@ export class EchoControlService {
       markUpProfit: markUpProfit,
       referralProfit: referralProfit,
       rawTransactionCost: rawTransactionCost,
+      echoProfit: echoProfit,
       metadata: transaction.metadata,
       status: transaction.status,
       userId: userId,
@@ -336,6 +338,7 @@ export class EchoControlService {
       totalAppProfit,
       referralProfit,
       markUpProfit,
+      echoProfit,
     } = await this.computeTransactionCosts(transaction, this.referralCodeId);
 
     const { userId, echoAppId, apiKeyId } = this.authResult;
@@ -346,6 +349,7 @@ export class EchoControlService {
       markUpProfit: markUpProfit,
       referralProfit: referralProfit,
       rawTransactionCost: rawTransactionCost,
+      echoProfit: echoProfit,
       metadata: transaction.metadata,
       status: transaction.status,
       userId: userId,
@@ -395,6 +399,7 @@ export class EchoControlService {
       }),
       ...(this.markUpId && { markUpId: this.markUpId }),
       transactionType: EnumTransactionType.X402,
+
     };
 
     await this.dbService.createPaidTransaction(transactionData);

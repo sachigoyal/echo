@@ -25,12 +25,6 @@ export async function finalize(
     const authPayload = payload.authorization;
     await transfer(authPayload.from as `0x${string}`, refundAmountUsdcBigInt);
   }
-
-  // We need to send the rawTransactionCost to a separate wallet (and allow claim through control)
-
-  // We need to send the echo markup profit to the echo repo (and allow claim through control)
-
-  // We need to send the app Markup Profit to the app Repo (and allow them to claim through control)
 }
 
 export async function finalizeResource(

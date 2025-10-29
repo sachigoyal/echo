@@ -231,6 +231,8 @@ enum EnumPayoutStatus {
 enum EnumPayoutType {
   MARKUP
   REFERRAL
+  ECHO_PROFIT
+  APP_PROFIT
 }
 
 model Payout {
