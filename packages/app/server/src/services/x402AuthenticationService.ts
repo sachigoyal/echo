@@ -22,6 +22,7 @@ export class X402AuthenticationService {
     logger.info(`Authenticating X402 request for echo app ${requestedAppId}`);
 
     if (!requestedAppId) {
+      this.echoControlService.identifyX402Request(null, null);
       return null;
     }
 
