@@ -1,4 +1,3 @@
-import { Network } from 'types';
 import {
   usdcBigIntToDecimal,
   decimalToUsdcBigInt,
@@ -10,9 +9,11 @@ import { USDC_ADDRESS } from 'services/fund-repo/constants';
 import { FacilitatorClient } from 'services/facilitator/facilitatorService';
 import {
   ExactEvmPayload,
+  ExactEvmPayloadSchema,
   PaymentPayload,
   PaymentRequirementsSchema,
   SettleRequestSchema,
+  Network,
 } from 'services/facilitator/x402-types';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from 'logger';
@@ -44,8 +45,16 @@ export async function settle(
     return undefined;
   }
 
-  const payload = xPaymentData.payload as ExactEvmPayload;
-  logger.info(`Payment payload: ${JSON.stringify(payload)}`);
+  const payloadResult = ExactEvmPayloadSchema.safeParse(xPaymentData.payload);
+  if (!payloadResult.success) {
+    logger.error('Invalid ExactEvmPayload in settle', {
+      error: payloadResult.error,
+      payload: xPaymentData.payload,
+    });
+    buildX402Response(req, res, maxCost);
+    return undefined;
+  }
+  const payload = payloadResult.data;
 
   const paymentAmount = payload.authorization.value;
   const paymentAmountDecimal = usdcBigIntToDecimal(paymentAmount);

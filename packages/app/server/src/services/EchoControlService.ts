@@ -261,9 +261,9 @@ export class EchoControlService {
       ? applyEchoMarkup(transaction.rawTransactionCost)
       : new Decimal(0);
 
-    const totalTransactionCostDecimal = transaction.rawTransactionCost.plus(
-        totalAppProfitDecimal
-      ).plus(echoProfitDecimal);
+    const totalTransactionCostDecimal = transaction.rawTransactionCost
+      .plus(totalAppProfitDecimal)
+      .plus(echoProfitDecimal);
 
     // Return Decimal values directly
     return {
