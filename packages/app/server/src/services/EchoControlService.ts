@@ -256,13 +256,14 @@ export class EchoControlService {
     const markUpProfitDecimal = totalAppProfitDecimal.minus(
       referralProfitDecimal
     );
-    const totalTransactionCostDecimal = transaction.rawTransactionCost.plus(
-      totalAppProfitDecimal
-    );
 
     const echoProfitDecimal = addEchoProfit
       ? applyEchoMarkup(transaction.rawTransactionCost)
       : new Decimal(0);
+
+    const totalTransactionCostDecimal = transaction.rawTransactionCost.plus(
+        totalAppProfitDecimal
+      ).plus(echoProfitDecimal);
 
     // Return Decimal values directly
     return {
