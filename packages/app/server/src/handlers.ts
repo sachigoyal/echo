@@ -12,7 +12,6 @@ import { ProviderType } from 'providers/ProviderType';
 import { settle } from 'handlers/settle';
 import { finalize } from 'handlers/finalize';
 import { refund } from 'handlers/refund';
-import { applyEchoMarkup } from 'services/PricingService';
 
 export async function handleX402Request({
   req,
