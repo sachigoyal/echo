@@ -1,5 +1,5 @@
 import { SiNextdotjs, SiReact } from '@icons-pack/react-simple-icons';
-import { AppWindow, BotMessageSquare, Image, KeyRound } from 'lucide-react';
+import { AppWindow, BotMessageSquare, Image } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { TemplateGroup } from './types';
