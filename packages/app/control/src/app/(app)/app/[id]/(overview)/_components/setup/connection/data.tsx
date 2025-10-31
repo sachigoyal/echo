@@ -50,14 +50,6 @@ export const TEMPLATES: TemplateGroup = {
           url: 'https://echo-next-image.vercel.app/',
         },
         {
-          id: 'authjs',
-          title: 'Auth.js (NextAuth)',
-          description:
-            'Next.js application with Echo as an Auth.js provider for authentication.',
-          Icon: KeyRound,
-          url: 'https://echo-authjs.vercel.app/',
-        },
-        {
           id: 'next',
           title: 'Boilerplate',
           description:
