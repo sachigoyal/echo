@@ -38,14 +38,14 @@ const facilitators: FacilitatorConfig[] = [
     name: 'Coinbase',
   },
   {
-    url: X402RS_FACILITATOR_BASE_URL!,
-    methodPrefix: X402RS_FACILITATOR_METHOD_PREFIX!,
-    name: 'X402RS',
-  },
-  {
     url: PAYAI_FACILITATOR_BASE_URL!,
     methodPrefix: PAYAI_FACILITATOR_METHOD_PREFIX!,
     name: 'PayAI',
+  },
+  {
+    url: X402RS_FACILITATOR_BASE_URL!,
+    methodPrefix: X402RS_FACILITATOR_METHOD_PREFIX!,
+    name: 'X402RS',
   },
   {
     url: '',
