@@ -1,5 +1,5 @@
 import { SiNextdotjs, SiReact } from '@icons-pack/react-simple-icons';
-import { AppWindow, BotMessageSquare, Image } from 'lucide-react';
+import { AppWindow, BotMessageSquare, Image, KeyRound } from 'lucide-react';
 import type { Route } from 'next';
 import Link from 'next/link';
 import type { TemplateGroup } from './types';
@@ -48,6 +48,14 @@ export const TEMPLATES: TemplateGroup = {
             'A full-stack image generation application using Next.js and the Vercel AI SDK.',
           Icon: Image,
           url: 'https://echo-next-image.vercel.app/',
+        },
+        {
+          id: 'authjs',
+          title: 'Auth.js (NextAuth)',
+          description:
+            'Next.js application with Echo as an Auth.js provider for authentication.',
+          Icon: KeyRound,
+          url: 'https://echo-authjs.vercel.app/',
         },
         {
           id: 'next',
