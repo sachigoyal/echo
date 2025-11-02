@@ -7,6 +7,21 @@ export const maxDuration = 30;
 
 const BASE_URL = process.env.BASE_URL || 'https://api.echo.merit.systems/v1';
 
+function echoFetch(paymentAuthHeader: string | null | undefined) {
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const headers: Record<string, string> = { ...init?.headers } as Record<string, string>;
+    if (paymentAuthHeader) {
+      headers['x-payment'] = paymentAuthHeader;
+    }
+
+    delete headers['Authorization'];
+    return fetch(input, {
+      ...init,
+      headers,
+    });
+  }
+}
+
 async function validateAuthentication(useX402: boolean): Promise<{
   token?: string | null;
   error?: Response;
@@ -74,7 +89,7 @@ export async function POST(req: Request) {
       const x402OpenAI = createOpenAI({
         baseURL: BASE_URL,
         apiKey: 'ignore',
-        headers: paymentHeader ? { 'x-payment': paymentHeader } : {},
+        fetch: echoFetch(paymentHeader),
       });
 
       const result = streamText({
