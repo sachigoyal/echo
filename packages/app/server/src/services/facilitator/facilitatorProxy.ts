@@ -7,14 +7,15 @@ import {
 } from './x402-types';
 import logger, { logMetric } from '../../logger';
 import dotenv from 'dotenv';
+import { env } from '../../env';
 
 dotenv.config();
 
-const PROXY_FACILITATOR_URL = process.env.PROXY_FACILITATOR_URL;
+const PROXY_FACILITATOR_URL = env.PROXY_FACILITATOR_URL;
 if (!PROXY_FACILITATOR_URL) {
   throw new Error('PROXY_FACILITATOR_URL is not set');
 }
-const facilitatorTimeout = process.env.FACILITATOR_REQUEST_TIMEOUT || 20000;
+const facilitatorTimeout = env.FACILITATOR_REQUEST_TIMEOUT || 20000;
 
 type FacilitatorMethod = 'verify' | 'settle';
 

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/**/*.ts"
+  ],
+  "ignore": [
+    "/scripts/**",
+    "/src/__tests__/**",
+    "/src/generated/**",
+    "/dist/**"
+  ],
+  "ignoreDependencies": [
+    "@merit-systems/echo-typescript-sdk"
+  ]
+}
+

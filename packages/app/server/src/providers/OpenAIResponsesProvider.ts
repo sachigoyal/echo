@@ -12,8 +12,9 @@ import { BaseProvider } from './BaseProvider';
 import { ProviderType } from './ProviderType';
 import { Decimal } from '@prisma/client/runtime/library';
 import logger from '../logger';
+import { env } from '../env';
 
-export const parseSSEResponsesFormat = (
+const parseSSEResponsesFormat = (
   data: string
 ): ResponseStreamEvent[] => {
   // Split by double newlines to separate complete events
@@ -69,7 +70,7 @@ export class OpenAIResponsesProvider extends BaseProvider {
   }
 
   getApiKey(): string | undefined {
-    return process.env.OPENAI_API_KEY;
+    return env.OPENAI_API_KEY;
   }
 
   async handleBody(data: string): Promise<Transaction> {

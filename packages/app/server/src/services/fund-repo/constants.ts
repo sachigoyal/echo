@@ -1,4 +1,4 @@
-export const MERIT_ABI = [
+const MERIT_ABI = [
   {
     inputs: [
       {
@@ -64,7 +64,7 @@ export const ERC20_CONTRACT_ABI = [
   },
 ] as const;
 
-export const ERC3009_ABI = [
+const ERC3009_ABI = [
   {
     name: 'transferWithAuthorization',
     type: 'function',
@@ -82,7 +82,7 @@ export const ERC3009_ABI = [
   },
 ] as const;
 
-export const MERIT_CONTRACT_ADDRESS = process.env
+const MERIT_CONTRACT_ADDRESS = process.env
   .MERIT_CONTRACT_ADDRESS as `0x${string}`;
-export const USDC_ADDRESS = process.env.USDC_ADDRESS as `0x${string}`;
-export const ETH_ADDRESS = process.env.ETH_ADDRESS as `0x${string}`;
+export const USDC_ADDRESS = env.USDC_ADDRESS as `0x${string}`;
+const ETH_ADDRESS = env.ETH_ADDRESS as `0x${string}`;
