@@ -7,11 +7,16 @@ import { useAccount } from "wagmi";
 import { AuthModal } from "./auth-modal";
 import { WalletConnectButton } from "./connect-button";
 import { EchoAccount } from "./echo-account-next";
+import { Skeleton } from "./ui/skeleton";
 
 export function ConnectionSelector() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const { isConnected } = useAccount();
-  const { user } = useEcho();
+  const { isConnected, isConnecting } = useAccount();
+  const { user, isLoading } = useEcho();
+
+  if (isLoading || isConnecting) {
+    return <Skeleton className="h-10 w-24 animate-pulse" />;
+  }
 
   // If either is already connected, show only that connection method
   const isEchoConnected = !!user;
