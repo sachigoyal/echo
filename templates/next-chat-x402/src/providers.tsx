@@ -17,7 +17,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <EchoProvider
             config={{ appId: process.env.NEXT_PUBLIC_ECHO_APP_ID! }}
           >
-            {children}
+            <div className="flex min-h-screen flex-col">
+              {children}
+            </div>
           </EchoProvider>
         </RainbowKitProvider>
       </QueryClientProvider>

@@ -1,7 +1,7 @@
 'use client';
 
 import { CopyIcon, MessageSquare } from 'lucide-react';
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { useChatWithPayment } from '@/lib/x402/use-chat-with-payment';
 import { Action, Actions } from '@/components/ai-elements/actions';
 import {
@@ -58,7 +58,8 @@ const suggestions = [
 const ChatBotDemo = () => {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
-  const { messages, sendMessage, status } = useChatWithPayment();
+  const [isDismissed, setIsDismissed] = useState(false);
+  const { messages, sendMessage, status, error, paymentError, clearPaymentError } = useChatWithPayment();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +86,18 @@ const ChatBotDemo = () => {
       }
     );
   };
+
+  const handleDismissError = () => {
+    clearPaymentError();
+    setIsDismissed(true);
+  };
+
+  // Reset dismissed state when sending a new message
+  useEffect(() => {
+    if (status === 'submitted') {
+      setIsDismissed(false);
+    }
+  }, [status]);
 
   return (
     <div className="mx-auto flex h-full max-w-4xl flex-col p-6">
@@ -177,6 +190,31 @@ const ChatBotDemo = () => {
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
+        
+        {(error || paymentError) && !isDismissed && (
+          <div className="mt-4 mb-2 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-semibold text-red-800 dark:text-red-200">
+                  {paymentError ? 'Payment Required' : 'Error'}
+                </h3>
+                <p className="mt-1 text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">
+                  {paymentError || error?.message || 'An error occurred while processing your request.'}
+                </p>
+              </div>
+              <button
+                onClick={handleDismissError}
+                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200"
+                aria-label="Dismiss error"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+        
         <Suggestions>
           {suggestions.map(suggestion => (
             <Suggestion
@@ -187,7 +225,7 @@ const ChatBotDemo = () => {
           ))}
         </Suggestions>
 
-        <PromptInput onSubmit={handleSubmit} className="mt-4 flex-shrink-0">
+        <PromptInput onSubmit={handleSubmit} className="mt-4 shrink-0">
           <PromptInputTextarea
             onChange={e => setInput(e.target.value)}
             value={input}
