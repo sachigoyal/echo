@@ -1,7 +1,8 @@
 import { env } from './env';
 
 export const WALLET_OWNER = env.WALLET_OWNER || 'echo-fund-owner';
-export const WALLET_SMART_ACCOUNT = (env.WALLET_OWNER || 'echo-fund-owner') + '-smart-account';
+export const WALLET_SMART_ACCOUNT =
+  (env.WALLET_OWNER || 'echo-fund-owner') + '-smart-account';
 
 export const DOMAIN_NAME = 'USD Coin';
 export const DOMAIN_VERSION = '2';

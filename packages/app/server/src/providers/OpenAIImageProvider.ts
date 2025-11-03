@@ -9,9 +9,7 @@ import { env } from '../env';
 
 // Use OpenAI SDK's ResponseUsage for non-streaming responses
 
-const parseSSEImageGenerationFormat = (
-  data: string
-): ImagesResponse[] => {
+const parseSSEImageGenerationFormat = (data: string): ImagesResponse[] => {
   // Split by double newlines to separate complete events
   const eventBlocks = data.split('\n\n');
   const chunks: ImagesResponse[] = [];

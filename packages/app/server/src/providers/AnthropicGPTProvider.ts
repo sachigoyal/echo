@@ -6,9 +6,7 @@ import { ProviderType } from './ProviderType';
 import logger from '../logger';
 import { env } from '../env';
 
-const parseSSEAnthropicGPTFormat = (
-  data: string
-): StreamingChunkBody[] => {
+const parseSSEAnthropicGPTFormat = (data: string): StreamingChunkBody[] => {
   // Split by double newlines to separate events
   const events = data.split('\n\n');
   const chunks: StreamingChunkBody[] = [];

@@ -8,7 +8,9 @@ export const env = createEnv({
 
     // Server
     PORT: z.coerce.number().default(3069),
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    NODE_ENV: z
+      .enum(['development', 'production', 'test'])
+      .default('development'),
 
     // Network & Blockchain
     NETWORK: z.string().default('base-sepolia'),
@@ -76,4 +78,3 @@ export const env = createEnv({
   runtimeEnv: process.env,
   skipValidation: process.env.SKIP_ENV_VALIDATION === 'true',
 });
-

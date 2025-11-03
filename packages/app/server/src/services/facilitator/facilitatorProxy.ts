@@ -86,4 +86,3 @@ export async function facilitatorProxy<
 
   return data as T;
 }
-

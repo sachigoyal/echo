@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { BaseProvider } from '../providers/BaseProvider';
 import {
   extractGeminiModelName,
-  isGeminiStreamingPath
+  isGeminiStreamingPath,
 } from '../utils/gemini/string-parsing';
 import { env } from '../env';
 

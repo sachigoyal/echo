@@ -39,7 +39,8 @@ function parseArgs(): ScriptOptions {
  * Log message if verbose mode is enabled
  */
 function log(message: string, options: ScriptOptions): void {
-  if (options.verbose) {``
+  if (options.verbose) {
+    ``;
     console.log(`[generate-api-types] ${message}`);
   }
 }

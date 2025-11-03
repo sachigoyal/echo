@@ -7,8 +7,5 @@
     "/src/clients/**",
     "/dist/**"
   ],
-  "ignoreDependencies": [
-    "@merit-systems/echo-typescript-sdk"
-  ]
+  "ignoreDependencies": ["@merit-systems/echo-typescript-sdk"]
 }
-

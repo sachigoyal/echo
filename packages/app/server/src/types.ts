@@ -229,10 +229,7 @@ interface SupportedPaymentKindsResponse {
   kinds: SupportedPaymentKind[];
 }
 
-type TransferWithAuthorization = Omit<
-  ExactEvmPayloadAuthorization,
-  'from'
->;
+type TransferWithAuthorization = Omit<ExactEvmPayloadAuthorization, 'from'>;
 
 type HandlerInput = {
   req: EscrowRequest;
