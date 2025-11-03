@@ -31,6 +31,12 @@ export async function facilitatorProxy<
   payload: PaymentPayload,
   paymentRequirements: PaymentRequirements
 ): Promise<T> {
+
+  if (!PROXY_FACILITATOR_URL) {
+    throw new Error('PROXY_FACILITATOR_URL is not set');
+  }
+
+
   logMetric('facilitator_proxy_attempt', 1, {
     method,
   });
@@ -52,11 +58,6 @@ export async function facilitatorProxy<
       `Proxy facilitator ${method} request timed out after ${facilitatorTimeout}ms`
     );
   }, Number(facilitatorTimeout));
-
-  if (!PROXY_FACILITATOR_URL) {
-    throw new Error('PROXY_FACILITATOR_URL is not set');
-  }
-
   const res = await fetch(`${PROXY_FACILITATOR_URL}/${method}`, {
     method: 'POST',
     headers,
