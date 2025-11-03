@@ -12,9 +12,6 @@ import { env } from '../../env';
 dotenv.config();
 
 const PROXY_FACILITATOR_URL = env.PROXY_FACILITATOR_URL;
-if (!PROXY_FACILITATOR_URL) {
-  throw new Error('PROXY_FACILITATOR_URL is not set');
-}
 const facilitatorTimeout = env.FACILITATOR_REQUEST_TIMEOUT || 20000;
 
 type FacilitatorMethod = 'verify' | 'settle';
@@ -56,6 +53,10 @@ export async function facilitatorProxy<
       `Proxy facilitator ${method} request timed out after ${facilitatorTimeout}ms`
     );
   }, Number(facilitatorTimeout));
+
+  if (!PROXY_FACILITATOR_URL) {
+    throw new Error('PROXY_FACILITATOR_URL is not set');
+  }
 
   const res = await fetch(`${PROXY_FACILITATOR_URL}/${method}`, {
     method: 'POST',
