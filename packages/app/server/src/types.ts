@@ -94,7 +94,7 @@ export interface TransactionRequest extends Transaction {
   transactionType?: EnumTransactionType;
 }
 
-interface ApiKeyValidationResult {
+export interface ApiKeyValidationResult {
   userId: string;
   echoAppId: string;
   user: User;
