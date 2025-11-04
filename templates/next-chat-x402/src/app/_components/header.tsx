@@ -13,7 +13,7 @@ const Header: FC<HeaderProps> = ({
   className = '',
 }) => {
   return (
-<header
+    <header
       className={`border-gray-200 border-b bg-white shadow-sm ${className}`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

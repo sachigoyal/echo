@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <Providers>
           <Header title="Echo Chat" />
-          <div className="min-h-0 flex-1">{children}</div>
+          <div className="min-h-0 flex flex-1 flex-col">{children}</div>
         </Providers>
       </body>
     </html>

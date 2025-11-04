@@ -100,8 +100,8 @@ const ChatBotDemo = () => {
   }, [status]);
 
   return (
-    <div className="mx-auto flex h-full max-w-4xl flex-col p-6">
-      <div className="flex h-full min-h-0 flex-col">
+    <div className="mx-auto flex flex-col h-full! flex-1 max-w-4xl p-6">
+      <div className="flex flex-1 h-full min-h-0 flex-col">
         <Conversation className="relative min-h-0 w-full flex-1 overflow-hidden">
           <ConversationContent>
             {messages.length === 0 ? (
