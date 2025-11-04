@@ -18,8 +18,6 @@ describe('Echo API Test', () => {
       throw new Error('ECHO_API_KEY environment variable is not set');
     }
 
-    console.log('ECHO_API_KEY:', env.ECHO_API_KEY);
-
     // Create OpenAI client with echo.router.merit.systems baseURL
     oai = new OpenAI({
       apiKey: env.ECHO_API_KEY,
