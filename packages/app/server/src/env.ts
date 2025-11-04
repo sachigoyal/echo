@@ -1,5 +1,8 @@
 import { createEnv } from '@t3-oss/env-core';
 import { z } from 'zod';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const env = createEnv({
   server: {
@@ -46,8 +49,8 @@ export const env = createEnv({
     GOOGLE_SERVICE_ACCOUNT_KEY: z.string().optional(),
 
     // API Keys - Echo
-    API_KEY_HASH_SECRET: z.string().default('default-hash-secret'),
-    API_ECHO_ACCESS_JWT_SECRET: z.string().default('default-jwt-secret'),
+    API_KEY_HASH_SECRET: z.string().default('change-this-in-production-very-secret-key'),
+    API_ECHO_ACCESS_JWT_SECRET: z.string().default('api-jwt-secret-change-in-production'),
 
     // Echo Configuration
     ECHO_MARKUP: z.string().default('1.25'),
