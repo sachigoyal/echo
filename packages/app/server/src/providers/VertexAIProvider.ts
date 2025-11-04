@@ -472,7 +472,14 @@ export class VertexAIProvider extends BaseProvider {
   }
 
   private getServiceAccountCredentials(): any {
-    const serviceAccountKey = env.GOOGLE_SERVICE_ACCOUNT_KEY;
+    const serviceAccountKeyEncoded =
+      process.env.GOOGLE_SERVICE_ACCOUNT_KEY_ENCODED;
+    // decode from base64
+    const serviceAccountKey = Buffer.from(
+      serviceAccountKeyEncoded!,
+      'base64'
+    ).toString('utf-8');
+
     if (!serviceAccountKey) {
       return null;
     }
@@ -480,7 +487,7 @@ export class VertexAIProvider extends BaseProvider {
     try {
       return JSON.parse(serviceAccountKey);
     } catch (error) {
-      logger.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY', error);
+      logger.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_KEY_ENCODED', error);
       return null;
     }
   }
