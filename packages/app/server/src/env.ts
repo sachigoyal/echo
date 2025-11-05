@@ -12,7 +12,7 @@ export const env = createEnv({
     // Server
     PORT: z.coerce.number().default(3069),
     NODE_ENV: z
-      .enum(['development', 'production', 'staging'])
+      .enum(['development', 'production', 'staging', "test"])
       .default('development'),
 
     // Network & Blockchain
