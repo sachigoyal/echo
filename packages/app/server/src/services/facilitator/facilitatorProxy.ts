@@ -8,6 +8,7 @@ import {
 import logger, { logMetric } from '../../logger';
 import dotenv from 'dotenv';
 import { env } from '../../env';
+import { FacilitatorProxyError } from '../../errors/http';
 
 dotenv.config();
 
@@ -69,13 +70,11 @@ export async function facilitatorProxy<
   clearTimeout(timeoutId);
 
   if (res.status !== 200) {
-    const errorBody = await res.text();
-    const errorMsg = `${res.status} ${res.statusText} - ${errorBody}`;
     logMetric('facilitator_proxy_failure', 1, {
       method,
       status: res.status,
     });
-    throw new Error(`Proxy facilitator failed for ${method}: ${errorMsg}`);
+    throw new FacilitatorProxyError();
   }
 
   const data = await res.json();
