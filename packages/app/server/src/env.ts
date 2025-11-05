@@ -46,7 +46,7 @@ export const env = createEnv({
     OPENROUTER_API_KEY: z.string().optional(),
     TAVILY_API_KEY: z.string().optional(),
     E2B_API_KEY: z.string().optional(),
-    GOOGLE_SERVICE_ACCOUNT_KEY: z.string().optional(),
+    GOOGLE_SERVICE_ACCOUNT_KEY_ENCODED: z.string().optional(),
 
     // API Keys - Echo
     API_KEY_HASH_SECRET: z.string().default('change-this-in-production-very-secret-key'),
