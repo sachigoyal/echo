@@ -10,7 +10,6 @@ export {
   type EthereumProviderInstance
 } from './wallet'
 export { createWalletSigner } from './signer'
-export { createPaymentHeader, parseChainIdFromNetwork, parse402Response, type PaymentSpec, type Payment402Response } from './x402'
 export {
   ErrorCode,
   AppError,
