@@ -1,7 +1,7 @@
 import { Storage, StorageType } from './store'
-import { ApiKeySchema, ModelSchema, AuthMethodSchema, WalletConnectSessionSchema, validate } from '@/validation'
+import { ApiKeySchema, ModelSchema, AuthMethodSchema, WalletConnectSessionSchema, LocalWalletSessionSchema, validate } from '@/validation'
 import { DEFAULT_MODEL } from './models'
-import type { Model, AuthMethod, WalletConnectSession } from '@/validation'
+import type { Model, AuthMethod, WalletConnectSession, LocalWalletSession } from '@/validation'
 
 class EchodexStorage extends Storage {
   constructor() {
@@ -67,15 +67,56 @@ class EchodexStorage extends Storage {
     return this.has('walletSession', StorageType.NORMAL)
   }
 
+  async getLocalWalletPrivateKey(): Promise<string | undefined> {
+    return this.get<string>('localWalletPrivateKey', {
+      type: StorageType.SECURE
+    })
+  }
+
+  async setLocalWalletPrivateKey(key: string): Promise<void> {
+    await this.set('localWalletPrivateKey', key, { type: StorageType.SECURE })
+  }
+
+  async deleteLocalWalletPrivateKey(): Promise<void> {
+    await this.delete('localWalletPrivateKey', StorageType.SECURE)
+  }
+
+  async hasLocalWalletPrivateKey(): Promise<boolean> {
+    return this.has('localWalletPrivateKey', StorageType.SECURE)
+  }
+
+  async getLocalWalletSession(): Promise<LocalWalletSession | undefined> {
+    return this.get<LocalWalletSession>('localWalletSession', {
+      type: StorageType.NORMAL,
+      schema: LocalWalletSessionSchema
+    })
+  }
+
+  async setLocalWalletSession(session: LocalWalletSession): Promise<void> {
+    const validatedSession = validate(LocalWalletSessionSchema, session)
+    await this.set('localWalletSession', validatedSession, { type: StorageType.NORMAL })
+  }
+
+  async deleteLocalWalletSession(): Promise<void> {
+    await this.delete('localWalletSession', StorageType.NORMAL)
+  }
+
+  async hasLocalWalletSession(): Promise<boolean> {
+    return this.has('localWalletSession', StorageType.NORMAL)
+  }
+
   async isAuthenticated(): Promise<boolean> {
     const method = await this.getAuthMethod()
     if (!method) return false
     
     if (method === 'echo') {
       return this.hasApiKey()
-    } else {
+    } else if (method === 'wallet') {
       return this.hasWalletSession()
+    } else if (method === 'local-wallet') {
+      return this.hasLocalWalletSession()
     }
+    return false
   }
 
   async getModel(): Promise<Model> {

@@ -46,13 +46,19 @@ export const ThreadSchema = z.object({
 
 export const ThreadsSchema = z.array(ThreadSchema)
 
-export const AuthMethodSchema = z.enum(['echo', 'wallet'] as const)
+export const AuthMethodSchema = z.enum(['echo', 'wallet', 'local-wallet'] as const)
 
 export const WalletConnectSessionSchema = z.object({
   topic: z.string(),
   address: z.string(),
   chainId: z.number(),
   expiry: z.number().optional()
+})
+
+export const LocalWalletSessionSchema = z.object({
+  address: z.string(),
+  chainId: z.number(),
+  createdAt: z.string()
 })
 
 export type ApiKey = z.infer<typeof ApiKeySchema>
@@ -64,3 +70,4 @@ export type ThreadMessage = z.infer<typeof ThreadMessageSchema>
 export type Thread = z.infer<typeof ThreadSchema>
 export type AuthMethod = z.infer<typeof AuthMethodSchema>
 export type WalletConnectSession = z.infer<typeof WalletConnectSessionSchema>
+export type LocalWalletSession = z.infer<typeof LocalWalletSessionSchema>

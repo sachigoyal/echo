@@ -2,7 +2,7 @@
 
 import { Command } from 'commander'
 import { select, isCancel } from '@clack/prompts'
-import { loginWithEcho, loginWithWallet, logout } from '@/auth'
+import { loginWithEcho, loginWithWallet, initLocalWallet, logout } from '@/auth'
 import { 
   startChatSession, 
   resumeChatSession,
@@ -10,7 +10,11 @@ import {
   selectModel, 
   showConversationHistory, 
   exportConversationHistory,
-  clearConversationHistory
+  clearConversationHistory,
+  showLocalWalletBalance,
+  showLocalWalletAddress,
+  exportPrivateKey,
+  fundWallet
 } from '@/core'
 import { isAuthenticated } from '@/utils'
 import { ECHODEX_ASCII_ART, AUTH_OPTIONS } from '@/constants'
@@ -42,8 +46,10 @@ program
     let success = false
     if (authMethod === 'echo') {
       success = await loginWithEcho()
-    } else {
+    } else if (authMethod === 'wallet') {
       success = await loginWithWallet()
+    } else if (authMethod === 'local-wallet') {
+      success = await initLocalWallet()
     }
 
     process.exit(success ? 0 : 1)
@@ -102,6 +108,38 @@ program
   .description('Resume a conversation from history')
   .action(async () => {
     await resumeChatSession()
+    process.exit(0)
+  })
+
+program
+  .command('wallet-balance')
+  .description('Show local wallet USDC balance')
+  .action(async () => {
+    await showLocalWalletBalance()
+    process.exit(0)
+  })
+
+program
+  .command('wallet-address')
+  .description('Show local wallet address and QR code')
+  .action(async () => {
+    await showLocalWalletAddress()
+    process.exit(0)
+  })
+
+program
+  .command('export-private-key')
+  .description('Export local wallet private key (⚠️ SENSITIVE)')
+  .action(async () => {
+    await exportPrivateKey()
+    process.exit(0)
+  })
+
+program
+  .command('fund-wallet')
+  .description('Show QR code and wait for USDC deposit')
+  .action(async () => {
+    await fundWallet()
     process.exit(0)
   })
 

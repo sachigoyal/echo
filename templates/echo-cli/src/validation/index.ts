@@ -11,6 +11,7 @@ export {
   ThreadsSchema,
   AuthMethodSchema,
   WalletConnectSessionSchema,
+  LocalWalletSessionSchema,
   type ApiKey,
   type UserInfo,
   type Balance,
@@ -19,5 +20,6 @@ export {
   type ThreadMessage,
   type Thread,
   type AuthMethod,
-  type WalletConnectSession
+  type WalletConnectSession,
+  type LocalWalletSession
 } from './schemas'

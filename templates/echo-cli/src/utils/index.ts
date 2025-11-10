@@ -9,7 +9,16 @@ export {
   clearWalletSession,
   type EthereumProviderInstance
 } from './wallet'
-export { createWalletSigner } from './signer'
+export { createWalletSigner, createLocalWalletSigner } from './signer'
+export {
+  generateWallet,
+  getLocalWalletAddress,
+  formatPrivateKeyForDisplay,
+  generateQRCodeForAddress,
+  getUSDCBalance,
+  clearLocalWalletSession,
+  type GeneratedWallet
+} from './local-wallet'
 export {
   ErrorCode,
   AppError,
@@ -20,5 +29,7 @@ export {
   extractErrorMessage,
   isAppError,
   isErrorCode,
+  is402PaymentError,
+  transformPaymentError,
   type ErrorContext
 } from './errors'

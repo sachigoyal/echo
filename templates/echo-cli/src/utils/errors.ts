@@ -63,20 +63,41 @@ export function handleError(err: unknown, fallbackMessage: string = 'An error oc
   }
 }
 
-export function displayAppError(err: AppError): void {
+export function displayAppError(err: unknown): void {
+  // Convert to AppError if needed
+  let appError: AppError
+  
+  if (isAppError(err)) {
+    appError = err
+  } else if (is402PaymentError(err)) {
+    appError = transformPaymentError(err)
+  } else if (err instanceof Error) {
+    appError = createError({
+      code: ErrorCode.UNKNOWN,
+      message: err.message,
+      originalError: err
+    })
+  } else {
+    appError = createError({
+      code: ErrorCode.UNKNOWN,
+      message: 'An unexpected error occurred',
+      originalError: err
+    })
+  }
+
   blankLine()
 
-  switch (err.code) {
+  switch (appError.code) {
     case ErrorCode.VALIDATION_ERROR:
       error('Validation Error')
-      if (err.details) {
-        hint(err.details)
+      if (appError.details) {
+        hint(appError.details)
       }
       break
 
     case ErrorCode.AUTHENTICATION_FAILED:
       error('Authentication Failed')
-      hint(err.message)
+      hint(appError.message)
       hint('Please check your credentials and try again')
       break
 
@@ -93,15 +114,21 @@ export function displayAppError(err: AppError): void {
 
     case ErrorCode.WRONG_CHAIN:
       error('Wrong Blockchain Network')
-      hint(`Your wallet is on chain ${err.currentChainId}`)
-      hint(`Please switch to chain ${err.requiredChainId} in your mobile wallet`)
+      hint(`Your wallet is on chain ${appError.currentChainId}`)
+      hint(`Please switch to chain ${appError.requiredChainId} in your mobile wallet`)
       break
 
     case ErrorCode.INSUFFICIENT_FUNDS:
-      error('Insufficient Funds')
-      warning('Your wallet does not have enough balance to proceed')
-      if (err.details) {
-        hint(err.details)
+      error('💰 Insufficient USDC Balance')
+      warning('Your wallet does not have enough USDC to complete this request')
+      blankLine()
+      hint('To fund your wallet:')
+      hint('  • Run: echodex fund-wallet')
+      hint('  • Or check balance: echodex wallet-balance')
+      hint('  • Or view address: echodex wallet-address')
+      if (appError.details) {
+        blankLine()
+        hint(appError.details)
       }
       break
 
@@ -112,20 +139,20 @@ export function displayAppError(err: AppError): void {
 
     case ErrorCode.API_ERROR:
       error('API Error')
-      hint(err.message)
+      hint(appError.message)
       break
 
     case ErrorCode.NOT_FOUND:
       warning('Not Found')
-      hint(err.message)
+      hint(appError.message)
       break
 
     case ErrorCode.CANCELLED:
-      warning(err.message)
+      warning(appError.message)
       break
 
     default:
-      error(err.message)
+      error(appError.message)
   }
 
   blankLine()
@@ -147,5 +174,54 @@ export function isAppError(err: unknown): err is AppError {
 
 export function isErrorCode(err: unknown, code: ErrorCode): boolean {
   return isAppError(err) && err.code === code
+}
+
+export function is402PaymentError(err: unknown): boolean {
+  if (err && typeof err === 'object' && 'statusCode' in err) {
+    return (err as any).statusCode === 402
+  }
+  return false
+}
+
+export function transformPaymentError(err: unknown): AppError {
+  const errorData = err as any
+  
+  // Check if it's a 402 payment error
+  if (errorData.statusCode === 402) {
+    let details: string | undefined
+    try {
+      if (errorData.responseBody) {
+        const parsed = JSON.parse(errorData.responseBody)
+        details = parsed.error
+      }
+    } catch {
+      // Ignore JSON parse errors
+    }
+    
+    return createError({
+      code: ErrorCode.INSUFFICIENT_FUNDS,
+      message: 'Insufficient USDC balance to complete this request',
+      details,
+      originalError: err
+    })
+  }
+  
+  // Check for other payment-related errors
+  if (errorData.message?.includes('Payment Required') || 
+      errorData.message?.includes('payment') ||
+      errorData.message?.includes('402')) {
+    return createError({
+      code: ErrorCode.INSUFFICIENT_FUNDS,
+      message: 'Payment required - insufficient funds',
+      originalError: err
+    })
+  }
+  
+  // Default to payment failed
+  return createError({
+    code: ErrorCode.PAYMENT_FAILED,
+    message: 'Payment processing failed',
+    originalError: err
+  })
 }
 

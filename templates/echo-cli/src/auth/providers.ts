@@ -3,7 +3,7 @@ import { createX402OpenAI } from '@merit-systems/ai-x402'
 import type { LanguageModel } from 'ai'
 import { storage } from '@/config'
 import { ECHO_APP_ID, APP } from '@/constants'
-import { createWalletSigner, throwError, ErrorCode } from '@/utils'
+import { createWalletSigner, createLocalWalletSigner, throwError, ErrorCode } from '@/utils'
 
 interface AIProvider {
   (modelId: string): LanguageModel
@@ -16,6 +16,8 @@ export async function getAIProvider(): Promise<AIProvider | null> {
     return createEchoProvider()
   } else if (authMethod === 'wallet') {
     return createWalletProvider()
+  } else if (authMethod === 'local-wallet') {
+    return createLocalWalletProvider()
   }
 
   return null
@@ -46,6 +48,23 @@ async function createWalletProvider(): Promise<AIProvider> {
     throwError({
       code: ErrorCode.WALLET_SESSION_EXPIRED,
       message: 'Wallet session expired or disconnected'
+    })
+  }
+
+  return createX402OpenAI({
+    walletClient: signer,
+    baseRouterUrl: APP.echoRouterUrl,
+    echoAppId: ECHO_APP_ID
+  })
+}
+
+async function createLocalWalletProvider(): Promise<AIProvider> {
+  const signer = await createLocalWalletSigner()
+
+  if (!signer) {
+    throwError({
+      code: ErrorCode.WALLET_SESSION_EXPIRED,
+      message: 'Local wallet session expired or not found'
     })
   }
 

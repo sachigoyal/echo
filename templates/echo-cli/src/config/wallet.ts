@@ -11,5 +11,14 @@ export const WALLET_OPTIONAL_METHODS = [
 
 export const AUTH_OPTIONS = [
   { value: 'echo', label: 'Echo API Key' },
-  { value: 'wallet', label: 'WalletConnect' }
+  { value: 'wallet', label: 'WalletConnect' },
+  { value: 'local-wallet', label: 'Local Wallet (Self Custody)' }
+]
+
+export const CHAIN_OPTIONS = [
+  { value: 1, label: 'Ethereum Mainnet' },
+  { value: 8453, label: 'Base' },
+  { value: 10, label: 'Optimism' },
+  { value: 137, label: 'Polygon' },
+  { value: 42161, label: 'Arbitrum' }
 ]

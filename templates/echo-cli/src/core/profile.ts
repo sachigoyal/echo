@@ -3,7 +3,7 @@ import { getEchoClient } from '@/auth'
 import { storage } from '@/config'
 import { validate, UserInfoSchema, BalanceSchema } from '@/validation'
 import { warning, header, label, blankLine, error } from '@/print'
-import { getChainName, formatAddress, displayAppError, createError, ErrorCode } from '@/utils'
+import { getChainName, formatAddress, getUSDCBalance, displayAppError, createError, ErrorCode } from '@/utils'
 
 export async function showProfile(): Promise<void> {
   const authMethod = await storage.getAuthMethod()
@@ -15,8 +15,10 @@ export async function showProfile(): Promise<void> {
 
   if (authMethod === 'echo') {
     await showEchoProfile()
-  } else {
+  } else if (authMethod === 'wallet') {
     await showWalletProfile()
+  } else if (authMethod === 'local-wallet') {
+    await showLocalWalletProfile()
   }
 }
 
@@ -76,4 +78,36 @@ async function showWalletProfile(): Promise<void> {
     label('Session Expires:', chalk.white(expiryDate.toLocaleString()))
   }
   blankLine()
+}
+
+async function showLocalWalletProfile(): Promise<void> {
+  const session = await storage.getLocalWalletSession()
+  
+  if (!session) {
+    warning('Local wallet session not found. Please run: echodex login')
+    return
+  }
+
+  try {
+    const balance = await getUSDCBalance(session.address, session.chainId)
+
+    blankLine()
+    header('=== Local Wallet Profile ===')
+    blankLine()
+    label('Auth Method:', chalk.cyan('Local Wallet (Self Custody)'))
+    label('Address:', chalk.white(session.address))
+    label('Short Address:', chalk.gray(formatAddress(session.address)))
+    label('Chain:', chalk.green(`${getChainName(session.chainId, true)} (${session.chainId})`))
+    label('USDC Balance:', chalk.green(`${balance} USDC`))
+    label('Created:', chalk.white(new Date(session.createdAt).toLocaleDateString()))
+    blankLine()
+    label('Security:', chalk.yellow('🔐 Private key stored in OS keychain'))
+    blankLine()
+  } catch (err) {
+    displayAppError(createError({
+      code: ErrorCode.WALLET_DISCONNECTED,
+      message: 'Failed to fetch wallet profile',
+      originalError: err
+    }))
+  }
 }

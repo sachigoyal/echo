@@ -13,10 +13,17 @@ export async function logout(): Promise<void> {
   
   await storage.deleteApiKey()
   await storage.deleteWalletSession()
+  await storage.deleteLocalWalletPrivateKey()
+  await storage.deleteLocalWalletSession()
   await storage.deleteAuthMethod()
   
   clearEchoClient()
   clearEthereumProvider()
   
-  success('✓ Successfully logged out and cleared all credentials')
+  if (authMethod === 'local-wallet') {
+    success('✓ Successfully logged out')
+    success('✓ Local wallet private key has been deleted from keychain')
+  } else {
+    success('✓ Successfully logged out and cleared all credentials')
+  }
 }
