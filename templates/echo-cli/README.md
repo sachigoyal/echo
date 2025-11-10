@@ -123,6 +123,28 @@ The WalletConnect method uses the X402 payment protocol:
 
 ## Configuration
 
+### Required Setup
+
+Before running the CLI, update the configuration in `src/constants.ts`:
+
+1. **Echo App ID**: 
+   - Visit [echo.merit.systems](https://echo.merit.systems)
+   - Create or retrieve your Echo App ID
+   - Replace `YOUR_ECHO_APP_ID` in `src/constants.ts`
+
+2. **WalletConnect Project ID**:
+   - Visit [walletconnect.com](https://walletconnect.com)
+   - Create a new project and get your Project ID
+   - Replace `YOUR_WALLETCONNECT_PROJECT_ID` in `src/constants.ts`
+
+After updating these values, rebuild the project:
+
+```bash
+pnpm build
+```
+
+### Runtime Configuration
+
 Configuration is stored in:
 - **Credentials**: OS keychain (secure)
 - **Settings**: `~/.config/echodex/` (platform-specific)
