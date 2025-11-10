@@ -94,4 +94,3 @@ class EchodexStorage extends Storage {
 
 export const storage = new EchodexStorage()
 export { StorageType, StorageAdapter } from './store'
-export { APP } from './app'

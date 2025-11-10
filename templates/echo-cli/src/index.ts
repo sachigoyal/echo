@@ -9,7 +9,8 @@ import {
   showProfile, 
   selectModel, 
   showConversationHistory, 
-  exportConversationHistory 
+  exportConversationHistory,
+  clearConversationHistory
 } from '@/core'
 import { isAuthenticated } from '@/utils'
 import { ECHODEX_ASCII_ART, AUTH_OPTIONS } from '@/constants'
@@ -85,6 +86,14 @@ program
   .description('Export conversation history as JSON')
   .action(async () => {
     const success = await exportConversationHistory()
+    process.exit(success ? 0 : 1)
+  })
+
+program
+  .command('clear-history')
+  .description('Clear all conversation history')
+  .action(async () => {
+    const success = await clearConversationHistory()
     process.exit(success ? 0 : 1)
   })
 

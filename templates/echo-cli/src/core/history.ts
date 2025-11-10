@@ -159,3 +159,28 @@ export async function selectThreadToResume(): Promise<Thread | null> {
   return threads.find(t => t.id === selectedId) || null
 }
 
+export async function clearConversationHistory(): Promise<boolean> {
+  try {
+    const threads = await getThreads()
+    
+    if (threads.length === 0) {
+      warning('No conversation history to clear.')
+      return false
+    }
+    
+    await storage.set(THREADS_STORAGE_KEY, [], {
+      type: StorageType.NORMAL
+    })
+    
+    success(`Cleared ${threads.length} thread${threads.length > 1 ? 's' : ''} from history.`)
+    return true
+  } catch (err) {
+    displayAppError(createError({
+      code: ErrorCode.API_ERROR,
+      message: 'Failed to clear history',
+      originalError: err
+    }))
+    return false
+  }
+}
+

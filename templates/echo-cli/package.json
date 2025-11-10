@@ -10,7 +10,9 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "dev": "tsx src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",

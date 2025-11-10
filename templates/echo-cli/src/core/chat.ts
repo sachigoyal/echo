@@ -9,7 +9,7 @@ import { warning, hint, blankLine, write, newLine, error, header } from '@/print
 import { createThread, addMessageToThread, selectThreadToResume } from './history'
 import { Thread } from '@/validation'
 
-async function runChatLoop(thread: Thread): Promise<void> {
+async function runChatLoop(thread: Thread, isResume: boolean = false): Promise<void> {
   const authenticated = await isAuthenticated()
 
   if (!authenticated) {
@@ -42,7 +42,23 @@ async function runChatLoop(thread: Thread): Promise<void> {
   const mode = MESSAGE_MODES.CHAT
   const modeDisplay = mode === MESSAGE_MODES.CHAT ? 'Chat' : 'Agent'
   
-  header(`${AGENT_NAME} - ${modeDisplay}`)
+  header(`${AGENT_NAME} - ${modeDisplay}${isResume ? ' (Resumed)' : ''}`)
+  
+  // Display previous messages if resuming
+  if (isResume && thread.messages.length > 0) {
+    hint('Previous conversation:')
+    blankLine()
+    
+    thread.messages.forEach((msg) => {
+      const displayName = msg.role === 'user' ? 'You' : AGENT_NAME
+      const color = msg.role === 'user' ? chalk.green : chalk.blue
+      write(color(`${displayName}: `))
+      write(`${msg.content}\n`)
+    })
+    
+    blankLine()
+  }
+  
   hint(`Type "exit" to quit.`)
   hint(`Using model: ${thread.model}\n`)
 
@@ -132,5 +148,5 @@ export async function resumeChatSession(): Promise<void> {
     return
   }
   
-  await runChatLoop(thread)
+  await runChatLoop(thread, true)
 }

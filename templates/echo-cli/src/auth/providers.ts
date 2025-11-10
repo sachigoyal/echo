@@ -1,8 +1,8 @@
 import { createEchoOpenAI } from '@merit-systems/echo-typescript-sdk'
 import { createX402OpenAI } from '@merit-systems/ai-x402'
 import type { LanguageModel } from 'ai'
-import { storage, APP } from '@/config'
-import { ECHO_APP_ID } from '@/constants'
+import { storage } from '@/config'
+import { ECHO_APP_ID, APP } from '@/constants'
 import { createWalletSigner, throwError, ErrorCode } from '@/utils'
 
 interface AIProvider {

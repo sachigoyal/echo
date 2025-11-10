@@ -93,6 +93,7 @@ echodex model          # Select a different AI model
 ```bash
 echodex history        # View your conversation history
 echodex export         # Export conversations as JSON
+echodex clear-history  # Clear all conversation history
 ```
 
 ### Profile
