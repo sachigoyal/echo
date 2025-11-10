@@ -9,7 +9,6 @@
  * - Validates file types (images only)
  * - Sets maximum file size (50MB)
  * - Generates temporary tokens
- * - Blobs are auto-deleted after server processing
  */
 
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
@@ -36,9 +35,6 @@ export async function POST(request: Request): Promise<NextResponse> {
         // Called after successful upload
         // You can add logging, analytics, etc. here
         console.log('Blob upload completed:', blob.pathname);
-        
-        // Note: The blob will be automatically deleted after the server
-        // downloads it for processing (see server-blob-utils.ts)
       },
     });
 

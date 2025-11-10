@@ -10,7 +10,7 @@ import { ERROR_MESSAGES } from '@/lib/constants';
 
 /**
  * Handles OpenAI image editing
- * Downloads images from Vercel Blob URLs and converts to data URLs
+ * Converts image URLs to data URLs for processing
  */
 export async function handleOpenAIEdit(
   prompt: string,

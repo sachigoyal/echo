@@ -3,11 +3,7 @@
  * 
  * This module handles downloading images from Vercel Blob storage on the server
  * and converting them to base64 for AI model consumption.
- * 
- * IMPORTANT: Blobs are deleted after download to ensure user privacy.
  */
-
-import { del } from '@vercel/blob';
 
 export function isBlobUrl(url: string): boolean {
   try {
@@ -19,8 +15,7 @@ export function isBlobUrl(url: string): boolean {
 }
 
 export async function downloadBlobToDataUrl(
-  blobUrl: string,
-  deleteAfter: boolean = true
+  blobUrl: string
 ): Promise<string> {
   try {
     const response = await fetch(blobUrl);
@@ -36,17 +31,6 @@ export async function downloadBlobToDataUrl(
     // Get content type from response headers
     const contentType = response.headers.get('content-type') || 'image/png';
     
-    // Delete the blob immediately after download for privacy
-    if (deleteAfter && isBlobUrl(blobUrl)) {
-      try {
-        await del(blobUrl);
-        console.log('Deleted blob after download:', blobUrl);
-      } catch (deleteError) {
-        console.error('Failed to delete blob:', deleteError);
-        // Don't throw - the image was downloaded successfully
-      }
-    }
-    
     return `data:${contentType};base64,${base64}`;
   } catch (error) {
     console.error('Error downloading blob:', error);
@@ -57,15 +41,13 @@ export async function downloadBlobToDataUrl(
 }
 
 export async function downloadBlobsToDataUrls(
-  blobUrls: string[],
-  deleteAfter: boolean = true
+  blobUrls: string[]
 ): Promise<string[]> {
-  return Promise.all(blobUrls.map(url => downloadBlobToDataUrl(url, deleteAfter)));
+  return Promise.all(blobUrls.map(url => downloadBlobToDataUrl(url)));
 }
 
 export async function processImageUrls(
-  imageUrls: string[],
-  deleteAfter: boolean = true
+  imageUrls: string[]
 ): Promise<string[]> {
   return Promise.all(
     imageUrls.map(async url => {
@@ -74,13 +56,13 @@ export async function processImageUrls(
         return url;
       }
       
-      // If it's a blob URL, download, convert, and delete
+      // If it's a blob URL, download and convert
       if (isBlobUrl(url)) {
-        return downloadBlobToDataUrl(url, deleteAfter);
+        return downloadBlobToDataUrl(url);
       }
       
-      // For any other URL type, try to download it (but don't delete)
-      return downloadBlobToDataUrl(url, false);
+      // For any other URL type, try to download it
+      return downloadBlobToDataUrl(url);
     })
   );
 }

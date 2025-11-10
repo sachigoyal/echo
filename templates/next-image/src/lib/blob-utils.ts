@@ -3,8 +3,6 @@
  * 
  * This module handles uploading images DIRECTLY to Vercel Blob storage from the client.
  * This bypasses the 4.5MB server request limit entirely!
- * 
- * Images are uploaded directly to Vercel Blob, then deleted after server processing.
  */
 
 import { upload } from '@vercel/blob/client';
