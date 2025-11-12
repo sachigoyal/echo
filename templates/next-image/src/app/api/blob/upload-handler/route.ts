@@ -26,7 +26,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         // For example: verify user session, check quotas, etc.
         
         return {
-          allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+          allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'],
           maximumSizeInBytes: 50 * 1024 * 1024, // 50MB
           addRandomSuffix: true, // Prevent filename collisions and add obscurity
         };
