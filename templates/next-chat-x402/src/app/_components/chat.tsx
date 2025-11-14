@@ -71,13 +71,10 @@ const ChatBotDemo = () => {
   const { isScrollable, scrollToBottom } = useScrollable(conversationContentRef);
   const { messages, sendMessage, status, error } = useChatWithPayment({
     walletClient: walletClient as Signer,
-    // Only pass regenerateOptions if we have a wallet for x402 payments
-    ...(walletClient && {
-      regenerateOptions: {
-        body: { model },
-        headers: { 'use-x402': 'true' },
-      },
-    }),
+    regenerateOptions: {
+      body: { model },
+      headers: { 'use-x402': 'true' },
+    },
   });
 
   const ensureBaseChain = async () => {
