@@ -1,8 +1,11 @@
 'use client';
 
-import { CopyIcon, MessageSquare } from 'lucide-react';
-import { Fragment, useState, useEffect } from 'react';
-import { useChatWithPayment } from '@/lib/x402/use-chat-with-payment';
+import { CopyIcon, MessageSquare, ChevronDown } from 'lucide-react';
+import { Fragment, useState, useEffect, useRef } from 'react';
+import { useChatWithPayment } from '@merit-systems/ai-x402';
+import { useAccount, useSwitchChain, useWalletClient } from 'wagmi';
+import { base } from 'wagmi/chains';
+import { useScrollable } from '@/lib/use-scrollable';
 import { Action, Actions } from '@/components/ai-elements/actions';
 import {
   Conversation,
@@ -37,6 +40,8 @@ import {
   SourcesTrigger,
 } from '@/components/ai-elements/sources';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
+import { Button } from '@/components/ui/button';
+import { Signer } from 'x402/types';
 
 const models = [
   {
@@ -59,36 +64,86 @@ const ChatBotDemo = () => {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
   const [isDismissed, setIsDismissed] = useState(false);
-  const { messages, sendMessage, status, error, paymentError, clearPaymentError } = useChatWithPayment();
+  const { data: walletClient } = useWalletClient();
+  const { chain } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
+  const conversationContentRef = useRef<HTMLDivElement>(null);
+  const { isScrollable, scrollToBottom } = useScrollable(conversationContentRef);
+  const { messages, sendMessage, status, error } = useChatWithPayment({
+    walletClient: walletClient as Signer,
+    // Only pass regenerateOptions if we have a wallet for x402 payments
+    ...(walletClient && {
+      regenerateOptions: {
+        body: { model },
+        headers: { 'use-x402': 'true' },
+      },
+    }),
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const ensureBaseChain = async () => {
+    try {
+      if (chain?.id !== base.id) {
+        await switchChainAsync({ chainId: base.id });
+      }
+    } catch {
+      // ignore; user may cancel switch prompt
+    }
+  };
+
+  const isPaymentRequiredError = (err: unknown): boolean => {
+    if (!err || typeof err !== 'object') return false;
+    const maybeError = err as { message?: string };
+    if (!maybeError.message) return false;
+    try {
+      const parsed = JSON.parse(maybeError.message);
+      const hasVersion =
+        parsed && typeof parsed.x402Version === 'number';
+      const hasAccepts = Array.isArray(parsed?.accepts);
+      return !!(hasVersion && hasAccepts);
+    } catch {
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
+      if (walletClient) {
+        await ensureBaseChain();
+      }
       sendMessage(
         { text: input },
         {
           body: {
             model: model,
           },
+          headers: walletClient ? { 'use-x402': 'true' } : {},
         }
       );
       setInput('');
+      // Scroll to bottom when submitting a new message
+      setTimeout(() => scrollToBottom(), 100);
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = async (suggestion: string) => {
+    if (walletClient) {
+      await ensureBaseChain();
+    }
     sendMessage(
       { text: suggestion },
       {
         body: {
           model: model,
         },
+        headers: walletClient ? { 'use-x402': 'true' } : {},
       }
     );
+    // Scroll to bottom when submitting a new message
+    setTimeout(() => scrollToBottom(), 100);
   };
 
   const handleDismissError = () => {
-    clearPaymentError();
     setIsDismissed(true);
   };
 
@@ -99,12 +154,20 @@ const ChatBotDemo = () => {
     }
   }, [status]);
 
+  // Scroll to bottom when a new message is added
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  }, [messages.length, scrollToBottom]);
+
   return (
     <div className="mx-auto flex flex-col h-full! flex-1 max-w-4xl p-6">
       <div className="flex flex-1 h-full min-h-0 flex-col">
         <Conversation className="relative min-h-0 w-full flex-1 overflow-hidden">
-          <ConversationContent>
-            {messages.length === 0 ? (
+          <div ref={conversationContentRef} className="h-[72vh] overflow-y-auto relative">
+            <ConversationContent>
+              {messages.length === 0 ? (
               <ConversationEmptyState
                 icon={<MessageSquare className="size-12" />}
                 title="No messages yet"
@@ -187,19 +250,32 @@ const ChatBotDemo = () => {
               ))
             )}
             {status === 'submitted' && <Loader />}
-          </ConversationContent>
+            </ConversationContent>
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none bg-linear-to-t from-background to-transparent" />
+          {isScrollable && (
+            <Button
+              onClick={scrollToBottom}
+              size="icon"
+              variant="outline"
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 rounded-full"
+              aria-label="Scroll to bottom"
+            >
+              <ChevronDown className="h-5 w-5" />
+            </Button>
+          )}
           <ConversationScrollButton />
         </Conversation>
         
-        {(error || paymentError) && !isDismissed && (
+        {error && !isDismissed && !isPaymentRequiredError(error) && (
           <div className="mt-4 mb-2 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-semibold text-red-800 dark:text-red-200">
-                  {paymentError ? 'Payment Required' : 'Error'}
+                  Error
                 </h3>
                 <p className="mt-1 text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap">
-                  {paymentError || error?.message || 'An error occurred while processing your request.'}
+                  {error?.message || 'An error occurred while processing your request.'}
                 </p>
               </div>
               <button

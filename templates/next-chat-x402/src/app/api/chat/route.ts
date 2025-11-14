@@ -1,11 +1,11 @@
 import { convertToModelMessages, streamText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import {
+  createX402OpenAIWithoutPayment,
+  UiStreamOnError,
+} from '@merit-systems/ai-x402/server';
 import { openai, getEchoToken } from '@/echo';
-import { validateChatRequest } from '@/lib/x402/validate';
 
 export const maxDuration = 30;
-
-const BASE_URL = process.env.BASE_URL || 'https://api.echo.merit.systems/v1';
 
 async function validateAuthentication(useX402: boolean): Promise<{
   token?: string | null;
@@ -36,11 +36,48 @@ async function validateAuthentication(useX402: boolean): Promise<{
   }
 }
 
+function validateChatRequest(body: unknown): {
+  isValid: boolean;
+  data?: { model: string; messages: any[] };
+  error?: { message: string; status: number };
+} {
+  if (!body || typeof body !== 'object') {
+    return {
+      isValid: false,
+      error: { message: 'Invalid request body', status: 400 },
+    };
+  }
+
+  const { model, messages } = body as Record<string, unknown>;
+
+  if (!model || typeof model !== 'string') {
+    return {
+      isValid: false,
+      error: { message: 'Model parameter is required', status: 400 },
+    };
+  }
+
+  if (!messages || !Array.isArray(messages)) {
+    return {
+      isValid: false,
+      error: {
+        message: 'Messages parameter is required and must be an array',
+        status: 400,
+      },
+    };
+  }
+
+  return {
+    isValid: true,
+    data: { model, messages },
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const useX402Header = req.headers.get('use-x402');
-    const useX402 = useX402Header === 'true';
-    const paymentHeader = req.headers.get('x-payment');
+    const hasPaymentHeader = !!req.headers.get('x-payment');
+    const useX402 = useX402Header === 'true' || hasPaymentHeader;
     const body = await req.json();
 
     const validation = validateChatRequest(body);
@@ -59,40 +96,18 @@ export async function POST(req: Request) {
 
     const { model, messages } = validation.data;
 
-    const authResult = await validateAuthentication(useX402);
-    if (authResult.error) {
-      return authResult.error;
-    }
-
     if (useX402) {
-      const streamFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-        const headers: Record<string, string> = { ...init?.headers } as Record<string, string>;
-        if (paymentHeader) {
-          headers['x-payment'] = paymentHeader;
-        }
-        delete headers['Authorization'];
-        
-        const response = await fetch(input, {
-          ...init,
-          headers,
-        });
+      const authResult = await validateAuthentication(true);
+      if (authResult.error) {
+        return authResult.error;
+      }
 
-        // If we get a 402, throw an error with the response body
-        if (response.status === 402) {
-          const errorBody = await response.clone().json();
-          const error = new Error('Payment Required') as Error & { status: number; body: unknown };
-          error.status = 402;
-          error.body = errorBody;
-          throw error;
-        }
-
-        return response;
-      };
-
-      const x402OpenAI = createOpenAI({
-        baseURL: BASE_URL,
-        apiKey: 'ignore',
-        fetch: streamFetch,
+      // For x402, payment is handled client-side via useChatWithPayment.
+      // Use the router without server-side payment handling so 402 bubbles to client.
+      const x402OpenAI = createX402OpenAIWithoutPayment({
+        // If not provided, defaults to https://echo.router.merit.systems
+        baseRouterUrl: process.env.X402_ROUTER_URL,
+        echoAppId: process.env.ECHO_APP_ID,
       });
 
       const result = streamText({
@@ -100,26 +115,16 @@ export async function POST(req: Request) {
         messages: convertToModelMessages(messages),
       });
 
-      for await (const part of result.fullStream) {
-        switch (part.type) {
-          case 'error': {
-            const error: any = part.error;
-            const status = error.status;
-            if (status === 402) {
-              return new Response(
-                JSON.stringify(error.body),
-                { status: 402, headers: { 'Content-Type': 'application/json' } }
-              );
-            }
-            break;
-          }
-        }
-      }
-
       return result.toUIMessageStreamResponse({
         sendSources: true,
         sendReasoning: true,
+        onError: UiStreamOnError(),
       });
+    }
+
+    const authResult = await validateAuthentication(false);
+    if (authResult.error) {
+      return authResult.error;
     }
 
     const result = streamText({
@@ -132,18 +137,8 @@ export async function POST(req: Request) {
       sendReasoning: true,
     });
   } catch (error) {
+    console.error('Chat API error:', error);
 
-    if (error && typeof error === 'object' && 'status' in error && error.status === 402) {
-      const paymentError = error as { status: number; body: unknown };
-      return new Response(
-        JSON.stringify(paymentError.body),
-        {
-          status: 402,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    
     return new Response(
       JSON.stringify({
         error: 'Internal server error',
